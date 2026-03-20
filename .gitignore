@@ -1,0 +1,38 @@
+# --- Python 垃圾 ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+build/
+bin/
+lib/
+include/
+share/
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Flutter / Dart 垃圾 ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_export_environment.sh
+/linux/flutter/ephemeral/
+
+# --- IDE & 系统垃圾 ---
+.vscode/
+.idea/
+*.swp
+*.bak
+.DS_Store
+Thumbs.db
+
+# --- 项目特有记录 ---
+*.log
