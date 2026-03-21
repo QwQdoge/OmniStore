@@ -27,12 +27,25 @@ RE_SUDO_OUTPUT = re.compile(r'[sudo]\s*[\w\s]+:\s*')
 
 
 def gen_env(global_interpreter: bool = USE_GLOBAL_INTERPRETER, lang: Optional[str] = DEFAULT_LANG,
-            extra_paths: Optional[Set[str]] = None) -> dict:
-
+            extra_paths: Optional[Set[str]] = None, locale: Optional[str] = None) -> dict:
+    """Generate environment variables for subprocess execution.
+    
+    Args:
+        global_interpreter: Use global Python interpreter
+        lang: Language setting (LANG environment variable)
+        extra_paths: Additional paths to add to PATH
+        locale: Locale setting (LC_ALL environment variable) - useful for consistent output parsing
+    
+    Returns:
+        Dictionary of environment variables
+    """
     custom_env = dict(os.environ)
 
     if lang is not None:
         custom_env['LANG'] = lang
+
+    if locale is not None:
+        custom_env['LC_ALL'] = locale
 
     if global_interpreter:  # to avoid subprocess calls to the virtualenv python interpreter instead of the global one.
         custom_env['PATH'] = GLOBAL_INTERPRETER_PATH

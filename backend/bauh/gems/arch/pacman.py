@@ -7,8 +7,6 @@ from io import StringIO
 from threading import Thread
 from typing import List, Set, Tuple, Dict, Iterable, Optional, Any, Pattern, Collection
 
-from colorama import Fore
-
 from bauh.commons import system
 from bauh.commons.system import run_cmd, new_subprocess, new_root_subprocess, SystemProcess, SimpleProcess
 from bauh.commons.util import size_to_byte
@@ -29,6 +27,29 @@ RE_DESKTOP_FILES = re.compile(r'\n?([\w\-_]+)\s+(/usr/share/.+\.desktop)')
 RE_IGNORED_PACKAGES: Optional[Pattern] = None
 
 
+def _create_package_info(name: str, version: str, description: str = "", source: str = "", 
+                        installed: bool = False) -> Dict[str, Any]:
+    """Create a standardized package information object.
+    
+    Args:
+        name: Package name
+        version: Package version
+        description: Package description (optional)
+        source: Package source/repository (optional)
+        installed: Whether the package is installed
+    
+    Returns:
+        Dictionary with standardized package information
+    """
+    return {
+        "name": name,
+        "version": version,
+        "description": description,
+        "source": source,
+        "installed": installed
+    }
+
+
 def is_available() -> bool:
     return bool(shutil.which('pacman'))
 
@@ -36,15 +57,19 @@ def is_available() -> bool:
 def get_repositories(pkgs: Iterable[str]) -> dict:
     pkgre = '|'.join(pkgs).replace('+', r'\+').replace('.', r'\.')
 
-    searchres = new_subprocess(['pacman', '-Ss', pkgre]).stdout
+    search_proc = new_subprocess(['pacman', '-Ss', pkgre])
+    searchres = search_proc.stdout if search_proc else None
     repositories = {}
 
-    for line in new_subprocess(['grep', '-E', '.+/({}) '.format(pkgre)], stdin=searchres).stdout:
-        if line:
-            match = line.decode()
-            for p in pkgs:
-                if p in match:
-                    repositories[p] = match.split('/')[0]
+    if searchres:
+        grep_result = new_subprocess(['grep', '-E', '.+/({}) '.format(pkgre)], stdin=searchres)
+        if grep_result and grep_result.stdout:
+            for line in grep_result.stdout:
+                if line:
+                    match = line.decode()
+                    for p in pkgs:
+                        if p in match:
+                            repositories[p] = match.split('/')[0]
 
     not_found = {pkg for pkg in pkgs if pkg and pkg not in repositories}
 
@@ -58,35 +83,56 @@ def get_repositories(pkgs: Iterable[str]) -> dict:
     return repositories
 
 
-def get_info(pkg_name, remote: bool = False) -> str:
-    return run_cmd('pacman -{}i {}'.format('Q' if not remote else 'S', pkg_name), print_error=False)
+def get_info(pkg_name, remote: bool = False) -> Optional[str]:
+    return run_cmd('pacman -{}i {}'.format('Q' if not remote else 'S', pkg_name), print_error=False, lang='C')
 
 
 def get_info_list(pkg_name: str, remote: bool = False) -> List[tuple]:
     info = get_info(pkg_name, remote)
     if info:
         return re.findall(r'(\w+\s?\w+)\s*:\s*(.+(\n\s+.+)*)', info)
+    return []
 
 
 def get_info_dict(pkg_name: str, remote: bool = False) -> Optional[dict]:
+    """Get package info as a dictionary with optimized parsing.
+    
+    Args:
+        pkg_name: The package name to query
+        remote: If True, query from remote deposits (pacman -Si), else local (pacman -Qi)
+    
+    Returns:
+        Dictionary of package information or None if not found
+    """
     list_attrs = {'depends on', 'required by', 'conflicts with'}
     info_list = get_info_list(pkg_name, remote)
 
-    if info_list:
-        info_dict = {}
-        for info_data in info_list:
-            attr = info_data[0].lower().strip()
-            info_dict[attr] = info_data[1]
+    if not info_list:
+        return None
 
-            if info_dict[attr] == 'None':
-                info_dict[attr] = None
+    info_dict = {}
+    for info_data in info_list:
+        if not info_data or len(info_data) < 2:
+            continue
 
-            if attr == 'optional deps' and info_dict[attr]:
-                info_dict[attr] = info_dict[attr].split('\n')
-            elif attr in list_attrs and info_dict[attr]:
-                info_dict[attr] = [d.strip() for d in info_dict[attr].split(' ') if d]
+        # Optimize: normalize attribute name once
+        attr_normalized = info_data[0].lower().strip()
+        value = info_data[1]
 
-        return info_dict
+        # Store value, converting 'None' strings to None
+        info_dict[attr_normalized] = None if value == 'None' else value
+
+        # Skip further processing for None/empty values
+        if not value or value == 'None':
+            continue
+
+        # Parse list-type attributes
+        if attr_normalized == 'optional deps':
+            info_dict[attr_normalized] = [line.strip() for line in value.split('\n') if line.strip()]
+        elif attr_normalized in list_attrs:
+            info_dict[attr_normalized] = [d.strip() for d in value.split() if d.strip()]
+
+    return info_dict if info_dict else None
 
 
 def check_installed(pkg: str) -> bool:
@@ -109,7 +155,7 @@ def map_packages(names: Optional[Iterable[str]] = None, remote: bool = False, si
         thread_ignored = Thread(target=fill_ignored_packages, args=(ignored,), daemon=True)
         thread_ignored.start()
 
-    env = system.gen_env()
+    env = system.gen_env(locale='C')
     env['LC_TIME'] = ''
 
     code, allinfo = system.execute(f"pacman -{'S' if remote else 'Q'}i {' '.join(names) if names else ''}",
@@ -213,13 +259,17 @@ def list_installed_files(pkgname: str) -> List[str]:
 
 
 def verify_pgp_key(key: str) -> bool:
-    list_key = new_subprocess(['pacman-key', '-l']).stdout
+    list_proc = new_subprocess(['pacman-key', '-l'])
+    list_key = list_proc.stdout if list_proc else None
 
-    for out in new_subprocess(['grep', " " + key], stdin=list_key).stdout:
-        if out:
-            line = out.decode().strip()
-            if line and key in line:
-                return True
+    if list_key:
+        grep_result = new_subprocess(['grep', " " + key], stdin=list_key)
+        if grep_result and grep_result.stdout:
+            for out in grep_result.stdout:
+                if out:
+                    line = out.decode().strip()
+                    if line and key in line:
+                        return True
 
     return False
 
@@ -262,15 +312,15 @@ def check_missing(names: Set[str]) -> Set[str]:
 
     not_installed = set()
 
-    for o in installed.stderr:
-        if o:
-            err_line = o.decode()
+    if installed and installed.stderr:
+        for o in installed.stderr:
+            if o:
+                err_line = o.decode()
 
-            if err_line:
-                not_found = [n for n in RE_DEP_NOTFOUND.findall(err_line) if n]
-
-                if not_found:
-                    not_installed.update(not_found)
+                if err_line:
+                    not_found = [n for n in RE_DEP_NOTFOUND.findall(err_line) if n]
+                    if not_found:
+                        not_installed.update(not_found)
 
     return not_installed
 
@@ -279,33 +329,37 @@ def read_repository_from_info(name: str) -> Optional[str]:
     info = new_subprocess(['pacman', '-Si', name])
 
     not_found = False
-    for o in info.stderr:
-        if o:
-            err_line = o.decode()
-            if RE_DEP_NOTFOUND.findall(err_line):
-                not_found = True
+    if info and info.stderr:
+        for o in info.stderr:
+            if o:
+                err_line = o.decode()
+                if RE_DEP_NOTFOUND.findall(err_line):
+                    not_found = True
 
     if not_found:
         return
 
     repository = None
 
-    for o in new_subprocess(['grep', '-Po', "Repository\s+:\s+\K.+"], stdin=info.stdout).stdout:
-        if o:
-            line = o.decode().strip()
+    if info and info.stdout:
+        grep_result = new_subprocess(['grep', '-Po', r'Repository\s+:\s+\K.+'], stdin=info.stdout)
+        if grep_result and grep_result.stdout:
+            for o in grep_result.stdout:
+                if o:
+                    line = o.decode().strip()
 
-            if line:
-                repository = line
+                    if line:
+                        repository = line
 
     return repository
 
 
-def guess_repository(name: str) -> Tuple[str, str]:
+def guess_repository(name: str) -> Optional[Tuple[str, str]]:
     if not name:
         raise Exception("'name' cannot be None or blank")
 
     only_name = RE_DEP_OPERATORS.split(name)[0]
-    res = run_cmd('pacman -Ss {}'.format(only_name))
+    res = run_cmd('pacman -Ss {}'.format(only_name), lang='C')
 
     if res:
         lines = res.split('\n')
@@ -323,6 +377,8 @@ def guess_repository(name: str) -> Tuple[str, str]:
 
                         if found:
                             return line_name, line_repo
+    
+    return None
 
 
 def read_provides(name: str) -> Set[str]:
@@ -330,27 +386,27 @@ def read_provides(name: str) -> Set[str]:
 
     not_found = False
 
-    for o in dep_info.stderr:
-        if o:
-            err_line = o.decode()
-
-            if err_line:
-                if RE_DEP_NOTFOUND.findall(err_line):
-                    not_found = True
+    if dep_info and dep_info.stderr:
+        for o in dep_info.stderr:
+            if o:
+                err_line = o.decode()
+                if err_line:
+                    if RE_DEP_NOTFOUND.findall(err_line):
+                        not_found = True
 
     if not_found:
         raise PackageNotFoundException(name)
 
-    provides = None
+    provides = {name}  # Default to at least the package name itself
 
-    for out in new_subprocess(['grep', '-Po', 'Provides\s+:\s\K(.+)'], stdin=dep_info.stdout).stdout:
-        if out:
-            provided_names = [p.strip() for p in out.decode().strip().split(' ') if p]
-
-            if provided_names[0].lower() == 'none':
-                provides = {name}
-            else:
-                provides = {name, *provided_names}
+    if dep_info and dep_info.stdout:
+        grep_result = new_subprocess(['grep', '-Po', r'Provides\s+:\s+\K(.+)'], stdin=dep_info.stdout)
+        if grep_result and grep_result.stdout:
+            for out in grep_result.stdout:
+                if out:
+                    provided_names = [p.strip() for p in out.decode().strip().split(' ') if p]
+                    if provided_names and provided_names[0].lower() != 'none':
+                        provides.update(provided_names)
 
     return provides
 
@@ -360,24 +416,28 @@ def read_dependencies(name: str) -> Set[str]:
 
     not_found = False
 
-    for o in dep_info.stderr:
-        if o:
-            err_line = o.decode()
+    if dep_info and dep_info.stderr:
+        for o in dep_info.stderr:
+            if o:
+                err_line = o.decode()
 
-            if err_line:
-                if RE_DEP_NOTFOUND.findall(err_line):
-                    not_found = True
+                if err_line:
+                    if RE_DEP_NOTFOUND.findall(err_line):
+                        not_found = True
 
     if not_found:
         raise PackageNotFoundException(name)
 
     depends_on = set()
-    for out in new_subprocess(['grep', '-Po', 'Depends\s+On\s+:\s\K(.+)'], stdin=dep_info.stdout).stdout:
-        if out:
-            line = out.decode().strip()
-
-            if line:
-                depends_on.update([d for d in line.split(' ') if d and d.lower() != 'none'])
+    
+    if dep_info and dep_info.stdout:
+        grep_result = new_subprocess(['grep', '-Po', r'Depends\s+On\s+:\s+\K(.+)'], stdin=dep_info.stdout)
+        if grep_result and grep_result.stdout:
+            for out in grep_result.stdout:
+                if out:
+                    line = out.decode().strip()
+                    if line:
+                        depends_on.update([d for d in line.split(' ') if d and d.lower() != 'none'])
 
     return depends_on
 
@@ -387,14 +447,17 @@ def sync_databases(root_password: Optional[str], force: bool = False) -> SimpleP
                          root_password=root_password)
 
 
-def get_version_for_not_installed(pkgname: str) -> str:
-    output = run_cmd('pacman -Ss {}'.format(pkgname), print_error=False)
-
+def get_version_for_not_installed(pkgname: str) -> Optional[str]:
+    output = run_cmd('pacman -Ss {}'.format(pkgname), print_error=False, lang='C')
     if output:
-        return output.split('\n')[0].split(' ')[1].strip()
+        try:
+            return output.split('\n')[0].split(' ')[1].strip()
+        except (IndexError, AttributeError):
+            return None
+    return None
 
 
-def map_repositories(pkgnames: Iterable[str] = None) -> Dict[str, str]:
+def map_repositories(pkgnames: Optional[Iterable[str]] = None) -> Dict[str, str]:
     info = run_cmd(f"pacman -Si {' '.join(pkgnames) if pkgnames else ''}", print_error=False, ignore_return_code=True)
     if info:
         repos = re.findall(r'(Name|Repository)\s*:\s*(.+)', info)
@@ -416,17 +479,24 @@ def list_repository_updates() -> Dict[str, str]:
     return res
 
 
-def get_build_date(pkgname: str) -> str:
-    output = run_cmd('pacman -Qi {}'.format(pkgname))
-
+def get_build_date(pkgname: str) -> Optional[str]:
+    output = run_cmd('pacman -Qi {}'.format(pkgname), lang='C')
     if output:
         bdate_line = [l for l in output.split('\n') if l.startswith('Build Date')]
-
         if bdate_line:
             return ':'.join(bdate_line[0].split(':')[1:]).strip()
+    return None
 
 
 def search(words: str) -> Dict[str, dict]:
+    """Search for packages and return standardized package information.
+    
+    Args:
+        words: Search query string
+    
+    Returns:
+        Dictionary with package names as keys and standardized package info as values
+    """
     output = run_cmd('pacman -Ss ' + words, print_error=False)
 
     found = {}
@@ -435,21 +505,37 @@ def search(words: str) -> Dict[str, dict]:
         for l in output.split('\n'):
             if l:
                 if l.startswith(' '):
-                    current['description'] = l.strip()
-                    found[current['name']] = current
-                    del current['name']
-                    current = None
+                    description = l.strip()
+                    pkg_name = current.get('name', '')
+                    version = current.get('version', '')
+                    source = current.get('source', '')
+                    
+                    # Create standardized package info
+                    found[pkg_name] = _create_package_info(
+                        name=pkg_name,
+                        version=version,
+                        description=description,
+                        source=source,
+                        installed=False
+                    )
+                    current = {}
                 else:
-                    if current is None:
-                        current = {}
-
+                    if current:
+                        continue
+                    
                     repo_split = l.split('/')
-                    current['repository'] = repo_split[0]
-
+                    source = repo_split[0]
+                    
                     data_split = repo_split[1].split(' ')
-                    current['name'] = data_split[0]
-
-                    current['version'] = data_split[1]
+                    pkg_name = data_split[0]
+                    version = data_split[1] if len(data_split) > 1 else ''
+                    
+                    current = {
+                        'name': pkg_name,
+                        'version': version,
+                        'source': source
+                    }
+    
     return found
 
 
@@ -482,15 +568,18 @@ def sort_fastest_mirrors(root_password: Optional[str], limit: int) -> SimpleProc
 
 
 def list_mirror_countries() -> List[str]:
-    output = run_cmd('pacman-mirrors -l')
-
+    output = run_cmd('pacman-mirrors -l', lang='C')
     if output:
         return [c for c in output.split('\n') if c]
+    return []
 
 
 def get_current_mirror_countries() -> List[str]:
-    output = run_cmd('pacman-mirrors -lc').strip()
-    return ['all'] if not output else [c for c in output.split('\n') if c]
+    output = run_cmd('pacman-mirrors -lc', lang='C')
+    if not output:
+        return ['all']
+    output_str = output.strip()
+    return ['all'] if not output_str else [c for c in output_str.split('\n') if c]
 
 
 def is_mirrors_available() -> bool:
@@ -501,7 +590,13 @@ def map_update_sizes(pkgs: List[str]) -> Dict[str, float]:  # bytes:
     output = run_cmd('pacman -Si {}'.format(' '.join(pkgs)))
 
     if output:
-        return {pkgs[idx]: size_to_byte(size[0], size[1]) for idx, size in enumerate(RE_INSTALLED_SIZE.findall(output))}
+        result = {}
+        for idx, size in enumerate(RE_INSTALLED_SIZE.findall(output)):
+            if idx < len(pkgs):
+                byte_size = size_to_byte(size[0], size[1])
+                if byte_size is not None:
+                    result[pkgs[idx]] = byte_size
+        return result
 
     return {}
 
@@ -510,7 +605,13 @@ def map_download_sizes(pkgs: List[str]) -> Dict[str, float]:  # bytes:
     output = run_cmd('pacman -Si {}'.format(' '.join(pkgs)))
 
     if output:
-        return {pkgs[idx]: size_to_byte(size[0], size[1]) for idx, size in enumerate(RE_DOWNLOAD_SIZE.findall(output))}
+        result = {}
+        for idx, size in enumerate(RE_DOWNLOAD_SIZE.findall(output)):
+            if idx < len(pkgs):
+                byte_size = size_to_byte(size[0], size[1])
+                if byte_size is not None:
+                    result[pkgs[idx]] = byte_size
+        return result
 
     return {}
 
@@ -519,7 +620,13 @@ def get_installed_size(pkgs: List[str]) -> Dict[str, float]:  # bytes
     output = run_cmd('pacman -Qi {}'.format(' '.join(pkgs)))
 
     if output:
-        return {pkgs[idx]: size_to_byte(size[0], size[1]) for idx, size in enumerate(RE_INSTALLED_SIZE.findall(output))}
+        result = {}
+        for idx, size in enumerate(RE_INSTALLED_SIZE.findall(output)):
+            if idx < len(pkgs):
+                byte_size = size_to_byte(size[0], size[1])
+                if byte_size is not None:
+                    result[pkgs[idx]] = byte_size
+        return result
 
     return {}
 
@@ -537,7 +644,7 @@ def _fill_provided_map(key: str, val: str, output: Dict[str, Set[str]]):
         current_val.add(val)
 
 
-def map_provided(remote: bool = False, pkgs: Iterable[str] = None) -> Optional[Dict[str, Set[str]]]:
+def map_provided(remote: bool = False, pkgs: Optional[Iterable[str]] = None) -> Optional[Dict[str, Set[str]]]:
     output = run_cmd(f"pacman -{'S' if remote else 'Q'}i {' '.join(pkgs) if pkgs else ''}")
 
     if output:
@@ -557,19 +664,22 @@ def map_provided(remote: bool = False, pkgs: Iterable[str] = None) -> Optional[D
                     elif field == 'Version':
                         latest_version = val.split('=')[0]
                     elif field == 'Provides':
-                        _fill_provided_map(latest_name, latest_name, provided_map)
-                        _fill_provided_map(f'{latest_name}={latest_version}', latest_name, provided_map)
+                        if latest_name:
+                            _fill_provided_map(latest_name, latest_name, provided_map)
+                        if latest_name and latest_version:
+                            _fill_provided_map(f'{latest_name}={latest_version}', latest_name, provided_map)
 
                         if val != 'None':
                             for w in val.split(' '):
                                 if w:
                                     word = w.strip()
-                                    _fill_provided_map(word, latest_name, provided_map)
+                                    if latest_name:
+                                        _fill_provided_map(word, latest_name, provided_map)
 
-                                    word_split = word.split('=')
+                                        word_split = word.split('=')
 
-                                    if word_split[0] != word:
-                                        _fill_provided_map(word_split[0], latest_name, provided_map)
+                                        if word_split[0] != word and latest_name:
+                                            _fill_provided_map(word_split[0], latest_name, provided_map)
                         else:
                             provided = True
 
@@ -578,7 +688,7 @@ def map_provided(remote: bool = False, pkgs: Iterable[str] = None) -> Optional[D
                         latest_version = None
                         provided = False
 
-                elif provided:
+                elif provided and latest_name:
                     for w in l.split(' '):
                         if w:
                             word = w.strip()
@@ -597,7 +707,7 @@ def list_download_data(pkgs: Iterable[str]) -> List[Dict[str, str]]:
 
     res = []
     if output:
-        data = {'a': None, 'v': None, 'r': None, 'n': None}
+        data: Dict[str, object] = {'a': None, 'v': None, 'r': None, 'n': None}
 
         for l in output.split('\n'):
             if l:
@@ -616,7 +726,7 @@ def list_download_data(pkgs: Iterable[str]) -> List[Dict[str, str]]:
                     elif field == 'Architecture':
                         data['a'] = val
                     elif data.get('a'):
-                        res.append(data)
+                        res.append({k: str(v) for k, v in data.items()})
                         data = {'a': None, 'v': None, 'r': None, 'n': None}
 
     return res
@@ -632,7 +742,7 @@ def map_updates_data(pkgs: Iterable[str], files: bool = False, description: bool
         res = {}
         if output:
             latest_name = None
-            data = {'ds': None, 's': None, 'v': None, 'c': None, 'p': None, 'd': None, 'r': None, 'des': None}
+            data: Dict[str, object] = {'ds': None, 's': None, 'v': None, 'c': None, 'p': None, 'd': None, 'r': None, 'des': None}
             latest_field = None
 
             for l in output.split('\n'):
@@ -657,17 +767,18 @@ def map_updates_data(pkgs: Iterable[str], files: bool = False, description: bool
                             latest_field = 'des'
                         elif field == 'Provides':
                             latest_field = 'p'
-                            data['p'] = {latest_name, '{}={}'.format(latest_name, data['v'])}
+                            data['p'] = {latest_name, '{}={}'.format(latest_name, data.get('v', ''))}
                             if val != 'None':
                                 for w in val.split(' '):
                                     if w:
                                         word = w.strip()
-                                        data['p'].add(word)
+                                        if isinstance(data['p'], set):
+                                            data['p'].add(word)
 
-                                        word_split = word.split('=')
+                                            word_split = word.split('=')
 
-                                        if word_split[0] != word:
-                                            data['p'].add(word_split[0])
+                                            if word_split[0] != word:
+                                                data['p'].add(word_split[0])
                         elif field == 'Depends On':
                             val = val.strip()
 
@@ -705,14 +816,17 @@ def map_updates_data(pkgs: Iterable[str], files: bool = False, description: bool
                             for w in l.split(' '):
                                 if w:
                                     word = w.strip()
-                                    data['p'].add(word)
+                                    if isinstance(data['p'], set):
+                                        data['p'].add(word)
 
-                                    word_split = word.split('=')
+                                        word_split = word.split('=')
 
-                                    if word_split[0] != word:
-                                        data['p'].add(word_split[0])
-                        else:
-                            data[latest_field].update((w.strip() for w in l.split(' ') if w))
+                                        if word_split[0] != word:
+                                            data['p'].add(word_split[0])
+                        elif latest_field in ('c', 'd') and isinstance(data.get(latest_field), set):
+                            set_val = data[latest_field]
+                            if isinstance(set_val, set):
+                                set_val.update((w.strip() for w in l.split(' ') if w))
 
         return res
 
@@ -799,8 +913,8 @@ def map_optional_deps(names: Iterable[str], remote: bool, not_installed: bool = 
 def map_required_dependencies(*names: str) -> Dict[str, Set[str]]:
     output = run_cmd('pacman -Qi {}'.format(' '.join(names) if names else ''))
 
+    res = {}
     if output:
-        res = {}
         latest_name, deps, latest_field = None, None, None
 
         for l in output.split('\n'):
@@ -830,7 +944,7 @@ def map_required_dependencies(*names: str) -> Dict[str, Set[str]]:
                 elif latest_name and deps is not None:
                     deps.update((dep for dep in l.split(' ') if dep))
 
-        return res
+    return res
 
 
 def get_cache_dir() -> str:
@@ -851,11 +965,11 @@ def get_cache_dir() -> str:
                 return cache_dirs[-1][0:-1]
             else:
                 return cache_dirs[-1]
-        else:
-            return '/var/cache/pacman/pkg'
+    
+    return '/var/cache/pacman/pkg'
 
 
-def map_required_by(names: Iterable[str] = None, remote: bool = False) -> Dict[str, Set[str]]:
+def map_required_by(names: Optional[Iterable[str]] = None, remote: bool = False) -> Dict[str, Set[str]]:
     output = run_cmd(f"pacman -{'Sii' if remote else 'Qi'} {' '.join(names) if names else ''}".strip(),
                      print_error=False)
 
@@ -884,7 +998,7 @@ def map_required_by(names: Iterable[str] = None, remote: bool = False) -> Dict[s
                         latest_name, required = None, None
 
                 elif latest_name and required is not None:
-                    required.update(required.update((d for d in l.strip().split(' ') if d)))
+                    required.update((d for d in l.strip().split(' ') if d))
         return res
     elif names:
         return {n: set() for n in names}
@@ -895,8 +1009,8 @@ def map_required_by(names: Iterable[str] = None, remote: bool = False) -> Dict[s
 def map_conflicts_with(names: Iterable[str], remote: bool) -> Dict[str, Dict[str, Set[str]]]:
     output = run_cmd('pacman -{}i {}'.format('S' if remote else 'Q', ' '.join(names)))
 
+    res = {}
     if output:
-        res = {}
         latest_name, conflicts, replaces, field = None, None, None, None
 
         for l in output.split('\n'):
@@ -929,19 +1043,19 @@ def map_conflicts_with(names: Iterable[str], remote: bool) -> Dict[str, Dict[str
                         latest_name, conflicts, replaces = None, None, None
 
                 elif latest_name and field:
-                    if field == 'c':
+                    if field == 'c' and conflicts is not None:
                         conflicts.update((d for d in l.strip().split(' ') if d))
-                    elif field == 'r':
+                    elif field == 'r' and replaces is not None:
                         replaces.update((d for d in l.strip().split(' ') if d))
 
-        return res
+    return res
 
 
 def map_replaces(names: Iterable[str], remote: bool = False) -> Dict[str, Set[str]]:
     output = run_cmd('pacman -{}i {}'.format('S' if remote else 'Q', ' '.join(names)))
 
+    res = {}
     if output:
-        res = {}
         latest_name, replaces = None, None
 
         for l in output.split('\n'):
@@ -967,7 +1081,7 @@ def map_replaces(names: Iterable[str], remote: bool = False) -> Dict[str, Set[st
                 elif latest_name and replaces is not None:
                     replaces.update((d for d in l.strip().split(' ') if d))
 
-        return res
+    return res
 
 
 def list_installed_names() -> Set[str]:
@@ -984,6 +1098,8 @@ def list_available_mirrors() -> List[str]:
         if mirrors:
             mirrors.sort(key=lambda o: o[0])
             return [m[1] for m in mirrors]
+
+    return []
 
 
 def get_mirrors_branch() -> str:
@@ -1017,13 +1133,12 @@ def list_hard_requirements(name: str, logger: Optional[logging.Logger] = None,
     code, output = system.execute(cmd.getvalue(), shell=True)
 
     if code != 0:
-        if 'HoldPkg' in output:
+        if output and 'HoldPkg' in output:
             raise PackageInHoldException()
-        elif 'target not found' in output:
+        elif output and 'target not found' in output:
             raise PackageNotFoundException(name)
         elif logger:
-            logger.error("Unexpected error while listing hard requirements of: {}".format(name))
-            print('{}{}{}'.format(Fore.RED, output, Fore.RESET))
+            logger.error("Unexpected error while listing hard requirements of: {}\n{}".format(name, output))
     elif output:
         reqs = set()
 
@@ -1063,6 +1178,12 @@ def find_one_match(name: str) -> Optional[str]:
 
 
 def map_available_packages() -> Optional[Dict[str, Any]]:
+    """Map all available packages with standardized information.
+    
+    Returns:
+        Dictionary with package names as keys and standardized package info as values,
+        or None if command fails
+    """
     output = run_cmd('pacman -Sl')
 
     if output:
@@ -1075,15 +1196,31 @@ def map_available_packages() -> Optional[Dict[str, Any]]:
 
                 if len(package_data) >= 3:
                     pkgname = package_data[1].strip()
+                    version = package_data[2].strip()
+                    source = package_data[0].strip()
+                    installed = len(package_data) == 4 and 'installed' in package_data[3]
 
                     if pkgname:
-                        res[pkgname] = {'v': package_data[2].strip(),
-                                        'r': package_data[0].strip(),
-                                        'i': len(package_data) == 4 and 'installed' in package_data[3]}
+                        res[pkgname] = _create_package_info(
+                            name=pkgname,
+                            version=version,
+                            description="",
+                            source=source,
+                            installed=installed
+                        )
         return res
 
 
-def map_installed(pkgs: Optional[Collection[str]] = None) -> Optional[Dict[str, str]]:
+def map_installed(pkgs: Optional[Collection[str]] = None) -> Optional[Dict[str, dict]]:
+    """Map installed packages with standardized information.
+    
+    Args:
+        pkgs: Optional collection of package names to query. If None, lists all installed packages.
+    
+    Returns:
+        Dictionary with package names as keys and standardized package info as values,
+        or None if command fails
+    """
     output = run_cmd(f"pacman -Q {' '.join({*pkgs} if pkgs else '')}".strip(), print_error=False)
 
     if output:
@@ -1094,5 +1231,14 @@ def map_installed(pkgs: Optional[Collection[str]] = None) -> Optional[Dict[str, 
             if line:
                 pkg_version = line.split(" ")
                 if len(pkg_version) == 2:
-                    res[pkg_version[0]] = pkg_version[1]
+                    pkg_name = pkg_version[0]
+                    version = pkg_version[1]
+                    
+                    res[pkg_name] = _create_package_info(
+                        name=pkg_name,
+                        version=version,
+                        description="",
+                        source="",
+                        installed=True
+                    )
         return res
