@@ -1,0 +1,22 @@
+# OmniArch 全局配置
+search:
+  # 默认开启的源
+  enabled_sources:
+    - pacman
+    - aur
+    - flatpak
+  # 默认排序规则: "smart" (权重), "alpha" (字母), "source" (来源优先级)
+  default_sort: "smart"
+  # 搜索结果上限
+  max_results: 100
+
+ui:
+  theme: "dark"
+  language: "zh-CN"
+
+# 来源优先级（用于权重计算）
+priority:
+  pacman: 100
+  aur: 80
+  flatpak: 60
+  appimage: 40
