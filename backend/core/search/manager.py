@@ -20,20 +20,23 @@ class SearchManager:
         self._init_source_instances()
 
     def _init_source_instances(self):
-        """根据 ConfigManager 的实时状态初始化源"""
-        # 使用 cm.get 快捷获取
+        """根据配置动态启动源"""
         sources_cfg = self.cm.get("search.sources", {})
-        
-        # 清空现有源（方便热重载）
         self.sources = []
 
+        # 优化点：明确区分 pacman 和 aur 的逻辑控制
         if sources_cfg.get("pacman") or sources_cfg.get("aur"):
+            # 这里的 AurPacmanSource 内部应该能自己处理 search
+            # 但如果你想更省资源，可以在 search_all 循环里判断
             self.sources.append(AurPacmanSource("AUR/Pacman"))
+            
         if sources_cfg.get("flatpak"):
             self.sources.append(FlatpakSource("Flatpak"))
+            
         if sources_cfg.get("appimage"):
             appimg_src = AppImageSource("AppImage")
             self.sources.append(appimg_src)
+            # 异步预热：这是一个很好的细节，保持住
             asyncio.create_task(appimg_src.search(""))
 
     def _calculate_smart_score(self, item: Dict, query: str) -> float:
