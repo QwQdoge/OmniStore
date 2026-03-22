@@ -5,6 +5,7 @@ from typing import Optional, List, Dict, Any
 from .aur_pacman import AurPacmanSource
 from .flatpak import FlatpakSource
 from .appimage import AppImageSource
+from ..status import StatusChecker
 
 class SearchManager:
     def __init__(self, config: Optional[dict] = None):
@@ -131,4 +132,27 @@ class SearchManager:
             combined.sort(key=lambda x: (not x.get('is_installed', False), x['name'].lower()))
 
         # --- 阶段 3: 合并去重 ---
-        return self.merge_duplicates(combined)
+        # 先合并，减少重复检测安装状态的次数（比如同名软件在不同源都有）
+        merged_results = self.merge_duplicates(combined)
+
+        # --- 阶段 4: 并行检测安装状态 (核心修正) ---
+        # 提取所有包的检测任务
+        check_tasks = [
+            StatusChecker.check(item["name"], item["primary_source"]) 
+            for item in merged_results
+        ]
+        
+        # 并发执行所有检测，效率最高
+        status_list = await asyncio.gather(*check_tasks, return_exceptions=True)
+
+        # 将检测结果写回结果集
+        for i in range(len(merged_results)):
+            # 如果检测过程中出错了，默认设为 False
+            is_inst = status_list[i] if isinstance(status_list[i], bool) else False
+            merged_results[i]["is_installed"] = is_inst
+            
+            # 同时更新 variants 里的状态（可选，为了前端显示更准）
+            for variant in merged_results[i].get("variants", []):
+                variant["is_installed"] = is_inst
+
+        return merged_results # ✅ 确保 return 在最后
