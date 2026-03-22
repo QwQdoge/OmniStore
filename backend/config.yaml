@@ -1,22 +1,73 @@
-# OmniArch 全局配置
+# ==========================================
+# OmniArch 全局配置文件 
+# ==========================================
+
+# --- 核心搜索逻辑 ---
 search:
-  # 默认开启的源
   enabled_sources:
     - pacman
     - aur
     - flatpak
-  # 默认排序规则: "smart" (权重), "alpha" (字母), "source" (来源优先级)
-  default_sort: "smart"
-  # 搜索结果上限
-  max_results: 100
+    - appimage
+  # 搜索防抖延迟 (毫秒)，降低后端压力
+  debounce_ms: 300
+  max_results_per_source: 50
+  # 自动检测更新频率 (小时)
+  check_update_interval: 24
+  # 是否合并同名包 (由 SearchManager 处理)
+  merge_duplicates: true
+  # 代理设置 (抓取 AUR 或 GitHub 时可能需要)
+  proxy:
+    enabled: false
+    http: "http://127.0.0.1:7890"
 
+# --- 优先级权重 (Smart Score) ---
+priority:
+  native: 100    # 官方库
+  aur: 80        # 用户仓库
+  flatpak: 60    # 沙盒应用
+  appimage: 40   # 独立包
+
+# --- 视觉与界面 ---
 ui:
-  theme: "dark"
+  # 模式: "system", "dark", "light"
+  appearance: "system"
+  # 动态色彩种子 (十六进制)，用于生成 Material You 配色方案
+  color_seed: "#CA6ECF"
+  # 字体配置
+  font:
+    # 主界面字体：首选 Google Sans，备选 Roboto
+    sans_family: "Google Sans"
+    # 终端/代码字体：Roboto Mono
+    mono_family: "Roboto Mono"
+    size_base: 14
+    size_terminal: 12
+    # 字重控制 (400=Regular, 500=Medium, 700=Bold)
+    weight_title: 500
+  # 界面细节
+  display:
+    show_unsupported_apps: false # 是否显示架构不兼容的包
+    enable_animations: true      # 是否开启转场动画
+    compact_mode: false          # 是否开启紧凑模式 (缩减边距)
+  # 国际化
   language: "zh-CN"
 
-# 来源优先级（用于权重计算）
-priority:
-  pacman: 100
-  aur: 80
-  flatpak: 60
-  appimage: 40
+# --- 安装执行器配置 ---
+executor:
+  # 默认 AUR 助手: "yay", "paru"
+  aur_helper: "yay"
+  # 安装时是否自动清理缓存
+  auto_clean: true
+  # 终端模拟器行为
+  terminal:
+    shell: "/bin/zsh"
+    # 是否在安装完成后保持日志窗口开启
+    keep_open_on_failure: true
+    # 模拟权限提升方式: "sudo", "doas"
+    sudo_command: "sudo"
+
+# --- 开发者选项 ---
+debug:
+  enabled: false
+  log_level: "INFO" # DEBUG, INFO, WARNING, ERROR
+  show_ws_payload: false # 在终端打印 WebSocket 原始数据包
