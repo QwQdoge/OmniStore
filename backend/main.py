@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from core.search.manager import SearchManager
-from core.executor import InstallExecutor  # ✅ 导入真实的执行器
+from core.executor import InstallExecutor
 import json
 import asyncio
 

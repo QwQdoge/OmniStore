@@ -10,7 +10,7 @@ class InstallExecutor:
         name = package.get("name")
         
         if not name or not isinstance(name, str):
-            msg = "❌ 错误: 软件包名称缺失"
+            msg = "错误: 软件包名称缺失"
             if callback: await callback(msg)
             print(msg)
             return
@@ -40,7 +40,7 @@ class InstallExecutor:
             if isinstance(url, str) and url:
                 await self._download_appimage(name, url, callback=callback)
             else:
-                msg = f"❌ {name} 链接无效"
+                msg = f"{name} 链接无效"
                 if callback: await callback(msg)
                 print(msg)
 
