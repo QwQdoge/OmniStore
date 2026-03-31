@@ -1,5 +1,5 @@
 # ==========================================
-# OmniArch 全局配置文件 
+# OmniStore 全局配置文件 
 # ==========================================
 
 # --- 核心搜索逻辑 ---
@@ -64,10 +64,10 @@ executor:
     # 是否在安装完成后保持日志窗口开启
     keep_open_on_failure: true
     # 模拟权限提升方式: "sudo", "doas"
-    sudo_command: "sudo"
+#    sudo_command: "sudo"
 
 # --- 开发者选项 ---
 debug:
-  enabled: false
-  log_level: "INFO" # DEBUG, INFO, WARNING, ERROR
-  show_ws_payload: false # 在终端打印 WebSocket 原始数据包
+#  enabled: false
+#  log_level: "INFO" # DEBUG, INFO, WARNING, ERROR
+#  show_ws_payload: false # 在终端打印 WebSocket 原始数据包

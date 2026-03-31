@@ -5,14 +5,17 @@ from collections.abc import Mapping
 
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
-        # 1. 强制 XDG 规范：确保配置文件永远在 ~/.config/omniarch/
-        self.config_dir = Path.home() / ".config" / "omniarch"
+        # 1. 强制 XDG 规范：确保配置文件永远在 ~/.config/omnistore/
+        self.config_dir = Path.home() / ".config" / "omnistore"
         self.config_path = self.config_dir / config_name
         
         self.default_config = {
             "search": {
                 "sources": {
-                    "pacman": True, "aur": True, "flatpak": True, "appimage": True
+                    "pacman": True, 
+                    "aur": False, 
+                    "flatpak": True, 
+                    "appimage": True
                 },
                 "max_results": 100
             },

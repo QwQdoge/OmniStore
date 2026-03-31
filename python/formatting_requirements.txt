@@ -1,0 +1,10 @@
+search_result = 
+{
+"name": name
+"last_version": last_version
+"source": source
+"description": description
+"votes": votes
+"installed": is_installed
+}
+
