@@ -17,4 +17,7 @@ PyYAML==6.0.3              # 解析配置文件
 # --- 基础工具 ---
 # requests==2.32.5           # 留着备用，但异步函数里尽量别用它
 
-subprocess==0.0.1  # 用于执行系统命令，替代 os.system 和 subprocess 模块的复杂性    
+subprocess==0.0.1  # 用于执行系统命令，替代 os.system 和 subprocess 模块的复杂性  
+# --- GUI ---  
+PySide6>=6.6
+materialyoucolor>=3.0.0

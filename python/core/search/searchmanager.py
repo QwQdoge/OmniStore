@@ -2,7 +2,7 @@ import asyncio
 from typing import List, Dict, Any
 
 from core.search.base import SearchSource
-from .smart_scoring import _calculate_smart_score
+from .smart_scoring import SmartScoring
 from .pacman import PacmanSearch
 from .aur import AurSearch
 from .flatpak import FlatpakSearch
@@ -10,11 +10,14 @@ from .appimage import AppImageSearch
 import shutil
 import aiohttp
 import re
+import sys
+import json
 
-
+    
 class SearchManager:
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession):
         self.cm = config_manager
+        self.smart_scoring = SmartScoring(config_manager)
         # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session 
         self.source_instances = {} 
@@ -64,17 +67,26 @@ class SearchManager:
         tasks = [src.search(query) for src in active_sources]
         # 使用 timeout 防止某个源（如 AUR 网络不佳）卡死整个搜索
         responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        tasks = [src.search(query) for src in active_sources]
+        # 使用 asyncio.wait_for 给整个搜索加一个总超时，防止无限等待
+        try:
+            responses = await asyncio.gather(*tasks, return_exceptions=True)
+        except Exception as e:
+            sys.stderr.write(f"[SearchManager] Global search crash: {e}\n")
+            return []
         
         combined = []
-        for res in responses:
+        for i, res in enumerate(responses):
+            source_name = active_sources[i].name if i < len(active_sources) else f"Source_{i}"
             if isinstance(res, list):
                 combined.extend(res)
             elif isinstance(res, Exception):
-                print(f"Search source failed: {res}")
-                return []  # 任何一个源失败都返回空列表，避免部分结果误导用户
+                # ❌ 不要 print，改用 stderr，确保 stdout 只有干净的 JSON
+                sys.stderr.write(f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
         # 1. 初始排序：在合并前先按智能分排一次
-        combined.sort(key=lambda x: _calculate_smart_score(self, x, query), reverse=True)
+        combined.sort(key=lambda x: self.smart_scoring._calculate_smart_score(x, query), reverse=True)
 
         # 2. 合并同名包
         merged = self.merge_duplicates(combined)

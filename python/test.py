@@ -1,57 +1,53 @@
 import asyncio
-import aiohttp
+import sys
+from unittest.mock import AsyncMock, patch
 from pathlib import Path
-from core.config_loader import ConfigManager
-from core.search.searchmanager import SearchManager
 
-async def test_all_sources():
-    cm = ConfigManager()
-    
-    # --- 强行开启所有源 (覆盖配置文件) ---
-    sources = ["pacman", "flatpak", "aur", "appimage"]
-    for s in sources:
-        cm.set(f"search.sources.{s}", True)
-    
-    # 设置合理的优先级权重
-    cm.set("priority.pacman", 100)
-    cm.set("priority.aur", 80)
-    cm.set("priority.flatpak", 60)
-    cm.set("priority.appimage", 40)
+# 确保导入路径
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-    print("🚀 [全源启动测试] 正在初始化所有引擎...")
-    
-    async with aiohttp.ClientSession() as session:
-        manager = SearchManager(cm, session)
-        
-        # 验证插件加载情况
-        active = [s.name for s in manager._get_active_sources()]
-        print(f"📡 活跃插件清单: {active}")
+from main import main
 
-        # 测试案例：选择一个在所有渠道都有的高频软件
-        query = "fastfetch"  # 这个软件在 pacman、AUR、flatpak 都有，且通常不安装过，适合测试
-        print(f"\n🔍 正在跨源搜索: '{query}' ...")
-        
-        results = await manager.search_all(query)
-        
-        print(f"\n--- 📊 综合排序结果 (Top 5) ---")
-        if not results:
-            print("❌ 搜索失败，请检查网络或插件逻辑。")
-            return
+async def test_cli_distribution():
+    print("核心功能分发测试 (CLI Distribution Test)")
+    print("-" * 50)
 
-        for i, item in enumerate(results[:5]):
-            # 提取所有来源及其版本
-            variants_info = [f"{v['source']}({v.get('last_version', 'N/A')})" for v in item.get('variants', [])]
-            primary = item.get('primary_source', 'Unknown')
-            is_inst = "已安装 📥" if item.get('installed') or item.get('is_installed') else "未安装"
-            
-            print(f"{i+1}. 【{item['name']}】 - {is_inst}")
-            print(f"   ⭐ 最佳来源: {primary}")
-            print(f"   📦 所有渠道: {', '.join(variants_info)}")
-            print(f"   📝 描述: {item.get('description', '')[:60]}...")
-            print("-" * 50)
+    # 模拟 Backend 对象
+    with patch("main.OmnistoreBackend") as MockBackend:
+        mock_instance = MockBackend.return_value
+        mock_instance.run_search = AsyncMock()
+        mock_instance.run_install = AsyncMock()
+        mock_instance.run_uninstall = AsyncMock()
+
+        # --- 测试 1: 测试搜索 (-S) ---
+        print("测试 [-S]: omni -S telegram --json")
+        with patch("sys.argv", ["main.py", "-S", "telegram", "--json"]):
+            await main()
+            mock_instance.run_search.assert_called_once_with("telegram", json_mode=True)
+            print("✅ 搜索指令分发正常")
+
+        # --- 测试 2: 测试安装 (-I) ---
+        print("\n测试 [-I]: omni -I wechat --source AUR")
+        with patch("sys.argv", ["main.py", "-I", "wechat", "--source", "AUR"]):
+            await main()
+            # 验证是否传入了正确的参数
+            mock_instance.run_install.assert_called_once()
+            args, kwargs = mock_instance.run_install.call_args
+            assert args[0] == "wechat"
+            assert kwargs['source'] == "AUR"
+            print("✅ 安装指令分发正常")
+
+        # --- 测试 3: 测试卸载 (-R) ---
+        # 注意：你的代码里 remove 对应的是 run_uninstall
+        print("\n测试 [-R]: omni -R vlc --source Flatpak")
+        with patch("sys.argv", ["main.py", "-R", "vlc", "--source", "Flatpak"]):
+            await main()
+            mock_instance.run_uninstall.assert_called_once()
+            args, kwargs = mock_instance.run_uninstall.call_args
+            assert args[0] == "vlc"
+            assert kwargs['source'] == "Flatpak"
+            print("✅ 卸载指令分发正常")
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(test_all_sources())
-    except KeyboardInterrupt:
-        pass
+    asyncio.run(test_cli_distribution())
+    print("\n🎉 所有 CLI 路由分支测试通过！")

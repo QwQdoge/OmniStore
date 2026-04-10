@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart'; // 这个文件是搜索页面的 UI 实现，负责展示搜索输入框和结果列表，并调用 SearchService 来获取数据
-import '../models/app_package.dart'; // 你的数据模型类，定义了 AppPackage 的结构
-// 你的桥接类，负责与 Python 后端通信，获取搜索结果
+// ignore_for_file: curly_braces_in_flow_control_structures
+
+import 'package:flutter/material.dart';
+import '../models/app_package.dart';
 import '../bridges/search_bridge.dart';
 import 'app_details_page.dart';
+
+// 定义显示模式枚举
+enum ViewMode { list, grid }
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -13,34 +17,74 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+
+  // 核心状态变量
   List<AppPackage> _results = [];
   bool _isLoading = false;
+  bool _hasInput = false; // 实时监测输入框是否有文字
+  ViewMode _viewMode = ViewMode.list; // 默认为列表模式
 
-  // --- 补全缺失的搜索核心逻辑 ---
+  // 模拟搜索历史
+  final List<String> _history = [
+    "zen-browser",
+    "neovim",
+    "visual-studio-code",
+    "discord",
+  ];
+
+  // 模拟分类数据
+  final List<Map<String, dynamic>> _categories = [
+    {"name": "开发工具", "icon": Icons.code},
+    {"name": "影音娱乐", "icon": Icons.movie},
+    {"name": "互联网", "icon": Icons.language},
+    {"name": "系统工具", "icon": Icons.settings_suggest},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // 关键：监听输入框变化
+    _controller.addListener(_handleInputUpdate);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleInputUpdate);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // 实时监测输入，决定显示结果页还是分类页
+  void _handleInputUpdate() {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty != _hasInput) {
+      setState(() {
+        _hasInput = text.isNotEmpty;
+        // 如果清空了输入框，同时清空结果
+        if (!_hasInput) _results = [];
+      });
+    }
+  }
+
+  // 核心搜索逻辑
   Future<void> onSearchIconPressed() async {
     final query = _controller.text.trim();
     if (query.isEmpty) return;
 
     setState(() {
       _isLoading = true;
-      // 这里的逻辑：如果是新搜索，清空旧结果；如果是分页（以后加），则保留。
-      // 目前我们直接清空，展示 Loading
       _results = [];
     });
 
     try {
-      // 1. 实例化桥接服务
       final service = BackendService();
-
-      // 2. 调用 Python 后端
       final List<dynamic> rawData = await service.searchPackages(query);
 
-      // 3. 转换模型并更新 UI
       setState(() {
         _results = rawData.map((j) => AppPackage.fromJson(j)).toList();
         _isLoading = false;
 
-        // 4. 自动记录到搜索历史 (可选逻辑)
+        // 记录历史
         if (!_history.contains(query)) {
           _history.insert(0, query);
           if (_history.length > 8) _history.removeLast();
@@ -59,58 +103,99 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  // 模拟搜索历史数据（以后可以存入 SharedPreferences）
-  final List<String> _history = [
-    "zen-browser",
-    "neovim",
-    "visual-studio-code",
-    "discord",
-  ];
-
-  // 模拟分类数据
-  final List<Map<String, dynamic>> _categories = [
-    {"name": "开发工具", "icon": Icons.code},
-    {"name": "影音娱乐", "icon": Icons.movie},
-    {"name": "互联网", "icon": Icons.language},
-    {"name": "系统工具", "icon": Icons.settings_suggest},
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. 标题
-        const Padding(
-          padding: EdgeInsets.fromLTRB(24, 40, 24, 8),
-          child: Text(
-            "搜索应用",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-        ),
-
-        // 2. 搜索框
+        _buildHeader(),
         _buildSearchInput(),
-
         if (_isLoading) const LinearProgressIndicator(),
 
-        // 3. 根据状态切换内容：搜索中/结果列表 VS 初始页(历史+分类)
+        // 核心逻辑切换：有输入显示结果，没输入显示分类
         Expanded(
-          child: _results.isNotEmpty || _isLoading
-              ? _buildResultList()
-              : _buildInitialView(),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _hasInput ? _buildResultsArea() : _buildInitialView(),
+          ),
         ),
       ],
     );
   }
 
-  // --- 初始页面：展示历史记录和分类 ---
+  // 1. 顶部标题 + 模式切换开关
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "搜索应用",
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          // 仅在有结果展示时才允许切换视图
+          if (_hasInput)
+            SegmentedButton<ViewMode>(
+              segments: const [
+                ButtonSegment(
+                  value: ViewMode.list,
+                  icon: Icon(Icons.view_list_rounded),
+                ),
+                ButtonSegment(
+                  value: ViewMode.grid,
+                  icon: Icon(Icons.grid_view_rounded),
+                ),
+              ],
+              selected: {_viewMode},
+              onSelectionChanged: (newSelection) {
+                setState(() => _viewMode = newSelection.first);
+              },
+              showSelectedIcon: false,
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 2. 优化后的搜索框
+  Widget _buildSearchInput() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SearchBar(
+        controller: _controller,
+        hintText: '输入应用名称...',
+        elevation: WidgetStateProperty.all(0),
+        backgroundColor: WidgetStateProperty.all(
+          Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        ),
+        leading: const Icon(Icons.search),
+        trailing: [
+          if (_hasInput)
+            IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => _controller.clear(),
+            ),
+          IconButton(
+            icon: const Icon(Icons.send_rounded),
+            onPressed: onSearchIconPressed,
+          ),
+        ],
+        onSubmitted: (_) => onSearchIconPressed(),
+      ),
+    );
+  }
+
+  // 3. 初始视图（分类 + 历史）
   Widget _buildInitialView() {
     return ListView(
+      key: const ValueKey("InitialView"),
       padding: const EdgeInsets.symmetric(horizontal: 24),
       children: [
         const SizedBox(height: 16),
-        // 历史记录部分
         const Text(
           "搜索历史",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -131,10 +216,7 @@ class _SearchPageState extends State<SearchPage> {
               )
               .toList(),
         ),
-
         const SizedBox(height: 32),
-
-        // 分类部分
         const Text(
           "分类浏览",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -144,7 +226,7 @@ class _SearchPageState extends State<SearchPage> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 桌面端可以设为 2 或 3
+            crossAxisCount: 2,
             childAspectRatio: 2.5,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
@@ -152,16 +234,12 @@ class _SearchPageState extends State<SearchPage> {
           itemCount: _categories.length,
           itemBuilder: (context, index) {
             final cat = _categories[index];
-            return InkWell(
-              onTap: () {
-                // TODO: 跳转分类搜索
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            return Card(
+              elevation: 0,
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: InkWell(
+                onTap: () {}, // TODO: 分类点击逻辑
+                borderRadius: BorderRadius.circular(12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -181,39 +259,18 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // --- 搜索框组件 (保持逻辑，优化样式) ---
-  Widget _buildSearchInput() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SearchBar(
-        controller: _controller,
-        hintText: '输入应用名称...',
-        elevation: WidgetStateProperty.all(0),
-        backgroundColor: WidgetStateProperty.all(
-          Theme.of(
-            context,
-          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        ),
-        leading: const Icon(Icons.search),
-        trailing: [
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: onSearchIconPressed,
-          ),
-        ],
-        onSubmitted: (_) => onSearchIconPressed(),
-      ),
-    );
+  // 4. 结果展示逻辑选择
+  Widget _buildResultsArea() {
+    if (!_isLoading && _results.isEmpty) {
+      return const Center(child: Text("正在寻找..."));
+    }
+    return _viewMode == ViewMode.list ? _buildResultList() : _buildResultGrid();
   }
 
+  // --- 列表布局 ---
   Widget _buildResultList() {
-    if (!_isLoading && _results.isEmpty) {
-      return Center(
-        child: Text(_controller.text.isEmpty ? "准备好探索了吗？" : "未找到匹配的应用"),
-      );
-    }
-
     return ListView.builder(
+      key: const ValueKey("ListView"),
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: _results.length,
       itemBuilder: (context, index) {
@@ -222,7 +279,11 @@ class _SearchPageState extends State<SearchPage> {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: Colors.grey.shade300),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
@@ -234,23 +295,19 @@ class _SearchPageState extends State<SearchPage> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 4),
                 Text(
                   app.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
-                // 关键点：展示你 JSON 里的 sources/variants
                 Wrap(
                   spacing: 6,
                   children: app.sources.map((s) => _buildSourceTag(s)).toList(),
                 ),
               ],
             ),
-            trailing: app.installed
-                ? const Icon(Icons.check_circle, color: Colors.green)
-                : const Icon(Icons.download_for_offline_outlined),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _showAppDetails(app),
           ),
         );
@@ -258,14 +315,76 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSourceTag(String source) {
+  // --- 网格/瀑布流布局 ---
+  Widget _buildResultGrid() {
+    return GridView.builder(
+      key: const ValueKey("GridView"),
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        mainAxisExtent: 180,
+      ),
+      itemCount: _results.length,
+      itemBuilder: (context, index) {
+        final app = _results[index];
+        return Card(
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: InkWell(
+            onTap: () => _showAppDetails(app),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  child: Text(app.name[0].toUpperCase()),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  app.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 4,
+                  children: app.sources
+                      .take(2)
+                      .map((s) => _buildSourceTag(s, isSmall: true))
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceTag(String source, {bool isSmall = false}) {
     Color color = Colors.grey;
-    if (source == "Pacman") color = Colors.blue;
-    if (source == "AUR") color = Colors.orange;
-    if (source == "Flatpak") color = Colors.purple;
+    if (source == "Pacman") {
+      color = Colors.blue;
+    } else if (source == "AUR") {
+      color = Colors.orange;
+    } else if (source == "Flatpak") {
+      color = Colors.purple;
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
@@ -275,7 +394,7 @@ class _SearchPageState extends State<SearchPage> {
         source,
         style: TextStyle(
           color: color,
-          fontSize: 10,
+          fontSize: isSmall ? 8 : 10,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -283,7 +402,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showAppDetails(AppPackage app) {
-    // 点击详情逻辑
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),

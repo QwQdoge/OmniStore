@@ -8,7 +8,7 @@ from typing import List, Dict
 
 class AppImageSearch(SearchSource):
     FEED_URL = "https://appimage.github.io/feed.json"
-    headers = {"User-Agent": "Omnistore/1.0 (https://github.com/omnistore/omnistore)"}
+    headers = {"User-Agent": "Omnistore/0.1 (https://github.com/omnistore/omnistore)"}
 
     def __init__(self, session: aiohttp.ClientSession):
         super().__init__(name="AppImage")

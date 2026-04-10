@@ -35,3 +35,16 @@ Thumbs.db
 
 # --- 项目特有记录 ---
 *.log
+
+# --- Qt Creator 垃圾 ---
+.qtcreator/
+build-*/  # Qt Creator 的构建目录，通常以 build- 开头
+*.pro.user
+*.pro.user.*  # 包含用户特定设置的文件
+*.qmlc  # 编译后的 QML 文件
+*.qmltypes  # QML 类型信息文件
+*.moc  # Meta-Object Compiler 生成的文件
+*.rcc  # Qt 资源文件编译后的文件
+*.qrc  # Qt 资源文件
+*.qrc.cpp  # Qt 资源文件编译后的 C++ 文件
+*.qrc.h  # Qt 资源文件编译后的头文件    
