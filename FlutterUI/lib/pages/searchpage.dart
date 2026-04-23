@@ -1,9 +1,10 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
 import 'package:flutter/material.dart';
-import '../models/app_package.dart';
+import '../services/app_package.dart';
 import '../bridges/search_bridge.dart';
 import 'app_details_page.dart';
+import '../services/history_service.dart';
 
 // 定义显示模式枚举
 enum ViewMode { list, grid }
@@ -17,20 +18,17 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final HistoryService _historyService = HistoryService();
 
   // 核心状态变量
   List<AppPackage> _results = [];
   bool _isLoading = false;
   bool _hasInput = false; // 实时监测输入框是否有文字
+  bool _hasSearched = false;
   ViewMode _viewMode = ViewMode.list; // 默认为列表模式
 
-  // 模拟搜索历史
-  final List<String> _history = [
-    "zen-browser",
-    "neovim",
-    "visual-studio-code",
-    "discord",
-  ];
+  // 搜索历史
+  List<String> _history = [];
 
   // 模拟分类数据
   final List<Map<String, dynamic>> _categories = [
@@ -45,6 +43,7 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     // 关键：监听输入框变化
     _controller.addListener(_handleInputUpdate);
+    _loadHistory();
   }
 
   @override
@@ -60,10 +59,30 @@ class _SearchPageState extends State<SearchPage> {
     if (text.isNotEmpty != _hasInput) {
       setState(() {
         _hasInput = text.isNotEmpty;
-        // 如果清空了输入框，同时清空结果
-        if (!_hasInput) _results = [];
+        if (!_hasInput) {
+          _results = [];
+          _hasSearched = false; // ← 重置
+        }
       });
     }
+  }
+
+  // 清空所有历史记录
+  Future<void> _clearAllHistory() async {
+    await _historyService.clear();
+    setState(() => _history = []);
+  }
+
+  // 删除历史记录
+  Future<void> _removeHistory(String query) async {
+    final updated = await _historyService.remove(query);
+    setState(() => _history = updated);
+  }
+
+  // 加载历史记录
+  Future<void> _loadHistory() async {
+    final list = await _historyService.load();
+    if (mounted) setState(() => _history = list);
   }
 
   // 核心搜索逻辑
@@ -72,17 +91,21 @@ class _SearchPageState extends State<SearchPage> {
     if (query.isEmpty) return;
 
     setState(() {
-      _isLoading = true;
       _results = [];
+      _isLoading = true;
+      _hasSearched = true; // ← 加这一行
     });
 
     try {
       final service = BackendService();
       final List<dynamic> rawData = await service.searchPackages(query);
+      final updatedHistory = await _historyService.add(query);
 
       setState(() {
         _results = rawData.map((j) => AppPackage.fromJson(j)).toList();
         _isLoading = false;
+        _hasSearched = true;
+        _history = updatedHistory; // 更新历史记录列表
 
         // 记录历史
         if (!_history.contains(query)) {
@@ -105,57 +128,57 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        _buildSearchInput(),
-        if (_isLoading) const LinearProgressIndicator(),
-
-        // 核心逻辑切换：有输入显示结果，没输入显示分类
-        Expanded(
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar.large(
+          title: const Text('搜索应用'),
+          centerTitle: false,
+          backgroundColor: Colors.transparent,
+          actions: [
+            if (_hasInput)
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: SegmentedButton<ViewMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ViewMode.list,
+                      icon: Icon(Icons.view_list_rounded),
+                    ),
+                    ButtonSegment(
+                      value: ViewMode.grid,
+                      icon: Icon(Icons.grid_view_rounded),
+                    ),
+                  ],
+                  selected: {_viewMode},
+                  onSelectionChanged: (newSelection) {
+                    setState(() => _viewMode = newSelection.first);
+                  },
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        SliverToBoxAdapter(child: _buildSearchInput()),
+        if (_isLoading)
+          const SliverToBoxAdapter(child: LinearProgressIndicator()),
+        SliverFillRemaining(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: _hasInput ? _buildResultsArea() : _buildInitialView(),
+            child: _hasInput
+                ? KeyedSubtree(
+                    key: const ValueKey('results'),
+                    child: _buildResultsArea(),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('initial'),
+                    child: _buildInitialView(),
+                  ),
           ),
         ),
       ],
-    );
-  }
-
-  // 1. 顶部标题 + 模式切换开关
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "搜索应用",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          // 仅在有结果展示时才允许切换视图
-          if (_hasInput)
-            SegmentedButton<ViewMode>(
-              segments: const [
-                ButtonSegment(
-                  value: ViewMode.list,
-                  icon: Icon(Icons.view_list_rounded),
-                ),
-                ButtonSegment(
-                  value: ViewMode.grid,
-                  icon: Icon(Icons.grid_view_rounded),
-                ),
-              ],
-              selected: {_viewMode},
-              onSelectionChanged: (newSelection) {
-                setState(() => _viewMode = newSelection.first);
-              },
-              showSelectedIcon: false,
-              style: const ButtonStyle(visualDensity: VisualDensity.compact),
-            ),
-        ],
-      ),
     );
   }
 
@@ -196,26 +219,76 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       children: [
         const SizedBox(height: 16),
-        const Text(
-          "搜索历史",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "搜索历史",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (_history.isNotEmpty)
+              TextButton.icon(
+                onPressed: () async {
+                  // 二次确认，防止误操作
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text("清空历史记录"),
+                      content: const Text("确定要删除所有搜索历史吗？"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text("取消"),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text("清空"),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) _clearAllHistory();
+                },
+                icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+                label: const Text("清空"),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+          ],
+        ), // 历史记录标签
+
+        if (_history.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              "暂无搜索历史",
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
+            ),
+          ),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: _history
               .map(
-                (h) => ActionChip(
+                (h) => InputChip(
                   label: Text(h),
                   onPressed: () {
-                    _controller.text = h;
+                    _controller.value = TextEditingValue(
+                      text: h,
+                      selection: TextSelection.collapsed(offset: h.length),
+                    );
                     onSearchIconPressed();
                   },
+                  onDeleted: () => _removeHistory(h), // ← 单条删除
+                  deleteIcon: const Icon(Icons.close_rounded, size: 14),
                 ),
               )
               .toList(),
         ),
+
         const SizedBox(height: 32),
         const Text(
           "分类浏览",
@@ -261,9 +334,12 @@ class _SearchPageState extends State<SearchPage> {
 
   // 4. 结果展示逻辑选择
   Widget _buildResultsArea() {
-    if (!_isLoading && _results.isEmpty) {
-      return const Center(child: Text("正在寻找..."));
+    if (_isLoading)
+      return const SizedBox.shrink(); // loading 交给 LinearProgressIndicator
+    if (_hasSearched && _results.isEmpty) {
+      return const Center(child: Text("未找到相关应用"));
     }
+    if (!_hasSearched) return const Center(child: Text("正在寻找..."));
     return _viewMode == ViewMode.list ? _buildResultList() : _buildResultGrid();
   }
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../models/app_package.dart';
+import '../services/app_package.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
