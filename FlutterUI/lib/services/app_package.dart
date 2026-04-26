@@ -6,6 +6,7 @@ class AppPackage {
   final String version;
   final List<String> sources; // 这是一个 List，用来存 ["Pacman", "AUR"] 这种
   final String? url;
+  final String? id;
 
   AppPackage({
     required this.name,
@@ -15,6 +16,7 @@ class AppPackage {
     required this.version,
     required this.sources,
     this.url,
+    this.id,
   });
 
   factory AppPackage.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,9 @@ class AppPackage {
       sources: extractedSources,
       url: json['url'] != null && json['url'].toString().isNotEmpty
           ? json['url'].toString()
+          : null,
+      id: json['id'] != null && json['id'].toString().isNotEmpty
+          ? json['id'].toString()
           : null,
     );
   }

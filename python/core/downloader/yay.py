@@ -18,10 +18,17 @@ class YayDownloader:
         Execute yay/pacman command and stream logs/progress back to callback.
         """
         final_env = os.environ.copy()
+        
+        # Ensure we have a graphical askpass tool for internal sudo calls
+        askpass = await self.executor._find_askpass()
+        
         final_env.update({
             "FORCE_COLOR": "1",
             "LC_ALL": "en_US.UTF-8",
-            "SUDO_USER": os.getlogin()
+            "SUDO_USER": os.getlogin(),
+            "SUDO_ASKPASS": askpass if askpass else "",
+            # Some versions of sudo also need this to trigger askpass without -A
+            "SSH_ASKPASS": askpass if askpass else ""
         })
         if env:
             final_env.update(env)
@@ -88,7 +95,14 @@ class YayDownloader:
 
     async def install(self, package_name: str, callback=None):
         """Install logic"""
-        cmd = ["yay", "-S", "--noconfirm", "--needed", package_name]
+        cmd = [
+            "yay", "-S", "--noconfirm", "--needed",
+            "--answerclean", "None",
+            "--answerdiff", "None",
+            "--answeredit", "None",
+            "--answerupgrade", "None",
+            package_name
+        ]
         return await self._run_command(cmd, callback=callback)
 
     async def uninstall(self, package_name: str, callback=None):

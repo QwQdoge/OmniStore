@@ -39,12 +39,13 @@ class FlatpakDownloader:
                 "PYTHONUNBUFFERED": "1"
             }
 
-            process = await asyncio.create_subprocess_exec(
+            self.current_process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 env=env
             )
+            process = self.current_process
 
             last_sent_progress = -1
 
@@ -53,10 +54,15 @@ class FlatpakDownloader:
                     chunk = await process.stdout.read(1024)
                     if not chunk:
                         break
-                    if not is_install:
-                        continue
-
                     raw_data = chunk.decode('utf-8', errors='ignore')
+
+                    if not is_install:
+                        if callback:
+                            for line in raw_data.splitlines():
+                                line = line.strip()
+                                if line:
+                                    await callback(f"[INFO] {line}")
+                        continue
 
                     # 1. Match summary: Installing 3/8... 19%
                     summary_match = re.search(
@@ -81,6 +87,7 @@ class FlatpakDownloader:
                         last_sent_progress = total_prog
 
             await process.wait()
+            self.current_process = None
             if is_install and process.returncode == 0:
                 if callback:
                     await callback("[PROGRESS] 100")
@@ -88,21 +95,26 @@ class FlatpakDownloader:
         except Exception as e:
             if callback:
                 await callback(f"[ERROR] Flatpak command failed: {e}")
+            self.current_process = None
 
     async def uninstall(self, app_id: str, callback=None):
         """Uninstall and clean residue"""
         if callback:
             await callback(f"[INFO] Uninstalling {app_id}...")
 
-        cmd = ["flatpak", "uninstall", "-y", "--noninteractive", app_id]
+        cmd = ["flatpak", "uninstall", "--user", "-y", "--noninteractive", app_id]
         await self._run_flatpak_command(cmd, callback=callback)
 
         # Cleanup unused runtimes
         if callback:
             await callback("[INFO] Cleaning unused runtimes...")
-        unused_cmd = ["flatpak", "uninstall", "--unused", "-y", "--noninteractive"]
+        unused_cmd = ["flatpak", "uninstall", "--user", "--unused", "-y", "--noninteractive"]
         await self._run_flatpak_command(unused_cmd, callback=callback)
 
-    async def stop(self):
+    def stop(self):
         """Flatpak stop logic"""
-        pass
+        if hasattr(self, 'current_process') and self.current_process:
+            try:
+                self.current_process.terminate()
+            except Exception:
+                pass

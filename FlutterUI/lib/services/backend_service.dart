@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'app_package.dart';
 
 class BackendService {
   final String _venvPython = "/home/shekong/Projects/Omnistore/python/.venv/bin/python";
@@ -11,6 +12,23 @@ class BackendService {
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
   static final ValueNotifier<String> globalStatus = ValueNotifier("Ready");
   static final ValueNotifier<bool> isDownloading = ValueNotifier(false);
+  
+  // 当前正在操作的 app（用于跨页面状态恢复）
+  static final ValueNotifier<AppPackage?> activeApp = ValueNotifier(null);
+  static final ValueNotifier<String?> activeFlag = ValueNotifier(null); // "-I" or "-R"
+  static Process? activeProcess;
+
+  static void cancelCurrentTask() {
+    if (activeProcess != null) {
+      activeProcess!.kill(ProcessSignal.sigterm);
+      activeProcess = null;
+      isDownloading.value = false;
+      globalStatus.value = "任务已取消";
+      globalProgress.value = null;
+      activeApp.value = null;
+      activeFlag.value = null;
+    }
+  }
 
   /// 搜索逻辑
   Future<List<dynamic>> searchPackages(String query) async {
@@ -26,7 +44,7 @@ class BackendService {
     }
   }
 
-  /// 获取已安装列表 (新增加)
+  /// 获取已安装列表
   Future<List<dynamic>> listInstalled() async {
     try {
       final result = await Process.run(_venvPython, [

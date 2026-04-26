@@ -57,7 +57,7 @@ class OmnistoreBackend:
         if level is None:
             if msg.startswith("[ERROR]") or msg.startswith("[Error]"): level = "ERROR"
             elif msg.startswith("[INFO]") or msg.startswith("[Status]") or msg.startswith("[Executor]"): level = "INFO"
-            elif msg.startswith("[PROGRESS]"): level = "DEBUG"
+            elif msg.startswith("[PROGRESS]"): level = "PROGRESS"
             elif msg.startswith("[DEBUG]"): level = "DEBUG"
             else: level = "INFO"
 
@@ -73,7 +73,7 @@ class OmnistoreBackend:
 
         # Filter based on config level
         config_level = self.config.get("logging.level", "INFO").upper()
-        level_map = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40}
+        level_map = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "PROGRESS": 99}
         
         current_level_val = level_map.get(level.upper(), 20)
         config_level_val = level_map.get(config_level, 20)
@@ -130,11 +130,12 @@ class OmnistoreBackend:
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False):
         """Uninstallation logic"""
         self.is_action = True
+        package_data = {"name": package_name, "source": source}
 
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
-        await self.executor.uninstall(package_name, source, callback=cb)
+        await self.executor.uninstall(package_data, callback=cb)
 
     async def run_list_installed(self, json_mode: bool = False):
         """List all installed AppImage and Flatpak applications"""
@@ -179,6 +180,28 @@ class OmnistoreBackend:
             # Don't use callback here in JSON mode as it breaks the query output
             if not json_mode:
                 await self._flutter_callback(f"Failed to scan Flatpaks: {e}", json_mode, level="ERROR")
+
+        # 3. Scan Native/AUR
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "pacman", "-Qqe",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            stdout, _ = await proc.communicate()
+            if stdout:
+                lines = stdout.decode().strip().splitlines()
+                for line in lines:
+                    if line:
+                        installed_list.append({
+                            "name": line,
+                            "source": "Native",
+                            "installed": True,
+                            "description": "Native/AUR package",
+                            "last_version": "Local"
+                        })
+        except Exception:
+            pass
 
         if json_mode:
             print(json.dumps(installed_list))
@@ -245,10 +268,11 @@ async def main():
                        help="Uninstall software packages")
     group.add_argument("-L", "--list-installed", action="store_true",
                        help="List all installed AppImage and Flatpak packages")
+    group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
 
     parser.add_argument("--json", action="store_true",
                         help="Output results in JSON format")
-    parser.add_argument("--source", choices=["AUR", "Flatpak", "AppImage"],
+    parser.add_argument("--source", choices=["AUR", "Flatpak", "AppImage", "Native"],
                         default="AUR", help="Specify the source for installation (default: AUR)")
     parser.add_argument(
         "--url", help="For AppImage, specify the direct download URL")
@@ -268,7 +292,16 @@ async def main():
     args = parser.parse_args()
     backend = OmnistoreBackend()
 
-    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed]):  # 如果没有任何操作指令，显示帮助
+    import signal
+    def handle_term(sig, frame):
+        if backend and hasattr(backend, "executor"):
+            backend.executor.stop()
+        sys.exit(0)
+    
+    signal.signal(signal.SIGTERM, handle_term)
+    signal.signal(signal.SIGINT, handle_term)
+
+    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch]):  # 如果没有任何操作指令，显示帮助
         parser.print_help()
         return
 
@@ -323,6 +356,34 @@ async def main():
     elif args.list_installed:
         # 列出已安装
         await backend.run_list_installed(json_mode=args.json)
+
+    elif args.launch:
+        import subprocess
+        try:
+            # Check for id if it was passed or use the name directly
+            target = args.launch
+            
+            if args.source == "Flatpak":
+                subprocess.Popen(["flatpak", "run", target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            elif args.source == "AppImage":
+                app_path = Path.home() / f"Applications/{target}.AppImage"
+                if app_path.exists():
+                    subprocess.Popen([str(app_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                else:
+                    found = list((Path.home() / "Applications").glob(f"*{target}*.AppImage"))
+                    if found:
+                        subprocess.Popen([str(found[0])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                subprocess.Popen([target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if args.json:
+                print(json.dumps({"status": "success", "message": f"[INFO] Launched {target}"}))
+            else:
+                print(f"[INFO] Launched {target}")
+        except Exception as e:
+            if args.json:
+                print(json.dumps({"status": "error", "message": f"[ERROR] Launch failed: {str(e)}"}))
+            else:
+                print(f"[ERROR] Launch failed: {str(e)}")
 
 if __name__ == "__main__":
     import asyncio

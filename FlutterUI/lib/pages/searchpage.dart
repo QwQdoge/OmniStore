@@ -6,7 +6,6 @@ import '../services/backend_service.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
 
-// 定义显示模式枚举
 enum ViewMode { list, grid }
 
 class SearchPage extends StatefulWidget {
@@ -18,30 +17,28 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   final HistoryService _historyService = HistoryService();
 
-  // 核心状态变量
   List<AppPackage> _results = [];
   bool _isLoading = false;
-  bool _hasInput = false; // 实时监测输入框是否有文字
+  bool _hasInput = false;
   bool _hasSearched = false;
-  ViewMode _viewMode = ViewMode.list; // 默认为列表模式
-
-  // 搜索历史
+  ViewMode _viewMode = ViewMode.list;
   List<String> _history = [];
 
-  // 模拟分类数据
   final List<Map<String, dynamic>> _categories = [
     {"name": "开发工具", "icon": Icons.code},
     {"name": "影音娱乐", "icon": Icons.movie},
     {"name": "互联网", "icon": Icons.language},
     {"name": "系统工具", "icon": Icons.settings_suggest},
+    {"name": "办公", "icon": Icons.work_outline},
+    {"name": "游戏", "icon": Icons.sports_esports_outlined},
   ];
 
   @override
   void initState() {
     super.initState();
-    // 关键：监听输入框变化
     _controller.addListener(_handleInputUpdate);
     _loadHistory();
   }
@@ -50,10 +47,10 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _controller.removeListener(_handleInputUpdate);
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  // 实时监测输入，决定显示结果页还是分类页
   void _handleInputUpdate() {
     final text = _controller.text.trim();
     if (text.isNotEmpty != _hasInput) {
@@ -61,66 +58,58 @@ class _SearchPageState extends State<SearchPage> {
         _hasInput = text.isNotEmpty;
         if (!_hasInput) {
           _results = [];
-          _hasSearched = false; // ← 重置
+          _hasSearched = false;
         }
       });
     }
   }
 
-  // 清空所有历史记录
   Future<void> _clearAllHistory() async {
     await _historyService.clear();
     setState(() => _history = []);
   }
 
-  // 删除历史记录
   Future<void> _removeHistory(String query) async {
     final updated = await _historyService.remove(query);
     setState(() => _history = updated);
   }
 
-  // 加载历史记录
   Future<void> _loadHistory() async {
     final list = await _historyService.load();
     if (mounted) setState(() => _history = list);
   }
 
-  // 核心搜索逻辑
-  Future<void> onSearchIconPressed() async {
-    final query = _controller.text.trim();
-    if (query.isEmpty) return;
+  Future<void> _search([String? query]) async {
+    final q = (query ?? _controller.text).trim();
+    if (q.isEmpty) return;
+
+    if (query != null && query != _controller.text) {
+      _controller.text = query;
+    }
+    _focusNode.unfocus();
 
     setState(() {
       _results = [];
       _isLoading = true;
-      _hasSearched = true; // ← 加这一行
+      _hasSearched = true;
+      _hasInput = true;
     });
 
     try {
       final service = BackendService();
-      final List<dynamic> rawData = await service.searchPackages(query);
-      final updatedHistory = await _historyService.add(query);
+      final List<dynamic> rawData = await service.searchPackages(q);
+      final updatedHistory = await _historyService.add(q);
 
       setState(() {
         _results = rawData.map((j) => AppPackage.fromJson(j)).toList();
         _isLoading = false;
-        _hasSearched = true;
-        _history = updatedHistory; // 更新历史记录列表
-
-        // 记录历史
-        if (!_history.contains(query)) {
-          _history.insert(0, query);
-          if (_history.length > 8) _history.removeLast();
-        }
+        _history = updatedHistory;
       });
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('搜索失败: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          SnackBar(content: Text('搜索失败: $e'), backgroundColor: Theme.of(context).colorScheme.error),
         );
       }
     }
@@ -128,303 +117,311 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _buildSearchInput(),
-              if (_hasInput)
-                Padding(
-                  padding: const EdgeInsets.only(right: 16, bottom: 8),
-                  child: SegmentedButton<ViewMode>(
-                    segments: const [
-                      ButtonSegment(
-                        value: ViewMode.list,
-                        icon: Icon(Icons.view_list_rounded),
-                      ),
-                      ButtonSegment(
-                        value: ViewMode.grid,
-                        icon: Icon(Icons.grid_view_rounded),
-                      ),
-                    ],
-                    selected: {_viewMode},
-                    onSelectionChanged: (newSelection) {
-                      setState(() => _viewMode = newSelection.first);
-                    },
-                    showSelectedIcon: false,
-                    style: const ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      children: [
+        // ─── 顶部搜索区域（始终居中显示）───
+        _buildSearchArea(colorScheme),
+
         if (_isLoading)
-          const SliverToBoxAdapter(child: LinearProgressIndicator()),
-        SliverFillRemaining(
+          LinearProgressIndicator(minHeight: 2, color: colorScheme.primary),
+
+        // ─── 内容区 ───
+        Expanded(
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 250),
             child: _hasInput
-                ? KeyedSubtree(
-                    key: const ValueKey('results'),
-                    child: _buildResultsArea(),
-                  )
-                : KeyedSubtree(
-                    key: const ValueKey('initial'),
-                    child: _buildInitialView(),
-                  ),
+                ? KeyedSubtree(key: const ValueKey('results'), child: _buildResultsArea())
+                : KeyedSubtree(key: const ValueKey('initial'), child: _buildInitialCard(colorScheme)),
           ),
         ),
       ],
     );
   }
 
-  // 2. 优化后的搜索框
-  Widget _buildSearchInput() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SearchBar(
-        controller: _controller,
-        hintText: '输入应用名称...',
-        elevation: WidgetStateProperty.all(0),
-        backgroundColor: WidgetStateProperty.all(
-          Theme.of(
-            context,
-          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        ),
-        leading: const Icon(Icons.search),
-        trailing: [
-          if (_hasInput)
-            IconButton(
-              icon: const Icon(Icons.close_rounded),
-              onPressed: () => _controller.clear(),
-            ),
-          IconButton(
-            icon: const Icon(Icons.send_rounded),
-            onPressed: onSearchIconPressed,
+  // ──────────────────────────────────────────────────────────
+  // 搜索输入栏
+  // ──────────────────────────────────────────────────────────
+  Widget _buildSearchArea(ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680),
+        child: SearchBar(
+          controller: _controller,
+          focusNode: _focusNode,
+          hintText: '搜索应用、游戏、工具...',
+          elevation: WidgetStateProperty.all(0),
+          backgroundColor: WidgetStateProperty.all(
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
           ),
-        ],
-        onSubmitted: (_) => onSearchIconPressed(),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            ),
+          ),
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16)),
+          leading: const Icon(Icons.search),
+          trailing: [
+            if (_hasInput)
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () {
+                  _controller.clear();
+                  _focusNode.requestFocus();
+                },
+              ),
+            FilledButton.tonal(
+              onPressed: _search,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text("搜索"),
+            ),
+            const SizedBox(width: 4),
+          ],
+          onSubmitted: (_) => _search(),
+        ),
       ),
     );
   }
 
-  // 3. 初始视图（分类 + 历史）
-  Widget _buildInitialView() {
-    return ListView(
-      key: const ValueKey("InitialView"),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      children: [
-        const SizedBox(height: 16),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "搜索历史",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            if (_history.isNotEmpty)
-              TextButton.icon(
-                onPressed: () async {
-                  // 二次确认，防止误操作
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text("清空历史记录"),
-                      content: const Text("确定要删除所有搜索历史吗？"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text("取消"),
-                        ),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text("清空"),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) _clearAllHistory();
-                },
-                icon: const Icon(Icons.delete_sweep_rounded, size: 16),
-                label: const Text("清空"),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                  visualDensity: VisualDensity.compact,
+  // ──────────────────────────────────────────────────────────
+  // 初始状态：一个大卡片，内含历史 + 分类
+  // ──────────────────────────────────────────────────────────
+  Widget _buildInitialCard(ColorScheme colorScheme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Column(
+            children: [
+              // ── 搜索历史 + 分类：一个大容器 ──
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
                 ),
-              ),
-          ],
-        ), // 历史记录标签
-
-        if (_history.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              "暂无搜索历史",
-              style: TextStyle(color: Theme.of(context).colorScheme.outline),
-            ),
-          ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _history
-              .map(
-                (h) => InputChip(
-                  label: Text(h),
-                  onPressed: () {
-                    _controller.value = TextEditingValue(
-                      text: h,
-                      selection: TextSelection.collapsed(offset: h.length),
-                    );
-                    onSearchIconPressed();
-                  },
-                  onDeleted: () => _removeHistory(h), // ← 单条删除
-                  deleteIcon: const Icon(Icons.close_rounded, size: 14),
-                ),
-              )
-              .toList(),
-        ),
-
-        const SizedBox(height: 32),
-        const Text(
-          "分类浏览",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 2.5,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: _categories.length,
-          itemBuilder: (context, index) {
-            final cat = _categories[index];
-            return Card(
-              elevation: 0,
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: InkWell(
-                onTap: () {
-                  _controller.text = cat['name'];
-                  onSearchIconPressed();
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      cat['icon'],
-                      color: Theme.of(context).colorScheme.primary,
+                    // ── 历史标题 ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 8, 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.history_rounded, size: 16, color: colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 8),
+                          Text(
+                            "搜索历史",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (_history.isNotEmpty)
+                            TextButton.icon(
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text("清空历史记录"),
+                                    content: const Text("确定要删除所有搜索历史吗？"),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("取消")),
+                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("清空")),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) _clearAllHistory();
+                              },
+                              icon: const Icon(Icons.delete_sweep_rounded, size: 14),
+                              label: const Text("清空"),
+                              style: TextButton.styleFrom(
+                                foregroundColor: colorScheme.error,
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(cat['name']),
+
+                    // ── 历史标签 ──
+                    if (_history.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                        child: Text(
+                          "暂无搜索历史",
+                          style: TextStyle(color: colorScheme.outline, fontSize: 13),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: _history.map((h) => InputChip(
+                            label: Text(h, style: const TextStyle(fontSize: 12)),
+                            onPressed: () => _search(h),
+                            onDeleted: () => _removeHistory(h),
+                            deleteIcon: const Icon(Icons.close_rounded, size: 14),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          )).toList(),
+                        ),
+                      ),
+
+                    Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+
+                    // ── 分类标题 ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      child: Row(
+                        children: [
+                          Icon(Icons.grid_view_rounded, size: 16, color: colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 8),
+                          Text(
+                            "分类浏览",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── 分类网格 ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _categories.map((cat) => ActionChip(
+                          avatar: Icon(cat['icon'] as IconData, size: 16, color: colorScheme.primary),
+                          label: Text(cat['name'] as String, style: const TextStyle(fontSize: 12)),
+                          onPressed: () => _search(cat['name'] as String),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                          backgroundColor: colorScheme.surface,
+                        )).toList(),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            );
-          },
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // 搜索结果区域
+  // ──────────────────────────────────────────────────────────
+  Widget _buildResultsArea() {
+    if (_isLoading) return const SizedBox.shrink();
+    if (_hasSearched && _results.isEmpty) {
+      return const Center(child: Text("未找到相关应用"));
+    }
+    if (!_hasSearched) return const Center(child: Text("正在寻找..."));
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text("${_results.length} 个结果", style: const TextStyle(fontSize: 12)),
+              const SizedBox(width: 12),
+              SegmentedButton<ViewMode>(
+                segments: const [
+                  ButtonSegment(value: ViewMode.list, icon: Icon(Icons.view_list_rounded, size: 16)),
+                  ButtonSegment(value: ViewMode.grid, icon: Icon(Icons.grid_view_rounded, size: 16)),
+                ],
+                selected: {_viewMode},
+                onSelectionChanged: (s) => setState(() => _viewMode = s.first),
+                showSelectedIcon: false,
+                style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _viewMode == ViewMode.list ? _buildResultList() : _buildResultGrid(),
         ),
       ],
     );
   }
 
-  // 4. 结果展示逻辑选择
-  Widget _buildResultsArea() {
-    if (_isLoading)
-      return const SizedBox.shrink(); // loading 交给 LinearProgressIndicator
-    if (_hasSearched && _results.isEmpty) {
-      return const Center(child: Text("未找到相关应用"));
-    }
-    if (!_hasSearched) return const Center(child: Text("正在寻找..."));
-    return _viewMode == ViewMode.list ? _buildResultList() : _buildResultGrid();
-  }
-
-  // --- 列表布局 ---
   Widget _buildResultList() {
     return ListView.builder(
       key: const ValueKey("ListView"),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: _results.length,
       itemBuilder: (context, index) {
         final app = _results[index];
-        final theme = Theme.of(context);
-        final colorScheme = theme.colorScheme;
+        final colorScheme = Theme.of(context).colorScheme;
         return InkWell(
           onTap: () => _showAppDetails(app),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               children: [
-                // 方角图标
-                Hero(
-                  tag: app.name,
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      app.name[0].toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    app.name[0].toUpperCase(),
+                    style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            app.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              letterSpacing: -0.2,
+                          Flexible(
+                            child: Text(
+                              app.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           if (app.installed) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
                                 color: colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: colorScheme.primary.withValues(alpha: 0.2),
-                                ),
                               ),
                               child: Text(
                                 "已就绪",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.primary,
-                                ),
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
                               ),
                             ),
                           ],
@@ -433,58 +430,38 @@ class _SearchPageState extends State<SearchPage> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
+                          ...app.sources.take(2).map((s) => Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: _buildSourceTag(s, isSmall: true),
+                          )),
                           Text(
-                            "4.${(app.name.length % 5) + 5} ★",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            "${(app.name.length * 12.5).toStringAsFixed(0)} MB • ${app.primarySource}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
+                            " • ${app.version}",
+                            style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                // 安装/打开按钮
-                if (app.installed)
-                  FilledButton.tonal(
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      minimumSize: const Size(0, 32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                app.installed
+                    ? FilledButton.tonal(
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          minimumSize: const Size(0, 32),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        onPressed: () => _showAppDetails(app),
+                        child: const Text("打开", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      )
+                    : FilledButton(
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          minimumSize: const Size(0, 32),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        onPressed: () => _showAppDetails(app),
+                        child: const Text("安装", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
-                    ),
-                    onPressed: () => _showAppDetails(app),
-                    child: const Text(
-                      "打开",
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                  )
-                else
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      minimumSize: const Size(0, 32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    onPressed: () => _showAppDetails(app),
-                    child: const Text(
-                      "安装",
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -493,16 +470,15 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // --- 网格/瀑布流布局 ---
   Widget _buildResultGrid() {
     return GridView.builder(
       key: const ValueKey("GridView"),
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 220,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        mainAxisExtent: 180,
+        maxCrossAxisExtent: 200,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        mainAxisExtent: 160,
       ),
       itemCount: _results.length,
       itemBuilder: (context, index) {
@@ -511,11 +487,7 @@ class _SearchPageState extends State<SearchPage> {
           elevation: 0,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
+            side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(16),
           ),
           child: InkWell(
@@ -524,24 +496,16 @@ class _SearchPageState extends State<SearchPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  child: Text(app.name[0].toUpperCase()),
+                  radius: 22,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  child: Text(app.name[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  app.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
+                Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 6),
                 Wrap(
                   spacing: 4,
-                  children: app.sources
-                      .take(2)
-                      .map((s) => _buildSourceTag(s, isSmall: true))
-                      .toList(),
+                  children: app.sources.take(2).map((s) => _buildSourceTag(s, isSmall: true)).toList(),
                 ),
               ],
             ),
@@ -553,16 +517,14 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildSourceTag(String source, {bool isSmall = false}) {
     Color color = Colors.grey;
-    if (source == "Pacman") {
-      color = Colors.blue;
-    } else if (source == "AUR") {
-      color = Colors.orange;
-    } else if (source == "Flatpak") {
-      color = Colors.purple;
-    }
+    if (source == "Pacman") color = Colors.blue;
+    else if (source == "AUR") color = Colors.orange;
+    else if (source == "Flatpak") color = Colors.purple;
+    else if (source == "AppImage") color = Colors.teal;
+    else if (source == "Native") color = Colors.blue;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
@@ -570,19 +532,12 @@ class _SearchPageState extends State<SearchPage> {
       ),
       child: Text(
         source,
-        style: TextStyle(
-          color: color,
-          fontSize: isSmall ? 8 : 10,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   void _showAppDetails(AppPackage app) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)));
   }
 }
