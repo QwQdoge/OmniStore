@@ -9,7 +9,8 @@ import '../services/history_service.dart';
 enum ViewMode { list, grid }
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final bool autoFocus;
+  const SearchPage({super.key, this.autoFocus = false});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -153,6 +154,7 @@ class _SearchPageState extends State<SearchPage> {
         child: SearchBar(
           controller: _controller,
           focusNode: _focusNode,
+          autoFocus: widget.autoFocus,
           hintText: '搜索应用、游戏、工具...',
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
@@ -170,6 +172,7 @@ class _SearchPageState extends State<SearchPage> {
             if (_hasInput)
               IconButton(
                 icon: const Icon(Icons.close_rounded),
+                tooltip: '清除搜索',
                 onPressed: () {
                   _controller.clear();
                   _focusNode.requestFocus();
@@ -310,6 +313,7 @@ class _SearchPageState extends State<SearchPage> {
                         spacing: 8,
                         runSpacing: 8,
                         children: _categories.map((cat) => ActionChip(
+                          tooltip: '搜索 ${cat['name']}',
                           avatar: Icon(cat['icon'] as IconData, size: 16, color: colorScheme.primary),
                           label: Text(cat['name'] as String, style: const TextStyle(fontSize: 12)),
                           onPressed: () => _search(cat['name'] as String),
@@ -351,8 +355,16 @@ class _SearchPageState extends State<SearchPage> {
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
                 segments: const [
-                  ButtonSegment(value: ViewMode.list, icon: Icon(Icons.view_list_rounded, size: 16)),
-                  ButtonSegment(value: ViewMode.grid, icon: Icon(Icons.grid_view_rounded, size: 16)),
+                  ButtonSegment(
+                    value: ViewMode.list,
+                    icon: Icon(Icons.view_list_rounded, size: 16),
+                    tooltip: '列表视图',
+                  ),
+                  ButtonSegment(
+                    value: ViewMode.grid,
+                    icon: Icon(Icons.grid_view_rounded, size: 16),
+                    tooltip: '网格视图',
+                  ),
                 ],
                 selected: {_viewMode},
                 onSelectionChanged: (s) => setState(() => _viewMode = s.first),
