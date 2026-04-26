@@ -5,6 +5,7 @@ class AppPackage {
   final String primarySource;
   final String version;
   final List<String> sources; // 这是一个 List，用来存 ["Pacman", "AUR"] 这种
+  final String? url;
 
   AppPackage({
     required this.name,
@@ -13,6 +14,7 @@ class AppPackage {
     required this.primarySource,
     required this.version,
     required this.sources,
+    this.url,
   });
 
   factory AppPackage.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,9 @@ class AppPackage {
       primarySource: json['primary_source'] ?? 'Native',
       version: json['version'] ?? 'N/A',
       sources: extractedSources,
+      url: json['url'] != null && json['url'].toString().isNotEmpty
+          ? json['url'].toString()
+          : null,
     );
   }
   // 模拟从后台获取推荐数据

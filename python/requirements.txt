@@ -1,23 +1,22 @@
 # --- 核心后端 ---
-# fastapi==0.115.0
-# uvicorn[standard]==0.30.6  # standard 包含更快的 uvloop
-# websockets==13.1
-# python-multipart==0.0.12  # FastAPI 必带，处理请求体
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+websockets==13.1
+python-multipart==0.0.12
 
 # --- 异步网络与并发 ---
-# aiohttp==3.10.5            # 你 AppImage 下载和搜索用的
-# httpx==0.27.2              # 比 requests 更现代的异步库 (推荐替代 requests)
+aiohttp==3.10.5
+httpx==0.27.2
 
 # --- 系统与工具 ---
-# psutil==7.2.2              # 监控进程状态
-PyYAML==6.0.3              # 解析配置文件
-# packaging==26.0            # 处理版本号对比
-# lxml==6.0.2                # 网页爬虫/XML解析
+psutil==7.2.2
+PyYAML==6.0.3
+packaging==26.0
+lxml==6.0.2
 
 # --- 基础工具 ---
-# requests==2.32.5           # 留着备用，但异步函数里尽量别用它
+requests==2.32.5
 
-subprocess==0.0.1  # 用于执行系统命令，替代 os.system 和 subprocess 模块的复杂性  
 # --- GUI ---  
 PySide6>=6.6
 materialyoucolor>=3.0.0

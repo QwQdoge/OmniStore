@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/bridges/search_bridge.dart';
+import 'package:frontend/services/backend_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -22,6 +22,41 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String appearance = 'system';
   String colorSeed = '#CA6ECF';
+  String logLevel = 'INFO';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  Future<void> _loadConfig() async {
+    final config = await BackendService().loadConfig();
+    if (config.isEmpty) return;
+
+    setState(() {
+      final s = config['search'] ?? {};
+      final src = s['sources'] ?? {};
+      pacmanEnabled = src['pacman'] ?? true;
+      aurEnabled = src['aur'] ?? true;
+      flatpakEnabled = src['flatpak'] ?? true;
+      appimageEnabled = src['appimage'] ?? true;
+      maxResults = (s['max_results'] ?? 100).toDouble();
+
+      final p = config['priority'] ?? {};
+      pacmanPriority = (p['pacman'] ?? 100).toDouble();
+      aurPriority = (p['aur'] ?? 80).toDouble();
+      flatpakPriority = (p['flatpak'] ?? 60).toDouble();
+      appimagePriority = (p['appimage'] ?? 40).toDouble();
+
+      final ui = config['ui'] ?? {};
+      appearance = ui['appearance'] ?? 'system';
+      colorSeed = ui['color_seed'] ?? '#CA6ECF';
+
+      final log = config['logging'] ?? {};
+      logLevel = log['level'] ?? 'INFO';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +170,26 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle('系统与日志'),
+                _buildGroupCard([
+                  ListTile(
+                    leading: const Icon(Icons.bug_report_outlined),
+                    title: const Text('日志记录等级'),
+                    subtitle: const Text('较低等级会显示更多详细信息'),
+                    trailing: DropdownButton<String>(
+                      value: logLevel,
+                      underline: const SizedBox(),
+                      onChanged: (v) => setState(() => logLevel = v!),
+                      items: const [
+                        DropdownMenuItem(value: 'DEBUG', child: Text('DEBUG')),
+                        DropdownMenuItem(value: 'INFO', child: Text('INFO')),
+                        DropdownMenuItem(value: 'WARNING', child: Text('WARNING')),
+                        DropdownMenuItem(value: 'ERROR', child: Text('ERROR')),
+                      ],
+                    ),
+                  ),
+                ]),
                 const SizedBox(height: 40),
               ]),
             ),
@@ -226,6 +281,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'appimage': appimagePriority.toInt(),
       },
       'ui': {'appearance': appearance, 'color_seed': colorSeed},
+      'logging': {'level': logLevel},
     };
 
     BackendService().saveConfig(config).then((success) {

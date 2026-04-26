@@ -1,3 +1,4 @@
+from main import main
 import asyncio
 import sys
 from unittest.mock import AsyncMock, patch
@@ -6,7 +7,6 @@ from pathlib import Path
 # 确保导入路径
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from main import main
 
 async def test_cli_distribution():
     print("核心功能分发测试 (CLI Distribution Test)")
@@ -23,7 +23,8 @@ async def test_cli_distribution():
         print("测试 [-S]: omni -S telegram --json")
         with patch("sys.argv", ["main.py", "-S", "telegram", "--json"]):
             await main()
-            mock_instance.run_search.assert_called_once_with("telegram", json_mode=True)
+            mock_instance.run_search.assert_called_once_with(
+                "telegram", json_mode=True)
             print("✅ 搜索指令分发正常")
 
         # --- 测试 2: 测试安装 (-I) ---

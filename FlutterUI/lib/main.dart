@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/homepage.dart';
 import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
+import 'pages/download_page.dart';
+import 'services/backend_service.dart';
 
 void main() => runApp(const OmnistoreApp());
 
@@ -10,8 +12,8 @@ class OmnistoreApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 定义统一的种子颜色
-    const seedColor = Color(0xFF005FB8);
+    // 按照用户要求，主色调改为经典的 Material 3 Blue
+    const seedColor = Color(0xFF0B57D0);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -53,6 +55,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
     const HomePage(),
     const SearchPage(),
     const SettingsPage(),
+    const DownloadPage(),
   ];
 
   @override
@@ -63,6 +66,85 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
     return Scaffold(
       // 背景使用最底层的 surface 颜色
       backgroundColor: colorScheme.surface,
+      // Chrome OS 风格的全局顶部标题栏
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleSpacing: 0,
+        // 左侧 Logo
+        leadingWidth: 90,
+        leading: Center(
+          child: Icon(
+            Icons.shop_two_rounded, // 类似 Play Store 的图标
+            color: colorScheme.primary,
+            size: 32,
+          ),
+        ),
+        title: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: GestureDetector(
+              onTap: () {
+                if (_selectedIndex != 1) {
+                  setState(() => _selectedIndex = 1);
+                }
+              },
+              child: Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHigh.withValues(
+                    alpha: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Search apps & games',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.mic_none_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: colorScheme.primaryContainer,
+            child: Text(
+              'U',
+              style: TextStyle(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
       body: Row(
         children: [
           // 左侧导航列：Google Play 宽屏布局风格
@@ -71,16 +153,18 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
           // 右侧内容区：Google Play 招牌的大圆角容器
           Expanded(
             child: Container(
-              margin: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+              margin: const EdgeInsets.fromLTRB(0, 8, 8, 8),
               decoration: BoxDecoration(
-                // 使用 surfaceContainer 营造出 M3 的分层感
-                color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(28),
+                // 纯净背景，类似于 Google Play 的平铺感
+                color: theme.brightness == Brightness.light
+                    ? Colors.white
+                    : colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -111,13 +195,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         children: [
-          // 顶部 Logo
-          _buildLogo(colorScheme),
-
           // 中间导航项
           Expanded(
             child: NavigationRail(
-              selectedIndex: _selectedIndex,
+              selectedIndex: _selectedIndex > 2 ? null : _selectedIndex,
               onDestinationSelected: (i) => setState(() => _selectedIndex = i),
               labelType: NavigationRailLabelType.selected,
               backgroundColor: Colors.transparent,
@@ -154,48 +235,59 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
   }
 
   Widget _buildDownloadButton(ColorScheme colorScheme) {
-    return Tooltip(
-      message: "查看下载队列",
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          onPressed: () {
-            // 这里以后可以弹出下载进度对话框
+    return ValueListenableBuilder<bool>(
+      valueListenable: BackendService.isDownloading,
+      builder: (context, isDownloading, child) {
+        return ValueListenableBuilder<double?>(
+          valueListenable: BackendService.globalProgress,
+          builder: (context, progress, child) {
+            return Tooltip(
+              message: isDownloading
+                  ? "正在执行任务: ${BackendService.globalStatus.value}"
+                  : "查看下载队列",
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _selectedIndex == 3
+                      ? colorScheme.primary
+                      : isDownloading
+                          ? colorScheme.primary.withValues(alpha: 0.1)
+                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (isDownloading)
+                      CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 3,
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                      ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() => _selectedIndex = 3);
+                      },
+                      icon: Icon(
+                        isDownloading
+                            ? Icons.downloading_rounded
+                            : Icons.download_for_offline_rounded,
+                        color: _selectedIndex == 3
+                            ? colorScheme.onPrimary
+                            : isDownloading
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                        size: 26,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
           },
-          icon: Icon(
-            Icons.download_for_offline_rounded,
-            color: colorScheme.onSurfaceVariant,
-            size: 26,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLogo(ColorScheme colorScheme) {
-    return Container(
-      margin: const EdgeInsets.only(top: 20, bottom: 20),
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: colorScheme.primary,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.auto_awesome_mosaic,
-        color: Colors.white,
-        size: 28,
-      ),
+        );
+      },
     );
   }
 }

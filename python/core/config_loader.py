@@ -1,20 +1,20 @@
 import yaml
 from pathlib import Path
-from collections.abc import Mapping
 from typing import Any, Dict, Optional
+
 
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
         # 遵循 XDG 规范
         self.config_dir = Path.home() / ".config" / "omnistore"
         self.config_path = self.config_dir / config_name
-        
+
         self.default_config = {
             "search": {
                 "sources": {
-                    "pacman": True, 
-                    "aur": True, 
-                    "flatpak": True, 
+                    "pacman": True,
+                    "aur": True,
+                    "flatpak": True,
                     "appimage": True
                 },
                 "max_results": 100
@@ -25,6 +25,9 @@ class ConfigManager:
             "ui": {
                 "appearance": "system",
                 "color_seed": "#4E7EEF"
+            },
+            "logging": {
+                "level": "INFO"
             }
         }
         # 初始化加载
@@ -54,7 +57,7 @@ class ConfigManager:
             self.config_dir.mkdir(parents=True, exist_ok=True)
             self.save(self.default_config)
             return self.default_config
-        
+
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 user_cfg = yaml.safe_load(f) or {}
@@ -70,11 +73,12 @@ class ConfigManager:
         try:
             self.config_dir.mkdir(parents=True, exist_ok=True)
             temp_file = self.config_path.with_suffix(".tmp")
-            
+
             with open(temp_file, "w", encoding="utf-8") as f:
                 # 不排序 Key，保持 yaml 的易读性
-                yaml.dump(cfg, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
-            
+                yaml.dump(cfg, f, allow_unicode=True,
+                          sort_keys=False, default_flow_style=False)
+
             # 原子重命名，防止保存时断电损坏原始文件
             temp_file.replace(self.config_path)
             self.current_config = cfg

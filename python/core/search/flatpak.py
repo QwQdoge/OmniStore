@@ -1,6 +1,7 @@
 import asyncio
 from .base import SearchSource
 
+
 class FlatpakSearch(SearchSource):
     def __init__(self, session=None):
         super().__init__(name="Flatpak")
@@ -34,7 +35,7 @@ class FlatpakSearch(SearchSource):
                 ),
                 self._get_installed_flatpaks()
             ]
-            
+
             # 使用 wait_for 防止命令挂起（虽然 flatpak 通常很快）
             results = await asyncio.gather(*tasks)
             proc, installed_set = results
@@ -45,7 +46,7 @@ class FlatpakSearch(SearchSource):
 
             lines = stdout.decode().strip().splitlines()
             final_results = []
-            
+
             for line in lines:
                 # 某些版本的 flatpak 可能会带表头，跳过它
                 if "Application ID" in line or "Name" in line:
@@ -56,7 +57,7 @@ class FlatpakSearch(SearchSource):
                     continue
 
                 # 字段映射优化
-                display_name = parts[0] # 更加用户友好的名称
+                display_name = parts[0]  # 更加用户友好的名称
                 app_id = parts[1]
                 version = parts[2] if len(parts) > 2 else "Unknown"
                 desc = parts[3] if len(parts) > 3 else f"Flatpak app {app_id}"
@@ -70,9 +71,9 @@ class FlatpakSearch(SearchSource):
                     "votes": 0,
                     "installed": app_id in installed_set
                 })
-            
+
             return final_results
 
-        except Exception as e:
+        except Exception:
             # 这里的 Exception 捕获很关键，防止没装 flatpak 导致整个后台崩掉
             return []
