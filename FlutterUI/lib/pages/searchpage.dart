@@ -153,6 +153,7 @@ class _SearchPageState extends State<SearchPage> {
         child: SearchBar(
           controller: _controller,
           focusNode: _focusNode,
+          autoFocus: true,
           hintText: '搜索应用、游戏、工具...',
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
@@ -170,6 +171,7 @@ class _SearchPageState extends State<SearchPage> {
             if (_hasInput)
               IconButton(
                 icon: const Icon(Icons.close_rounded),
+                tooltip: '清空内容',
                 onPressed: () {
                   _controller.clear();
                   _focusNode.requestFocus();
