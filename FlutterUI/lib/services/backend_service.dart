@@ -75,6 +75,34 @@ class BackendService {
     } catch (e) { return false; }
   }
 
+  /// 获取动态推荐
+  Future<List<AppPackage>> getRecommendations() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--recommend", "--json",
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      List<dynamic> data = jsonDecode(result.stdout.toString().trim());
+      return data.map((item) => AppPackage.fromJson(item)).toList();
+    } catch (e) {
+      debugPrint("Recommendations Exception: $e");
+      return [];
+    }
+  }
+
+  /// 获取应用详情 (从 Flathub 等外部源)
+  Future<Map<String, dynamic>> getAppDetails(String appId) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--details", appId, "--json",
+      ], workingDirectory: _workingDir);
+      return jsonDecode(result.stdout);
+    } catch (e) {
+      return {};
+    }
+  }
+
   Stream<String> executeAction(String flag, String packageName, String source, {String? url}) async* {
     if (packageName.isEmpty) {
       yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";

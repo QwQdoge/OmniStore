@@ -8,6 +8,11 @@ class AppPackage {
   final String? url;
   final String? id;
 
+  final String? icon;
+  final List<String>? screenshots;
+  final String? developer;
+  final String? homepage;
+
   AppPackage({
     required this.name,
     required this.description,
@@ -17,6 +22,10 @@ class AppPackage {
     required this.sources,
     this.url,
     this.id,
+    this.icon,
+    this.screenshots,
+    this.developer,
+    this.homepage,
   });
 
   factory AppPackage.fromJson(Map<String, dynamic> json) {
@@ -40,6 +49,10 @@ class AppPackage {
       id: json['id'] != null && json['id'].toString().isNotEmpty
           ? json['id'].toString()
           : null,
+      icon: json['icon'],
+      screenshots: json['screenshots'] != null ? List<String>.from(json['screenshots']) : null,
+      developer: json['developer'],
+      homepage: json['homepage'],
     );
   }
   // 模拟从后台获取推荐数据
