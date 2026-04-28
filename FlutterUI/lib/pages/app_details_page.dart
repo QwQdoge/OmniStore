@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../services/l10n_service.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -146,14 +147,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("取消"),
+            child: Text(L10nService.s('cancel')),
           ),
           FilledButton(
             style: isUninstall
                 ? FilledButton.styleFrom(backgroundColor: Colors.red)
                 : null,
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("确定"),
+            child: Text(L10nService.s('confirm')),
           ),
         ],
       ),
@@ -373,13 +374,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _buildActionArea(colorScheme),
             const SizedBox(height: 32),
             const Divider(),
-            _buildSectionTitle(theme, "关于此软件"),
+            _buildSectionTitle(theme, L10nService.s('about')),
             Text(widget.app.description, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 32),
-            _buildSectionTitle(theme, "详细参数"),
-            _buildInfoRow(Icons.source, "来源", widget.app.primarySource),
-            _buildInfoRow(Icons.all_inclusive, "变体", widget.app.sources.join(", ")),
-            _buildInfoRow(Icons.verified_outlined, "版本", widget.app.version),
+            _buildSectionTitle(theme, L10nService.s('details')),
+            _buildInfoRow(Icons.source, L10nService.s('source'), widget.app.primarySource),
+            _buildInfoRow(Icons.all_inclusive, L10nService.s('variants'), widget.app.sources.join(", ")),
+            _buildInfoRow(Icons.verified_outlined, L10nService.s('version'), widget.app.version),
           ],
         ),
       ),
@@ -474,7 +475,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _handleAction("-R"),
-                child: const Text("卸载", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(L10nService.s('uninstall'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -489,7 +490,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 onPressed: _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
-                label: const Text("启动程序", style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(L10nService.s('launch'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -506,7 +507,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         onPressed: () => _handleAction("-I"),
         icon: const Icon(Icons.download_rounded),
-        label: const Text("立即安装", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(L10nService.s('install'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }

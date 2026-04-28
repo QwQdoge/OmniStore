@@ -5,11 +5,13 @@ import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
+import '../services/l10n_service.dart';
 
 enum ViewMode { list, grid }
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final bool autoFocus;
+  const SearchPage({super.key, this.autoFocus = false});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -28,12 +30,12 @@ class _SearchPageState extends State<SearchPage> {
   List<String> _history = [];
 
   final List<Map<String, dynamic>> _categories = [
-    {"name": "开发工具", "icon": Icons.code},
-    {"name": "影音娱乐", "icon": Icons.movie},
-    {"name": "互联网", "icon": Icons.language},
-    {"name": "系统工具", "icon": Icons.settings_suggest},
-    {"name": "办公", "icon": Icons.work_outline},
-    {"name": "游戏", "icon": Icons.sports_esports_outlined},
+    {"id": "dev", "name": "开发工具", "icon": Icons.code},
+    {"id": "media", "name": "影音娱乐", "icon": Icons.movie},
+    {"id": "web", "name": "互联网", "icon": Icons.language},
+    {"id": "sys", "name": "系统工具", "icon": Icons.settings_suggest},
+    {"id": "work", "name": "办公", "icon": Icons.work_outline},
+    {"id": "game", "name": "游戏", "icon": Icons.sports_esports_outlined},
   ];
 
   @override
@@ -153,7 +155,8 @@ class _SearchPageState extends State<SearchPage> {
         child: SearchBar(
           controller: _controller,
           focusNode: _focusNode,
-          hintText: '搜索应用、游戏、工具...',
+          autoFocus: widget.autoFocus,
+          hintText: L10nService.s('search_hint'),
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
             colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
@@ -170,6 +173,7 @@ class _SearchPageState extends State<SearchPage> {
             if (_hasInput)
               IconButton(
                 icon: const Icon(Icons.close_rounded),
+                tooltip: L10nService.s('clear_search'),
                 onPressed: () {
                   _controller.clear();
                   _focusNode.requestFocus();
@@ -181,7 +185,7 @@ class _SearchPageState extends State<SearchPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 visualDensity: VisualDensity.compact,
               ),
-              child: const Text("搜索"),
+              child: Text(L10nService.s('search')),
             ),
             const SizedBox(width: 4),
           ],
@@ -220,7 +224,7 @@ class _SearchPageState extends State<SearchPage> {
                           Icon(Icons.history_rounded, size: 16, color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 8),
                           Text(
-                            "搜索历史",
+                            L10nService.s('history'),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -234,18 +238,18 @@ class _SearchPageState extends State<SearchPage> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    title: const Text("清空历史记录"),
-                                    content: const Text("确定要删除所有搜索历史吗？"),
+                                    title: Text(L10nService.s('clear_history')),
+                                    content: Text(L10nService.s('confirm_clear_history')),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("取消")),
-                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("清空")),
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10nService.s('cancel'))),
+                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(L10nService.s('clear'))),
                                     ],
                                   ),
                                 );
                                 if (confirm == true) _clearAllHistory();
                               },
                               icon: const Icon(Icons.delete_sweep_rounded, size: 14),
-                              label: const Text("清空"),
+                              label: Text(L10nService.s('clear')),
                               style: TextButton.styleFrom(
                                 foregroundColor: colorScheme.error,
                                 visualDensity: VisualDensity.compact,
@@ -261,7 +265,7 @@ class _SearchPageState extends State<SearchPage> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                         child: Text(
-                          "暂无搜索历史",
+                          L10nService.s('no_history'),
                           style: TextStyle(color: colorScheme.outline, fontSize: 13),
                         ),
                       )
@@ -292,7 +296,7 @@ class _SearchPageState extends State<SearchPage> {
                           Icon(Icons.grid_view_rounded, size: 16, color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 8),
                           Text(
-                            "分类浏览",
+                            L10nService.s('categories'),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -310,12 +314,14 @@ class _SearchPageState extends State<SearchPage> {
                         spacing: 8,
                         runSpacing: 8,
                         children: _categories.map((cat) => ActionChip(
-                          avatar: Icon(cat['icon'] as IconData, size: 16, color: colorScheme.primary),
-                          label: Text(cat['name'] as String, style: const TextStyle(fontSize: 12)),
-                          onPressed: () => _search(cat['name'] as String),
-                          visualDensity: VisualDensity.compact,
+                          tooltip: '${L10nService.s('search')} ${L10nService.s(cat['id'])}',
+                          avatar: Icon(cat['icon'] as IconData, size: 18, color: colorScheme.onSurfaceVariant),
+                          label: Text(L10nService.s(cat['id']), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                          onPressed: () => _search(L10nService.s(cat['id'])),
+                          visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
                           backgroundColor: colorScheme.surface,
                         )).toList(),
                       ),
@@ -336,9 +342,9 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildResultsArea() {
     if (_isLoading) return const SizedBox.shrink();
     if (_hasSearched && _results.isEmpty) {
-      return const Center(child: Text("未找到相关应用"));
+      return Center(child: Text(L10nService.s('not_found')));
     }
-    if (!_hasSearched) return const Center(child: Text("正在寻找..."));
+    if (!_hasSearched) return Center(child: Text(L10nService.s('searching')));
 
     return Column(
       children: [
@@ -347,12 +353,20 @@ class _SearchPageState extends State<SearchPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text("${_results.length} 个结果", style: const TextStyle(fontSize: 12)),
+              Text(L10nService.s('results_count', args: [_results.length.toString()]), style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
-                segments: const [
-                  ButtonSegment(value: ViewMode.list, icon: Icon(Icons.view_list_rounded, size: 16)),
-                  ButtonSegment(value: ViewMode.grid, icon: Icon(Icons.grid_view_rounded, size: 16)),
+                segments: [
+                  ButtonSegment(
+                    value: ViewMode.list,
+                    icon: const Icon(Icons.view_list_rounded, size: 16),
+                    tooltip: L10nService.s('list_view'),
+                  ),
+                  ButtonSegment(
+                    value: ViewMode.grid,
+                    icon: const Icon(Icons.grid_view_rounded, size: 16),
+                    tooltip: L10nService.s('grid_view'),
+                  ),
                 ],
                 selected: {_viewMode},
                 onSelectionChanged: (s) => setState(() => _viewMode = s.first),
@@ -420,7 +434,7 @@ class _SearchPageState extends State<SearchPage> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                "已就绪",
+                                L10nService.s('ready'),
                                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
                               ),
                             ),
@@ -451,7 +465,7 @@ class _SearchPageState extends State<SearchPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: const Text("打开", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(L10nService.s('open'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       )
                     : FilledButton(
                         style: FilledButton.styleFrom(
@@ -460,7 +474,7 @@ class _SearchPageState extends State<SearchPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: const Text("安装", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(L10nService.s('install'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
               ],
             ),

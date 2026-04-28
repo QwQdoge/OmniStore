@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/backend_service.dart';
 import '../services/app_package.dart';
 import 'app_details_page.dart';
+import '../services/l10n_service.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -82,14 +83,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("管理下载与应用", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(L10nService.s('downloads'), style: const TextStyle(fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: false,
           indicatorSize: TabBarIndicatorSize.label,
-          tabs: const [
-            Tab(text: "正在下载"),
-            Tab(text: "已安装"),
+          tabs: [
+            Tab(text: L10nService.s('downloads')),
+            Tab(text: L10nService.s('ready')),
           ],
         ),
       ),
@@ -391,6 +392,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                             const PopupMenuItem(value: "uninstall", child: ListTile(leading: Icon(Icons.delete_outline, size: 18, color: Colors.red), title: Text("卸载", style: TextStyle(color: Colors.red)))),
                           ],
                           icon: const Icon(Icons.more_vert),
+                          tooltip: L10nService.s('more_options'),
                         ),
                       ],
                     ),
