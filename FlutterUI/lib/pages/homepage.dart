@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../services/l10n_service.dart';
 import './app_details_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -44,7 +45,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader('为你推荐'),
+                    _buildSectionHeader(L10nService.s('featured')),
                     const SizedBox(height: 16),
                     if (_isLoading)
                       const SizedBox(
@@ -52,9 +53,9 @@ class _HomePageState extends State<HomePage> {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     else if (_recommendations.isEmpty)
-                      const SizedBox(
+                      SizedBox(
                         height: 210,
-                        child: Center(child: Text("暂无推荐")),
+                        child: Center(child: Text(L10nService.s('no_recommendations'))),
                       )
                     else
                       SizedBox(
@@ -79,7 +80,7 @@ class _HomePageState extends State<HomePage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 32, bottom: 16),
-                child: _buildSectionHeader('热门应用'),
+                child: _buildSectionHeader(L10nService.s('popular')),
               ),
             ),
             if (_isLoading)
@@ -357,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               child: Text(
-                app.installed ? "打开" : "安装",
+                app.installed ? L10nService.s('open') : L10nService.s('install'),
                 style: TextStyle(
                   color: app.installed
                       ? colorScheme.primary

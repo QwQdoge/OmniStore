@@ -391,14 +391,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _buildActionArea(colorScheme),
             const SizedBox(height: 32),
             const Divider(),
-            _buildSectionTitle(theme, "关于此软件"),
+            _buildSectionTitle(theme, L10nService.s('about')),
             if (_isLoadingDetails)
               const Center(child: CircularProgressIndicator())
             else
               Text(
                 _extraDetails?['description'] ??
                     (widget.app.description.isEmpty
-                        ? "暂无详细描述"
+                        ? L10nService.s('no_description')
                         : widget.app.description),
                 style: theme.textTheme.bodyLarge,
               ),
@@ -406,7 +406,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             if (_extraDetails != null &&
                 _extraDetails!['screenshots'] != null &&
                 (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-              _buildSectionTitle(theme, "软件截图"),
+              _buildSectionTitle(theme, L10nService.s('software_screenshots')),
               SizedBox(
                 height: 200,
                 child: ListView.separated(
@@ -426,15 +426,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
               const SizedBox(height: 32),
             ],
-            _buildSectionTitle(theme, "详细参数"),
-            _buildInfoRow(Icons.source, "来源", widget.app.primarySource),
+            _buildSectionTitle(theme, L10nService.s('details')),
+            _buildInfoRow(Icons.source, L10nService.s('source'), widget.app.primarySource),
             _buildInfoRow(
-                Icons.all_inclusive, "变体", widget.app.sources.join(", ")),
-            _buildInfoRow(Icons.verified_outlined, "版本", widget.app.version),
+                Icons.all_inclusive, L10nService.s('variants'), widget.app.sources.join(", ")),
+            _buildInfoRow(Icons.verified_outlined, L10nService.s('version'), widget.app.version),
             if (_extraDetails?['developer'] != null)
-              _buildInfoRow(Icons.person_outline, "开发者", _extraDetails!['developer']),
+              _buildInfoRow(Icons.person_outline, L10nService.s('developer'), _extraDetails!['developer']),
             if (_extraDetails?['license'] != null)
-              _buildInfoRow(Icons.description_outlined, "许可", _extraDetails!['license']),
+              _buildInfoRow(Icons.description_outlined, L10nService.s('license'), _extraDetails!['license']),
           ],
         ),
       ),
@@ -621,7 +621,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           Icon(Icons.check_circle_outline, size: 14, color: theme.colorScheme.primary),
                           const SizedBox(width: 4),
                           Text(
-                            "已安装",
+                            L10nService.s('installed'),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -643,14 +643,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
-                  items: [
+                  items: {
                     if (widget.app.sources.isNotEmpty)
                       ...widget.app.sources
                     else
                       widget.app.primarySource,
                     if (widget.app.sources.isEmpty || !widget.app.sources.contains(_selectedSource))
                       _selectedSource,
-                  ].toSet().map((String source) {
+                  }.map((String source) {
                     return DropdownMenuItem<String>(value: source, child: Text(source));
                   }).toList(),
                   onChanged: (String? newValue) {
