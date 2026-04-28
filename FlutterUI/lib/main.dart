@@ -57,7 +57,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
 
   final List<Widget> _subPages = [
     const HomePage(),
-    const SearchPage(),
+    const SearchPage(autoFocus: true),
     const SettingsPage(),
     const DownloadPage(),
   ];
