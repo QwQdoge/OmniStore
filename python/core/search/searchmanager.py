@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 
 from core.search.base import SearchSource
 from .smart_scoring import SmartScoring
+from core.habit_tracker import HabitTracker
 from .pacman import PacmanSearch
 from .aur import AurSearch
 from .flatpak import FlatpakSearch
@@ -16,7 +17,8 @@ import sys
 class SearchManager:
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession):
         self.cm = config_manager
-        self.smart_scoring = SmartScoring(config_manager)
+        self.habit_tracker = HabitTracker()
+        self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
         # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session
         self.source_instances = {}
@@ -56,6 +58,9 @@ class SearchManager:
     async def search_all(self, query: str) -> List[Dict]:
         if not query or len(query) < 2:
             return []
+
+        # 记录搜索习惯
+        self.habit_tracker.record_search(query)
 
         active_sources = self._get_active_sources()
 

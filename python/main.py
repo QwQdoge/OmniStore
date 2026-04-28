@@ -1,5 +1,6 @@
 from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
+from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from typing import Optional
 import json
@@ -38,6 +39,7 @@ class OmnistoreBackend:
     def __init__(self):
         self.config = ConfigManager()
         self.manager: SearchManager | None = None
+        self.recommender: RecommendationManager | None = None
         # self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
         self.session = None  # aiohttp session 也在需要时创建，确保资源正确释放
         # self.loop = asyncio.get_event_loop() # 事件循环也在需要时获取，避免在某些环境下的兼容性问题
@@ -46,6 +48,7 @@ class OmnistoreBackend:
 
     async def initialize(self, session: aiohttp.ClientSession):
         self.manager = SearchManager(self.config, session)
+        self.recommender = RecommendationManager(session)
         if self.manager is None:
             raise RuntimeError(
                 "Failed to initialize SearchManager. Check configuration and environment.")
@@ -122,6 +125,10 @@ class OmnistoreBackend:
         self.is_action = True
         package_data = {"name": name, "source": source, "url": url}
 
+        # 记录安装习惯
+        if self.manager and self.manager.habit_tracker:
+            self.manager.habit_tracker.record_install(name, source)
+
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
@@ -136,6 +143,35 @@ class OmnistoreBackend:
             await self._flutter_callback(m, json_mode)
 
         await self.executor.uninstall(package_data, callback=cb)
+
+    async def run_recommendations(self, json_mode: bool = False):
+        """Fetch dynamic recommendations"""
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                await self.initialize(session)
+                results = await self.recommender.get_recommendations() # type: ignore
+                if json_mode:
+                    print(json.dumps(results, ensure_ascii=False))
+                else:
+                    for app in results:
+                        print(f"推荐: {app['name']} ({app['id']})")
+        except Exception as e:
+            if json_mode:
+                print(json.dumps({"error": str(e), "results": []}))
+            else:
+                print(f"[Error] {e}")
+
+    async def run_app_details(self, app_id: str, json_mode: bool = False):
+        """Fetch dynamic app details"""
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                await self.initialize(session)
+                results = await self.recommender.get_details(app_id) # type: ignore
+                print(json.dumps(results, ensure_ascii=False))
+        except Exception as e:
+            print(json.dumps({"error": str(e)}))
 
     async def run_list_installed(self, json_mode: bool = False):
         """List all installed AppImage and Flatpak applications"""
@@ -269,6 +305,8 @@ async def main():
     group.add_argument("-L", "--list-installed", action="store_true",
                        help="List all installed AppImage and Flatpak packages")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
+    group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
+    group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
 
     parser.add_argument("--json", action="store_true",
                         help="Output results in JSON format")
@@ -301,7 +339,7 @@ async def main():
     signal.signal(signal.SIGTERM, handle_term)
     signal.signal(signal.SIGINT, handle_term)
 
-    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch]):  # 如果没有任何操作指令，显示帮助
+    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details]):  # 如果没有任何操作指令，显示帮助
         parser.print_help()
         return
 
@@ -356,6 +394,12 @@ async def main():
     elif args.list_installed:
         # 列出已安装
         await backend.run_list_installed(json_mode=args.json)
+
+    elif args.recommend:
+        await backend.run_recommendations(json_mode=args.json)
+
+    elif args.details:
+        await backend.run_app_details(args.details, json_mode=args.json)
 
     elif args.launch:
         import subprocess

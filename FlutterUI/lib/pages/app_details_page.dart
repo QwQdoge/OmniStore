@@ -20,12 +20,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   double? _progress;
   late String _selectedSource;
   late bool _isAppInstalled;
+  Map<String, dynamic>? _extraDetails;
+  bool _isLoadingDetails = false;
 
   @override
   void initState() {
     super.initState();
     _selectedSource = widget.app.primarySource;
     _isAppInstalled = widget.app.installed;
+
+    if (widget.app.id != null && widget.app.primarySource == "Flatpak") {
+      _fetchExtraDetails();
+    }
 
     // 状态恢复：如果全局正在处理的是这个 App，恢复进行中状态
     final active = BackendService.activeApp.value;
@@ -40,6 +46,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   void dispose() {
     // 不在 dispose 时 kill 进程，因为全局任务应继续运行
     super.dispose();
+  }
+
+  Future<void> _fetchExtraDetails() async {
+    setState(() => _isLoadingDetails = true);
+    final details = await BackendService().getAppDetails(widget.app.id!);
+    if (mounted) {
+      setState(() {
+        _extraDetails = details;
+        _isLoadingDetails = false;
+      });
+    }
   }
 
   void _cancelAction() {
@@ -374,12 +391,49 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             const SizedBox(height: 32),
             const Divider(),
             _buildSectionTitle(theme, "关于此软件"),
-            Text(widget.app.description, style: theme.textTheme.bodyLarge),
-            const SizedBox(height: 32),
+            if (_isLoadingDetails)
+              const Center(child: CircularProgressIndicator())
+            else
+              Text(
+                _extraDetails?['description'] ??
+                    (widget.app.description.isEmpty
+                        ? "暂无详细描述"
+                        : widget.app.description),
+                style: theme.textTheme.bodyLarge,
+              ),
+            const SizedBox(height: 24),
+            if (_extraDetails != null &&
+                _extraDetails!['screenshots'] != null &&
+                (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+              _buildSectionTitle(theme, "软件截图"),
+              SizedBox(
+                height: 200,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: (_extraDetails!['screenshots'] as List).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        _extraDetails!['screenshots'][index],
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
             _buildSectionTitle(theme, "详细参数"),
             _buildInfoRow(Icons.source, "来源", widget.app.primarySource),
-            _buildInfoRow(Icons.all_inclusive, "变体", widget.app.sources.join(", ")),
+            _buildInfoRow(
+                Icons.all_inclusive, "变体", widget.app.sources.join(", ")),
             _buildInfoRow(Icons.verified_outlined, "版本", widget.app.version),
+            if (_extraDetails?['developer'] != null)
+              _buildInfoRow(Icons.person_outline, "开发者", _extraDetails!['developer']),
+            if (_extraDetails?['license'] != null)
+              _buildInfoRow(Icons.description_outlined, "许可", _extraDetails!['license']),
           ],
         ),
       ),
@@ -512,6 +566,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -523,13 +578,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             borderRadius: BorderRadius.circular(20),
           ),
           alignment: Alignment.center,
-          child: Text(
-            widget.app.name[0].toUpperCase(),
-            style: theme.textTheme.headlineLarge?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: iconUrl != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(iconUrl, fit: BoxFit.cover),
+                )
+              : Text(
+                  widget.app.name[0].toUpperCase(),
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
         const SizedBox(width: 20),
         Expanded(

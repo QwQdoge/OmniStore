@@ -155,7 +155,6 @@ class _SearchPageState extends State<SearchPage> {
           controller: _controller,
           focusNode: _focusNode,
           autoFocus: widget.autoFocus,
-          autoFocus: true,
           hintText: '搜索应用、游戏、工具...',
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(

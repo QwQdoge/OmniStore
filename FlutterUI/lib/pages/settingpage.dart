@@ -20,6 +20,8 @@ class _SettingsPageState extends State<SettingsPage> {
   double flatpakPriority = 60;
   double appimagePriority = 40;
 
+  List<String> sourceOrder = ['pacman', 'aur', 'flatpak', 'appimage'];
+
   String appearance = 'system';
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
@@ -48,6 +50,16 @@ class _SettingsPageState extends State<SettingsPage> {
       aurPriority = (p['aur'] ?? 80).toDouble();
       flatpakPriority = (p['flatpak'] ?? 60).toDouble();
       appimagePriority = (p['appimage'] ?? 40).toDouble();
+
+      // 根据权重排序源
+      var entries = p.entries.toList()
+        ..sort((a, b) => (b.value as num).compareTo(a.value as num));
+      sourceOrder =
+          entries.map((e) => e.key.toString()).cast<String>().toList();
+      // 补齐缺失的
+      for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
+        if (!sourceOrder.contains(s)) sourceOrder.add(s);
+      }
 
       final ui = config['ui'] ?? {};
       appearance = ui['appearance'] ?? 'system';
@@ -107,30 +119,74 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('结果优先级（权重）'),
+                _buildSectionTitle('结果源优先级 (拖动排序)'),
+                _buildGroupCard([
+                  SizedBox(
+                    height: 220,
+                    child: ReorderableListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final item = sourceOrder.removeAt(oldIndex);
+                          sourceOrder.insert(newIndex, item);
+
+                          // 根据新顺序重新分配权重 (100, 80, 60, 40)
+                          for (int i = 0; i < sourceOrder.length; i++) {
+                            double weight = 100.0 - (i * 20);
+                            switch (sourceOrder[i]) {
+                              case 'pacman':
+                                pacmanPriority = weight;
+                                break;
+                              case 'aur':
+                                aurPriority = weight;
+                                break;
+                              case 'flatpak':
+                                flatpakPriority = weight;
+                                break;
+                              case 'appimage':
+                                appimagePriority = weight;
+                                break;
+                            }
+                          }
+                        });
+                      },
+                      children: sourceOrder.map((s) {
+                        IconData icon;
+                        String label;
+                        switch (s) {
+                          case 'pacman':
+                            icon = Icons.apps;
+                            label = 'Pacman (官方)';
+                            break;
+                          case 'aur':
+                            icon = Icons.cloud_outlined;
+                            label = 'AUR (用户)';
+                            break;
+                          case 'flatpak':
+                            icon = Icons.inventory_2_outlined;
+                            label = 'Flatpak';
+                            break;
+                          default:
+                            icon = Icons.insert_drive_file_outlined;
+                            label = 'AppImage';
+                        }
+                        return ListTile(
+                          key: ValueKey(s),
+                          leading: Icon(icon),
+                          title: Text(label),
+                          trailing: const Icon(Icons.drag_handle),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle('搜索设置'),
                 _buildGroupCard([
                   _buildSliderTile(
-                    'Pacman',
-                    pacmanPriority,
-                    (v) => setState(() => pacmanPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'AUR',
-                    aurPriority,
-                    (v) => setState(() => aurPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'Flatpak',
-                    flatpakPriority,
-                    (v) => setState(() => flatpakPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'AppImage',
-                    appimagePriority,
-                    (v) => setState(() => appimagePriority = v),
-                  ),
-                  _buildSliderTile(
-                    '最大结果数',
+                    '最大显示结果数',
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,

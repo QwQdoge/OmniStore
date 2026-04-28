@@ -1,60 +1,110 @@
 import 'package:flutter/material.dart';
 import '../services/app_package.dart';
+import '../services/backend_service.dart';
 import './app_details_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final featured = AppPackage.getFeaturedApps();
-    final hotapps = AppPackage.getHotApps();
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  List<AppPackage> _recommendations = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _isLoading = true);
+    final results = await BackendService().getRecommendations();
+    if (mounted) {
+      setState(() {
+        _recommendations = results;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader('为你推荐'),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 210,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: featured.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 16),
-                      itemBuilder: (context, index) =>
-                          _buildBannerCard(context, featured[index]),
-                    ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader('为你推荐'),
+                    const SizedBox(height: 16),
+                    if (_isLoading)
+                      const SizedBox(
+                        height: 210,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_recommendations.isEmpty)
+                      const SizedBox(
+                        height: 210,
+                        child: Center(child: Text("暂无推荐")),
+                      )
+                    else
+                      SizedBox(
+                        height: 210,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: (_recommendations.length / 2).floor(),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 16),
+                          itemBuilder: (context, index) =>
+                              _buildBannerCard(context, _recommendations[index]),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                child: _buildSectionHeader('热门应用'),
+              ),
+            ),
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final startIndex = (_recommendations.length / 2).floor();
+                      if (startIndex + index >= _recommendations.length) {
+                        return null;
+                      }
+                      return _buildListCard(
+                          context, _recommendations[startIndex + index]);
+                    },
+                    childCount: _recommendations.length -
+                        (_recommendations.length / 2).floor(),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 32, bottom: 16),
-              child: _buildSectionHeader('热门应用'),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildListCard(context, hotapps[index]),
-                childCount: hotapps.length,
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
-        ],
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          ],
+        ),
       ),
     );
   }
@@ -117,13 +167,25 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.image_outlined,
-                    size: 48,
-                    color: colorScheme.primary.withValues(alpha: 0.5),
-                  ),
-                ),
+                child: app.icon != null
+                    ? Image.network(
+                        app.icon!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (c, e, s) => Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 48,
+                            color: colorScheme.primary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: colorScheme.primary.withValues(alpha: 0.5),
+                        ),
+                      ),
               ),
             ),
             // 下半部分：应用信息
@@ -147,14 +209,19 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      app.name[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
+                    child: app.icon != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(app.icon!),
+                          )
+                        : Text(
+                            app.name[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -221,14 +288,19 @@ class HomePage extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: Text(
-                app.name[0].toUpperCase(),
-                style: TextStyle(
-                  fontSize: 24,
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: app.icon != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(app.icon!),
+                    )
+                  : Text(
+                      app.name[0].toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
             const SizedBox(width: 16),
             Expanded(
