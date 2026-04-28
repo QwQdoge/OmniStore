@@ -53,7 +53,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
 
   final List<Widget> _subPages = [
     const HomePage(),
-    const SearchPage(),
+    const SearchPage(autoFocus: true),
     const SettingsPage(),
     const DownloadPage(),
   ];
@@ -79,6 +79,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
             Icons.shop_two_rounded, // 类似 Play Store 的图标
             color: colorScheme.primary,
             size: 32,
+            semanticLabel: 'Omnistore 徽标',
           ),
         ),
         title: Center(

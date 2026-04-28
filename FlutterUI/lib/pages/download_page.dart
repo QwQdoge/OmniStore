@@ -391,6 +391,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                             const PopupMenuItem(value: "uninstall", child: ListTile(leading: Icon(Icons.delete_outline, size: 18, color: Colors.red), title: Text("卸载", style: TextStyle(color: Colors.red)))),
                           ],
                           icon: const Icon(Icons.more_vert),
+                          tooltip: '更多选项',
                         ),
                       ],
                     ),
