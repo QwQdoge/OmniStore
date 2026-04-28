@@ -94,7 +94,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 Icon(Icons.search_rounded, size: 18, color: Theme.of(context).colorScheme.onSecondaryContainer),
                 const SizedBox(width: 8),
                 Text(
-                  'Search apps & games',
+                  '搜索应用与游戏',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -107,17 +107,21 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline_rounded),
+            tooltip: '帮助',
             onPressed: () {},
           ),
           const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: colorScheme.primaryContainer,
-            child: Text(
-              'U',
-              style: TextStyle(
-                color: colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.bold,
+          Tooltip(
+            message: '用户账户',
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: colorScheme.primaryContainer,
+              child: Text(
+                'U',
+                style: TextStyle(
+                  color: colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -189,17 +193,17 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 NavigationRailDestination(
                   icon: Icon(Icons.apps_outlined),
                   selectedIcon: Icon(Icons.apps_rounded),
-                  label: Text('Discover'),
+                  label: Text('探索'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.search_rounded),
                   selectedIcon: Icon(Icons.manage_search_rounded),
-                  label: Text('Search'),
+                  label: Text('搜索'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.settings_outlined),
                   selectedIcon: Icon(Icons.settings_rounded),
-                  label: Text('Settings'),
+                  label: Text('设置'),
                 ),
               ],
             ),
