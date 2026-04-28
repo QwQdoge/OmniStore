@@ -4,6 +4,7 @@ import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
 import 'services/backend_service.dart';
+import 'services/l10n_service.dart';
 
 void main() => runApp(const OmnistoreApp());
 
@@ -36,7 +37,10 @@ class OmnistoreApp extends StatelessWidget {
         brightness: Brightness.dark, // 修复：这里只能是 dark
       ),
 
-      home: const MainNavigationEntry(),
+      home: ValueListenableBuilder<Language>(
+        valueListenable: L10nService.language,
+        builder: (context, _, __) => const MainNavigationEntry(),
+      ),
     );
   }
 }
@@ -79,7 +83,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
             Icons.shop_two_rounded, // 类似 Play Store 的图标
             color: colorScheme.primary,
             size: 32,
-            semanticLabel: 'Omnistore 徽标',
+            semanticLabel: 'Omnistore',
           ),
         ),
         title: Center(
@@ -95,7 +99,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 Icon(Icons.search_rounded, size: 18, color: Theme.of(context).colorScheme.onSecondaryContainer),
                 const SizedBox(width: 8),
                 Text(
-                  '搜索应用与游戏',
+                  L10nService.s('search_hint'),
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -108,12 +112,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline_rounded),
-            tooltip: '帮助',
+            tooltip: L10nService.s('help_outline_rounded'), // Fallback if no specific l10n
             onPressed: () {},
           ),
           const SizedBox(width: 8),
           Tooltip(
-            message: '用户账户',
+            message: L10nService.s('user_profile'), // Fallback
             child: CircleAvatar(
               radius: 16,
               backgroundColor: colorScheme.primaryContainer,
@@ -190,21 +194,21 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
               indicatorShape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              destinations: const [
+              destinations: [
                 NavigationRailDestination(
-                  icon: Icon(Icons.apps_outlined),
-                  selectedIcon: Icon(Icons.apps_rounded),
-                  label: Text('探索'),
+                  icon: const Icon(Icons.apps_outlined),
+                  selectedIcon: const Icon(Icons.apps_rounded),
+                  label: Text(L10nService.s('discover')),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.search_rounded),
-                  selectedIcon: Icon(Icons.manage_search_rounded),
-                  label: Text('搜索'),
+                  icon: const Icon(Icons.search_rounded),
+                  selectedIcon: const Icon(Icons.manage_search_rounded),
+                  label: Text(L10nService.s('search')),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings_rounded),
-                  label: Text('设置'),
+                  icon: const Icon(Icons.settings_outlined),
+                  selectedIcon: const Icon(Icons.settings_rounded),
+                  label: Text(L10nService.s('settings')),
                 ),
               ],
             ),

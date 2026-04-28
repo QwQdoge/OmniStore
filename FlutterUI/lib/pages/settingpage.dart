@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/services/backend_service.dart';
+import '../services/backend_service.dart';
+import '../services/l10n_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -77,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('设置'),
+            title: Text(L10nService.s('settings')),
             centerTitle: false,
             backgroundColor: Colors.transparent,
             actions: [
@@ -86,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: TextButton.icon(
                   onPressed: _saveAll,
                   icon: const Icon(Icons.done_all),
-                  label: const Text('保存并应用'),
+                  label: Text(L10nService.s('save_apply')),
                 ),
               ),
             ],
@@ -95,7 +96,28 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle('包管理器'),
+                _buildSectionTitle(L10nService.s('language')),
+                _buildGroupCard([
+                  ListTile(
+                    leading: const Icon(Icons.language_rounded),
+                    title: Text(L10nService.s('language')),
+                    trailing: DropdownButton<Language>(
+                      value: L10nService.language.value,
+                      underline: const SizedBox(),
+                      onChanged: (Language? v) {
+                        if (v != null) {
+                          setState(() => L10nService.setLanguage(v));
+                        }
+                      },
+                      items: [
+                        DropdownMenuItem(value: Language.zh, child: Text(L10nService.s('chinese'))),
+                        DropdownMenuItem(value: Language.en, child: Text(L10nService.s('english'))),
+                      ],
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(L10nService.s('package_manager')),
                 _buildGroupCard([
                   _buildSwitchTile(
                     'Pacman（官方库）',
@@ -193,11 +215,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('界面个性化'),
+                _buildSectionTitle(L10nService.s('appearance')),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.palette_outlined),
-                    title: const Text('主题色种子'),
+                    title: Text(L10nService.s('theme_color')),
                     subtitle: Text(colorSeed),
                     trailing: Container(
                       width: 24,
@@ -213,25 +235,25 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
-                    title: const Text('外观模式'),
+                    title: Text(L10nService.s('appearance_mode')),
                     trailing: DropdownButton<String>(
                       value: appearance,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => appearance = v!),
-                      items: const [
-                        DropdownMenuItem(value: 'system', child: Text('跟随系统')),
-                        DropdownMenuItem(value: 'light', child: Text('浅色模式')),
-                        DropdownMenuItem(value: 'dark', child: Text('深色模式')),
+                      items: [
+                        DropdownMenuItem(value: 'system', child: Text(L10nService.s('system_mode'))),
+                        DropdownMenuItem(value: 'light', child: Text(L10nService.s('light_mode'))),
+                        DropdownMenuItem(value: 'dark', child: Text(L10nService.s('dark_mode'))),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('系统与日志'),
+                _buildSectionTitle(L10nService.s('logging')),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
-                    title: const Text('日志记录等级'),
+                    title: Text(L10nService.s('log_level')),
                     subtitle: const Text('较低等级会显示更多详细信息'),
                     trailing: DropdownButton<String>(
                       value: logLevel,
@@ -344,7 +366,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? '配置已保存，部分设置重启生效' : '保存配置失败'),
+          content: Text(success ? L10nService.s('save_success') : L10nService.s('save_fail')),
           backgroundColor: success ? null : Theme.of(context).colorScheme.error,
         ),
       );

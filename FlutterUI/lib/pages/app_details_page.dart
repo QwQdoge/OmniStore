@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../services/l10n_service.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -163,14 +164,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("取消"),
+            child: Text(L10nService.s('cancel')),
           ),
           FilledButton(
             style: isUninstall
                 ? FilledButton.styleFrom(backgroundColor: Colors.red)
                 : null,
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("确定"),
+            child: Text(L10nService.s('confirm')),
           ),
         ],
       ),
@@ -528,7 +529,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _handleAction("-R"),
-                child: const Text("卸载", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(L10nService.s('uninstall'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -543,7 +544,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 onPressed: _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
-                label: const Text("启动程序", style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(L10nService.s('launch'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -560,7 +561,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         onPressed: () => _handleAction("-I"),
         icon: const Icon(Icons.download_rounded),
-        label: const Text("立即安装", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(L10nService.s('install'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }
