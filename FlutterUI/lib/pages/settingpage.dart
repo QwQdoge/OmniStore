@@ -358,7 +358,11 @@ class _SettingsPageState extends State<SettingsPage> {
         'flatpak': flatpakPriority.toInt(),
         'appimage': appimagePriority.toInt(),
       },
-      'ui': {'appearance': appearance, 'color_seed': colorSeed},
+      'ui': {
+        'appearance': appearance, 
+        'color_seed': colorSeed,
+        'language': L10nService.languageCode,
+      },
       'logging': {'level': logLevel},
     };
 

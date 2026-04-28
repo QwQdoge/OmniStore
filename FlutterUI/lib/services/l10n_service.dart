@@ -5,6 +5,16 @@ enum Language { zh, en }
 class L10nService {
   static final ValueNotifier<Language> language = ValueNotifier(Language.zh);
 
+  static Future<void> init(Map<String, dynamic> config) async {
+    final ui = config['ui'] ?? {};
+    final langStr = ui['language'] as String?;
+    if (langStr == 'en') {
+      language.value = Language.en;
+    } else {
+      language.value = Language.zh;
+    }
+  }
+
   static final Map<Language, Map<String, String>> _strings = {
     Language.zh: {
       'discover': '发现',
@@ -135,4 +145,6 @@ class L10nService {
   static void setLanguage(Language lang) {
     language.value = lang;
   }
+
+  static String get languageCode => language.value == Language.en ? 'en' : 'zh';
 }
