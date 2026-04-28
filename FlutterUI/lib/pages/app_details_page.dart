@@ -412,7 +412,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: (_extraDetails!['screenshots'] as List).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),

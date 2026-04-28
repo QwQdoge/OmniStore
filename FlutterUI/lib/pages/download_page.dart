@@ -272,7 +272,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: sources.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
               final s = sources[i];
               final isSelected = _selectedSourceFilter == s;

@@ -66,8 +66,10 @@ class _HomePageState extends State<HomePage> {
                           itemCount: (_recommendations.length / 2).floor(),
                           separatorBuilder: (context, index) =>
                               const SizedBox(width: 16),
-                          itemBuilder: (context, index) =>
-                              _buildBannerCard(context, _recommendations[index]),
+                          itemBuilder: (context, index) => _buildBannerCard(
+                            context,
+                            _recommendations[index],
+                          ),
                         ),
                       ),
                   ],
@@ -95,9 +97,12 @@ class _HomePageState extends State<HomePage> {
                         return null;
                       }
                       return _buildListCard(
-                          context, _recommendations[startIndex + index]);
+                        context,
+                        _recommendations[startIndex + index],
+                      );
                     },
-                    childCount: _recommendations.length -
+                    childCount:
+                        _recommendations.length -
                         (_recommendations.length / 2).floor(),
                   ),
                 ),
@@ -154,6 +159,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 上半部分：类似宣传大图
+            //TODO: 添加宣传图
             Expanded(
               child: Container(
                 width: double.infinity,
