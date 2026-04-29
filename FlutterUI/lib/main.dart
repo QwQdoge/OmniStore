@@ -257,8 +257,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
           builder: (context, progress, child) {
             return Tooltip(
               message: isDownloading
-                  ? "正在执行任务: ${BackendService.globalStatus.value}"
-                  : "查看下载队列",
+                  ? L10nService.s('executing_task', args: [L10nService.s(BackendService.globalStatus.value)])
+                  : L10nService.s('view_download_queue'),
               child: Container(
                 width: 48,
                 height: 48,

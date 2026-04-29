@@ -15,12 +15,13 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   late TabController _tabController;
   List<AppPackage> _installedApps = [];
   bool _isLoadingInstalled = false;
-  String _selectedSourceFilter = "全部";
+  late String _selectedSourceFilter;
   final BackendService _backend = BackendService();
 
   @override
   void initState() {
     super.initState();
+    _selectedSourceFilter = "all";
     _tabController = TabController(length: 2, vsync: this);
     _loadInstalledApps();
   }
@@ -115,7 +116,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               children: [
                 Icon(Icons.cloud_done_outlined, size: 64, color: colorScheme.outline),
                 const SizedBox(height: 16),
-                Text("当前没有正在下载的任务", style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                Text(L10nService.s('no_download_tasks'), style: TextStyle(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           );
@@ -161,14 +162,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            activeApp?.name ?? "处理中...",
+                            activeApp?.name ?? L10nService.s('processing'),
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             overflow: TextOverflow.ellipsis,
                           ),
                           ValueListenableBuilder<String>(
                             valueListenable: BackendService.globalStatus,
                             builder: (context, status, _) => Text(
-                              status,
+                              L10nService.s(status),
                               style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -179,7 +180,9 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                     ValueListenableBuilder<double?>(
                       valueListenable: BackendService.globalProgress,
                       builder: (context, progress, _) => Text(
-                        progress != null ? "${(progress * 100).toInt()}%" : "等待中",
+                        progress != null
+                            ? L10nService.s('completed_percent', args: [(progress * 100).toInt().toString()])
+                            : L10nService.s('waiting'),
                         style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
                       ),
                     ),
@@ -208,17 +211,17 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                           );
                         },
                         icon: const Icon(Icons.open_in_new, size: 16),
-                        label: const Text("查看详情"),
+                        label: Text(L10nService.s('view_details')),
                       ),
                     TextButton.icon(
                       onPressed: () {
                         BackendService.cancelCurrentTask();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("任务已成功取消")),
+                          SnackBar(content: Text(L10nService.s('task_cancelled_msg'))),
                         );
                       },
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text("取消任务"),
+                      label: Text(L10nService.s('cancel_task')),
                       style: TextButton.styleFrom(foregroundColor: colorScheme.error),
                     ),
                   ],
@@ -243,9 +246,9 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           children: [
             Icon(Icons.inventory_2_outlined, size: 64, color: colorScheme.outline),
             const SizedBox(height: 16),
-            const Text("尚未发现已安装的应用"),
+            Text(L10nService.s('no_installed_apps')),
             const SizedBox(height: 8),
-            FilledButton.tonal(onPressed: _loadInstalledApps, child: const Text("刷新列表")),
+            FilledButton.tonal(onPressed: _loadInstalledApps, child: Text(L10nService.s('refresh_list'))),
           ],
         ),
       );
@@ -256,10 +259,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     for (final app in _installedApps) {
       grouped.putIfAbsent(app.primarySource, () => []).add(app);
     }
-    final sources = ["全部", ...grouped.keys.toList()..sort()];
+    final sources = ["all", ...grouped.keys.toList()..sort()];
 
     // 过滤
-    final List<AppPackage> filtered = _selectedSourceFilter == "全部"
+    final List<AppPackage> filtered = _selectedSourceFilter == "all"
         ? _installedApps
         : (grouped[_selectedSourceFilter] ?? []);
 
@@ -276,9 +279,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             itemBuilder: (context, i) {
               final s = sources[i];
               final isSelected = _selectedSourceFilter == s;
-              final color = s == "全部" ? colorScheme.primary : _sourceColor(s);
+              final color = s == "all" ? colorScheme.primary : _sourceColor(s);
               return FilterChip(
-                label: Text(s, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : color, fontWeight: FontWeight.bold)),
+                label: Text(s == "all" ? L10nService.s('all') : s,
+                    style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : color, fontWeight: FontWeight.bold)),
                 selected: isSelected,
                 onSelected: (_) => setState(() => _selectedSourceFilter = s),
                 selectedColor: color,
@@ -367,14 +371,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: Text("卸载 ${app.name}？"),
-                                  content: const Text("此操作将从系统中移除该应用。"),
+                                  title: Text(L10nService.s('confirm_uninstall_app', args: [app.name])),
+                                  content: Text(L10nService.s('uninstall_app_msg')),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("取消")),
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10nService.s('cancel'))),
                                     FilledButton(
                                       style: FilledButton.styleFrom(backgroundColor: Colors.red),
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text("卸载"),
+                                      child: Text(L10nService.s('uninstall')),
                                     ),
                                   ],
                                 ),
@@ -388,8 +392,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(value: "open", child: ListTile(leading: Icon(Icons.open_in_new, size: 18), title: Text("打开详情"))),
-                            const PopupMenuItem(value: "uninstall", child: ListTile(leading: Icon(Icons.delete_outline, size: 18, color: Colors.red), title: Text("卸载", style: TextStyle(color: Colors.red)))),
+                            PopupMenuItem(
+                                value: "open",
+                                child: ListTile(leading: const Icon(Icons.open_in_new, size: 18), title: Text(L10nService.s('open_details')))),
+                            PopupMenuItem(
+                                value: "uninstall",
+                                child: ListTile(
+                                    leading: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                    title: Text(L10nService.s('uninstall'), style: const TextStyle(color: Colors.red)))),
                           ],
                           icon: const Icon(Icons.more_vert),
                           tooltip: L10nService.s('more_options'),

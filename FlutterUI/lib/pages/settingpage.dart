@@ -141,7 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('结果源优先级 (拖动排序)'),
+                _buildSectionTitle(L10nService.s('source_priority_drag')),
                 _buildGroupCard([
                   SizedBox(
                     height: 220,
@@ -180,11 +180,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         switch (s) {
                           case 'pacman':
                             icon = Icons.apps;
-                            label = 'Pacman (官方)';
+                            label = L10nService.s('pacman_official');
                             break;
                           case 'aur':
                             icon = Icons.cloud_outlined;
-                            label = 'AUR (用户)';
+                            label = L10nService.s('aur_user');
                             break;
                           case 'flatpak':
                             icon = Icons.inventory_2_outlined;
@@ -205,10 +205,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('搜索设置'),
+                _buildSectionTitle(L10nService.s('search_settings')),
                 _buildGroupCard([
                   _buildSliderTile(
-                    '最大显示结果数',
+                    L10nService.s('max_results_count'),
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,
@@ -254,7 +254,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
                     title: Text(L10nService.s('log_level')),
-                    subtitle: const Text('较低等级会显示更多详细信息'),
+                    subtitle: Text(L10nService.s('log_level_subtitle')),
                     trailing: DropdownButton<String>(
                       value: logLevel,
                       underline: const SizedBox(),
