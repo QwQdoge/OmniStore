@@ -111,7 +111,10 @@ class _SearchPageState extends State<SearchPage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('搜索失败: $e'), backgroundColor: Theme.of(context).colorScheme.error),
+          SnackBar(
+            content: Text(L10nService.s('search_failed', args: [e.toString()])),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     }
@@ -156,7 +159,7 @@ class _SearchPageState extends State<SearchPage> {
           controller: _controller,
           focusNode: _focusNode,
           autoFocus: widget.autoFocus,
-          hintText: '搜索应用、游戏、工具...',
+          hintText: L10nService.s('search_hint'),
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
             colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
@@ -405,10 +408,22 @@ class _SearchPageState extends State<SearchPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    app.name[0].toUpperCase(),
-                    style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
-                  ),
+                  child: app.icon != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            app.icon!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => Text(
+                              app.name[0].toUpperCase(),
+                              style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )
+                      : Text(
+                          app.name[0].toUpperCase(),
+                          style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
+                        ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -512,7 +527,10 @@ class _SearchPageState extends State<SearchPage> {
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(app.name[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
+                  backgroundImage: app.icon != null ? NetworkImage(app.icon!) : null,
+                  child: app.icon == null
+                      ? Text(app.name[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold))
+                      : null,
                 ),
                 const SizedBox(height: 10),
                 Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
