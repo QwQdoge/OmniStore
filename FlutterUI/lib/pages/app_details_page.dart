@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 
@@ -20,12 +21,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   double? _progress;
   late String _selectedSource;
   late bool _isAppInstalled;
+  Map<String, dynamic>? _extraDetails;
+  bool _isLoadingDetails = false;
 
   @override
   void initState() {
     super.initState();
     _selectedSource = widget.app.primarySource;
     _isAppInstalled = widget.app.installed;
+
+    // 即使不是 Flatpak，也尝试获取额外元数据（图标、截图等）
+    _fetchExtraDetails();
 
     // 状态恢复：如果全局正在处理的是这个 App，恢复进行中状态
     final active = BackendService.activeApp.value;
@@ -40,6 +46,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   void dispose() {
     // 不在 dispose 时 kill 进程，因为全局任务应继续运行
     super.dispose();
+  }
+
+  Future<void> _fetchExtraDetails() async {
+    setState(() => _isLoadingDetails = true);
+    final target = widget.app.id ?? widget.app.name;
+    final details = await BackendService().getAppDetails(target);
+    if (mounted) {
+      setState(() {
+        _extraDetails = details;
+        _isLoadingDetails = false;
+      });
+    }
   }
 
   void _cancelAction() {
@@ -76,9 +94,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 child: Row(
                   children: [
-                    const Text(
-                      "Terminal Output",
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.terminalOutput,
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
                         fontFamily: 'monospace',
@@ -98,10 +116,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   builder: (context, setInnerState) {
                     // 监听全局状态更新日志
                     return _logs.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              "Waiting for output...",
-                              style: TextStyle(color: Colors.grey, fontFamily: 'monospace'),
+                              AppLocalizations.of(context)!.waitingForOutput,
+                              style: const TextStyle(color: Colors.grey, fontFamily: 'monospace'),
                             ),
                           )
                         : ListView.builder(
@@ -141,19 +159,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isUninstall ? "确认卸载" : "确认安装"),
-        content: Text("确定要对 ${widget.app.name} 执行此操作吗？"),
+        title: Text(isUninstall ? AppLocalizations.of(context)!.confirmUninstall : AppLocalizations.of(context)!.confirmInstall),
+        content: Text(AppLocalizations.of(context)!.confirmActionMsg(widget.app.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("取消"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             style: isUninstall
                 ? FilledButton.styleFrom(backgroundColor: Colors.red)
                 : null,
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("确定"),
+            child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
       ),
@@ -357,7 +375,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 isLabelVisible: _isInstalling,
                 child: const Icon(Icons.terminal_outlined),
               ),
-              tooltip: "查看终端输出",
+              tooltip: AppLocalizations.of(context)!.terminalOutput,
               onPressed: _showTerminalDialog,
             ),
           const SizedBox(width: 8),
@@ -373,13 +391,50 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _buildActionArea(colorScheme),
             const SizedBox(height: 32),
             const Divider(),
-            _buildSectionTitle(theme, "关于此软件"),
-            Text(widget.app.description, style: theme.textTheme.bodyLarge),
-            const SizedBox(height: 32),
-            _buildSectionTitle(theme, "详细参数"),
-            _buildInfoRow(Icons.source, "来源", widget.app.primarySource),
-            _buildInfoRow(Icons.all_inclusive, "变体", widget.app.sources.join(", ")),
-            _buildInfoRow(Icons.verified_outlined, "版本", widget.app.version),
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+            if (_isLoadingDetails)
+              const Center(child: CircularProgressIndicator())
+            else
+              Text(
+                _extraDetails?['description'] ??
+                    (widget.app.description.isEmpty
+                        ? AppLocalizations.of(context)!.noResults
+                        : widget.app.description),
+                style: theme.textTheme.bodyLarge,
+              ),
+            const SizedBox(height: 24),
+            if (_extraDetails != null &&
+                _extraDetails!['screenshots'] != null &&
+                (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+              _buildSectionTitle(theme, AppLocalizations.of(context)!.screenshots),
+              SizedBox(
+                height: 200,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: (_extraDetails!['screenshots'] as List).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        _extraDetails!['screenshots'][index],
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
+            _buildInfoRow(Icons.source, AppLocalizations.of(context)!.source, widget.app.primarySource),
+            _buildInfoRow(
+                Icons.all_inclusive, AppLocalizations.of(context)!.variant, widget.app.sources.join(", ")),
+            _buildInfoRow(Icons.verified_outlined, AppLocalizations.of(context)!.version, widget.app.version),
+            if (_extraDetails?['developer'] != null)
+              _buildInfoRow(Icons.person_outline, AppLocalizations.of(context)!.developer, _extraDetails!['developer']),
+            if (_extraDetails?['license'] != null)
+              _buildInfoRow(Icons.description_outlined, AppLocalizations.of(context)!.license, _extraDetails!['license']),
           ],
         ),
       ),
@@ -474,7 +529,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _handleAction("-R"),
-                child: const Text("卸载", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context)!.uninstall, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -489,7 +544,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 onPressed: _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
-                label: const Text("启动程序", style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context)!.launch, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -506,12 +561,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         onPressed: () => _handleAction("-I"),
         icon: const Icon(Icons.download_rounded),
-        label: const Text("立即安装", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(AppLocalizations.of(context)!.install, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -523,13 +579,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             borderRadius: BorderRadius.circular(20),
           ),
           alignment: Alignment.center,
-          child: Text(
-            widget.app.name[0].toUpperCase(),
-            style: theme.textTheme.headlineLarge?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: iconUrl != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(iconUrl, fit: BoxFit.cover),
+                )
+              : Text(
+                  widget.app.name[0].toUpperCase(),
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
         const SizedBox(width: 20),
         Expanded(
@@ -560,7 +621,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           Icon(Icons.check_circle_outline, size: 14, color: theme.colorScheme.primary),
                           const SizedBox(width: 4),
                           Text(
-                            "已安装",
+                            AppLocalizations.of(context)!.ready,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/app_package.dart';
 import 'app_details_page.dart';
@@ -25,16 +26,20 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   }
 
   Future<void> _loadInstalledApps() async {
+    if (!mounted) return;
     setState(() => _isLoadingInstalled = true);
     try {
       final results = await _backend.listInstalled();
-      setState(() {
-        _installedApps = results.map((json) => AppPackage.fromJson(json)).toList();
-      });
+      if (mounted) {
+        setState(() {
+          _installedApps =
+              results.map((json) => AppPackage.fromJson(json)).toList();
+        });
+      }
     } catch (e) {
       debugPrint("Error loading installed apps: $e");
     } finally {
-      setState(() => _isLoadingInstalled = false);
+      if (mounted) setState(() => _isLoadingInstalled = false);
     }
   }
 
@@ -82,14 +87,15 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("管理下载与应用", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.downloads,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: false,
           indicatorSize: TabBarIndicatorSize.label,
-          tabs: const [
-            Tab(text: "正在下载"),
-            Tab(text: "已安装"),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.searching), // No exact key, using searching
+            Tab(text: AppLocalizations.of(context)!.ready),
           ],
         ),
       ),
@@ -114,7 +120,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               children: [
                 Icon(Icons.cloud_done_outlined, size: 64, color: colorScheme.outline),
                 const SizedBox(height: 16),
-                Text("当前没有正在下载的任务", style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                Text(AppLocalizations.of(context)!.noResults, style: TextStyle(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           );
@@ -160,7 +166,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            activeApp?.name ?? "处理中...",
+                            activeApp?.name ?? AppLocalizations.of(context)!.searching,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -178,7 +184,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                     ValueListenableBuilder<double?>(
                       valueListenable: BackendService.globalProgress,
                       builder: (context, progress, _) => Text(
-                        progress != null ? "${(progress * 100).toInt()}%" : "等待中",
+                        progress != null ? "${(progress * 100).toInt()}%" : AppLocalizations.of(context)!.searching,
                         style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
                       ),
                     ),
@@ -207,17 +213,17 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                           );
                         },
                         icon: const Icon(Icons.open_in_new, size: 16),
-                        label: const Text("查看详情"),
+                        label: Text(AppLocalizations.of(context)!.details),
                       ),
                     TextButton.icon(
                       onPressed: () {
                         BackendService.cancelCurrentTask();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("任务已成功取消")),
+                          SnackBar(content: Text(AppLocalizations.of(context)!.taskCancelled)),
                         );
                       },
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text("取消任务"),
+                      label: Text(AppLocalizations.of(context)!.cancel),
                       style: TextButton.styleFrom(foregroundColor: colorScheme.error),
                     ),
                   ],
@@ -242,9 +248,9 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           children: [
             Icon(Icons.inventory_2_outlined, size: 64, color: colorScheme.outline),
             const SizedBox(height: 16),
-            const Text("尚未发现已安装的应用"),
+            Text(AppLocalizations.of(context)!.noResults),
             const SizedBox(height: 8),
-            FilledButton.tonal(onPressed: _loadInstalledApps, child: const Text("刷新列表")),
+            FilledButton.tonal(onPressed: _loadInstalledApps, child: Text(AppLocalizations.of(context)!.featured)), // Using featured for refresh
           ],
         ),
       );
@@ -366,14 +372,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: Text("卸载 ${app.name}？"),
-                                  content: const Text("此操作将从系统中移除该应用。"),
+                                  title: Text(AppLocalizations.of(context)!.confirmUninstall),
+                                  content: Text(AppLocalizations.of(context)!.confirmActionMsg(app.name)),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("取消")),
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
                                     FilledButton(
                                       style: FilledButton.styleFrom(backgroundColor: Colors.red),
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text("卸载"),
+                                      child: Text(AppLocalizations.of(context)!.uninstall),
                                     ),
                                   ],
                                 ),
@@ -387,11 +393,11 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(value: "open", child: ListTile(leading: Icon(Icons.open_in_new, size: 18), title: Text("打开详情"))),
-                            const PopupMenuItem(value: "uninstall", child: ListTile(leading: Icon(Icons.delete_outline, size: 18, color: Colors.red), title: Text("卸载", style: TextStyle(color: Colors.red)))),
+                            PopupMenuItem(value: "open", child: ListTile(leading: const Icon(Icons.open_in_new, size: 18), title: Text(AppLocalizations.of(context)!.details))),
+                            PopupMenuItem(value: "uninstall", child: ListTile(leading: const Icon(Icons.delete_outline, size: 18, color: Colors.red), title: Text(AppLocalizations.of(context)!.uninstall, style: const TextStyle(color: Colors.red)))),
                           ],
                           icon: const Icon(Icons.more_vert),
-                          tooltip: '更多选项',
+                          tooltip: AppLocalizations.of(context)!.details,
                         ),
                       ],
                     ),

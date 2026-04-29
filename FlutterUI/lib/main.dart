@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'pages/homepage.dart';
 import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
@@ -18,6 +20,16 @@ class OmnistoreApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Omnistore',
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('zh'),
+      ],
 
       // 1. 实现“跟随系统亮暗”的关键：
       themeMode: ThemeMode.system,
@@ -79,7 +91,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
             Icons.shop_two_rounded, // 类似 Play Store 的图标
             color: colorScheme.primary,
             size: 32,
-            semanticLabel: 'Omnistore 徽标',
+            semanticLabel: AppLocalizations.of(context)!.explore,
           ),
         ),
         title: Center(
@@ -95,7 +107,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 Icon(Icons.search_rounded, size: 18, color: Theme.of(context).colorScheme.onSecondaryContainer),
                 const SizedBox(width: 8),
                 Text(
-                  '搜索应用与游戏',
+                  AppLocalizations.of(context)!.searchHint,
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -108,12 +120,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline_rounded),
-            tooltip: '帮助',
+            tooltip: AppLocalizations.of(context)!.help,
             onPressed: () {},
           ),
           const SizedBox(width: 8),
           Tooltip(
-            message: '用户账户',
+            message: AppLocalizations.of(context)!.userAccount,
             child: CircleAvatar(
               radius: 16,
               backgroundColor: colorScheme.primaryContainer,
@@ -190,21 +202,21 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
               indicatorShape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              destinations: const [
+              destinations: [
                 NavigationRailDestination(
-                  icon: Icon(Icons.apps_outlined),
-                  selectedIcon: Icon(Icons.apps_rounded),
-                  label: Text('探索'),
+                  icon: const Icon(Icons.apps_outlined),
+                  selectedIcon: const Icon(Icons.apps_rounded),
+                  label: Text(AppLocalizations.of(context)!.explore),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.search_rounded),
-                  selectedIcon: Icon(Icons.manage_search_rounded),
-                  label: Text('搜索'),
+                  icon: const Icon(Icons.search_rounded),
+                  selectedIcon: const Icon(Icons.manage_search_rounded),
+                  label: Text(AppLocalizations.of(context)!.search),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings_rounded),
-                  label: Text('设置'),
+                  icon: const Icon(Icons.settings_outlined),
+                  selectedIcon: const Icon(Icons.settings_rounded),
+                  label: Text(AppLocalizations.of(context)!.settings),
                 ),
               ],
             ),
@@ -227,8 +239,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
           builder: (context, progress, child) {
             return Tooltip(
               message: isDownloading
-                  ? "正在执行任务: ${BackendService.globalStatus.value}"
-                  : "查看下载队列",
+                  ? "${AppLocalizations.of(context)!.searching} ${BackendService.globalStatus.value}"
+                  : AppLocalizations.of(context)!.downloads,
               child: Container(
                 width: 48,
                 height: 48,

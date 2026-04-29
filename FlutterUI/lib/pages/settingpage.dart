@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/services/backend_service.dart';
+import '../l10n/app_localizations.dart';
+import '../services/backend_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -19,6 +20,8 @@ class _SettingsPageState extends State<SettingsPage> {
   double aurPriority = 80;
   double flatpakPriority = 60;
   double appimagePriority = 40;
+
+  List<String> sourceOrder = ['pacman', 'aur', 'flatpak', 'appimage'];
 
   String appearance = 'system';
   String colorSeed = '#CA6ECF';
@@ -49,6 +52,16 @@ class _SettingsPageState extends State<SettingsPage> {
       flatpakPriority = (p['flatpak'] ?? 60).toDouble();
       appimagePriority = (p['appimage'] ?? 40).toDouble();
 
+      // 根据权重排序源
+      var entries = p.entries.toList()
+        ..sort((a, b) => (b.value as num).compareTo(a.value as num));
+      sourceOrder =
+          entries.map((e) => e.key.toString()).cast<String>().toList();
+      // 补齐缺失的
+      for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
+        if (!sourceOrder.contains(s)) sourceOrder.add(s);
+      }
+
       final ui = config['ui'] ?? {};
       appearance = ui['appearance'] ?? 'system';
       colorSeed = ui['color_seed'] ?? '#CA6ECF';
@@ -65,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('设置'),
+            title: Text(AppLocalizations.of(context)!.settings),
             centerTitle: false,
             backgroundColor: Colors.transparent,
             actions: [
@@ -74,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: TextButton.icon(
                   onPressed: _saveAll,
                   icon: const Icon(Icons.done_all),
-                  label: const Text('保存并应用'),
+                  label: Text(AppLocalizations.of(context)!.saveAndApply),
                 ),
               ),
             ],
@@ -83,65 +96,109 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle('包管理器'),
+                _buildSectionTitle(AppLocalizations.of(context)!.packageManager),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    'Pacman（官方库）',
+                    AppLocalizations.of(context)!.pacmanOfficial,
                     pacmanEnabled,
                     (v) => setState(() => pacmanEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'AUR（用户库）',
+                    AppLocalizations.of(context)!.aurUser,
                     aurEnabled,
                     (v) => setState(() => aurEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'Flatpak',
+                    AppLocalizations.of(context)!.flatpak,
                     flatpakEnabled,
                     (v) => setState(() => flatpakEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'AppImage',
+                    AppLocalizations.of(context)!.appImage,
                     appimageEnabled,
                     (v) => setState(() => appimageEnabled = v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('结果优先级（权重）'),
+                _buildSectionTitle(AppLocalizations.of(context)!.sourcePriority),
+                _buildGroupCard([
+                  SizedBox(
+                    height: 220,
+                    child: ReorderableListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final item = sourceOrder.removeAt(oldIndex);
+                          sourceOrder.insert(newIndex, item);
+
+                          // 根据新顺序重新分配权重 (100, 80, 60, 40)
+                          for (int i = 0; i < sourceOrder.length; i++) {
+                            double weight = 100.0 - (i * 20);
+                            switch (sourceOrder[i]) {
+                              case 'pacman':
+                                pacmanPriority = weight;
+                                break;
+                              case 'aur':
+                                aurPriority = weight;
+                                break;
+                              case 'flatpak':
+                                flatpakPriority = weight;
+                                break;
+                              case 'appimage':
+                                appimagePriority = weight;
+                                break;
+                            }
+                          }
+                        });
+                      },
+                      children: sourceOrder.map((s) {
+                        IconData icon;
+                        String label;
+                        switch (s) {
+                          case 'pacman':
+                            icon = Icons.apps;
+                            label = AppLocalizations.of(context)!.pacmanOfficial;
+                            break;
+                          case 'aur':
+                            icon = Icons.cloud_outlined;
+                            label = AppLocalizations.of(context)!.aurUser;
+                            break;
+                          case 'flatpak':
+                            icon = Icons.inventory_2_outlined;
+                            label = AppLocalizations.of(context)!.flatpak;
+                            break;
+                          default:
+                            icon = Icons.insert_drive_file_outlined;
+                            label = AppLocalizations.of(context)!.appImage;
+                        }
+                        return ListTile(
+                          key: ValueKey(s),
+                          leading: Icon(icon),
+                          title: Text(label),
+                          trailing: const Icon(Icons.drag_handle),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.search),
                 _buildGroupCard([
                   _buildSliderTile(
-                    'Pacman',
-                    pacmanPriority,
-                    (v) => setState(() => pacmanPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'AUR',
-                    aurPriority,
-                    (v) => setState(() => aurPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'Flatpak',
-                    flatpakPriority,
-                    (v) => setState(() => flatpakPriority = v),
-                  ),
-                  _buildSliderTile(
-                    'AppImage',
-                    appimagePriority,
-                    (v) => setState(() => appimagePriority = v),
-                  ),
-                  _buildSliderTile(
-                    '最大结果数',
+                    AppLocalizations.of(context)!.maxResults,
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('界面个性化'),
+                _buildSectionTitle(AppLocalizations.of(context)!.appearance),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.palette_outlined),
-                    title: const Text('主题色种子'),
+                    title: Text(AppLocalizations.of(context)!.themeColor),
                     subtitle: Text(colorSeed),
                     trailing: Container(
                       width: 24,
@@ -157,26 +214,26 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
-                    title: const Text('外观模式'),
+                    title: Text(AppLocalizations.of(context)!.appearance),
                     trailing: DropdownButton<String>(
                       value: appearance,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => appearance = v!),
-                      items: const [
-                        DropdownMenuItem(value: 'system', child: Text('跟随系统')),
-                        DropdownMenuItem(value: 'light', child: Text('浅色模式')),
-                        DropdownMenuItem(value: 'dark', child: Text('深色模式')),
+                      items: [
+                        DropdownMenuItem(value: 'system', child: Text(AppLocalizations.of(context)!.followSystem)),
+                        DropdownMenuItem(value: 'light', child: Text(AppLocalizations.of(context)!.lightMode)),
+                        DropdownMenuItem(value: 'dark', child: Text(AppLocalizations.of(context)!.darkMode)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('系统与日志'),
+                _buildSectionTitle(AppLocalizations.of(context)!.help), // Use something suitable
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
-                    title: const Text('日志记录等级'),
-                    subtitle: const Text('较低等级会显示更多详细信息'),
+                    title: Text(AppLocalizations.of(context)!.loggingLevel),
+                    subtitle: Text(AppLocalizations.of(context)!.help),
                     trailing: DropdownButton<String>(
                       value: logLevel,
                       underline: const SizedBox(),
@@ -288,7 +345,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? '配置已保存，部分设置重启生效' : '保存配置失败'),
+          content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
           backgroundColor: success ? null : Theme.of(context).colorScheme.error,
         ),
       );
