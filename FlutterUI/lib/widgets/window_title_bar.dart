@@ -62,23 +62,37 @@ class WindowTitleBar extends StatelessWidget {
                   if (showSearch)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: FilledButton.tonal(
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                        ),
-                        onPressed: onSearchPressed,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.search_rounded, size: 16),
-                            const SizedBox(width: 8),
-                            Text(
-                              AppLocalizations.of(context)?.searchHint ?? "Search",
-                              style: const TextStyle(fontSize: 12),
+                      child: Container(
+                        constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
+                        child: InkWell(
+                          onTap: onSearchPressed,
+                          borderRadius: BorderRadius.circular(24),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant.withOpacity(0.5),
+                              ),
                             ),
-                          ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.search_rounded, size: 18, color: colorScheme.onSurfaceVariant),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context)?.searchHint ?? "Search",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
