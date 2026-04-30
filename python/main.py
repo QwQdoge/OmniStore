@@ -168,7 +168,10 @@ class OmnistoreBackend:
             timeout = aiohttp.ClientTimeout(total=15)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
-                results = await self.recommender.get_details(app_id) # type: ignore
+                if "." in app_id: # Likely an ID
+                    results = await self.recommender.get_details(app_id) # type: ignore
+                else: # Likely a name
+                    results = await self.recommender.find_metadata(app_id) # type: ignore
                 print(json.dumps(results, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({"error": str(e)}))
@@ -262,7 +265,8 @@ class OmnistoreBackend:
                 # 扁平化变体信息，方便前端展示 Chip
                 "variants": item.get("variants", []),
                 "version": str(item.get("last_version") or item.get("version") or "N/A"),
-                "score": int(item.get("score", 0))
+                "score": int(item.get("score", 0)),
+                "icon": item.get("icon")
             })
 
         # 确保输出是唯一的，且不带多余的换行

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
@@ -30,9 +31,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     _selectedSource = widget.app.primarySource;
     _isAppInstalled = widget.app.installed;
 
-    if (widget.app.id != null && widget.app.primarySource == "Flatpak") {
-      _fetchExtraDetails();
-    }
+    // 即使不是 Flatpak，也尝试获取额外元数据（图标、截图等）
+    _fetchExtraDetails();
 
     // 状态恢复：如果全局正在处理的是这个 App，恢复进行中状态
     final active = BackendService.activeApp.value;
@@ -51,7 +51,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Future<void> _fetchExtraDetails() async {
     setState(() => _isLoadingDetails = true);
-    final details = await BackendService().getAppDetails(widget.app.id!);
+    final target = widget.app.id ?? widget.app.name;
+    final details = await BackendService().getAppDetails(target);
     if (mounted) {
       setState(() {
         _extraDetails = details;
@@ -94,9 +95,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 child: Row(
                   children: [
-                    const Text(
-                      "Terminal Output",
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.terminalOutput,
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
                         fontFamily: 'monospace',
@@ -116,10 +117,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   builder: (context, setInnerState) {
                     // 监听全局状态更新日志
                     return _logs.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              "Waiting for output...",
-                              style: TextStyle(color: Colors.grey, fontFamily: 'monospace'),
+                              AppLocalizations.of(context)!.waitingForOutput,
+                              style: const TextStyle(color: Colors.grey, fontFamily: 'monospace'),
                             ),
                           )
                         : ListView.builder(
@@ -159,19 +160,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isUninstall ? "确认卸载" : "确认安装"),
-        content: Text("确定要对 ${widget.app.name} 执行此操作吗？"),
+        title: Text(isUninstall ? AppLocalizations.of(context)!.confirmUninstall : AppLocalizations.of(context)!.confirmInstall),
+        content: Text(AppLocalizations.of(context)!.confirmActionMsg(widget.app.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(L10nService.s('cancel')),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             style: isUninstall
                 ? FilledButton.styleFrom(backgroundColor: Colors.red)
                 : null,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(L10nService.s('confirm')),
+            child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
       ),
@@ -375,7 +376,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 isLabelVisible: _isInstalling,
                 child: const Icon(Icons.terminal_outlined),
               ),
-              tooltip: "查看终端输出",
+              tooltip: AppLocalizations.of(context)!.terminalOutput,
               onPressed: _showTerminalDialog,
             ),
           const SizedBox(width: 8),
@@ -391,14 +392,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _buildActionArea(colorScheme),
             const SizedBox(height: 32),
             const Divider(),
-            _buildSectionTitle(theme, L10nService.s('about')),
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
             if (_isLoadingDetails)
               const Center(child: CircularProgressIndicator())
             else
               Text(
                 _extraDetails?['description'] ??
                     (widget.app.description.isEmpty
-                        ? L10nService.s('no_description')
+                        ? AppLocalizations.of(context)!.noResults
                         : widget.app.description),
                 style: theme.textTheme.bodyLarge,
               ),
@@ -406,13 +407,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             if (_extraDetails != null &&
                 _extraDetails!['screenshots'] != null &&
                 (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-              _buildSectionTitle(theme, L10nService.s('software_screenshots')),
+              _buildSectionTitle(theme, AppLocalizations.of(context)!.screenshots),
               SizedBox(
                 height: 200,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: (_extraDetails!['screenshots'] as List).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -426,15 +427,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
               const SizedBox(height: 32),
             ],
-            _buildSectionTitle(theme, L10nService.s('details')),
-            _buildInfoRow(Icons.source, L10nService.s('source'), widget.app.primarySource),
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
+            _buildInfoRow(Icons.source, AppLocalizations.of(context)!.source, widget.app.primarySource),
             _buildInfoRow(
-                Icons.all_inclusive, L10nService.s('variants'), widget.app.sources.join(", ")),
-            _buildInfoRow(Icons.verified_outlined, L10nService.s('version'), widget.app.version),
+                Icons.all_inclusive, AppLocalizations.of(context)!.variant, widget.app.sources.join(", ")),
+            _buildInfoRow(Icons.verified_outlined, AppLocalizations.of(context)!.version, widget.app.version),
             if (_extraDetails?['developer'] != null)
-              _buildInfoRow(Icons.person_outline, L10nService.s('developer'), _extraDetails!['developer']),
+              _buildInfoRow(Icons.person_outline, AppLocalizations.of(context)!.developer, _extraDetails!['developer']),
             if (_extraDetails?['license'] != null)
-              _buildInfoRow(Icons.description_outlined, L10nService.s('license'), _extraDetails!['license']),
+              _buildInfoRow(Icons.description_outlined, AppLocalizations.of(context)!.license, _extraDetails!['license']),
           ],
         ),
       ),
@@ -529,7 +530,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _handleAction("-R"),
-                child: Text(L10nService.s('uninstall'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context)!.uninstall, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -544,7 +545,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
                 onPressed: _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
-                label: Text(L10nService.s('launch'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context)!.launch, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -561,7 +562,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         onPressed: () => _handleAction("-I"),
         icon: const Icon(Icons.download_rounded),
-        label: Text(L10nService.s('install'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(AppLocalizations.of(context)!.install, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -621,7 +622,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           Icon(Icons.check_circle_outline, size: 14, color: theme.colorScheme.primary),
                           const SizedBox(width: 4),
                           Text(
-                            L10nService.s('installed'),
+                            AppLocalizations.of(context)!.ready,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,

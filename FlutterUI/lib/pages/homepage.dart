@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
-import '../services/l10n_service.dart';
 import './app_details_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader(L10nService.s('featured')),
+                  _buildSectionHeader(AppLocalizations.of(context)!.featured),
                     const SizedBox(height: 16),
                     if (_isLoading)
                       const SizedBox(
@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
                     else if (_recommendations.isEmpty)
                       SizedBox(
                         height: 210,
-                        child: Center(child: Text(L10nService.s('no_recommendations'))),
+                        child: Center(child: Text(AppLocalizations.of(context)!.noResults)),
                       )
                     else
                       SizedBox(
@@ -67,10 +67,8 @@ class _HomePageState extends State<HomePage> {
                           itemCount: (_recommendations.length / 2).floor(),
                           separatorBuilder: (context, index) =>
                               const SizedBox(width: 16),
-                          itemBuilder: (context, index) => _buildBannerCard(
-                            context,
-                            _recommendations[index],
-                          ),
+                          itemBuilder: (context, index) =>
+                              _buildBannerCard(context, _recommendations[index]),
                         ),
                       ),
                   ],
@@ -80,7 +78,7 @@ class _HomePageState extends State<HomePage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 32, bottom: 16),
-                child: _buildSectionHeader(L10nService.s('popular')),
+                child: _buildSectionHeader(AppLocalizations.of(context)!.hotApps),
               ),
             ),
             if (_isLoading)
@@ -98,12 +96,9 @@ class _HomePageState extends State<HomePage> {
                         return null;
                       }
                       return _buildListCard(
-                        context,
-                        _recommendations[startIndex + index],
-                      );
+                          context, _recommendations[startIndex + index]);
                     },
-                    childCount:
-                        _recommendations.length -
+                    childCount: _recommendations.length -
                         (_recommendations.length / 2).floor(),
                   ),
                 ),
@@ -358,7 +353,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               child: Text(
-                app.installed ? L10nService.s('open') : L10nService.s('install'),
+                app.installed ? AppLocalizations.of(context)!.open : AppLocalizations.of(context)!.install,
                 style: TextStyle(
                   color: app.installed
                       ? colorScheme.primary

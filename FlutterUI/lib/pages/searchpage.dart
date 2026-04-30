@@ -1,6 +1,7 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import 'app_details_page.dart';
@@ -29,14 +30,17 @@ class _SearchPageState extends State<SearchPage> {
   ViewMode _viewMode = ViewMode.list;
   List<String> _history = [];
 
-  final List<Map<String, dynamic>> _categories = [
-    {"id": "dev", "name": "开发工具", "icon": Icons.code},
-    {"id": "media", "name": "影音娱乐", "icon": Icons.movie},
-    {"id": "web", "name": "互联网", "icon": Icons.language},
-    {"id": "sys", "name": "系统工具", "icon": Icons.settings_suggest},
-    {"id": "work", "name": "办公", "icon": Icons.work_outline},
-    {"id": "game", "name": "游戏", "icon": Icons.sports_esports_outlined},
-  ];
+  List<Map<String, dynamic>> _getCategories(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {"name": l10n.catDevelopment, "icon": Icons.code},
+      {"name": l10n.catMedia, "icon": Icons.movie},
+      {"name": l10n.catInternet, "icon": Icons.language},
+      {"name": l10n.catSystem, "icon": Icons.settings_suggest},
+      {"name": l10n.catOffice, "icon": Icons.work_outline},
+      {"name": l10n.catGames, "icon": Icons.sports_esports_outlined},
+    ];
+  }
 
   @override
   void initState() {
@@ -111,10 +115,7 @@ class _SearchPageState extends State<SearchPage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(L10nService.s('search_failed', args: [e.toString()])),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.failed}: $e'), backgroundColor: Theme.of(context).colorScheme.error),
         );
       }
     }
@@ -159,7 +160,7 @@ class _SearchPageState extends State<SearchPage> {
           controller: _controller,
           focusNode: _focusNode,
           autoFocus: widget.autoFocus,
-          hintText: L10nService.s('search_hint'),
+          hintText: AppLocalizations.of(context)!.searchHint,
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
             colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
@@ -188,7 +189,7 @@ class _SearchPageState extends State<SearchPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 visualDensity: VisualDensity.compact,
               ),
-              child: Text(L10nService.s('search')),
+              child: Text(AppLocalizations.of(context)!.search),
             ),
             const SizedBox(width: 4),
           ],
@@ -227,7 +228,7 @@ class _SearchPageState extends State<SearchPage> {
                           Icon(Icons.history_rounded, size: 16, color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 8),
                           Text(
-                            L10nService.s('history'),
+                            AppLocalizations.of(context)!.search,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -241,18 +242,18 @@ class _SearchPageState extends State<SearchPage> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    title: Text(L10nService.s('clear_history')),
-                                    content: Text(L10nService.s('confirm_clear_history')),
+                                    title: Text(AppLocalizations.of(context)!.uninstall), // Use something suitable
+                                    content: Text(AppLocalizations.of(context)!.confirmActionMsg("History")),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10nService.s('cancel'))),
-                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(L10nService.s('clear'))),
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
+                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.confirm)),
                                     ],
                                   ),
                                 );
                                 if (confirm == true) _clearAllHistory();
                               },
                               icon: const Icon(Icons.delete_sweep_rounded, size: 14),
-                              label: Text(L10nService.s('clear')),
+                            label: Text(AppLocalizations.of(context)!.uninstall),
                               style: TextButton.styleFrom(
                                 foregroundColor: colorScheme.error,
                                 visualDensity: VisualDensity.compact,
@@ -268,7 +269,7 @@ class _SearchPageState extends State<SearchPage> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                         child: Text(
-                          L10nService.s('no_history'),
+                          AppLocalizations.of(context)!.noResults,
                           style: TextStyle(color: colorScheme.outline, fontSize: 13),
                         ),
                       )
@@ -316,12 +317,12 @@ class _SearchPageState extends State<SearchPage> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: _categories.map((cat) => ActionChip(
-                          tooltip: '${L10nService.s('search')} ${L10nService.s(cat['id'])}',
-                          avatar: Icon(cat['icon'] as IconData, size: 18, color: colorScheme.onSurfaceVariant),
-                          label: Text(L10nService.s(cat['id']), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                          onPressed: () => _search(L10nService.s(cat['id'])),
-                          visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+                        children: _getCategories(context).map((cat) => ActionChip(
+                          tooltip: '${AppLocalizations.of(context)!.search} ${cat['name']}',
+                          avatar: Icon(cat['icon'] as IconData, size: 16, color: colorScheme.primary),
+                          label: Text(cat['name'] as String, style: const TextStyle(fontSize: 12)),
+                          onPressed: () => _search(cat['name'] as String),
+                          visualDensity: VisualDensity.compact,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                           side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
@@ -345,9 +346,9 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildResultsArea() {
     if (_isLoading) return const SizedBox.shrink();
     if (_hasSearched && _results.isEmpty) {
-      return Center(child: Text(L10nService.s('not_found')));
+      return Center(child: Text(AppLocalizations.of(context)!.noResults));
     }
-    if (!_hasSearched) return Center(child: Text(L10nService.s('searching')));
+    if (!_hasSearched) return Center(child: Text(AppLocalizations.of(context)!.searching));
 
     return Column(
       children: [
@@ -356,7 +357,7 @@ class _SearchPageState extends State<SearchPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(L10nService.s('results_count', args: [_results.length.toString()]), style: const TextStyle(fontSize: 12)),
+              Text(AppLocalizations.of(context)!.resultsFound(_results.length), style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
                 segments: [
@@ -414,15 +415,21 @@ class _SearchPageState extends State<SearchPage> {
                           child: Image.network(
                             app.icon!,
                             fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => Text(
+                            errorBuilder: (context, error, stackTrace) => Text(
                               app.name[0].toUpperCase(),
-                              style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         )
                       : Text(
                           app.name[0].toUpperCase(),
-                          style: TextStyle(fontSize: 22, color: colorScheme.primary, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.bold),
                         ),
                 ),
                 const SizedBox(width: 14),
@@ -449,7 +456,7 @@ class _SearchPageState extends State<SearchPage> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                L10nService.s('ready'),
+                                AppLocalizations.of(context)!.ready,
                                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
                               ),
                             ),
@@ -480,7 +487,7 @@ class _SearchPageState extends State<SearchPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: Text(L10nService.s('open'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(AppLocalizations.of(context)!.open, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       )
                     : FilledButton(
                         style: FilledButton.styleFrom(
@@ -489,7 +496,7 @@ class _SearchPageState extends State<SearchPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: Text(L10nService.s('install'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(AppLocalizations.of(context)!.install, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
               ],
             ),
@@ -526,10 +533,15 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  backgroundImage: app.icon != null ? NetworkImage(app.icon!) : null,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
+                  backgroundImage:
+                      app.icon != null ? NetworkImage(app.icon!) : null,
                   child: app.icon == null
-                      ? Text(app.name[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold))
+                      ? Text(app.name[0].toUpperCase(),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold))
                       : null,
                 ),
                 const SizedBox(height: 10),

@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from core.search.base import SearchSource
 from .smart_scoring import SmartScoring
 from core.habit_tracker import HabitTracker
+from core.recommendation_manager import RecommendationManager
 from .pacman import PacmanSearch
 from .aur import AurSearch
 from .flatpak import FlatpakSearch
@@ -21,6 +22,7 @@ class SearchManager:
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
         # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session
+        self.recommender = RecommendationManager(session)
         self.source_instances = {}
         # 根据环境和配置动态加载搜索源实例，确保只有启用且环境支持的源才会被初始化
         self._setup_sources()
@@ -97,7 +99,30 @@ class SearchManager:
 
         # 3. 截断结果，提升 Flutter 端渲染性能
         max_res = self.cm.get("search.max_results", 50)
-        return merged[:max_res]
+        top_results = merged[:max_res]
+
+        # 4. 异步补全前几个结果的元数据（图标等）
+        await self._enrich_metadata(top_results[:5])
+
+        return top_results
+
+    async def _enrich_metadata(self, items: List[Dict]):
+        """并发补全元数据"""
+        tasks = []
+        for item in items:
+            if not item.get("icon"):
+                tasks.append(self._enrich_single(item))
+
+        if tasks:
+            await asyncio.gather(*tasks)
+
+    async def _enrich_single(self, item: Dict):
+        metadata = await self.recommender.find_metadata(item['name'])
+        if metadata:
+            if metadata.get("icon"):
+                item["icon"] = metadata["icon"]
+            if metadata.get("description") and len(item.get("description", "")) < 50:
+                item["description"] = metadata["description"]
 
     def _normalize_app_name(self, name: str) -> str:
         """

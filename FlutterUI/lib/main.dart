@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'pages/homepage.dart';
 import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
@@ -26,26 +28,19 @@ class OmnistoreApp extends StatelessWidget {
     // 按照用户要求，主色调改为经典的 Material 3 Blue
     const seedColor = Color(0xFF0B57D0);
 
-    return ValueListenableBuilder<Language>(
-      valueListenable: L10nService.language,
-      builder: (context, lang, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Omnistore',
-          
-          // 添加标准语言包支持
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('zh', 'CN'),
-            Locale('en', 'US'),
-          ],
-          locale: lang == Language.en 
-              ? const Locale('en', 'US') 
-              : const Locale('zh', 'CN'),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Omnistore',
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('zh'),
+      ],
 
           // 1. 实现“跟随系统亮暗”的关键：
           themeMode: ThemeMode.system,
@@ -109,7 +104,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
             Icons.shop_two_rounded, // 类似 Play Store 的图标
             color: colorScheme.primary,
             size: 32,
-            semanticLabel: 'Omnistore',
+            semanticLabel: AppLocalizations.of(context)!.explore,
           ),
         ),
         title: Center(
@@ -125,7 +120,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 Icon(Icons.search_rounded, size: 18, color: Theme.of(context).colorScheme.onSecondaryContainer),
                 const SizedBox(width: 8),
                 Text(
-                  L10nService.s('search_hint'),
+                  AppLocalizations.of(context)!.searchHint,
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -138,12 +133,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline_rounded),
-            tooltip: L10nService.s('help_outline_rounded'), // Fallback if no specific l10n
+            tooltip: AppLocalizations.of(context)!.help,
             onPressed: () {},
           ),
           const SizedBox(width: 8),
           Tooltip(
-            message: L10nService.s('user_profile'), // Fallback
+            message: AppLocalizations.of(context)!.userAccount,
             child: CircleAvatar(
               radius: 16,
               backgroundColor: colorScheme.primaryContainer,
@@ -224,17 +219,17 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
                 NavigationRailDestination(
                   icon: const Icon(Icons.apps_outlined),
                   selectedIcon: const Icon(Icons.apps_rounded),
-                  label: Text(L10nService.s('discover')),
+                  label: Text(AppLocalizations.of(context)!.explore),
                 ),
                 NavigationRailDestination(
                   icon: const Icon(Icons.search_rounded),
                   selectedIcon: const Icon(Icons.manage_search_rounded),
-                  label: Text(L10nService.s('search')),
+                  label: Text(AppLocalizations.of(context)!.search),
                 ),
                 NavigationRailDestination(
                   icon: const Icon(Icons.settings_outlined),
                   selectedIcon: const Icon(Icons.settings_rounded),
-                  label: Text(L10nService.s('settings')),
+                  label: Text(AppLocalizations.of(context)!.settings),
                 ),
               ],
             ),
@@ -257,8 +252,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
           builder: (context, progress, child) {
             return Tooltip(
               message: isDownloading
-                  ? "正在执行任务: ${BackendService.globalStatus.value}"
-                  : "查看下载队列",
+                  ? "${AppLocalizations.of(context)!.searching} ${BackendService.globalStatus.value}"
+                  : AppLocalizations.of(context)!.downloads,
               child: Container(
                 width: 48,
                 height: 48,
