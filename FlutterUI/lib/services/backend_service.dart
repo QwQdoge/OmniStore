@@ -83,6 +83,27 @@ class BackendService {
     } catch (e) { return false; }
   }
 
+  Future<Map<String, dynamic>> checkEnv() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--check-env", "--json",
+      ], workingDirectory: _workingDir);
+      return jsonDecode(result.stdout);
+    } catch (e) { return {}; }
+  }
+
+  Stream<String> bootstrap() async* {
+    try {
+      final process = await Process.start(_venvPython, [
+        _scriptPath, "--bootstrap", "--json",
+      ], workingDirectory: _workingDir);
+
+      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+    } catch (e) {
+      yield "[CALLBACK] {\"log\": \"[ERROR] 启动引导失败: $e\"}";
+    }
+  }
+
   /// 获取动态推荐
   Future<List<AppPackage>> getRecommendations() async {
     try {
