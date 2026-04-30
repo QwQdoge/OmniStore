@@ -6,7 +6,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../widgets/window_title_bar.dart';
 import '../services/l10n_service.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -19,7 +21,6 @@ class AppDetailsPage extends StatefulWidget {
 
 class _AppDetailsPageState extends State<AppDetailsPage> {
   bool _isInstalling = false;
-  final List<String> _logs = [];
   String _statusKey = 'ready';
   List<String>? _statusArgs;
   double? _progress;
@@ -90,7 +91,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             children: [
               // 标题栏
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: const BoxDecoration(
                   color: Color(0xFF1C1C1C),
                   borderRadius: BorderRadius.only(
@@ -111,32 +115,43 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     const Spacer(),
                     InkWell(
                       onTap: () => Navigator.pop(ctx),
-                      child: const Icon(Icons.close, color: Colors.white54, size: 18),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white54,
+                        size: 18,
+                      ),
                     ),
                   ],
                 ),
               ),
               // 日志内容
               Expanded(
-                child: StatefulBuilder(
-                  builder: (context, setInnerState) {
-                    // 监听全局状态更新日志
-                    return _logs.isEmpty
+                child: ValueListenableBuilder<List<String>>(
+                  valueListenable: BackendService.globalLogs,
+                  builder: (context, logs, _) {
+                    return logs.isEmpty
                         ? Center(
                             child: Text(
                               AppLocalizations.of(context)!.waitingForOutput,
-                              style: const TextStyle(color: Colors.grey, fontFamily: 'monospace'),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontFamily: 'monospace',
+                              ),
                             ),
                           )
                         : ListView.builder(
                             reverse: true,
                             padding: const EdgeInsets.all(12),
-                            itemCount: _logs.length,
+                            itemCount: logs.length,
                             itemBuilder: (context, i) {
-                              final log = _logs[_logs.length - 1 - i];
+                              final log = logs[logs.length - 1 - i];
                               Color textColor = const Color(0xFFD4D4D4);
-                              if (log.startsWith("[ERROR]")) textColor = Colors.redAccent;
-                              if (log.startsWith("[INFO]")) textColor = Colors.greenAccent.shade400;
+                              if (log.contains("[ERROR]")) {
+                                textColor = Colors.redAccent;
+                              }
+                              if (log.contains("[INFO]")) {
+                                textColor = Colors.greenAccent.shade400;
+                              }
                               return Text(
                                 log,
                                 style: TextStyle(
@@ -165,8 +180,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isUninstall ? AppLocalizations.of(context)!.confirmUninstall : AppLocalizations.of(context)!.confirmInstall),
-        content: Text(AppLocalizations.of(context)!.confirmActionMsg(widget.app.name)),
+        title: Text(
+          isUninstall
+              ? AppLocalizations.of(context)!.confirmUninstall
+              : AppLocalizations.of(context)!.confirmInstall,
+        ),
+        content: Text(
+          AppLocalizations.of(context)!.confirmActionMsg(widget.app.name),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -187,12 +208,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     setState(() {
       _isInstalling = true;
-      _logs.clear();
       _progress = null;
       _statusKey = isUninstall ? 'preparing_uninstall' : 'preparing_install';
       _statusArgs = null;
     });
 
+    BackendService.clearLogs();
     BackendService.isDownloading.value = true;
     BackendService.globalProgress.value = null;
     BackendService.globalStatus.value = _statusKey;
@@ -200,18 +221,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     BackendService.activeFlag.value = flag;
 
     try {
-      final process = await Process.start(
-        BackendService.venvPython,
-        [
-          BackendService.scriptPath,
-          flag,
-          widget.app.name.trim(),
-          '--source', _selectedSource,
-          if (widget.app.url != null && flag == "-I") ...['--url', widget.app.url!],
-          '--json',
+      final process = await Process.start(BackendService.venvPython, [
+        BackendService.scriptPath,
+        flag,
+        widget.app.name.trim(),
+        '--source',
+        _selectedSource,
+        if (widget.app.url != null && flag == "-I") ...[
+          '--url',
+          widget.app.url!,
         ],
-        workingDirectory: BackendService.workingDir,
-      );
+        '--json',
+      ], workingDirectory: BackendService.workingDir);
       BackendService.activeProcess = process;
 
       process.stdout
@@ -233,34 +254,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             }
 
             if (data != null && mounted) {
-              setState(() {
-                String log = data!['message'] ?? data['log'] ?? "";
-                if (log.isNotEmpty) {
-                  if (log.startsWith("[PROGRESS]")) {
-                    final parts = log.split(" ");
-                    if (parts.length > 1) {
-                      final p = double.tryParse(parts[1]);
-                      if (p != null) {
+              String log = data['message'] ?? data['log'] ?? "";
+              if (log.isNotEmpty) {
+                if (log.startsWith("[PROGRESS]")) {
+                  final parts = log.split(" ");
+                  if (parts.length > 1) {
+                    final p = double.tryParse(parts[1]);
+                    if (p != null) {
+                      setState(() {
                         _progress = p / 100.0;
-                        BackendService.globalProgress.value = _progress;
-                      }
-                    }
-                  } else {
-                    _logs.add(log);
-                    if (log.startsWith("[INFO]") || log.startsWith("[ERROR]")) {
-                        _statusKey = log;
-                        _statusArgs = null;
-                      BackendService.globalStatus.value = log;
+                      });
+                      BackendService.globalProgress.value = _progress;
                     }
                   }
+                } else {
+                  BackendService.addLog(log);
+                  if (log.contains("[INFO]") || log.contains("[ERROR]")) {
+                    setState(() {
+                      _statusKey = log;
+                      _statusArgs = null;
+                    });
+                    BackendService.globalStatus.value = log;
+                  }
                 }
-              });
+              }
             }
           });
 
       process.stderr.transform(utf8.decoder).listen((err) {
         debugPrint("PYTHON STDERR: $err");
-        if (mounted) setState(() => _logs.add("stderr: $err"));
+        BackendService.addLog("stderr: $err");
       });
 
       final exitCode = await process.exitCode;
@@ -270,7 +293,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       BackendService.activeProcess = null;
 
       if (mounted) {
-        final wasCancelled = exitCode != 0 && !BackendService.isDownloading.value;
+        final wasCancelled =
+            exitCode != 0 && !BackendService.isDownloading.value;
 
         setState(() {
           BackendService.isDownloading.value = false;
@@ -296,9 +320,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isUninstall
-                    ? L10nService.s('uninstall_success_msg', args: [widget.app.name])
-                    : L10nService.s('install_success_msg', args: [widget.app.name])),
+                content: Text(
+                  isUninstall
+                      ? L10nService.s(
+                          'uninstall_success_msg',
+                          args: [widget.app.name],
+                        )
+                      : L10nService.s(
+                          'install_success_msg',
+                          args: [widget.app.name],
+                        ),
+                ),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 4),
               ),
@@ -321,12 +353,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Future<void> _showFailureDialog(String flag, int exitCode, {String? error}) async {
+  Future<void> _showFailureDialog(
+    String flag,
+    int exitCode, {
+    String? error,
+  }) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.error_outline, color: Colors.red, size: 32),
-        title: Text(flag == "-I" ? L10nService.s('install_failed') : L10nService.s('uninstall_failed')),
+        title: Text(
+          flag == "-I"
+              ? L10nService.s('install_failed')
+              : L10nService.s('uninstall_failed'),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -335,10 +375,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               Text(
                 error != null
                     ? L10nService.s('error_with_msg', args: [error])
-                    : L10nService.s('exit_code_with_msg', args: [exitCode.toString()]),
+                    : L10nService.s(
+                        'exit_code_with_msg',
+                        args: [exitCode.toString()],
+                      ),
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
               ),
-              if (_logs.isNotEmpty) ...[
+              if (BackendService.globalLogs.value.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(L10nService.s('last_logs')),
                 Container(
@@ -349,13 +392,22 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   constraints: const BoxConstraints(maxHeight: 150),
-                  child: ListView.builder(
-                    reverse: true,
-                    itemCount: _logs.length,
-                    itemBuilder: (context, i) => Text(
-                      _logs[_logs.length - 1 - i],
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontFamily: 'monospace'),
-                    ),
+                  child: ValueListenableBuilder<List<String>>(
+                    valueListenable: BackendService.globalLogs,
+                    builder: (context, logs, _) {
+                      return ListView.builder(
+                        reverse: true,
+                        itemCount: logs.length,
+                        itemBuilder: (context, i) => Text(
+                          logs[logs.length - 1 - i],
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 10,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -363,14 +415,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(L10nService.s('close'))),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(L10nService.s('close')),
+          ),
           FilledButton.tonal(
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                _logs.clear();
-            _statusKey = 'ready';
-            _statusArgs = null;
+                _statusKey = 'ready';
+                _statusArgs = null;
                 _progress = null;
               });
             },
@@ -453,21 +507,94 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     );
                   },
                 ),
+                const SizedBox(width: 8),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(theme),
+                  const SizedBox(height: 24),
+                  _buildActionArea(colorScheme),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+                  if (_isLoadingDetails)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    MarkdownBody(
+                      data: _extraDetails?['description'] ??
+                          (widget.app.description.isEmpty
+                              ? AppLocalizations.of(context)!.noResults
+                              : widget.app.description),
+                      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                        p: theme.textTheme.bodyLarge,
+                      ),
+                      selectable: true,
+                    ),
+                  const SizedBox(height: 24),
+                  if (_extraDetails != null &&
+                      _extraDetails!['screenshots'] != null &&
+                      (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                    _buildSectionTitle(
+                      theme,
+                      AppLocalizations.of(context)!.screenshots,
+                    ),
+                    SizedBox(
+                      height: 200,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: (_extraDetails!['screenshots'] as List).length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              _extraDetails!['screenshots'][index],
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                  _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
+                  _buildInfoRow(
+                    Icons.source,
+                    AppLocalizations.of(context)!.source,
+                    widget.app.primarySource,
+                  ),
+                  _buildInfoRow(
+                    Icons.all_inclusive,
+                    AppLocalizations.of(context)!.variant,
+                    widget.app.sources.join(", "),
+                  ),
+                  _buildInfoRow(
+                    Icons.verified_outlined,
+                    AppLocalizations.of(context)!.version,
+                    widget.app.version,
+                  ),
+                  if (_extraDetails?['developer'] != null)
+                    _buildInfoRow(
+                      Icons.person_outline,
+                      AppLocalizations.of(context)!.developer,
+                      _extraDetails!['developer'],
+                    ),
+                  if (_extraDetails?['license'] != null)
+                    _buildInfoRow(
+                      Icons.description_outlined,
+                      AppLocalizations.of(context)!.license,
+                      _extraDetails!['license'],
+                    ),
+                ],
               ),
-              const SizedBox(height: 32),
-            ],
-            _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
-            _buildInfoRow(Icons.source, AppLocalizations.of(context)!.source, widget.app.primarySource),
-            _buildInfoRow(
-                Icons.all_inclusive, AppLocalizations.of(context)!.variant, widget.app.sources.join(", ")),
-            _buildInfoRow(Icons.verified_outlined, AppLocalizations.of(context)!.version, widget.app.version),
-            if (_extraDetails?['developer'] != null)
-              _buildInfoRow(Icons.person_outline, AppLocalizations.of(context)!.developer, _extraDetails!['developer']),
-            if (_extraDetails?['license'] != null)
-              _buildInfoRow(Icons.description_outlined, AppLocalizations.of(context)!.license, _extraDetails!['license']),
-          ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -479,15 +606,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         : widget.app.name.trim();
 
     try {
-      await Process.start(
-        BackendService.venvPython,
-        [BackendService.scriptPath, '--launch', target, '--source', _selectedSource],
-        workingDirectory: BackendService.workingDir,
-      );
+      await Process.start(BackendService.venvPython, [
+        BackendService.scriptPath,
+        '--launch',
+        target,
+        '--source',
+        _selectedSource,
+      ], workingDirectory: BackendService.workingDir);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10nService.s('launch_failed', args: [e.toString()]))),
+          SnackBar(
+            content: Text(L10nService.s('launch_failed', args: [e.toString()])),
+          ),
         );
       }
     }
@@ -498,9 +629,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+          color: colorScheme.primaryContainer.withOpacity(0.4),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+          border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
         ),
         child: Column(
           children: [
@@ -518,19 +649,31 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     children: [
                       Text(
                         L10nService.s(_statusKey, args: _statusArgs),
-                        style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (_progress != null)
                         Text(
-                          L10nService.s('completed_percent', args: [(_progress! * 100).toInt().toString()]),
-                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                          L10nService.s(
+                            'completed_percent',
+                            args: [(_progress! * 100).toInt().toString()],
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
+                  icon: const Icon(
+                    Icons.cancel_outlined,
+                    color: Colors.redAccent,
+                  ),
                   onPressed: _cancelAction,
                   tooltip: L10nService.s('cancel_task'),
                 ),
@@ -542,7 +685,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               child: LinearProgressIndicator(
                 value: _progress,
                 minHeight: 6,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                backgroundColor: colorScheme.primary.withOpacity(0.1),
               ),
             ),
           ],
@@ -560,10 +703,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
                   side: const BorderSide(color: Colors.redAccent, width: 1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () => _handleAction("-R"),
-                child: Text(AppLocalizations.of(context)!.uninstall, style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  AppLocalizations.of(context)!.uninstall,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
@@ -574,11 +722,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               height: 54,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
-                label: Text(AppLocalizations.of(context)!.launch, style: const TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(
+                  AppLocalizations.of(context)!.launch,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
@@ -591,11 +744,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       height: 54,
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         onPressed: () => _handleAction("-I"),
         icon: const Icon(Icons.download_rounded),
-        label: Text(AppLocalizations.of(context)!.install, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(
+          AppLocalizations.of(context)!.install,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -667,14 +825,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   if (_isAppInstalled)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.check_circle_outline, size: 14, color: theme.colorScheme.primary),
+                          Icon(
+                            Icons.check_circle_outline,
+                            size: 14,
+                            color: theme.colorScheme.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             AppLocalizations.of(context)!.ready,
@@ -739,11 +904,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   },
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.app.version,
-                style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
-              ),
             ],
           ),
         ),
@@ -753,10 +913,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Widget _buildSectionTitle(ThemeData theme, String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Text(
         title,
-        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: theme.colorScheme.primary,
+        ),
       ),
     );
   }
@@ -791,7 +954,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
           Icon(icon, size: 18, color: Colors.grey),

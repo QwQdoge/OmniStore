@@ -66,5 +66,15 @@
   "catInternet": "互联网",
   "catSystem": "系统工具",
   "catOffice": "办公",
-  "catGames": "游戏"
+  "catGames": "游戏",
+  "updates": "更新",
+  "upToDate": "所有应用已是最新",
+  "checkUpdates": "检查更新",
+  "foundUpdates": "发现 {count} 个更新",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "updateAll": "全部更新"
 }

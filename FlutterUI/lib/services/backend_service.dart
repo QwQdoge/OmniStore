@@ -24,7 +24,21 @@ class BackendService {
   // 当前正在操作的 app（用于跨页面状态恢复）
   static final ValueNotifier<AppPackage?> activeApp = ValueNotifier(null);
   static final ValueNotifier<String?> activeFlag = ValueNotifier(null); // "-I" or "-R"
+  static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static Process? activeProcess;
+
+  static void addLog(String log) {
+    final currentLogs = globalLogs.value;
+    if (currentLogs.length > 500) {
+      globalLogs.value = [...currentLogs.sublist(currentLogs.length - 499), log];
+    } else {
+      globalLogs.value = [...currentLogs, log];
+    }
+  }
+
+  static void clearLogs() {
+    globalLogs.value = [];
+  }
 
   static void cancelCurrentTask() {
     if (activeProcess != null) {
@@ -153,6 +167,34 @@ class BackendService {
       });
     } catch (e) {
       yield "[CALLBACK] {\"log\": \"启动失败: $e\"}";
+    }
+  }
+
+  /// 检查更新
+  Future<List<dynamic>> checkUpdates() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "-C", "--json",
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      debugPrint("CheckUpdates Exception: $e");
+      return [];
+    }
+  }
+
+  /// 更新所有
+  Stream<String> updateAll(String source) async* {
+    try {
+      final process = await Process.start(_venvPython, [
+        _scriptPath, "-U", "all", "--source", source, "--json",
+      ], workingDirectory: _workingDir);
+
+      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+    } catch (e) {
+      yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
     }
   }
 }

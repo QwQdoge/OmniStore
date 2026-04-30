@@ -66,5 +66,15 @@
   "catInternet": "Internet",
   "catSystem": "System",
   "catOffice": "Office",
-  "catGames": "Games"
+  "catGames": "Games",
+  "updates": "Updates",
+  "upToDate": "All apps are up to date",
+  "checkUpdates": "Check for Updates",
+  "foundUpdates": "Found {count} updates",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "updateAll": "Update All"
 }
