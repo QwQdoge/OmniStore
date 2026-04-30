@@ -199,16 +199,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     try {
       final process = await Process.start(
-        '/home/shekong/Projects/Omnistore/python/.venv/bin/python',
+        BackendService.venvPython,
         [
-          '/home/shekong/Projects/Omnistore/python/main.py',
+          BackendService.scriptPath,
           flag,
           widget.app.name.trim(),
           '--source', _selectedSource,
           if (widget.app.url != null && flag == "-I") ...['--url', widget.app.url!],
           '--json',
         ],
-        workingDirectory: '/home/shekong/Projects/Omnistore/python',
+        workingDirectory: BackendService.workingDir,
       );
       BackendService.activeProcess = process;
 
@@ -467,9 +467,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     try {
       await Process.start(
-        '/home/shekong/Projects/Omnistore/python/.venv/bin/python',
-        ['/home/shekong/Projects/Omnistore/python/main.py', '--launch', target, '--source', _selectedSource],
-        workingDirectory: '/home/shekong/Projects/Omnistore/python',
+        BackendService.venvPython,
+        [BackendService.scriptPath, '--launch', target, '--source', _selectedSource],
+        workingDirectory: BackendService.workingDir,
       );
     } catch (e) {
       if (mounted) {

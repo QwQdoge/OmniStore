@@ -4,9 +4,17 @@ import 'package:flutter/material.dart';
 import 'app_package.dart';
 
 class BackendService {
-  final String _venvPython = "/home/shekong/Projects/Omnistore/python/.venv/bin/python";
-  final String _scriptPath = "/home/shekong/Projects/Omnistore/python/main.py";
-  final String _workingDir = "/home/shekong/Projects/Omnistore/python";
+  static String get _projectRoot => Directory.current.path.endsWith('FlutterUI')
+      ? Directory.current.parent.path
+      : Directory.current.path;
+
+  static String get venvPython => "$_projectRoot/python/.venv/bin/python";
+  static String get scriptPath => "$_projectRoot/python/main.py";
+  static String get workingDir => "$_projectRoot/python";
+
+  String get _venvPython => venvPython;
+  String get _scriptPath => scriptPath;
+  String get _workingDir => workingDir;
 
   // 全局进度通知器
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);

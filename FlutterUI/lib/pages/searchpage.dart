@@ -47,6 +47,11 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _controller.addListener(_handleInputUpdate);
     _loadHistory();
+    if (widget.autoFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNode.requestFocus();
+      });
+    }
   }
 
   @override
@@ -159,7 +164,7 @@ class _SearchPageState extends State<SearchPage> {
         child: SearchBar(
           controller: _controller,
           focusNode: _focusNode,
-          autoFocus: widget.autoFocus,
+          autoFocus: false,
           hintText: AppLocalizations.of(context)!.searchHint,
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
