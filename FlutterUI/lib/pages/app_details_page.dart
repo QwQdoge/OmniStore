@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -414,12 +415,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             if (_isLoadingDetails)
               const Center(child: CircularProgressIndicator())
             else
-              Text(
-                _extraDetails?['description'] ??
+              MarkdownBody(
+                data: _extraDetails?['description'] ??
                     (widget.app.description.isEmpty
                         ? AppLocalizations.of(context)!.noResults
                         : widget.app.description),
-                style: theme.textTheme.bodyLarge,
+                selectable: true,
+                styleSheet: MarkdownStyleSheet(
+                  p: theme.textTheme.bodyLarge,
+                ),
               ),
             const SizedBox(height: 24),
             if (_extraDetails != null &&
@@ -665,14 +669,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontSize: 14,
                   ),
                   items: {
-                    if (widget.app.sources.isNotEmpty)
-                      ...widget.app.sources
-                    else
-                      widget.app.primarySource,
-                    if (widget.app.sources.isEmpty || !widget.app.sources.contains(_selectedSource))
-                      _selectedSource,
+                    widget.app.primarySource,
+                    ...widget.app.sources,
+                    _selectedSource,
                   }.map((String source) {
-                    return DropdownMenuItem<String>(value: source, child: Text(source));
+                    return DropdownMenuItem<String>(
+                      value: source,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildSourceTag(source, isSmall: true),
+                          const SizedBox(width: 8),
+                          Text(source),
+                        ],
+                      ),
+                    );
                   }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null && mounted) {
@@ -699,6 +710,34 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       child: Text(
         title,
         style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildSourceTag(String source, {bool isSmall = false}) {
+    Color color = Colors.grey;
+    if (source == "Pacman") {
+      color = Colors.blue;
+    } else if (source == "AUR") {
+      color = Colors.orange;
+    } else if (source == "Flatpak") {
+      color = Colors.purple;
+    } else if (source == "AppImage") {
+      color = Colors.teal;
+    } else if (source == "Native") {
+      color = Colors.blue;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        source,
+        style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
       ),
     );
   }

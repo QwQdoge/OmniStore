@@ -5,6 +5,7 @@ import 'pages/homepage.dart';
 import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
+import 'pages/welcome_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 
@@ -15,11 +16,25 @@ void main() async {
   final config = await BackendService().loadConfig();
   await L10nService.init(config);
   
-  runApp(const OmnistoreApp());
+  runApp(OmnistoreApp(initialConfig: config));
 }
 
-class OmnistoreApp extends StatelessWidget {
-  const OmnistoreApp({super.key});
+class OmnistoreApp extends StatefulWidget {
+  final Map<String, dynamic> initialConfig;
+  const OmnistoreApp({super.key, required this.initialConfig});
+
+  @override
+  State<OmnistoreApp> createState() => _OmnistoreAppState();
+}
+
+class _OmnistoreAppState extends State<OmnistoreApp> {
+  late bool _isFirstRun;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFirstRun = widget.initialConfig['first_run'] == true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,25 +55,29 @@ class OmnistoreApp extends StatelessWidget {
         Locale('zh'),
       ],
 
-          // 1. 实现“跟随系统亮暗”的关键：
-          themeMode: ThemeMode.system,
+      // 1. 实现“跟随系统亮暗”的关键：
+      themeMode: ThemeMode.system,
 
-          // 亮色模式配置
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: seedColor,
-            brightness: Brightness.light, 
-          ),
+      // 亮色模式配置
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: seedColor,
+        brightness: Brightness.light,
+      ),
 
-          // 暗色模式配置
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: seedColor,
-            brightness: Brightness.dark, 
-          ),
+      // 暗色模式配置
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: seedColor,
+        brightness: Brightness.dark,
+      ),
 
-          home: const MainNavigationEntry(),
-        );
+      home: _isFirstRun
+          ? WelcomePage(onFinish: () {
+              setState(() => _isFirstRun = false);
+            })
+          : const MainNavigationEntry(),
+    );
   }
 }
 
