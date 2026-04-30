@@ -130,13 +130,17 @@ class SearchManager:
         """
         # 1. 统一转小写，去掉空格
         n = name.lower().strip()
-        # 2. 移除版本号或架构信息（如果有）
+        # 2. 如果是 ID 格式 (com.discordapp.Discord), 提取最后一部分
+        if "." in n and len(n.split(".")) > 2:
+            n = n.split(".")[-1]
+
+        # 3. 移除版本号或架构信息（如果有）
         n = n.split()[0]
-        # 3. 移除常见的 Linux 包名后缀 (关键：让 telegram-desktop-bin 变成 telegram)
+        # 4. 移除常见的 Linux 包名后缀 (关键：让 telegram-desktop-bin 变成 telegram)
         # 我们要移除 -bin, -git, -desktop, -appimage, -a 等干扰项
         n = re.sub(
-            r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron)$', '', n)
-        # 4. 移除中间的连字符，处理 TelegramDesktop 这种写法
+            r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$', '', n)
+        # 5. 移除中间的连字符，处理 TelegramDesktop 这种写法
         n = n.replace("-", "").replace("_", "")
         return n
 
@@ -163,7 +167,7 @@ class SearchManager:
                 # 第一次初始化条目
                 entry = item.copy()
                 entry['primary_source'] = source
-                entry['is_installed'] = is_installed
+                entry['installed'] = is_installed
                 entry['variants'] = [variant]
                 # 记录已有的来源类型，防止重复
                 entry['_source_types'] = {source}
@@ -176,7 +180,7 @@ class SearchManager:
 
                 # 更新全局安装状态
                 if is_installed:
-                    seen[norm_key]['is_installed'] = True
+                    seen[norm_key]['installed'] = True
 
                 # 优先级抢占：如果新来源是 Native 或 Flatpak，通常它们的名字和描述更官方
                 if source in ["Native", "Flatpak"] and seen[norm_key]['primary_source'] == "AUR":
@@ -184,6 +188,8 @@ class SearchManager:
                     seen[norm_key]['primary_source'] = source
                     seen[norm_key]['description'] = item.get(
                         'description', seen[norm_key]['description'])
+                    if item.get("icon"):
+                        seen[norm_key]['icon'] = item["icon"]
 
         # 清理掉用于内部逻辑的辅助字段
         for entry in seen.values():

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -438,28 +440,71 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Column(
-      children: [
-        WindowTitleBar(title: widget.app.name),
-        Expanded(
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(widget.app.name),
-              actions: [
-                ValueListenableBuilder<List<String>>(
-                  valueListenable: BackendService.globalLogs,
-                  builder: (context, logs, _) {
-                    if (_isInstalling || logs.isNotEmpty) {
-                      return IconButton(
-                        icon: Badge(
-                          isLabelVisible: _isInstalling,
-                          child: const Icon(Icons.terminal_outlined),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.app.name),
+        actions: [
+          if (_isInstalling || _logs.isNotEmpty)
+            IconButton(
+              icon: Badge(
+                isLabelVisible: _isInstalling,
+                child: const Icon(Icons.terminal_outlined),
+              ),
+              tooltip: AppLocalizations.of(context)!.terminalOutput,
+              onPressed: _showTerminalDialog,
+            ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(theme),
+            const SizedBox(height: 24),
+            _buildActionArea(colorScheme),
+            const SizedBox(height: 32),
+            const Divider(),
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+            if (_isLoadingDetails)
+              const Center(child: CircularProgressIndicator())
+            else
+              MarkdownBody(
+                data: _extraDetails?['description'] ??
+                    (widget.app.description.isEmpty
+                        ? AppLocalizations.of(context)!.noResults
+                        : widget.app.description),
+                selectable: true,
+                styleSheet: MarkdownStyleSheet(
+                  p: theme.textTheme.bodyLarge,
+                ),
+              ),
+            const SizedBox(height: 24),
+            if (_extraDetails != null &&
+                _extraDetails!['screenshots'] != null &&
+                (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+              _buildSectionTitle(theme, AppLocalizations.of(context)!.screenshots),
+              SizedBox(
+                height: 200,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: (_extraDetails!['screenshots'] as List).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: _extraDetails!['screenshots'][index],
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 200,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Center(child: CircularProgressIndicator()),
                         ),
-                        tooltip: AppLocalizations.of(context)!.terminalOutput,
-                        onPressed: _showTerminalDialog,
-                      );
-                    }
-                    return const SizedBox.shrink();
+                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(width: 8),
@@ -554,8 +599,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _launchApp() async {
-    String target = (widget.app.id != null && _selectedSource == "Flatpak")
-        ? widget.app.id!
+    // 找到对应的 variant
+    final variant = _getVariantForSource(_selectedSource);
+    String target = (variant?['id'] != null && _selectedSource == "Flatpak")
+        ? variant!['id']!
         : widget.app.name.trim();
 
     try {
@@ -711,6 +758,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
+  Map<String, dynamic>? _getVariantForSource(String source) {
+    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+      for (var v in _extraDetails!['variants']) {
+        if (v['source'] == source) return v;
+      }
+    }
+    // Fallback to widget.app.variants if we have them
+    // But currently AppPackage only has names. We might need to store full variant objects in AppPackage
+    return null;
+  }
+
   Widget _buildHeader(ThemeData theme) {
     final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
     return Row(
@@ -727,7 +785,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           child: iconUrl != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.network(iconUrl, fit: BoxFit.cover),
+                  child: CachedNetworkImage(
+                    imageUrl: iconUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                    errorWidget: (context, url, error) => Text(
+                      widget.app.name[0].toUpperCase(),
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 )
               : Text(
                   widget.app.name[0].toUpperCase(),
@@ -795,24 +864,42 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
-                  items:
-                      {
-                        if (widget.app.sources.isNotEmpty)
-                          ...widget.app.sources
-                        else
-                          widget.app.primarySource,
-                        if (widget.app.sources.isEmpty ||
-                            !widget.app.sources.contains(_selectedSource))
-                          _selectedSource,
-                      }
-                          .map(
-                            (s) => DropdownMenuItem(value: s, child: Text(s)),
-                          )
-                          .toList(),
-                  onChanged: (v) {
-                    if (v != null) {
-                      setState(() => _selectedSource = v);
-                      _fetchExtraDetails();
+                  items: {
+                    widget.app.primarySource,
+                    ...widget.app.sources,
+                    _selectedSource,
+                  }.map((String source) {
+                    return DropdownMenuItem<String>(
+                      value: source,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildSourceTag(source, isSmall: true),
+                          const SizedBox(width: 8),
+                          Text(source),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null && mounted) {
+                      setState(() {
+                        _selectedSource = newValue;
+                        // 更新安装状态（基于当前选择的来源）
+                        // 寻找对应的 variant 检查安装状态
+                        bool isInstalled = false;
+                        if (_extraDetails != null && _extraDetails!['variants'] != null) {
+                          for (var v in _extraDetails!['variants']) {
+                            if (v['source'] == newValue) {
+                              isInstalled = v['installed'] ?? false;
+                              break;
+                            }
+                          }
+                        } else if (newValue == widget.app.primarySource) {
+                          isInstalled = widget.app.installed;
+                        }
+                        _isAppInstalled = isInstalled;
+                      });
                     }
                   },
                 ),
@@ -833,6 +920,34 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           fontWeight: FontWeight.bold,
           color: theme.colorScheme.primary,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSourceTag(String source, {bool isSmall = false}) {
+    Color color = Colors.grey;
+    if (source == "Pacman") {
+      color = Colors.blue;
+    } else if (source == "AUR") {
+      color = Colors.orange;
+    } else if (source == "Flatpak") {
+      color = Colors.purple;
+    } else if (source == "AppImage") {
+      color = Colors.teal;
+    } else if (source == "Native") {
+      color = Colors.blue;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        source,
+        style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
       ),
     );
   }

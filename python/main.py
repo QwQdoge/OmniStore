@@ -3,7 +3,6 @@ from core.search.searchmanager import SearchManager
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.env_manager import EnvManager
-from core.update_manager import UpdateManager
 from typing import Optional
 import json
 import sys
@@ -192,11 +191,33 @@ class OmnistoreBackend:
             timeout = aiohttp.ClientTimeout(total=15)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
+
+                # 1. Fetch rich metadata (screenshots, developer, etc)
                 if "." in app_id: # Likely an ID
-                    results = await self.recommender.get_details(app_id) # type: ignore
+                    details = await self.recommender.get_details(app_id) # type: ignore
                 else: # Likely a name
-                    results = await self.recommender.find_metadata(app_id) # type: ignore
-                print(json.dumps(results, ensure_ascii=False))
+                    details = await self.recommender.find_metadata(app_id) # type: ignore
+
+                # 2. Check for variants across ALL sources
+                # Use the name from details or app_id
+                search_name = details.get("name") or app_id.split(".")[-1]
+                variants_results = await self.manager.search_all(search_name) # type: ignore
+
+                # Find the matching app in search results to get combined variants
+                norm_target = self.manager._normalize_app_name(search_name) # type: ignore
+                matched_app = None
+                for res in variants_results:
+                    if self.manager._normalize_app_name(res['name']) == norm_target: # type: ignore
+                        matched_app = res
+                        break
+
+                if matched_app:
+                    details["variants"] = matched_app.get("variants", [])
+                    # Update description if empty
+                    if not details.get("description") or len(details.get("description")) < 10:
+                        details["description"] = matched_app.get("description", "")
+
+                print(json.dumps(details, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({"error": str(e)}))
 
@@ -210,10 +231,11 @@ class OmnistoreBackend:
             for f in apps_dir.glob("*.AppImage"):
                 installed_list.append({
                     "name": f.stem,
-                    "source": "AppImage",
+                    "primary_source": "AppImage",
+                    "variants": [{"source": "AppImage"}],
                     "installed": True,
                     "description": f"Local AppImage at {f}",
-                    "last_version": "Local",
+                    "version": "Local",
                     "url": f.as_uri()
                 })
 
@@ -234,9 +256,10 @@ class OmnistoreBackend:
                         installed_list.append({
                             "name": parts[0],
                             "id": parts[1],
-                            "source": "Flatpak",
+                            "primary_source": "Flatpak",
+                            "variants": [{"source": "Flatpak"}],
                             "installed": True,
-                            "last_version": parts[2] if len(parts) > 2 else "Unknown",
+                            "version": parts[2] if len(parts) > 2 else "Unknown",
                             "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
                         })
         except Exception as e:
@@ -258,31 +281,11 @@ class OmnistoreBackend:
                     if line:
                         installed_list.append({
                             "name": line,
-                            "source": "Native",
+                            "primary_source": "Native",
+                            "variants": [{"source": "Native"}],
                             "installed": True,
-                            "description": "Native system package",
-                            "last_version": "Local"
-                        })
-        except Exception: pass
-
-        # 4. Scan AUR
-        try:
-            # -Qm: foreign packages (not in sync database), -qe: explicitly installed
-            proc = await asyncio.create_subprocess_exec(
-                "pacman", "-Qqme",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            if stdout:
-                for line in stdout.decode().strip().splitlines():
-                    if line:
-                        installed_list.append({
-                            "name": line,
-                            "source": "AUR",
-                            "installed": True,
-                            "description": "AUR package",
-                            "last_version": "Local"
+                            "description": "Native/AUR package",
+                            "version": "Local"
                         })
         except Exception: pass
 
@@ -394,7 +397,7 @@ async def main():
     signal.signal(signal.SIGTERM, handle_term)
     signal.signal(signal.SIGINT, handle_term)
 
-    if not any([args.search, args.install, args.remove, args.update, args.check_updates, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
+    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
         parser.print_help()
         return
 

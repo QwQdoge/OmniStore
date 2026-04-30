@@ -35,13 +35,20 @@ class AppPackage {
         .map((v) => v['source'].toString())
         .toList();
 
+    String primarySource = json['primary_source'] ?? json['source'] ?? 'Native';
+
+    // 如果没有 variants，至少把 primarySource 放进去
+    if (extractedSources.isEmpty) {
+      extractedSources.add(primarySource);
+    }
+
     return AppPackage(
       name: json['name'] ?? 'Unknown',
       description: json['description'] ?? '',
       // 注意：Python 传过来的是 installed，确保这里对应上
       installed: json['installed'] ?? false,
-      primarySource: json['primary_source'] ?? 'Native',
-      version: json['version'] ?? 'N/A',
+      primarySource: primarySource,
+      version: json['version'] ?? json['last_version'] ?? 'N/A',
       sources: extractedSources,
       url: json['url'] != null && json['url'].toString().isNotEmpty
           ? json['url'].toString()
