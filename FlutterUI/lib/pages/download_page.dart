@@ -16,12 +16,13 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   late TabController _tabController;
   List<AppPackage> _installedApps = [];
   bool _isLoadingInstalled = false;
-  String _selectedSourceFilter = "全部";
+  late String _selectedSourceFilter;
   final BackendService _backend = BackendService();
 
   @override
   void initState() {
     super.initState();
+    _selectedSourceFilter = "all";
     _tabController = TabController(length: 2, vsync: this);
     _loadInstalledApps();
   }
@@ -174,7 +175,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                           ValueListenableBuilder<String>(
                             valueListenable: BackendService.globalStatus,
                             builder: (context, status, _) => Text(
-                              status,
+                              L10nService.s(status),
                               style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -262,10 +263,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     for (final app in _installedApps) {
       grouped.putIfAbsent(app.primarySource, () => []).add(app);
     }
-    final sources = ["全部", ...grouped.keys.toList()..sort()];
+    final sources = ["all", ...grouped.keys.toList()..sort()];
 
     // 过滤
-    final List<AppPackage> filtered = _selectedSourceFilter == "全部"
+    final List<AppPackage> filtered = _selectedSourceFilter == "all"
         ? _installedApps
         : (grouped[_selectedSourceFilter] ?? []);
 
@@ -282,9 +283,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             itemBuilder: (context, i) {
               final s = sources[i];
               final isSelected = _selectedSourceFilter == s;
-              final color = s == "全部" ? colorScheme.primary : _sourceColor(s);
+              final color = s == "all" ? colorScheme.primary : _sourceColor(s);
               return FilterChip(
-                label: Text(s, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : color, fontWeight: FontWeight.bold)),
+                label: Text(s == "all" ? L10nService.s('all') : s,
+                    style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : color, fontWeight: FontWeight.bold)),
                 selected: isSelected,
                 onSelected: (_) => setState(() => _selectedSourceFilter = s),
                 selectedColor: color,

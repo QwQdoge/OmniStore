@@ -18,7 +18,8 @@ class AppDetailsPage extends StatefulWidget {
 class _AppDetailsPageState extends State<AppDetailsPage> {
   bool _isInstalling = false;
   final List<String> _logs = [];
-  String _currentStatus = "Ready";
+  String _statusKey = 'ready';
+  List<String>? _statusArgs;
   double? _progress;
   late String _selectedSource;
   late bool _isAppInstalled;
@@ -30,6 +31,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     super.initState();
     _selectedSource = widget.app.primarySource;
     _isAppInstalled = widget.app.installed;
+    _statusKey = 'ready';
 
     // 即使不是 Flatpak，也尝试获取额外元数据（图标、截图等）
     _fetchExtraDetails();
@@ -38,7 +40,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final active = BackendService.activeApp.value;
     if (active != null && active.name == widget.app.name) {
       _isInstalling = true;
-      _currentStatus = BackendService.globalStatus.value;
+      _statusKey = BackendService.globalStatus.value;
       _progress = BackendService.globalProgress.value;
     }
   }
@@ -66,7 +68,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (mounted) {
       setState(() {
         _isInstalling = false;
-        _currentStatus = "Ready";
+        _statusKey = 'ready';
+        _statusArgs = null;
         _progress = null;
       });
     }
@@ -184,12 +187,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       _isInstalling = true;
       _logs.clear();
       _progress = null;
-      _currentStatus = isUninstall ? "正在准备卸载..." : "正在准备安装...";
+      _statusKey = isUninstall ? 'preparing_uninstall' : 'preparing_install';
+      _statusArgs = null;
     });
 
     BackendService.isDownloading.value = true;
     BackendService.globalProgress.value = null;
-    BackendService.globalStatus.value = _currentStatus;
+    BackendService.globalStatus.value = _statusKey;
     BackendService.activeApp.value = widget.app;
     BackendService.activeFlag.value = flag;
 
@@ -242,7 +246,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   } else {
                     _logs.add(log);
                     if (log.startsWith("[INFO]") || log.startsWith("[ERROR]")) {
-                      _currentStatus = log;
+                        _statusKey = log;
+                        _statusArgs = null;
                       BackendService.globalStatus.value = log;
                     }
                   }
@@ -269,14 +274,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           BackendService.isDownloading.value = false;
           if (exitCode == 0) {
             _progress = 1.0;
-            _currentStatus = isUninstall ? "✓ 卸载成功" : "✓ 安装成功";
+            _statusKey = isUninstall ? 'uninstall_success' : 'install_success';
+            _statusArgs = null;
             _isAppInstalled = !isUninstall;
           } else if (wasCancelled) {
             _isInstalling = false;
-            _currentStatus = "任务已取消";
+            _statusKey = 'task_cancelled';
+            _statusArgs = null;
           } else {
             _isInstalling = false;
-            _currentStatus = "✗ 失败 (错误码: $exitCode)";
+            _statusKey = 'task_failed_code';
+            _statusArgs = [exitCode.toString()];
             _showFailureDialog(flag, exitCode);
           }
         });
@@ -286,7 +294,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isUninstall ? "${widget.app.name} 卸载成功" : "${widget.app.name} 安装成功"),
+                content: Text(isUninstall
+                    ? L10nService.s('uninstall_success_msg', args: [widget.app.name])
+                    : L10nService.s('install_success_msg', args: [widget.app.name])),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 4),
               ),
@@ -302,7 +312,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       if (mounted) {
         setState(() {
           _isInstalling = false;
-          _currentStatus = "✗ 启动失败: $e";
+          _statusKey = 'launch_failed';
+          _statusArgs = [e.toString()];
         });
       }
     }
@@ -313,19 +324,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.error_outline, color: Colors.red, size: 32),
-        title: Text(flag == "-I" ? "安装失败" : "卸载失败"),
+        title: Text(flag == "-I" ? L10nService.s('install_failed') : L10nService.s('uninstall_failed')),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                error != null ? "错误: $error" : "操作退出码: $exitCode",
+                error != null
+                    ? L10nService.s('error_with_msg', args: [error])
+                    : L10nService.s('exit_code_with_msg', args: [exitCode.toString()]),
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
               ),
               if (_logs.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                const Text("最后日志:"),
+                Text(L10nService.s('last_logs')),
                 Container(
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(8),
@@ -348,13 +361,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("关闭")),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(L10nService.s('close'))),
           FilledButton.tonal(
             onPressed: () {
               Navigator.pop(context);
-              setState(() { _logs.clear(); _currentStatus = "Ready"; _progress = null; });
+              setState(() {
+                _logs.clear();
+            _statusKey = 'ready';
+            _statusArgs = null;
+                _progress = null;
+              });
             },
-            child: const Text("重试"),
+            child: Text(L10nService.s('retry')),
           ),
         ],
       ),
@@ -455,7 +473,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("启动失败: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10nService.s('launch_failed', args: [e.toString()]))),
+        );
       }
     }
   }
@@ -484,13 +504,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _currentStatus,
+                        L10nService.s(_statusKey, args: _statusArgs),
                         style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (_progress != null)
                         Text(
-                          "已完成 ${(_progress! * 100).toInt()}%",
+                          L10nService.s('completed_percent', args: [(_progress! * 100).toInt().toString()]),
                           style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                         ),
                     ],
@@ -499,7 +519,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 IconButton(
                   icon: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
                   onPressed: _cancelAction,
-                  tooltip: "取消任务",
+                  tooltip: L10nService.s('cancel_task'),
                 ),
               ],
             ),
