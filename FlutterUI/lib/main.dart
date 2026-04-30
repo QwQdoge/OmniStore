@@ -7,13 +7,34 @@ import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
+import 'services/update_service.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // 初始化窗口管理器
+  await windowManager.ensureInitialized();
+
+  WindowOptions windowOptions = const WindowOptions(
+    size: Size(1100, 750),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+    await windowManager.setPreventClose(true);
+  });
+
   // 初始化配置和语言
   final config = await BackendService().loadConfig();
   await L10nService.init(config);
+
+  // 初始化更新服务
+  await UpdateService().init();
   
   runApp(const OmnistoreApp());
 }
@@ -69,7 +90,27 @@ class MainNavigationEntry extends StatefulWidget {
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
 }
 
-class _MainNavigationEntryState extends State<MainNavigationEntry> {
+class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowListener {
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onWindowClose() async {
+    // 这里可以处理关闭逻辑，比如隐藏到托盘
+    bool isPreventClose = await windowManager.isPreventClose();
+    if (isPreventClose) {
+      await windowManager.hide();
+    }
+  }
   int _selectedIndex = 0;
 
   final List<Widget> _subPages = [
@@ -85,110 +126,163 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      // 背景使用最底层的 surface 颜色
       backgroundColor: colorScheme.surface,
-      // Chrome OS 风格的全局顶部标题栏
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleSpacing: 0,
-        // 左侧 Logo
-        leadingWidth: 90,
-        leading: Center(
-          child: Icon(
-            Icons.shop_two_rounded, // 类似 Play Store 的图标
-            color: colorScheme.primary,
-            size: 32,
-            semanticLabel: AppLocalizations.of(context)!.explore,
-          ),
-        ),
-        title: Center(
-          child: FilledButton.tonal(
-            style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            ),
-            onPressed: () => setState(() => _selectedIndex = 1),
+      body: Column(
+        children: [
+          // 自定义标题栏
+          _buildChromeTitleBar(colorScheme, theme),
+          Expanded(
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.search_rounded, size: 18, color: Theme.of(context).colorScheme.onSecondaryContainer),
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context)!.searchHint,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                // 左侧导航列
+                _buildSideBar(colorScheme),
+                // 右侧内容区
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 0, 8, 8),
+                    decoration: BoxDecoration(
+                      color: theme.brightness == Brightness.light
+                          ? Colors.white
+                          : colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(_selectedIndex),
+                          child: _subPages[_selectedIndex],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
-            tooltip: AppLocalizations.of(context)!.help,
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-          Tooltip(
-            message: AppLocalizations.of(context)!.userAccount,
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Text(
-                'U',
-                style: TextStyle(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
         ],
       ),
-      body: Row(
-        children: [
-          // 左侧导航列：Google Play 宽屏布局风格
-          _buildSideBar(colorScheme),
+    );
+  }
 
-          // 右侧内容区：Google Play 招牌的大圆角容器
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-              decoration: BoxDecoration(
-                // 纯净背景，类似于 Google Play 的平铺感
-                color: theme.brightness == Brightness.light
-                    ? Colors.white
-                    : colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+  Widget _buildChromeTitleBar(ColorScheme colorScheme, ThemeData theme) {
+    return DragToMoveArea(
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        color: colorScheme.surface,
+        child: Row(
+          children: [
+            // Logo
+            const SizedBox(width: 8),
+            Icon(
+              Icons.shop_two_rounded,
+              color: colorScheme.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            // Title
+            Text(
+              "OmniStore",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  // 使用这种曲线让切换更有 Google Play 的灵动感
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: KeyedSubtree(
-                    key: ValueKey<int>(_selectedIndex),
-                    child: _subPages[_selectedIndex],
+            ),
+            const Spacer(),
+            // Search Bar (Middle)
+            Center(
+              child: SizedBox(
+                height: 32,
+                child: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  onPressed: () => setState(() => _selectedIndex = 1),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.search_rounded, size: 16, color: colorScheme.onSecondaryContainer),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLocalizations.of(context)!.searchHint,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
+            const Spacer(),
+            // Window Controls
+            Row(
+              children: [
+                _buildWindowButton(
+                  icon: Icons.minimize_rounded,
+                  onPressed: () => windowManager.minimize(),
+                  colorScheme: colorScheme,
+                ),
+                _buildWindowButton(
+                  icon: Icons.crop_square_rounded,
+                  onPressed: () async {
+                    if (await windowManager.isMaximized()) {
+                      windowManager.unmaximize();
+                    } else {
+                      windowManager.maximize();
+                    }
+                  },
+                  colorScheme: colorScheme,
+                ),
+                _buildWindowButton(
+                  icon: Icons.close_rounded,
+                  onPressed: () => windowManager.close(),
+                  isClose: true,
+                  colorScheme: colorScheme,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWindowButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required ColorScheme colorScheme,
+    bool isClose = false,
+  }) {
+    return Container(
+      width: 46,
+      height: 32,
+      margin: const EdgeInsets.symmetric(horizontal: 1),
+      child: InkWell(
+        onTap: onPressed,
+        hoverColor: isClose ? Colors.red.withValues(alpha: 0.8) : colorScheme.onSurface.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 16,
+            color: colorScheme.onSurface.withValues(alpha: 0.8),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -240,6 +334,39 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
   }
 
   Widget _buildDownloadButton(ColorScheme colorScheme) {
+    return ValueListenableBuilder<List<dynamic>>(
+      valueListenable: UpdateService().availableUpdates,
+      builder: (context, updates, _) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _buildDownloadButtonBase(colorScheme),
+            if (updates.isNotEmpty)
+              Positioned(
+                top: -2,
+                right: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.error,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colorScheme.surface, width: 2),
+                  ),
+                  constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                  child: Text(
+                    updates.length.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDownloadButtonBase(ColorScheme colorScheme) {
     return ValueListenableBuilder<bool>(
       valueListenable: BackendService.isDownloading,
       builder: (context, isDownloading, child) {

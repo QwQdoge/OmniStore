@@ -270,6 +270,50 @@ class InstallExecutor:
         finally:
             self.is_running = False
 
+    async def update(self, package: dict, callback):
+        """Unified update entry (for specific package or 'all')"""
+        if self.is_running:
+            if callback:
+                await callback("[ERROR] Another task is already in progress.")
+            return False
+
+        source = package.get("source")
+        name = package.get("name") # Can be 'all' for updating everything in that source
+
+        try:
+            self.is_running = True
+
+            if self._needs_privilege(source):
+                if not await self._ensure_privileged(callback):
+                    return False
+
+            if callback:
+                await callback(f"[INFO] Starting {source} update for {name}...")
+
+            if source in ("AUR", "Native"):
+                # For yay, update all is just 'yay -Syu'
+                if name == "all":
+                    return await self.yay.update_all(callback=callback)
+                else:
+                    # Update specific is also just 'yay -S package'
+                    return await self.yay.install(name, callback=callback)
+            elif source == "Flatpak":
+                if name == "all":
+                    return await self.flatpak.update_all(callback=callback)
+                else:
+                    return await self.flatpak.update(name, callback=callback)
+            else:
+                if callback:
+                    await callback(f"[ERROR] Unsupported source for update: {source}")
+                return False
+
+        except Exception as e:
+            if callback:
+                await callback(f"[ERROR] Update failed: {e}")
+            return False
+        finally:
+            self.is_running = False
+
     def stop(self):
         """Emergency stop"""
         self.yay.stop()

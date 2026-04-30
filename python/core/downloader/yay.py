@@ -112,6 +112,11 @@ class YayDownloader:
         cmd = ["yay", "-Rs", "--noconfirm", package_name]
         return await self._run_command(cmd, callback=callback)
 
+    async def update_all(self, callback=None):
+        """Update all packages"""
+        cmd = ["yay", "-Syu", "--noconfirm"]
+        return await self._run_command(cmd, callback=callback)
+
     def stop(self):
         """Safe stop"""
         if self.current_process:

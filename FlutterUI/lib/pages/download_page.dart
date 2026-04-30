@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/app_package.dart';
 import 'app_details_page.dart';
 import '../services/l10n_service.dart';
+import '../services/update_service.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -23,7 +25,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _selectedSourceFilter = "all";
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadInstalledApps();
   }
 
@@ -51,7 +53,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     super.dispose();
   }
 
-  // 来源标签颜色（与 SearchPage 保持一致）
   Color _sourceColor(String source) {
     switch (source) {
       case "Flatpak": return Colors.purple;
@@ -96,7 +97,33 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           isScrollable: false,
           indicatorSize: TabBarIndicatorSize.label,
           tabs: [
-            Tab(text: AppLocalizations.of(context)!.searching), // No exact key, using searching
+            Tab(text: AppLocalizations.of(context)!.searching),
+            ValueListenableBuilder<List<dynamic>>(
+              valueListenable: UpdateService().availableUpdates,
+              builder: (context, updates, _) {
+                return Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(AppLocalizations.of(context)!.updates),
+                      if (updates.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colorScheme.error,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            updates.length.toString(),
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
             Tab(text: AppLocalizations.of(context)!.ready),
           ],
         ),
@@ -105,6 +132,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         controller: _tabController,
         children: [
           _buildQueueTab(colorScheme),
+          _buildUpdatesTab(colorScheme),
           _buildInstalledTab(colorScheme),
         ],
       ),
@@ -205,7 +233,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 进入详情按钮
                     if (activeApp != null)
                       TextButton.icon(
                         onPressed: () {
@@ -238,6 +265,165 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     );
   }
 
+  Widget _buildUpdatesTab(ColorScheme colorScheme) {
+    return ValueListenableBuilder<List<dynamic>>(
+      valueListenable: UpdateService().availableUpdates,
+      builder: (context, updates, _) {
+        if (updates.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.update_disabled_rounded, size: 64, color: colorScheme.outline),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)!.upToDate, style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 16),
+                FilledButton.tonal(
+                  onPressed: () => UpdateService().checkNow(),
+                  child: Text(AppLocalizations.of(context)!.checkUpdates),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.foundUpdates(updates.length),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  FilledButton.icon(
+                    onPressed: () => _handleUpdateAll(updates),
+                    icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
+                    label: Text(AppLocalizations.of(context)!.updateAll),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: updates.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final update = updates[index];
+                  return Card(
+                    elevation: 0,
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      title: Text(update['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              _buildSourceTag(update['source']),
+                              const SizedBox(width: 8),
+                              Text(
+                                "${update['current_version']} -> ${update['new_version']}",
+                                style: TextStyle(fontSize: 12, color: colorScheme.primary),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton.filledTonal(
+                        onPressed: () => _handleSingleUpdate(update),
+                        icon: const Icon(Icons.download_rounded),
+                        tooltip: "更新",
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleSingleUpdate(dynamic update) {
+    final app = AppPackage(
+      name: update['name'],
+      id: update['id'] ?? update['name'],
+      description: update['description'] ?? "",
+      version: update['new_version'],
+      primarySource: update['source'],
+      installed: true,
+      sources: [update['source']],
+    );
+
+    BackendService.isDownloading.value = true;
+    BackendService.activeApp.value = app;
+    BackendService.activeFlag.value = "-U";
+
+    _backend.executeAction("-U", app.name, app.primarySource).listen((event) {
+      if (event.startsWith("[CALLBACK]")) {
+        final data = jsonDecode(event.substring(11));
+        if (data['type'] == 'log') {
+          final msg = data['message'] as String;
+          if (msg.startsWith("[PROGRESS]")) {
+            BackendService.globalProgress.value = double.tryParse(msg.substring(11))! / 100;
+          } else {
+            BackendService.globalStatus.value = msg;
+          }
+        }
+      }
+    }, onDone: () {
+      BackendService.isDownloading.value = false;
+      BackendService.activeApp.value = null;
+      UpdateService().checkNow(); // 更新完刷新列表
+    });
+
+    _tabController.animateTo(0);
+  }
+
+  void _handleUpdateAll(List<dynamic> updates) {
+    // 简单起见，按来源分批更新，或者直接调用后端的一键更新逻辑
+    // 这里我们演示按来源调用
+    final sources = updates.map((e) => e['source'] as String).toSet();
+
+    BackendService.isDownloading.value = true;
+    BackendService.globalStatus.value = "正在启动批量更新...";
+
+    Future.microtask(() async {
+      for (var source in sources) {
+        if (!mounted) break;
+        BackendService.globalStatus.value = "正在更新 $source 软件包...";
+        await for (var event in _backend.updateAll(source)) {
+           if (event.startsWith("[CALLBACK]")) {
+            final data = jsonDecode(event.substring(11));
+            if (data['type'] == 'log') {
+              final msg = data['message'] as String;
+              if (msg.startsWith("[PROGRESS]")) {
+                BackendService.globalProgress.value = double.tryParse(msg.substring(11))! / 100;
+              } else {
+                BackendService.globalStatus.value = msg;
+              }
+            }
+          }
+        }
+      }
+      BackendService.isDownloading.value = false;
+      UpdateService().checkNow();
+    });
+
+    _tabController.animateTo(0);
+  }
+
   Widget _buildInstalledTab(ColorScheme colorScheme) {
     if (_isLoadingInstalled) {
       return const Center(child: CircularProgressIndicator());
@@ -252,27 +438,24 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context)!.noResults),
             const SizedBox(height: 8),
-            FilledButton.tonal(onPressed: _loadInstalledApps, child: Text(AppLocalizations.of(context)!.featured)), // Using featured for refresh
+            FilledButton.tonal(onPressed: _loadInstalledApps, child: Text(AppLocalizations.of(context)!.featured)),
           ],
         ),
       );
     }
 
-    // 分组
     final Map<String, List<AppPackage>> grouped = {};
     for (final app in _installedApps) {
       grouped.putIfAbsent(app.primarySource, () => []).add(app);
     }
     final sources = ["all", ...grouped.keys.toList()..sort()];
 
-    // 过滤
     final List<AppPackage> filtered = _selectedSourceFilter == "all"
         ? _installedApps
         : (grouped[_selectedSourceFilter] ?? []);
 
     return Column(
       children: [
-        // 来源筛选栏
         Container(
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -300,7 +483,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           ),
         ),
 
-        // 列表
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -324,7 +506,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     child: Row(
                       children: [
-                        // 图标
                         Container(
                           width: 44,
                           height: 44,
@@ -343,7 +524,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // 信息
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +543,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                             ],
                           ),
                         ),
-                        // 操作菜单
                         PopupMenuButton<String>(
                           onSelected: (val) async {
                             if (val == "open") {
