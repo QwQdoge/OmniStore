@@ -182,4 +182,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catGames => 'Games';
+
+  @override
+  String get updates => 'Updates';
+
+  @override
+  String get checkUpdates => 'Check Updates';
+
+  @override
+  String get upToDate => 'Up to date';
+
+  @override
+  String get updateAll => 'Update All';
+
+  @override
+  String foundUpdates(int count) {
+    return 'Found $count updates';
+  }
 }

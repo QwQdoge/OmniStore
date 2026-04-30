@@ -111,6 +111,16 @@ class FlatpakDownloader:
         unused_cmd = ["flatpak", "uninstall", "--user", "--unused", "-y", "--noninteractive"]
         await self._run_flatpak_command(unused_cmd, callback=callback)
 
+    async def update(self, app_id: str, callback=None):
+        """Update specific app"""
+        cmd = ["flatpak", "update", "--user", "-y", "--noninteractive", app_id]
+        await self._run_flatpak_command(cmd, callback=callback, is_install=True)
+
+    async def update_all(self, callback=None):
+        """Update all apps"""
+        cmd = ["flatpak", "update", "--user", "-y", "--noninteractive"]
+        await self._run_flatpak_command(cmd, callback=callback, is_install=True)
+
     def stop(self):
         """Flatpak stop logic"""
         if hasattr(self, 'current_process') and self.current_process:

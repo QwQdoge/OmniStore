@@ -439,6 +439,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Games'**
   String get catGames;
+
+  /// No description provided for @updates.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get updates;
+
+  /// No description provided for @checkUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Updates'**
+  String get checkUpdates;
+
+  /// No description provided for @upToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to date'**
+  String get upToDate;
+
+  /// No description provided for @updateAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Update All'**
+  String get updateAll;
+
+  /// No description provided for @foundUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Found {count} updates'**
+  String foundUpdates(int count);
 }
 
 class _AppLocalizationsDelegate
