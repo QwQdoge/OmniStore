@@ -3,6 +3,7 @@ from core.search.searchmanager import SearchManager
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.env_manager import EnvManager
+from core.update_manager import UpdateManager
 from typing import Optional
 import json
 import sys
@@ -42,6 +43,7 @@ class OmnistoreBackend:
         self.env = EnvManager()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
+        self.updater = UpdateManager(self.config)
         # self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
         self.session = None  # aiohttp session 也在需要时创建，确保资源正确释放
         # self.loop = asyncio.get_event_loop() # 事件循环也在需要时获取，避免在某些环境下的兼容性问题
@@ -145,6 +147,25 @@ class OmnistoreBackend:
             await self._flutter_callback(m, json_mode)
 
         await self.executor.uninstall(package_data, callback=cb)
+
+    async def run_update(self, package_name: str, source: str, json_mode: bool = False):
+        """Update logic"""
+        self.is_action = True
+        package_data = {"name": package_name, "source": source}
+
+        async def cb(m):
+            await self._flutter_callback(m, json_mode)
+
+        await self.executor.update(package_data, callback=cb)
+
+    async def run_check_updates(self, json_mode: bool = False):
+        """Check for updates logic"""
+        updates = await self.updater.check_all_updates()
+        if json_mode:
+            print(json.dumps(updates, ensure_ascii=False))
+        else:
+            for u in updates:
+                print(f"[{u['source']}] {u['name']}: {u['current_version']} -> {u['new_version']}")
 
     async def run_recommendations(self, json_mode: bool = False):
         """Fetch dynamic recommendations"""
@@ -308,6 +329,10 @@ async def main():
                        help="Install software packages")
     group.add_argument("-R", "--remove", metavar="PACKAGE",
                        help="Uninstall software packages")
+    group.add_argument("-U", "--update", metavar="PACKAGE",
+                       help="Update software packages (use 'all' for all packages in source)")
+    group.add_argument("-C", "--check-updates", action="store_true",
+                       help="Check for updates for all installed packages")
     group.add_argument("-L", "--list-installed", action="store_true",
                        help="List all installed AppImage and Flatpak packages")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
@@ -398,6 +423,18 @@ async def main():
             source=args.source,
             json_mode=args.json
         )
+
+    elif args.update:
+        # 更新逻辑
+        await backend.run_update(
+            args.update,
+            source=args.source,
+            json_mode=args.json
+        )
+
+    elif args.check_updates:
+        # 检查更新逻辑
+        await backend.run_check_updates(json_mode=args.json)
 
     elif args.list_installed:
         # 列出已安装
