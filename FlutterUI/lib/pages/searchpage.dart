@@ -248,8 +248,8 @@ class _SearchPageState extends State<SearchPage> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    title: Text(AppLocalizations.of(context)!.uninstall), // Use something suitable
-                                    content: Text(AppLocalizations.of(context)!.confirmActionMsg("History")),
+                                    title: Text(L10nService.s('clear_history')),
+                                    content: Text(L10nService.s('confirm_clear_history')),
                                     actions: [
                                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
                                       FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.confirm)),
@@ -259,7 +259,7 @@ class _SearchPageState extends State<SearchPage> {
                                 if (confirm == true) _clearAllHistory();
                               },
                               icon: const Icon(Icons.delete_sweep_rounded, size: 14),
-                            label: Text(AppLocalizations.of(context)!.uninstall),
+                            label: Text(L10nService.s('clear_history')),
                               style: TextButton.styleFrom(
                                 foregroundColor: colorScheme.error,
                                 visualDensity: VisualDensity.compact,

@@ -6,9 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
-import '../widgets/window_title_bar.dart';
 import '../services/l10n_service.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -444,15 +442,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       appBar: AppBar(
         title: Text(widget.app.name),
         actions: [
-          if (_isInstalling || _logs.isNotEmpty)
-            IconButton(
-              icon: Badge(
-                isLabelVisible: _isInstalling,
-                child: const Icon(Icons.terminal_outlined),
-              ),
-              tooltip: AppLocalizations.of(context)!.terminalOutput,
-              onPressed: _showTerminalDialog,
-            ),
+          ValueListenableBuilder<List<String>>(
+            valueListenable: BackendService.globalLogs,
+            builder: (context, logs, _) {
+              if (!_isInstalling && logs.isEmpty) return const SizedBox.shrink();
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: _isInstalling,
+                  child: const Icon(Icons.terminal_outlined),
+                ),
+                tooltip: AppLocalizations.of(context)!.terminalOutput,
+                onPressed: _showTerminalDialog,
+              );
+            },
+          ),
           const SizedBox(width: 8),
         ],
       ),
@@ -485,6 +488,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 _extraDetails!['screenshots'] != null &&
                 (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
               _buildSectionTitle(theme, AppLocalizations.of(context)!.screenshots),
+              const SizedBox(height: 12),
               SizedBox(
                 height: 200,
                 child: ListView.separated(
@@ -507,94 +511,40 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     );
                   },
                 ),
-                const SizedBox(width: 8),
-              ],
-            ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(theme),
-                  const SizedBox(height: 24),
-                  _buildActionArea(colorScheme),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
-                  if (_isLoadingDetails)
-                    const Center(child: CircularProgressIndicator())
-                  else
-                    MarkdownBody(
-                      data: _extraDetails?['description'] ??
-                          (widget.app.description.isEmpty
-                              ? AppLocalizations.of(context)!.noResults
-                              : widget.app.description),
-                      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                        p: theme.textTheme.bodyLarge,
-                      ),
-                      selectable: true,
-                    ),
-                  const SizedBox(height: 24),
-                  if (_extraDetails != null &&
-                      _extraDetails!['screenshots'] != null &&
-                      (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-                    _buildSectionTitle(
-                      theme,
-                      AppLocalizations.of(context)!.screenshots,
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: (_extraDetails!['screenshots'] as List).length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 12),
-                        itemBuilder: (context, index) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              _extraDetails!['screenshots'][index],
-                              fit: BoxFit.cover,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                  _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
-                  _buildInfoRow(
-                    Icons.source,
-                    AppLocalizations.of(context)!.source,
-                    widget.app.primarySource,
-                  ),
-                  _buildInfoRow(
-                    Icons.all_inclusive,
-                    AppLocalizations.of(context)!.variant,
-                    widget.app.sources.join(", "),
-                  ),
-                  _buildInfoRow(
-                    Icons.verified_outlined,
-                    AppLocalizations.of(context)!.version,
-                    widget.app.version,
-                  ),
-                  if (_extraDetails?['developer'] != null)
-                    _buildInfoRow(
-                      Icons.person_outline,
-                      AppLocalizations.of(context)!.developer,
-                      _extraDetails!['developer'],
-                    ),
-                  if (_extraDetails?['license'] != null)
-                    _buildInfoRow(
-                      Icons.description_outlined,
-                      AppLocalizations.of(context)!.license,
-                      _extraDetails!['license'],
-                    ),
-                ],
               ),
+              const SizedBox(height: 32),
+            ],
+            _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
+            _buildInfoRow(
+              Icons.source,
+              AppLocalizations.of(context)!.source,
+              widget.app.primarySource,
             ),
-          ),
+            _buildInfoRow(
+              Icons.all_inclusive,
+              AppLocalizations.of(context)!.variant,
+              widget.app.sources.join(", "),
+            ),
+            _buildInfoRow(
+              Icons.verified_outlined,
+              AppLocalizations.of(context)!.version,
+              widget.app.version,
+            ),
+            if (_extraDetails?['developer'] != null)
+              _buildInfoRow(
+                Icons.person_outline,
+                AppLocalizations.of(context)!.developer,
+                _extraDetails!['developer'],
+              ),
+            if (_extraDetails?['license'] != null)
+              _buildInfoRow(
+                Icons.description_outlined,
+                AppLocalizations.of(context)!.license,
+                _extraDetails!['license'],
+              ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
