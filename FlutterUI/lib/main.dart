@@ -6,8 +6,19 @@ import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
 import 'services/backend_service.dart';
+import 'services/l10n_service.dart';
 
-void main() => runApp(const OmnistoreApp());
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化配置和语言
+  final config = await BackendService().loadConfig();
+  await L10nService.init(config);
+  
+  runApp(const OmnistoreApp());
+}
 
 class OmnistoreApp extends StatelessWidget {
   const OmnistoreApp({super.key});
@@ -31,24 +42,26 @@ class OmnistoreApp extends StatelessWidget {
         Locale('zh'),
       ],
 
-      // 1. 实现“跟随系统亮暗”的关键：
-      themeMode: ThemeMode.system,
+          // 1. 实现“跟随系统亮暗”的关键：
+          themeMode: ThemeMode.system,
 
-      // 亮色模式配置
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: seedColor,
-        brightness: Brightness.light, // 修复：这里只能是 light
-      ),
+          // 亮色模式配置
+          theme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: seedColor,
+            brightness: Brightness.light, 
+          ),
 
-      // 暗色模式配置
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: seedColor,
-        brightness: Brightness.dark, // 修复：这里只能是 dark
-      ),
+          // 暗色模式配置
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: seedColor,
+            brightness: Brightness.dark, 
+          ),
 
-      home: const MainNavigationEntry(),
+          home: const MainNavigationEntry(),
+        );
+      },
     );
   }
 }

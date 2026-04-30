@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../services/l10n_service.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -643,14 +644,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
-                  items: [
+                  items: {
                     if (widget.app.sources.isNotEmpty)
                       ...widget.app.sources
                     else
                       widget.app.primarySource,
                     if (widget.app.sources.isEmpty || !widget.app.sources.contains(_selectedSource))
                       _selectedSource,
-                  ].toSet().map((String source) {
+                  }.map((String source) {
                     return DropdownMenuItem<String>(value: source, child: Text(source));
                   }).toList(),
                   onChanged: (String? newValue) {

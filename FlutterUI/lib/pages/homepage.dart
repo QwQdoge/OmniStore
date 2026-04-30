@@ -155,6 +155,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 上半部分：类似宣传大图
+            //TODO: 添加宣传图
             Expanded(
               child: Container(
                 width: double.infinity,

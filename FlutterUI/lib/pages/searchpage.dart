@@ -6,6 +6,7 @@ import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
+import '../services/l10n_service.dart';
 
 enum ViewMode { list, grid }
 
@@ -176,7 +177,7 @@ class _SearchPageState extends State<SearchPage> {
             if (_hasInput)
               IconButton(
                 icon: const Icon(Icons.close_rounded),
-                tooltip: '清空内容',
+                tooltip: L10nService.s('clear_search'),
                 onPressed: () {
                   _controller.clear();
                   _focusNode.requestFocus();
@@ -299,7 +300,7 @@ class _SearchPageState extends State<SearchPage> {
                           Icon(Icons.grid_view_rounded, size: 16, color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 8),
                           Text(
-                            "分类浏览",
+                            L10nService.s('categories'),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -323,7 +324,8 @@ class _SearchPageState extends State<SearchPage> {
                           onPressed: () => _search(cat['name'] as String),
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
                           backgroundColor: colorScheme.surface,
                         )).toList(),
                       ),
@@ -358,16 +360,16 @@ class _SearchPageState extends State<SearchPage> {
               Text(AppLocalizations.of(context)!.resultsFound(_results.length), style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: ViewMode.list,
-                    icon: Icon(Icons.view_list_rounded, size: 16),
-                    tooltip: '列表视图',
+                    icon: const Icon(Icons.view_list_rounded, size: 16),
+                    tooltip: L10nService.s('list_view'),
                   ),
                   ButtonSegment(
                     value: ViewMode.grid,
-                    icon: Icon(Icons.grid_view_rounded, size: 16),
-                    tooltip: '网格视图',
+                    icon: const Icon(Icons.grid_view_rounded, size: 16),
+                    tooltip: L10nService.s('grid_view'),
                   ),
                 ],
                 selected: {_viewMode},

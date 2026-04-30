@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/app_package.dart';
 import 'app_details_page.dart';
+import '../services/l10n_service.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -277,7 +278,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: sources.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
               final s = sources[i];
               final isSelected = _selectedSourceFilter == s;
