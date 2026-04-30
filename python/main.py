@@ -170,11 +170,33 @@ class OmnistoreBackend:
             timeout = aiohttp.ClientTimeout(total=15)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
+
+                # 1. Fetch rich metadata (screenshots, developer, etc)
                 if "." in app_id: # Likely an ID
-                    results = await self.recommender.get_details(app_id) # type: ignore
+                    details = await self.recommender.get_details(app_id) # type: ignore
                 else: # Likely a name
-                    results = await self.recommender.find_metadata(app_id) # type: ignore
-                print(json.dumps(results, ensure_ascii=False))
+                    details = await self.recommender.find_metadata(app_id) # type: ignore
+
+                # 2. Check for variants across ALL sources
+                # Use the name from details or app_id
+                search_name = details.get("name") or app_id.split(".")[-1]
+                variants_results = await self.manager.search_all(search_name) # type: ignore
+
+                # Find the matching app in search results to get combined variants
+                norm_target = self.manager._normalize_app_name(search_name) # type: ignore
+                matched_app = None
+                for res in variants_results:
+                    if self.manager._normalize_app_name(res['name']) == norm_target: # type: ignore
+                        matched_app = res
+                        break
+
+                if matched_app:
+                    details["variants"] = matched_app.get("variants", [])
+                    # Update description if empty
+                    if not details.get("description") or len(details.get("description")) < 10:
+                        details["description"] = matched_app.get("description", "")
+
+                print(json.dumps(details, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({"error": str(e)}))
 

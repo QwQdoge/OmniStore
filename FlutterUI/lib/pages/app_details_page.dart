@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -439,9 +440,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   itemBuilder: (context, index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        _extraDetails!['screenshots'][index],
+                      child: CachedNetworkImage(
+                        imageUrl: _extraDetails!['screenshots'][index],
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 200,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Center(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
                       ),
                     );
                   },
@@ -465,8 +472,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _launchApp() async {
-    String target = (widget.app.id != null && _selectedSource == "Flatpak")
-        ? widget.app.id!
+    // 找到对应的 variant
+    final variant = _getVariantForSource(_selectedSource);
+    String target = (variant?['id'] != null && _selectedSource == "Flatpak")
+        ? variant!['id']!
         : widget.app.name.trim();
 
     try {
@@ -591,6 +600,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
+  Map<String, dynamic>? _getVariantForSource(String source) {
+    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+      for (var v in _extraDetails!['variants']) {
+        if (v['source'] == source) return v;
+      }
+    }
+    // Fallback to widget.app.variants if we have them
+    // But currently AppPackage only has names. We might need to store full variant objects in AppPackage
+    return null;
+  }
+
   Widget _buildHeader(ThemeData theme) {
     final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
     return Row(
@@ -607,7 +627,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           child: iconUrl != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.network(iconUrl, fit: BoxFit.cover),
+                  child: CachedNetworkImage(
+                    imageUrl: iconUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                    errorWidget: (context, url, error) => Text(
+                      widget.app.name[0].toUpperCase(),
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 )
               : Text(
                   widget.app.name[0].toUpperCase(),
@@ -687,7 +718,23 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null && mounted) {
-                      setState(() => _selectedSource = newValue);
+                      setState(() {
+                        _selectedSource = newValue;
+                        // 更新安装状态（基于当前选择的来源）
+                        // 寻找对应的 variant 检查安装状态
+                        bool isInstalled = false;
+                        if (_extraDetails != null && _extraDetails!['variants'] != null) {
+                          for (var v in _extraDetails!['variants']) {
+                            if (v['source'] == newValue) {
+                              isInstalled = v['installed'] ?? false;
+                              break;
+                            }
+                          }
+                        } else if (newValue == widget.app.primarySource) {
+                          isInstalled = widget.app.installed;
+                        }
+                        _isAppInstalled = isInstalled;
+                      });
                     }
                   },
                 ),

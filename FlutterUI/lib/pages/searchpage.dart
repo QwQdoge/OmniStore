@@ -1,6 +1,7 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -417,10 +418,11 @@ class _SearchPageState extends State<SearchPage> {
                   child: app.icon != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            app.icon!,
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Text(
+                            placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                            errorWidget: (context, url, error) => Text(
                               app.name[0].toUpperCase(),
                               style: TextStyle(
                                   fontSize: 22,
@@ -536,18 +538,31 @@ class _SearchPageState extends State<SearchPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                  backgroundImage:
-                      app.icon != null ? NetworkImage(app.icon!) : null,
-                  child: app.icon == null
-                      ? Text(app.name[0].toUpperCase(),
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold))
-                      : null,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: app.icon != null
+                        ? CachedNetworkImage(
+                            imageUrl: app.icon!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            errorWidget: (context, url, error) => Center(
+                              child: Text(app.name[0].toUpperCase(),
+                                  style: TextStyle(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          )
+                        : Center(
+                            child: Text(app.name[0].toUpperCase(),
+                                style: TextStyle(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
