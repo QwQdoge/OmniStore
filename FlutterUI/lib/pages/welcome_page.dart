@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
+import '../widgets/window_title_bar.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -86,48 +87,57 @@ class _WelcomePageState extends State<WelcomePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: Center(
-        child: Container(
-          width: 600,
-          height: 500,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              )
-            ],
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: ClipRRect(
+      body: Column(
+        children: [
+          const WindowTitleBar(),
+          Expanded(
+            child: Center(
+              child: Container(
+                width: 600,
+                height: 500,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: animation.drive(
-                      Tween(begin: const Offset(0, 0.1), end: Offset.zero)
-                          .chain(CurveTween(curve: Curves.easeOutCubic)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: animation.drive(
+                                  Tween(begin: const Offset(0, 0.1),
+                                          end: Offset.zero)
+                                      .chain(
+                                          CurveTween(curve: Curves.easeOutCubic)),
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: _buildCurrentStep(),
+                        ),
+                      ),
                     ),
-                    child: child,
-                  ),
-                );
-              },
-                    child: _buildCurrentStep(),
-                  ),
+                    _buildFeedbackArea(),
+                  ],
                 ),
               ),
-              _buildFeedbackArea(),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -299,7 +309,7 @@ class _WelcomePageState extends State<WelcomePage> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Text(

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
+import 'app_package.dart';
 import 'backend_service.dart';
 import 'l10n_service.dart';
 
@@ -76,6 +78,68 @@ class UpdateService {
       await _systemTray.setToolTip(L10nService.s('tray_tooltip_updates', args: [updates.length.toString()]));
     } else {
       await _systemTray.setToolTip(L10nService.s('tray_tooltip_uptodate'));
+    }
+  }
+
+  Future<void> checkUpdates() => checkNow();
+
+  Future<void> startUpdate(String name, String source) async {
+    if (BackendService.isDownloading.value) return;
+
+    BackendService.isDownloading.value = true;
+    BackendService.globalStatus.value = L10nService.s('preparing_update');
+    BackendService.globalProgress.value = null;
+    BackendService.clearLogs();
+    
+    // Create a dummy AppPackage for tracking if we don't have one
+    final app = AppPackage(
+      name: name,
+      description: "Updating...",
+      installed: true,
+      version: "Latest",
+      sources: [source],
+      primarySource: source,
+    );
+    BackendService.activeApp.value = app;
+
+    try {
+      final process = await Process.start(
+        BackendService.venvPython,
+        [BackendService.scriptPath, "-U", name, "--source", source, "--json"],
+        workingDirectory: BackendService.workingDir,
+      );
+
+      BackendService.activeProcess = process;
+
+      process.stdout.transform(const Utf8Decoder()).transform(const LineSplitter()).listen((line) {
+        String cleanLine = line.trim();
+        if (cleanLine.startsWith("[CALLBACK]")) {
+           try {
+             final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
+             String log = data['message'] ?? data['log'] ?? "";
+             if (log.isNotEmpty) {
+               if (log.startsWith("[PROGRESS]")) {
+                  final p = double.tryParse(log.split(" ")[1]);
+                  if (p != null) BackendService.globalProgress.value = p / 100.0;
+               } else {
+                  BackendService.addLog(log);
+               }
+             }
+           } catch (_) {}
+        }
+      });
+
+      final exitCode = await process.exitCode;
+      BackendService.isDownloading.value = false;
+      BackendService.activeApp.value = null;
+      BackendService.activeProcess = null;
+
+      if (exitCode == 0) {
+        checkNow(); // Refresh update list
+      }
+    } catch (e) {
+      BackendService.isDownloading.value = false;
+      BackendService.activeApp.value = null;
     }
   }
 

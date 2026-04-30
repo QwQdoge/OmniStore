@@ -93,7 +93,8 @@ class OmnistoreBackend:
             if self.is_action:
                 output = json.dumps(
                     {"type": "log", "message": msg, "level": level.upper()}, ensure_ascii=False)
-                sys.stdout.write(f"{output}\n")
+                sys.stdout.write(f"[CALLBACK] {output}\n")
+                sys.stdout.flush()
         else:
             print(f"📦 {msg}")
 
@@ -243,27 +244,47 @@ class OmnistoreBackend:
             if not json_mode:
                 await self._flutter_callback(f"Failed to scan Flatpaks: {e}", json_mode, level="ERROR")
 
-        # 3. Scan Native/AUR
+        # 3. Scan Native (Pacman)
         try:
+            # -Qn: native packages (sync database), -qe: explicitly installed
             proc = await asyncio.create_subprocess_exec(
-                "pacman", "-Qqe",
+                "pacman", "-Qqne",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
             )
             stdout, _ = await proc.communicate()
             if stdout:
-                lines = stdout.decode().strip().splitlines()
-                for line in lines:
+                for line in stdout.decode().strip().splitlines():
                     if line:
                         installed_list.append({
                             "name": line,
                             "source": "Native",
                             "installed": True,
-                            "description": "Native/AUR package",
+                            "description": "Native system package",
                             "last_version": "Local"
                         })
-        except Exception:
-            pass
+        except Exception: pass
+
+        # 4. Scan AUR
+        try:
+            # -Qm: foreign packages (not in sync database), -qe: explicitly installed
+            proc = await asyncio.create_subprocess_exec(
+                "pacman", "-Qqme",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            stdout, _ = await proc.communicate()
+            if stdout:
+                for line in stdout.decode().strip().splitlines():
+                    if line:
+                        installed_list.append({
+                            "name": line,
+                            "source": "AUR",
+                            "installed": True,
+                            "description": "AUR package",
+                            "last_version": "Local"
+                        })
+        except Exception: pass
 
         if json_mode:
             print(json.dumps(installed_list))
@@ -294,6 +315,7 @@ class OmnistoreBackend:
 
         # 确保输出是唯一的，且不带多余的换行
         sys.stdout.write(json.dumps(output, ensure_ascii=False) + '\n')
+        sys.stdout.flush()
 
     def _output_pretty(self, query, results):
         if not results:
@@ -372,7 +394,7 @@ async def main():
     signal.signal(signal.SIGTERM, handle_term)
     signal.signal(signal.SIGINT, handle_term)
 
-    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
+    if not any([args.search, args.install, args.remove, args.update, args.check_updates, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
         parser.print_help()
         return
 

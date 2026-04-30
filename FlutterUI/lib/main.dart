@@ -10,6 +10,7 @@ import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
 import 'package:window_manager/window_manager.dart';
+import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -149,7 +150,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
       body: Column(
         children: [
           // 自定义标题栏
-          _buildChromeTitleBar(colorScheme, theme),
+          WindowTitleBar(
+            showSearch: true,
+            onSearchPressed: () => setState(() => _selectedIndex = 1),
+          ),
           Expanded(
             child: Row(
               children: [
@@ -166,7 +170,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -194,117 +198,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
     );
   }
 
-  Widget _buildChromeTitleBar(ColorScheme colorScheme, ThemeData theme) {
-    return DragToMoveArea(
-      child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        color: colorScheme.surface,
-        child: Row(
-          children: [
-            // Logo
-            const SizedBox(width: 8),
-            Icon(
-              Icons.shop_two_rounded,
-              color: colorScheme.primary,
-              size: 24,
-            ),
-            const SizedBox(width: 12),
-            // Title
-            Text(
-              "OmniStore",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const Spacer(),
-            // Search Bar (Middle)
-            Center(
-              child: SizedBox(
-                height: 32,
-                child: FilledButton.tonal(
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 1),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.search_rounded, size: 16, color: colorScheme.onSecondaryContainer),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppLocalizations.of(context)!.searchHint,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSecondaryContainer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const Spacer(),
-            // Window Controls
-            Row(
-              children: [
-                _buildWindowButton(
-                  icon: Icons.minimize_rounded,
-                  onPressed: () => windowManager.minimize(),
-                  colorScheme: colorScheme,
-                ),
-                _buildWindowButton(
-                  icon: Icons.crop_square_rounded,
-                  onPressed: () async {
-                    if (await windowManager.isMaximized()) {
-                      windowManager.unmaximize();
-                    } else {
-                      windowManager.maximize();
-                    }
-                  },
-                  colorScheme: colorScheme,
-                ),
-                _buildWindowButton(
-                  icon: Icons.close_rounded,
-                  onPressed: () => windowManager.close(),
-                  isClose: true,
-                  colorScheme: colorScheme,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWindowButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required ColorScheme colorScheme,
-    bool isClose = false,
-  }) {
-    return Container(
-      width: 46,
-      height: 32,
-      margin: const EdgeInsets.symmetric(horizontal: 1),
-      child: InkWell(
-        onTap: onPressed,
-        hoverColor: isClose ? Colors.red.withValues(alpha: 0.8) : colorScheme.onSurface.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-        child: Center(
-          child: Icon(
-            icon,
-            size: 16,
-            color: colorScheme.onSurface.withValues(alpha: 0.8),
-          ),
-        ),
-      ),
-    );
-  }
 
   // 侧边栏布局：Logo + 导航 + 左下角图标
   Widget _buildSideBar(ColorScheme colorScheme) {
@@ -403,8 +296,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                   color: _selectedIndex == 3
                       ? colorScheme.primary
                       : isDownloading
-                          ? colorScheme.primary.withValues(alpha: 0.1)
-                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          ? colorScheme.primary.withOpacity(0.1)
+                          : colorScheme.surfaceContainerHighest.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
                 child: Stack(

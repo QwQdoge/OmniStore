@@ -187,16 +187,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updates => 'Updates';
 
   @override
-  String get checkUpdates => 'Check Updates';
+  String get upToDate => 'All apps are up to date';
 
   @override
-  String get upToDate => 'Up to date';
-
-  @override
-  String get updateAll => 'Update All';
+  String get checkUpdates => 'Check for Updates';
 
   @override
   String foundUpdates(int count) {
     return 'Found $count updates';
   }
+
+  @override
+  String get updateAll => 'Update All';
 }

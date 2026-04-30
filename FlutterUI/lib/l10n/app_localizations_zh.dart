@@ -187,16 +187,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updates => '更新';
 
   @override
+  String get upToDate => '所有应用已是最新';
+
+  @override
   String get checkUpdates => '检查更新';
-
-  @override
-  String get upToDate => '已是最新';
-
-  @override
-  String get updateAll => '全部更新';
 
   @override
   String foundUpdates(int count) {
     return '发现 $count 个更新';
   }
+
+  @override
+  String get updateAll => '全部更新';
 }
