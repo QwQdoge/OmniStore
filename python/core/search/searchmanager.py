@@ -102,7 +102,7 @@ class SearchManager:
         top_results = merged[:max_res]
 
         # 4. 异步补全前几个结果的元数据（图标等）
-        await self._enrich_metadata(top_results[:5])
+        await self._enrich_metadata(top_results[:15])
 
         return top_results
 

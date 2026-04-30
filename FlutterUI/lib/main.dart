@@ -8,8 +8,6 @@ import 'pages/download_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 
-import 'package:flutter_localizations/flutter_localizations.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -61,8 +59,6 @@ class OmnistoreApp extends StatelessWidget {
 
           home: const MainNavigationEntry(),
         );
-      },
-    );
   }
 }
 
@@ -78,7 +74,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> {
 
   final List<Widget> _subPages = [
     const HomePage(),
-    const SearchPage(autoFocus: true),
+    const SearchPage(autoFocus: false),
     const SettingsPage(),
     const DownloadPage(),
   ];
