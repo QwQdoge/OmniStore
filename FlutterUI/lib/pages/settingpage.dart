@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
-import '../services/l10n_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -78,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(L10nService.s('settings')),
+            title: Text(AppLocalizations.of(context)!.settings),
             centerTitle: false,
             backgroundColor: Colors.transparent,
             actions: [
@@ -87,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: TextButton.icon(
                   onPressed: _saveAll,
                   icon: const Icon(Icons.done_all),
-                  label: Text(L10nService.s('save_apply')),
+                  label: Text(AppLocalizations.of(context)!.saveAndApply),
                 ),
               ),
             ],
@@ -96,52 +96,31 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle(L10nService.s('language')),
-                _buildGroupCard([
-                  ListTile(
-                    leading: const Icon(Icons.language_rounded),
-                    title: Text(L10nService.s('language')),
-                    trailing: DropdownButton<Language>(
-                      value: L10nService.language.value,
-                      underline: const SizedBox(),
-                      onChanged: (Language? v) {
-                        if (v != null) {
-                          setState(() => L10nService.setLanguage(v));
-                        }
-                      },
-                      items: [
-                        DropdownMenuItem(value: Language.zh, child: Text(L10nService.s('chinese'))),
-                        DropdownMenuItem(value: Language.en, child: Text(L10nService.s('english'))),
-                      ],
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                _buildSectionTitle(L10nService.s('package_manager')),
+                _buildSectionTitle(AppLocalizations.of(context)!.packageManager),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    'Pacman（官方库）',
+                    AppLocalizations.of(context)!.pacmanOfficial,
                     pacmanEnabled,
                     (v) => setState(() => pacmanEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'AUR（用户库）',
+                    AppLocalizations.of(context)!.aurUser,
                     aurEnabled,
                     (v) => setState(() => aurEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'Flatpak',
+                    AppLocalizations.of(context)!.flatpak,
                     flatpakEnabled,
                     (v) => setState(() => flatpakEnabled = v),
                   ),
                   _buildSwitchTile(
-                    'AppImage',
+                    AppLocalizations.of(context)!.appImage,
                     appimageEnabled,
                     (v) => setState(() => appimageEnabled = v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(L10nService.s('source_priority_drag')),
+                _buildSectionTitle(AppLocalizations.of(context)!.sourcePriority),
                 _buildGroupCard([
                   SizedBox(
                     height: 220,
@@ -180,19 +159,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         switch (s) {
                           case 'pacman':
                             icon = Icons.apps;
-                            label = L10nService.s('pacman_official');
+                            label = AppLocalizations.of(context)!.pacmanOfficial;
                             break;
                           case 'aur':
                             icon = Icons.cloud_outlined;
-                            label = L10nService.s('aur_user');
+                            label = AppLocalizations.of(context)!.aurUser;
                             break;
                           case 'flatpak':
                             icon = Icons.inventory_2_outlined;
-                            label = 'Flatpak';
+                            label = AppLocalizations.of(context)!.flatpak;
                             break;
                           default:
                             icon = Icons.insert_drive_file_outlined;
-                            label = 'AppImage';
+                            label = AppLocalizations.of(context)!.appImage;
                         }
                         return ListTile(
                           key: ValueKey(s),
@@ -205,21 +184,21 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(L10nService.s('search_settings')),
+                _buildSectionTitle(AppLocalizations.of(context)!.search),
                 _buildGroupCard([
                   _buildSliderTile(
-                    L10nService.s('max_results_count'),
+                    AppLocalizations.of(context)!.maxResults,
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(L10nService.s('appearance')),
+                _buildSectionTitle(AppLocalizations.of(context)!.appearance),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.palette_outlined),
-                    title: Text(L10nService.s('theme_color')),
+                    title: Text(AppLocalizations.of(context)!.themeColor),
                     subtitle: Text(colorSeed),
                     trailing: Container(
                       width: 24,
@@ -235,26 +214,26 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
-                    title: Text(L10nService.s('appearance_mode')),
+                    title: Text(AppLocalizations.of(context)!.appearance),
                     trailing: DropdownButton<String>(
                       value: appearance,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => appearance = v!),
                       items: [
-                        DropdownMenuItem(value: 'system', child: Text(L10nService.s('system_mode'))),
-                        DropdownMenuItem(value: 'light', child: Text(L10nService.s('light_mode'))),
-                        DropdownMenuItem(value: 'dark', child: Text(L10nService.s('dark_mode'))),
+                        DropdownMenuItem(value: 'system', child: Text(AppLocalizations.of(context)!.followSystem)),
+                        DropdownMenuItem(value: 'light', child: Text(AppLocalizations.of(context)!.lightMode)),
+                        DropdownMenuItem(value: 'dark', child: Text(AppLocalizations.of(context)!.darkMode)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(L10nService.s('logging')),
+                _buildSectionTitle(AppLocalizations.of(context)!.help), // Use something suitable
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
-                    title: Text(L10nService.s('log_level')),
-                    subtitle: Text(L10nService.s('log_level_subtitle')),
+                    title: Text(AppLocalizations.of(context)!.loggingLevel),
+                    subtitle: Text(AppLocalizations.of(context)!.help),
                     trailing: DropdownButton<String>(
                       value: logLevel,
                       underline: const SizedBox(),
@@ -370,7 +349,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? L10nService.s('save_success') : L10nService.s('save_fail')),
+          content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
           backgroundColor: success ? null : Theme.of(context).colorScheme.error,
         ),
       );

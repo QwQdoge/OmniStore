@@ -100,3 +100,22 @@ class RecommendationManager:
         except Exception as e:
             print(f"[RecommendationManager] Detail Error: {e}")
         return {}
+
+    async def find_metadata(self, name: str) -> Dict:
+        """Try to find metadata (icon, description) for a package name by searching Flathub"""
+        search_url = "https://flathub.org/api/v2/search"
+        try:
+            async with self.session.post(search_url, json={"query": name}, timeout=5) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    hits = data.get("hits", [])
+                    if hits:
+                        # Find the best match
+                        for hit in hits:
+                            hit_name = hit.get("name", "").lower()
+                            app_id = hit.get("app_id", "").lower()
+                            if hit_name == name.lower() or app_id == name.lower() or app_id.endswith(f".{name.lower()}"):
+                                return await self.get_details(hit.get("app_id"))
+        except Exception as e:
+            print(f"[RecommendationManager] Find Metadata Error: {e}")
+        return {}
