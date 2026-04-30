@@ -2,6 +2,7 @@ from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
+from core.env_manager import EnvManager
 from typing import Optional
 import json
 import sys
@@ -38,6 +39,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 class OmnistoreBackend:
     def __init__(self):
         self.config = ConfigManager()
+        self.env = EnvManager()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
         # self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
@@ -311,6 +313,8 @@ async def main():
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
     group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
+    group.add_argument("--check-env", action="store_true", help="Check system environment")
+    group.add_argument("--bootstrap", action="store_true", help="Bootstrap environment")
 
     parser.add_argument("--json", action="store_true",
                         help="Output results in JSON format")
@@ -343,7 +347,7 @@ async def main():
     signal.signal(signal.SIGTERM, handle_term)
     signal.signal(signal.SIGINT, handle_term)
 
-    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details]):  # 如果没有任何操作指令，显示帮助
+    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
         parser.print_help()
         return
 
@@ -404,6 +408,17 @@ async def main():
 
     elif args.details:
         await backend.run_app_details(args.details, json_mode=args.json)
+
+    elif args.check_env:
+        status = await backend.env.check_env()
+        print(json.dumps(status, ensure_ascii=False))
+
+    elif args.bootstrap:
+        async def cb(m):
+            await backend._flutter_callback(m, args.json)
+        success = await backend.env.bootstrap(callback=cb)
+        if args.json:
+            print(json.dumps({"status": "success" if success else "error"}))
 
     elif args.launch:
         import subprocess

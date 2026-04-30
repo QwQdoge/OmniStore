@@ -10,6 +10,7 @@ class ConfigManager:
         self.config_path = self.config_dir / config_name
 
         self.default_config = {
+            "first_run": True,
             "search": {
                 "sources": {
                     "pacman": True,
