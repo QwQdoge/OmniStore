@@ -29,6 +29,15 @@ class ConfigManager:
             },
             "logging": {
                 "level": "INFO"
+            },
+            "notifications": {
+                "enabled": True,
+                "progress": True,
+                "completion": True
+            },
+            "updates": {
+                "check_interval_hours": 1,
+                "remind_updates": True
             }
         }
         # 初始化加载

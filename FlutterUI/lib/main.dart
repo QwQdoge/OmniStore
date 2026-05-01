@@ -37,6 +37,7 @@ void main() async {
 
   // 初始化更新服务
   await UpdateService().init();
+  await UpdateService().updateConfig();
   
   runApp(OmnistoreApp(initialConfig: config));
 }

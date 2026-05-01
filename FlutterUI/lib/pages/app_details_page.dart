@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
+import '../services/update_service.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -218,6 +219,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     BackendService.activeApp.value = widget.app;
     BackendService.activeFlag.value = flag;
 
+    UpdateService().showProgressNotification(
+      isUninstall
+          ? L10nService.s('uninstalling_app', args: [widget.app.name])
+          : L10nService.s('installing_app', args: [widget.app.name]),
+      0,
+    );
+
     try {
       final process = await Process.start(BackendService.venvPython, [
         BackendService.scriptPath,
@@ -263,6 +271,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         _progress = p / 100.0;
                       });
                       BackendService.globalProgress.value = _progress;
+                      UpdateService().showProgressNotification(
+                        widget.app.name,
+                        _progress!,
+                      );
                     }
                   }
                 } else {
@@ -293,6 +305,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       if (mounted) {
         final wasCancelled =
             exitCode != 0 && !BackendService.isDownloading.value;
+
+        if (!wasCancelled) {
+          UpdateService().showCompletionNotification(
+            widget.app.name,
+            exitCode == 0,
+          );
+        }
 
         setState(() {
           BackendService.isDownloading.value = false;
@@ -341,6 +360,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     } catch (e) {
       BackendService.activeApp.value = null;
       BackendService.activeProcess = null;
+      UpdateService().showCompletionNotification(widget.app.name, false);
       if (mounted) {
         setState(() {
           _isInstalling = false;

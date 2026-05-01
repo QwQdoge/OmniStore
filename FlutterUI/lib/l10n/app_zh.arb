@@ -76,5 +76,29 @@
       "count": { "type": "int" }
     }
   },
-  "updateAll": "全部更新"
+  "updateAll": "全部更新",
+  "notifications": "通知设置",
+  "enableNotifications": "启用通知",
+  "progressNotifications": "进度通知",
+  "completionNotifications": "完成通知",
+  "updateReminders": "更新提醒",
+  "checkInterval": "自动检查更新间隔 (小时)",
+  "remindMeOfUpdates": "提醒我有可用更新",
+  "installingApp": "正在安装 {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "uninstallingApp": "正在卸载 {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "installSuccessTitle": "安装成功",
+  "uninstallSuccessTitle": "卸载成功",
+  "installFailedTitle": "安装失败",
+  "uninstallFailedTitle": "卸载失败",
+  "taskCompleted": "任务执行完成"
 }
