@@ -178,7 +178,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(28.0),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
                         switchInCurve: Curves.easeInOutExpo,

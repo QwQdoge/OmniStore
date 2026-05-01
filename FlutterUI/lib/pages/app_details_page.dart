@@ -651,11 +651,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             ),
             const SizedBox(height: 16),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: _progress,
-                minHeight: 6,
+                minHeight: 8,
                 backgroundColor: colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
           ],

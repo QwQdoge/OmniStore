@@ -173,7 +173,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
               side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
             ),
           ),
