@@ -199,4 +199,50 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updateAll => '全部更新';
+
+  @override
+  String get notifications => '通知设置';
+
+  @override
+  String get enableNotifications => '启用通知';
+
+  @override
+  String get progressNotifications => '进度通知';
+
+  @override
+  String get completionNotifications => '完成通知';
+
+  @override
+  String get updateReminders => '更新提醒';
+
+  @override
+  String get checkInterval => '自动检查更新间隔 (小时)';
+
+  @override
+  String get remindMeOfUpdates => '提醒我有可用更新';
+
+  @override
+  String installingApp(String name) {
+    return '正在安装 $name';
+  }
+
+  @override
+  String uninstallingApp(String name) {
+    return '正在卸载 $name';
+  }
+
+  @override
+  String get installSuccessTitle => '安装成功';
+
+  @override
+  String get uninstallSuccessTitle => '卸载成功';
+
+  @override
+  String get installFailedTitle => '安装失败';
+
+  @override
+  String get uninstallFailedTitle => '卸载失败';
+
+  @override
+  String get taskCompleted => '任务执行完成';
 }

@@ -469,6 +469,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update All'**
   String get updateAll;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @enableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get enableNotifications;
+
+  /// No description provided for @progressNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress Notifications'**
+  String get progressNotifications;
+
+  /// No description provided for @completionNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion Notifications'**
+  String get completionNotifications;
+
+  /// No description provided for @updateReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Reminders'**
+  String get updateReminders;
+
+  /// No description provided for @checkInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Check Interval (Hours)'**
+  String get checkInterval;
+
+  /// No description provided for @remindMeOfUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind Me of Updates'**
+  String get remindMeOfUpdates;
+
+  /// No description provided for @installingApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name}'**
+  String installingApp(String name);
+
+  /// No description provided for @uninstallingApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstalling {name}'**
+  String uninstallingApp(String name);
+
+  /// No description provided for @installSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Successful'**
+  String get installSuccessTitle;
+
+  /// No description provided for @uninstallSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstallation Successful'**
+  String get uninstallSuccessTitle;
+
+  /// No description provided for @installFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Failed'**
+  String get installFailedTitle;
+
+  /// No description provided for @uninstallFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstallation Failed'**
+  String get uninstallFailedTitle;
+
+  /// No description provided for @taskCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Completed'**
+  String get taskCompleted;
 }
 
 class _AppLocalizationsDelegate

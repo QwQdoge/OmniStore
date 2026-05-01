@@ -76,5 +76,29 @@
       "count": { "type": "int" }
     }
   },
-  "updateAll": "Update All"
+  "updateAll": "Update All",
+  "notifications": "Notifications",
+  "enableNotifications": "Enable Notifications",
+  "progressNotifications": "Progress Notifications",
+  "completionNotifications": "Completion Notifications",
+  "updateReminders": "Update Reminders",
+  "checkInterval": "Update Check Interval (Hours)",
+  "remindMeOfUpdates": "Remind Me of Updates",
+  "installingApp": "Installing {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "uninstallingApp": "Uninstalling {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "installSuccessTitle": "Installation Successful",
+  "uninstallSuccessTitle": "Uninstallation Successful",
+  "installFailedTitle": "Installation Failed",
+  "uninstallFailedTitle": "Uninstallation Failed",
+  "taskCompleted": "Task Completed"
 }

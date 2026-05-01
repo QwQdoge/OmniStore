@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
+import '../services/update_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -27,6 +28,12 @@ class _SettingsPageState extends State<SettingsPage> {
   String appearance = 'system';
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
+
+  bool notificationsEnabled = true;
+  bool progressNotifications = true;
+  bool completionNotifications = true;
+  double updateCheckInterval = 1;
+  bool remindUpdates = true;
 
   @override
   void initState() {
@@ -69,6 +76,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
       final log = config['logging'] ?? {};
       logLevel = log['level'] ?? 'INFO';
+
+      final notify = config['notifications'] ?? {};
+      notificationsEnabled = notify['enabled'] ?? true;
+      progressNotifications = notify['progress'] ?? true;
+      completionNotifications = notify['completion'] ?? true;
+
+      final up = config['updates'] ?? {};
+      updateCheckInterval = (up['check_interval_hours'] ?? 1).toDouble();
+      remindUpdates = up['remind_updates'] ?? true;
     });
   }
 
@@ -229,7 +245,44 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.help), // Use something suitable
+                _buildSectionTitle(AppLocalizations.of(context)!.notifications),
+                _buildGroupCard([
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.enableNotifications,
+                    notificationsEnabled,
+                    (v) => setState(() => notificationsEnabled = v),
+                  ),
+                  if (notificationsEnabled) ...[
+                    _buildSwitchTile(
+                      AppLocalizations.of(context)!.progressNotifications,
+                      progressNotifications,
+                      (v) => setState(() => progressNotifications = v),
+                    ),
+                    _buildSwitchTile(
+                      AppLocalizations.of(context)!.completionNotifications,
+                      completionNotifications,
+                      (v) => setState(() => completionNotifications = v),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),
+                _buildGroupCard([
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.remindMeOfUpdates,
+                    remindUpdates,
+                    (v) => setState(() => remindUpdates = v),
+                  ),
+                  _buildSliderTile(
+                    AppLocalizations.of(context)!.checkInterval,
+                    updateCheckInterval,
+                    (v) => setState(() => updateCheckInterval = v),
+                    min: 1,
+                    max: 24,
+                  ),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.help),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
@@ -293,6 +346,7 @@ class _SettingsPageState extends State<SettingsPage> {
     String title,
     double value,
     Function(double) onChanged, {
+    double min = 0,
     double max = 100,
   }) {
     return Padding(
@@ -312,8 +366,9 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Slider(
             value: value,
+            min: min,
             max: max,
-            divisions: max.toInt(),
+            divisions: (max - min).toInt(),
             onChanged: onChanged,
           ),
         ],
@@ -344,9 +399,21 @@ class _SettingsPageState extends State<SettingsPage> {
         'language': L10nService.languageCode,
       },
       'logging': {'level': logLevel},
+      'notifications': {
+        'enabled': notificationsEnabled,
+        'progress': progressNotifications,
+        'completion': completionNotifications,
+      },
+      'updates': {
+        'check_interval_hours': updateCheckInterval.toInt(),
+        'remind_updates': remindUpdates,
+      },
     };
 
     BackendService().saveConfig(config).then((success) {
+      if (success) {
+        UpdateService().updateConfig();
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

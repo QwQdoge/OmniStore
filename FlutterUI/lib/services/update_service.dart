@@ -19,6 +19,9 @@ class UpdateService {
 
   final ValueNotifier<List<dynamic>> availableUpdates = ValueNotifier([]);
   Timer? _updateTimer;
+  Map<String, dynamic> _config = {};
+  DateTime? _lastNotificationTime;
+  String? _lastNotifiedUpdateHash;
 
   Future<void> init() async {
     // 初始化通知
@@ -31,7 +34,12 @@ class UpdateService {
     // 初始化托盘
     await _initSystemTray();
 
-    // 启动定时检查 (默认每小时检查一次)
+    // 启动定时检查
+    _startUpdateTimer();
+  }
+
+  Future<void> updateConfig() async {
+    _config = await BackendService().loadConfig();
     _startUpdateTimer();
   }
 
@@ -61,7 +69,8 @@ class UpdateService {
 
   void _startUpdateTimer() {
     _updateTimer?.cancel();
-    _updateTimer = Timer.periodic(const Duration(hours: 1), (timer) {
+    final interval = _config['updates']?['check_interval_hours'] ?? 1;
+    _updateTimer = Timer.periodic(Duration(hours: interval), (timer) {
       checkNow();
     });
     // 启动后立即检查一次
@@ -73,10 +82,18 @@ class UpdateService {
     final updates = await BackendService().checkUpdates();
     availableUpdates.value = updates;
 
+    final remindEnabled = _config['updates']?['remind_updates'] ?? true;
+    final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
+
     if (updates.isNotEmpty) {
-      _showUpdateNotification(updates.length);
+      final currentHash = updates.map((e) => "${e['name']}-${e['new_version']}").join(",");
+      if (remindEnabled && notificationsEnabled && currentHash != _lastNotifiedUpdateHash) {
+        _showUpdateNotification(updates.length);
+        _lastNotifiedUpdateHash = currentHash;
+      }
       await _systemTray.setToolTip(L10nService.s('tray_tooltip_updates', args: [updates.length.toString()]));
     } else {
+      _lastNotifiedUpdateHash = null;
       await _systemTray.setToolTip(L10nService.s('tray_tooltip_uptodate'));
     }
   }
@@ -90,7 +107,9 @@ class UpdateService {
     BackendService.globalStatus.value = L10nService.s('preparing_update');
     BackendService.globalProgress.value = null;
     BackendService.clearLogs();
-    
+
+    showProgressNotification(L10nService.s('preparing_update'), 0);
+
     // Create a dummy AppPackage for tracking if we don't have one
     final app = AppPackage(
       name: name,
@@ -111,21 +130,28 @@ class UpdateService {
 
       BackendService.activeProcess = process;
 
-      process.stdout.transform(const Utf8Decoder()).transform(const LineSplitter()).listen((line) {
+      process.stdout
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .listen((line) {
         String cleanLine = line.trim();
         if (cleanLine.startsWith("[CALLBACK]")) {
-           try {
-             final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-             String log = data['message'] ?? data['log'] ?? "";
-             if (log.isNotEmpty) {
-               if (log.startsWith("[PROGRESS]")) {
-                  final p = double.tryParse(log.split(" ")[1]);
-                  if (p != null) BackendService.globalProgress.value = p / 100.0;
-               } else {
-                  BackendService.addLog(log);
-               }
-             }
-           } catch (_) {}
+          try {
+            final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
+            String log = data['message'] ?? data['log'] ?? "";
+            if (log.isNotEmpty) {
+              if (log.startsWith("[PROGRESS]")) {
+                final p = double.tryParse(log.split(" ")[1]);
+                if (p != null) {
+                  final progressValue = p / 100.0;
+                  BackendService.globalProgress.value = progressValue;
+                  showProgressNotification(name, progressValue);
+                }
+              } else {
+                BackendService.addLog(log);
+              }
+            }
+          } catch (_) {}
         }
       });
 
@@ -134,25 +160,76 @@ class UpdateService {
       BackendService.activeApp.value = null;
       BackendService.activeProcess = null;
 
+      showCompletionNotification(name, exitCode == 0);
+
       if (exitCode == 0) {
         checkNow(); // Refresh update list
       }
     } catch (e) {
       BackendService.isDownloading.value = false;
       BackendService.activeApp.value = null;
+      showCompletionNotification(name, false);
     }
   }
 
   Future<void> _showUpdateNotification(int count) async {
-    const LinuxNotificationDetails linuxPlatformChannelSpecifics = LinuxNotificationDetails(
+    const LinuxNotificationDetails linuxPlatformChannelSpecifics =
+        LinuxNotificationDetails(
       urgency: LinuxNotificationUrgency.normal,
     );
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(linux: linuxPlatformChannelSpecifics);
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(linux: linuxPlatformChannelSpecifics);
     await _notificationsPlugin.show(
       0,
       L10nService.s('notification_title'),
       L10nService.s('notification_body', args: [count.toString()]),
       platformChannelSpecifics,
+    );
+  }
+
+  Future<void> showProgressNotification(String title, double progress) async {
+    final enabled = _config['notifications']?['enabled'] ?? true;
+    final progressEnabled = _config['notifications']?['progress'] ?? true;
+    if (!enabled || !progressEnabled) return;
+
+    // Throttle: once every 2 seconds
+    final now = DateTime.now();
+    if (_lastNotificationTime != null &&
+        now.difference(_lastNotificationTime!) < const Duration(seconds: 2)) {
+      if (progress < 1.0) return;
+    }
+    _lastNotificationTime = now;
+
+    final linuxDetails = LinuxNotificationDetails(
+      urgency: LinuxNotificationUrgency.low,
+      customHints: [
+        // For standard Linux notification daemons to show progress if supported
+        // though not all support it via standard API
+      ],
+    );
+
+    await _notificationsPlugin.show(
+      1,
+      title,
+      "${(progress * 100).toInt()}%",
+      NotificationDetails(linux: linuxDetails),
+    );
+  }
+
+  Future<void> showCompletionNotification(String title, bool success) async {
+    final enabled = _config['notifications']?['enabled'] ?? true;
+    final completionEnabled = _config['notifications']?['completion'] ?? true;
+    if (!enabled || !completionEnabled) return;
+
+    final linuxDetails = const LinuxNotificationDetails(
+      urgency: LinuxNotificationUrgency.normal,
+    );
+
+    await _notificationsPlugin.show(
+      2,
+      L10nService.s('task_completed'),
+      "$title: ${success ? L10nService.s('success') : L10nService.s('failed')}",
+      NotificationDetails(linux: linuxDetails),
     );
   }
 }

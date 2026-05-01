@@ -199,4 +199,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateAll => 'Update All';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get enableNotifications => 'Enable Notifications';
+
+  @override
+  String get progressNotifications => 'Progress Notifications';
+
+  @override
+  String get completionNotifications => 'Completion Notifications';
+
+  @override
+  String get updateReminders => 'Update Reminders';
+
+  @override
+  String get checkInterval => 'Update Check Interval (Hours)';
+
+  @override
+  String get remindMeOfUpdates => 'Remind Me of Updates';
+
+  @override
+  String installingApp(String name) {
+    return 'Installing $name';
+  }
+
+  @override
+  String uninstallingApp(String name) {
+    return 'Uninstalling $name';
+  }
+
+  @override
+  String get installSuccessTitle => 'Installation Successful';
+
+  @override
+  String get uninstallSuccessTitle => 'Uninstallation Successful';
+
+  @override
+  String get installFailedTitle => 'Installation Failed';
+
+  @override
+  String get uninstallFailedTitle => 'Uninstallation Failed';
+
+  @override
+  String get taskCompleted => 'Task Completed';
 }
