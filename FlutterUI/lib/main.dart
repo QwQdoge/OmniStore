@@ -167,7 +167,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       color: theme.brightness == Brightness.light
                           ? Colors.white
                           : colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
@@ -180,8 +180,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       borderRadius: BorderRadius.circular(28),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
+                        switchInCurve: Curves.easeInOutExpo,
+                        switchOutCurve: Curves.easeInOutExpo,
                         child: KeyedSubtree(
                           key: ValueKey<int>(_selectedIndex),
                           child: _subPages[_selectedIndex],
