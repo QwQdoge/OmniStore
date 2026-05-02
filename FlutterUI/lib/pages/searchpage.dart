@@ -459,12 +459,12 @@ class _SearchPageState extends State<SearchPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
-                                color: colorScheme.primary.withOpacity(0.1),
+                            color: Colors.green.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 AppLocalizations.of(context)!.ready,
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
                               ),
                             ),
                           ],

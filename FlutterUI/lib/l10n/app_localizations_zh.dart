@@ -216,6 +216,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get closeToTray => '关闭时隐藏到系统托盘';
 
   @override
+  String get useSystemTitleBar => '使用系统标题栏';
+
+  @override
   String get showWindow => '显示窗口';
 
   @override

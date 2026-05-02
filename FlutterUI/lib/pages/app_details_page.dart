@@ -462,7 +462,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return Scaffold(
       body: Column(
         children: [
-          const WindowTitleBar(),
+          FutureBuilder<Map<String, dynamic>>(
+            future: BackendService().loadConfig(),
+            builder: (context, snapshot) {
+              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
+              if (useSystem) return const SizedBox.shrink();
+              return const WindowTitleBar();
+            },
+          ),
           Expanded(
             child: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) => [

@@ -54,7 +54,7 @@ class RecommendationManager:
                     item['screenshots'] = details.get('screenshots') or []
                     item['description'] = details.get('description') or item.get('description')
 
-            enrich_tasks = [_enrich_item(app) for app in recommended[:10]]
+            enrich_tasks = [_enrich_item(app) for app in recommended[:15]]
             await asyncio.gather(*enrich_tasks)
 
             # Limit results

@@ -82,6 +82,7 @@
   "progressNotifications": "Progress Notifications",
   "completionNotifications": "Completion Notifications",
   "closeToTray": "Close to system tray",
+  "useSystemTitleBar": "Use system title bar",
   "showWindow": "Show Window",
   "exit": "Exit",
   "trayTooltipUpdates": "OmniStore: Found {count} updates",

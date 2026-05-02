@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart' as wm;
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
@@ -29,6 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
   bool closeToTray = true;
+  bool useSystemTitleBar = false;
   bool includeAurUpdates = true;
 
   bool notificationsEnabled = true;
@@ -76,6 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appearance = ui['appearance'] ?? 'system';
       colorSeed = ui['color_seed'] ?? '#CA6ECF';
       closeToTray = ui['close_to_tray'] ?? true;
+      useSystemTitleBar = ui['use_system_title_bar'] ?? false;
 
       final log = config['logging'] ?? {};
       logLevel = log['level'] ?? 'INFO';
@@ -280,6 +283,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     closeToTray,
                     (v) => setState(() => closeToTray = v),
                   ),
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.useSystemTitleBar,
+                    useSystemTitleBar,
+                    (v) => _toggleTitleBar(v),
+                  ),
                   ],
                 ]),
                 const SizedBox(height: 24),
@@ -466,6 +474,19 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _toggleTitleBar(bool useSystem) async {
+    setState(() => useSystemTitleBar = useSystem);
+    // 立即生效
+    try {
+      final wm.TitleBarStyle style = useSystem
+          ? wm.TitleBarStyle.normal
+          : wm.TitleBarStyle.hidden;
+      await wm.windowManager.setTitleBarStyle(style);
+    } catch (e) {
+      debugPrint("TitleBar Error: $e");
+    }
+  }
+
   void _saveAll() {
     final config = {
       'search': {
@@ -487,6 +508,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'appearance': appearance, 
         'color_seed': colorSeed,
         'close_to_tray': closeToTray,
+        'use_system_title_bar': useSystemTitleBar,
         'language': L10nService.languageCode,
       },
       'logging': {'level': logLevel},

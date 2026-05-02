@@ -216,6 +216,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeToTray => 'Close to system tray';
 
   @override
+  String get useSystemTitleBar => 'Use system title bar';
+
+  @override
   String get showWindow => 'Show Window';
 
   @override

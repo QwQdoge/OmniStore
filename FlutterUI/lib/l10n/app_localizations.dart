@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'Close to system tray'**
   String get closeToTray;
 
+  /// No description provided for @useSystemTitleBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Use system title bar'**
+  String get useSystemTitleBar;
+
   /// No description provided for @showWindow.
   ///
   /// In en, this message translates to:

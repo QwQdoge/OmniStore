@@ -285,14 +285,17 @@ class _HomePageState extends State<HomePage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            "Rating 4.${(app.name.length % 5) + 5} • ${app.primarySource}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurface.withOpacity(0.6),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Text(
+                                  "Rating 4.${(app.name.length % 5) + 5} • ",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurface.withOpacity(0.6),
+                                  ),
+                                ),
+                                _buildSourceChips(app.sources.take(2).toList()),
+                              ],
                           ),
                         ],
                       ),
@@ -311,6 +314,9 @@ class _HomePageState extends State<HomePage> {
   Widget _buildListCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // 获取当前可用变体
+    final otherSources = app.sources.where((s) => s != app.primarySource).toList();
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -401,7 +407,25 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _buildSourceChips(app.sources.take(1).toList()),
+                        if (otherSources.isEmpty)
+                          _buildSourceChips([app.primarySource])
+                        else
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: app.primarySource,
+                              isDense: true,
+                              icon: const Icon(Icons.arrow_drop_down, size: 14),
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue),
+                              items: app.sources.map((s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(s, style: const TextStyle(fontSize: 10)),
+                              )).toList(),
+                              onChanged: (v) {
+                                // 这里我们通常需要改变 app 的状态，但 app 是由后台生成的
+                                // 实际上跳转到详情页选择更合适，这里我们只显示所有来源
+                              },
+                            ),
+                          ),
                       ],
                     ),
                   ],
