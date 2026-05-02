@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(28.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -154,45 +154,21 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(28.0),
               border: Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
             ),
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 上半部分：类似宣传大图
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        colorScheme.primaryContainer,
-                        colorScheme.tertiaryContainer,
-                      ],
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/featured_banner.png'),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  child: app.icon != null
-                      ? Image.network(
-                          app.icon!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (c, e, s) => Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 48,
-                              color: colorScheme.primary.withOpacity(0.5),
-                            ),
-                          ),
-                        )
-                      : Center(
-                          child: Icon(
-                            Icons.image_outlined,
-                            size: 48,
-                            color: colorScheme.primary.withOpacity(0.5),
-                          ),
-                        ),
                 ),
               ),
               // 下半部分：应用信息
@@ -209,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -249,7 +225,7 @@ class _HomePageState extends State<HomePage> {
                             "Rating 4.${(app.name.length % 5) + 5} • ${app.primarySource}",
                             style: TextStyle(
                               fontSize: 12,
-                              color: colorScheme.onSurface.withOpacity(0.6),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -292,7 +268,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 1),
                     ),
@@ -335,7 +311,7 @@ class _HomePageState extends State<HomePage> {
                           "${(app.name.length * 12.5).toStringAsFixed(0)} MB",
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurface.withOpacity(0.6),
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -389,7 +365,7 @@ class _HomePageState extends State<HomePage> {
             (s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

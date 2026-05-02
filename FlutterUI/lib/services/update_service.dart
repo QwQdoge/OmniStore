@@ -11,6 +11,7 @@ import 'l10n_service.dart';
 
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
+  static UpdateService get instance => _instance;
   factory UpdateService() => _instance;
   UpdateService._internal();
 
