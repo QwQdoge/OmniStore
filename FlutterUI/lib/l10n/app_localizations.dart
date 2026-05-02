@@ -488,7 +488,7 @@ abstract class AppLocalizations {
   /// **'Progress Notifications'**
   String get progressNotifications;
 
-  /// Description for completionNotifications
+  /// No description provided for @completionNotifications.
   ///
   /// In en, this message translates to:
   /// **'Completion Notifications'**
@@ -524,7 +524,7 @@ abstract class AppLocalizations {
   /// **'OmniStore: Up to date'**
   String get trayTooltipUpToDate;
 
-  /// No description provided for @updateReminders.
+  /// Description for updateReminders
   ///
   /// In en, this message translates to:
   /// **'Update Reminders'**
