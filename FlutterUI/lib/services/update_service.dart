@@ -126,7 +126,14 @@ class UpdateService {
       description: "Updating...",
       installed: true,
       version: "Latest",
-      sources: [source],
+      variants: [
+        AppVariant(
+          source: source,
+          version: "Latest",
+          installed: true,
+          description: "Updating...",
+        )
+      ],
       primarySource: source,
     );
     BackendService.activeApp.value = app;
