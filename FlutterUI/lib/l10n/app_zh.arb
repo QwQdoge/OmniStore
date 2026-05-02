@@ -22,7 +22,9 @@
   "resultsFound": "{count} 个结果",
   "@resultsFound": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noResults": "未找到相关应用",
@@ -48,7 +50,9 @@
   "confirmActionMsg": "确定要对 {name} 执行此操作吗？",
   "@confirmActionMsg": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "cancel": "取消",
@@ -73,7 +77,9 @@
   "foundUpdates": "发现 {count} 个更新",
   "@foundUpdates": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "updateAll": "全部更新",
@@ -98,13 +104,17 @@
   "installingApp": "正在安装 {name}",
   "@installingApp": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "uninstallingApp": "正在卸载 {name}",
   "@uninstallingApp": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "installSuccessTitle": "安装成功",

@@ -857,7 +857,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
-                  items: {
+                  items: <String>{
                     for (var v in widget.app.variants) v.source,
                     if (_extraDetails != null && _extraDetails!['variants'] != null)
                       for (var v in _extraDetails!['variants']) v['source'].toString(),
