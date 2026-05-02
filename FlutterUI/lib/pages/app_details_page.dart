@@ -8,6 +8,7 @@ import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
 import '../services/update_service.dart';
+import '../widgets/window_title_bar.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -459,30 +460,40 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.app.name),
-        actions: [
-          ValueListenableBuilder<List<String>>(
-            valueListenable: BackendService.globalLogs,
-            builder: (context, logs, _) {
-              if (!_isInstalling && logs.isEmpty) return const SizedBox.shrink();
-              return IconButton(
-                icon: Badge(
-                  isLabelVisible: _isInstalling,
-                  child: const Icon(Icons.terminal_outlined),
+      body: Column(
+        children: [
+          const WindowTitleBar(),
+          Expanded(
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                SliverAppBar(
+                  pinned: true,
+                  title: Text(widget.app.name),
+                  actions: [
+                    ValueListenableBuilder<List<String>>(
+                      valueListenable: BackendService.globalLogs,
+                      builder: (context, logs, _) {
+                        if (!_isInstalling && logs.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return IconButton(
+                          icon: Badge(
+                            isLabelVisible: _isInstalling,
+                            child: const Icon(Icons.terminal_outlined),
+                          ),
+                          tooltip: AppLocalizations.of(context)!.terminalOutput,
+                          onPressed: _showTerminalDialog,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
-                tooltip: AppLocalizations.of(context)!.terminalOutput,
-                onPressed: _showTerminalDialog,
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(theme),
             const SizedBox(height: 24),
@@ -562,8 +573,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 AppLocalizations.of(context)!.license,
                 _extraDetails!['license'],
               ),
-          ],
-        ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -651,11 +666,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             ),
             const SizedBox(height: 16),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: _progress,
-                minHeight: 6,
+                minHeight: 8,
                 backgroundColor: colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
           ],

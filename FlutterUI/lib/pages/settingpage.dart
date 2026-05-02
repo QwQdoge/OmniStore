@@ -90,14 +90,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(AppLocalizations.of(context)!.settings),
+            title: Text(
+              AppLocalizations.of(context)!.settings,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
             centerTitle: false,
             backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16),

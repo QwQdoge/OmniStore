@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -127,26 +128,54 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBannerCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Material(
-      color: theme.brightness == Brightness.light
-          ? Colors.white
-          : colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),
-        ),
-        child: Container(
-          width: 300,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.3),
-            ),
+    return Container(
+      width: 300,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
+        ],
+      ),
+      child: Material(
+        color: theme.brightness == Brightness.light
+            ? Colors.white
+            : colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(28.0),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                AppDetailsPage(app: app),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
+                child: SlideTransition(
+                  position: animation.drive(Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28.0),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 上半部分：类似宣传大图
@@ -163,23 +192,39 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  child: app.icon != null
-                      ? Image.network(
-                          app.icon!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (c, e, s) => Center(
+                  child: (app.screenshots != null && app.screenshots!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: app.screenshots![0],
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Center(
+                            child: CircularProgressIndicator(
+                              color: colorScheme.primary.withOpacity(0.3),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                          errorWidget: (c, e, s) => Icon(
+                            Icons.image_outlined,
+                            size: 48,
+                            color: colorScheme.primary.withOpacity(0.5),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                colorScheme.primaryContainer,
+                                colorScheme.tertiaryContainer,
+                              ],
+                            ),
+                          ),
+                          child: Center(
                             child: Icon(
                               Icons.image_outlined,
                               size: 48,
                               color: colorScheme.primary.withOpacity(0.5),
                             ),
-                          ),
-                        )
-                      : Center(
-                          child: Icon(
-                            Icons.image_outlined,
-                            size: 48,
-                            color: colorScheme.primary.withOpacity(0.5),
                           ),
                         ),
                 ),
@@ -208,7 +253,13 @@ class _HomePageState extends State<HomePage> {
                       child: app.icon != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(app.icon!),
+                              child: CachedNetworkImage(
+                                imageUrl: app.icon!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(
+                                        strokeWidth: 2),
+                              ),
                             )
                           : Text(
                               app.name[0].toUpperCase(),
@@ -253,8 +304,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildListCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
@@ -262,10 +314,27 @@ class _HomePageState extends State<HomePage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                AppDetailsPage(app: app),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
+                child: SlideTransition(
+                  position: animation.drive(Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -290,7 +359,12 @@ class _HomePageState extends State<HomePage> {
                 child: app.icon != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(app.icon!),
+                        child: CachedNetworkImage(
+                          imageUrl: app.icon!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     : Text(
                         app.name[0].toUpperCase(),
@@ -346,7 +420,24 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          AppDetailsPage(app: app),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
+                          child: SlideTransition(
+                            position: animation.drive(Tween<Offset>(
+                              begin: const Offset(0.05, 0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+                            child: child,
+                          ),
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 500),
+                    ),
                   );
                 },
                 child: Text(

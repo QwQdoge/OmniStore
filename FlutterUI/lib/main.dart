@@ -112,10 +112,19 @@ class MainNavigationEntry extends StatefulWidget {
 }
 
 class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowListener {
+  int _selectedIndex = 0;
+  late final List<Widget> _subPages;
+
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
+    _subPages = [
+      const HomePage(),
+      const SearchPage(autoFocus: false),
+      const SettingsPage(),
+      const DownloadPage(),
+    ];
   }
 
   @override
@@ -132,14 +141,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
       await windowManager.hide();
     }
   }
-  int _selectedIndex = 0;
-
-  final List<Widget> _subPages = [
-    const HomePage(),
-    const SearchPage(autoFocus: false),
-    const SettingsPage(),
-    const DownloadPage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +179,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(28.0),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
                         switchInCurve: Curves.easeInOutExpo,
