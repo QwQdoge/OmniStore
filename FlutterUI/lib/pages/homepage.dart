@@ -127,26 +127,37 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBannerCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Material(
-      color: theme.brightness == Brightness.light
-          ? Colors.white
-          : colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),
-        ),
-        child: Container(
-          width: 300,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.3),
-            ),
+    return Container(
+      width: 300,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
+        ],
+      ),
+      child: Material(
+        color: theme.brightness == Brightness.light
+            ? Colors.white
+            : colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(28.0),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28.0),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 上半部分：类似宣传大图
@@ -253,8 +264,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildListCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
@@ -262,7 +274,7 @@ class _HomePageState extends State<HomePage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => AppDetailsPage(app: app)),

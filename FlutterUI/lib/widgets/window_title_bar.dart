@@ -66,12 +66,12 @@ class WindowTitleBar extends StatelessWidget {
                         constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
                         child: InkWell(
                           onTap: onSearchPressed,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(28),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
                               color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(28),
                               border: Border.all(
                                 color: colorScheme.outlineVariant.withOpacity(0.5),
                               ),
