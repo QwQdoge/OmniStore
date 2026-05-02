@@ -10,35 +10,36 @@ import 'pages/welcome_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/window_manager.dart' as wm;
 import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // 初始化窗口管理器
-  await windowManager.ensureInitialized();
-
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(1100, 750),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.hidden,
-  );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-    await windowManager.setPreventClose(true);
-  });
+  await wm.windowManager.ensureInitialized();
 
   // 初始化配置和语言
   final config = await BackendService().loadConfig();
+  final bool useSystemBar = config['ui']?['use_system_title_bar'] ?? false;
+
+  wm.WindowOptions windowOptions = wm.WindowOptions(
+    size: const Size(1100, 750),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: useSystemBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
+  );
+  wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await wm.windowManager.show();
+    await wm.windowManager.focus();
+    await wm.windowManager.setPreventClose(true);
+  });
   await L10nService.init(config);
 
   // 初始化更新服务
-  await UpdateService.instance.init();
-  await UpdateService.instance.updateConfig();
+  await UpdateService().init();
+  await UpdateService().updateConfig();
   
   runApp(OmnistoreApp(initialConfig: config));
 }
@@ -112,14 +113,14 @@ class MainNavigationEntry extends StatefulWidget {
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
 }
 
-class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowListener {
+class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.WindowListener {
   int _selectedIndex = 0;
   late final List<Widget> _subPages;
 
   @override
   void initState() {
     super.initState();
-    windowManager.addListener(this);
+    wm.windowManager.addListener(this);
     _subPages = [
       const HomePage(),
       const SearchPage(autoFocus: false),
@@ -130,7 +131,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
 
   @override
   void dispose() {
-    windowManager.removeListener(this);
+    wm.windowManager.removeListener(this);
     super.dispose();
   }
 
@@ -141,10 +142,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
     final bool closeToTray = config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
-      await windowManager.hide();
+      await wm.windowManager.hide();
     } else {
-      await windowManager.setPreventClose(false);
-      await windowManager.close();
+      await wm.windowManager.setPreventClose(false);
+      await wm.windowManager.close();
       exit(0);
     }
   }
@@ -159,9 +160,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
       body: Column(
         children: [
           // 自定义标题栏
-          WindowTitleBar(
-            showSearch: true,
-            onSearchPressed: () => setState(() => _selectedIndex = 1),
+          FutureBuilder<Map<String, dynamic>>(
+            future: BackendService().loadConfig(),
+            builder: (context, snapshot) {
+              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
+              if (useSystem) return const SizedBox.shrink();
+              return WindowTitleBar(
+                showSearch: true,
+                onSearchPressed: () => setState(() => _selectedIndex = 1),
+              );
+            },
           ),
           Expanded(
             child: Row(
@@ -179,7 +187,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -256,7 +264,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
 
   Widget _buildDownloadButton(ColorScheme colorScheme) {
     return ValueListenableBuilder<List<dynamic>>(
-      valueListenable: UpdateService.instance.availableUpdates,
+      valueListenable: UpdateService().availableUpdates,
       builder: (context, updates, _) {
         return Stack(
           clipBehavior: Clip.none,
@@ -305,8 +313,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                   color: _selectedIndex == 3
                       ? colorScheme.primary
                       : isDownloading
-                          ? colorScheme.primary.withValues(alpha: 0.1)
-                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          ? colorScheme.primary.withOpacity(0.1)
+                          : colorScheme.surfaceContainerHighest.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
                 child: Stack(

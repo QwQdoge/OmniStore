@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(28.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -172,19 +172,24 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(28.0),
               border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                color: colorScheme.outlineVariant.withOpacity(0.3),
               ),
             ),
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 上半部分：类似宣传大图
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/featured_banner.png'),
-                      fit: BoxFit.cover,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colorScheme.primaryContainer,
+                        colorScheme.tertiaryContainer,
+                      ],
                     ),
                   ),
                   child: (app.screenshots != null && app.screenshots!.isNotEmpty)
@@ -238,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Colors.black.withOpacity(0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -280,14 +285,17 @@ class _HomePageState extends State<HomePage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            "Rating 4.${(app.name.length % 5) + 5} • ${app.primarySource}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Text(
+                                  "Rating 4.${(app.name.length % 5) + 5} • ",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurface.withOpacity(0.6),
+                                  ),
+                                ),
+                                _buildSourceChips(app.sources.take(2).toList()),
+                              ],
                           ),
                         ],
                       ),
@@ -306,6 +314,9 @@ class _HomePageState extends State<HomePage> {
   Widget _buildListCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // 获取当前可用变体
+    final otherSources = app.sources.where((s) => s != app.primarySource).toList();
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -344,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 1),
                     ),
@@ -392,11 +403,29 @@ class _HomePageState extends State<HomePage> {
                           "${(app.name.length * 12.5).toStringAsFixed(0)} MB",
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _buildSourceChips(app.sources.take(1).toList()),
+                        if (otherSources.isEmpty)
+                          _buildSourceChips([app.primarySource])
+                        else
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: app.primarySource,
+                              isDense: true,
+                              icon: const Icon(Icons.arrow_drop_down, size: 14),
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue),
+                              items: app.sources.map((s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(s, style: const TextStyle(fontSize: 10)),
+                              )).toList(),
+                              onChanged: (v) {
+                                // 这里我们通常需要改变 app 的状态，但 app 是由后台生成的
+                                // 实际上跳转到详情页选择更合适，这里我们只显示所有来源
+                              },
+                            ),
+                          ),
                       ],
                     ),
                   ],
@@ -463,7 +492,7 @@ class _HomePageState extends State<HomePage> {
             (s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
+                color: Colors.blue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

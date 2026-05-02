@@ -174,9 +174,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _handleAction(String flag) async {
-    if (_isInstalling) {
-      return;
-    }
+    if (_isInstalling) return;
 
     final isUninstall = flag == "-R";
     final confirmed = await showDialog<bool>(
@@ -206,9 +204,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ),
     );
 
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
 
     setState(() {
       _isInstalling = true;
@@ -224,7 +220,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     BackendService.activeApp.value = widget.app;
     BackendService.activeFlag.value = flag;
 
-    UpdateService.instance.showProgressNotification(
+    UpdateService().showProgressNotification(
       isUninstall
           ? L10nService.s('uninstalling_app', args: [widget.app.name])
           : L10nService.s('installing_app', args: [widget.app.name]),
@@ -251,9 +247,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           .transform(const LineSplitter())
           .listen((line) {
             String cleanLine = line.trim();
-            if (cleanLine.isEmpty) {
-              return;
-            }
+            if (cleanLine.isEmpty) return;
 
             Map<String, dynamic>? data;
             if (cleanLine.startsWith("[CALLBACK]")) {
@@ -278,7 +272,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         _progress = p / 100.0;
                       });
                       BackendService.globalProgress.value = _progress;
-                      UpdateService.instance.showProgressNotification(
+                      UpdateService().showProgressNotification(
                         widget.app.name,
                         _progress!,
                       );
@@ -314,7 +308,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             exitCode != 0 && !BackendService.isDownloading.value;
 
         if (!wasCancelled) {
-          UpdateService.instance.showCompletionNotification(
+          UpdateService().showCompletionNotification(
             widget.app.name,
             exitCode == 0,
           );
@@ -361,15 +355,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             );
           }
           await Future.delayed(const Duration(seconds: 1));
-          if (mounted) {
-            setState(() => _isInstalling = false);
-          }
+          if (mounted) setState(() => _isInstalling = false);
         }
       }
     } catch (e) {
       BackendService.activeApp.value = null;
       BackendService.activeProcess = null;
-      UpdateService.instance.showCompletionNotification(widget.app.name, false);
+      UpdateService().showCompletionNotification(widget.app.name, false);
       if (mounted) {
         setState(() {
           _isInstalling = false;
@@ -470,7 +462,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return Scaffold(
       body: Column(
         children: [
-          const WindowTitleBar(),
+          FutureBuilder<Map<String, dynamic>>(
+            future: BackendService().loadConfig(),
+            builder: (context, snapshot) {
+              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
+              if (useSystem) return const SizedBox.shrink();
+              return const WindowTitleBar();
+            },
+          ),
           Expanded(
             child: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -533,7 +532,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: (_extraDetails!['screenshots'] as List).length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -622,9 +621,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+          color: colorScheme.primaryContainer.withOpacity(0.4),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+          border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
         ),
         child: Column(
           children: [
@@ -678,7 +677,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               child: LinearProgressIndicator(
                 value: _progress,
                 minHeight: 8,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                backgroundColor: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
