@@ -859,10 +859,30 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fontSize: 14,
                   ),
                   items: {
-                    widget.app.primarySource,
-                    ...widget.app.sources,
+                    for (var v in widget.app.variants) v.source,
+                    if (_extraDetails != null && _extraDetails!['variants'] != null)
+                      for (var v in _extraDetails!['variants']) v['source'].toString(),
                     _selectedSource,
                   }.map((String source) {
+                    // Try to find version for this source
+                    String? version;
+                    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+                      for (var v in _extraDetails!['variants']) {
+                        if (v['source'] == source) {
+                          version = v['version'] ?? v['last_version'];
+                          break;
+                        }
+                      }
+                    }
+                    if (version == null) {
+                      for (var v in widget.app.variants) {
+                        if (v.source == source) {
+                          version = v.version;
+                          break;
+                        }
+                      }
+                    }
+
                     return DropdownMenuItem<String>(
                       value: source,
                       child: Row(
@@ -871,6 +891,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           _buildSourceTag(source, isSmall: true),
                           const SizedBox(width: 8),
                           Text(source),
+                          if (version != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              "v$version",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.normal,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );
@@ -880,7 +911,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       setState(() {
                         _selectedSource = newValue;
                         // 更新安装状态（基于当前选择的来源）
-                        // 寻找对应的 variant 检查安装状态
                         bool isInstalled = false;
                         if (_extraDetails != null && _extraDetails!['variants'] != null) {
                           for (var v in _extraDetails!['variants']) {
@@ -889,8 +919,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                               break;
                             }
                           }
-                        } else if (newValue == widget.app.primarySource) {
-                          isInstalled = widget.app.installed;
+                        } else {
+                          for (var v in widget.app.variants) {
+                            if (v.source == newValue) {
+                              isInstalled = v.installed;
+                              break;
+                            }
+                          }
                         }
                         _isAppInstalled = isInstalled;
                       });
