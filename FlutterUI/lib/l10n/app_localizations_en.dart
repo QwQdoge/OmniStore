@@ -213,6 +213,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completionNotifications => 'Completion Notifications';
 
   @override
+  String get closeToTray => 'Close to system tray';
+
+  @override
+  String get showWindow => 'Show Window';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String trayTooltipUpdates(Object count) {
+    return 'OmniStore: Found $count updates';
+  }
+
+  @override
+  String get trayTooltipUpToDate => 'OmniStore: Up to date';
+
+  @override
   String get updateReminders => 'Update Reminders';
 
   @override

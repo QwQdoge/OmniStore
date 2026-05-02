@@ -494,6 +494,36 @@ abstract class AppLocalizations {
   /// **'Completion Notifications'**
   String get completionNotifications;
 
+  /// No description provided for @closeToTray.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to system tray'**
+  String get closeToTray;
+
+  /// No description provided for @showWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Window'**
+  String get showWindow;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
+
+  /// No description provided for @trayTooltipUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore: Found {count} updates'**
+  String trayTooltipUpdates(Object count);
+
+  /// No description provided for @trayTooltipUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore: Up to date'**
+  String get trayTooltipUpToDate;
+
   /// No description provided for @updateReminders.
   ///
   /// In en, this message translates to:

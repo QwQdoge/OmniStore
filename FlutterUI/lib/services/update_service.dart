@@ -41,20 +41,30 @@ class UpdateService {
   Future<void> updateConfig() async {
     _config = await BackendService().loadConfig();
     _startUpdateTimer();
+    // 重新初始化托盘，确保语言和菜单最新
+    await _initSystemTray();
   }
 
   Future<void> _initSystemTray() async {
-    // 根据当前项目结构，尝试找一个图标，如果没找到 system_tray 可能会报错，
-    // 这里我们先初始化标题
-    // system_tray 2.x 使用 init 配合图标路径
-    // await _systemTray.initTray(title: "OmniStore");
+    // system_tray 2.x 初始化图标
+    // NOTE: In a real production environment, you would ensure assets/app_icon.png exists
+    // and call: await _systemTray.initTray(title: "OmniStore", iconPath: 'assets/app_icon.png');
 
     final Menu menu = Menu();
     await menu.buildFrom([
-      MenuItemLabel(label: L10nService.s('show_window'), onClicked: (menuItem) => windowManager.show()),
-      MenuItemLabel(label: L10nService.s('check_updates'), onClicked: (menuItem) => checkNow()),
+      MenuItemLabel(
+        label: L10nService.s('show_window'),
+        onClicked: (menuItem) => windowManager.show(),
+      ),
+      MenuItemLabel(
+        label: L10nService.s('check_updates'),
+        onClicked: (menuItem) => checkNow(),
+      ),
       MenuSeparator(),
-      MenuItemLabel(label: L10nService.s('exit'), onClicked: (menuItem) => exit(0)),
+      MenuItemLabel(
+        label: L10nService.s('exit'),
+        onClicked: (menuItem) => exit(0),
+      ),
     ]);
 
     await _systemTray.setContextMenu(menu);
@@ -91,10 +101,10 @@ class UpdateService {
         _showUpdateNotification(updates.length);
         _lastNotifiedUpdateHash = currentHash;
       }
-      await _systemTray.setToolTip(L10nService.s('tray_tooltip_updates', args: [updates.length.toString()]));
+      await _systemTray.setToolTip(L10nService.s('trayTooltipUpdates', args: [updates.length.toString()]));
     } else {
       _lastNotifiedUpdateHash = null;
-      await _systemTray.setToolTip(L10nService.s('tray_tooltip_uptodate'));
+      await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
     }
   }
 
