@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -9,30 +10,31 @@ import 'pages/welcome_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/window_manager.dart' as wm;
 import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // 初始化窗口管理器
-  await windowManager.ensureInitialized();
-
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(1100, 750),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.hidden,
-  );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-    await windowManager.setPreventClose(true);
-  });
+  await wm.windowManager.ensureInitialized();
 
   // 初始化配置和语言
   final config = await BackendService().loadConfig();
+  final bool useSystemBar = config['ui']?['use_system_title_bar'] ?? false;
+
+  wm.WindowOptions windowOptions = wm.WindowOptions(
+    size: const Size(1100, 750),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: useSystemBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
+  );
+  wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await wm.windowManager.show();
+    await wm.windowManager.focus();
+    await wm.windowManager.setPreventClose(true);
+  });
   await L10nService.init(config);
 
   // 初始化更新服务
@@ -111,35 +113,42 @@ class MainNavigationEntry extends StatefulWidget {
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
 }
 
-class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowListener {
+class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.WindowListener {
+  int _selectedIndex = 0;
+  late final List<Widget> _subPages;
+
   @override
   void initState() {
     super.initState();
-    windowManager.addListener(this);
+    wm.windowManager.addListener(this);
+    _subPages = [
+      const HomePage(),
+      const SearchPage(autoFocus: false),
+      const SettingsPage(),
+      const DownloadPage(),
+    ];
   }
 
   @override
   void dispose() {
-    windowManager.removeListener(this);
+    wm.windowManager.removeListener(this);
     super.dispose();
   }
 
   @override
   void onWindowClose() async {
-    // 这里可以处理关闭逻辑，比如隐藏到托盘
-    bool isPreventClose = await windowManager.isPreventClose();
-    if (isPreventClose) {
-      await windowManager.hide();
+    // 动态检查配置中的“关闭至托盘”设置
+    final config = await BackendService().loadConfig();
+    final bool closeToTray = config['ui']?['close_to_tray'] ?? true;
+
+    if (closeToTray) {
+      await wm.windowManager.hide();
+    } else {
+      await wm.windowManager.setPreventClose(false);
+      await wm.windowManager.close();
+      exit(0);
     }
   }
-  int _selectedIndex = 0;
-
-  final List<Widget> _subPages = [
-    const HomePage(),
-    const SearchPage(autoFocus: false),
-    const SettingsPage(),
-    const DownloadPage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -151,9 +160,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
       body: Column(
         children: [
           // 自定义标题栏
-          WindowTitleBar(
-            showSearch: true,
-            onSearchPressed: () => setState(() => _selectedIndex = 1),
+          FutureBuilder<Map<String, dynamic>>(
+            future: BackendService().loadConfig(),
+            builder: (context, snapshot) {
+              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
+              if (useSystem) return const SizedBox.shrink();
+              return WindowTitleBar(
+                showSearch: true,
+                onSearchPressed: () => setState(() => _selectedIndex = 1),
+              );
+            },
           ),
           Expanded(
             child: Row(
@@ -178,7 +194,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(28.0),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
                         switchInCurve: Curves.easeInOutExpo,

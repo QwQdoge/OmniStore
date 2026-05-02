@@ -173,7 +173,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
               side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
             ),
           ),
@@ -459,12 +459,12 @@ class _SearchPageState extends State<SearchPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
-                                color: colorScheme.primary.withOpacity(0.1),
+                            color: Colors.green.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 AppLocalizations.of(context)!.ready,
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
                               ),
                             ),
                           ],
@@ -602,6 +602,25 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showAppDetails(AppPackage app) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)));
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            AppDetailsPage(app: app),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
+            child: SlideTransition(
+              position: animation.drive(Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 }

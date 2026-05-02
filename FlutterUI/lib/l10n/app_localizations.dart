@@ -494,11 +494,77 @@ abstract class AppLocalizations {
   /// **'Completion Notifications'**
   String get completionNotifications;
 
+  /// No description provided for @closeToTray.
+  ///
+  /// In en, this message translates to:
+  /// **'Close to system tray'**
+  String get closeToTray;
+
+  /// No description provided for @useSystemTitleBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Use system title bar'**
+  String get useSystemTitleBar;
+
+  /// No description provided for @showWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Window'**
+  String get showWindow;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
+
+  /// No description provided for @trayTooltipUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore: Found {count} updates'**
+  String trayTooltipUpdates(Object count);
+
+  /// No description provided for @trayTooltipUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore: Up to date'**
+  String get trayTooltipUpToDate;
+
   /// No description provided for @updateReminders.
   ///
   /// In en, this message translates to:
   /// **'Update Reminders'**
   String get updateReminders;
+
+  /// No description provided for @maintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get maintenance;
+
+  /// No description provided for @updateAllPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Update All Packages'**
+  String get updateAllPackages;
+
+  /// No description provided for @includeAurUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Include AUR in \'Update All\''**
+  String get includeAurUpdates;
+
+  /// No description provided for @resetOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Onboarding (Welcome Page)'**
+  String get resetOnboarding;
+
+  /// No description provided for @resetOnboardingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reset onboarding? The welcome page will show on next launch.'**
+  String get resetOnboardingConfirm;
 
   /// No description provided for @checkInterval.
   ///

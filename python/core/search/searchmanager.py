@@ -102,7 +102,8 @@ class SearchManager:
         top_results = merged[:max_res]
 
         # 4. 异步补全前几个结果的元数据（图标等）
-        await self._enrich_metadata(top_results[:15])
+        # 增加补全数量到 30，确保列表模式下更多图标可见
+        await self._enrich_metadata(top_results[:30])
 
         return top_results
 
@@ -110,7 +111,8 @@ class SearchManager:
         """并发补全元数据"""
         tasks = []
         for item in items:
-            if not item.get("icon"):
+            # 即使有图标，如果没描述也尝试补全
+            if not item.get("icon") or not item.get("description"):
                 tasks.append(self._enrich_single(item))
 
         if tasks:

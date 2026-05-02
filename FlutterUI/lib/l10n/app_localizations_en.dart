@@ -213,7 +213,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completionNotifications => 'Completion Notifications';
 
   @override
+  String get closeToTray => 'Close to system tray';
+
+  @override
+  String get useSystemTitleBar => 'Use system title bar';
+
+  @override
+  String get showWindow => 'Show Window';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String trayTooltipUpdates(Object count) {
+    return 'OmniStore: Found $count updates';
+  }
+
+  @override
+  String get trayTooltipUpToDate => 'OmniStore: Up to date';
+
+  @override
   String get updateReminders => 'Update Reminders';
+
+  @override
+  String get maintenance => 'Maintenance';
+
+  @override
+  String get updateAllPackages => 'Update All Packages';
+
+  @override
+  String get includeAurUpdates => 'Include AUR in \'Update All\'';
+
+  @override
+  String get resetOnboarding => 'Reset Onboarding (Welcome Page)';
+
+  @override
+  String get resetOnboardingConfirm =>
+      'Are you sure you want to reset onboarding? The welcome page will show on next launch.';
 
   @override
   String get checkInterval => 'Update Check Interval (Hours)';

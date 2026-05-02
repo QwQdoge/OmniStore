@@ -46,6 +46,17 @@ class RecommendationManager:
             # Simple shuffle for "refresh" effect
             random.shuffle(recommended)
 
+            # Fetch screenshots and icons for the top 10 recommended apps to ensure cards have visuals
+            async def _enrich_item(item):
+                details = await self.get_details(item['id'])
+                if details:
+                    item['icon'] = details.get('icon') or item.get('icon')
+                    item['screenshots'] = details.get('screenshots') or []
+                    item['description'] = details.get('description') or item.get('description')
+
+            enrich_tasks = [_enrich_item(app) for app in recommended[:15]]
+            await asyncio.gather(*enrich_tasks)
+
             # Limit results
             return recommended[:20]
 
