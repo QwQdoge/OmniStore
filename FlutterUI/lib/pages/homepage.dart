@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(28.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(28.0),
               border: Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -198,14 +198,14 @@ class _HomePageState extends State<HomePage> {
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Center(
                             child: CircularProgressIndicator(
-                              color: colorScheme.primary.withOpacity(0.3),
+                              color: colorScheme.primary.withValues(alpha: 0.3),
                               strokeWidth: 2,
                             ),
                           ),
                           errorWidget: (c, e, s) => Icon(
                             Icons.image_outlined,
                             size: 48,
-                            color: colorScheme.primary.withOpacity(0.5),
+                            color: colorScheme.primary.withValues(alpha: 0.5),
                           ),
                         )
                       : Container(
@@ -223,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                             child: Icon(
                               Icons.image_outlined,
                               size: 48,
-                              color: colorScheme.primary.withOpacity(0.5),
+                              color: colorScheme.primary.withValues(alpha: 0.5),
                             ),
                           ),
                         ),
@@ -243,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -291,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                                   "Rating 4.${(app.name.length % 5) + 5} • ",
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: colorScheme.onSurface.withOpacity(0.6),
+                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                                   ),
                                 ),
                                 _buildSourceChips(app.sources.take(2).toList()),
@@ -355,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 1),
                     ),
@@ -403,7 +403,7 @@ class _HomePageState extends State<HomePage> {
                           "${(app.name.length * 12.5).toStringAsFixed(0)} MB",
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurface.withOpacity(0.6),
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -492,7 +492,7 @@ class _HomePageState extends State<HomePage> {
             (s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

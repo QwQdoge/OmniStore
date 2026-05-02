@@ -532,7 +532,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: (_extraDetails!['screenshots'] as List).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (context, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -621,9 +621,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withOpacity(0.4),
+          color: colorScheme.primaryContainer.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
+          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -677,7 +677,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               child: LinearProgressIndicator(
                 value: _progress,
                 minHeight: 8,
-                backgroundColor: colorScheme.primary.withOpacity(0.1),
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),

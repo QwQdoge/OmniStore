@@ -331,11 +331,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         // 考虑到 UI 逻辑，跳转到索引 3 是最好的
                         // 我们需要访问 MainNavigationEntry 的状态，或者使用一个全局导航 key
                         // 在此 demo 中，我们先提示已检查到更新
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(AppLocalizations.of(context)!.foundUpdates(UpdateService().availableUpdates.value.length))),
-                          );
-                        }
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppLocalizations.of(context)!.foundUpdates(UpdateService().availableUpdates.value.length))),
+                        );
                       }
                     },
                   ),

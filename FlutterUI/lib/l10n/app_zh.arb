@@ -1,24 +1,81 @@
 {
   "@@locale": "zh",
   "searchHint": "搜索应用、游戏、工具...",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
   "featured": "为你推荐",
+  "@featured": {
+    "description": "Description for featured"
+  },
   "hotApps": "热门应用",
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
   "explore": "探索",
+  "@explore": {
+    "description": "Description for explore"
+  },
   "search": "搜索",
+  "@search": {
+    "description": "Description for search"
+  },
   "settings": "设置",
+  "@settings": {
+    "description": "Description for settings"
+  },
   "downloads": "下载",
+  "@downloads": {
+    "description": "Description for downloads"
+  },
   "help": "帮助",
+  "@help": {
+    "description": "Description for help"
+  },
   "userAccount": "用户账户",
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
   "install": "安装",
+  "@install": {
+    "description": "Description for install"
+  },
   "open": "打开",
+  "@open": {
+    "description": "Description for open"
+  },
   "uninstall": "卸载",
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
   "launch": "启动程序",
+  "@launch": {
+    "description": "Description for launch"
+  },
   "about": "关于此软件",
+  "@about": {
+    "description": "Description for about"
+  },
   "details": "详细参数",
+  "@details": {
+    "description": "Description for details"
+  },
   "source": "来源",
+  "@source": {
+    "description": "Description for source"
+  },
   "variant": "变体",
+  "@variant": {
+    "description": "Description for variant"
+  },
   "version": "版本",
+  "@version": {
+    "description": "Description for version"
+  },
   "ready": "已就绪",
+  "@ready": {
+    "description": "Description for ready"
+  },
   "resultsFound": "{count} 个结果",
   "@resultsFound": {
     "placeholders": {
@@ -28,25 +85,85 @@
     }
   },
   "noResults": "未找到相关应用",
+  "@noResults": {
+    "description": "Description for noResults"
+  },
   "searching": "正在寻找...",
+  "@searching": {
+    "description": "Description for searching"
+  },
   "packageManager": "包管理器",
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
   "pacmanOfficial": "Pacman（官方库）",
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
   "aurUser": "AUR（用户库）",
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
   "flatpak": "Flatpak",
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
   "appImage": "AppImage",
+  "@appImage": {
+    "description": "Description for appImage"
+  },
   "sourcePriority": "结果源优先级 (拖动排序)",
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
   "maxResults": "最大显示结果数",
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
   "appearance": "外观模式",
+  "@appearance": {
+    "description": "Description for appearance"
+  },
   "themeColor": "主题色种子",
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
   "followSystem": "跟随系统",
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
   "lightMode": "浅色模式",
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
   "darkMode": "深色模式",
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
   "loggingLevel": "日志记录等级",
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
   "saveAndApply": "保存并应用",
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
   "configSaved": "配置已保存，部分设置重启生效",
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
   "configSaveFailed": "保存配置失败",
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
   "confirmUninstall": "确认卸载",
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
   "confirmInstall": "确认安装",
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
   "confirmActionMsg": "确定要对 {name} 执行此操作吗？",
   "@confirmActionMsg": {
     "placeholders": {
@@ -56,24 +173,81 @@
     }
   },
   "cancel": "取消",
+  "@cancel": {
+    "description": "Description for cancel"
+  },
   "confirm": "确定",
+  "@confirm": {
+    "description": "Description for confirm"
+  },
   "terminalOutput": "终端输出",
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
   "waitingForOutput": "正在等待输出...",
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
   "screenshots": "软件截图",
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
   "developer": "开发者",
+  "@developer": {
+    "description": "Description for developer"
+  },
   "license": "许可",
+  "@license": {
+    "description": "Description for license"
+  },
   "success": "成功",
+  "@success": {
+    "description": "Description for success"
+  },
   "failed": "失败",
+  "@failed": {
+    "description": "Description for failed"
+  },
   "taskCancelled": "任务已取消",
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
   "catDevelopment": "开发工具",
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
   "catMedia": "影音娱乐",
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
   "catInternet": "互联网",
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
   "catSystem": "系统工具",
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
   "catOffice": "办公",
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
   "catGames": "游戏",
+  "@catGames": {
+    "description": "Description for catGames"
+  },
   "updates": "更新",
+  "@updates": {
+    "description": "Description for updates"
+  },
   "upToDate": "所有应用已是最新",
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
   "checkUpdates": "检查更新",
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
   "foundUpdates": "发现 {count} 个更新",
   "@foundUpdates": {
     "placeholders": {
@@ -83,24 +257,86 @@
     }
   },
   "updateAll": "全部更新",
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
   "notifications": "通知设置",
+  "@notifications": {
+    "description": "Description for notifications"
+  },
   "enableNotifications": "启用通知",
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
   "progressNotifications": "进度通知",
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
   "completionNotifications": "完成通知",
+  "@completionNotifications": {
+    "description": "Description for completionNotifications"
+  },
   "closeToTray": "关闭时隐藏到系统托盘",
+  "@closeToTray": {
+    "description": "Description for closeToTray"
+  },
   "useSystemTitleBar": "使用系统标题栏",
+  "@useSystemTitleBar": {
+    "description": "Description for useSystemTitleBar"
+  },
   "showWindow": "显示窗口",
+  "@showWindow": {
+    "description": "Description for showWindow"
+  },
   "exit": "退出",
+  "@exit": {
+    "description": "Description for exit"
+  },
   "trayTooltipUpdates": "OmniStore: 发现 {count} 个更新",
+  "@trayTooltipUpdates": {
+    "description": "Description for trayTooltipUpdates",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "trayTooltipUpToDate": "OmniStore: 应用已是最新",
+  "@trayTooltipUpToDate": {
+    "description": "Description for trayTooltipUpToDate"
+  },
   "updateReminders": "更新提醒",
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
   "maintenance": "维护与操作",
+  "@maintenance": {
+    "description": "Description for maintenance"
+  },
   "updateAllPackages": "更新所有应用",
+  "@updateAllPackages": {
+    "description": "Description for updateAllPackages"
+  },
   "includeAurUpdates": "更新所有时包含 AUR",
+  "@includeAurUpdates": {
+    "description": "Description for includeAurUpdates"
+  },
   "resetOnboarding": "重置引导 (欢迎页面)",
+  "@resetOnboarding": {
+    "description": "Description for resetOnboarding"
+  },
   "resetOnboardingConfirm": "确定要重置引导吗？下次启动将重新显示欢迎页面。",
+  "@resetOnboardingConfirm": {
+    "description": "Description for resetOnboardingConfirm"
+  },
   "checkInterval": "自动检查更新间隔 (小时)",
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
   "remindMeOfUpdates": "提醒我有可用更新",
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
   "installingApp": "正在安装 {name}",
   "@installingApp": {
     "placeholders": {
@@ -118,8 +354,23 @@
     }
   },
   "installSuccessTitle": "安装成功",
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
   "uninstallSuccessTitle": "卸载成功",
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
   "installFailedTitle": "安装失败",
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
   "uninstallFailedTitle": "卸载失败",
-  "taskCompleted": "任务执行完成"
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
+  "taskCompleted": "任务执行完成",
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  }
 }

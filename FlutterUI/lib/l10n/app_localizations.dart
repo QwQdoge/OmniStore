@@ -530,7 +530,7 @@ abstract class AppLocalizations {
   /// **'OmniStore: Up to date'**
   String get trayTooltipUpToDate;
 
-  /// Description for updateReminders
+  /// No description provided for @updateReminders.
   ///
   /// In en, this message translates to:
   /// **'Update Reminders'**

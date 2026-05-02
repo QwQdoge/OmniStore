@@ -102,9 +102,9 @@ class _DownloadPageState extends State<DownloadPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         source,
@@ -231,7 +231,7 @@ class _DownloadPageState extends State<DownloadPage>
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -333,7 +333,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.task_alt, size: 64, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.task_alt, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Text(L10nService.s('no_active_tasks'), style: const TextStyle(color: Colors.grey)),
               ],
@@ -410,7 +410,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Text(L10nService.s('all_updated'), style: const TextStyle(color: Colors.grey)),
               ],
@@ -448,8 +448,6 @@ class _DownloadPageState extends State<DownloadPage>
     if (_isLoadingInstalled) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [

@@ -187,7 +187,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -313,8 +313,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                   color: _selectedIndex == 3
                       ? colorScheme.primary
                       : isDownloading
-                          ? colorScheme.primary.withOpacity(0.1)
-                          : colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                          ? colorScheme.primary.withValues(alpha: 0.1)
+                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: Stack(
