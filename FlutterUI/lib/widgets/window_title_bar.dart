@@ -70,10 +70,10 @@ class WindowTitleBar extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(28),
                               border: Border.all(
-                                color: colorScheme.outlineVariant.withOpacity(0.5),
+                                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                               ),
                             ),
                             child: Row(
@@ -86,7 +86,7 @@ class WindowTitleBar extends StatelessWidget {
                                     AppLocalizations.of(context)?.searchHint ?? "Search",
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ),
@@ -150,9 +150,9 @@ class WindowTitleBar extends StatelessWidget {
         style: IconButton.styleFrom(
           shape: const RoundedRectangleBorder(),
           hoverColor: isClose
-              ? Colors.red.withOpacity(0.8)
-              : colorScheme.onSurface.withOpacity(0.1),
-          foregroundColor: isClose ? null : colorScheme.onSurface.withOpacity(0.7),
+              ? Colors.red.withValues(alpha: 0.8)
+              : colorScheme.onSurface.withValues(alpha: 0.1),
+          foregroundColor: isClose ? null : colorScheme.onSurface.withValues(alpha: 0.7),
         ),
         icon: Icon(icon),
       ),

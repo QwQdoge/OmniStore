@@ -42,7 +42,9 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Future<void> _loadInstalledApps() async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _isLoadingInstalled = true);
     try {
       final results = await _backend.listInstalled();
@@ -57,7 +59,9 @@ class _DownloadPageState extends State<DownloadPage>
     } catch (e) {
       debugPrint("Error loading installed apps: $e");
     } finally {
-      if (mounted) setState(() => _isLoadingInstalled = false);
+      if (mounted) {
+        setState(() => _isLoadingInstalled = false);
+      }
     }
   }
 
@@ -101,9 +105,9 @@ class _DownloadPageState extends State<DownloadPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         source,
@@ -230,7 +234,7 @@ class _DownloadPageState extends State<DownloadPage>
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -332,7 +336,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.task_alt, size: 64, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.task_alt, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Text(L10nService.s('no_active_tasks'), style: const TextStyle(color: Colors.grey)),
               ],
@@ -409,7 +413,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Text(L10nService.s('all_updated'), style: const TextStyle(color: Colors.grey)),
               ],
@@ -470,7 +474,7 @@ class _DownloadPageState extends State<DownloadPage>
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             leading: app.icon != null 
-                ? Image.network(app.icon!, width: 40, height: 40, errorBuilder: (_, __, ___) => const Icon(Icons.apps))
+                ? Image.network(app.icon!, width: 40, height: 40, errorBuilder: (_, _, _) => const Icon(Icons.apps))
                 : const Icon(Icons.apps, size: 40),
             title: Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Row(

@@ -1,85 +1,277 @@
 {
   "@@locale": "en",
   "searchHint": "Search apps, games, tools...",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
   "featured": "Featured",
+  "@featured": {
+    "description": "Description for featured"
+  },
   "hotApps": "Hot Apps",
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
   "explore": "Explore",
+  "@explore": {
+    "description": "Description for explore"
+  },
   "search": "Search",
+  "@search": {
+    "description": "Description for search"
+  },
   "settings": "Settings",
+  "@settings": {
+    "description": "Description for settings"
+  },
   "downloads": "Downloads",
+  "@downloads": {
+    "description": "Description for downloads"
+  },
   "help": "Help",
+  "@help": {
+    "description": "Description for help"
+  },
   "userAccount": "User Account",
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
   "install": "Install",
+  "@install": {
+    "description": "Label for the installation button"
+  },
   "open": "Open",
+  "@open": {
+    "description": "Description for open"
+  },
   "uninstall": "Uninstall",
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
   "launch": "Launch",
+  "@launch": {
+    "description": "Description for launch"
+  },
   "about": "About",
+  "@about": {
+    "description": "Description for about"
+  },
   "details": "Details",
+  "@details": {
+    "description": "Description for details"
+  },
   "source": "Source",
+  "@source": {
+    "description": "Description for source"
+  },
   "variant": "Variant",
+  "@variant": {
+    "description": "Description for variant"
+  },
   "version": "Version",
+  "@version": {
+    "description": "Description for version"
+  },
   "ready": "Ready",
+  "@ready": {
+    "description": "Description for ready"
+  },
   "resultsFound": "{count} results",
   "@resultsFound": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noResults": "No results found",
+  "@noResults": {
+    "description": "Description for noResults"
+  },
   "searching": "Searching...",
+  "@searching": {
+    "description": "Description for searching"
+  },
   "packageManager": "Package Manager",
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
   "pacmanOfficial": "Pacman (Official)",
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
   "aurUser": "AUR (User)",
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
   "flatpak": "Flatpak",
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
   "appImage": "AppImage",
+  "@appImage": {
+    "description": "Description for appImage"
+  },
   "sourcePriority": "Source Priority (Drag to reorder)",
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
   "maxResults": "Max Results",
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
   "appearance": "Appearance",
+  "@appearance": {
+    "description": "Description for appearance"
+  },
   "themeColor": "Theme Color Seed",
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
   "followSystem": "Follow System",
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
   "lightMode": "Light Mode",
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
   "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
   "loggingLevel": "Logging Level",
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
   "saveAndApply": "Save and Apply",
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
   "configSaved": "Configuration saved",
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
   "configSaveFailed": "Failed to save configuration",
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
   "confirmUninstall": "Confirm Uninstall",
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
   "confirmInstall": "Confirm Install",
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
   "confirmActionMsg": "Are you sure you want to perform this action on {name}?",
   "@confirmActionMsg": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "cancel": "Cancel",
+  "@cancel": {
+    "description": "Description for cancel"
+  },
   "confirm": "Confirm",
+  "@confirm": {
+    "description": "Description for confirm"
+  },
   "terminalOutput": "Terminal Output",
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
   "waitingForOutput": "Waiting for output...",
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
   "screenshots": "Screenshots",
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
   "developer": "Developer",
+  "@developer": {
+    "description": "Description for developer"
+  },
   "license": "License",
+  "@license": {
+    "description": "Description for license"
+  },
   "success": "Success",
+  "@success": {
+    "description": "Description for success"
+  },
   "failed": "Failed",
+  "@failed": {
+    "description": "Description for failed"
+  },
   "taskCancelled": "Task Cancelled",
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
   "catDevelopment": "Development",
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
   "catMedia": "Media",
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
   "catInternet": "Internet",
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
   "catSystem": "System",
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
   "catOffice": "Office",
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
   "catGames": "Games",
+  "@catGames": {
+    "description": "Description for catGames"
+  },
   "updates": "Updates",
+  "@updates": {
+    "description": "Description for updates"
+  },
   "upToDate": "All apps are up to date",
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
   "checkUpdates": "Check for Updates",
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
   "foundUpdates": "Found {count} updates",
   "@foundUpdates": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "updateAll": "Update All",
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
   "notifications": "Notifications",
+  "@notifications": {
+    "description": "Description for notifications"
+  },
   "enableNotifications": "Enable Notifications",
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
   "progressNotifications": "Progress Notifications",
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
   "completionNotifications": "Completion Notifications",
   "closeToTray": "Close to system tray",
   "showWindow": "Show Window",
@@ -87,23 +279,51 @@
   "trayTooltipUpdates": "OmniStore: Found {count} updates",
   "trayTooltipUpToDate": "OmniStore: Up to date",
   "updateReminders": "Update Reminders",
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
   "checkInterval": "Update Check Interval (Hours)",
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
   "remindMeOfUpdates": "Remind Me of Updates",
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
   "installingApp": "Installing {name}",
   "@installingApp": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "uninstallingApp": "Uninstalling {name}",
   "@uninstallingApp": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "installSuccessTitle": "Installation Successful",
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
   "uninstallSuccessTitle": "Uninstallation Successful",
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
   "installFailedTitle": "Installation Failed",
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
   "uninstallFailedTitle": "Uninstallation Failed",
-  "taskCompleted": "Task Completed"
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
+  "taskCompleted": "Task Completed",
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  }
 }

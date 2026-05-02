@@ -237,7 +237,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    onTap: () {}, // TODO: 颜色选择器
+                    onTap: _showColorPicker,
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
@@ -391,6 +391,62 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showColorPicker() {
+    final colors = [
+      const Color(0xFFCA6ECF), // Default Purple
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+      Colors.deepPurple,
+      Colors.brown,
+      Colors.grey,
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.themeColor),
+        content: SizedBox(
+          width: 300,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: colors.length,
+            itemBuilder: (context, index) {
+              final color = colors[index];
+              return InkWell(
+                  onTap: () {
+                  setState(() {
+                    colorSeed = '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+                  });
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: colorSeed.contains(color.toARGB32().toRadixString(16).substring(2).toUpperCase()) ? 3 : 0,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _saveAll() {
     final config = {
       'search': {
@@ -428,7 +484,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     BackendService().saveConfig(config).then((success) {
       if (success) {
-        UpdateService().updateConfig();
+        UpdateService.instance.updateConfig();
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
