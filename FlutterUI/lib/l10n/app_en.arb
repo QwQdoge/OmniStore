@@ -273,9 +273,11 @@
     "description": "Description for progressNotifications"
   },
   "completionNotifications": "Completion Notifications",
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
+  "closeToTray": "Close to system tray",
+  "showWindow": "Show Window",
+  "exit": "Exit",
+  "trayTooltipUpdates": "OmniStore: Found {count} updates",
+  "trayTooltipUpToDate": "OmniStore: Up to date",
   "updateReminders": "Update Reminders",
   "@updateReminders": {
     "description": "Description for updateReminders"

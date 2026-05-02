@@ -213,6 +213,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get completionNotifications => '完成通知';
 
   @override
+  String get closeToTray => '关闭时隐藏到系统托盘';
+
+  @override
+  String get showWindow => '显示窗口';
+
+  @override
+  String get exit => '退出';
+
+  @override
+  String trayTooltipUpdates(Object count) {
+    return 'OmniStore: 发现 $count 个更新';
+  }
+
+  @override
+  String get trayTooltipUpToDate => 'OmniStore: 应用已是最新';
+
+  @override
   String get updateReminders => '更新提醒';
 
   @override

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -112,10 +113,19 @@ class MainNavigationEntry extends StatefulWidget {
 }
 
 class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowListener {
+  int _selectedIndex = 0;
+  late final List<Widget> _subPages;
+
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
+    _subPages = [
+      const HomePage(),
+      const SearchPage(autoFocus: false),
+      const SettingsPage(),
+      const DownloadPage(),
+    ];
   }
 
   @override
@@ -126,20 +136,18 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
 
   @override
   void onWindowClose() async {
-    // 这里可以处理关闭逻辑，比如隐藏到托盘
-    bool isPreventClose = await windowManager.isPreventClose();
-    if (isPreventClose) {
+    // 动态检查配置中的“关闭至托盘”设置
+    final config = await BackendService().loadConfig();
+    final bool closeToTray = config['ui']?['close_to_tray'] ?? true;
+
+    if (closeToTray) {
       await windowManager.hide();
+    } else {
+      await windowManager.setPreventClose(false);
+      await windowManager.close();
+      exit(0);
     }
   }
-  int _selectedIndex = 0;
-
-  final List<Widget> _subPages = [
-    const HomePage(),
-    const SearchPage(autoFocus: false),
-    const SettingsPage(),
-    const DownloadPage(),
-  ];
 
   @override
   Widget build(BuildContext context) {

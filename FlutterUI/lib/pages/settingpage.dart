@@ -28,6 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String appearance = 'system';
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
+  bool closeToTray = true;
 
   bool notificationsEnabled = true;
   bool progressNotifications = true;
@@ -73,6 +74,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final ui = config['ui'] ?? {};
       appearance = ui['appearance'] ?? 'system';
       colorSeed = ui['color_seed'] ?? '#CA6ECF';
+      closeToTray = ui['close_to_tray'] ?? true;
 
       final log = config['logging'] ?? {};
       logLevel = log['level'] ?? 'INFO';
@@ -90,14 +92,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(AppLocalizations.of(context)!.settings),
+            title: Text(
+              AppLocalizations.of(context)!.settings,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
             centerTitle: false,
             backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16),
@@ -263,6 +273,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       completionNotifications,
                       (v) => setState(() => completionNotifications = v),
                     ),
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.closeToTray,
+                    closeToTray,
+                    (v) => setState(() => closeToTray = v),
+                  ),
                   ],
                 ]),
                 const SizedBox(height: 24),
@@ -452,6 +467,7 @@ class _SettingsPageState extends State<SettingsPage> {
       'ui': {
         'appearance': appearance, 
         'color_seed': colorSeed,
+        'close_to_tray': closeToTray,
         'language': L10nService.languageCode,
       },
       'logging': {'level': logLevel},
