@@ -37,8 +37,8 @@ void main() async {
   await L10nService.init(config);
 
   // 初始化更新服务
-  await UpdateService.instance.init();
-  await UpdateService.instance.updateConfig();
+  await UpdateService().init();
+  await UpdateService().updateConfig();
   
   runApp(OmnistoreApp(initialConfig: config));
 }
@@ -179,7 +179,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -256,7 +256,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
 
   Widget _buildDownloadButton(ColorScheme colorScheme) {
     return ValueListenableBuilder<List<dynamic>>(
-      valueListenable: UpdateService.instance.availableUpdates,
+      valueListenable: UpdateService().availableUpdates,
       builder: (context, updates, _) {
         return Stack(
           clipBehavior: Clip.none,
@@ -305,8 +305,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with WindowLi
                   color: _selectedIndex == 3
                       ? colorScheme.primary
                       : isDownloading
-                          ? colorScheme.primary.withValues(alpha: 0.1)
-                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          ? colorScheme.primary.withOpacity(0.1)
+                          : colorScheme.surfaceContainerHighest.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
                 child: Stack(

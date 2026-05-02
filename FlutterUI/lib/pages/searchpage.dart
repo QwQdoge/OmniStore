@@ -169,12 +169,12 @@ class _SearchPageState extends State<SearchPage> {
           hintText: AppLocalizations.of(context)!.searchHint,
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+            colorScheme.surfaceContainerHighest.withOpacity(0.6),
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(28),
-              side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
             ),
           ),
           padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16)),
@@ -221,7 +221,7 @@ class _SearchPageState extends State<SearchPage> {
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                  border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.4)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +296,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
 
-                    Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                    Divider(height: 1, color: colorScheme.outlineVariant.withOpacity(0.4)),
 
                     // ── 分类标题 ──
                     Padding(
@@ -331,7 +331,7 @@ class _SearchPageState extends State<SearchPage> {
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
+                          side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.6)),
                           backgroundColor: colorScheme.surface,
                         )).toList(),
                       ),
@@ -459,7 +459,7 @@ class _SearchPageState extends State<SearchPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
-                                color: colorScheme.primary.withValues(alpha: 0.1),
+                                color: colorScheme.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -479,7 +479,7 @@ class _SearchPageState extends State<SearchPage> {
                           )),
                           Text(
                             " • ${app.version}",
-                            style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withOpacity(0.5)),
                           ),
                         ],
                       ),
@@ -530,7 +530,7 @@ class _SearchPageState extends State<SearchPage> {
           elevation: 0,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
             borderRadius: BorderRadius.circular(16),
           ),
           child: InkWell(
@@ -590,9 +590,9 @@ class _SearchPageState extends State<SearchPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Text(
         source,

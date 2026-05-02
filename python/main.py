@@ -3,7 +3,6 @@ from core.search.searchmanager import SearchManager
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.env_manager import EnvManager
-from core.update_manager import UpdateManager
 from typing import Optional
 import json
 import sys

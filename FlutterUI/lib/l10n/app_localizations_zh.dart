@@ -233,6 +233,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateReminders => '更新提醒';
 
   @override
+  String get maintenance => '维护与操作';
+
+  @override
+  String get updateAllPackages => '更新所有应用';
+
+  @override
+  String get includeAurUpdates => '更新所有时包含 AUR';
+
+  @override
+  String get resetOnboarding => '重置引导 (欢迎页面)';
+
+  @override
+  String get resetOnboardingConfirm => '确定要重置引导吗？下次启动将重新显示欢迎页面。';
+
+  @override
   String get checkInterval => '自动检查更新间隔 (小时)';
 
   @override
