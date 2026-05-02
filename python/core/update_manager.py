@@ -9,9 +9,13 @@ class UpdateManager:
 
     async def check_all_updates(self) -> List[Dict]:
         tasks = []
+        include_aur = True
+        if self.config:
+            include_aur = self.config.get("updates.include_aur_in_update_all", True)
+
         if shutil.which("pacman"):
             tasks.append(self.check_pacman_updates())
-        if shutil.which("yay"):
+        if shutil.which("yay") and include_aur:
             tasks.append(self.check_aur_updates())
         if shutil.which("flatpak"):
             tasks.append(self.check_flatpak_updates())
