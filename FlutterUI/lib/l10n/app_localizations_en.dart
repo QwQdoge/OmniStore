@@ -225,7 +225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exit => 'Exit';
 
   @override
-  String trayTooltipUpdates(Object count) {
+  String trayTooltipUpdates(int count) {
     return 'OmniStore: Found $count updates';
   }
 

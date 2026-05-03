@@ -225,7 +225,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exit => '退出';
 
   @override
-  String trayTooltipUpdates(Object count) {
+  String trayTooltipUpdates(int count) {
     return 'OmniStore: 发现 $count 个更新';
   }
 
