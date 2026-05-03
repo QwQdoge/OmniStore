@@ -79,11 +79,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   void _showTerminalDialog() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         child: SizedBox(
           width: 600,
           height: 400,
@@ -95,19 +97,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   horizontal: 12,
                   vertical: 10,
                 ),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1C1C1C),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHigh,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12.0),
+                    topRight: Radius.circular(12.0),
                   ),
                 ),
                 child: Row(
                   children: [
                     Text(
                       AppLocalizations.of(context)!.terminalOutput,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 13,
                         fontFamily: 'monospace',
                       ),
@@ -115,9 +117,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     const Spacer(),
                     InkWell(
                       onTap: () => Navigator.pop(ctx),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
-                        color: Colors.white54,
+                        color: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.7),
                         size: 18,
                       ),
                     ),
@@ -145,7 +148,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                             itemCount: logs.length,
                             itemBuilder: (context, i) {
                               final log = logs[logs.length - 1 - i];
-                              Color textColor = const Color(0xFFD4D4D4);
+                              Color textColor = theme.colorScheme.onSurface;
                               if (log.contains("[ERROR]")) {
                                 textColor = Colors.redAccent;
                               }
@@ -246,51 +249,51 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .listen((line) {
-            String cleanLine = line.trim();
-            if (cleanLine.isEmpty) return;
+        String cleanLine = line.trim();
+        if (cleanLine.isEmpty) return;
 
-            Map<String, dynamic>? data;
-            if (cleanLine.startsWith("[CALLBACK]")) {
-              try {
-                data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-              } catch (_) {}
-            } else if (cleanLine.startsWith("{")) {
-              try {
-                data = jsonDecode(cleanLine);
-              } catch (_) {}
-            }
+        Map<String, dynamic>? data;
+        if (cleanLine.startsWith("[CALLBACK]")) {
+          try {
+            data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
+          } catch (_) {}
+        } else if (cleanLine.startsWith("{")) {
+          try {
+            data = jsonDecode(cleanLine);
+          } catch (_) {}
+        }
 
-            if (data != null && mounted) {
-              String log = data['message'] ?? data['log'] ?? "";
-              if (log.isNotEmpty) {
-                if (log.startsWith("[PROGRESS]")) {
-                  final parts = log.split(" ");
-                  if (parts.length > 1) {
-                    final p = double.tryParse(parts[1]);
-                    if (p != null) {
-                      setState(() {
-                        _progress = p / 100.0;
-                      });
-                      BackendService.globalProgress.value = _progress;
-                      UpdateService().showProgressNotification(
-                        widget.app.name,
-                        _progress!,
-                      );
-                    }
-                  }
-                } else {
-                  BackendService.addLog(log);
-                  if (log.contains("[INFO]") || log.contains("[ERROR]")) {
-                    setState(() {
-                      _statusKey = log;
-                      _statusArgs = null;
-                    });
-                    BackendService.globalStatus.value = log;
-                  }
+        if (data != null && mounted) {
+          String log = data['message'] ?? data['log'] ?? "";
+          if (log.isNotEmpty) {
+            if (log.startsWith("[PROGRESS]")) {
+              final parts = log.split(" ");
+              if (parts.length > 1) {
+                final p = double.tryParse(parts[1]);
+                if (p != null) {
+                  setState(() {
+                    _progress = p / 100.0;
+                  });
+                  BackendService.globalProgress.value = _progress;
+                  UpdateService().showProgressNotification(
+                    widget.app.name,
+                    _progress!,
+                  );
                 }
               }
+            } else {
+              BackendService.addLog(log);
+              if (log.contains("[INFO]") || log.contains("[ERROR]")) {
+                setState(() {
+                  _statusKey = log;
+                  _statusArgs = null;
+                });
+                BackendService.globalStatus.value = log;
+              }
             }
-          });
+          }
+        }
+      });
 
       process.stderr.transform(utf8.decoder).listen((err) {
         debugPrint("PYTHON STDERR: $err");
@@ -377,6 +380,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     int exitCode, {
     String? error,
   }) async {
+    final theme = Theme.of(context);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -407,8 +411,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(8),
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   constraints: const BoxConstraints(maxHeight: 150),
                   child: ValueListenableBuilder<List<String>>(
@@ -465,7 +470,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           FutureBuilder<Map<String, dynamic>>(
             future: BackendService().loadConfig(),
             builder: (context, snapshot) {
-              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
+              final useSystem =
+                  snapshot.data?['ui']?['use_system_title_bar'] ?? false;
               if (useSystem) return const SizedBox.shrink();
               return const WindowTitleBar();
             },
@@ -501,85 +507,92 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(theme),
-            const SizedBox(height: 24),
-            _buildActionArea(colorScheme),
-            const SizedBox(height: 32),
-            const Divider(),
-            _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
-            if (_isLoadingDetails)
-              const Center(child: CircularProgressIndicator())
-            else
-              MarkdownBody(
-                data: _extraDetails?['description'] ??
-                    (widget.app.description.isEmpty
-                        ? AppLocalizations.of(context)!.noResults
-                        : widget.app.description),
-                selectable: true,
-                styleSheet: MarkdownStyleSheet(
-                  p: theme.textTheme.bodyLarge,
-                ),
-              ),
-            const SizedBox(height: 24),
-            if (_extraDetails != null &&
-                _extraDetails!['screenshots'] != null &&
-                (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-              _buildSectionTitle(theme, AppLocalizations.of(context)!.screenshots),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 200,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: (_extraDetails!['screenshots'] as List).length,
-                  separatorBuilder: (context, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        imageUrl: _extraDetails!['screenshots'][index],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          width: 200,
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Center(child: CircularProgressIndicator()),
+                  children: [
+                    _buildHeader(theme),
+                    const SizedBox(height: 24),
+                    _buildActionArea(colorScheme),
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    _buildSectionTitle(
+                        theme, AppLocalizations.of(context)!.about),
+                    if (_isLoadingDetails)
+                      const Center(child: CircularProgressIndicator())
+                    else
+                      MarkdownBody(
+                        data: _extraDetails?['description'] ??
+                            (widget.app.description.isEmpty
+                                ? AppLocalizations.of(context)!.noResults
+                                : widget.app.description),
+                        selectable: true,
+                        styleSheet: MarkdownStyleSheet(
+                          p: theme.textTheme.bodyLarge,
                         ),
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image),
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-            _buildSectionTitle(theme, AppLocalizations.of(context)!.details),
-            _buildInfoRow(
-              Icons.source,
-              AppLocalizations.of(context)!.source,
-              widget.app.primarySource,
-            ),
-            _buildInfoRow(
-              Icons.all_inclusive,
-              AppLocalizations.of(context)!.variant,
-              widget.app.sources.join(", "),
-            ),
-            _buildInfoRow(
-              Icons.verified_outlined,
-              AppLocalizations.of(context)!.version,
-              widget.app.version,
-            ),
-            if (_extraDetails?['developer'] != null)
-              _buildInfoRow(
-                Icons.person_outline,
-                AppLocalizations.of(context)!.developer,
-                _extraDetails!['developer'],
-              ),
-            if (_extraDetails?['license'] != null)
-              _buildInfoRow(
-                Icons.description_outlined,
-                AppLocalizations.of(context)!.license,
-                _extraDetails!['license'],
-              ),
+                    const SizedBox(height: 24),
+                    if (_extraDetails != null &&
+                        _extraDetails!['screenshots'] != null &&
+                        (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                      _buildSectionTitle(
+                          theme, AppLocalizations.of(context)!.screenshots),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount:
+                              (_extraDetails!['screenshots'] as List).length,
+                          separatorBuilder: (context, _) =>
+                              const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(12.0),
+                              child: CachedNetworkImage(
+                                imageUrl: _extraDetails!['screenshots'][index],
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: 200,
+                                  color: colorScheme.surfaceContainerHighest,
+                                  child: const Center(
+                                      child: CircularProgressIndicator()),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.broken_image),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                    _buildSectionTitle(
+                        theme, AppLocalizations.of(context)!.details),
+                    _buildInfoRow(
+                      Icons.source,
+                      AppLocalizations.of(context)!.source,
+                      widget.app.primarySource,
+                    ),
+                    _buildInfoRow(
+                      Icons.all_inclusive,
+                      AppLocalizations.of(context)!.variant,
+                      widget.app.sources.join(", "),
+                    ),
+                    _buildInfoRow(
+                      Icons.verified_outlined,
+                      AppLocalizations.of(context)!.version,
+                      widget.app.version,
+                    ),
+                    if (_extraDetails?['developer'] != null)
+                      _buildInfoRow(
+                        Icons.person_outline,
+                        AppLocalizations.of(context)!.developer,
+                        _extraDetails!['developer'],
+                      ),
+                    if (_extraDetails?['license'] != null)
+                      _buildInfoRow(
+                        Icons.description_outlined,
+                        AppLocalizations.of(context)!.license,
+                        _extraDetails!['license'],
+                      ),
                   ],
                 ),
               ),
@@ -673,12 +686,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             ),
             const SizedBox(height: 16),
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.0),
               child: LinearProgressIndicator(
                 value: _progress,
                 minHeight: 8,
                 backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.0),
               ),
             ),
           ],
@@ -697,7 +710,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   foregroundColor: Colors.red,
                   side: const BorderSide(color: Colors.redAccent, width: 1),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
                 onPressed: () => _handleAction("-R"),
@@ -716,7 +729,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
                 onPressed: _launchApp,
@@ -738,7 +751,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         onPressed: () => _handleAction("-I"),
@@ -772,16 +785,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           height: 80,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.0),
           ),
           alignment: Alignment.center,
           child: iconUrl != null
               ? ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.0),
                   child: CachedNetworkImage(
                     imageUrl: iconUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(strokeWidth: 2),
                     errorWidget: (context, url, error) => Text(
                       widget.app.name[0].toUpperCase(),
                       style: theme.textTheme.headlineLarge?.copyWith(
@@ -824,7 +838,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Row(
                         children: [
@@ -859,13 +873,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   items: <String>{
                     for (var v in widget.app.variants) v.source,
-                    if (_extraDetails != null && _extraDetails!['variants'] != null)
-                      for (var v in _extraDetails!['variants']) v['source'].toString(),
+                    if (_extraDetails != null &&
+                        _extraDetails!['variants'] != null)
+                      for (var v in _extraDetails!['variants'])
+                        v['source'].toString(),
                     _selectedSource,
                   }.map((String source) {
                     // Try to find version for this source
                     String? version;
-                    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+                    if (_extraDetails != null &&
+                        _extraDetails!['variants'] != null) {
                       for (var v in _extraDetails!['variants']) {
                         if (v['source'] == source) {
                           version = v['version'] ?? v['last_version'];
@@ -911,7 +928,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         _selectedSource = newValue;
                         // 更新安装状态（基于当前选择的来源）
                         bool isInstalled = false;
-                        if (_extraDetails != null && _extraDetails!['variants'] != null) {
+                        if (_extraDetails != null &&
+                            _extraDetails!['variants'] != null) {
                           for (var v in _extraDetails!['variants']) {
                             if (v['source'] == newValue) {
                               isInstalled = v['installed'] ?? false;
@@ -953,31 +971,37 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Widget _buildSourceTag(String source, {bool isSmall = false}) {
-    Color color = Colors.grey;
-    if (source == "Pacman") {
-      color = Colors.blue;
-    } else if (source == "AUR") {
-      color = Colors.orange;
-    } else if (source == "Flatpak") {
-      color = Colors.purple;
-    } else if (source == "AppImage") {
-      color = Colors.teal;
-    } else if (source == "Native") {
-      color = Colors.blue;
-    }
+    return Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      Color color = colorScheme.secondary;
+      if (source == "Pacman") {
+        color = Colors.blue;
+      } else if (source == "AUR") {
+        color = Colors.orange;
+      } else if (source == "Flatpak") {
+        color = Colors.purple;
+      } else if (source == "AppImage") {
+        color = Colors.teal;
+      } else if (source == "Native") {
+        color = Colors.blue;
+      }
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(
-        source,
-        style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
-      ),
-    );
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6.0),
+          border: Border.all(color: color.withValues(alpha: 0.5)),
+        ),
+        child: Text(
+          source,
+          style: TextStyle(
+              color: color,
+              fontSize: isSmall ? 9 : 10,
+              fontWeight: FontWeight.bold),
+        ),
+      );
+    });
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
