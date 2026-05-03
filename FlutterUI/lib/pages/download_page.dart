@@ -49,9 +49,8 @@ class _DownloadPageState extends State<DownloadPage>
       final results = await _backend.listInstalled();
       if (mounted) {
         setState(() {
-          _installedApps = results
-              .map((json) => AppPackage.fromJson(json))
-              .toList();
+          _installedApps =
+              results.map((json) => AppPackage.fromJson(json)).toList();
           _applyFilters();
         });
       }
@@ -103,7 +102,7 @@ class _DownloadPageState extends State<DownloadPage>
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.0),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
@@ -118,38 +117,44 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   void _showTerminalDialog(BuildContext context) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         child: SizedBox(
           width: 600,
           height: 400,
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1C1C1C),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHigh,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12.0),
+                    topRight: Radius.circular(12.0),
                   ),
                 ),
                 child: Row(
                   children: [
                     Text(
                       AppLocalizations.of(context)!.terminalOutput,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 13,
                         fontFamily: 'monospace',
                       ),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54, size: 18),
+                      icon: Icon(Icons.close,
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.7),
+                          size: 18),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -175,9 +180,13 @@ class _DownloadPageState extends State<DownloadPage>
                             itemCount: logs.length,
                             itemBuilder: (context, i) {
                               final log = logs[logs.length - 1 - i];
-                              Color textColor = const Color(0xFFD4D4D4);
-                              if (log.contains("[ERROR]")) textColor = Colors.redAccent;
-                              if (log.contains("[INFO]")) textColor = Colors.greenAccent.shade400;
+                              Color textColor = theme.colorScheme.onSurface;
+                              if (log.contains("[ERROR]")) {
+                                textColor = Colors.redAccent;
+                              }
+                              if (log.contains("[INFO]")) {
+                                textColor = Colors.greenAccent.shade400;
+                              }
                               return Text(
                                 log,
                                 style: TextStyle(
@@ -227,11 +236,12 @@ class _DownloadPageState extends State<DownloadPage>
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.0),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    fillColor: colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -258,7 +268,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 ),
                                 decoration: BoxDecoration(
                                   color: colorScheme.error,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 child: Text(
                                   updates.length.toString(),
@@ -333,9 +343,11 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.task_alt, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                Icon(Icons.task_alt,
+                    size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                Text(L10nService.s('no_active_tasks'), style: const TextStyle(color: Colors.grey)),
+                Text(L10nService.s('no_active_tasks'),
+                    style: const TextStyle(color: Colors.grey)),
               ],
             ),
           );
@@ -346,7 +358,9 @@ class _DownloadPageState extends State<DownloadPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(L10nService.s('current_task'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(L10nService.s('current_task'),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 20),
               Card(
                 child: Padding(
@@ -354,8 +368,11 @@ class _DownloadPageState extends State<DownloadPage>
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.downloading, size: 40, color: Colors.blue),
-                        title: Text(activeApp.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        leading: const Icon(Icons.downloading,
+                            size: 40, color: Colors.blue),
+                        title: Text(activeApp.name,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: ValueListenableBuilder<String>(
                           valueListenable: BackendService.globalStatus,
                           builder: (context, status, _) => Text(status),
@@ -370,7 +387,8 @@ class _DownloadPageState extends State<DownloadPage>
                               LinearProgressIndicator(value: progress),
                               const SizedBox(height: 8),
                               if (progress != null)
-                                Text("${(progress * 100).toInt()}%", style: const TextStyle(fontSize: 12)),
+                                Text("${(progress * 100).toInt()}%",
+                                    style: const TextStyle(fontSize: 12)),
                             ],
                           );
                         },
@@ -381,7 +399,8 @@ class _DownloadPageState extends State<DownloadPage>
                         children: [
                           TextButton(
                             onPressed: () => BackendService.cancelCurrentTask(),
-                            child: Text(L10nService.s('cancel'), style: const TextStyle(color: Colors.red)),
+                            child: Text(L10nService.s('cancel'),
+                                style: const TextStyle(color: Colors.red)),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
@@ -410,9 +429,11 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                Icon(Icons.check_circle_outline,
+                    size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                Text(L10nService.s('all_updated'), style: const TextStyle(color: Colors.grey)),
+                Text(L10nService.s('all_updated'),
+                    style: const TextStyle(color: Colors.grey)),
               ],
             ),
           );
@@ -426,12 +447,15 @@ class _DownloadPageState extends State<DownloadPage>
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
-                title: Text(update['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text("${update['current_version']} → ${update['new_version']}"),
+                title: Text(update['name'],
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(
+                    "${update['current_version']} → ${update['new_version']}"),
                 trailing: ElevatedButton(
                   onPressed: () {
                     // Start update
-                    UpdateService().startUpdate(update['name'], update['source']);
+                    UpdateService()
+                        .startUpdate(update['name'], update['source']);
                     _tabController.animateTo(0);
                   },
                   child: Text(L10nService.s('update')),
@@ -455,18 +479,13 @@ class _DownloadPageState extends State<DownloadPage>
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
-            children: [
-              "all",
-              "Native",
-              "Flatpak",
-              "AUR",
-              "AppImage"
-            ].map((s) {
+            children: ["all", "Native", "Flatpak", "AUR", "AppImage"].map((s) {
               final isSelected = _selectedSourceFilter == s;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(s == "all" ? AppLocalizations.of(context)!.explore : s),
+                  label: Text(
+                      s == "all" ? AppLocalizations.of(context)!.explore : s),
                   selected: isSelected,
                   onSelected: (v) {
                     if (v) {
@@ -496,7 +515,8 @@ class _DownloadPageState extends State<DownloadPage>
           children: [
             const Icon(Icons.search_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text(L10nService.s('no_results'), style: const TextStyle(color: Colors.grey)),
+            Text(L10nService.s('no_results'),
+                style: const TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -512,7 +532,7 @@ class _DownloadPageState extends State<DownloadPage>
           child: ListTile(
             leading: app.icon != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.0),
                     child: CachedNetworkImage(
                       imageUrl: app.icon!,
                       width: 40,
@@ -545,8 +565,8 @@ class _DownloadPageState extends State<DownloadPage>
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                   return FadeTransition(
-                    opacity:
-                        animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
+                    opacity: animation
+                        .drive(CurveTween(curve: Curves.easeInOutExpo)),
                     child: SlideTransition(
                       position: animation.drive(Tween<Offset>(
                         begin: const Offset(0.05, 0),
