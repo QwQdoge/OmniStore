@@ -116,6 +116,7 @@ class MainNavigationEntry extends StatefulWidget {
 class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.WindowListener {
   int _selectedIndex = 0;
   late final List<Widget> _subPages;
+  bool _useSystemTitleBar = false;
 
   @override
   void initState() {
@@ -127,6 +128,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const SettingsPage(),
       const DownloadPage(),
     ];
+    _loadConfig();
+  }
+
+  Future<void> _loadConfig() async {
+    final config = await BackendService().loadConfig();
+    if (mounted) {
+      setState(() {
+        _useSystemTitleBar = config['ui']?['use_system_title_bar'] ?? false;
+      });
+    }
   }
 
   @override
@@ -160,17 +171,11 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       body: Column(
         children: [
           // 自定义标题栏
-          FutureBuilder<Map<String, dynamic>>(
-            future: BackendService().loadConfig(),
-            builder: (context, snapshot) {
-              final useSystem = snapshot.data?['ui']?['use_system_title_bar'] ?? false;
-              if (useSystem) return const SizedBox.shrink();
-              return WindowTitleBar(
-                showSearch: true,
-                onSearchPressed: () => setState(() => _selectedIndex = 1),
-              );
-            },
-          ),
+          if (!_useSystemTitleBar)
+            WindowTitleBar(
+              showSearch: true,
+              onSearchPressed: () => setState(() => _selectedIndex = 1),
+            ),
           Expanded(
             child: Row(
               children: [
@@ -182,9 +187,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                     margin: const EdgeInsets.fromLTRB(0, 0, 8, 8),
                     decoration: BoxDecoration(
                       color: theme.brightness == Brightness.light
-                          ? Colors.white
+                          ? colorScheme.surface
                           : colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(28.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
@@ -232,7 +237,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
               backgroundColor: Colors.transparent,
               indicatorColor: colorScheme.secondaryContainer,
               indicatorShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.0),
               ),
               destinations: [
                 NavigationRailDestination(
@@ -284,7 +289,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                   constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                   child: Text(
                     updates.length.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: colorScheme.onError, fontSize: 10, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                 ),

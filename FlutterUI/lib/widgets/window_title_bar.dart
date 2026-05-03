@@ -66,12 +66,12 @@ class WindowTitleBar extends StatelessWidget {
                         constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
                         child: InkWell(
                           onTap: onSearchPressed,
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(28.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
                               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(28),
+                              borderRadius: BorderRadius.circular(28.0),
                               border: Border.all(
                                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                               ),
@@ -150,7 +150,7 @@ class WindowTitleBar extends StatelessWidget {
         style: IconButton.styleFrom(
           shape: const RoundedRectangleBorder(),
           hoverColor: isClose
-              ? Colors.red.withValues(alpha: 0.8)
+              ? colorScheme.error.withValues(alpha: 0.8)
               : colorScheme.onSurface.withValues(alpha: 0.1),
           foregroundColor: isClose ? null : colorScheme.onSurface.withValues(alpha: 0.7),
         ),

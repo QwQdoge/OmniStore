@@ -150,7 +150,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                               final log = logs[logs.length - 1 - i];
                               Color textColor = theme.colorScheme.onSurface;
                               if (log.contains("[ERROR]")) {
-                                textColor = Colors.redAccent;
+                                textColor = theme.colorScheme.error;
                               }
                               if (log.contains("[INFO]")) {
                                 textColor = Colors.greenAccent.shade400;
@@ -182,7 +182,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final isUninstall = flag == "-R";
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
         title: Text(
           isUninstall
               ? AppLocalizations.of(context)!.confirmUninstall
@@ -198,13 +200,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
           FilledButton(
             style: isUninstall
-                ? FilledButton.styleFrom(backgroundColor: Colors.red)
+                ? FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.error,
+                    foregroundColor: theme.colorScheme.onError,
+                  )
                 : null,
             onPressed: () => Navigator.pop(context, true),
             child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
-      ),
+      );
+      },
     );
 
     if (confirmed != true) return;
@@ -384,7 +390,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.error_outline, color: Colors.red, size: 32),
+        icon: Icon(Icons.error_outline, color: theme.colorScheme.error, size: 32),
         title: Text(
           flag == "-I"
               ? L10nService.s('install_failed')
@@ -424,8 +430,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         itemCount: logs.length,
                         itemBuilder: (context, i) => Text(
                           logs[logs.length - 1 - i],
-                          style: const TextStyle(
-                            color: Colors.redAccent,
+                          style: TextStyle(
+                            color: theme.colorScheme.error,
                             fontSize: 10,
                             fontFamily: 'monospace',
                           ),
@@ -635,7 +641,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
           color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.0),
           border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
         ),
         child: Column(
@@ -675,9 +681,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.cancel_outlined,
-                    color: Colors.redAccent,
+                    color: colorScheme.error,
                   ),
                   onPressed: _cancelAction,
                   tooltip: L10nService.s('cancel_task'),
@@ -707,8 +713,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               height: 54,
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.redAccent, width: 1),
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error, width: 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),
                   ),
