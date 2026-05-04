@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Material(
           color: theme.brightness == Brightness.light
-              ? Colors.white
+              ? colorScheme.surface
               : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(28.0),
           clipBehavior: Clip.antiAlias,
@@ -271,8 +271,8 @@ class _HomePageState extends State<HomePage> {
                                 )
                               : Text(
                                   app.name[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                          style: TextStyle(
+                                    color: colorScheme.onPrimary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
                                   ),
