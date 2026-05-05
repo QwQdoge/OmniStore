@@ -146,27 +146,93 @@ class BackendService {
     }
   }
 
-  Stream<String> executeAction(String flag, String packageName, String source, {String? url}) async* {
-    if (packageName.isEmpty) {
-      yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";
+  Stream<String> executeAction(String flag, AppPackage app, String source, {String? url}) async* {
+    if (app.name.isEmpty) {
+      yield "[CALLBACK] {\"log\": \"[ERROR] 错误：包名不能为空\"}";
       return;
     }
 
+    if (isDownloading.value) {
+      yield "[CALLBACK] {\"log\": \"[ERROR] 另一个任务正在进行中\"}";
+      return;
+    }
+
+    final isUninstall = flag == "-R";
+    final isUpdate = flag == "-U";
+
+    isDownloading.value = true;
+    activeApp.value = app;
+    activeFlag.value = flag;
+    globalStatus.value = isUninstall ? 'preparing_uninstall' : (isUpdate ? 'preparing_update' : 'preparing_install');
+    globalProgress.value = null;
+    clearLogs();
+
     try {
-      List<String> args = [_scriptPath, flag, packageName, "--source", source, "--json"];
+      List<String> args = [_scriptPath, flag, app.name.trim(), "--source", source, "--json"];
       if (url != null && url.isNotEmpty) {
         args.addAll(["--url", url]);
       }
 
       final process = await Process.start(_venvPython, args, workingDirectory: _workingDir);
+      activeProcess = process;
 
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+      final stdoutStream = process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+
+      await for (final line in stdoutStream) {
+        String cleanLine = line.trim();
+        if (cleanLine.isEmpty) continue;
+
+        yield cleanLine;
+
+        Map<String, dynamic>? data;
+        if (cleanLine.startsWith("[CALLBACK]")) {
+          try {
+            data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
+          } catch (_) {}
+        } else if (cleanLine.startsWith("{")) {
+          try {
+            data = jsonDecode(cleanLine);
+          } catch (_) {}
+        }
+
+        if (data != null) {
+          String log = data['message'] ?? data['log'] ?? "";
+          if (log.isNotEmpty) {
+            if (log.startsWith("[PROGRESS]")) {
+              final parts = log.split(" ");
+              if (parts.length > 1) {
+                final p = double.tryParse(parts[1]);
+                if (p != null) {
+                  globalProgress.value = p / 100.0;
+                }
+              }
+            } else {
+              addLog(log);
+              if (log.contains("[INFO]") || log.contains("[ERROR]")) {
+                globalStatus.value = log;
+              }
+            }
+          }
+        }
+      }
 
       process.stderr.transform(utf8.decoder).listen((data) {
         debugPrint("Python Stderr: $data");
+        addLog("stderr: $data");
       });
+
+      final exitCode = await process.exitCode;
+      if (exitCode != 0 && isDownloading.value) {
+        globalStatus.value = "[ERROR] Task failed with exit code $exitCode";
+      }
     } catch (e) {
-      yield "[CALLBACK] {\"log\": \"启动失败: $e\"}";
+      String errMsg = "[ERROR] 启动失败: $e";
+      addLog(errMsg);
+      globalStatus.value = errMsg;
+      yield "[CALLBACK] {\"log\": \"$errMsg\"}";
+    } finally {
+      isDownloading.value = false;
+      activeProcess = null;
     }
   }
 
@@ -187,14 +253,14 @@ class BackendService {
 
   /// 更新所有
   Stream<String> updateAll(String source) async* {
-    try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath, "-U", "all", "--source", source, "--json",
-      ], workingDirectory: _workingDir);
-
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
-    } catch (e) {
-      yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
-    }
+    final dummyApp = AppPackage(
+      name: "all",
+      description: "Updating all packages from $source",
+      installed: true,
+      version: "Latest",
+      variants: [AppVariant(source: source, version: "Latest", installed: true, description: "")],
+      primarySource: source,
+    );
+    yield* executeAction("-U", dummyApp, source);
   }
 }

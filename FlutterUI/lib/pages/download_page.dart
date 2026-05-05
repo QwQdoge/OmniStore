@@ -335,86 +335,102 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return ValueListenableBuilder<AppPackage?>(
-      valueListenable: BackendService.activeApp,
-      builder: (context, activeApp, _) {
-        if (activeApp == null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.task_alt,
-                    size: 64, color: Colors.grey.withValues(alpha: 0.5)),
-                const SizedBox(height: 16),
-                Text(L10nService.s('no_active_tasks'),
-                    style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          );
-        }
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return ValueListenableBuilder<bool>(
+      valueListenable: BackendService.isDownloading,
+      builder: (context, isDownloading, _) {
+        return ValueListenableBuilder<AppPackage?>(
+          valueListenable: BackendService.activeApp,
+          builder: (context, activeApp, _) {
+            if (activeApp == null && !isDownloading) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.task_alt,
+                        size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                    const SizedBox(height: 16),
+                    Text(L10nService.s('no_active_tasks'),
+                        style: const TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              );
+            }
 
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(L10nService.s('current_task'),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 20),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.downloading,
-                            size: 40, color: Colors.blue),
-                        title: Text(activeApp.name,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: ValueListenableBuilder<String>(
-                          valueListenable: BackendService.globalStatus,
-                          builder: (context, status, _) => Text(status),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ValueListenableBuilder<double?>(
-                        valueListenable: BackendService.globalProgress,
-                        builder: (context, progress, _) {
-                          return Column(
-                            children: [
-                              LinearProgressIndicator(value: progress),
-                              const SizedBox(height: 8),
-                              if (progress != null)
-                                Text("${(progress * 100).toInt()}%",
-                                    style: const TextStyle(fontSize: 12)),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+            final displayApp = activeApp ?? AppPackage(name: "Processing...", description: "", installed: false, version: "", variants: [], primarySource: "");
+
+            return Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(L10nService.s('current_task'),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18)),
+                  const SizedBox(height: 20),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
                         children: [
-                          TextButton(
-                            onPressed: () => BackendService.cancelCurrentTask(),
-                            child: Text(L10nService.s('cancel'),
-                                style: const TextStyle(color: Colors.red)),
+                          ListTile(
+                            leading: Icon(
+                                isDownloading ? Icons.downloading : Icons.task_alt,
+                                size: 40,
+                                color: isDownloading ? Colors.blue : Colors.green),
+                            title: Text(displayApp.name,
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: ValueListenableBuilder<String>(
+                              valueListenable: BackendService.globalStatus,
+                              builder: (context, status, _) => Text(L10nService.s(status)),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => _showTerminalDialog(context),
-                            child: Text(L10nService.s('view_logs')),
+                          const SizedBox(height: 16),
+                          ValueListenableBuilder<double?>(
+                            valueListenable: BackendService.globalProgress,
+                            builder: (context, progress, _) {
+                              return Column(
+                                children: [
+                                  LinearProgressIndicator(
+                                    value: progress,
+                                    backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  if (progress != null)
+                                    Text("${(progress * 100).toInt()}%",
+                                        style: const TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (isDownloading)
+                                TextButton(
+                                  onPressed: () => BackendService.cancelCurrentTask(),
+                                  child: Text(L10nService.s('cancel'),
+                                      style: const TextStyle(color: Colors.red)),
+                                ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () => _showTerminalDialog(context),
+                                child: Text(L10nService.s('view_logs')),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

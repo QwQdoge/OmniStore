@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -111,81 +110,29 @@ class UpdateService {
   Future<void> checkUpdates() => checkNow();
 
   Future<void> startUpdate(String name, String source) async {
-    if (BackendService.isDownloading.value) return;
-
-    BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value = L10nService.s('preparing_update');
-    BackendService.globalProgress.value = null;
-    BackendService.clearLogs();
-
-    showProgressNotification(L10nService.s('preparing_update'), 0);
-
-    // Create a dummy AppPackage for tracking if we don't have one
     final app = AppPackage(
       name: name,
       description: "Updating...",
       installed: true,
       version: "Latest",
       variants: [
-        AppVariant(
-          source: source,
-          version: "Latest",
-          installed: true,
-          description: "Updating...",
-        )
+        AppVariant(source: source, version: "Latest", installed: true, description: "")
       ],
       primarySource: source,
     );
-    BackendService.activeApp.value = app;
 
-    try {
-      final process = await Process.start(
-        BackendService.venvPython,
-        [BackendService.scriptPath, "-U", name, "--source", source, "--json"],
-        workingDirectory: BackendService.workingDir,
-      );
+    final stream = BackendService().executeAction("-U", app, source);
 
-      BackendService.activeProcess = process;
+    // Handle notifications by listening to the stream or globals
+    // Since we already have listeners or can add them, we just wait for completion here
+    bool success = true;
+    await for (final line in stream) {
+      if (line.contains("[ERROR]")) success = false;
+    }
 
-      process.stdout
-          .transform(const Utf8Decoder())
-          .transform(const LineSplitter())
-          .listen((line) {
-        String cleanLine = line.trim();
-        if (cleanLine.startsWith("[CALLBACK]")) {
-          try {
-            final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-            String log = data['message'] ?? data['log'] ?? "";
-            if (log.isNotEmpty) {
-              if (log.startsWith("[PROGRESS]")) {
-                final p = double.tryParse(log.split(" ")[1]);
-                if (p != null) {
-                  final progressValue = p / 100.0;
-                  BackendService.globalProgress.value = progressValue;
-                  showProgressNotification(name, progressValue);
-                }
-              } else {
-                BackendService.addLog(log);
-              }
-            }
-          } catch (_) {}
-        }
-      });
-
-      final exitCode = await process.exitCode;
-      BackendService.isDownloading.value = false;
-      BackendService.activeApp.value = null;
-      BackendService.activeProcess = null;
-
-      showCompletionNotification(name, exitCode == 0);
-
-      if (exitCode == 0) {
-        checkNow(); // Refresh update list
-      }
-    } catch (e) {
-      BackendService.isDownloading.value = false;
-      BackendService.activeApp.value = null;
-      showCompletionNotification(name, false);
+    showCompletionNotification(name, success);
+    if (success) {
+      checkNow(); // Refresh update list
     }
   }
 

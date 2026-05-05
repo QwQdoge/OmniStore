@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -237,126 +236,58 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
 
     try {
-      final process = await Process.start(BackendService.venvPython, [
-        BackendService.scriptPath,
+      final stream = BackendService().executeAction(
         flag,
-        widget.app.name.trim(),
-        '--source',
+        widget.app,
         _selectedSource,
-        if (widget.app.url != null && flag == "-I") ...[
-          '--url',
-          widget.app.url!,
-        ],
-        '--json',
-      ], workingDirectory: BackendService.workingDir);
-      BackendService.activeProcess = process;
+        url: (widget.app.url != null && flag == "-I") ? widget.app.url : null,
+      );
 
-      process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-        String cleanLine = line.trim();
-        if (cleanLine.isEmpty) return;
+      bool hasError = false;
+      await for (final line in stream) {
+        if (!mounted) break;
 
-        Map<String, dynamic>? data;
-        if (cleanLine.startsWith("[CALLBACK]")) {
-          try {
-            data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          } catch (_) {}
-        } else if (cleanLine.startsWith("{")) {
-          try {
-            data = jsonDecode(cleanLine);
-          } catch (_) {}
+        // Sync local state for UI responsiveness
+        setState(() {
+          _statusKey = BackendService.globalStatus.value;
+          _progress = BackendService.globalProgress.value;
+        });
+
+        if (line.contains("[PROGRESS]")) {
+           UpdateService().showProgressNotification(widget.app.name, _progress ?? 0);
         }
-
-        if (data != null && mounted) {
-          String log = data['message'] ?? data['log'] ?? "";
-          if (log.isNotEmpty) {
-            if (log.startsWith("[PROGRESS]")) {
-              final parts = log.split(" ");
-              if (parts.length > 1) {
-                final p = double.tryParse(parts[1]);
-                if (p != null) {
-                  setState(() {
-                    _progress = p / 100.0;
-                  });
-                  BackendService.globalProgress.value = _progress;
-                  UpdateService().showProgressNotification(
-                    widget.app.name,
-                    _progress!,
-                  );
-                }
-              }
-            } else {
-              BackendService.addLog(log);
-              if (log.contains("[INFO]") || log.contains("[ERROR]")) {
-                setState(() {
-                  _statusKey = log;
-                  _statusArgs = null;
-                });
-                BackendService.globalStatus.value = log;
-              }
-            }
-          }
-        }
-      });
-
-      process.stderr.transform(utf8.decoder).listen((err) {
-        debugPrint("PYTHON STDERR: $err");
-        BackendService.addLog("stderr: $err");
-      });
-
-      final exitCode = await process.exitCode;
-
-      BackendService.activeApp.value = null;
-      BackendService.activeFlag.value = null;
-      BackendService.activeProcess = null;
+        if (line.contains("[ERROR]")) hasError = true;
+      }
 
       if (mounted) {
-        final wasCancelled =
-            exitCode != 0 && !BackendService.isDownloading.value;
-
-        if (!wasCancelled) {
-          UpdateService().showCompletionNotification(
-            widget.app.name,
-            exitCode == 0,
-          );
-        }
+        final bool isSuccess = !hasError && !BackendService.isDownloading.value;
+        UpdateService().showCompletionNotification(widget.app.name, isSuccess);
 
         setState(() {
-          BackendService.isDownloading.value = false;
-          if (exitCode == 0) {
+          if (isSuccess) {
             _progress = 1.0;
             _statusKey = isUninstall ? 'uninstall_success' : 'install_success';
-            _statusArgs = null;
             _isAppInstalled = !isUninstall;
-          } else if (wasCancelled) {
+          } else if (!BackendService.isDownloading.value && !hasError) {
+             // Task was cancelled
             _isInstalling = false;
             _statusKey = 'task_cancelled';
-            _statusArgs = null;
           } else {
             _isInstalling = false;
             _statusKey = 'task_failed_code';
-            _statusArgs = [exitCode.toString()];
-            _showFailureDialog(flag, exitCode);
+            _statusArgs = ["1"]; // Default error code if we don't have exit code here
+            _showFailureDialog(flag, 1);
           }
         });
 
-        if (exitCode == 0) {
-          // 全局通知 Banner（即使用户不在此页面也能看到）
+        if (isSuccess) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
                   isUninstall
-                      ? L10nService.s(
-                          'uninstall_success_msg',
-                          args: [widget.app.name],
-                        )
-                      : L10nService.s(
-                          'install_success_msg',
-                          args: [widget.app.name],
-                        ),
+                      ? L10nService.s('uninstall_success_msg', args: [widget.app.name])
+                      : L10nService.s('install_success_msg', args: [widget.app.name]),
                 ),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 4),
@@ -368,8 +299,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         }
       }
     } catch (e) {
-      BackendService.activeApp.value = null;
-      BackendService.activeProcess = null;
       UpdateService().showCompletionNotification(widget.app.name, false);
       if (mounted) {
         setState(() {
