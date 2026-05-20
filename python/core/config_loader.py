@@ -16,16 +16,18 @@ class ConfigManager:
                     "pacman": True,
                     "aur": True,
                     "flatpak": True,
-                    "appimage": True
+                    "appimage": True,
+                    "snap": True
                 },
                 "max_results": 100
             },
             "priority": {
-                "pacman": 100, "aur": 80, "flatpak": 60, "appimage": 40
+                "pacman": 100, "aur": 80, "flatpak": 60, "appimage": 40, "snap": 30
             },
             "ui": {
                 "appearance": "system",
-                "color_seed": "#4E7EEF"
+                "color_seed": "#4E7EEF",
+                "language": "zh-CN"
             },
             "logging": {
                 "level": "INFO"
@@ -37,7 +39,30 @@ class ConfigManager:
             },
             "updates": {
                 "check_interval_hours": 1,
-                "remind_updates": True
+                "remind_updates": True,
+                "include_aur_in_update_all": True
+            },
+            "ai": {
+                "enabled": False,
+                "provider": "ollama",
+                "endpoint": "http://localhost:11434",
+                "model": "qwen2.5:7b",
+                "api_key": ""
+            },
+            "custom_repos": {
+                "flatpak": [],
+                "pacman": [],
+                "appimage": []
+            },
+            "mirrors": {
+                "pacman": "/etc/pacman.d/mirrorlist",
+                "flatpak_remotes": ["https://dl.flathub.org/repo/flathub.flatpakrepo"]
+            },
+            "daemon": {
+                "enabled": True,
+                "check_interval_hours": 4,
+                "auto_update": false,
+                "notifications": True
             }
         }
         # 初始化加载

@@ -1,32 +1,23 @@
-from core.downloader.downloader import InstallExecutor
-from core.search.searchmanager import SearchManager
-from core.recommendation_manager import RecommendationManager
-from core.config_loader import ConfigManager
-from core.env_manager import EnvManager
-from typing import Optional
+import functools
 import json
 import sys
 import argparse
 import aiohttp
 import logging
 from pathlib import Path
-import functools
+from typing import Optional
 
-# 强制让本项目所有的 print 都自带 flush，保证 Flutter 能实时收到
+# Force all print statements to flush immediately, ensuring real-time output to Flutter
 print = functools.partial(print, flush=True)
 
-# 获取当前文件的绝对路径
+# Path handling optimization
 current_file_path = Path(__file__).resolve()
-# 将包含 core 的目录加入 path
 sys.path.insert(0, str(current_file_path.parent))
-
-# 路径处理优化
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.append(str(BASE_DIR))
 
 # Initial minimal logging config
 logging.basicConfig(level=logging.ERROR)
-
 
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stdout.reconfigure(  # type: ignore
@@ -34,6 +25,15 @@ if hasattr(sys.stderr, 'reconfigure'):
         encoding='utf-8',
         errors='replace'
     )
+
+from core.downloader.downloader import InstallExecutor
+from core.search.searchmanager import SearchManager
+from core.recommendation_manager import RecommendationManager
+from core.config_loader import ConfigManager
+from core.env_manager import EnvManager
+from core.update_manager import UpdateManager
+from core.ai.assistant import AIAssistant
+from core.search.custom_repo import CustomRepoManager
 
 
 class OmnistoreBackend:
@@ -43,11 +43,12 @@ class OmnistoreBackend:
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
         self.updater = UpdateManager(self.config)
-        # self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
-        self.session = None  # aiohttp session 也在需要时创建，确保资源正确释放
-        # self.loop = asyncio.get_event_loop() # 事件循环也在需要时获取，避免在某些环境下的兼容性问题
         self.executor = InstallExecutor()
         self.is_action = False
+        
+        # Initialize new features
+        self.ai = AIAssistant(self.config)
+        self.repo_manager = CustomRepoManager(self.config)
 
     async def initialize(self, session: aiohttp.ClientSession):
         self.manager = SearchManager(self.config, session)
@@ -59,7 +60,6 @@ class OmnistoreBackend:
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
         """Unified log exit with level support and auto-detection"""
-        # Map common prefixes to levels
         if level is None:
             if msg.startswith("[ERROR]") or msg.startswith("[Error]"): level = "ERROR"
             elif msg.startswith("[INFO]") or msg.startswith("[Status]") or msg.startswith("[Executor]"): level = "INFO"
@@ -67,17 +67,14 @@ class OmnistoreBackend:
             elif msg.startswith("[DEBUG]"): level = "DEBUG"
             else: level = "INFO"
 
-        # Normalize prefix and translate [Status] to [INFO]
         if msg.startswith("[Status]"):
             msg = msg.replace("[Status]", "[INFO]", 1)
         elif not msg.startswith("["):
             msg = f"[{level.upper()}] {msg}"
         
-        # Replace [Error] with [ERROR] for consistency
         if msg.startswith("[Error]"):
             msg = msg.replace("[Error]", "[ERROR]", 1)
 
-        # Filter based on config level
         config_level = self.config.get("logging.level", "INFO").upper()
         level_map = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "PROGRESS": 99}
         
@@ -88,18 +85,15 @@ class OmnistoreBackend:
             return
 
         if json_mode:
-            # ONLY output log objects during actions to avoid breaking Process.run JSON parsing
-            if self.is_action:
-                output = json.dumps(
-                    {"type": "log", "message": msg, "level": level.upper()}, ensure_ascii=False)
-                sys.stdout.write(f"[CALLBACK] {output}\n")
-                sys.stdout.flush()
+            output = json.dumps(
+                {"type": "log", "message": msg, "level": level.upper()}, ensure_ascii=False)
+            sys.stdout.write(f"[CALLBACK] {output}\n")
+            sys.stdout.flush()
         else:
             print(f"📦 {msg}")
 
     async def run_search(self, query: str, json_mode: bool = False):
         try:
-            # 设置超时，防止某个源（如 AppImage 抓 GitHub）卡死整个进程
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
@@ -117,7 +111,6 @@ class OmnistoreBackend:
                     self._output_pretty(query, results)
 
         except Exception as e:
-            # 这里的错误处理非常关键，如果是 JSON 模式，必须返回 JSON 格式的错误
             error_msg = f"Backend Error: {str(e)}"
             if json_mode:
                 print(json.dumps({"error": error_msg, "results": []}))
@@ -125,11 +118,10 @@ class OmnistoreBackend:
                 print(f"[Error] {error_msg}")
 
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False):
-        """Installation logic: call our optimized dispatcher"""
+        """Installation logic"""
         self.is_action = True
         package_data = {"name": name, "source": source, "url": url}
 
-        # 记录安装习惯
         if self.manager and self.manager.habit_tracker:
             self.manager.habit_tracker.record_install(name, source)
 
@@ -192,18 +184,14 @@ class OmnistoreBackend:
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
 
-                # 1. Fetch rich metadata (screenshots, developer, etc)
-                if "." in app_id: # Likely an ID
+                if "." in app_id:
                     details = await self.recommender.get_details(app_id) # type: ignore
-                else: # Likely a name
+                else:
                     details = await self.recommender.find_metadata(app_id) # type: ignore
 
-                # 2. Check for variants across ALL sources
-                # Use the name from details or app_id
                 search_name = details.get("name") or app_id.split(".")[-1]
                 variants_results = await self.manager.search_all(search_name) # type: ignore
 
-                # Find the matching app in search results to get combined variants
                 norm_target = self.manager._normalize_app_name(search_name) # type: ignore
                 matched_app = None
                 for res in variants_results:
@@ -213,7 +201,6 @@ class OmnistoreBackend:
 
                 if matched_app:
                     details["variants"] = matched_app.get("variants", [])
-                    # Update description if empty
                     if not details.get("description") or len(details.get("description")) < 10:
                         details["description"] = matched_app.get("description", "")
 
@@ -222,10 +209,10 @@ class OmnistoreBackend:
             print(json.dumps({"error": str(e)}))
 
     async def run_list_installed(self, json_mode: bool = False):
-        """List all installed AppImage and Flatpak applications"""
+        """List all installed AppImage, Flatpak, and Native applications"""
         installed_list = []
 
-        # 1. Scan AppImage (based on ~/Applications directory)
+        # 1. Scan AppImage
         apps_dir = Path.home() / "Applications"
         if apps_dir.exists():
             for f in apps_dir.glob("*.AppImage"):
@@ -263,13 +250,11 @@ class OmnistoreBackend:
                             "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
                         })
         except Exception as e:
-            # Don't use callback here in JSON mode as it breaks the query output
             if not json_mode:
                 await self._flutter_callback(f"Failed to scan Flatpaks: {e}", json_mode, level="ERROR")
 
         # 3. Scan Native (Pacman)
         try:
-            # -Qn: native packages (sync database), -qe: explicitly installed
             proc = await asyncio.create_subprocess_exec(
                 "pacman", "-Qqne",
                 stdout=asyncio.subprocess.PIPE,
@@ -293,30 +278,109 @@ class OmnistoreBackend:
             print(json.dumps(installed_list))
         else:
             for app in installed_list:
-                print(f"[{app['source']}] {app['name']}")
+                print(f"[{app['primary_source']}] {app['name']}")
+
+    # --- Custom Repositories Methods ---
+    async def run_list_custom_repos(self):
+        """Combine and output all custom repositories from various sources"""
+        flatpaks = await self.repo_manager.list_flatpak_remotes()
+        pacmans = await self.repo_manager.list_pacman_repos()
+        appimages = self.repo_manager.list_appimage_feeds()
+        
+        # Load local configuration custom repos definitions to compare/fill in details
+        config_flatpak = self.config.get("custom_repos.flatpak", [])
+        config_pacman = self.config.get("custom_repos.pacman", [])
+        
+        result = {
+            "flatpak": flatpaks,
+            "pacman": pacmans,
+            "appimage": [{"name": Path(url).stem, "url": url} for url in appimages],
+            "config_flatpak": config_flatpak,
+            "config_pacman": config_pacman
+        }
+        print(json.dumps(result, ensure_ascii=False))
+
+    async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False):
+        self.is_action = True
+        async def cb(m):
+            await self._flutter_callback(m, json_mode)
+
+        success = False
+        if repo_type == "flatpak":
+            success = await self.repo_manager.add_flatpak_remote(name, url, callback=cb)
+        elif repo_type == "pacman":
+            success = await self.repo_manager.add_pacman_repo(name, url, callback=cb)
+        elif repo_type == "appimage":
+            success = self.repo_manager.add_appimage_feed(url)
+            if success:
+                await cb(f"[INFO] Successfully added AppImage feed: {url}")
+            else:
+                await cb(f"[ERROR] Failed to add AppImage feed: {url}")
+        else:
+            await cb(f"[ERROR] Invalid repo type: {repo_type}")
+
+        if json_mode:
+            print(json.dumps({"status": "success" if success else "error"}))
+
+    async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False):
+        self.is_action = True
+        async def cb(m):
+            await self._flutter_callback(m, json_mode)
+
+        success = False
+        if repo_type == "flatpak":
+            success = await self.repo_manager.remove_flatpak_remote(name, callback=cb)
+        elif repo_type == "pacman":
+            success = await self.repo_manager.remove_pacman_repo(name, callback=cb)
+        elif repo_type == "appimage":
+            # For appimages, name parameter contains the url to remove
+            success = self.repo_manager.remove_appimage_feed(name)
+            if success:
+                await cb(f"[INFO] Successfully removed AppImage feed: {name}")
+            else:
+                await cb(f"[ERROR] Failed to remove AppImage feed: {name}")
+        else:
+            await cb(f"[ERROR] Invalid repo type: {repo_type}")
+
+        if json_mode:
+            print(json.dumps({"status": "success" if success else "error"}))
+
+    # --- AI Features Methods ---
+    async def run_ai_explain(self, app_name: str, app_description: str = ""):
+        res = await self.ai.explain_app(app_name, app_description)
+        print(json.dumps({"response": res}, ensure_ascii=False))
+
+    async def run_ai_recommend(self, prompt: str):
+        # Hybrid Search: search locally for the query to provide candidates context to AI
+        timeout = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await self.initialize(session)
+            # Find candidate apps matching query keyword (e.g. search broad keywords first)
+            keywords = prompt.split()
+            broad_query = keywords[0] if keywords else prompt
+            candidates = await self.manager.search_all(broad_query) # type: ignore
+            
+            res = await self.ai.recommend_apps(prompt, candidates)
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    async def run_ai_analyze_error(self, error_log: str):
+        res = await self.ai.analyze_error(error_log)
+        print(json.dumps({"response": res}, ensure_ascii=False))
 
     def _output_json(self, results):
-        """
-        标准化输出格式。
-        注意：在 Flutter 侧，建议先判断返回的是 List 还是 Map(含 error)
-        """
         output = []
         for item in results:
-            # 增加数据清洗，防止 None 值导致 Flutter 解析失败
             output.append({
                 "name": str(item.get("name", "Unknown")),
                 "description": str(item.get("description", "")),
                 "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
-                "primary_source": str(item.get("primary_source", "Native")),
-                "url": str(item.get("url") or ""), # 提取下载链接
-                # 扁平化变体信息，方便前端展示 Chip
+                "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
+                "url": str(item.get("url") or ""),
                 "variants": item.get("variants", []),
                 "version": str(item.get("last_version") or item.get("version") or "N/A"),
                 "score": int(item.get("score", 0)),
                 "icon": item.get("icon")
             })
-
-        # 确保输出是唯一的，且不带多余的换行
         sys.stdout.write(json.dumps(output, ensure_ascii=False) + '\n')
         sys.stdout.flush()
 
@@ -330,7 +394,6 @@ class OmnistoreBackend:
         for i, item in enumerate(results[:15]):
             status = "installed" if (item.get("installed") or item.get(
                 "is_installed")) else "not_installed"
-            # Extract source names
             sources = [v['source'] for v in item.get('variants', [])]
             source_str = f"({', '.join(sources)})"
 
@@ -343,8 +406,7 @@ class OmnistoreBackend:
 async def main():
     parser = argparse.ArgumentParser(
         description="Omnistore: all-in-one software manager for Arch Linux and beyond.\n\n",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Examples:\n  omni -S wechat          # Search for WeChat\n  omni -S telegram --json # Provide data to frontend"
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
     group = parser.add_mutually_exclusive_group(required=False)
@@ -365,21 +427,32 @@ async def main():
     group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
     group.add_argument("--check-env", action="store_true", help="Check system environment")
     group.add_argument("--bootstrap", action="store_true", help="Bootstrap environment")
+    
+    # Custom repositories options
+    group.add_argument("--list-custom-repos", action="store_true", help="List custom repositories")
+    group.add_argument("--add-custom-repo", metavar="TYPE,NAME,URL", help="Add custom repo (e.g. flatpak,flathub-beta,https://dl.flathub.org/beta-repo/)")
+    group.add_argument("--remove-custom-repo", metavar="TYPE,NAME", help="Remove custom repo (e.g. flatpak,flathub-beta)")
+
+    # AI options
+    group.add_argument("--ai-explain", metavar="APP_NAME", help="Ask AI to explain package details")
+    group.add_argument("--ai-recommend", metavar="PROMPT", help="Ask AI to recommend apps based on prompt")
+    group.add_argument("--ai-analyze-error", metavar="ERROR_LOG", help="Ask AI to analyze installation error logs")
 
     parser.add_argument("--json", action="store_true",
-                        help="Output results in JSON format")
+                         help="Output results in JSON format")
     parser.add_argument("--source", choices=["AUR", "Flatpak", "AppImage", "Native"],
-                        default="AUR", help="Specify the source for installation (default: AUR)")
+                         default="AUR", help="Specify the source for installation (default: AUR)")
     parser.add_argument(
         "--url", help="For AppImage, specify the direct download URL")
     parser.add_argument("--version", action="version",
-                        version="Omnistore 0.1.0")
+                         version="Omnistore 0.1.0")
     parser.add_argument("--debug", action="store_true",
-                        help="Enable debug mode with verbose logging")
+                         help="Enable debug mode with verbose logging")
     parser.add_argument("--get-config", action="store_true",
-                        help="Get the full configuration as JSON")
+                         help="Get the full configuration as JSON")
     parser.add_argument("--set-config", metavar="CONFIG_JSON",
-                        help="Set the full configuration using a JSON string")
+                         help="Set the full configuration using a JSON string")
+    parser.add_argument("--ai-desc", help="Helper argument for --ai-explain to provide a description")
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -397,11 +470,18 @@ async def main():
     signal.signal(signal.SIGTERM, handle_term)
     signal.signal(signal.SIGINT, handle_term)
 
-    if not any([args.search, args.install, args.remove, args.get_config, args.set_config, args.list_installed, args.launch, args.recommend, args.details, args.check_env, args.bootstrap]):  # 如果没有任何操作指令，显示帮助
+    # Validate active argument
+    active_args = [
+        args.search, args.install, args.remove, args.get_config, args.set_config, 
+        args.list_installed, args.launch, args.recommend, args.details, args.check_env, 
+        args.bootstrap, args.list_custom_repos, args.add_custom_repo, args.remove_custom_repo,
+        args.ai_explain, args.ai_recommend, args.ai_analyze_error
+    ]
+    if not any(active_args):
         parser.print_help()
         return
 
-    # --- 处理逻辑分发 ---
+    # --- Dispatch Logic ---
 
     if args.get_config:
         config = backend.config.data
@@ -417,23 +497,19 @@ async def main():
                 print(json.dumps({"status": "error", "message": "[ERROR] No configuration data provided"}))
                 sys.exit(1)
 
-            # Unified return format
             success = backend.config.save(new_config=json.loads(input_data))
             if success:
                 print(json.dumps({"status": "success", "message": "[INFO] Configuration saved successfully"}))
             else:
-                print(json.dumps(
-                    {"status": "error", "message": "[ERROR] Failed to save configuration"}))
+                print(json.dumps({"status": "error", "message": "[ERROR] Failed to save configuration"}))
         except Exception as e:
             print(json.dumps({"status": "error", "message": f"[ERROR] {str(e)}"}))
             sys.exit(1)
 
     elif args.search:
-        # 搜索逻辑
         await backend.run_search(args.search, json_mode=args.json)
 
     elif args.install:
-        # 安装逻辑
         await backend.run_install(
             args.install,
             source=args.source,
@@ -442,7 +518,6 @@ async def main():
         )
 
     elif args.remove:
-        # 卸载逻辑
         await backend.run_uninstall(
             args.remove,
             source=args.source,
@@ -450,7 +525,6 @@ async def main():
         )
 
     elif args.update:
-        # 更新逻辑
         await backend.run_update(
             args.update,
             source=args.source,
@@ -458,11 +532,9 @@ async def main():
         )
 
     elif args.check_updates:
-        # 检查更新逻辑
         await backend.run_check_updates(json_mode=args.json)
 
     elif args.list_installed:
-        # 列出已安装
         await backend.run_list_installed(json_mode=args.json)
 
     elif args.recommend:
@@ -485,9 +557,7 @@ async def main():
     elif args.launch:
         import subprocess
         try:
-            # Check for id if it was passed or use the name directly
             target = args.launch
-            
             if args.source == "Flatpak":
                 subprocess.Popen(["flatpak", "run", target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif args.source == "AppImage":
@@ -510,15 +580,52 @@ async def main():
             else:
                 print(f"[ERROR] Launch failed: {str(e)}")
 
+    # Custom repo dispatching
+    elif args.list_custom_repos:
+        await backend.run_list_custom_repos()
+
+    elif args.add_custom_repo:
+        try:
+            parts = args.add_custom_repo.split(',', 2)
+            if len(parts) < 3:
+                # Fallback for AppImage type where name isn't strictly required (url is second param)
+                if len(parts) == 2 and parts[0] == "appimage":
+                    await backend.run_add_custom_repo("appimage", "", parts[1], json_mode=args.json)
+                else:
+                    print(json.dumps({"status": "error", "message": "[ERROR] Add custom repo arguments must be: type,name,url"}))
+            else:
+                await backend.run_add_custom_repo(parts[0], parts[1], parts[2], json_mode=args.json)
+        except Exception as e:
+            print(json.dumps({"status": "error", "message": f"[ERROR] Add custom repo parsing failed: {e}"}))
+
+    elif args.remove_custom_repo:
+        try:
+            parts = args.remove_custom_repo.split(',', 1)
+            if len(parts) < 2:
+                print(json.dumps({"status": "error", "message": "[ERROR] Remove custom repo arguments must be: type,name"}))
+            else:
+                await backend.run_remove_custom_repo(parts[0], parts[1], json_mode=args.json)
+        except Exception as e:
+            print(json.dumps({"status": "error", "message": f"[ERROR] Remove custom repo parsing failed: {e}"}))
+
+    # AI dispatching
+    elif args.ai_explain:
+        await backend.run_ai_explain(args.ai_explain, args.ai_desc or "")
+
+    elif args.ai_recommend:
+        await backend.run_ai_recommend(args.ai_recommend)
+
+    elif args.ai_analyze_error:
+        await backend.run_ai_analyze_error(args.ai_analyze_error)
+
+
 if __name__ == "__main__":
     import asyncio
     try:
-        # 使用 run 启动异步主函数
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
     except Exception:
-        # 调试核心：如果启动失败，至少把错误喷到 stderr
         import traceback
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)

@@ -5,7 +5,7 @@ from core.search.base import SearchSource
 from .smart_scoring import SmartScoring
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
-from .pacman import PacmanSearch
+from .snap import SnapSearch
 from .aur import AurSearch
 from .flatpak import FlatpakSearch
 from .appimage import AppImageSearch
@@ -32,13 +32,8 @@ class SearchManager:
     def _setup_sources(self):
         self.source_instances = {}
         # 只有环境支持才加载
-        if shutil.which("pacman"):
-            self.source_instances["pacman"] = PacmanSearch("Native")
-        if shutil.which("flatpak"):
-            self.source_instances["flatpak"] = FlatpakSearch("Flatpak")
-        # AppImage 不需要外部命令，直接加载
-        self.source_instances["appimage"] = AppImageSearch(self.session)
-        # AUR 搜索需要 aiohttp 支持，且用户必须启用
+        if shutil.which("snap"):
+            self.source_instances["snap"] = SnapSearch(self.session)
         if self.cm.get("search.sources.aur", False):
             self.source_instances["aur"] = AurSearch(self.session)
 
