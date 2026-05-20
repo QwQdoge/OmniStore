@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refresh() async {
     setState(() => _isLoading = true);
-    final results = await BackendService().getRecommendations();
+    final results = await BackendService.instance.getRecommendations();
     if (mounted) {
       setState(() {
         _recommendations = results;
@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Material(
           color: theme.brightness == Brightness.light
-              ? colorScheme.surface
+              ? colorScheme.surfaceContainerLow
               : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(28.0),
           clipBehavior: Clip.antiAlias,

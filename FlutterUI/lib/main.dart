@@ -15,12 +15,22 @@ import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // 初始化窗口管理器
-  await wm.windowManager.ensureInitialized();
 
-  // 初始化配置和语言
-  final config = await BackendService().loadConfig();
+  // 并行初始化核心服务以提升加载速度
+  final results = await Future.wait([
+    wm.windowManager.ensureInitialized(),
+    BackendService.instance.loadConfig(),
+    UpdateService().init(),
+  ]);
+
+  final Map<String, dynamic> config = results[1] as Map<String, dynamic>;
+
+  // 初始化语言服务（依赖配置）
+  await L10nService.init(config);
+  
+  // 更新服务同步最新配置
+  await UpdateService().updateConfig();
+
   final bool useSystemBar = config['ui']?['use_system_title_bar'] ?? false;
 
   wm.WindowOptions windowOptions = wm.WindowOptions(
@@ -30,16 +40,12 @@ void main() async {
     skipTaskbar: false,
     titleBarStyle: useSystemBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
   );
+
   wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
     await wm.windowManager.show();
     await wm.windowManager.focus();
     await wm.windowManager.setPreventClose(true);
   });
-  await L10nService.init(config);
-
-  // 初始化更新服务
-  await UpdateService().init();
-  await UpdateService().updateConfig();
   
   runApp(OmnistoreApp(initialConfig: config));
 }
@@ -101,13 +107,14 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
           ? WelcomePage(onFinish: () {
               setState(() => _isFirstRun = false);
             })
-          : const MainNavigationEntry(),
+          : MainNavigationEntry(initialConfig: widget.initialConfig),
     );
   }
 }
 
 class MainNavigationEntry extends StatefulWidget {
-  const MainNavigationEntry({super.key});
+  final Map<String, dynamic> initialConfig;
+  const MainNavigationEntry({super.key, required this.initialConfig});
 
   @override
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
@@ -128,16 +135,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const SettingsPage(),
       const DownloadPage(),
     ];
-    _loadConfig();
-  }
-
-  Future<void> _loadConfig() async {
-    final config = await BackendService().loadConfig();
-    if (mounted) {
-      setState(() {
-        _useSystemTitleBar = config['ui']?['use_system_title_bar'] ?? false;
-      });
-    }
+    _useSystemTitleBar = widget.initialConfig['ui']?['use_system_title_bar'] ?? false;
   }
 
   @override
@@ -149,7 +147,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   @override
   void onWindowClose() async {
     // 动态检查配置中的“关闭至托盘”设置
-    final config = await BackendService().loadConfig();
+    final config = await BackendService.instance.loadConfig();
     final bool closeToTray = config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
@@ -184,7 +182,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                 // 右侧内容区
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 0, 8, 8),
+                    margin: _useSystemTitleBar
+                        ? const EdgeInsets.fromLTRB(0, 12, 12, 12)
+                        : const EdgeInsets.fromLTRB(0, 0, 8, 8),
                     decoration: BoxDecoration(
                       color: theme.brightness == Brightness.light
                           ? colorScheme.surface
@@ -224,10 +224,18 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   // 侧边栏布局：Logo + 导航 + 左下角图标
   Widget _buildSideBar(ColorScheme colorScheme) {
     return Container(
-      width: 90, // 固定宽度
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      width: _useSystemTitleBar ? 96 : 90, // Tablet style slightly wider
+      padding: EdgeInsets.symmetric(vertical: _useSystemTitleBar ? 24 : 12),
       child: Column(
         children: [
+          if (_useSystemTitleBar) ...[
+            IconButton.filledTonal(
+              onPressed: () => setState(() => _selectedIndex = 1),
+              icon: const Icon(Icons.search_rounded),
+              tooltip: AppLocalizations.of(context)!.search,
+            ),
+            const SizedBox(height: 24),
+          ],
           // 中间导航项
           Expanded(
             child: NavigationRail(

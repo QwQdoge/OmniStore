@@ -20,7 +20,7 @@ class _WelcomePageState extends State<WelcomePage> {
   bool _isBootstrapping = false;
   String _bootstrapLog = "";
   bool _enableAUR = true;
-  final BackendService _backend = BackendService();
+  final BackendService _backend = BackendService.instance;
 
   @override
   void initState() {

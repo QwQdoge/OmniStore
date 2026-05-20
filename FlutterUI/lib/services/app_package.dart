@@ -60,31 +60,32 @@ class AppPackage {
   List<String> get sources => variants.map((v) => v.source).toList();
 
   factory AppPackage.fromJson(Map<String, dynamic> json) {
-    var variantsData = json['variants'] as List? ?? [];
+    var variantsData = json['variants'] is List ? json['variants'] as List : [];
     List<AppVariant> parsedVariants = variantsData
+        .whereType<Map<String, dynamic>>()
         .map((v) => AppVariant.fromJson(v))
         .toList();
 
-    String primarySource = json['primary_source'] ?? json['source'] ?? 'Native';
+    String primarySource = (json['primary_source'] ?? json['source'] ?? 'Native').toString();
 
     // 如果没有 variants，根据当前信息构造一个
     if (parsedVariants.isEmpty) {
       parsedVariants.add(AppVariant(
         source: primarySource,
-        version: json['version'] ?? json['last_version'] ?? 'N/A',
-        installed: json['installed'] ?? false,
-        description: json['description'] ?? '',
-        url: json['url'],
-        id: json['id'],
+        version: (json['version'] ?? json['last_version'] ?? 'N/A').toString(),
+        installed: json['installed'] == true,
+        description: (json['description'] ?? '').toString(),
+        url: json['url']?.toString(),
+        id: json['id']?.toString(),
       ));
     }
 
     return AppPackage(
-      name: json['name'] ?? 'Unknown',
-      description: json['description'] ?? '',
-      installed: json['installed'] ?? false,
+      name: (json['name'] ?? 'Unknown').toString(),
+      description: (json['description'] ?? '').toString(),
+      installed: json['installed'] == true,
       primarySource: primarySource,
-      version: json['version'] ?? json['last_version'] ?? 'N/A',
+      version: (json['version'] ?? json['last_version'] ?? 'N/A').toString(),
       variants: parsedVariants,
       url: json['url'] != null && json['url'].toString().isNotEmpty
           ? json['url'].toString()
@@ -92,10 +93,12 @@ class AppPackage {
       id: json['id'] != null && json['id'].toString().isNotEmpty
           ? json['id'].toString()
           : null,
-      icon: json['icon'],
-      screenshots: json['screenshots'] != null ? List<String>.from(json['screenshots']) : null,
-      developer: json['developer'],
-      homepage: json['homepage'],
+      icon: json['icon']?.toString(),
+      screenshots: json['screenshots'] is List
+          ? (json['screenshots'] as List).map((e) => e.toString()).toList()
+          : null,
+      developer: json['developer']?.toString(),
+      homepage: json['homepage']?.toString(),
     );
   }
 

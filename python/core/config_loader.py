@@ -62,7 +62,7 @@ class ConfigManager:
             "daemon": {
                 "enabled": True,
                 "check_interval_hours": 4,
-                "auto_update": false,
+                "auto_update": False,
                 "notifications": True
             }
         }

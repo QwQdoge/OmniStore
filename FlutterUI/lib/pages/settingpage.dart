@@ -46,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadConfig() async {
-    final config = await BackendService().loadConfig();
+    final config = await BackendService.instance.loadConfig();
     if (config.isEmpty) return;
 
     setState(() {
@@ -459,9 +459,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (confirm == true) {
-      final config = await BackendService().loadConfig();
+      final config = await BackendService.instance.loadConfig();
       config['first_run'] = true;
-      final success = await BackendService().saveConfig(config);
+      final success = await BackendService.instance.saveConfig(config);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -523,7 +523,7 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     };
 
-    BackendService().saveConfig(config).then((success) {
+    BackendService.instance.saveConfig(config).then((success) {
       if (success) {
         UpdateService().updateConfig();
       }
