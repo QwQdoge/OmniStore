@@ -48,3 +48,17 @@ build-*/  # Qt Creator 的构建目录，通常以 build- 开头
 *.qrc  # Qt 资源文件
 *.qrc.cpp  # Qt 资源文件编译后的 C++ 文件
 *.qrc.h  # Qt 资源文件编译后的头文件    
+
+
+# --- Rust 补丁 ---
+*.rs.bk
+Cargo.lock # 只有在写库时才提交，写应用建议忽略或保留，看你习惯
+/target/ # Rust 的构建输出目录，包含编译后的二进制文件和依赖库
+
+# --- 系统增强 ---
+ehthumbs.db
+ehthumbs_vista.db
+*.exe
+*.dll
+*.so
+*.dylib

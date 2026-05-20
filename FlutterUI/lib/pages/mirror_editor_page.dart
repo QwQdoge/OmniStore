@@ -1,6 +1,6 @@
 // lib/pages/mirror_editor_page.dart
 import 'package:flutter/material.dart';
-import 'package:omnistore_backend/backend_service.dart'; // hypothetical service
+import '../services/backend_service.dart';
 
 class MirrorEditorPage extends StatefulWidget {
   const MirrorEditorPage({Key? key}) : super(key: key);
@@ -21,6 +21,7 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
 
   Future<void> _loadMirrors() async {
     final mirrors = await BackendService.instance.getPacmanMirrors();
+    if (!mounted) return;
     setState(() {
       _mirrors = mirrors;
       _loading = false;
@@ -29,6 +30,7 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
 
   Future<void> _saveMirrors() async {
     await BackendService.instance.savePacmanMirrors(_mirrors);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('镜像列表已保存')),
     );

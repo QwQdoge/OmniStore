@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'app_package.dart';
 
 class BackendService {
+  static final BackendService instance = BackendService();
   static String get _projectRoot => Directory.current.path.endsWith('FlutterUI')
       ? Directory.current.parent.path
       : Directory.current.path;
@@ -84,8 +85,11 @@ class BackendService {
   Future<Map<String, dynamic>> loadConfig() async {
     try {
       final result = await Process.run(_venvPython, [_scriptPath, "--get-config", "--json"]);
+      if (result.exitCode != 0) return {};
       return jsonDecode(result.stdout);
-    } catch (e) { return {}; }
+    } catch (e) {
+      return {};
+    }
   }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
@@ -144,6 +148,34 @@ class BackendService {
     } catch (e) {
       return {};
     }
+  }
+
+  Future<List<String>> getPacmanMirrors() async {
+    final config = await loadConfig();
+    final customRepos = config['custom_repos'] as Map<String, dynamic>?;
+    final pacman = customRepos?['pacman'] as List<dynamic>? ?? [];
+    return pacman.map((entry) {
+      if (entry is Map<String, dynamic>) {
+        final name = entry['name']?.toString() ?? '';
+        final url = entry['url']?.toString() ?? '';
+        return name.isNotEmpty && url.isNotEmpty ? '$name|$url' : entry.toString();
+      }
+      return entry.toString();
+    }).toList();
+  }
+
+  Future<bool> savePacmanMirrors(List<String> mirrors) async {
+    final config = await loadConfig();
+    final customRepos = Map<String, dynamic>.from(config['custom_repos'] as Map? ?? {});
+    customRepos['pacman'] = mirrors.map((entry) {
+      final parts = entry.split('|');
+      if (parts.length == 2) {
+        return {'name': parts[0].trim(), 'url': parts[1].trim()};
+      }
+      return {'name': entry.trim(), 'url': entry.trim()};
+    }).toList();
+    config['custom_repos'] = customRepos;
+    return saveConfig(config);
   }
 
   Stream<String> executeAction(String flag, String packageName, String source, {String? url}) async* {
