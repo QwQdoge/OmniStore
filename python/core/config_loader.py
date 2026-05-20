@@ -17,7 +17,8 @@ class ConfigManager:
                     "aur": True,
                     "flatpak": True,
                     "appimage": True,
-                    "snap": True
+                    "snap": True,
+                    "ai": True
                 },
                 "max_results": 100
             },

@@ -366,7 +366,13 @@ class OmnistoreBackend:
     async def run_ai_analyze_error(self, error_log: str):
         res = await self.ai.analyze_error(error_log)
         print(json.dumps({"response": res}, ensure_ascii=False))
-
+    async def run_ai_summary(self, json_mode: bool = False):
+        """Generate AI project summary."""
+        res = await self.ai.summarize_project()
+        if json_mode:
+            print(json.dumps({"response": res}, ensure_ascii=False))
+        else:
+            print(f"AI Summary:\n{res}")
     def _output_json(self, results):
         output = []
         for item in results:
@@ -424,6 +430,7 @@ async def main():
                        help="List all installed AppImage and Flatpak packages")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
+    parser.add_argument("--ai-summary", action="store_true", help="Generate AI project summary")
     group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
     group.add_argument("--check-env", action="store_true", help="Check system environment")
     group.add_argument("--bootstrap", action="store_true", help="Bootstrap environment")
@@ -537,8 +544,8 @@ async def main():
     elif args.list_installed:
         await backend.run_list_installed(json_mode=args.json)
 
-    elif args.recommend:
-        await backend.run_recommendations(json_mode=args.json)
+    elif args.ai_summary:
+        await backend.run_ai_summary(json_mode=args.json)
 
     elif args.details:
         await backend.run_app_details(args.details, json_mode=args.json)

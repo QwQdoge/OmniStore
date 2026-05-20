@@ -118,3 +118,21 @@ class AIAssistant:
         )
         user_prompt = f"Error log:\n{error_log}"
         return await self._post_request(system_prompt, user_prompt)
+    async def summarize_project(self) -> str:
+        """Generate a concise markdown summary of the OmniStore project using the AI provider."""
+        # Use README as the source material if available
+        readme_path = Path(__file__).resolve().parents[3] / "README.md"
+        if readme_path.exists():
+            try:
+                readme_text = readme_path.read_text(encoding="utf-8")
+            except Exception:
+                readme_text = ""
+        else:
+            readme_text = ""
+        system_prompt = (
+            "You are OmniStore AI assistant. Summarize the OmniStore project in concise markdown, covering its purpose, main features, and architecture."
+        )
+        # Include README content if available
+        user_prompt = f"Project README:\n{readme_text}" if readme_text else "Provide a brief summary of OmniStore based on your knowledge."
+        return await self._post_request(system_prompt, user_prompt)
+    
