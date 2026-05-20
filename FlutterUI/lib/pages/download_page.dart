@@ -22,7 +22,7 @@ class _DownloadPageState extends State<DownloadPage>
   bool _isLoadingInstalled = false;
   late String _selectedSourceFilter;
   String _searchQuery = "";
-  final BackendService _backend = BackendService();
+  final BackendService _backend = BackendService.instance;
   final TextEditingController _searchController = TextEditingController();
 
   @override

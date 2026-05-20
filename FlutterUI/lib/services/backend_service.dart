@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'app_package.dart';
 
 class BackendService {
-  static final BackendService instance = BackendService();
+  static final BackendService instance = BackendService._internal();
+  factory BackendService() => instance;
+  BackendService._internal();
+
   static String get _projectRoot => Directory.current.path.endsWith('FlutterUI')
       ? Directory.current.parent.path
       : Directory.current.path;

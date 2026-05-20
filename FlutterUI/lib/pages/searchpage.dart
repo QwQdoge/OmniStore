@@ -108,7 +108,7 @@ class _SearchPageState extends State<SearchPage> {
     });
 
     try {
-      final service = BackendService();
+      final service = BackendService.instance;
       final List<dynamic> rawData = await service.searchPackages(q);
       final updatedHistory = await _historyService.add(q);
 
@@ -169,11 +169,11 @@ class _SearchPageState extends State<SearchPage> {
           hintText: AppLocalizations.of(context)!.searchHint,
           elevation: WidgetStateProperty.all(0),
           backgroundColor: WidgetStateProperty.all(
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+            colorScheme.surfaceContainer,
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(28.0),
               side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
           ),

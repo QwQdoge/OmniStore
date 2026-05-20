@@ -57,7 +57,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Future<void> _fetchExtraDetails() async {
     setState(() => _isLoadingDetails = true);
     final target = widget.app.id ?? widget.app.name;
-    final details = await BackendService().getAppDetails(target);
+    final details = await BackendService.instance.getAppDetails(target);
     if (mounted) {
       setState(() {
         _extraDetails = details;
@@ -474,7 +474,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       body: Column(
         children: [
           FutureBuilder<Map<String, dynamic>>(
-            future: BackendService().loadConfig(),
+            future: BackendService.instance.loadConfig(),
             builder: (context, snapshot) {
               final useSystem =
                   snapshot.data?['ui']?['use_system_title_bar'] ?? false;

@@ -39,7 +39,7 @@ class UpdateService {
   }
 
   Future<void> updateConfig() async {
-    _config = await BackendService().loadConfig();
+    _config = await BackendService.instance.loadConfig();
     _startUpdateTimer();
     // 重新初始化托盘，确保语言和菜单最新
     await _initSystemTray();
@@ -89,7 +89,7 @@ class UpdateService {
 
   Future<void> checkNow() async {
     debugPrint("Checking for updates...");
-    final updates = await BackendService().checkUpdates();
+    final updates = await BackendService.instance.checkUpdates();
     availableUpdates.value = updates;
 
     final remindEnabled = _config['updates']?['remind_updates'] ?? true;
