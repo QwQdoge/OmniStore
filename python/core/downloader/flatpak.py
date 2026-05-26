@@ -72,6 +72,9 @@ class FlatpakDownloader:
                     list_progress_match = re.search(
                         r"\[\s*(\d+)%\s*\]", raw_data)
 
+                    # 3. Match speed: 4.5 MB/s
+                    speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", raw_data)
+
                     total_prog = None
 
                     if summary_match:
@@ -80,6 +83,10 @@ class FlatpakDownloader:
                                          * 100 + (sub / total))
                     elif list_progress_match:
                         total_prog = int(list_progress_match.group(1))
+
+                    if speed_match:
+                        if callback:
+                            await callback(f"[SPEED] {speed_match.group(1)}")
 
                     if total_prog is not None and total_prog > last_sent_progress:
                         if callback:

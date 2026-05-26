@@ -58,12 +58,21 @@ class YayDownloader:
                         if callback:
                             # --- Progress parsing ---
                             progress_match = re.search(r"(\d+)%", msg)
+                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", msg)
+
                             if progress_match:
                                 await callback(f"[PROGRESS] {progress_match.group(1)}")
+
+                            if speed_match:
+                                await callback(f"[SPEED] {speed_match.group(1)}")
 
                             # --- Status recognition ---
                             if "Installing" in msg or "正在安装" in msg:
                                 await callback("[INFO] Installing dependencies...")
+                            elif "Verifying" in msg or "正在校验" in msg:
+                                await callback("[INFO] Verifying package...")
+                            elif "Building" in msg or "正在构建" in msg:
+                                await callback("[INFO] Building package...")
 
                             # --- Raw log relay ---
                             await callback(f"[INFO] {msg}")

@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/app_package.dart';
+import '../services/task_manager.dart';
+import '../models/task_state.dart';
+import '../widgets/smooth_progress_bar.dart';
 import 'app_details_page.dart';
 import '../services/l10n_service.dart';
 import '../services/update_service.dart';
@@ -335,10 +339,12 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return ValueListenableBuilder<AppPackage?>(
-      valueListenable: BackendService.activeApp,
-      builder: (context, activeApp, _) {
-        if (activeApp == null) {
+    return StreamBuilder<TaskState?>(
+      stream: TaskManager().taskStateStream,
+      initialData: TaskManager().currentTask,
+      builder: (context, snapshot) {
+        final task = snapshot.data;
+        if (task == null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -348,6 +354,12 @@ class _DownloadPageState extends State<DownloadPage>
                 const SizedBox(height: 16),
                 Text(L10nService.s('no_active_tasks'),
                     style: const TextStyle(color: Colors.grey)),
+                const SizedBox(height: 24),
+                if (kDebugMode)
+                  OutlinedButton(
+                    onPressed: () => TaskManager().startMockTask(),
+                    child: const Text("Start Mock Task (Debug)"),
+                  ),
               ],
             ),
           );
@@ -364,48 +376,21 @@ class _DownloadPageState extends State<DownloadPage>
               const SizedBox(height: 20),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      ListTile(
-                        leading: const Icon(Icons.downloading,
-                            size: 40, color: Colors.blue),
-                        title: Text(activeApp.name,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: ValueListenableBuilder<String>(
-                          valueListenable: BackendService.globalStatus,
-                          builder: (context, status, _) => Text(status),
-                        ),
+                      SmoothProgressBar(
+                        taskState: task,
+                        onCancel: () => TaskManager().cancelTask(),
                       ),
-                      const SizedBox(height: 16),
-                      ValueListenableBuilder<double?>(
-                        valueListenable: BackendService.globalProgress,
-                        builder: (context, progress, _) {
-                          return Column(
-                            children: [
-                              LinearProgressIndicator(value: progress),
-                              const SizedBox(height: 8),
-                              if (progress != null)
-                                Text("${(progress * 100).toInt()}%",
-                                    style: const TextStyle(fontSize: 12)),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(
-                            onPressed: () => BackendService.cancelCurrentTask(),
-                            child: Text(L10nService.s('cancel'),
-                                style: const TextStyle(color: Colors.red)),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
+                          ElevatedButton.icon(
                             onPressed: () => _showTerminalDialog(context),
-                            child: Text(L10nService.s('view_logs')),
+                            icon: const Icon(Icons.terminal, size: 18),
+                            label: Text(L10nService.s('view_logs')),
                           ),
                         ],
                       ),
