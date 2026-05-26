@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart' as wm;
+import 'package:file_picker/file_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
@@ -343,6 +344,35 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: Text(AppLocalizations.of(context)!.resetOnboarding),
                     onTap: _resetOnboarding,
                   ),
+                  ListTile(
+                    leading: const Icon(Icons.cleaning_services_rounded),
+                    title: const Text("系统清理"),
+                    subtitle: const Text("删除孤立软件包并清理 pacman 缓存"),
+                    onTap: () {
+                      BackendService.instance.cleanSystem().listen((event) {});
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("系统清理任务已启动")),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.backup_rounded),
+                    title: const Text("备份与导出"),
+                    subtitle: const Text("导出当前已安装软件列表或从备份导入"),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton.icon(
+                            onPressed: _exportBackup,
+                            icon: const Icon(Icons.upload_rounded),
+                            label: const Text("导出")),
+                        TextButton.icon(
+                            onPressed: _importBackup,
+                            icon: const Icon(Icons.download_rounded),
+                            label: const Text("导入")),
+                      ],
+                    ),
+                  ),
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.help),
@@ -437,6 +467,62 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _exportBackup() async {
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: '选择导出位置',
+      fileName: 'omnistore_backup.json',
+    );
+
+    if (outputFile != null) {
+      final res = await BackendService.instance.exportPackages(outputFile);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(res['status'] == 'success'
+                  ? "导出成功: ${res['count']}个包"
+                  : "导出失败: ${res['message']}")),
+        );
+      }
+    }
+  }
+
+  Future<void> _importBackup() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+
+    if (result != null) {
+      final path = result.files.single.path!;
+      final packages = await BackendService.instance.importPackages(path);
+      if (mounted && packages.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("导入备份"),
+            content: Text("已从备份中读取 ${packages.length} 个软件包。是否开始批量恢复？"),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("取消")),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  for (var pkg in packages) {
+                    BackendService.instance
+                        .executeAction("-I", pkg['name'], pkg['source'] ?? 'Native')
+                        .listen((_) {});
+                  }
+                },
+                child: const Text("开始恢复"),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _resetOnboarding() async {

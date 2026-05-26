@@ -232,4 +232,59 @@ class BackendService {
       yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
     }
   }
+
+  /// 获取必备包
+  Future<List<dynamic>> getEssentials() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--essentials",
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// 导入包
+  Future<List<dynamic>> importPackages(String filepath) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--import-packages", filepath,
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// 导出包列表
+  Future<Map<String, dynamic>> exportPackages(String filepath) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--export-packages", filepath,
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return {"status": "error"};
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      return {"status": "error", "message": e.toString()};
+    }
+  }
+
+  /// 清理系统（孤立包和缓存）
+  Stream<String> cleanSystem() async* {
+    try {
+      final process = await Process.start(_venvPython, [
+        _scriptPath, "--clean-system", "--json",
+      ], workingDirectory: _workingDir);
+
+      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+    } catch (e) {
+      yield "[CALLBACK] {\"log\": \"清理失败: $e\"}";
+    }
+  }
 }

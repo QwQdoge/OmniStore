@@ -32,23 +32,33 @@ class SearchManager:
     def _setup_sources(self):
         self.source_instances = {}
         # 只有环境支持才加载
+        if shutil.which("pacman"):
+            from .pacman import PacmanSearch
+            self.source_instances["pacman"] = PacmanSearch(self.session)
+
+        from .aur import AurSearch
+        self.source_instances["aur"] = AurSearch(self.session)
+
+        if shutil.which("flatpak"):
+            from .flatpak import FlatpakSearch
+            self.source_instances["flatpak"] = FlatpakSearch(self.session)
         if shutil.which("snap"):
             self.source_instances["snap"] = SnapSearch(self.session)
-        if self.cm.get("search.sources.aur", False):
-            self.source_instances["aur"] = AurSearch(self.session)
 
     def _get_active_sources(self) -> List[SearchSource]:
         active = []
         for key, instance in self.source_instances.items():
             # 统一查找 search.sources.pacman 这种布尔值
             path = f"search.sources.{key}"
-            if self.cm.get(path, False):  # 默认不开启，除非配置里写了 true
+            # 特殊处理：pacman 和 aur 默认开启，如果配置没显式关掉的话
+            default_val = True if key in ["pacman", "aur"] else False
+            if self.cm.get(path, default_val):
                 active.append(instance)
             else:
-                print(f"Search source '{key}' is disabled in config.")
+                sys.stderr.write(f"[SearchManager] Search source '{key}' is disabled in config.\n")
 
         if not active:
-            print("Warning: No search sources are enabled in config.")
+            sys.stderr.write("[SearchManager] Warning: No search sources are enabled in config.\n")
 
         return active
 
@@ -85,12 +95,30 @@ class SearchManager:
                 sys.stderr.write(
                     f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
-        # 1. 初始排序：在合并前先按智能分排一次
-        combined.sort(key=lambda x: self.smart_scoring._calculate_smart_score(
-            x, query), reverse=True)
+        # 1. 初始排序：按智能分和来源优先级排序 (Flatpak 优先)
+        def _sort_key(x):
+            score = self.smart_scoring._calculate_smart_score(x, query)
+            source_prio = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}.get(x.get('source'), 0)
+            return (score, source_prio)
+
+        combined.sort(key=_sort_key, reverse=True)
 
         # 2. 合并同名包
         merged = self.merge_duplicates(combined)
+
+        # 2.5 检查完全匹配，并将其置顶
+        query_norm = self._normalize_app_name(query)
+        exact_match_idx = -1
+        for idx, item in enumerate(merged):
+            if self._normalize_app_name(item['name']) == query_norm:
+                exact_match_idx = idx
+                break
+
+        if exact_match_idx != -1:
+            exact_match = merged.pop(exact_match_idx)
+            # 标记为精确匹配，前端可以据此展示大卡片
+            exact_match["is_exact_match"] = True
+            merged.insert(0, exact_match)
 
         # 3. 截断结果，提升 Flutter 端渲染性能
         max_res = self.cm.get("search.max_results", 50)
@@ -179,8 +207,11 @@ class SearchManager:
                 if is_installed:
                     seen[norm_key]['installed'] = True
 
-                # 优先级抢占：如果新来源是 Native 或 Flatpak，通常它们的名字和描述更官方
-                if source in ["Native", "Flatpak"] and seen[norm_key]['primary_source'] == "AUR":
+                # 优先级抢占：Flatpak 优先，其次是 Native，最后是 AUR
+                current_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(seen[norm_key]['primary_source'], 0)
+                new_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(source, 0)
+
+                if new_prio > current_prio:
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source
                     seen[norm_key]['description'] = item.get(
