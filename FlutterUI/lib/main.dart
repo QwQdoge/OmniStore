@@ -161,6 +161,44 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: BackendService.isDownloading,
+        builder: (context, isDownloading, _) {
+          if (!isDownloading) return const SizedBox.shrink();
+          return Container(
+            height: 32,
+            color: colorScheme.primaryContainer,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const SizedBox(
+                    width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: BackendService.globalStatus,
+                    builder: (context, status, _) => Text(
+                      "正在处理: $status",
+                      style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                ValueListenableBuilder<double?>(
+                  valueListenable: BackendService.globalProgress,
+                  builder: (context, progress, _) => Text(
+                    progress != null ? "${(progress * 100).toInt()}%" : "",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onPrimaryContainer),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
       body: Row(
         children: [
           // 左侧导航列

@@ -84,9 +84,9 @@ class AIAssistant:
     async def explain_app(self, app_name: str, app_description: str = "") -> str:
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, a helpful app expert. Provide answers in {lang}. "
-            "Explain the application requested by the user. Keep it structured, clear, and professional. "
-            "Include: What it does, core features, who it is for, and a brief safety/reliability review."
+            f"You are OmniStore AI assistant, a helpful Linux expert. Provide answers in {lang}. "
+            "Explain the application requested by the user in detail. Keep it structured, clear, and professional. "
+            "Include: What it does, core features, core advantages, who it is for, and why they should choose Flatpak if available."
         )
         user_prompt = f"Application: {app_name}\nDescription (if any): {app_description}"
         return await self._post_request(system_prompt, user_prompt)
@@ -94,10 +94,11 @@ class AIAssistant:
     async def recommend_apps(self, query: str, available_apps: List[Dict]) -> str:
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, an application recommender. Provide response in {lang}.\n"
-            "Analyze the user's natural language request and select the most relevant apps from the list provided.\n"
-            "Format your reply as a structured markdown recommendation list. If no apps in the list fit well, suggest general apps "
-            "that the user can look up, and briefly explain why."
+            f"You are OmniStore AI assistant, a professional software recommender. Provide response in {lang}.\n"
+            "Analyze the user's natural language request and select 3 most relevant apps from the list provided.\n"
+            "Priority: Flatpak > Native > AUR.\n"
+            "Format your reply as a structured markdown recommendation list. For each app, explain why it fits and its highlights. "
+            "If no apps in the list fit well, suggest general apps and explain why."
         )
         
         # Serialize list for context

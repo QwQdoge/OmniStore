@@ -430,6 +430,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildTrustLabel(String source) {
+    String label = "社区";
+    Color color = Colors.orange;
+    IconData icon = Icons.people_outline;
+
+    if (source == "Pacman" || source == "Native") {
+      label = "官方";
+      color = Colors.blue;
+      icon = Icons.verified_user_outlined;
+    } else if (source == "Flatpak") {
+      label = "经校验";
+      color = Colors.green;
+      icon = Icons.verified_outlined;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 4),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 10, color: color, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
   void _executeInstall(String name, String source) {
     BackendService.instance
         .executeAction("-I", name, source)
@@ -476,6 +510,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           child: Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(20.0),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
               children: [
@@ -539,10 +578,12 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
+                            _buildTrustLabel(app.primarySource),
+                            const SizedBox(width: 8),
                           Text(
                             "${(app.name.length * 12.5).toStringAsFixed(0)} MB",
                             style: TextStyle(
-                              fontSize: 12,
+                                fontSize: 11,
                               color:
                                   colorScheme.onSurface.withValues(alpha: 0.6),
                             ),

@@ -37,7 +37,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     _statusKey = 'ready';
 
     // 即使不是 Flatpak，也尝试获取额外元数据（图标、截图等）
-    _fetchExtraDetails();
+    _fetchExtraDetails().then((_) {
+      if (mounted) _checkSourceSuggestion();
+    });
 
     // 状态恢复：如果全局正在处理的是这个 App，恢复进行中状态
     final active = BackendService.activeApp.value;
@@ -52,6 +54,27 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   void dispose() {
     // 不在 dispose 时 kill 进程，因为全局任务应继续运行
     super.dispose();
+  }
+
+  void _checkSourceSuggestion() {
+    if (_selectedSource != "Flatpak" && widget.app.sources.contains("Flatpak")) {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (!mounted || _isAppInstalled) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("发现此应用有 Flatpak 源，通常更稳定。"),
+            action: SnackBarAction(
+              label: "切换",
+              onPressed: () {
+                setState(() {
+                  _selectedSource = "Flatpak";
+                });
+              },
+            ),
+          ),
+        );
+      });
+    }
   }
 
   Future<void> _fetchExtraDetails() async {
@@ -214,6 +237,23 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
 
     if (confirmed != true) return;
+
+    // Security Warning for AUR
+    if (_selectedSource == "AUR") {
+      final aurConfirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 48),
+          title: const Text("安全风险提示"),
+          content: const Text("AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。"),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("取消")),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text("继续安装")),
+          ],
+        ),
+      );
+      if (aurConfirmed != true) return;
+    }
 
     setState(() {
       _isInstalling = true;

@@ -377,6 +377,76 @@ class OmnistoreBackend:
         res = self.essentials.import_from_file(filepath)
         print(json.dumps(res, ensure_ascii=False))
 
+    async def run_export_packages(self, filepath: str):
+        """Fetch all installed packages and export to a file"""
+        # Reuse list_installed logic
+        installed = []
+
+        # Simple scan (could be more comprehensive)
+        try:
+            import asyncio
+            proc = await asyncio.create_subprocess_exec(
+                "pacman", "-Qqne",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            stdout, _ = await proc.communicate()
+            if stdout:
+                for line in stdout.decode().strip().splitlines():
+                    if line:
+                        installed.append({"name": line, "source": "Native"})
+        except Exception: pass
+
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "flatpak", "list", "--app", "--columns=application",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            stdout, _ = await proc.communicate()
+            if stdout:
+                for line in stdout.decode().strip().splitlines():
+                    if line:
+                        installed.append({"name": line, "source": "Flatpak"})
+        except Exception: pass
+
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(installed, f, ensure_ascii=False, indent=2)
+            print(json.dumps({"status": "success", "count": len(installed)}))
+        except Exception as e:
+            print(json.dumps({"status": "error", "message": str(e)}))
+
+    async def run_clean_system(self, json_mode: bool = False):
+        """Cleanup logic: remove orphans and clean cache"""
+        async def cb(m):
+            await self._flutter_callback(m, json_mode)
+
+        try:
+            await cb("[INFO] 正在清理孤立软件包...")
+            proc = await asyncio.create_subprocess_exec(
+                "sudo", "pacman", "-Rs", "$(pacman -Qtdq)",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            await proc.communicate()
+
+            await cb("[INFO] 正在清理包缓存...")
+            proc = await asyncio.create_subprocess_exec(
+                "sudo", "pacman", "-Scc", "--noconfirm",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            await proc.communicate()
+
+            await cb("[INFO] 系统清理完成！")
+            if json_mode:
+                print(json.dumps({"status": "success"}))
+        except Exception as e:
+            await cb(f"[ERROR] 清理失败: {e}")
+            if json_mode:
+                print(json.dumps({"status": "error", "message": str(e)}))
+
     async def run_ai_summary(self, json_mode: bool = False):
         """Generate AI project summary."""
         res = await self.ai.summarize_project()
@@ -444,6 +514,8 @@ async def main():
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
     group.add_argument("--essentials", action="store_true", help="Get essential packages")
     group.add_argument("--import-packages", metavar="FILEPATH", help="Import packages from file")
+    group.add_argument("--export-packages", metavar="FILEPATH", help="Export installed packages to file")
+    group.add_argument("--clean-system", action="store_true", help="Remove orphans and clean cache")
     parser.add_argument("--ai-summary", action="store_true", help="Generate AI project summary")
     group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
     group.add_argument("--check-env", action="store_true", help="Check system environment")

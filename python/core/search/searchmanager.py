@@ -95,9 +95,13 @@ class SearchManager:
                 sys.stderr.write(
                     f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
-        # 1. 初始排序：在合并前先按智能分排一次
-        combined.sort(key=lambda x: self.smart_scoring._calculate_smart_score(
-            x, query), reverse=True)
+        # 1. 初始排序：按智能分和来源优先级排序 (Flatpak 优先)
+        def _sort_key(x):
+            score = self.smart_scoring._calculate_smart_score(x, query)
+            source_prio = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}.get(x.get('source'), 0)
+            return (score, source_prio)
+
+        combined.sort(key=_sort_key, reverse=True)
 
         # 2. 合并同名包
         merged = self.merge_duplicates(combined)
@@ -203,8 +207,11 @@ class SearchManager:
                 if is_installed:
                     seen[norm_key]['installed'] = True
 
-                # 优先级抢占：如果新来源是 Native 或 Flatpak，通常它们的名字和描述更官方
-                if source in ["Native", "Flatpak"] and seen[norm_key]['primary_source'] == "AUR":
+                # 优先级抢占：Flatpak 优先，其次是 Native，最后是 AUR
+                current_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(seen[norm_key]['primary_source'], 0)
+                new_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(source, 0)
+
+                if new_prio > current_prio:
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source
                     seen[norm_key]['description'] = item.get(
