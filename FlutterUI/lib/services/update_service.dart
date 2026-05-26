@@ -31,11 +31,14 @@ class UpdateService {
         InitializationSettings(linux: initializationSettingsLinux);
     await _notificationsPlugin.initialize(initializationSettings);
 
-    // 初始化托盘
-    await _initSystemTray();
+    // Initialize tray with error handling
+    try {
+      await _initSystemTray();
+    } catch (e) {
+      // Log error but continue execution to avoid app crash
+      debugPrint('System tray init failed: $e');
+    }
 
-    // 启动定时检查
-    _startUpdateTimer();
   }
 
   Future<void> updateConfig() async {
@@ -47,8 +50,7 @@ class UpdateService {
 
   Future<void> _initSystemTray() async {
     // system_tray 2.x 初始化图标
-    // NOTE: In a real production environment, you would ensure assets/app_icon.png exists
-    // and call: await _systemTray.initTray(title: "OmniStore", iconPath: 'assets/app_icon.png');
+    await _systemTray.initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png');
 
     final Menu menu = Menu();
     await menu.buildFrom([

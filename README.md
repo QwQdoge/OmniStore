@@ -120,6 +120,8 @@ daemon:
 ---
 
 ## 开发指南
+> 💡 详细的项目架构设计、UI 布局结构与核心模块实现原理，请参考 [project_architecture.md](project_architecture.md)。所有代码修改与升级，必须同步更新该架构设计文档。
+
 ### 后端（Python）
 - 代码位于 `python/`，核心模块：`core/config_loader.py`、`core/ai/assistant.py`、`core/search/`。
 - 运行单元测试：`pytest -q`（需先安装 `pytest`）。

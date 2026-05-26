@@ -248,7 +248,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (confirmed != true) return;
 
     // Security Warning for AUR
-    if (_selectedSource == "AUR") {
+    if (_selectedSource == "AUR" && mounted) {
       final aurConfirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(

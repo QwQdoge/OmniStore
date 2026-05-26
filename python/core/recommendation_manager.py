@@ -62,7 +62,68 @@ class RecommendationManager:
 
         except Exception as e:
             print(f"[RecommendationManager] Error: {e}")
-            return []
+            return [
+                {
+                    "name": "Firefox",
+                    "id": "org.mozilla.firefox",
+                    "description": "Safe, fast, and private web browser.",
+                    "source": "Flatpak",
+                    "icon": "https://dl.flathub.org/media/org/mozilla/firefox/d39c09bd9601d2a138bbdb6a9134015f/icons/128x128@2/org.mozilla.firefox.png",
+                    "installed": False,
+                    "primary_source": "Flatpak",
+                    "version": "N/A",
+                    "variants": [{"source": "Flatpak", "version": "N/A"}],
+                    "screenshots": []
+                },
+                {
+                    "name": "VLC",
+                    "id": "org.videolan.VLC",
+                    "description": "VLC media player, the open source multimedia player.",
+                    "source": "Flatpak",
+                    "icon": "https://dl.flathub.org/media/org/videolan/VLC/d0b904df90e3cd2958742b65109fd268/icons/128x128@2/org.videolan.VLC.png",
+                    "installed": False,
+                    "primary_source": "Flatpak",
+                    "version": "N/A",
+                    "variants": [{"source": "Flatpak", "version": "N/A"}],
+                    "screenshots": []
+                },
+                {
+                    "name": "Visual Studio Code",
+                    "id": "com.visualstudio.code",
+                    "description": "Visual Studio Code. Code editing. Redefined.",
+                    "source": "Flatpak",
+                    "icon": "https://dl.flathub.org/media/com/visualstudio/code/94318c642646d1bf7fa780d603a110a3/icons/128x128@2/com.visualstudio.code.png",
+                    "installed": False,
+                    "primary_source": "Flatpak",
+                    "version": "N/A",
+                    "variants": [{"source": "Flatpak", "version": "N/A"}],
+                    "screenshots": []
+                },
+                {
+                    "name": "GIMP",
+                    "id": "org.gimp.GIMP",
+                    "description": "GNU Image Manipulation Program.",
+                    "source": "Flatpak",
+                    "icon": "https://dl.flathub.org/media/org/gimp/GIMP/cb137beee095a0a382e21297e682ff96/icons/128x128@2/org.gimp.GIMP.png",
+                    "installed": False,
+                    "primary_source": "Flatpak",
+                    "version": "N/A",
+                    "variants": [{"source": "Flatpak", "version": "N/A"}],
+                    "screenshots": []
+                },
+                {
+                    "name": "OBS Studio",
+                    "id": "com.obsproject.Studio",
+                    "description": "Free and open source software for video recording and live streaming.",
+                    "source": "Flatpak",
+                    "icon": "https://dl.flathub.org/media/com/obsproject/Studio/3565f9730591f4fa59d1a3c631e84617/icons/128x128@2/com.obsproject.Studio.png",
+                    "installed": False,
+                    "primary_source": "Flatpak",
+                    "version": "N/A",
+                    "variants": [{"source": "Flatpak", "version": "N/A"}],
+                    "screenshots": []
+                }
+            ]
 
     async def get_details(self, app_id: str) -> Dict:
         """Fetch rich details for a specific app (Flathub API)"""

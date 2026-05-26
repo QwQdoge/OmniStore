@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/backend_service.dart';
 
 class MirrorEditorPage extends StatefulWidget {
-  const MirrorEditorPage({Key? key}) : super(key: key);
+  const MirrorEditorPage({super.key});
 
   @override
   State<MirrorEditorPage> createState() => _MirrorEditorPageState();

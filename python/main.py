@@ -629,8 +629,10 @@ async def main():
 
     # Validate active argument
     active_args = [
-        args.search, args.install, args.remove, args.get_config, args.set_config, 
-        args.list_installed, args.launch, args.recommend, args.details, args.check_env, 
+        args.search, args.install, args.remove, args.update, args.check_updates,
+        args.get_config, args.set_config, args.list_installed, args.launch,
+        args.recommend, args.essentials, args.import_packages, args.export_packages,
+        args.clean_system, args.ai_summary, args.details, args.check_env, 
         args.bootstrap, args.list_custom_repos, args.add_custom_repo, args.remove_custom_repo,
         args.ai_explain, args.ai_recommend, args.ai_analyze_error
     ]
@@ -700,6 +702,21 @@ async def main():
 
     elif args.details:
         await backend.run_app_details(args.details, json_mode=args.json)
+
+    elif args.recommend:
+        await backend.run_recommendations(json_mode=args.json)
+
+    elif args.essentials:
+        await backend.run_get_essentials()
+
+    elif args.import_packages:
+        await backend.run_import_packages(args.import_packages)
+
+    elif args.export_packages:
+        await backend.run_export_packages(args.export_packages)
+
+    elif args.clean_system:
+        await backend.run_clean_system(json_mode=args.json)
 
     elif args.check_env:
         status = await backend.env.check_env()

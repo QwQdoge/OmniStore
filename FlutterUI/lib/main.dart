@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'pages/homepage.dart';
+import 'pages/category_page.dart';
 import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
@@ -127,6 +128,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     wm.windowManager.addListener(this);
     _subPages = [
       const HomePage(),
+      const CategoryPage(),
       const SearchPage(autoFocus: false),
       const SettingsPage(),
       const DownloadPage(),
@@ -205,33 +207,41 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           _buildSideBar(colorScheme),
           // 右侧内容区
           Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(0, 12, 12, 12),
-              decoration: BoxDecoration(
-                color: theme.brightness == Brightness.light
-                    ? colorScheme.surface
-                    : colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(28.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28.0),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  switchInCurve: Curves.easeInOutExpo,
-                  switchOutCurve: Curves.easeInOutExpo,
-                  child: KeyedSubtree(
-                    key: ValueKey<int>(_selectedIndex),
-                    child: _subPages[_selectedIndex],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTopBar(colorScheme),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 0, 12, 12),
+                    decoration: BoxDecoration(
+                      color: theme.brightness == Brightness.light
+                          ? colorScheme.surface
+                          : colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(28.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28.0),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        switchInCurve: Curves.easeInOutExpo,
+                        switchOutCurve: Curves.easeInOutExpo,
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(_selectedIndex),
+                          child: _subPages[_selectedIndex],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -240,56 +250,83 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   }
 
 
-  // 侧边栏布局：Logo + 导航 + 左下角图标
+  // 侧边栏布局：探索 + 左下角下载
   Widget _buildSideBar(ColorScheme colorScheme) {
     return Container(
       width: 80,
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          // 顶部头像与搜索
-          _buildUserAvatar(colorScheme),
-          const SizedBox(height: 12),
+          IconButton(
+            onPressed: () => setState(() => _selectedIndex = 0),
+            icon: Icon(
+              _selectedIndex == 0 ? Icons.apps_rounded : Icons.apps_outlined,
+              color: _selectedIndex == 0 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              size: 28,
+            ),
+            tooltip: AppLocalizations.of(context)!.explore,
+          ),
           IconButton(
             onPressed: () => setState(() => _selectedIndex = 1),
-            icon: Icon(Icons.search_rounded,
-              color: _selectedIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant),
-            tooltip: AppLocalizations.of(context)!.search,
-          ),
-          const SizedBox(height: 20),
-
-          // 中间导航项 (移除设置，移入头像菜单)
-          Expanded(
-            child: NavigationRail(
-              selectedIndex: _selectedIndex == 0 ? 0 : (_selectedIndex == 3 ? 1 : null),
-              onDestinationSelected: (i) {
-                if (i == 0) setState(() => _selectedIndex = 0);
-                if (i == 1) setState(() => _selectedIndex = 3);
-              },
-              labelType: NavigationRailLabelType.none,
-              backgroundColor: Colors.transparent,
-              indicatorColor: colorScheme.secondaryContainer,
-              indicatorShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              destinations: [
-                NavigationRailDestination(
-                  icon: const Icon(Icons.apps_outlined),
-                  selectedIcon: const Icon(Icons.apps_rounded),
-                  label: Text(AppLocalizations.of(context)!.explore),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.download_done_rounded),
-                  selectedIcon: const Icon(Icons.download_done_rounded),
-                  label: Text(AppLocalizations.of(context)!.downloads),
-                ),
-              ],
+            icon: Icon(
+              _selectedIndex == 1 ? Icons.category_rounded : Icons.category_outlined,
+              color: _selectedIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              size: 28,
             ),
+            tooltip: "Category",
           ),
-
-          // 2. 左下角下载图标（Google Play 管理入口风格）
+          const Spacer(),
           _buildDownloadButton(colorScheme),
           const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  // 标题栏下方的顶栏布局：标题 + 搜索 + 头像
+  Widget _buildTopBar(ColorScheme colorScheme) {
+    String pageTitle = "";
+    if (_selectedIndex == 0) {
+      pageTitle = AppLocalizations.of(context)!.explore;
+    } else if (_selectedIndex == 1) {
+      pageTitle = "Category";
+    } else if (_selectedIndex == 2) {
+      pageTitle = AppLocalizations.of(context)!.search;
+    } else if (_selectedIndex == 3) {
+      pageTitle = AppLocalizations.of(context)!.settings;
+    } else if (_selectedIndex == 4) {
+      pageTitle = AppLocalizations.of(context)!.downloads;
+    }
+
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+      child: Row(
+        children: [
+          Text(
+            pageTitle,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: colorScheme.onSurface,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const Spacer(),
+          // 搜索按钮 (若不在搜索页则显示，点击切换到搜索页)
+          if (_selectedIndex != 2)
+            IconButton(
+              onPressed: () => setState(() => _selectedIndex = 2),
+              icon: Icon(
+                Icons.search_rounded,
+                color: colorScheme.onSurfaceVariant,
+                size: 24,
+              ),
+              tooltip: AppLocalizations.of(context)!.search,
+            ),
+          if (_selectedIndex != 1) const SizedBox(width: 12),
+          // 用户头像
+          _buildUserAvatar(colorScheme),
         ],
       ),
     );
@@ -330,7 +367,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
   Widget _buildUserAvatar(ColorScheme colorScheme) {
     return PopupMenuButton<int>(
-      offset: const Offset(40, 0),
+      offset: const Offset(0, 44),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       itemBuilder: (context) => [
         PopupMenuItem(
@@ -339,7 +376,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
             children: [
               const Icon(Icons.login_rounded, size: 20),
               const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)?.explore ?? "Login"), // 占位 Login
+              Text(AppLocalizations.of(context)?.explore ?? "Login"),
             ],
           ),
         ),
@@ -358,26 +395,26 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
         if (val == 1) setState(() => _selectedIndex = 2);
       },
       child: Container(
-        width: 44,
-        height: 44,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: Colors.purple, // 用户要求的紫色
+          color: colorScheme.primaryContainer,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.purple.withValues(alpha: 0.3),
+              color: colorScheme.primary.withValues(alpha: 0.15),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         alignment: Alignment.center,
-        child: const Text(
-          "M", // 用户要求的M
+        child: Text(
+          "M",
           style: TextStyle(
-            color: Colors.white,
+            color: colorScheme.onPrimaryContainer,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
       ),
@@ -399,7 +436,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _selectedIndex == 3
+                  color: _selectedIndex == 4
                       ? colorScheme.primary
                       : isDownloading
                           ? colorScheme.primary.withValues(alpha: 0.1)
@@ -417,13 +454,13 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                       ),
                     IconButton(
                       onPressed: () {
-                        setState(() => _selectedIndex = 3);
+                        setState(() => _selectedIndex = 4);
                       },
                       icon: Icon(
                         isDownloading
                             ? Icons.downloading_rounded
                             : Icons.download_for_offline_rounded,
-                        color: _selectedIndex == 3
+                        color: _selectedIndex == 4
                             ? colorScheme.onPrimary
                             : isDownloading
                                 ? colorScheme.primary
