@@ -2,7 +2,9 @@ import aiohttp
 import asyncio
 import json
 import random
-from typing import List, Dict
+import time
+from pathlib import Path
+from typing import List, Dict, Any, Optional
 from core.habit_tracker import HabitTracker
 
 class RecommendationManager:
@@ -11,119 +13,175 @@ class RecommendationManager:
         self.habit_tracker = HabitTracker()
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
+        self.cache_dir = Path.home() / ".cache" / "omnistore"
+        self.cache_path = self.cache_dir / "recommendations.json"
 
-    async def get_recommendations(self) -> List[Dict]:
-        """Fetch recommendations from external sources and mix with user habits"""
+    def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
+        """Load recommendations from cache if not expired"""
+        if not self.cache_path.exists():
+            return None
         try:
-            # Concurrent fetch from Flathub
-            async with self.session.get(self.flathub_popular_url, timeout=10) as resp:
-                popular_data = await resp.json() if resp.status == 200 else {"hits": []}
+            with open(self.cache_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Cache valid for 1 hour (3600 seconds)
+                if time.time() - data.get("timestamp", 0) < 3600:
+                    return data.get("recommendations")
+        except Exception:
+            pass
+        return None
 
-            async with self.session.get(self.flathub_trending_url, timeout=10) as resp:
-                trending_data = await resp.json() if resp.status == 200 else {"hits": []}
+    def _save_cache(self, recommendations: Dict[str, List[Dict]]):
+        """Save recommendations to cache"""
+        try:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
+            with open(self.cache_path, "w", encoding="utf-8") as f:
+                json.dump({
+                    "timestamp": time.time(),
+                    "recommendations": recommendations
+                }, f, ensure_ascii=False)
+        except Exception as e:
+            print(f"[RecommendationManager] Cache Save Error: {e}")
 
-            popular = popular_data.get("hits", [])
-            trending = trending_data.get("hits", [])
+    async def _fetch_collection(self, url: str) -> List[Dict]:
+        """Fetch a collection of apps from Flathub"""
+        try:
+            async with self.session.get(url, timeout=10) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    hits = data.get("hits", [])
+                    apps = []
+                    for app in hits:
+                        apps.append({
+                            "name": app.get("name", "Unknown"),
+                            "id": app.get("app_id"),
+                            "description": app.get("summary", ""),
+                            "source": "Flatpak",
+                            "icon": app.get("iconDesktopUrl") or app.get("iconMobileUrl"),
+                            "installed": False,
+                            "primary_source": "Flatpak",
+                            "version": "N/A",
+                            "variants": [{"source": "Flatpak", "version": "N/A"}]
+                        })
+                    return apps
+        except Exception as e:
+            print(f"[RecommendationManager] Collection Fetch Error ({url}): {e}")
+        return []
 
-            # Combine and de-duplicate
-            raw_apps = {app['app_id']: app for app in (popular + trending) if 'app_id' in app}.values()
+    async def get_recommendations(self, force_refresh: bool = False) -> Dict[str, List[Dict]]:
+        """Fetch categorized recommendations"""
+        if not force_refresh:
+            cached = self._load_cache()
+            if cached:
+                return cached
 
-            # Convert to OmniArch format
-            recommended = []
-            for app in raw_apps:
-                recommended.append({
-                    "name": app.get("name", "Unknown"),
-                    "id": app.get("app_id"),
-                    "description": app.get("summary", ""),
-                    "source": "Flatpak",
-                    "icon": app.get("iconDesktopUrl") or app.get("iconMobileUrl"),
-                    "installed": False, # Will be checked by frontend or further logic
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}]
-                })
+        try:
+            # 1. Fetch collections concurrently
+            popular_task = self._fetch_collection(self.flathub_popular_url)
+            trending_task = self._fetch_collection(self.flathub_trending_url)
 
-            # Simple shuffle for "refresh" effect
-            random.shuffle(recommended)
+            popular, trending = await asyncio.gather(popular_task, trending_task)
 
-            # Fetch screenshots and icons for the top 10 recommended apps to ensure cards have visuals
+            # 2. Personalization (For You)
+            for_you = []
+            tags = self.habit_tracker.get_recommendation_tags()
+            if tags:
+                # Search for apps matching tags
+                search_url = "https://flathub.org/api/v2/search"
+                tag_tasks = []
+                for tag in tags[:3]: # Limit to top 3 tags to avoid over-requesting
+                    tag_tasks.append(self.session.post(search_url, json={"query": tag}, timeout=5))
+
+                search_resps = await asyncio.gather(*tag_tasks, return_exceptions=True)
+                for resp in search_resps:
+                    if isinstance(resp, aiohttp.ClientResponse) and resp.status == 200:
+                        search_data = await resp.json()
+                        hits = search_data.get("hits", [])
+                        for hit in hits[:5]:
+                            for_you.append({
+                                "name": hit.get("name", "Unknown"),
+                                "id": hit.get("app_id"),
+                                "description": hit.get("summary", ""),
+                                "source": "Flatpak",
+                                "icon": hit.get("iconDesktopUrl") or hit.get("iconMobileUrl"),
+                                "installed": False,
+                                "primary_source": "Flatpak",
+                                "version": "N/A",
+                                "variants": [{"source": "Flatpak", "version": "N/A"}]
+                            })
+
+            # 3. Enrich top items for each category
             async def _enrich_item(item):
+                if not item.get('id'): return
                 details = await self.get_details(item['id'])
                 if details:
                     item['icon'] = details.get('icon') or item.get('icon')
                     item['screenshots'] = details.get('screenshots') or []
                     item['description'] = details.get('description') or item.get('description')
 
-            enrich_tasks = [_enrich_item(app) for app in recommended[:15]]
-            await asyncio.gather(*enrich_tasks)
+            # Enrich first few items to ensure quality
+            enrich_list = popular[:5] + trending[:5] + for_you[:5]
+            await asyncio.gather(*[_enrich_item(item) for item in enrich_list])
 
-            # Limit results
-            return recommended[:20]
+            # Deduplicate For You from others
+            seen_ids = {app['id'] for app in popular + trending}
+            for_you = [app for app in for_you if app['id'] not in seen_ids]
+
+            result = {
+                "featured": popular[:10],
+                "trending": trending[:15],
+                "for_you": for_you[:15]
+            }
+            self._save_cache(result)
+            return result
 
         except Exception as e:
             print(f"[RecommendationManager] Error: {e}")
-            return [
-                {
-                    "name": "Firefox",
-                    "id": "org.mozilla.firefox",
-                    "description": "Safe, fast, and private web browser.",
-                    "source": "Flatpak",
-                    "icon": "https://dl.flathub.org/media/org/mozilla/firefox/d39c09bd9601d2a138bbdb6a9134015f/icons/128x128@2/org.mozilla.firefox.png",
-                    "installed": False,
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}],
-                    "screenshots": []
-                },
-                {
-                    "name": "VLC",
-                    "id": "org.videolan.VLC",
-                    "description": "VLC media player, the open source multimedia player.",
-                    "source": "Flatpak",
-                    "icon": "https://dl.flathub.org/media/org/videolan/VLC/d0b904df90e3cd2958742b65109fd268/icons/128x128@2/org.videolan.VLC.png",
-                    "installed": False,
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}],
-                    "screenshots": []
-                },
-                {
-                    "name": "Visual Studio Code",
-                    "id": "com.visualstudio.code",
-                    "description": "Visual Studio Code. Code editing. Redefined.",
-                    "source": "Flatpak",
-                    "icon": "https://dl.flathub.org/media/com/visualstudio/code/94318c642646d1bf7fa780d603a110a3/icons/128x128@2/com.visualstudio.code.png",
-                    "installed": False,
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}],
-                    "screenshots": []
-                },
-                {
-                    "name": "GIMP",
-                    "id": "org.gimp.GIMP",
-                    "description": "GNU Image Manipulation Program.",
-                    "source": "Flatpak",
-                    "icon": "https://dl.flathub.org/media/org/gimp/GIMP/cb137beee095a0a382e21297e682ff96/icons/128x128@2/org.gimp.GIMP.png",
-                    "installed": False,
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}],
-                    "screenshots": []
-                },
-                {
-                    "name": "OBS Studio",
-                    "id": "com.obsproject.Studio",
-                    "description": "Free and open source software for video recording and live streaming.",
-                    "source": "Flatpak",
-                    "icon": "https://dl.flathub.org/media/com/obsproject/Studio/3565f9730591f4fa59d1a3c631e84617/icons/128x128@2/com.obsproject.Studio.png",
-                    "installed": False,
-                    "primary_source": "Flatpak",
-                    "version": "N/A",
-                    "variants": [{"source": "Flatpak", "version": "N/A"}],
-                    "screenshots": []
-                }
-            ]
+            # Fallback data in the correct structure
+            fallback = {
+                "featured": [
+                    {
+                        "name": "Firefox",
+                        "id": "org.mozilla.firefox",
+                        "description": "Safe, fast, and private web browser.",
+                        "source": "Flatpak",
+                        "icon": "https://dl.flathub.org/media/org/mozilla/firefox/d39c09bd9601d2a138bbdb6a9134015f/icons/128x128@2/org.mozilla.firefox.png",
+                        "installed": False,
+                        "primary_source": "Flatpak",
+                        "version": "N/A",
+                        "variants": [{"source": "Flatpak", "version": "N/A"}],
+                        "screenshots": []
+                    }
+                ],
+                "trending": [
+                    {
+                        "name": "VLC",
+                        "id": "org.videolan.VLC",
+                        "description": "VLC media player, the open source multimedia player.",
+                        "source": "Flatpak",
+                        "icon": "https://dl.flathub.org/media/org/videolan/VLC/d0b904df90e3cd2958742b65109fd268/icons/128x128@2/org.videolan.VLC.png",
+                        "installed": False,
+                        "primary_source": "Flatpak",
+                        "version": "N/A",
+                        "variants": [{"source": "Flatpak", "version": "N/A"}],
+                        "screenshots": []
+                    }
+                ],
+                "for_you": [
+                    {
+                        "name": "Visual Studio Code",
+                        "id": "com.visualstudio.code",
+                        "description": "Visual Studio Code. Code editing. Redefined.",
+                        "source": "Flatpak",
+                        "icon": "https://dl.flathub.org/media/com/visualstudio/code/94318c642646d1bf7fa780d603a110a3/icons/128x128@2/com.visualstudio.code.png",
+                        "installed": False,
+                        "primary_source": "Flatpak",
+                        "version": "N/A",
+                        "variants": [{"source": "Flatpak", "version": "N/A"}],
+                        "screenshots": []
+                    }
+                ]
+            }
+            return fallback
 
     async def get_details(self, app_id: str) -> Dict:
         """Fetch rich details for a specific app (Flathub API)"""

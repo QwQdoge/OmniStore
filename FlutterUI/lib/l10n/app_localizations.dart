@@ -110,6 +110,18 @@ abstract class AppLocalizations {
   /// **'Featured'**
   String get featured;
 
+  /// Description for forYou
+  ///
+  /// In en, this message translates to:
+  /// **'For You'**
+  String get forYou;
+
+  /// Description for essentialTools
+  ///
+  /// In en, this message translates to:
+  /// **'Essential Tools'**
+  String get essentialTools;
+
   /// Description for hotApps
   ///
   /// In en, this message translates to:

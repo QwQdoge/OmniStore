@@ -12,7 +12,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchHint => '搜索应用、游戏、工具...';
 
   @override
-  String get featured => '为你推荐';
+  String get featured => '精选推荐';
+
+  @override
+  String get forYou => '为您推荐';
+
+  @override
+  String get essentialTools => '必备工具';
 
   @override
   String get hotApps => '热门应用';

@@ -62,10 +62,11 @@ class _SearchPageState extends State<SearchPage> {
     // 自动加载推荐内容，优化“进入搜索页就要加载内容”的体验
     setState(() => _isLoading = true);
     try {
-      final results = await BackendService.instance.getRecommendations();
+      final resultsMap = await BackendService.instance.getRecommendations();
       if (mounted && _controller.text.isEmpty) {
         setState(() {
-          _results = results;
+          // 在搜索页预加载时，优先展示 "trending" 列表，如果没有则尝试 "featured"
+          _results = resultsMap['trending'] ?? resultsMap['featured'] ?? [];
           _isLoading = false;
           _hasSearched = true;
           // 注意：不要设置 _hasInput，让它保持在初始卡片状态但带有结果预加载

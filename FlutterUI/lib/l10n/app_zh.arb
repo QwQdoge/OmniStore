@@ -4,9 +4,17 @@
   "@searchHint": {
     "description": "Description for searchHint"
   },
-  "featured": "为你推荐",
+  "featured": "精选推荐",
   "@featured": {
     "description": "Description for featured"
+  },
+  "forYou": "为您推荐",
+  "@forYou": {
+    "description": "Description for forYou"
+  },
+  "essentialTools": "必备工具",
+  "@essentialTools": {
+    "description": "Description for essentialTools"
   },
   "hotApps": "热门应用",
   "@hotApps": {

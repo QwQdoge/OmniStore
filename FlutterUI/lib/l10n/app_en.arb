@@ -8,6 +8,14 @@
   "@featured": {
     "description": "Description for featured"
   },
+  "forYou": "For You",
+  "@forYou": {
+    "description": "Description for forYou"
+  },
+  "essentialTools": "Essential Tools",
+  "@essentialTools": {
+    "description": "Description for essentialTools"
+  },
   "hotApps": "Hot Apps",
   "@hotApps": {
     "description": "Description for hotApps"

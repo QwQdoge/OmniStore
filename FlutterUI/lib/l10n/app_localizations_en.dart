@@ -15,6 +15,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get featured => 'Featured';
 
   @override
+  String get forYou => 'For You';
+
+  @override
+  String get essentialTools => 'Essential Tools';
+
+  @override
   String get hotApps => 'Hot Apps';
 
   @override
