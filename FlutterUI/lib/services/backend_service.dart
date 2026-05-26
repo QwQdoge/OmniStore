@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'app_package.dart';
 
 class BackendService {
@@ -8,13 +9,31 @@ class BackendService {
   factory BackendService() => instance;
   BackendService._internal();
 
-  static String get _projectRoot => Directory.current.path.endsWith('FlutterUI')
-      ? Directory.current.parent.path
-      : Directory.current.path;
+  static String get _projectRoot {
+    var dir = Directory.current;
+    while (true) {
+      final candidate = p.join(dir.path, 'python', 'main.py');
+      if (File(candidate).existsSync()) return dir.path;
+      if (dir.parent.path == dir.path) break;
+      dir = dir.parent;
+    }
 
-  static String get venvPython => "$_projectRoot/python/.venv/bin/python";
-  static String get scriptPath => "$_projectRoot/python/main.py";
-  static String get workingDir => "$_projectRoot/python";
+    if (Directory.current.path.endsWith('FlutterUI')) {
+      final fallback = Directory.current.parent;
+      final candidate = p.join(fallback.path, 'python', 'main.py');
+      if (File(candidate).existsSync()) return fallback.path;
+    }
+
+    return Directory.current.path;
+  }
+
+  static String get venvPython {
+    final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
+    return File(candidate).existsSync() ? candidate : 'python';
+  }
+
+  static String get scriptPath => p.join(_projectRoot, 'python', 'main.py');
+  static String get workingDir => p.join(_projectRoot, 'python');
 
   String get _venvPython => venvPython;
   String get _scriptPath => scriptPath;
@@ -24,17 +43,22 @@ class BackendService {
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
   static final ValueNotifier<String> globalStatus = ValueNotifier("Ready");
   static final ValueNotifier<bool> isDownloading = ValueNotifier(false);
-  
+
   // 当前正在操作的 app（用于跨页面状态恢复）
   static final ValueNotifier<AppPackage?> activeApp = ValueNotifier(null);
-  static final ValueNotifier<String?> activeFlag = ValueNotifier(null); // "-I" or "-R"
+  static final ValueNotifier<String?> activeFlag = ValueNotifier(
+    null,
+  ); // "-I" or "-R"
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static Process? activeProcess;
 
   static void addLog(String log) {
     final currentLogs = globalLogs.value;
     if (currentLogs.length > 500) {
-      globalLogs.value = [...currentLogs.sublist(currentLogs.length - 499), log];
+      globalLogs.value = [
+        ...currentLogs.sublist(currentLogs.length - 499),
+        log,
+      ];
     } else {
       globalLogs.value = [...currentLogs, log];
     }
@@ -60,13 +84,27 @@ class BackendService {
   Future<List<dynamic>> searchPackages(String query) async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "-S", query, "--json",
+        _scriptPath,
+        "-S",
+        query,
+        "--json",
       ], workingDirectory: _workingDir);
 
-      if (result.exitCode != 0) return [];
-      return jsonDecode(result.stdout.toString().trim());
+      if (result.exitCode != 0) {
+        final errorOutput = result.stderr.toString().trim();
+        final message = errorOutput.isNotEmpty
+            ? errorOutput
+            : 'Backend script exited with code ${result.exitCode}';
+        debugPrint('searchPackages failed: $message');
+        throw Exception(message);
+      }
+
+      final output = result.stdout.toString().trim();
+      if (output.isEmpty) return [];
+      return jsonDecode(output);
     } catch (e) {
-      return [];
+      debugPrint('searchPackages Exception: $e');
+      rethrow;
     }
   }
 
@@ -74,7 +112,9 @@ class BackendService {
   Future<List<dynamic>> listInstalled() async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "-L", "--json",
+        _scriptPath,
+        "-L",
+        "--json",
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return [];
@@ -87,7 +127,11 @@ class BackendService {
 
   Future<Map<String, dynamic>> loadConfig() async {
     try {
-      final result = await Process.run(_venvPython, [_scriptPath, "--get-config", "--json"]);
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--get-config",
+        "--json",
+      ]);
       if (result.exitCode != 0) return {};
       return jsonDecode(result.stdout);
     } catch (e) {
@@ -98,28 +142,41 @@ class BackendService {
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--set-config", jsonEncode(config), "--json",
+        _scriptPath,
+        "--set-config",
+        jsonEncode(config),
+        "--json",
       ]);
       return result.exitCode == 0;
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--check-env", "--json",
+        _scriptPath,
+        "--check-env",
+        "--json",
       ], workingDirectory: _workingDir);
       return jsonDecode(result.stdout);
-    } catch (e) { return {}; }
+    } catch (e) {
+      return {};
+    }
   }
 
   Stream<String> bootstrap() async* {
     try {
       final process = await Process.start(_venvPython, [
-        _scriptPath, "--bootstrap", "--json",
+        _scriptPath,
+        "--bootstrap",
+        "--json",
       ], workingDirectory: _workingDir);
 
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+      yield* process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
     } catch (e) {
       yield "[CALLBACK] {\"log\": \"[ERROR] 启动引导失败: $e\"}";
     }
@@ -129,7 +186,9 @@ class BackendService {
   Future<List<AppPackage>> getRecommendations() async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--recommend", "--json",
+        _scriptPath,
+        "--recommend",
+        "--json",
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return [];
@@ -145,7 +204,10 @@ class BackendService {
   Future<Map<String, dynamic>> getAppDetails(String appId) async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--details", appId, "--json",
+        _scriptPath,
+        "--details",
+        appId,
+        "--json",
       ], workingDirectory: _workingDir);
       return jsonDecode(result.stdout);
     } catch (e) {
@@ -161,7 +223,9 @@ class BackendService {
       if (entry is Map<String, dynamic>) {
         final name = entry['name']?.toString() ?? '';
         final url = entry['url']?.toString() ?? '';
-        return name.isNotEmpty && url.isNotEmpty ? '$name|$url' : entry.toString();
+        return name.isNotEmpty && url.isNotEmpty
+            ? '$name|$url'
+            : entry.toString();
       }
       return entry.toString();
     }).toList();
@@ -169,7 +233,9 @@ class BackendService {
 
   Future<bool> savePacmanMirrors(List<String> mirrors) async {
     final config = await loadConfig();
-    final customRepos = Map<String, dynamic>.from(config['custom_repos'] as Map? ?? {});
+    final customRepos = Map<String, dynamic>.from(
+      config['custom_repos'] as Map? ?? {},
+    );
     customRepos['pacman'] = mirrors.map((entry) {
       final parts = entry.split('|');
       if (parts.length == 2) {
@@ -181,21 +247,39 @@ class BackendService {
     return saveConfig(config);
   }
 
-  Stream<String> executeAction(String flag, String packageName, String source, {String? url}) async* {
+  Stream<String> executeAction(
+    String flag,
+    String packageName,
+    String source, {
+    String? url,
+  }) async* {
     if (packageName.isEmpty) {
       yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";
       return;
     }
 
     try {
-      List<String> args = [_scriptPath, flag, packageName, "--source", source, "--json"];
+      List<String> args = [
+        _scriptPath,
+        flag,
+        packageName,
+        "--source",
+        source,
+        "--json",
+      ];
       if (url != null && url.isNotEmpty) {
         args.addAll(["--url", url]);
       }
 
-      final process = await Process.start(_venvPython, args, workingDirectory: _workingDir);
+      final process = await Process.start(
+        _venvPython,
+        args,
+        workingDirectory: _workingDir,
+      );
 
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+      yield* process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
 
       process.stderr.transform(utf8.decoder).listen((data) {
         debugPrint("Python Stderr: $data");
@@ -209,7 +293,9 @@ class BackendService {
   Future<List<dynamic>> checkUpdates() async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "-C", "--json",
+        _scriptPath,
+        "-C",
+        "--json",
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return [];
@@ -224,10 +310,17 @@ class BackendService {
   Stream<String> updateAll(String source) async* {
     try {
       final process = await Process.start(_venvPython, [
-        _scriptPath, "-U", "all", "--source", source, "--json",
+        _scriptPath,
+        "-U",
+        "all",
+        "--source",
+        source,
+        "--json",
       ], workingDirectory: _workingDir);
 
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+      yield* process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
     } catch (e) {
       yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
     }
@@ -237,7 +330,8 @@ class BackendService {
   Future<List<dynamic>> getEssentials() async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--essentials",
+        _scriptPath,
+        "--essentials",
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return [];
@@ -251,7 +345,9 @@ class BackendService {
   Future<List<dynamic>> importPackages(String filepath) async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--import-packages", filepath,
+        _scriptPath,
+        "--import-packages",
+        filepath,
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return [];
@@ -265,7 +361,9 @@ class BackendService {
   Future<Map<String, dynamic>> exportPackages(String filepath) async {
     try {
       final result = await Process.run(_venvPython, [
-        _scriptPath, "--export-packages", filepath,
+        _scriptPath,
+        "--export-packages",
+        filepath,
       ], workingDirectory: _workingDir);
 
       if (result.exitCode != 0) return {"status": "error"};
@@ -279,10 +377,14 @@ class BackendService {
   Stream<String> cleanSystem() async* {
     try {
       final process = await Process.start(_venvPython, [
-        _scriptPath, "--clean-system", "--json",
+        _scriptPath,
+        "--clean-system",
+        "--json",
       ], workingDirectory: _workingDir);
 
-      yield* process.stdout.transform(utf8.decoder).transform(const LineSplitter());
+      yield* process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
     } catch (e) {
       yield "[CALLBACK] {\"log\": \"清理失败: $e\"}";
     }

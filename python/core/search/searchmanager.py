@@ -1,4 +1,5 @@
 import asyncio
+import aiohttp
 from typing import List, Dict, Any
 
 from core.search.base import SearchSource
@@ -10,7 +11,6 @@ from .aur import AurSearch
 from .flatpak import FlatpakSearch
 from .appimage import AppImageSearch
 import shutil
-import aiohttp
 import re
 import sys
 
