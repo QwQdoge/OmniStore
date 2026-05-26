@@ -730,14 +730,14 @@ class _SearchPageState extends State<SearchPage> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: app.screenshots!.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, i) => ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
                         imageUrl: app.screenshots![i],
                         height: 160,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(width: 200, color: colorScheme.surfaceContainer),
+                        placeholder: (_, _) => Container(width: 200, color: colorScheme.surfaceContainer),
                       ),
                     ),
                   ),
