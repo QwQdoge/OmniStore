@@ -10,12 +10,26 @@ class BackendService {
   BackendService._internal();
 
   static String get _projectRoot {
-    var dir = Directory.current;
-    while (true) {
-      final candidate = p.join(dir.path, 'python', 'main.py');
-      if (File(candidate).existsSync()) return dir.path;
-      if (dir.parent.path == dir.path) break;
-      dir = dir.parent;
+    final searchRoots = <String>{Directory.current.path};
+
+    try {
+      final script = Platform.script.toFilePath();
+      if (script.isNotEmpty) searchRoots.add(p.dirname(script));
+    } catch (_) {}
+
+    try {
+      final exec = Platform.resolvedExecutable;
+      if (exec.isNotEmpty) searchRoots.add(p.dirname(exec));
+    } catch (_) {}
+
+    for (final root in searchRoots) {
+      var dir = Directory(root);
+      while (true) {
+        final candidate = p.join(dir.path, 'python', 'main.py');
+        if (File(candidate).existsSync()) return dir.path;
+        if (dir.parent.path == dir.path) break;
+        dir = dir.parent;
+      }
     }
 
     if (Directory.current.path.endsWith('FlutterUI')) {
@@ -131,7 +145,7 @@ class BackendService {
         _scriptPath,
         "--get-config",
         "--json",
-      ]);
+      ], workingDirectory: _workingDir);
       if (result.exitCode != 0) return {};
       return jsonDecode(result.stdout);
     } catch (e) {
@@ -146,7 +160,7 @@ class BackendService {
         "--set-config",
         jsonEncode(config),
         "--json",
-      ]);
+      ], workingDirectory: _workingDir);
       return result.exitCode == 0;
     } catch (e) {
       return false;
