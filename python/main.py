@@ -30,6 +30,7 @@ from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
+from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.update_manager import UpdateManager
 from core.ai.assistant import AIAssistant
@@ -40,6 +41,7 @@ from core.essentials_manager import EssentialsManager
 class OmnistoreBackend:
     def __init__(self):
         self.config = ConfigManager()
+        self.cache = CacheManager()
         self.env = EnvManager()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
@@ -130,17 +132,21 @@ class OmnistoreBackend:
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
-        await self.executor.install(package_data, callback=cb)
+        success = await self.executor.install(package_data, callback=cb)
+        if success:
+            self.cache.invalidate_installed_cache()
 
-    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False):
+    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R"):
         """Uninstallation logic"""
         self.is_action = True
-        package_data = {"name": package_name, "source": source}
+        package_data = {"name": package_name, "source": source, "flag": flag}
 
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
-        await self.executor.uninstall(package_data, callback=cb)
+        success = await self.executor.uninstall(package_data, callback=cb)
+        if success:
+            self.cache.invalidate_installed_cache()
 
     async def run_update(self, package_name: str, source: str, json_mode: bool = False):
         """Update logic"""
@@ -206,12 +212,50 @@ class OmnistoreBackend:
                     if not details.get("description") or len(details.get("description")) < 10:
                         details["description"] = matched_app.get("description", "")
 
+                # Fetch extra info for Native/AUR variants (dependencies, size)
+                for variant in details.get("variants", []):
+                    if variant['source'] in ("Native", "Pacman", "AUR"):
+                        try:
+                            flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
+                            proc = await asyncio.create_subprocess_exec(
+                                "pacman" if variant['source'] in ("Native", "Pacman") else "yay",
+                                flag, variant.get('name', search_name),
+                                stdout=asyncio.subprocess.PIPE,
+                                stderr=asyncio.subprocess.DEVNULL,
+                                env={**os.environ, "LC_ALL": "C"}
+                            )
+                            stdout, _ = await proc.communicate()
+                            if stdout:
+                                info = stdout.decode()
+                                deps_match = re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)
+                                if deps_match:
+                                    variant["depends"] = deps_match.group(1).split()
+
+                                dl_size_match = re.search(r"Download Size\s+:\s+(.*)", info)
+                                if dl_size_match:
+                                    variant["download_size"] = dl_size_match.group(1).strip()
+
+                                ins_size_match = re.search(r"Installed Size\s+:\s+(.*)", info)
+                                if ins_size_match:
+                                    variant["installed_size"] = ins_size_match.group(1).strip()
+                        except Exception: pass
+
                 print(json.dumps(details, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({"error": str(e)}))
 
-    async def run_list_installed(self, json_mode: bool = False):
+    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False):
         """List all installed AppImage, Flatpak, and Native applications"""
+        if not force_refresh:
+            cached = self.cache.get_installed_packages()
+            if cached:
+                if json_mode:
+                    print(json.dumps(cached))
+                else:
+                    for app in cached:
+                        print(f"[{app['primary_source']}] {app['name']}")
+                return
+
         installed_list = []
 
         # 1. Scan AppImage
@@ -281,6 +325,8 @@ class OmnistoreBackend:
         else:
             for app in installed_list:
                 print(f"[{app['primary_source']}] {app['name']}")
+
+        self.cache.save_installed_packages(installed_list)
 
     # --- Custom Repositories Methods ---
     async def run_list_custom_repos(self):
@@ -423,15 +469,32 @@ class OmnistoreBackend:
             await self._flutter_callback(m, json_mode)
 
         try:
-            await cb("[INFO] 正在清理孤立软件包...")
+            await cb("[INFO] 正在检测孤立软件包...")
             proc = await asyncio.create_subprocess_exec(
-                "sudo", "pacman", "-Rs", "$(pacman -Qtdq)",
+                "pacman", "-Qtdq",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            await proc.communicate()
+            stdout, _ = await proc.communicate()
+            orphans = stdout.decode().strip().splitlines()
+
+            if orphans:
+                await cb(f"[INFO] 正在清理 {len(orphans)} 个孤立软件包...")
+                if not await self.executor._ensure_privileged(cb):
+                    return
+
+                proc = await asyncio.create_subprocess_exec(
+                    "sudo", "pacman", "-Rs", "--noconfirm", *orphans,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                await proc.communicate()
+            else:
+                await cb("[INFO] 未发现孤立软件包。")
 
             await cb("[INFO] 正在清理包缓存...")
+            if not await self.executor._ensure_privileged(cb):
+                return
             proc = await asyncio.create_subprocess_exec(
                 "sudo", "pacman", "-Scc", "--noconfirm",
                 stdout=asyncio.subprocess.PIPE,
@@ -510,6 +573,7 @@ async def main():
                        help="Check for updates for all installed packages")
     group.add_argument("-L", "--list-installed", action="store_true",
                        help="List all installed AppImage and Flatpak packages")
+    parser.add_argument("--force-refresh", action="store_true", help="Force refresh installed cache")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
     group.add_argument("--essentials", action="store_true", help="Get essential packages")
@@ -614,7 +678,8 @@ async def main():
         await backend.run_uninstall(
             args.remove,
             source=args.source,
-            json_mode=args.json
+            json_mode=args.json,
+            flag=args.remove
         )
 
     elif args.update:
@@ -628,7 +693,7 @@ async def main():
         await backend.run_check_updates(json_mode=args.json)
 
     elif args.list_installed:
-        await backend.run_list_installed(json_mode=args.json)
+        await backend.run_list_installed(json_mode=args.json, force_refresh=args.force_refresh)
 
     elif args.ai_summary:
         await backend.run_ai_summary(json_mode=args.json)

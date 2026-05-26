@@ -1,5 +1,6 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
@@ -30,6 +31,7 @@ class _SearchPageState extends State<SearchPage> {
   bool _hasSearched = false;
   ViewMode _viewMode = ViewMode.list;
   List<String> _history = [];
+  Timer? _debounce;
 
   List<Map<String, dynamic>> _getCategories(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -46,7 +48,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _controller.addListener(_handleInputUpdate);
+    _controller.addListener(_onSearchChanged);
     _loadHistory();
     _loadInitialContent();
     if (widget.autoFocus) {
@@ -76,23 +78,29 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void dispose() {
-    _controller.removeListener(_handleInputUpdate);
+    _debounce?.cancel();
+    _controller.removeListener(_onSearchChanged);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _handleInputUpdate() {
-    final text = _controller.text.trim();
-    if (text.isNotEmpty != _hasInput) {
-      setState(() {
-        _hasInput = text.isNotEmpty;
-        if (!_hasInput) {
-          _results = [];
-          _hasSearched = false;
-        }
-      });
-    }
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      final text = _controller.text.trim();
+      if (text.length >= 2) {
+        _search(text);
+      } else {
+        setState(() {
+          _hasInput = text.isNotEmpty;
+          if (!_hasInput) {
+            _results = [];
+            _hasSearched = false;
+          }
+        });
+      }
+    });
   }
 
   Future<void> _clearAllHistory() async {

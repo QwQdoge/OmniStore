@@ -187,36 +187,61 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (TaskManager().isBusy) return;
 
     final isUninstall = flag == "-R";
+    bool cleanOrphans = false;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         final theme = Theme.of(context);
-        return AlertDialog(
-        title: Text(
-          isUninstall
-              ? AppLocalizations.of(context)!.confirmUninstall
-              : AppLocalizations.of(context)!.confirmInstall,
-        ),
-        content: Text(
-          AppLocalizations.of(context)!.confirmActionMsg(widget.app.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            style: isUninstall
-                ? FilledButton.styleFrom(
-                    backgroundColor: theme.colorScheme.error,
-                    foregroundColor: theme.colorScheme.onError,
-                  )
-                : null,
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
-      );
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                isUninstall
+                    ? AppLocalizations.of(context)!.confirmUninstall
+                    : AppLocalizations.of(context)!.confirmInstall,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.confirmActionMsg(widget.app.name),
+                  ),
+                  if (isUninstall && _selectedSource == "Native") ...[
+                    const SizedBox(height: 16),
+                    CheckboxListTile(
+                      value: cleanOrphans,
+                      onChanged: (val) {
+                        setDialogState(() => cleanOrphans = val ?? false);
+                      },
+                      title: const Text("同时清理无用依赖 (孤立包)", style: TextStyle(fontSize: 14)),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                FilledButton(
+                  style: isUninstall
+                      ? FilledButton.styleFrom(
+                          backgroundColor: theme.colorScheme.error,
+                          foregroundColor: theme.colorScheme.onError,
+                        )
+                      : null,
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(AppLocalizations.of(context)!.confirm),
+                ),
+              ],
+            );
+          }
+        );
       },
     );
 
@@ -243,7 +268,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       id: "task-${widget.app.name}",
       packageName: widget.app.name.trim(),
       source: _selectedSource,
-      actionFlag: flag,
+      actionFlag: isUninstall && cleanOrphans ? "-Rsn" : flag, // Use -Rsn for clean uninstall
       url: widget.app.url,
     );
 
@@ -399,6 +424,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         AppLocalizations.of(context)!.license,
                         _extraDetails!['license'],
                       ),
+                    _buildDependencySection(theme),
                   ],
                 ),
               ),
@@ -779,6 +805,47 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
       );
     });
+  }
+
+  Widget _buildDependencySection(ThemeData theme) {
+    final variant = _getVariantForSource(_selectedSource);
+    if (variant == null) return const SizedBox.shrink();
+
+    final deps = variant['depends'] as List?;
+    final dlSize = variant['download_size'];
+    final insSize = variant['installed_size'];
+
+    if ((deps == null || deps.isEmpty) && dlSize == null && insSize == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        _buildSectionTitle(theme, "安装信息"),
+        if (dlSize != null)
+          _buildInfoRow(Icons.downloading_rounded, "下载体积", dlSize.toString()),
+        if (insSize != null)
+          _buildInfoRow(Icons.storage_rounded, "解压后占用", insSize.toString()),
+        if (deps != null && deps.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text("依赖包 (${deps.length})",
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: deps.map((d) => Chip(
+              label: Text(d.toString(), style: const TextStyle(fontSize: 11)),
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )).toList(),
+          ),
+        ],
+      ],
+    );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {

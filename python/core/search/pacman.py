@@ -66,7 +66,9 @@ class PacmanSearch(SearchSource):
                         "source": "Pacman",
                         "description": "",
                         "installed": "[installed]" in extra,
-                        "votes": 0
+                        "votes": 0,
+                        "download_size": "",
+                        "installed_size": ""
                     }
                 elif current_pkg and line.startswith("    "):
                     # 2. 识别描述行：标题行下方带 4 个空格缩进的行
