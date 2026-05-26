@@ -34,6 +34,7 @@ from core.env_manager import EnvManager
 from core.update_manager import UpdateManager
 from core.ai.assistant import AIAssistant
 from core.search.custom_repo import CustomRepoManager
+from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
@@ -49,6 +50,7 @@ class OmnistoreBackend:
         # Initialize new features
         self.ai = AIAssistant(self.config)
         self.repo_manager = CustomRepoManager(self.config)
+        self.essentials = EssentialsManager(self.config)
 
     async def initialize(self, session: aiohttp.ClientSession):
         self.manager = SearchManager(self.config, session)
@@ -366,6 +368,15 @@ class OmnistoreBackend:
     async def run_ai_analyze_error(self, error_log: str):
         res = await self.ai.analyze_error(error_log)
         print(json.dumps({"response": res}, ensure_ascii=False))
+
+    async def run_get_essentials(self):
+        res = self.essentials.get_essentials()
+        print(json.dumps(res, ensure_ascii=False))
+
+    async def run_import_packages(self, filepath: str):
+        res = self.essentials.import_from_file(filepath)
+        print(json.dumps(res, ensure_ascii=False))
+
     async def run_ai_summary(self, json_mode: bool = False):
         """Generate AI project summary."""
         res = await self.ai.summarize_project()
@@ -385,7 +396,8 @@ class OmnistoreBackend:
                 "variants": item.get("variants", []),
                 "version": str(item.get("last_version") or item.get("version") or "N/A"),
                 "score": int(item.get("score", 0)),
-                "icon": item.get("icon")
+                "icon": item.get("icon"),
+                "is_exact_match": item.get("is_exact_match", False)
             })
         sys.stdout.write(json.dumps(output, ensure_ascii=False) + '\n')
         sys.stdout.flush()
@@ -430,6 +442,8 @@ async def main():
                        help="List all installed AppImage and Flatpak packages")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
+    group.add_argument("--essentials", action="store_true", help="Get essential packages")
+    group.add_argument("--import-packages", metavar="FILEPATH", help="Import packages from file")
     parser.add_argument("--ai-summary", action="store_true", help="Generate AI project summary")
     group.add_argument("--details", metavar="APP_ID", help="Get dynamic app details")
     group.add_argument("--check-env", action="store_true", help="Check system environment")

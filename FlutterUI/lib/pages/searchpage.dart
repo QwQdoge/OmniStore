@@ -48,10 +48,29 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _controller.addListener(_handleInputUpdate);
     _loadHistory();
+    _loadInitialContent();
     if (widget.autoFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
       });
+    }
+  }
+
+  Future<void> _loadInitialContent() async {
+    // 自动加载推荐内容，优化“进入搜索页就要加载内容”的体验
+    setState(() => _isLoading = true);
+    try {
+      final results = await BackendService.instance.getRecommendations();
+      if (mounted && _controller.text.isEmpty) {
+        setState(() {
+          _results = results;
+          _isLoading = false;
+          _hasSearched = true;
+          // 注意：不要设置 _hasInput，让它保持在初始卡片状态但带有结果预加载
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -158,48 +177,54 @@ class _SearchPageState extends State<SearchPage> {
   // ──────────────────────────────────────────────────────────
   Widget _buildSearchArea(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
       alignment: Alignment.center,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680),
-        child: SearchBar(
-          controller: _controller,
-          focusNode: _focusNode,
-          autoFocus: false,
-          hintText: AppLocalizations.of(context)!.searchHint,
-          elevation: WidgetStateProperty.all(0),
-          backgroundColor: WidgetStateProperty.all(
-            colorScheme.surfaceContainer,
-          ),
-          shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28.0),
-              side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: Hero(
+          tag: 'search_bar',
+          child: SearchBar(
+            controller: _controller,
+            focusNode: _focusNode,
+            autoFocus: false,
+            hintText: AppLocalizations.of(context)!.searchHint,
+            elevation: WidgetStateProperty.all(0),
+            backgroundColor: WidgetStateProperty.all(
+              colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             ),
-          ),
-          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16)),
-          leading: const Icon(Icons.search),
-          trailing: [
-            if (_hasInput)
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
-                tooltip: L10nService.s('clear_search'),
-                onPressed: () {
-                  _controller.clear();
-                  _focusNode.requestFocus();
-                },
-              ),
-            FilledButton.tonal(
-              onPressed: _search,
-              style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                visualDensity: VisualDensity.compact,
-              ),
-              child: Text(AppLocalizations.of(context)!.search),
+            textStyle: WidgetStateProperty.all(
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(width: 4),
-          ],
-          onSubmitted: (_) => _search(),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32.0), // 超大圆角
+                side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.2), width: 1.5),
+              ),
+            ),
+            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 8)),
+            leading: Icon(Icons.search_rounded, color: colorScheme.primary, size: 28),
+            trailing: [
+              if (_hasInput)
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: L10nService.s('clear_search'),
+                  onPressed: () {
+                    _controller.clear();
+                    _focusNode.requestFocus();
+                  },
+                ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: _search,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: Text(AppLocalizations.of(context)!.search, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+            onSubmitted: (_) => _search(),
+          ),
         ),
       ),
     );
@@ -400,6 +425,11 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: _results.length,
       itemBuilder: (context, index) {
         final app = _results[index];
+
+        // 检查是否是完全匹配的大卡片展示
+        if (index == 0 && app.isExactMatch) {
+          return _buildExactMatchCard(app);
+        }
         final colorScheme = Theme.of(context).colorScheme;
         return InkWell(
           onTap: () => _showAppDetails(app),
@@ -422,21 +452,35 @@ class _SearchPageState extends State<SearchPage> {
                             imageUrl: app.icon!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
-                            errorWidget: (context, url, error) => Text(
-                              app.name[0].toUpperCase(),
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.bold),
+                            errorWidget: (context, url, error) => Container(
+                              decoration: BoxDecoration(
+                                color: Colors.purple,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                "M",
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         )
-                      : Text(
-                          app.name[0].toUpperCase(),
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold),
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: Colors.purple,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "M",
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                 ),
                 const SizedBox(width: 14),
@@ -597,6 +641,103 @@ class _SearchPageState extends State<SearchPage> {
       child: Text(
         source,
         style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildExactMatchCard(AppPackage app) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          colors: [colorScheme.primaryContainer, colorScheme.surface],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: () => _showAppDetails(app),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
+                    ),
+                    child: app.icon != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: CachedNetworkImage(imageUrl: app.icon!, fit: BoxFit.cover),
+                          )
+                        : Icon(Icons.apps_rounded, size: 40, color: colorScheme.primary),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(app.name, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: app.sources.map((s) => _buildSourceTag(s)).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () => _showAppDetails(app),
+                    icon: Icon(app.installed ? Icons.open_in_new_rounded : Icons.download_rounded),
+                    label: Text(app.installed ? AppLocalizations.of(context)!.open : AppLocalizations.of(context)!.install),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                app.description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              if (app.screenshots != null && app.screenshots!.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 160,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: app.screenshots!.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, i) => ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: app.screenshots![i],
+                        height: 160,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(width: 200, color: colorScheme.surfaceContainer),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

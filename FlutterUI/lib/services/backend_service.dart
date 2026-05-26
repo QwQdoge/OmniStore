@@ -232,4 +232,32 @@ class BackendService {
       yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
     }
   }
+
+  /// 获取必备包
+  Future<List<dynamic>> getEssentials() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--essentials",
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// 导入包
+  Future<List<dynamic>> importPackages(String filepath) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath, "--import-packages", filepath,
+      ], workingDirectory: _workingDir);
+
+      if (result.exitCode != 0) return [];
+      return jsonDecode(result.stdout.toString().trim());
+    } catch (e) {
+      return [];
+    }
+  }
 }

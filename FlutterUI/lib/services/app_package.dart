@@ -41,6 +41,7 @@ class AppPackage {
   final List<String>? screenshots;
   final String? developer;
   final String? homepage;
+  final bool isExactMatch;
 
   AppPackage({
     required this.name,
@@ -55,6 +56,7 @@ class AppPackage {
     this.screenshots,
     this.developer,
     this.homepage,
+    this.isExactMatch = false,
   });
 
   List<String> get sources => variants.map((v) => v.source).toList();
@@ -99,6 +101,7 @@ class AppPackage {
           : null,
       developer: json['developer']?.toString(),
       homepage: json['homepage']?.toString(),
+      isExactMatch: json['is_exact_match'] == true,
     );
   }
 

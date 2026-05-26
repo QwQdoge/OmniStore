@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<AppPackage> _recommendations = [];
+  List<dynamic> _essentials = [];
   bool _isLoading = true;
 
   @override
@@ -24,12 +26,52 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refresh() async {
     setState(() => _isLoading = true);
-    final results = await BackendService.instance.getRecommendations();
+    final recFuture = BackendService.instance.getRecommendations();
+    final essFuture = BackendService.instance.getEssentials();
+
+    final results = await Future.wait([recFuture, essFuture]);
+
     if (mounted) {
       setState(() {
-        _recommendations = results;
+        _recommendations = List<AppPackage>.from(results[0]);
+        _essentials = results[1];
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _importPackages() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['txt', 'json'],
+    );
+
+    if (result != null) {
+      final path = result.files.single.path!;
+      final packages = await BackendService.instance.importPackages(path);
+      if (mounted && packages.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("导入软件包"),
+            content: Text("已从文件中读取 ${packages.length} 个软件包。是否开始批量下载？"),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("取消")),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  for (var pkg in packages) {
+                    final name = pkg['name'] as String;
+                    final source = pkg['source'] as String? ?? 'Native';
+                    _executeInstall(name, source);
+                  }
+                },
+                child: const Text("全部下载"),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
@@ -77,6 +119,42 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                child: Row(
+                  children: [
+                    Expanded(child: _buildSectionHeader("必备软件包")),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: OutlinedButton.icon(
+                        onPressed: _importPackages,
+                        icon: const Icon(Icons.file_upload_outlined, size: 18),
+                        label: const Text("导入列表"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()))
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    mainAxisExtent: 80,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildEssentialCard(_essentials[index]),
+                    childCount: _essentials.length,
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 32, bottom: 16),
@@ -322,6 +400,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildEssentialCard(dynamic item) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final name = item['name'] as String;
+    final source = item['source'] as String? ?? 'Native';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        title: Text(name,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text(item['description'] ?? "",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11)),
+        trailing: IconButton(
+          onPressed: () => _executeInstall(name, source),
+          icon: Icon(Icons.download_for_offline_rounded,
+              color: colorScheme.primary),
+        ),
+      ),
+    );
+  }
+
+  void _executeInstall(String name, String source) {
+    BackendService.instance
+        .executeAction("-I", name, source)
+        .listen((event) {
+      // 进度和状态由 BackendService 的 ValueNotifier 自动同步到全局 UI
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("正在安装 $name...")),
+    );
+  }
+
   Widget _buildListCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -386,12 +505,19 @@ class _HomePageState extends State<HomePage> {
                                 const CircularProgressIndicator(strokeWidth: 2),
                           ),
                         )
-                      : Text(
-                          app.name[0].toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: Colors.purple,
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "M",
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                 ),

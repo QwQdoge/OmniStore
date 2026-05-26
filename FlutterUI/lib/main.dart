@@ -11,7 +11,6 @@ import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
 import 'package:window_manager/window_manager.dart' as wm;
-import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,14 +30,12 @@ void main() async {
   // 更新服务同步最新配置
   await UpdateService().updateConfig();
 
-  final bool useSystemBar = config['ui']?['use_system_title_bar'] ?? false;
-
-  wm.WindowOptions windowOptions = wm.WindowOptions(
-    size: const Size(1100, 750),
+  wm.WindowOptions windowOptions = const wm.WindowOptions(
+    size: Size(1150, 800),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
-    titleBarStyle: useSystemBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
+    titleBarStyle: wm.TitleBarStyle.normal,
   );
 
   wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -123,7 +120,6 @@ class MainNavigationEntry extends StatefulWidget {
 class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.WindowListener {
   int _selectedIndex = 0;
   late final List<Widget> _subPages;
-  bool _useSystemTitleBar = false;
 
   @override
   void initState() {
@@ -135,7 +131,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const SettingsPage(),
       const DownloadPage(),
     ];
-    _useSystemTitleBar = widget.initialConfig['ui']?['use_system_title_bar'] ?? false;
   }
 
   @override
@@ -166,53 +161,39 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Column(
+      body: Row(
         children: [
-          // 自定义标题栏
-          if (!_useSystemTitleBar)
-            WindowTitleBar(
-              showSearch: true,
-              onSearchPressed: () => setState(() => _selectedIndex = 1),
-            ),
+          // 左侧导航列
+          _buildSideBar(colorScheme),
+          // 右侧内容区
           Expanded(
-            child: Row(
-              children: [
-                // 左侧导航列
-                _buildSideBar(colorScheme),
-                // 右侧内容区
-                Expanded(
-                  child: Container(
-                    margin: _useSystemTitleBar
-                        ? const EdgeInsets.fromLTRB(0, 12, 12, 12)
-                        : const EdgeInsets.fromLTRB(0, 0, 8, 8),
-                    decoration: BoxDecoration(
-                      color: theme.brightness == Brightness.light
-                          ? colorScheme.surface
-                          : colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(28.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28.0),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        switchInCurve: Curves.easeInOutExpo,
-                        switchOutCurve: Curves.easeInOutExpo,
-                        child: KeyedSubtree(
-                          key: ValueKey<int>(_selectedIndex),
-                          child: _subPages[_selectedIndex],
-                        ),
-                      ),
-                    ),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(0, 12, 12, 12),
+              decoration: BoxDecoration(
+                color: theme.brightness == Brightness.light
+                    ? colorScheme.surface
+                    : colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(28.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28.0),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  switchInCurve: Curves.easeInOutExpo,
+                  switchOutCurve: Curves.easeInOutExpo,
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(_selectedIndex),
+                    child: _subPages[_selectedIndex],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -224,24 +205,30 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   // 侧边栏布局：Logo + 导航 + 左下角图标
   Widget _buildSideBar(ColorScheme colorScheme) {
     return Container(
-      width: _useSystemTitleBar ? 96 : 90, // Tablet style slightly wider
-      padding: EdgeInsets.symmetric(vertical: _useSystemTitleBar ? 24 : 12),
+      width: 80,
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          if (_useSystemTitleBar) ...[
-            IconButton.filledTonal(
-              onPressed: () => setState(() => _selectedIndex = 1),
-              icon: const Icon(Icons.search_rounded),
-              tooltip: AppLocalizations.of(context)!.search,
-            ),
-            const SizedBox(height: 24),
-          ],
-          // 中间导航项
+          // 顶部头像与搜索
+          _buildUserAvatar(colorScheme),
+          const SizedBox(height: 12),
+          IconButton(
+            onPressed: () => setState(() => _selectedIndex = 1),
+            icon: Icon(Icons.search_rounded,
+              color: _selectedIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant),
+            tooltip: AppLocalizations.of(context)!.search,
+          ),
+          const SizedBox(height: 20),
+
+          // 中间导航项 (移除设置，移入头像菜单)
           Expanded(
             child: NavigationRail(
-              selectedIndex: _selectedIndex > 2 ? null : _selectedIndex,
-              onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-              labelType: NavigationRailLabelType.selected,
+              selectedIndex: _selectedIndex == 0 ? 0 : (_selectedIndex == 3 ? 1 : null),
+              onDestinationSelected: (i) {
+                if (i == 0) setState(() => _selectedIndex = 0);
+                if (i == 1) setState(() => _selectedIndex = 3);
+              },
+              labelType: NavigationRailLabelType.none,
               backgroundColor: Colors.transparent,
               indicatorColor: colorScheme.secondaryContainer,
               indicatorShape: RoundedRectangleBorder(
@@ -254,14 +241,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                   label: Text(AppLocalizations.of(context)!.explore),
                 ),
                 NavigationRailDestination(
-                  icon: const Icon(Icons.search_rounded),
-                  selectedIcon: const Icon(Icons.manage_search_rounded),
-                  label: Text(AppLocalizations.of(context)!.search),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.settings_outlined),
-                  selectedIcon: const Icon(Icons.settings_rounded),
-                  label: Text(AppLocalizations.of(context)!.settings),
+                  icon: const Icon(Icons.download_done_rounded),
+                  selectedIcon: const Icon(Icons.download_done_rounded),
+                  label: Text(AppLocalizations.of(context)!.downloads),
                 ),
               ],
             ),
@@ -305,6 +287,62 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           ],
         );
       },
+    );
+  }
+
+  Widget _buildUserAvatar(ColorScheme colorScheme) {
+    return PopupMenuButton<int>(
+      offset: const Offset(40, 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 0,
+          child: Row(
+            children: [
+              const Icon(Icons.login_rounded, size: 20),
+              const SizedBox(width: 12),
+              Text(AppLocalizations.of(context)?.explore ?? "Login"), // 占位 Login
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: [
+              const Icon(Icons.settings_rounded, size: 20),
+              const SizedBox(width: 12),
+              Text(AppLocalizations.of(context)!.settings),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (val) {
+        if (val == 1) setState(() => _selectedIndex = 2);
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.purple, // 用户要求的紫色
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purple.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          "M", // 用户要求的M
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+      ),
     );
   }
 

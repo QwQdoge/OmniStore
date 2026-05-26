@@ -802,20 +802,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
                         const CircularProgressIndicator(strokeWidth: 2),
-                    errorWidget: (context, url, error) => Text(
-                      widget.app.name[0].toUpperCase(),
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                    errorWidget: (context, url, error) => Container(
+                      decoration: BoxDecoration(
+                        color: Colors.purple,
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "M",
+                        style: TextStyle(
+                          fontSize: 36,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 )
-              : Text(
-                  widget.app.name[0].toUpperCase(),
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+              : Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "M",
+                    style: TextStyle(
+                      fontSize: 36,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
         ),

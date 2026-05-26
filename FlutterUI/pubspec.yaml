@@ -44,6 +44,7 @@ dependencies:
   window_manager: ^0.4.3
   system_tray: ^2.0.2
   flutter_local_notifications: ^18.0.1
+  file_picker: ^8.1.0
 
 dev_dependencies:
   flutter_test:
