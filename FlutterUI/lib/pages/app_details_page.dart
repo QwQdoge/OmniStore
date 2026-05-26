@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -7,7 +6,9 @@ import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
-import '../services/update_service.dart';
+import '../services/task_manager.dart';
+import '../models/task_state.dart';
+import '../widgets/smooth_progress_bar.dart';
 import '../widgets/window_title_bar.dart';
 
 class AppDetailsPage extends StatefulWidget {
@@ -20,10 +21,6 @@ class AppDetailsPage extends StatefulWidget {
 }
 
 class _AppDetailsPageState extends State<AppDetailsPage> {
-  bool _isInstalling = false;
-  String _statusKey = 'ready';
-  List<String>? _statusArgs;
-  double? _progress;
   late String _selectedSource;
   late bool _isAppInstalled;
   Map<String, dynamic>? _extraDetails;
@@ -34,20 +31,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     super.initState();
     _selectedSource = widget.app.primarySource;
     _isAppInstalled = widget.app.installed;
-    _statusKey = 'ready';
 
     // 即使不是 Flatpak，也尝试获取额外元数据（图标、截图等）
     _fetchExtraDetails().then((_) {
       if (mounted) _checkSourceSuggestion();
     });
 
-    // 状态恢复：如果全局正在处理的是这个 App，恢复进行中状态
-    final active = BackendService.activeApp.value;
-    if (active != null && active.name == widget.app.name) {
-      _isInstalling = true;
-      _statusKey = BackendService.globalStatus.value;
-      _progress = BackendService.globalProgress.value;
-    }
   }
 
   @override
@@ -90,14 +79,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   void _cancelAction() {
-    BackendService.cancelCurrentTask();
+    TaskManager().cancelTask();
     if (mounted) {
-      setState(() {
-        _isInstalling = false;
-        _statusKey = 'ready';
-        _statusArgs = null;
-        _progress = null;
-      });
+      setState(() {});
     }
   }
 
@@ -200,7 +184,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _handleAction(String flag) async {
-    if (_isInstalling) return;
+    if (TaskManager().isBusy) return;
 
     final isUninstall = flag == "-R";
     final confirmed = await showDialog<bool>(
@@ -255,255 +239,23 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       if (aurConfirmed != true) return;
     }
 
-    setState(() {
-      _isInstalling = true;
-      _progress = null;
-      _statusKey = isUninstall ? 'preparing_uninstall' : 'preparing_install';
-      _statusArgs = null;
-    });
-
-    BackendService.clearLogs();
-    BackendService.isDownloading.value = true;
-    BackendService.globalProgress.value = null;
-    BackendService.globalStatus.value = _statusKey;
-    BackendService.activeApp.value = widget.app;
-    BackendService.activeFlag.value = flag;
-
-    UpdateService().showProgressNotification(
-      isUninstall
-          ? L10nService.s('uninstalling_app', args: [widget.app.name])
-          : L10nService.s('installing_app', args: [widget.app.name]),
-      0,
+    final success = await TaskManager().startTask(
+      id: "task-${widget.app.name}",
+      packageName: widget.app.name.trim(),
+      source: _selectedSource,
+      actionFlag: flag,
+      url: widget.app.url,
     );
 
-    try {
-      final process = await Process.start(BackendService.venvPython, [
-        BackendService.scriptPath,
-        flag,
-        widget.app.name.trim(),
-        '--source',
-        _selectedSource,
-        if (widget.app.url != null && flag == "-I") ...[
-          '--url',
-          widget.app.url!,
-        ],
-        '--json',
-      ], workingDirectory: BackendService.workingDir);
-      BackendService.activeProcess = process;
-
-      process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-        String cleanLine = line.trim();
-        if (cleanLine.isEmpty) return;
-
-        Map<String, dynamic>? data;
-        if (cleanLine.startsWith("[CALLBACK]")) {
-          try {
-            data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          } catch (_) {}
-        } else if (cleanLine.startsWith("{")) {
-          try {
-            data = jsonDecode(cleanLine);
-          } catch (_) {}
-        }
-
-        if (data != null && mounted) {
-          String log = data['message'] ?? data['log'] ?? "";
-          if (log.isNotEmpty) {
-            if (log.startsWith("[PROGRESS]")) {
-              final parts = log.split(" ");
-              if (parts.length > 1) {
-                final p = double.tryParse(parts[1]);
-                if (p != null) {
-                  setState(() {
-                    _progress = p / 100.0;
-                  });
-                  BackendService.globalProgress.value = _progress;
-                  UpdateService().showProgressNotification(
-                    widget.app.name,
-                    _progress!,
-                  );
-                }
-              }
-            } else {
-              BackendService.addLog(log);
-              if (log.contains("[INFO]") || log.contains("[ERROR]")) {
-                setState(() {
-                  _statusKey = log;
-                  _statusArgs = null;
-                });
-                BackendService.globalStatus.value = log;
-              }
-            }
-          }
-        }
-      });
-
-      process.stderr.transform(utf8.decoder).listen((err) {
-        debugPrint("PYTHON STDERR: $err");
-        BackendService.addLog("stderr: $err");
-      });
-
-      final exitCode = await process.exitCode;
-
-      BackendService.activeApp.value = null;
-      BackendService.activeFlag.value = null;
-      BackendService.activeProcess = null;
-
-      if (mounted) {
-        final wasCancelled =
-            exitCode != 0 && !BackendService.isDownloading.value;
-
-        if (!wasCancelled) {
-          UpdateService().showCompletionNotification(
-            widget.app.name,
-            exitCode == 0,
-          );
-        }
-
-        setState(() {
-          BackendService.isDownloading.value = false;
-          if (exitCode == 0) {
-            _progress = 1.0;
-            _statusKey = isUninstall ? 'uninstall_success' : 'install_success';
-            _statusArgs = null;
-            _isAppInstalled = !isUninstall;
-          } else if (wasCancelled) {
-            _isInstalling = false;
-            _statusKey = 'task_cancelled';
-            _statusArgs = null;
-          } else {
-            _isInstalling = false;
-            _statusKey = 'task_failed_code';
-            _statusArgs = [exitCode.toString()];
-            _showFailureDialog(flag, exitCode);
-          }
-        });
-
-        if (exitCode == 0) {
-          // 全局通知 Banner（即使用户不在此页面也能看到）
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  isUninstall
-                      ? L10nService.s(
-                          'uninstall_success_msg',
-                          args: [widget.app.name],
-                        )
-                      : L10nService.s(
-                          'install_success_msg',
-                          args: [widget.app.name],
-                        ),
-                ),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          }
-          await Future.delayed(const Duration(seconds: 1));
-          if (mounted) setState(() => _isInstalling = false);
-        }
-      }
-    } catch (e) {
-      BackendService.activeApp.value = null;
-      BackendService.activeProcess = null;
-      UpdateService().showCompletionNotification(widget.app.name, false);
-      if (mounted) {
-        setState(() {
-          _isInstalling = false;
-          _statusKey = 'launch_failed';
-          _statusArgs = [e.toString()];
-        });
+    if (success && mounted) {
+      if (flag == "-I") {
+        setState(() => _isAppInstalled = true);
+      } else if (flag == "-R") {
+        setState(() => _isAppInstalled = false);
       }
     }
   }
 
-  Future<void> _showFailureDialog(
-    String flag,
-    int exitCode, {
-    String? error,
-  }) async {
-    final theme = Theme.of(context);
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: Icon(Icons.error_outline, color: theme.colorScheme.error, size: 32),
-        title: Text(
-          flag == "-I"
-              ? L10nService.s('install_failed')
-              : L10nService.s('uninstall_failed'),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                error != null
-                    ? L10nService.s('error_with_msg', args: [error])
-                    : L10nService.s(
-                        'exit_code_with_msg',
-                        args: [exitCode.toString()],
-                      ),
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-              ),
-              if (BackendService.globalLogs.value.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(L10nService.s('last_logs')),
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(color: theme.colorScheme.outlineVariant),
-                  ),
-                  constraints: const BoxConstraints(maxHeight: 150),
-                  child: ValueListenableBuilder<List<String>>(
-                    valueListenable: BackendService.globalLogs,
-                    builder: (context, logs, _) {
-                      return ListView.builder(
-                        reverse: true,
-                        itemCount: logs.length,
-                        itemBuilder: (context, i) => Text(
-                          logs[logs.length - 1 - i],
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
-                            fontSize: 10,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(L10nService.s('close')),
-          ),
-          FilledButton.tonal(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _statusKey = 'ready';
-                _statusArgs = null;
-                _progress = null;
-              });
-            },
-            child: Text(L10nService.s('retry')),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -529,19 +281,27 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   pinned: true,
                   title: Text(widget.app.name),
                   actions: [
-                    ValueListenableBuilder<List<String>>(
-                      valueListenable: BackendService.globalLogs,
-                      builder: (context, logs, _) {
-                        if (!_isInstalling && logs.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return IconButton(
-                          icon: Badge(
-                            isLabelVisible: _isInstalling,
-                            child: const Icon(Icons.terminal_outlined),
-                          ),
-                          tooltip: AppLocalizations.of(context)!.terminalOutput,
-                          onPressed: _showTerminalDialog,
+                    StreamBuilder<TaskState?>(
+                      stream: TaskManager().taskStateStream,
+                      initialData: TaskManager().currentTask,
+                      builder: (context, snapshot) {
+                        final isBusy = TaskManager().isBusy;
+                        return ValueListenableBuilder<List<String>>(
+                          valueListenable: BackendService.globalLogs,
+                          builder: (context, logs, _) {
+                            if (!isBusy && logs.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return IconButton(
+                              icon: Badge(
+                                isLabelVisible: isBusy,
+                                child: const Icon(Icons.terminal_outlined),
+                              ),
+                              tooltip:
+                                  AppLocalizations.of(context)!.terminalOutput,
+                              onPressed: _showTerminalDialog,
+                            );
+                          },
                         );
                       },
                     ),
@@ -676,77 +436,30 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Widget _buildActionArea(ColorScheme colorScheme) {
-    if (_isInstalling) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(16.0),
-          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        L10nService.s(_statusKey, args: _statusArgs),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (_progress != null)
-                        Text(
-                          L10nService.s(
-                            'completed_percent',
-                            args: [(_progress! * 100).toInt().toString()],
-                          ),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.cancel_outlined,
-                    color: colorScheme.error,
-                  ),
-                  onPressed: _cancelAction,
-                  tooltip: L10nService.s('cancel_task'),
-                ),
-              ],
+    return StreamBuilder<TaskState?>(
+      stream: TaskManager().taskStateStream,
+      initialData: TaskManager().currentTask,
+      builder: (context, snapshot) {
+        final task = snapshot.data;
+        if (task != null && task.id == "task-${widget.app.name}") {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(16.0),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: LinearProgressIndicator(
-                value: _progress,
-                minHeight: 8,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
+            child: SmoothProgressBar(
+              taskState: task,
+              onCancel: _cancelAction,
             ),
-          ],
-        ),
-      );
-    }
+          );
+        }
 
-    if (_isAppInstalled) {
-      return Row(
+        final isGlobalBusy = TaskManager().isBusy;
+
+        if (_isAppInstalled) {
+          return Row(
         children: [
           Expanded(
             child: SizedBox(
@@ -759,7 +472,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
-                onPressed: () => _handleAction("-R"),
+                onPressed: isGlobalBusy ? null : () => _handleAction("-R"),
                 child: Text(
                   AppLocalizations.of(context)!.uninstall,
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -778,7 +491,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
-                onPressed: _launchApp,
+                onPressed: isGlobalBusy ? null : _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
                 label: Text(
                   AppLocalizations.of(context)!.launch,
@@ -791,22 +504,24 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+        return SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+            ),
+            onPressed: isGlobalBusy ? null : () => _handleAction("-I"),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(
+              AppLocalizations.of(context)!.install,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        onPressed: () => _handleAction("-I"),
-        icon: const Icon(Icons.download_rounded),
-        label: Text(
-          AppLocalizations.of(context)!.install,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ),
+        );
+      },
     );
   }
 
