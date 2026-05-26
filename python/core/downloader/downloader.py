@@ -66,7 +66,14 @@ class InstallExecutor:
                                    "Please install 'zenity' or configure SUDO_ASKPASS.")
                 return False
 
-            password = await self._run_askpass(askpass_tool)
+            try:
+                # Set a timeout for the password dialog to prevent deadlock if user ignores it
+                password = await asyncio.wait_for(self._run_askpass(askpass_tool), timeout=60)
+            except asyncio.TimeoutError:
+                if callback:
+                    await callback("[ERROR] Password request timed out.")
+                return False
+
             if password is None:
                 if callback:
                     await callback("[ERROR] Password dialog was cancelled.")
@@ -253,7 +260,7 @@ class InstallExecutor:
                 await callback(f"[INFO] Removing {name} from {source}...")
 
             if source in ("AUR", "Native"):
-                return await self.yay.uninstall(name, callback=callback)
+                return await self.yay.uninstall(name, callback=callback, clean_orphans="n" in package.get("flag", ""))
             elif source == "Flatpak":
                 return await self.flatpak.uninstall(name, callback=callback)
             elif source == "AppImage":

@@ -152,7 +152,7 @@ class TaskManager {
         if (p != null) {
           _updateState(_currentTask?.copyWith(
             progress: p / 100.0,
-            status: TaskStatus.downloading, // Default to downloading when progress moves
+            status: TaskStatus.downloading,
           ));
         }
       } else if (logMessage.startsWith("[SPEED]")) {
@@ -163,8 +163,14 @@ class TaskManager {
         BackendService.addLog(logMessage);
 
         TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-        if (msg.toLowerCase().contains("installing")) {
+        double? progress = _currentTask?.progress;
+
+        if (msg.toLowerCase().contains("installing") ||
+            msg.toLowerCase().contains("verifying") ||
+            msg.toLowerCase().contains("building") ||
+            msg.toLowerCase().contains("cleaning")) {
           status = TaskStatus.installing;
+          progress = -1.0; // Indeterminate for these phases
         } else if (msg.toLowerCase().contains("downloading")) {
           status = TaskStatus.downloading;
         }
@@ -172,6 +178,7 @@ class TaskManager {
         _updateState(_currentTask?.copyWith(
           message: msg,
           status: status,
+          progress: progress,
         ));
         BackendService.globalStatus.value = msg;
       } else if (logMessage.startsWith("[ERROR]")) {

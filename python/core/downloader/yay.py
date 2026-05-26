@@ -114,11 +114,13 @@ class YayDownloader:
         ]
         return await self._run_command(cmd, callback=callback)
 
-    async def uninstall(self, package_name: str, callback=None):
+    async def uninstall(self, package_name: str, callback=None, clean_orphans: bool = False):
         """Uninstall logic"""
         if callback:
             await callback(f"[INFO] Uninstalling {package_name}...")
-        cmd = ["yay", "-Rs", "--noconfirm", package_name]
+
+        flag = "-Rsn" if clean_orphans else "-Rs"
+        cmd = ["yay", flag, "--noconfirm", package_name]
         return await self._run_command(cmd, callback=callback)
 
     async def update_all(self, callback=None):
