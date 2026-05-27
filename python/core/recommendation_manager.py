@@ -46,7 +46,10 @@ class RecommendationManager:
         """Fetch a collection of apps from Flathub"""
         try:
             # Flathub V2 API requires specific headers sometimes
-            headers = {"Accept": "application/json", "User-Agent": "OmniStore/0.1.0"}
+            headers = {
+                "Accept": "application/json",
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) OmniStore/0.1.0"
+            }
             async with self.session.get(url, timeout=15, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
@@ -189,7 +192,10 @@ class RecommendationManager:
         """Fetch rich details for a specific app (Flathub API)"""
         url = f"https://flathub.org/api/v2/appstream/{app_id}"
         try:
-            headers = {"Accept": "application/json", "User-Agent": "OmniStore/0.1.0"}
+            headers = {
+                "Accept": "application/json",
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) OmniStore/0.1.0"
+            }
             async with self.session.get(url, timeout=10, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()

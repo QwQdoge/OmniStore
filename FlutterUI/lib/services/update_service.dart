@@ -71,13 +71,15 @@ class UpdateService {
 
   Future<void> _initSystemTray() async {
     final config = await BackendService.instance.loadConfig();
-    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
+    // 默认在 Linux 上禁用，除非明确启用且依赖检查通过
+    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? false;
     if (!trayEnabled) {
-      debugPrint("System tray disabled in settings.");
+      debugPrint("System tray disabled (default on Linux or user set).");
       return;
     }
 
-    final configDir = Directory(p.join(Platform.environment['HOME'] ?? '', '.config', 'omnistore'));
+    final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+    final configDir = Directory(p.join(home, '.config', 'omnistore'));
     final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
     if (Platform.isLinux) {

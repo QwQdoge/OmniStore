@@ -28,7 +28,8 @@ class ConfigManager:
             "ui": {
                 "appearance": "system",
                 "color_seed": "#4E7EEF",
-                "language": "zh-CN"
+                "language": "zh-CN",
+                "enable_system_tray": False
             },
             "logging": {
                 "level": "INFO"
