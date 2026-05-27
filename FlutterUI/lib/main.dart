@@ -22,7 +22,7 @@ void main() async {
     BackendService.instance.loadConfig().timeout(const Duration(seconds: 10)),
   ]).catchError((e) {
     debugPrint("Initialization error: $e");
-    return [null, <String, dynamic>{}, null];
+    return [null, <String, dynamic>{}];
   });
 
   final Map<String, dynamic> config = (results[1] as Map<String, dynamic>?) ?? {};

@@ -45,7 +45,9 @@ class RecommendationManager:
     async def _fetch_collection(self, url: str) -> List[Dict]:
         """Fetch a collection of apps from Flathub"""
         try:
-            async with self.session.get(url, timeout=10) as resp:
+            # Flathub V2 API requires specific headers sometimes
+            headers = {"Accept": "application/json", "User-Agent": "OmniStore/0.1.0"}
+            async with self.session.get(url, timeout=15, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     hits = data.get("hits", [])
@@ -187,7 +189,8 @@ class RecommendationManager:
         """Fetch rich details for a specific app (Flathub API)"""
         url = f"https://flathub.org/api/v2/appstream/{app_id}"
         try:
-            async with self.session.get(url, timeout=10) as resp:
+            headers = {"Accept": "application/json", "User-Agent": "OmniStore/0.1.0"}
+            async with self.session.get(url, timeout=10, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
 

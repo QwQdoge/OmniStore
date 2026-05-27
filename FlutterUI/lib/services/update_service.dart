@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
@@ -56,9 +57,10 @@ class UpdateService {
       if (result.exitCode != 0) return true; // 如果 ldconfig 失败，保守假设存在
 
       final output = result.stdout.toString();
-      bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so.4');
-      bool hasAppIndicator = output.contains('libappindicator3.so.1') ||
-                             output.contains('libayatana-appindicator3.so.1');
+      bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so');
+      bool hasAppIndicator = output.contains('libappindicator3.so') ||
+                             output.contains('libayatana-appindicator3.so') ||
+                             output.contains('libappindicator-gtk3.so');
 
       return hasDbusMenu && hasAppIndicator;
     } catch (e) {
@@ -68,7 +70,23 @@ class UpdateService {
   }
 
   Future<void> _initSystemTray() async {
+    final config = await BackendService.instance.loadConfig();
+    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
+    if (!trayEnabled) {
+      debugPrint("System tray disabled in settings.");
+      return;
+    }
+
+    final configDir = Directory(p.join(Platform.environment['HOME'] ?? '', '.config', 'omnistore'));
+    final guardFile = File(p.join(configDir.path, '.tray_initializing'));
+
     if (Platform.isLinux) {
+      // 检查崩溃守卫
+      if (guardFile.existsSync()) {
+        debugPrint("System tray previously crashed. Skipping to prevent loop.");
+        return;
+      }
+
       final hasDeps = await _checkLinuxTrayDependencies();
       if (!hasDeps) {
         debugPrint("Skipping system tray initialization due to missing dependencies.");
@@ -77,6 +95,11 @@ class UpdateService {
     }
 
     try {
+      if (Platform.isLinux) {
+        if (!configDir.existsSync()) configDir.createSync(recursive: true);
+        guardFile.createSync();
+      }
+
       // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
       await _systemTray
           .initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png')
@@ -107,8 +130,12 @@ class UpdateService {
           _systemTray.popUpContextMenu();
         }
       });
+
+      // 初始化成功，清除崩溃守卫
+      if (guardFile.existsSync()) guardFile.deleteSync();
     } catch (e) {
       debugPrint("System tray initialization failed or timed out: $e");
+      // 注意：这里不删除 guardFile，以便下次启动知道这次失败了
     }
   }
 

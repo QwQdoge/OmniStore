@@ -31,6 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
   bool closeToTray = true;
+  bool enableSystemTray = true;
   bool useSystemTitleBar = false;
   bool includeAurUpdates = true;
 
@@ -79,6 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appearance = ui['appearance'] ?? 'system';
       colorSeed = ui['color_seed'] ?? '#CA6ECF';
       closeToTray = ui['close_to_tray'] ?? true;
+      enableSystemTray = ui['enable_system_tray'] ?? true;
       useSystemTitleBar = ui['use_system_title_bar'] ?? false;
 
       final log = config['logging'] ?? {};
@@ -285,6 +287,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     AppLocalizations.of(context)!.closeToTray,
                     closeToTray,
                     (v) => setState(() => closeToTray = v),
+                  ),
+                  _buildSwitchTile(
+                    "启用系统托盘",
+                    enableSystemTray,
+                    (v) => setState(() => enableSystemTray = v),
                   ),
                   _buildSwitchTile(
                     AppLocalizations.of(context)!.useSystemTitleBar,
@@ -595,6 +602,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'appearance': appearance, 
         'color_seed': colorSeed,
         'close_to_tray': closeToTray,
+        'enable_system_tray': enableSystemTray,
         'use_system_title_bar': useSystemTitleBar,
         'language': L10nService.languageCode,
       },
