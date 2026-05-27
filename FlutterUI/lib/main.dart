@@ -37,9 +37,12 @@ void main() async {
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: wm.TitleBarStyle.normal,
+    title: 'OmniStore',
   );
 
   wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await wm.windowManager.setTitle('OmniStore');
+    await wm.windowManager.setSkipTaskbar(false);
     await wm.windowManager.show();
     await wm.windowManager.focus();
     await wm.windowManager.setPreventClose(true);
@@ -102,9 +105,14 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
       ),
 
       home: _isFirstRun
-          ? WelcomePage(onFinish: () {
-              setState(() => _isFirstRun = false);
-            })
+          ? WelcomePage(
+              onFinish: () async {
+                await BackendService.instance.loadConfig();
+                setState(() {
+                  _isFirstRun = false;
+                });
+              },
+            )
           : MainNavigationEntry(initialConfig: widget.initialConfig),
     );
   }
@@ -149,6 +157,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
     if (closeToTray) {
       await wm.windowManager.hide();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("OmniStore 正在后台运行，可通过托盘图标打开"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } else {
       await wm.windowManager.setPreventClose(false);
       await wm.windowManager.close();

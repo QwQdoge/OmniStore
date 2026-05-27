@@ -102,7 +102,7 @@ class BackendService {
         "-S",
         query,
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
 
       if (result.exitCode != 0) {
         final errorOutput = result.stderr.toString().trim();
@@ -110,7 +110,7 @@ class BackendService {
             ? errorOutput
             : 'Backend script exited with code ${result.exitCode}';
         debugPrint('searchPackages failed: $message');
-        throw Exception(message);
+        return [];
       }
 
       final output = result.stdout.toString().trim();
@@ -118,7 +118,7 @@ class BackendService {
       return jsonDecode(output);
     } catch (e) {
       debugPrint('searchPackages Exception: $e');
-      rethrow;
+      return [];
     }
   }
 
@@ -203,10 +203,13 @@ class BackendService {
         _scriptPath,
         "--recommend",
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
 
       if (result.exitCode != 0) return {};
-      final dynamic data = jsonDecode(result.stdout.toString().trim());
+      final output = result.stdout.toString().trim();
+      if (output.isEmpty) return {};
+
+      final dynamic data = jsonDecode(output);
 
       if (data is Map<String, dynamic>) {
         final Map<String, List<AppPackage>> categories = {};
