@@ -439,11 +439,13 @@ class _HomePageState extends State<HomePage> {
                                   strokeWidth: 2,
                                 ),
                               ),
-                              errorWidget: (c, e, s) => Icon(
-                                Icons.image_outlined,
-                                size: 48,
-                                color:
-                                    colorScheme.primary.withValues(alpha: 0.5),
+                              errorWidget: (c, e, s) => Container(
+                                color: colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.image_outlined,
+                                  size: 48,
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                ),
                               ),
                             )
                           : Container(

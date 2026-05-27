@@ -153,8 +153,9 @@ class UpdateService {
 
   Future<void> checkNow() async {
     debugPrint("Checking for updates...");
-    final updates = await BackendService.instance.checkUpdates();
-    availableUpdates.value = updates;
+    try {
+      final updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+      availableUpdates.value = updates;
 
     final remindEnabled = _config['updates']?['remind_updates'] ?? true;
     final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
@@ -168,7 +169,12 @@ class UpdateService {
       await _systemTray.setToolTip(L10nService.s('trayTooltipUpdates', args: [updates.length.toString()]));
     } else {
       _lastNotifiedUpdateHash = null;
-      await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
+      try {
+        await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
+      } catch (_) {}
+    }
+    } catch (e) {
+      debugPrint("Update check failed: $e");
     }
   }
 
