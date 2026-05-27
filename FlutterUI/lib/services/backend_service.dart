@@ -196,8 +196,8 @@ class BackendService {
     }
   }
 
-  /// 获取动态推荐
-  Future<List<AppPackage>> getRecommendations() async {
+  /// 获取动态推荐 (已分类)
+  Future<Map<String, List<AppPackage>>> getRecommendations() async {
     try {
       final result = await Process.run(_venvPython, [
         _scriptPath,
@@ -205,12 +205,31 @@ class BackendService {
         "--json",
       ], workingDirectory: _workingDir);
 
-      if (result.exitCode != 0) return [];
-      List<dynamic> data = jsonDecode(result.stdout.toString().trim());
-      return data.map((item) => AppPackage.fromJson(item)).toList();
+      if (result.exitCode != 0) return {};
+      final dynamic data = jsonDecode(result.stdout.toString().trim());
+
+      if (data is Map<String, dynamic>) {
+        final Map<String, List<AppPackage>> categories = {};
+        data.forEach((key, value) {
+          if (value is List) {
+            categories[key] = value
+                .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+                .toList();
+          }
+        });
+        return categories;
+      } else if (data is List) {
+        // 向后兼容旧的列表格式
+        return {
+          "featured": data
+              .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+              .toList()
+        };
+      }
+      return {};
     } catch (e) {
       debugPrint("Recommendations Exception: $e");
-      return [];
+      return {};
     }
   }
 

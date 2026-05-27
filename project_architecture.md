@@ -35,7 +35,7 @@ The front-end is built using Flutter with a Material 3 design system. It uses a 
   - **Top Bar (`_buildTopBar`)**: Displays the current page title, a search action icon (navigates to `SearchPage` when clicked, visible on non-search pages), and the user settings avatar button (`_buildUserAvatar`). The avatar uses Material Design theme colors (`colorScheme.primaryContainer`).
   - **Global Status Bar**: At the bottom of the screen, displays background task status, current action logs, and download progress.
 - **Pages (`lib/pages/`)**:
-  - `homepage.dart`: Displays featured banner cards, essential packages grid, and hot apps lists.
+  - `homepage.dart`: Displays featured banner cards (Hero section), essential packages grid, and horizontal category shelves (Trending, For You).
   - `searchpage.dart`: Allows querying across different sources (Pacman, AUR, Flatpak, AppImage).
   - `settingpage.dart`: Detailed settings editor (sources toggles, source priorities drag-and-drop list using `onReorderItem`, log levels, backups, etc.).
   - `download_page.dart`: Displays detailed process logs and cancellation actions.
@@ -52,7 +52,7 @@ The front-end is built using Flutter with a Material 3 design system. It uses a 
 The Python backend serves as the CLI logic wrapper executing tasks.
 - **Entry point (`python/main.py`)**: Handles CLI arguments parsing and routes them to backend modules. Outputs JSON metadata or streams callback lines in format `[CALLBACK] {"message": "..."}` or `[PROGRESS] 50` back to Flutter.
 - **Core modules (`python/core/`)**:
-  - `recommendation_manager.py`: Fetches collection list from Flathub APIs. If network requests fail or time out, it returns a robust offline fallback list (Firefox, VLC, VS Code, GIMP, OBS Studio) to populate the frontend home page.
+  - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
   - `search/`: Unified package search logic.
   - `downloader/`: Process execution for installation/uninstallation flags.
   - `ai/`: AI Assistant wrapper communicating with Ollama/OpenAI API.
