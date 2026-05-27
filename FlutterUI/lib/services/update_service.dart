@@ -48,7 +48,34 @@ class UpdateService {
     await _initSystemTray();
   }
 
+  Future<bool> _checkLinuxTrayDependencies() async {
+    if (!Platform.isLinux) return true;
+    try {
+      // 检查常见的托盘依赖库是否存在
+      final result = await Process.run('ldconfig', ['-p']);
+      if (result.exitCode != 0) return true; // 如果 ldconfig 失败，保守假设存在
+
+      final output = result.stdout.toString();
+      bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so.4');
+      bool hasAppIndicator = output.contains('libappindicator3.so.1') ||
+                             output.contains('libayatana-appindicator3.so.1');
+
+      return hasDbusMenu && hasAppIndicator;
+    } catch (e) {
+      debugPrint("Dependency check failed: $e");
+      return true; // 报错则跳过检查
+    }
+  }
+
   Future<void> _initSystemTray() async {
+    if (Platform.isLinux) {
+      final hasDeps = await _checkLinuxTrayDependencies();
+      if (!hasDeps) {
+        debugPrint("Skipping system tray initialization due to missing dependencies.");
+        return;
+      }
+    }
+
     try {
       // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
       await _systemTray

@@ -162,7 +162,27 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    if (apps.isEmpty) return const SizedBox.shrink();
+    if (apps.isEmpty) {
+      return Container(
+        height: 200,
+        margin: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_rounded, color: Theme.of(context).colorScheme.error, size: 48),
+              const SizedBox(height: 12),
+              const Text("无法加载推荐内容，请检查后端状态"),
+              TextButton(onPressed: _refresh, child: const Text("重试")),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -134,8 +134,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     super.initState();
     wm.windowManager.addListener(this);
 
-    // 非阻塞初始化更新服务与系统托盘，防止启动崩溃
-    _initUpdateService();
+    // 延迟初始化更新服务与系统托盘，确保 UI 已渲染且环境检查更安全
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) _initUpdateService();
+      });
+    });
 
     _subPages = [
       const HomePage(),
