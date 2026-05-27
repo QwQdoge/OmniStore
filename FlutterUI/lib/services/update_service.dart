@@ -49,34 +49,40 @@ class UpdateService {
   }
 
   Future<void> _initSystemTray() async {
-    // system_tray 2.x 初始化图标
-    await _systemTray.initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png');
+    try {
+      // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
+      await _systemTray
+          .initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png')
+          .timeout(const Duration(seconds: 3));
 
-    final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(
-        label: L10nService.s('show_window'),
-        onClicked: (menuItem) => windowManager.show(),
-      ),
-      MenuItemLabel(
-        label: L10nService.s('check_updates'),
-        onClicked: (menuItem) => checkNow(),
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: L10nService.s('exit'),
-        onClicked: (menuItem) => exit(0),
-      ),
-    ]);
+      final Menu menu = Menu();
+      await menu.buildFrom([
+        MenuItemLabel(
+          label: L10nService.s('show_window'),
+          onClicked: (menuItem) => windowManager.show(),
+        ),
+        MenuItemLabel(
+          label: L10nService.s('check_updates'),
+          onClicked: (menuItem) => checkNow(),
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: L10nService.s('exit'),
+          onClicked: (menuItem) => exit(0),
+        ),
+      ]).timeout(const Duration(seconds: 2));
 
-    await _systemTray.setContextMenu(menu);
-    _systemTray.registerSystemTrayEventHandler((eventName) {
-      if (eventName == kSystemTrayEventClick) {
-        windowManager.show();
-      } else if (eventName == kSystemTrayEventRightClick) {
-        _systemTray.popUpContextMenu();
-      }
-    });
+      await _systemTray.setContextMenu(menu).timeout(const Duration(seconds: 2));
+      _systemTray.registerSystemTrayEventHandler((eventName) {
+        if (eventName == kSystemTrayEventClick) {
+          windowManager.show();
+        } else if (eventName == kSystemTrayEventRightClick) {
+          _systemTray.popUpContextMenu();
+        }
+      });
+    } catch (e) {
+      debugPrint("System tray initialization failed or timed out: $e");
+    }
   }
 
   void _startUpdateTimer() {

@@ -18,12 +18,15 @@ void main() async {
 
   // 并行初始化核心服务以提升加载速度
   final results = await Future.wait([
-    wm.windowManager.ensureInitialized(),
-    BackendService.instance.loadConfig(),
-    UpdateService().init(),
-  ]);
+    wm.windowManager.ensureInitialized().timeout(const Duration(seconds: 5)),
+    BackendService.instance.loadConfig().timeout(const Duration(seconds: 10)),
+    UpdateService().init().timeout(const Duration(seconds: 10)),
+  ]).catchError((e) {
+    debugPrint("Initialization error: $e");
+    return [null, <String, dynamic>{}, null];
+  });
 
-  final Map<String, dynamic> config = results[1] as Map<String, dynamic>;
+  final Map<String, dynamic> config = (results[1] as Map<String, dynamic>?) ?? {};
 
   // 初始化语言服务（依赖配置）
   await L10nService.init(config);

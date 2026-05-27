@@ -129,7 +129,7 @@ class BackendService {
         _scriptPath,
         "-L",
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return [];
       return jsonDecode(result.stdout.toString().trim());
@@ -145,10 +145,11 @@ class BackendService {
         _scriptPath,
         "--get-config",
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 5));
       if (result.exitCode != 0) return {};
       return jsonDecode(result.stdout);
     } catch (e) {
+      debugPrint("loadConfig Exception: $e");
       return {};
     }
   }
@@ -160,9 +161,10 @@ class BackendService {
         "--set-config",
         jsonEncode(config),
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 5));
       return result.exitCode == 0;
     } catch (e) {
+      debugPrint("saveConfig Exception: $e");
       return false;
     }
   }
@@ -173,9 +175,10 @@ class BackendService {
         _scriptPath,
         "--check-env",
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
       return jsonDecode(result.stdout);
     } catch (e) {
+      debugPrint("checkEnv Exception: $e");
       return {};
     }
   }
@@ -244,9 +247,10 @@ class BackendService {
         "--details",
         appId,
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
       return jsonDecode(result.stdout);
     } catch (e) {
+      debugPrint("getAppDetails Exception: $e");
       return {};
     }
   }
@@ -332,7 +336,7 @@ class BackendService {
         _scriptPath,
         "-C",
         "--json",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
 
       if (result.exitCode != 0) return [];
       return jsonDecode(result.stdout.toString().trim());
@@ -368,11 +372,12 @@ class BackendService {
       final result = await Process.run(_venvPython, [
         _scriptPath,
         "--essentials",
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
       return jsonDecode(result.stdout.toString().trim());
     } catch (e) {
+      debugPrint("getEssentials Exception: $e");
       return [];
     }
   }
@@ -384,11 +389,12 @@ class BackendService {
         _scriptPath,
         "--import-packages",
         filepath,
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
       return jsonDecode(result.stdout.toString().trim());
     } catch (e) {
+      debugPrint("importPackages Exception: $e");
       return [];
     }
   }
@@ -400,11 +406,12 @@ class BackendService {
         _scriptPath,
         "--export-packages",
         filepath,
-      ], workingDirectory: _workingDir);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return {"status": "error"};
       return jsonDecode(result.stdout.toString().trim());
     } catch (e) {
+      debugPrint("exportPackages Exception: $e");
       return {"status": "error", "message": e.toString()};
     }
   }
