@@ -40,6 +40,14 @@ class EnvManager:
             "yay": {
                 "status": "ok" if self._has_cmd("yay") else "warning",
                 "message": "AUR helper (yay) found" if self._has_cmd("yay") else "AUR helper (yay) missing"
+            },
+            "libdbusmenu-gtk3": {
+                "status": "ok" if self._has_pkg("libdbusmenu-gtk3") else "warning",
+                "message": "Tray menu support detected" if self._has_pkg("libdbusmenu-gtk3") else "Tray menu support (libdbusmenu-gtk3) missing"
+            },
+            "libappindicator-gtk3": {
+                "status": "ok" if self._has_pkg("libappindicator-gtk3") or self._has_pkg("libayatana-appindicator") else "warning",
+                "message": "Tray indicator support detected" if self._has_pkg("libappindicator-gtk3") or self._has_pkg("libayatana-appindicator") else "Tray indicator support (libappindicator-gtk3) missing"
             }
         }
         return status
@@ -60,17 +68,27 @@ class EnvManager:
         return res.returncode == 0
 
     async def bootstrap(self, callback=None):
-        """Install git, base-devel, and yay if missing."""
+        """Install git, base-devel, libraries and yay if missing."""
         if not self.is_arch:
             if callback: await callback("[ERROR] Cannot bootstrap on non-Arch system.")
             return False
 
-        # 1. Install git and base-devel
-        if not self._has_cmd("git") or not self._has_pkg("base-devel"):
-            if callback: await callback("[INFO] Installing git and base-devel...")
-            success = await self._run_pacman(["-S", "--noconfirm", "--needed", "git", "base-devel"], callback)
+        # 1. Install base dependencies and libraries
+        deps = ["git", "base-devel", "libdbusmenu-gtk3"]
+        # Use libayatana-appindicator if libappindicator-gtk3 is not in repos (Arch often uses Ayatana now)
+        if not self._has_pkg("libappindicator-gtk3") and not self._has_pkg("libayatana-appindicator"):
+            deps.append("libayatana-appindicator")
+        elif self._has_pkg("libappindicator-gtk3"):
+             # It's fine
+             pass
+
+        needed = [d for d in deps if not (self._has_cmd(d) if d == "git" else self._has_pkg(d))]
+
+        if needed:
+            if callback: await callback(f"[INFO] Installing dependencies: {', '.join(needed)}...")
+            success = await self._run_pacman(["-S", "--noconfirm", "--needed"] + needed, callback)
             if not success:
-                if callback: await callback("[ERROR] Failed to install base dependencies.")
+                if callback: await callback("[ERROR] Failed to install dependencies.")
                 return False
 
         # 2. Install yay

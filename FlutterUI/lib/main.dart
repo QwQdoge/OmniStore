@@ -20,7 +20,6 @@ void main() async {
   final results = await Future.wait([
     wm.windowManager.ensureInitialized().timeout(const Duration(seconds: 5)),
     BackendService.instance.loadConfig().timeout(const Duration(seconds: 10)),
-    UpdateService().init().timeout(const Duration(seconds: 10)),
   ]).catchError((e) {
     debugPrint("Initialization error: $e");
     return [null, <String, dynamic>{}, null];
@@ -30,9 +29,6 @@ void main() async {
 
   // 初始化语言服务（依赖配置）
   await L10nService.init(config);
-  
-  // 更新服务同步最新配置
-  await UpdateService().updateConfig();
 
   wm.WindowOptions windowOptions = const wm.WindowOptions(
     size: Size(1150, 800),
@@ -137,6 +133,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   void initState() {
     super.initState();
     wm.windowManager.addListener(this);
+
+    // 非阻塞初始化更新服务与系统托盘，防止启动崩溃
+    _initUpdateService();
+
     _subPages = [
       const HomePage(),
       const CategoryPage(),
@@ -144,6 +144,15 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const SettingsPage(),
       const DownloadPage(),
     ];
+  }
+
+  Future<void> _initUpdateService() async {
+    try {
+      await UpdateService().init().timeout(const Duration(seconds: 10));
+      await UpdateService().updateConfig().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint("UpdateService initialization failed: $e");
+    }
   }
 
   @override
