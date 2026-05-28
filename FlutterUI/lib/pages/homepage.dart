@@ -95,9 +95,7 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // 1.5 Categories Quick Access
-            SliverToBoxAdapter(
-              child: _buildCategoryQuickAccess(),
-            ),
+            _buildCategoryQuickAccess(),
 
             // 2. Essentials Grid
             SliverToBoxAdapter(
@@ -355,41 +353,42 @@ class _HomePageState extends State<HomePage> {
     final categories = CategoryService.getCategories(context);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 32),
-        _buildSectionHeader(AppLocalizations.of(context)!.category),
-        const SizedBox(height: 16),
-        SliverToBoxAdapter(child: SizedBox.shrink()), // Placeholder for structure if needed
-        SizedBox(
-          height: 48,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              return ActionChip(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchPage(initialQuery: 'category:${cat.id}'),
-                    ),
-                  );
-                },
-                avatar: Icon(cat.icon, size: 18, color: cat.color),
-                label: Text(cat.name),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-                backgroundColor: colorScheme.surfaceContainerLow,
-              );
-            },
+    return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 32),
+          _buildSectionHeader(AppLocalizations.of(context)!.category),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 48,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final cat = categories[index];
+                return ActionChip(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchPage(initialQuery: 'category:${cat.id}'),
+                      ),
+                    );
+                  },
+                  avatar: Icon(cat.icon, size: 18, color: cat.color),
+                  label: Text(cat.name),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                  backgroundColor: colorScheme.surfaceContainerLow,
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
