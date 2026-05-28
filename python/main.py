@@ -654,20 +654,25 @@ class OmnistoreBackend:
         else:
             print(f"AI Summary:\n{res}")
     def _output_json(self, results):
+        # TODO: Implement pagination or streaming for very large result sets.
         output = []
         for item in results:
-            output.append({
-                "name": str(item.get("name", "Unknown")),
-                "description": str(item.get("description", "")),
-                "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
-                "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
-                "url": str(item.get("url") or ""),
-                "variants": item.get("variants", []),
-                "version": str(item.get("last_version") or item.get("version") or "N/A"),
-                "score": int(item.get("score", 0)),
-                "icon": item.get("icon"),
-                "is_exact_match": item.get("is_exact_match", False)
-            })
+            try:
+                output.append({
+                    "name": str(item.get("name", "Unknown")),
+                    "description": str(item.get("description", "")),
+                    "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
+                    "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
+                    "url": str(item.get("url") or ""),
+                    "variants": item.get("variants", []),
+                    "version": str(item.get("last_version") or item.get("version") or "N/A"),
+                    "score": int(item.get("score", 0)),
+                    "icon": item.get("icon"),
+                    "is_exact_match": item.get("is_exact_match", False)
+                })
+            except Exception as e:
+                logging.error(f"Error serializing search result: {e}")
+
         sys.stdout.write(json.dumps(output, ensure_ascii=False) + '\n')
         sys.stdout.flush()
 

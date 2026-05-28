@@ -195,12 +195,22 @@ class TaskManager {
 
   void cancelTask() {
     if (_activeProcess != null) {
+      // TODO: Implement a cleaner way to handle child processes (e.g. process groups)
+      // to ensure all sub-processes (like pacman/yay) are also killed.
       _activeProcess!.kill(ProcessSignal.sigterm);
       _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
         message: "Task cancelled by user",
         speed: "",
       ));
+
+      // Force kill after a short delay if it hasn't exited
+      Future.delayed(const Duration(seconds: 2), () {
+        if (_activeProcess != null) {
+          _activeProcess!.kill(ProcessSignal.sigkill);
+          _activeProcess = null;
+        }
+      });
     } else if (_currentTask != null) {
       // Clear if not running
       _updateState(null);

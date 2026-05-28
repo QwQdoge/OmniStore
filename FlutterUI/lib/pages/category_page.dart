@@ -19,8 +19,8 @@ class CategoryPage extends StatelessWidget {
       {'id': 'System', 'name': l10n.catSystem, 'icon': Icons.settings_input_component_rounded, 'color': Colors.green},
       {'id': 'Office', 'name': l10n.catOffice, 'icon': Icons.description_outlined, 'color': Colors.teal},
       {'id': 'Game', 'name': l10n.catGames, 'icon': Icons.sports_esports_rounded, 'color': Colors.purple},
-      {'id': 'Graphics', 'name': '图形设计', 'icon': Icons.palette_outlined, 'color': Colors.pink},
-      {'id': 'Utility', 'name': '工具配件', 'icon': Icons.build_circle_outlined, 'color': Colors.blueGrey},
+      {'id': 'Graphics', 'name': l10n.catGraphics, 'icon': Icons.palette_outlined, 'color': Colors.pink},
+      {'id': 'Utility', 'name': l10n.catUtility, 'icon': Icons.build_circle_outlined, 'color': Colors.blueGrey},
     ];
 
     return Scaffold(

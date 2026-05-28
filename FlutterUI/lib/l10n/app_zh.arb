@@ -248,6 +248,22 @@
   "@catGames": {
     "description": "Description for catGames"
   },
+  "catGraphics": "图形设计",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "工具配件",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "系统与窗口",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "访问官网",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
   "updates": "更新",
   "@updates": {
     "description": "Description for updates"

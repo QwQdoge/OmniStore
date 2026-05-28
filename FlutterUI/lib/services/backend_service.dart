@@ -97,12 +97,13 @@ class BackendService {
   /// 搜索逻辑
   Future<List<dynamic>> searchPackages(String query) async {
     try {
+      // TODO: Use a stream-based approach for large search results to prevent UI hangs.
       final result = await Process.run(_venvPython, [
         _scriptPath,
         "-S",
         query,
         "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
 
       if (result.exitCode != 0) {
         final errorOutput = result.stderr.toString().trim();
@@ -145,9 +146,14 @@ class BackendService {
         _scriptPath,
         "--get-config",
         "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 5));
-      if (result.exitCode != 0) return {};
-      return jsonDecode(result.stdout);
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
+      if (result.exitCode != 0) {
+        debugPrint("loadConfig failed with exit code ${result.exitCode}: ${result.stderr}");
+        return {};
+      }
+      final output = result.stdout.toString().trim();
+      if (output.isEmpty) return {};
+      return jsonDecode(output);
     } catch (e) {
       debugPrint("loadConfig Exception: $e");
       return {};
