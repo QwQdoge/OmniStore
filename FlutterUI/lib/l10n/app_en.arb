@@ -248,6 +248,22 @@
   "@catGames": {
     "description": "Description for catGames"
   },
+  "catGraphics": "Graphics",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "Utilities",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "System & Window",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "Visit Website",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
   "updates": "Updates",
   "@updates": {
     "description": "Description for updates"

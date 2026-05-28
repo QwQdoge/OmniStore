@@ -254,7 +254,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    onTap: () {}, // TODO: 颜色选择器
+                    onTap: () {
+                      _showColorPicker();
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
@@ -290,6 +292,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       completionNotifications,
                       (v) => setState(() => completionNotifications = v),
                     ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.systemAndWindow),
+                _buildGroupCard([
                   _buildSwitchTile(
                     AppLocalizations.of(context)!.closeToTray,
                     closeToTray,
@@ -305,7 +312,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     useSystemTitleBar,
                     (v) => _toggleTitleBar(v),
                   ),
-                  ],
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),
@@ -573,6 +579,48 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       }
     }
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.themeColor),
+        content: SingleChildScrollView(
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              '#CA6ECF', '#0B57D0', '#1A73E8', '#34A853', '#FBBC04', '#EA4335',
+              '#673AB7', '#3F51B5', '#00BCD4', '#009688', '#FF5722', '#795548',
+            ].map((hex) => InkWell(
+              onTap: () {
+                setState(() => colorSeed = hex);
+                Navigator.pop(context);
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Color(int.parse(hex.replaceAll('#', '0xFF'))),
+                  shape: BoxShape.circle,
+                  border: colorSeed == hex ? Border.all(color: Theme.of(context).colorScheme.primary, width: 3) : null,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                  ],
+                ),
+                child: colorSeed == hex ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+              ),
+            )).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
+    );
   }
 
   Future<void> _toggleTitleBar(bool useSystem) async {

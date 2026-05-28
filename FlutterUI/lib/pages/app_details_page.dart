@@ -291,12 +291,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   pinned: true,
-                  title: Text(widget.app.name),
+                  title: Text(widget.app.name, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     onPressed: () => Navigator.pop(context),
                   ),
                   actions: [
+                    if (widget.app.url.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.language_rounded),
+                        tooltip: AppLocalizations.of(context)!.visitWebsite,
+                        onPressed: () {
+                          // TODO: Implement url_launcher to open widget.app.url
+                        },
+                      ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
                       initialData: TaskManager().currentTask,

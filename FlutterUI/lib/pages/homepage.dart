@@ -345,6 +345,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSectionHeader(String title) {
+    // TODO: Centralize MD3 typography constants (e.g., 26px, w900, -0.8 letter spacing).
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(

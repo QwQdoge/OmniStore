@@ -288,31 +288,53 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   // 侧边栏布局：探索 + 左下角下载
   Widget _buildSideBar(ColorScheme colorScheme) {
     return Container(
-      width: 80,
+      width: 90,
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          IconButton(
-            onPressed: () => setState(() => _selectedIndex = 0),
-            icon: Icon(
-              _selectedIndex == 0 ? Icons.apps_rounded : Icons.apps_outlined,
-              color: _selectedIndex == 0 ? colorScheme.primary : colorScheme.onSurfaceVariant,
-              size: 28,
-            ),
-            tooltip: AppLocalizations.of(context)!.explore,
-          ),
-          IconButton(
-            onPressed: () => setState(() => _selectedIndex = 1),
-            icon: Icon(
-              _selectedIndex == 1 ? Icons.category_rounded : Icons.category_outlined,
-              color: _selectedIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
-              size: 28,
-            ),
-            tooltip: AppLocalizations.of(context)!.category,
-          ),
+          _buildSideBarItem(0, Icons.explore_outlined, Icons.explore, AppLocalizations.of(context)!.explore, colorScheme),
+          const SizedBox(height: 16),
+          _buildSideBarItem(1, Icons.grid_view_outlined, Icons.grid_view_rounded, AppLocalizations.of(context)!.category, colorScheme),
+          const SizedBox(height: 16),
+          _buildSideBarItem(3, Icons.settings_outlined, Icons.settings, AppLocalizations.of(context)!.settings, colorScheme),
           const Spacer(),
           _buildDownloadButton(colorScheme),
           const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSideBarItem(int index, IconData icon, IconData selectedIcon, String label, ColorScheme colorScheme) {
+    final isSelected = _selectedIndex == index;
+    return InkWell(
+      onTap: () => setState(() => _selectedIndex = index),
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isSelected ? colorScheme.secondaryContainer : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              isSelected ? selectedIcon : icon,
+              color: isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -427,7 +449,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
         ),
       ],
       onSelected: (val) {
-        if (val == 1) setState(() => _selectedIndex = 2);
+        if (val == 1) setState(() => _selectedIndex = 3);
       },
       child: Container(
         width: 40,
