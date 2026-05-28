@@ -254,7 +254,39 @@ class _SettingsPageState extends State<SettingsPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    onTap: () {}, // TODO: 颜色选择器
+                    onTap: () {
+                      // TODO: Implement a real ColorPicker dialog.
+                      // For now, we can show a simple dialog with a few presets.
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("选择主题颜色 (TODO)"),
+                          content: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                '#CA6ECF', '#0B57D0', '#1A73E8', '#34A853', '#FBBC04', '#EA4335'
+                              ].map((hex) => GestureDetector(
+                                onTap: () {
+                                  setState(() => colorSeed = hex);
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Color(int.parse(hex.replaceAll('#', '0xFF'))),
+                                    shape: BoxShape.circle,
+                                    border: colorSeed == hex ? Border.all(color: Colors.white, width: 2) : null,
+                                  ),
+                                ),
+                              )).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
@@ -290,6 +322,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       completionNotifications,
                       (v) => setState(() => completionNotifications = v),
                     ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle("系统与窗口"),
+                _buildGroupCard([
                   _buildSwitchTile(
                     AppLocalizations.of(context)!.closeToTray,
                     closeToTray,
@@ -305,7 +342,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     useSystemTitleBar,
                     (v) => _toggleTitleBar(v),
                   ),
-                  ],
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),

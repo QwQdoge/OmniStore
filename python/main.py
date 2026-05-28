@@ -531,12 +531,10 @@ class OmnistoreBackend:
 
     async def run_export_packages(self, filepath: str):
         """Fetch all installed packages and export to a file"""
-        # Reuse list_installed logic
         installed = []
 
-        # Simple scan (could be more comprehensive)
+        # 1. Scan Native (Pacman)
         try:
-            import asyncio
             proc = await asyncio.create_subprocess_exec(
                 "pacman", "-Qqne",
                 stdout=asyncio.subprocess.PIPE,
@@ -549,6 +547,7 @@ class OmnistoreBackend:
                         installed.append({"name": line, "source": "Native"})
         except Exception: pass
 
+        # 2. Scan Flatpak
         try:
             proc = await asyncio.create_subprocess_exec(
                 "flatpak", "list", "--app", "--columns=application",
@@ -562,12 +561,37 @@ class OmnistoreBackend:
                         installed.append({"name": line, "source": "Flatpak"})
         except Exception: pass
 
+        # 3. Scan AUR (Optional, via yay -Qm)
         try:
+            proc = await asyncio.create_subprocess_exec(
+                "yay", "-Qm",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            stdout, _ = await proc.communicate()
+            if stdout:
+                for line in stdout.decode().strip().splitlines():
+                    if line:
+                        pkg_name = line.split()[0]
+                        installed.append({"name": pkg_name, "source": "AUR"})
+        except Exception: pass
+
+        try:
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
             with open(filepath, 'w') as f:
                 json.dump(installed, f, ensure_ascii=False, indent=2)
-            print(json.dumps({"status": "success", "count": len(installed)}))
+
+            # Use unified callback if in JSON mode to show progress/log
+            if self.json_mode:
+                print(json.dumps({"status": "success", "count": len(installed)}))
+            else:
+                console.print(Panel(f"Successfully exported {len(installed)} packages to {filepath}", border_style="green"))
         except Exception as e:
-            print(json.dumps({"status": "error", "message": str(e)}))
+            if self.json_mode:
+                print(json.dumps({"status": "error", "message": str(e)}))
+            else:
+                console.print(f"[ERROR] Export failed: {e}")
 
     async def run_clean_system(self, json_mode: bool = False):
         """Cleanup logic: remove orphans and clean cache"""

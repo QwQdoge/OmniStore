@@ -14,7 +14,8 @@ enum ViewMode { list, grid }
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
-  const SearchPage({super.key, this.autoFocus = false});
+  final String? initialQuery;
+  const SearchPage({super.key, this.autoFocus = false, this.initialQuery});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -50,7 +51,12 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _controller.addListener(_onSearchChanged);
     _loadHistory();
-    _loadInitialContent();
+    if (widget.initialQuery != null) {
+      _controller.text = widget.initialQuery!;
+      _search(widget.initialQuery!);
+    } else {
+      _loadInitialContent();
+    }
     if (widget.autoFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
