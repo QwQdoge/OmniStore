@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum Language { zh, en }
+enum Language { zh, en, ja, es, zhHant }
 
 class L10nService {
   static final ValueNotifier<Language> language = ValueNotifier(Language.zh);
@@ -8,10 +8,23 @@ class L10nService {
   static Future<void> init(Map<String, dynamic> config) async {
     final ui = config['ui'] ?? {};
     final langStr = ui['language'] as String?;
-    if (langStr == 'en') {
-      language.value = Language.en;
-    } else {
-      language.value = Language.zh;
+    switch (langStr) {
+      case 'en':
+        language.value = Language.en;
+        break;
+      case 'ja':
+        language.value = Language.ja;
+        break;
+      case 'es':
+        language.value = Language.es;
+        break;
+      case 'zh_Hant':
+        language.value = Language.zhHant;
+        break;
+      case 'zh':
+      default:
+        language.value = Language.zh;
+        break;
     }
   }
 
@@ -344,5 +357,15 @@ class L10nService {
     language.value = lang;
   }
 
-  static String get languageCode => language.value == Language.en ? 'en' : 'zh';
+  static String get languageCode {
+    switch (language.value) {
+      case Language.en: return 'en';
+      case Language.ja: return 'ja';
+      case Language.es: return 'es';
+      case Language.zhHant: return 'zh_Hant';
+      case Language.zh:
+      default:
+        return 'zh';
+    }
+  }
 }

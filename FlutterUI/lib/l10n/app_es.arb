@@ -131,5 +131,12 @@
   "uninstallSuccessTitle": "Desinstalación exitosa",
   "installFailedTitle": "Instalación fallida",
   "uninstallFailedTitle": "Desinstalación fallida",
-  "taskCompleted": "Tarea completada"
+  "taskCompleted": "Tarea completada",
+  "searchInstalledHint": "Buscar aplicaciones instaladas...",
+  "refresh": "Actualizar",
+  "noActiveTasks": "No hay tareas activas",
+  "currentTask": "Tarea actual",
+  "viewLogs": "Ver registros",
+  "allUpdated": "Todas las aplicaciones están al día",
+  "update": "Actualizar"
 }

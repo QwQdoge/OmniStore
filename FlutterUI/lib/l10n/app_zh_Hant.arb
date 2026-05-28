@@ -131,5 +131,12 @@
   "uninstallSuccessTitle": "解除安裝成功",
   "installFailedTitle": "安裝失敗",
   "uninstallFailedTitle": "解除安裝失敗",
-  "taskCompleted": "任務執行完成"
+  "taskCompleted": "任務執行完成",
+  "searchInstalledHint": "搜尋已安裝的應用程式...",
+  "refresh": "重新整理",
+  "noActiveTasks": "暫无進行中的任務",
+  "currentTask": "目前任務",
+  "viewLogs": "查看日誌",
+  "allUpdated": "所有應用程式已是最新",
+  "update": "更新"
 }

@@ -384,5 +384,12 @@
   "taskCompleted": "Task Completed",
   "@taskCompleted": {
     "description": "Description for taskCompleted"
-  }
+  },
+  "searchInstalledHint": "Search installed apps...",
+  "refresh": "Refresh",
+  "noActiveTasks": "No active tasks",
+  "currentTask": "Current Task",
+  "viewLogs": "View Logs",
+  "allUpdated": "All apps are up to date",
+  "update": "Update"
 }

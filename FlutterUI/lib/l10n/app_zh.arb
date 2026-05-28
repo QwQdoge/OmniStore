@@ -384,5 +384,12 @@
   "taskCompleted": "任务执行完成",
   "@taskCompleted": {
     "description": "Description for taskCompleted"
-  }
+  },
+  "searchInstalledHint": "搜索已安装的应用...",
+  "refresh": "刷新",
+  "noActiveTasks": "暂无活动中的任务",
+  "currentTask": "当前任务",
+  "viewLogs": "查看日志",
+  "allUpdated": "所有应用已是最新",
+  "update": "更新"
 }

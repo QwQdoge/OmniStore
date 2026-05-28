@@ -4,6 +4,9 @@ import sys
 import argparse
 import aiohttp
 import logging
+import asyncio
+import os
+import re
 from pathlib import Path
 from typing import Optional
 from rich.console import Console
@@ -25,8 +28,6 @@ def print(*args, **kwargs):
         _orig_print(*args, **kwargs, flush=True)
     elif not getattr(main, "json_mode_active", False):
          _orig_print(*args, **kwargs, flush=True)
-
-# Path handling optimization
 
 # Path handling optimization
 current_file_path = Path(__file__).resolve()
@@ -193,9 +194,15 @@ class OmnistoreBackend:
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
+        if not json_mode:
+            console.print(Panel(f"Uninstalling [bold red]{package_name}[/bold red] from [cyan]{source}[/cyan]", border_style="red"))
+
         success = await self.executor.uninstall(package_data, callback=cb)
         if success:
             self.cache.invalidate_installed_cache()
+            if not json_mode:
+                console.print(Panel(f"Successfully uninstalled [bold red]{package_name}[/bold red]! ✨", border_style="green"))
+                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
     async def run_update(self, package_name: str, source: str, json_mode: bool = False):
         """Update logic"""
@@ -205,7 +212,14 @@ class OmnistoreBackend:
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
-        await self.executor.update(package_data, callback=cb)
+        if not json_mode:
+            target = "all packages" if package_name == "all" else f"[bold green]{package_name}[/bold green]"
+            console.print(Panel(f"Updating {target} via [cyan]{source}[/cyan]", border_style="blue"))
+
+        success = await self.executor.update(package_data, callback=cb)
+        if success and not json_mode:
+            console.print(Panel(f"Update completed! 🎉", border_style="green"))
+            console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
     async def run_check_updates(self, json_mode: bool = False):
         """Check for updates logic"""
@@ -357,7 +371,6 @@ class OmnistoreBackend:
 
         # 2. Scan Flatpak
         try:
-            import asyncio
             proc = await asyncio.create_subprocess_exec(
                 "flatpak", "list", "--app", "--columns=name,application,version,description",
                 stdout=asyncio.subprocess.PIPE,
