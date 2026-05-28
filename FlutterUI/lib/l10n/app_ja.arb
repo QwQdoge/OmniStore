@@ -31,6 +31,7 @@
   },
   "noResults": "結果が見つかりませんでした",
   "searching": "検索中...",
+  "category": "カテゴリー",
   "packageManager": "パッケージマネージャー",
   "pacmanOfficial": "Pacman (公式)",
   "aurUser": "AUR (ユーザー)",

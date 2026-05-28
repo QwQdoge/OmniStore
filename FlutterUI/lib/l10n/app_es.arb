@@ -31,6 +31,7 @@
   },
   "noResults": "No se encontraron resultados",
   "searching": "Buscando...",
+  "category": "Categoría",
   "packageManager": "Gestor de paquetes",
   "pacmanOfficial": "Pacman (Oficial)",
   "aurUser": "AUR (Usuario)",

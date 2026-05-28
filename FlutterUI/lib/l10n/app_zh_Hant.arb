@@ -31,6 +31,7 @@
   },
   "noResults": "未找到相關應用",
   "searching": "正在尋找...",
+  "category": "分類",
   "packageManager": "套件管理員",
   "pacmanOfficial": "Pacman（官方庫）",
   "aurUser": "AUR（使用者庫）",

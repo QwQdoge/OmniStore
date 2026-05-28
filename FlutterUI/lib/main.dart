@@ -308,7 +308,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
               color: _selectedIndex == 1 ? colorScheme.primary : colorScheme.onSurfaceVariant,
               size: 28,
             ),
-            tooltip: "Category",
+            tooltip: AppLocalizations.of(context)!.category,
           ),
           const Spacer(),
           _buildDownloadButton(colorScheme),
@@ -324,7 +324,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     if (_selectedIndex == 0) {
       pageTitle = AppLocalizations.of(context)!.explore;
     } else if (_selectedIndex == 1) {
-      pageTitle = "Category";
+      pageTitle = AppLocalizations.of(context)!.category;
     } else if (_selectedIndex == 2) {
       pageTitle = AppLocalizations.of(context)!.search;
     } else if (_selectedIndex == 3) {
