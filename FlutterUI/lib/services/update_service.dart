@@ -103,8 +103,28 @@ class UpdateService {
       }
 
       // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
+      // Linux 下需要绝对路径
+      String iconPath = 'assets/app_icon.png';
+      if (Platform.isLinux) {
+        final String executablePath = Platform.resolvedExecutable;
+        final String projectRoot = p.dirname(p.dirname(executablePath));
+        final String potentialIcon = p.join(projectRoot, 'data', 'flutter_assets', 'assets', 'app_icon.png');
+        if (File(potentialIcon).existsSync()) {
+          iconPath = potentialIcon;
+        } else {
+          // Fallback to current directory for development
+          final devIcon = p.join(Directory.current.path, 'assets', 'app_icon.png');
+          if (File(devIcon).existsSync()) {
+            iconPath = devIcon;
+          } else if (Directory.current.path.endsWith('FlutterUI')) {
+             final devIconAlt = p.join(Directory.current.path, 'assets', 'app_icon.png');
+             if (File(devIconAlt).existsSync()) iconPath = devIconAlt;
+          }
+        }
+      }
+
       await _systemTray
-          .initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png')
+          .initSystemTray(title: "OmniStore", iconPath: iconPath)
           .timeout(const Duration(seconds: 3));
 
       final Menu menu = Menu();
@@ -151,10 +171,39 @@ class UpdateService {
     checkNow();
   }
 
+  Future<bool> _isDaemonRunning() async {
+    try {
+      if (Platform.isLinux) {
+        final result = await Process.run('pgrep', ['-x', 'omnistore-daemon']);
+        return result.exitCode == 0;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   Future<void> checkNow() async {
     debugPrint("Checking for updates...");
     try {
-      final updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+      // 如果 Rust 守护进程正在运行，UI 就不再主动检查更新，而是读取守护进程生成的状态文件
+      final bool daemonRunning = await _isDaemonRunning();
+      List<dynamic> updates = [];
+
+      if (daemonRunning) {
+        debugPrint("Daemon is running, fetching status from file...");
+        final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+        final statusFile = File(p.join(home, '.config', 'omnistore', 'update_status.json'));
+        if (statusFile.existsSync()) {
+          final content = await statusFile.readAsString();
+          final data = jsonDecode(content);
+          updates = data['updates'] ?? [];
+        } else {
+           // 文件不存在则回退到主动检查
+           updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+        }
+      } else {
+        updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+      }
+
       availableUpdates.value = updates;
 
     final remindEnabled = _config['updates']?['remind_updates'] ?? true;

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -15,6 +16,30 @@ import 'package:window_manager/window_manager.dart' as wm;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 单实例检测：使用本地 Socket 通信
+  const int port = 18080;
+  try {
+    final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
+    server.listen((socket) {
+      socket.listen((data) {
+        final message = utf8.decode(data).trim();
+        if (message == "SHOW") {
+          wm.windowManager.show();
+          wm.windowManager.focus();
+        }
+      });
+    });
+  } catch (e) {
+    // 绑定失败，说明已经有实例在运行
+    try {
+      final socket = await Socket.connect(InternetAddress.loopbackIPv4, port);
+      socket.write("SHOW");
+      await socket.flush();
+      await socket.close();
+    } catch (_) {}
+    exit(0);
+  }
 
   // 并行初始化核心服务以提升加载速度
   final results = await Future.wait([
@@ -40,11 +65,15 @@ void main() async {
   );
 
   wm.windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await wm.windowManager.setTitle('OmniStore');
-    await wm.windowManager.setSkipTaskbar(false);
-    await wm.windowManager.show();
-    await wm.windowManager.focus();
-    await wm.windowManager.setPreventClose(true);
+    try {
+      await wm.windowManager.setTitle('OmniStore');
+      await wm.windowManager.setSkipTaskbar(false);
+      await wm.windowManager.show();
+      await wm.windowManager.focus();
+      await wm.windowManager.setPreventClose(true);
+    } catch (e) {
+      debugPrint("WindowManager post-init error: $e");
+    }
   });
   
   runApp(OmnistoreApp(initialConfig: config));
