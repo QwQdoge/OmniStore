@@ -83,6 +83,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searching => 'Searching...';
 
   @override
+  String get category => 'Category';
+
+  @override
   String get packageManager => 'Package Manager';
 
   @override
@@ -287,4 +290,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskCompleted => 'Task Completed';
+
+  @override
+  String get searchInstalledHint => 'Search installed apps...';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get noActiveTasks => 'No active tasks';
+
+  @override
+  String get currentTask => 'Current Task';
+
+  @override
+  String get viewLogs => 'View Logs';
+
+  @override
+  String get allUpdated => 'All apps are up to date';
+
+  @override
+  String get update => 'Update';
 }

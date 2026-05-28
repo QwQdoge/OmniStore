@@ -254,7 +254,8 @@ class L10nService {
       'view_download_queue': 'View download queue',
       'confirm_uninstall': 'Confirm Uninstall',
       'confirm_install': 'Confirm Install',
-      'confirm_action_msg': 'Are you sure you want to perform this action on {}?',
+      'confirm_action_msg':
+          'Are you sure you want to perform this action on {}?',
       'preparing_uninstall': 'Preparing to uninstall...',
       'preparing_install': 'Preparing to install...',
       'uninstall_success': '✓ Uninstall successful',
@@ -294,12 +295,15 @@ class L10nService {
       'max_results_count': 'Max Display Results',
       'log_level_subtitle': 'Lower levels show more detailed information',
       'welcome_title': 'Welcome to OmniStore',
-      'welcome_subtitle': 'Providing a simple and elegant software management experience for Arch Linux',
+      'welcome_subtitle':
+          'Providing a simple and elegant software management experience for Arch Linux',
       'get_started': 'Get Started',
       'env_check_title': 'Environment Check',
       'env_check_subtitle': 'Ensuring your system is ready',
-      'env_fatal_desc': 'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.',
-      'env_warning_desc': 'Some necessary components are missing. We can configure them for you.',
+      'env_fatal_desc':
+          'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.',
+      'env_warning_desc':
+          'Some necessary components are missing. We can configure them for you.',
       'env_ok_desc': 'Everything is ready! Your system is perfect.',
       'fix_problems': 'Fix / Configure All',
       'continue_anyway': 'Continue Anyway',
@@ -308,12 +312,14 @@ class L10nService {
       'auto_config': 'Automatic (Recommended)',
       'custom_config': 'Custom Configuration',
       'enable_aur': 'Enable AUR (Arch User Repository)',
-      'aur_warning': 'Security Warning: AUR packages are user-contributed. Ensure you trust the source.',
+      'aur_warning':
+          'Security Warning: AUR packages are user-contributed. Ensure you trust the source.',
       'yay_desc': 'Enabling AUR requires installing the yay helper.',
       'finishing_setup': 'Finishing setup...',
       'setup_complete': 'Setup Complete!',
       'enter_store': 'Enter Store',
-      'bootstrap_note': 'Note: Setup may require entering your password multiple times.',
+      'bootstrap_note':
+          'Note: Setup may require entering your password multiple times.',
       'feedback_desc': 'If you encounter issues, please report them on GitHub.',
       'checking': 'Checking...',
       'installing': 'Installing...',
@@ -359,12 +365,15 @@ class L10nService {
 
   static String get languageCode {
     switch (language.value) {
-      case Language.en: return 'en';
-      case Language.ja: return 'ja';
-      case Language.es: return 'es';
-      case Language.zhHant: return 'zh_Hant';
+      case Language.en:
+        return 'en';
+      case Language.ja:
+        return 'ja';
+      case Language.es:
+        return 'es';
+      case Language.zhHant:
+        return 'zh_Hant';
       case Language.zh:
-      default:
         return 'zh';
     }
   }

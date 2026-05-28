@@ -18,16 +18,27 @@ from core.friendly_messages import get_friendly_message
 # Initial rich console
 console = Console(force_terminal=True)
 
-# Force all print statements to flush immediately, ensuring real-time output to Flutter
+# Force all print statements to flush immediately, ensuring real-time output to Flutter.
+# In JSON mode we must allow real JSON payloads to pass through while still filtering
+# non-JSON chatter that would break the frontend parser.
 _orig_print = print
+
+
 def print(*args, **kwargs):
-    # Only allow print if not in JSON mode or if it's a [CALLBACK]
-    # This prevents stray prints from breaking JSON parsing on the frontend
     msg = " ".join(map(str, args))
+
     if msg.startswith("[CALLBACK]") or msg.startswith("[PROGRESS]") or msg.startswith("[SPEED]"):
         _orig_print(*args, **kwargs, flush=True)
-    elif not getattr(main, "json_mode_active", False):
-         _orig_print(*args, **kwargs, flush=True)
+        return
+
+    json_mode = getattr(main, "json_mode_active", False)
+    if json_mode:
+        # Only allow actual JSON payloads in JSON mode.
+        if msg.startswith("{") or msg.startswith("[") or msg.startswith('"') or msg.startswith("true") or msg.startswith("false") or msg.startswith("null"):
+            _orig_print(*args, **kwargs, flush=True)
+        return
+
+    _orig_print(*args, **kwargs, flush=True)
 
 # Path handling optimization
 current_file_path = Path(__file__).resolve()
