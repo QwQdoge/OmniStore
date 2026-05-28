@@ -463,6 +463,30 @@ abstract class AppLocalizations {
   /// **'Games'**
   String get catGames;
 
+  /// Category for Graphics
+  ///
+  /// In en, this message translates to:
+  /// **'Graphics'**
+  String get catGraphics;
+
+  /// Category for Utility
+  ///
+  /// In en, this message translates to:
+  /// **'Utilities'**
+  String get catUtility;
+
+  /// Section title for system and window settings
+  ///
+  /// In en, this message translates to:
+  /// **'System & Window'**
+  String get systemAndWindow;
+
+  /// Tooltip for visiting website
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Website'**
+  String get visitWebsite;
+
   /// Description for updates
   ///
   /// In en, this message translates to:

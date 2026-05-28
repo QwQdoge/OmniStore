@@ -193,6 +193,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get catGames => 'Juegos';
 
   @override
+  String get catGraphics => 'Graphics';
+
+  @override
+  String get catUtility => 'Utilities';
+
+  @override
+  String get systemAndWindow => 'System & Window';
+
+  @override
+  String get visitWebsite => 'Visit Website';
+
+  @override
   String get updates => 'Actualizaciones';
 
   @override
