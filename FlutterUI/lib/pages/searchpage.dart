@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
+import '../services/category_service.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
 import '../services/l10n_service.dart';
@@ -34,17 +35,6 @@ class _SearchPageState extends State<SearchPage> {
   List<String> _history = [];
   Timer? _debounce;
 
-  List<Map<String, dynamic>> _getCategories(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return [
-      {"name": l10n.catDevelopment, "icon": Icons.code},
-      {"name": l10n.catMedia, "icon": Icons.movie},
-      {"name": l10n.catInternet, "icon": Icons.language},
-      {"name": l10n.catSystem, "icon": Icons.settings_suggest},
-      {"name": l10n.catOffice, "icon": Icons.work_outline},
-      {"name": l10n.catGames, "icon": Icons.sports_esports_outlined},
-    ];
-  }
 
   @override
   void initState() {
@@ -257,12 +247,15 @@ class _SearchPageState extends State<SearchPage> {
           child: Column(
             children: [
               // ── 搜索历史 + 分类：一个大容器 ──
-              Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
-                ),
+              Material(
+                color: colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(20),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -363,11 +356,11 @@ class _SearchPageState extends State<SearchPage> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: _getCategories(context).map((cat) => ActionChip(
-                          tooltip: '${AppLocalizations.of(context)!.search} ${cat['name']}',
-                          avatar: Icon(cat['icon'] as IconData, size: 16, color: colorScheme.primary),
-                          label: Text(cat['name'] as String, style: const TextStyle(fontSize: 12)),
-                          onPressed: () => _search(cat['name'] as String),
+                        children: CategoryService.getCategories(context).map((cat) => ActionChip(
+                          tooltip: '${AppLocalizations.of(context)!.search} ${cat.name}',
+                          avatar: Icon(cat.icon, size: 16, color: cat.color),
+                          label: Text(cat.name, style: const TextStyle(fontSize: 12)),
+                          onPressed: () => _search('category:${cat.id}'),
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -379,6 +372,7 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                 ),
               ),
+            ),
             ],
           ),
         ),
