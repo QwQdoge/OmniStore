@@ -20,7 +20,7 @@ void main() async {
   // 单实例检测：使用本地 Socket 通信
   const int port = 18080;
   try {
-    final server = await RawServerSocket.bind(InternetAddress.loopbackIPv4, port);
+    final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
     server.listen((socket) {
       socket.listen((data) {
         final message = utf8.decode(data).trim();
