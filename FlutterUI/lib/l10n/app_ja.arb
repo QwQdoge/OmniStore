@@ -1,0 +1,142 @@
+{
+  "@@locale": "ja",
+  "searchHint": "アプリ、ゲーム、ツールを検索...",
+  "featured": "おすすめ",
+  "forYou": "あなたへのおすすめ",
+  "essentialTools": "必須ツール",
+  "hotApps": "注目のアプリ",
+  "explore": "探索",
+  "search": "検索",
+  "settings": "設定",
+  "downloads": "ダウンロード",
+  "help": "ヘルプ",
+  "userAccount": "ユーザーアカウント",
+  "install": "インストール",
+  "open": "開く",
+  "uninstall": "アンインストール",
+  "launch": "起動",
+  "about": "このアプリについて",
+  "details": "詳細",
+  "source": "ソース",
+  "variant": "バリアント",
+  "version": "バージョン",
+  "ready": "準備完了",
+  "resultsFound": "{count} 件の結果が見つかりました",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noResults": "結果が見つかりませんでした",
+  "searching": "検索中...",
+  "category": "カテゴリー",
+  "packageManager": "パッケージマネージャー",
+  "pacmanOfficial": "Pacman (公式)",
+  "aurUser": "AUR (ユーザー)",
+  "flatpak": "Flatpak",
+  "appImage": "AppImage",
+  "sourcePriority": "ソースの優先順位 (ドラッグして並べ替え)",
+  "maxResults": "最大結果数",
+  "appearance": "外観",
+  "themeColor": "テーマカラー",
+  "followSystem": "システムに従う",
+  "lightMode": "ライトモード",
+  "darkMode": "ダークモード",
+  "loggingLevel": "ログレベル",
+  "saveAndApply": "保存して適用",
+  "configSaved": "設定を保存しました",
+  "configSaveFailed": "設定の保存に失敗しました",
+  "confirmUninstall": "アンインストールの確認",
+  "confirmInstall": "インストールの確認",
+  "confirmActionMsg": "{name} に対してこの操作を実行してもよろしいですか？",
+  "@confirmActionMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "キャンセル",
+  "confirm": "確認",
+  "terminalOutput": "ターミナル出力",
+  "waitingForOutput": "出力を待機中...",
+  "screenshots": "スクリーンショット",
+  "developer": "開発者",
+  "license": "ライセンス",
+  "success": "成功",
+  "failed": "失敗",
+  "taskCancelled": "タスクがキャンセルされました",
+  "catDevelopment": "開発",
+  "catMedia": "メディア",
+  "catInternet": "インターネット",
+  "catSystem": "システム",
+  "catOffice": "オフィス",
+  "catGames": "ゲーム",
+  "updates": "更新",
+  "upToDate": "すべてのアプリは最新です",
+  "checkUpdates": "更新を確認",
+  "foundUpdates": "{count} 件の更新が見つかりました",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateAll": "すべて更新",
+  "notifications": "通知",
+  "enableNotifications": "通知を有効にする",
+  "progressNotifications": "進行状況の通知",
+  "completionNotifications": "完了通知",
+  "closeToTray": "システムトレイに閉じる",
+  "useSystemTitleBar": "システムのタイトルバーを使用",
+  "showWindow": "ウィンドウを表示",
+  "exit": "終了",
+  "trayTooltipUpdates": "OmniStore: {count} 件の更新があります",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayTooltipUpToDate": "OmniStore: 最新の状態です",
+  "updateReminders": "更新のリマインダー",
+  "maintenance": "メンテナンス",
+  "updateAllPackages": "すべてのパッケージを更新",
+  "includeAurUpdates": "「すべて更新」に AUR を含める",
+  "resetOnboarding": "オンボーディングをリセット (ウェルカムページ)",
+  "resetOnboardingConfirm": "オンボーディングをリセットしてもよろしいですか？次回起動時にウェルカムページが表示されます。",
+  "checkInterval": "更新確認の間隔 (時間)",
+  "remindMeOfUpdates": "更新を通知する",
+  "installingApp": "{name} をインストール中",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uninstallingApp": "{name} をアンインストール中",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installSuccessTitle": "インストールが成功しました",
+  "uninstallSuccessTitle": "アンインストールが成功しました",
+  "installFailedTitle": "インストールに失敗しました",
+  "uninstallFailedTitle": "アンインストールに失敗しました",
+  "taskCompleted": "タスクが完了しました",
+  "searchInstalledHint": "インストール済みのアプリを検索...",
+  "refresh": "更新",
+  "noActiveTasks": "アクティブなタスクはありません",
+  "currentTask": "現在のタスク",
+  "viewLogs": "ログを表示",
+  "allUpdated": "すべてのアプリは最新です",
+  "update": "更新"
+}

@@ -1,0 +1,142 @@
+{
+  "@@locale": "zh_Hant",
+  "searchHint": "搜尋應用程式、遊戲、工具...",
+  "featured": "精選推薦",
+  "forYou": "為您推薦",
+  "essentialTools": "必備工具",
+  "hotApps": "熱門應用",
+  "explore": "探索",
+  "search": "搜尋",
+  "settings": "設定",
+  "downloads": "下載",
+  "help": "幫助",
+  "userAccount": "使用者帳戶",
+  "install": "安裝",
+  "open": "開啟",
+  "uninstall": "解除安裝",
+  "launch": "啟動程式",
+  "about": "關於此軟體",
+  "details": "詳細參數",
+  "source": "來源",
+  "variant": "變體",
+  "version": "版本",
+  "ready": "已就緒",
+  "resultsFound": "{count} 個結果",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noResults": "未找到相關應用",
+  "searching": "正在尋找...",
+  "category": "分類",
+  "packageManager": "套件管理員",
+  "pacmanOfficial": "Pacman（官方庫）",
+  "aurUser": "AUR（使用者庫）",
+  "flatpak": "Flatpak",
+  "appImage": "AppImage",
+  "sourcePriority": "結果源優先級 (拖動排序)",
+  "maxResults": "最大顯示結果數",
+  "appearance": "外觀模式",
+  "themeColor": "主題色種子",
+  "followSystem": "跟隨系統",
+  "lightMode": "淺色模式",
+  "darkMode": "深色模式",
+  "loggingLevel": "日誌記錄等級",
+  "saveAndApply": "儲存並應用",
+  "configSaved": "配置已儲存，部分設定重啟生效",
+  "configSaveFailed": "儲存配置失敗",
+  "confirmUninstall": "確認解除安裝",
+  "confirmInstall": "確認安裝",
+  "confirmActionMsg": "確定要對 {name} 執行此操作嗎？",
+  "@confirmActionMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "取消",
+  "confirm": "確定",
+  "terminalOutput": "終端輸出",
+  "waitingForOutput": "正在等待輸出...",
+  "screenshots": "軟體截圖",
+  "developer": "開發者",
+  "license": "授權",
+  "success": "成功",
+  "failed": "失敗",
+  "taskCancelled": "任務已取消",
+  "catDevelopment": "開發工具",
+  "catMedia": "影音娛樂",
+  "catInternet": "網際網路",
+  "catSystem": "系統工具",
+  "catOffice": "辦公",
+  "catGames": "遊戲",
+  "updates": "更新",
+  "upToDate": "所有應用程式已是最新",
+  "checkUpdates": "檢查更新",
+  "foundUpdates": "發現 {count} 個更新",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateAll": "全部更新",
+  "notifications": "通知設定",
+  "enableNotifications": "啟用通知",
+  "progressNotifications": "進度通知",
+  "completionNotifications": "完成通知",
+  "closeToTray": "關閉時隱藏到系統托盤",
+  "useSystemTitleBar": "使用系統標題列",
+  "showWindow": "顯示視窗",
+  "exit": "退出",
+  "trayTooltipUpdates": "OmniStore: 發現 {count} 個更新",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayTooltipUpToDate": "OmniStore: 應用程式已是最新",
+  "updateReminders": "更新提醒",
+  "maintenance": "維護與操作",
+  "updateAllPackages": "更新所有應用程式",
+  "includeAurUpdates": "更新所有時包含 AUR",
+  "resetOnboarding": "重置引導 (歡迎頁面)",
+  "resetOnboardingConfirm": "確定要重置引導嗎？下次啟動將重新顯示歡迎頁面。",
+  "checkInterval": "自動檢查更新間隔 (小時)",
+  "remindMeOfUpdates": "提醒我有可用更新",
+  "installingApp": "正在安裝 {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uninstallingApp": "正在解除安裝 {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installSuccessTitle": "安裝成功",
+  "uninstallSuccessTitle": "解除安裝成功",
+  "installFailedTitle": "安裝失敗",
+  "uninstallFailedTitle": "解除安裝失敗",
+  "taskCompleted": "任務執行完成",
+  "searchInstalledHint": "搜尋已安裝的應用程式...",
+  "refresh": "重新整理",
+  "noActiveTasks": "暫无進行中的任務",
+  "currentTask": "目前任務",
+  "viewLogs": "查看日誌",
+  "allUpdated": "所有應用程式已是最新",
+  "update": "更新"
+}

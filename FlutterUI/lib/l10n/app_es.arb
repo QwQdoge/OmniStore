@@ -1,0 +1,142 @@
+{
+  "@@locale": "es",
+  "searchHint": "Buscar aplicaciones, juegos, herramientas...",
+  "featured": "Destacado",
+  "forYou": "Para ti",
+  "essentialTools": "Herramientas esenciales",
+  "hotApps": "Aplicaciones populares",
+  "explore": "Explorar",
+  "search": "Buscar",
+  "settings": "Ajustes",
+  "downloads": "Descargas",
+  "help": "Ayuda",
+  "userAccount": "Cuenta de usuario",
+  "install": "Instalar",
+  "open": "Abrir",
+  "uninstall": "Desinstalar",
+  "launch": "Iniciar",
+  "about": "Acerca de",
+  "details": "Detalles",
+  "source": "Fuente",
+  "variant": "Variante",
+  "version": "Versión",
+  "ready": "Listo",
+  "resultsFound": "{count} resultados encontrados",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noResults": "No se encontraron resultados",
+  "searching": "Buscando...",
+  "category": "Categoría",
+  "packageManager": "Gestor de paquetes",
+  "pacmanOfficial": "Pacman (Oficial)",
+  "aurUser": "AUR (Usuario)",
+  "flatpak": "Flatpak",
+  "appImage": "AppImage",
+  "sourcePriority": "Prioridad de fuente (Arrastrar para reordenar)",
+  "maxResults": "Resultados máximos",
+  "appearance": "Apariencia",
+  "themeColor": "Color del tema",
+  "followSystem": "Seguir sistema",
+  "lightMode": "Modo claro",
+  "darkMode": "Modo oscuro",
+  "loggingLevel": "Nivel de registro",
+  "saveAndApply": "Guardar y aplicar",
+  "configSaved": "Configuración guardada",
+  "configSaveFailed": "Error al guardar la configuración",
+  "confirmUninstall": "Confirmar desinstalación",
+  "confirmInstall": "Confirmar instalación",
+  "confirmActionMsg": "¿Estás seguro de que quieres realizar esta acción en {name}?",
+  "@confirmActionMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "terminalOutput": "Salida de terminal",
+  "waitingForOutput": "Esperando salida...",
+  "screenshots": "Capturas de pantalla",
+  "developer": "Desarrollador",
+  "license": "Licencia",
+  "success": "Éxito",
+  "failed": "Error",
+  "taskCancelled": "Tarea cancelada",
+  "catDevelopment": "Desarrollo",
+  "catMedia": "Multimedia",
+  "catInternet": "Internet",
+  "catSystem": "Sistema",
+  "catOffice": "Oficina",
+  "catGames": "Juegos",
+  "updates": "Actualizaciones",
+  "upToDate": "Todas las aplicaciones están actualizadas",
+  "checkUpdates": "Buscar actualizaciones",
+  "foundUpdates": "Se encontraron {count} actualizaciones",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateAll": "Actualizar todo",
+  "notifications": "Notificaciones",
+  "enableNotifications": "Activar notificaciones",
+  "progressNotifications": "Notificaciones de progreso",
+  "completionNotifications": "Notificaciones de finalización",
+  "closeToTray": "Cerrar a la bandeja del sistema",
+  "useSystemTitleBar": "Usar barra de título del sistema",
+  "showWindow": "Mostrar ventana",
+  "exit": "Salir",
+  "trayTooltipUpdates": "OmniStore: Se encontraron {count} actualizaciones",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayTooltipUpToDate": "OmniStore: Actualizado",
+  "updateReminders": "Recordatorios de actualización",
+  "maintenance": "Mantenimiento",
+  "updateAllPackages": "Actualizar todos los paquetes",
+  "includeAurUpdates": "Incluir AUR en 'Actualizar todo'",
+  "resetOnboarding": "Restablecer bienvenida",
+  "resetOnboardingConfirm": "¿Estás seguro de que quieres restablecer la bienvenida? Se mostrará en el próximo inicio.",
+  "checkInterval": "Intervalo de comprobación (Horas)",
+  "remindMeOfUpdates": "Recordarme actualizaciones",
+  "installingApp": "Instalando {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uninstallingApp": "Desinstalando {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installSuccessTitle": "Instalación exitosa",
+  "uninstallSuccessTitle": "Desinstalación exitosa",
+  "installFailedTitle": "Instalación fallida",
+  "uninstallFailedTitle": "Desinstalación fallida",
+  "taskCompleted": "Tarea completada",
+  "searchInstalledHint": "Buscar aplicaciones instaladas...",
+  "refresh": "Actualizar",
+  "noActiveTasks": "No hay tareas activas",
+  "currentTask": "Tarea actual",
+  "viewLogs": "Ver registros",
+  "allUpdated": "Todas las aplicaciones están al día",
+  "update": "Actualizar"
+}
