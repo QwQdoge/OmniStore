@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
@@ -31,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String colorSeed = '#CA6ECF';
   String logLevel = 'INFO';
   bool closeToTray = true;
+  bool enableSystemTray = true;
   bool useSystemTitleBar = false;
   bool includeAurUpdates = true;
 
@@ -47,53 +49,60 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadConfig() async {
-    final config = await BackendService.instance.loadConfig();
-    if (config.isEmpty) return;
+    try {
+      final config = await BackendService.instance.loadConfig().timeout(const Duration(seconds: 5));
+      if (config.isEmpty) return;
 
-    setState(() {
-      final s = config['search'] ?? {};
-      final src = s['sources'] ?? {};
-      pacmanEnabled = src['pacman'] ?? true;
-      aurEnabled = src['aur'] ?? true;
-      flatpakEnabled = src['flatpak'] ?? true;
-      appimageEnabled = src['appimage'] ?? true;
-      maxResults = (s['max_results'] ?? 100).toDouble();
+      if (mounted) {
+        setState(() {
+          final s = config['search'] as Map<String, dynamic>? ?? {};
+          final src = (s['sources'] as Map<String, dynamic>?) ?? {};
+          pacmanEnabled = src['pacman'] ?? true;
+          aurEnabled = src['aur'] ?? true;
+          flatpakEnabled = src['flatpak'] ?? true;
+          appimageEnabled = src['appimage'] ?? true;
+          maxResults = (s['max_results'] ?? 100).toDouble();
 
-      final p = config['priority'] ?? {};
-      pacmanPriority = (p['pacman'] ?? 100).toDouble();
-      aurPriority = (p['aur'] ?? 80).toDouble();
-      flatpakPriority = (p['flatpak'] ?? 60).toDouble();
-      appimagePriority = (p['appimage'] ?? 40).toDouble();
+          final p = config['priority'] as Map<String, dynamic>? ?? {};
+          pacmanPriority = (p['pacman'] ?? 100).toDouble();
+          aurPriority = (p['aur'] ?? 80).toDouble();
+          flatpakPriority = (p['flatpak'] ?? 60).toDouble();
+          appimagePriority = (p['appimage'] ?? 40).toDouble();
 
-      // 根据权重排序源
-      var entries = p.entries.toList()
-        ..sort((a, b) => (b.value as num).compareTo(a.value as num));
-      sourceOrder =
-          entries.map((e) => e.key.toString()).cast<String>().toList();
-      // 补齐缺失的
-      for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
-        if (!sourceOrder.contains(s)) sourceOrder.add(s);
+          // 根据权重排序源
+          var entries = p.entries.toList()
+            ..sort((a, b) => (b.value as num).compareTo(a.value as num));
+          sourceOrder =
+              entries.map((e) => e.key.toString()).cast<String>().toList();
+          // 补齐缺失的
+          for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
+            if (!sourceOrder.contains(s)) sourceOrder.add(s);
+          }
+
+          final ui = config['ui'] as Map<String, dynamic>? ?? {};
+          appearance = ui['appearance'] ?? 'system';
+          colorSeed = ui['color_seed'] ?? '#CA6ECF';
+          closeToTray = ui['close_to_tray'] ?? true;
+          enableSystemTray = ui['enable_system_tray'] ?? (Platform.isLinux ? false : true);
+          useSystemTitleBar = ui['use_system_title_bar'] ?? false;
+
+          final log = config['logging'] as Map<String, dynamic>? ?? {};
+          logLevel = log['level'] ?? 'INFO';
+
+          final notify = config['notifications'] as Map<String, dynamic>? ?? {};
+          notificationsEnabled = notify['enabled'] ?? true;
+          progressNotifications = notify['progress'] ?? true;
+          completionNotifications = notify['completion'] ?? true;
+
+          final upConfig = config['updates'] as Map<String, dynamic>? ?? {};
+          updateCheckInterval = (upConfig['check_interval_hours'] ?? 1).toDouble();
+          remindUpdates = upConfig['remind_updates'] ?? true;
+          includeAurUpdates = upConfig['include_aur_in_update_all'] ?? true;
+        });
       }
-
-      final ui = config['ui'] ?? {};
-      appearance = ui['appearance'] ?? 'system';
-      colorSeed = ui['color_seed'] ?? '#CA6ECF';
-      closeToTray = ui['close_to_tray'] ?? true;
-      useSystemTitleBar = ui['use_system_title_bar'] ?? false;
-
-      final log = config['logging'] ?? {};
-      logLevel = log['level'] ?? 'INFO';
-
-      final notify = config['notifications'] ?? {};
-      notificationsEnabled = notify['enabled'] ?? true;
-      progressNotifications = notify['progress'] ?? true;
-      completionNotifications = notify['completion'] ?? true;
-
-      final upConfig = config['updates'] ?? {};
-      updateCheckInterval = (upConfig['check_interval_hours'] ?? 1).toDouble();
-      remindUpdates = upConfig['remind_updates'] ?? true;
-      includeAurUpdates = upConfig['include_aur_in_update_all'] ?? true;
-    });
+    } catch (e) {
+      debugPrint("Settings load error: $e");
+    }
   }
 
   @override
@@ -285,6 +294,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     AppLocalizations.of(context)!.closeToTray,
                     closeToTray,
                     (v) => setState(() => closeToTray = v),
+                  ),
+                  _buildSwitchTile(
+                    "启用系统托盘",
+                    enableSystemTray,
+                    (v) => setState(() => enableSystemTray = v),
                   ),
                   _buildSwitchTile(
                     AppLocalizations.of(context)!.useSystemTitleBar,
@@ -595,6 +609,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'appearance': appearance, 
         'color_seed': colorSeed,
         'close_to_tray': closeToTray,
+        'enable_system_tray': enableSystemTray,
         'use_system_title_bar': useSystemTitleBar,
         'language': L10nService.languageCode,
       },

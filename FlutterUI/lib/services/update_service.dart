@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
@@ -48,35 +49,96 @@ class UpdateService {
     await _initSystemTray();
   }
 
+  Future<bool> _checkLinuxTrayDependencies() async {
+    if (!Platform.isLinux) return true;
+    try {
+      // 检查常见的托盘依赖库是否存在
+      final result = await Process.run('ldconfig', ['-p']);
+      if (result.exitCode != 0) return true; // 如果 ldconfig 失败，保守假设存在
+
+      final output = result.stdout.toString();
+      bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so');
+      bool hasAppIndicator = output.contains('libappindicator3.so') ||
+                             output.contains('libayatana-appindicator3.so') ||
+                             output.contains('libappindicator-gtk3.so');
+
+      return hasDbusMenu && hasAppIndicator;
+    } catch (e) {
+      debugPrint("Dependency check failed: $e");
+      return true; // 报错则跳过检查
+    }
+  }
+
   Future<void> _initSystemTray() async {
-    // system_tray 2.x 初始化图标
-    await _systemTray.initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png');
+    final config = await BackendService.instance.loadConfig();
+    // 默认在 Linux 上禁用，除非明确启用且依赖检查通过
+    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? false;
+    if (!trayEnabled) {
+      debugPrint("System tray disabled (default on Linux or user set).");
+      return;
+    }
 
-    final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(
-        label: L10nService.s('show_window'),
-        onClicked: (menuItem) => windowManager.show(),
-      ),
-      MenuItemLabel(
-        label: L10nService.s('check_updates'),
-        onClicked: (menuItem) => checkNow(),
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: L10nService.s('exit'),
-        onClicked: (menuItem) => exit(0),
-      ),
-    ]);
+    final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+    final configDir = Directory(p.join(home, '.config', 'omnistore'));
+    final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
-    await _systemTray.setContextMenu(menu);
-    _systemTray.registerSystemTrayEventHandler((eventName) {
-      if (eventName == kSystemTrayEventClick) {
-        windowManager.show();
-      } else if (eventName == kSystemTrayEventRightClick) {
-        _systemTray.popUpContextMenu();
+    if (Platform.isLinux) {
+      // 检查崩溃守卫
+      if (guardFile.existsSync()) {
+        debugPrint("System tray previously crashed. Skipping to prevent loop.");
+        return;
       }
-    });
+
+      final hasDeps = await _checkLinuxTrayDependencies();
+      if (!hasDeps) {
+        debugPrint("Skipping system tray initialization due to missing dependencies.");
+        return;
+      }
+    }
+
+    try {
+      if (Platform.isLinux) {
+        if (!configDir.existsSync()) configDir.createSync(recursive: true);
+        guardFile.createSync();
+      }
+
+      // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
+      await _systemTray
+          .initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png')
+          .timeout(const Duration(seconds: 3));
+
+      final Menu menu = Menu();
+      await menu.buildFrom([
+        MenuItemLabel(
+          label: L10nService.s('show_window'),
+          onClicked: (menuItem) => windowManager.show(),
+        ),
+        MenuItemLabel(
+          label: L10nService.s('check_updates'),
+          onClicked: (menuItem) => checkNow(),
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: L10nService.s('exit'),
+          onClicked: (menuItem) => exit(0),
+        ),
+      ]).timeout(const Duration(seconds: 2));
+
+      await _systemTray.setContextMenu(menu).timeout(const Duration(seconds: 2));
+      _systemTray.registerSystemTrayEventHandler((eventName) {
+        if (eventName == kSystemTrayEventClick) {
+          windowManager.show();
+        } else if (eventName == kSystemTrayEventRightClick) {
+          _systemTray.popUpContextMenu();
+        }
+      });
+
+      // 初始化成功，清除崩溃守卫
+      if (guardFile.existsSync()) guardFile.deleteSync();
+    } catch (e) {
+      debugPrint("System tray initialization failed or timed out: $e");
+      // 注意：这里不删除 guardFile，以便下次启动知道这次失败了
+    }
   }
 
   void _startUpdateTimer() {
@@ -91,8 +153,9 @@ class UpdateService {
 
   Future<void> checkNow() async {
     debugPrint("Checking for updates...");
-    final updates = await BackendService.instance.checkUpdates();
-    availableUpdates.value = updates;
+    try {
+      final updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+      availableUpdates.value = updates;
 
     final remindEnabled = _config['updates']?['remind_updates'] ?? true;
     final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
@@ -106,7 +169,12 @@ class UpdateService {
       await _systemTray.setToolTip(L10nService.s('trayTooltipUpdates', args: [updates.length.toString()]));
     } else {
       _lastNotifiedUpdateHash = null;
-      await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
+      try {
+        await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
+      } catch (_) {}
+    }
+    } catch (e) {
+      debugPrint("Update check failed: $e");
     }
   }
 

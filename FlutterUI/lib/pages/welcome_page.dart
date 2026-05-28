@@ -29,12 +29,25 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   Future<void> _checkEnv() async {
-    final status = await _backend.checkEnv();
-    setState(() {
-      _envStatus = status;
-      _hasFatal = status.values.any((e) => e['status'] == 'fatal');
-      _hasWarning = status.values.any((e) => e['status'] == 'warning');
-    });
+    try {
+      final status = await _backend.checkEnv().timeout(const Duration(seconds: 10));
+      if (mounted) {
+        setState(() {
+          _envStatus = status;
+          _hasFatal = status.values.any((e) => e['status'] == 'fatal');
+          _hasWarning = status.values.any((e) => e['status'] == 'warning');
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasFatal = true;
+          _envStatus = {
+            "Backend": {"status": "fatal", "message": "无法连接到后端服务: $e"}
+          };
+        });
+      }
+    }
   }
 
   Future<void> _runBootstrap() async {

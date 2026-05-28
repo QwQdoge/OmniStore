@@ -162,7 +162,27 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    if (apps.isEmpty) return const SizedBox.shrink();
+    if (apps.isEmpty) {
+      return Container(
+        height: 200,
+        margin: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_rounded, color: Theme.of(context).colorScheme.error, size: 48),
+              const SizedBox(height: 12),
+              const Text("无法加载推荐内容，请检查后端状态"),
+              TextButton(onPressed: _refresh, child: const Text("重试")),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,17 +212,41 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 48),
-        _buildSectionHeader(title),
-        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: const Row(
+                  children: [
+                    Text("查看更多"),
+                    Icon(Icons.chevron_right_rounded, size: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 100,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          height: 120,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 16),
-            itemBuilder: (context, index) => _buildShelfItem(context, apps[index]),
+            itemBuilder: (context, index) =>
+                _buildShelfItem(context, apps[index]),
           ),
         ),
       ],
@@ -213,75 +257,88 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
-      ),
-      borderRadius: BorderRadius.circular(20.0),
-      child: Container(
-        width: 260,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: app.icon != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        app.name[0].toUpperCase(),
-                        style: TextStyle(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold),
-                      ),
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24.0),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'app-icon-${app.name}-${app.primarySource}',
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16.0),
                     ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+                    child: app.icon != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16.0),
+                            child: CachedNetworkImage(
+                              imageUrl: app.icon!,
+                              fit: BoxFit.cover,
+                              errorWidget: (c, e, s) => Center(
+                                child: Text(
+                                  app.name[0].toUpperCase(),
+                                  style: TextStyle(
+                                      color: colorScheme.onSecondaryContainer,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              app.name[0].toUpperCase(),
+                              style: TextStyle(
+                                  color: colorScheme.onSecondaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          app.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Text(
+                        app.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(height: 4),
+                      Text(
+                        app.description,
+                        style: TextStyle(
+                            fontSize: 12, color: colorScheme.onSurfaceVariant),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
                       _buildTrustLabel(app.primarySource),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    app.description,
-                    style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -293,9 +350,9 @@ class _HomePageState extends State<HomePage> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 22,
+          fontSize: 26,
           fontWeight: FontWeight.w900,
-          letterSpacing: -0.5,
+          letterSpacing: -0.8,
         ),
       ),
     );
@@ -382,11 +439,13 @@ class _HomePageState extends State<HomePage> {
                                   strokeWidth: 2,
                                 ),
                               ),
-                              errorWidget: (c, e, s) => Icon(
-                                Icons.image_outlined,
-                                size: 48,
-                                color:
-                                    colorScheme.primary.withValues(alpha: 0.5),
+                              errorWidget: (c, e, s) => Container(
+                                color: colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.image_outlined,
+                                  size: 48,
+                                  color: colorScheme.primary.withValues(alpha: 0.5),
+                                ),
                               ),
                             )
                           : Container(

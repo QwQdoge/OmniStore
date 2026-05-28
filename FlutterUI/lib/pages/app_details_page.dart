@@ -9,7 +9,6 @@ import '../services/l10n_service.dart';
 import '../services/task_manager.dart';
 import '../models/task_state.dart';
 import '../widgets/smooth_progress_bar.dart';
-import '../widgets/window_title_bar.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -288,23 +287,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      body: Column(
-        children: [
-          FutureBuilder<Map<String, dynamic>>(
-            future: BackendService.instance.loadConfig(),
-            builder: (context, snapshot) {
-              final useSystem =
-                  snapshot.data?['ui']?['use_system_title_bar'] ?? false;
-              if (useSystem) return const SizedBox.shrink();
-              return const WindowTitleBar();
-            },
-          ),
-          Expanded(
-            child: NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   pinned: true,
                   title: Text(widget.app.name),
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                   actions: [
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
@@ -334,7 +325,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ],
                 ),
               ],
-              body: SingleChildScrollView(
+              body: SelectionArea(
+                child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,8 +378,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   child: const Center(
                                       child: CircularProgressIndicator()),
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.broken_image),
+                                errorWidget: (context, url, error) => Container(
+                                  width: 200,
+                                  color: colorScheme.surfaceContainerHighest,
+                                  child: const Icon(Icons.broken_image_rounded),
+                                ),
                               ),
                             );
                           },
@@ -430,8 +425,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
             ),
           ),
-        ],
-      ),
     );
   }
 
