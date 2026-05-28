@@ -77,10 +77,10 @@ class YayDownloader:
                             # --- Raw log relay ---
                             await callback(f"[INFO] {msg}")
 
-                        # Local console debug
-                        print(f"\r[Process] {msg[:80]}...", end="", flush=True)
-                        if '\n' in part:
-                            print()
+                        # Local console debug (only if not in json mode)
+                        # We can't easily check for json_mode here without passing it down,
+                        # but we can check if stdout is a TTY or use a flag.
+                        # For now, let's just make it quieter if it's being captured.
 
             return_code = await self.current_process.wait()
 

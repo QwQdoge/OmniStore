@@ -6,9 +6,27 @@ import aiohttp
 import logging
 from pathlib import Path
 from typing import Optional
+from rich.console import Console
+from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.table import Table
+from core.friendly_messages import get_friendly_message
+
+# Initial rich console
+console = Console(force_terminal=True)
 
 # Force all print statements to flush immediately, ensuring real-time output to Flutter
-print = functools.partial(print, flush=True)
+_orig_print = print
+def print(*args, **kwargs):
+    # Only allow print if not in JSON mode or if it's a [CALLBACK]
+    # This prevents stray prints from breaking JSON parsing on the frontend
+    msg = " ".join(map(str, args))
+    if msg.startswith("[CALLBACK]") or msg.startswith("[PROGRESS]") or msg.startswith("[SPEED]"):
+        _orig_print(*args, **kwargs, flush=True)
+    elif not getattr(main, "json_mode_active", False):
+         _orig_print(*args, **kwargs, flush=True)
+
+# Path handling optimization
 
 # Path handling optimization
 current_file_path = Path(__file__).resolve()
@@ -16,8 +34,21 @@ sys.path.insert(0, str(current_file_path.parent))
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.append(str(BASE_DIR))
 
-# Initial minimal logging config
-logging.basicConfig(level=logging.ERROR)
+# Enhanced logging config
+def setup_logging(level="INFO", json_mode=False):
+    if json_mode:
+        logging.basicConfig(
+            level=getattr(logging, level.upper(), logging.INFO),
+            format="%(message)s",
+            handlers=[logging.StreamHandler(sys.stderr)]
+        )
+    else:
+        logging.basicConfig(
+            level=getattr(logging, level.upper(), logging.INFO),
+            format="%(message)s",
+            datefmt="[%X]",
+            handlers=[RichHandler(console=console, rich_tracebacks=True)]
+        )
 
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stdout.reconfigure(  # type: ignore
@@ -39,7 +70,7 @@ from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
-    def __init__(self):
+    def __init__(self, json_mode=False):
         self.config = ConfigManager()
         self.cache = CacheManager()
         self.env = EnvManager()
@@ -48,11 +79,14 @@ class OmnistoreBackend:
         self.updater = UpdateManager(self.config)
         self.executor = InstallExecutor()
         self.is_action = False
+        self.json_mode = json_mode
         
         # Initialize new features
         self.ai = AIAssistant(self.config)
         self.repo_manager = CustomRepoManager(self.config)
         self.essentials = EssentialsManager(self.config)
+
+        setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
     async def initialize(self, session: aiohttp.ClientSession):
         self.manager = SearchManager(self.config, session)
@@ -71,30 +105,39 @@ class OmnistoreBackend:
             elif msg.startswith("[DEBUG]"): level = "DEBUG"
             else: level = "INFO"
 
-        if msg.startswith("[Status]"):
-            msg = msg.replace("[Status]", "[INFO]", 1)
-        elif not msg.startswith("["):
-            msg = f"[{level.upper()}] {msg}"
-        
-        if msg.startswith("[Error]"):
-            msg = msg.replace("[Error]", "[ERROR]", 1)
-
-        config_level = self.config.get("logging.level", "INFO").upper()
-        level_map = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "PROGRESS": 99}
-        
-        current_level_val = level_map.get(level.upper(), 20)
-        config_level_val = level_map.get(config_level, 20)
-
-        if current_level_val < config_level_val:
-            return
+        # Clean up legacy prefixes
+        clean_msg = msg
+        for prefix in ["[Status]", "[INFO]", "[ERROR]", "[Error]", "[DEBUG]", "[Executor]"]:
+            if clean_msg.startswith(prefix):
+                clean_msg = clean_msg.replace(prefix, "", 1).strip()
+                break
 
         if json_mode:
+            # For terminal output in UI, we can add some box-like decoration if it's a major event
+            # but keep it simple JSON for the protocol.
+            # The "beautification" in UI will be handled by the Log viewer's colors,
+            # but we can add some Unicode characters to make it "体贴宜人".
+            icon = "📦"
+            if level == "ERROR": icon = "❌"
+            elif level == "SUCCESS": icon = "✅"
+            elif level == "INFO": icon = "🔹"
+            elif level == "PROGRESS": icon = "⏳"
+
+            decorated_msg = f"{icon} {clean_msg}"
+
             output = json.dumps(
-                {"type": "log", "message": msg, "level": level.upper()}, ensure_ascii=False)
+                {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
             sys.stdout.write(f"[CALLBACK] {output}\n")
             sys.stdout.flush()
         else:
-            print(f"📦 {msg}")
+            if level == "ERROR":
+                logging.error(clean_msg)
+            elif level == "PROGRESS":
+                # Progress is usually handled specifically, but for terminal we can just info it
+                if not clean_msg.isdigit(): # If it's just a number, maybe skip or format
+                     logging.info(f"Progress: {clean_msg}%")
+            else:
+                logging.info(clean_msg)
 
     async def run_search(self, query: str, json_mode: bool = False):
         try:
@@ -132,9 +175,15 @@ class OmnistoreBackend:
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
+        if not json_mode:
+            console.print(Panel(f"Installing [bold green]{name}[/bold green] from [cyan]{source}[/cyan]", border_style="green"))
+
         success = await self.executor.install(package_data, callback=cb)
         if success:
             self.cache.invalidate_installed_cache()
+            if not json_mode:
+                console.print(Panel(f"Successfully installed [bold green]{name}[/bold green]! 🎉", border_style="green"))
+                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R"):
         """Uninstallation logic"""
@@ -164,8 +213,21 @@ class OmnistoreBackend:
         if json_mode:
             print(json.dumps(updates, ensure_ascii=False))
         else:
+            if not updates:
+                console.print(Panel("All apps are up to date! ✨", border_style="green"))
+                return
+
+            table = Table(title="Available Updates", show_header=True, header_style="bold yellow")
+            table.add_column("Source", style="cyan")
+            table.add_column("Package Name", style="bold green")
+            table.add_column("Current", style="red")
+            table.add_column("New", style="green")
+
             for u in updates:
-                print(f"[{u['source']}] {u['name']}: {u['current_version']} -> {u['new_version']}")
+                table.add_row(u['source'], u['name'], u['current_version'], u['new_version'])
+
+            console.print(table)
+            console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
     async def run_recommendations(self, json_mode: bool = False):
         """Fetch dynamic recommendations"""
@@ -244,6 +306,28 @@ class OmnistoreBackend:
         except Exception as e:
             print(json.dumps({"error": str(e)}))
 
+    def _output_installed_pretty(self, installed_list):
+        if not installed_list:
+            console.print(Panel("No installed applications found.", border_style="yellow"))
+            return
+
+        table = Table(title="Installed Applications", show_header=True, header_style="bold blue")
+        table.add_column("Source", style="cyan")
+        table.add_column("Name", style="bold green")
+        table.add_column("Version", style="dim")
+        table.add_column("Description", style="italic")
+
+        for app in installed_list:
+            table.add_row(
+                app['primary_source'],
+                app['name'],
+                app.get('version', 'N/A'),
+                app.get('description', 'No description')[:50] + "..." if len(app.get('description', '')) > 50 else app.get('description', '')
+            )
+
+        console.print(table)
+        console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+
     async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False):
         """List all installed AppImage, Flatpak, and Native applications"""
         if not force_refresh:
@@ -252,8 +336,7 @@ class OmnistoreBackend:
                 if json_mode:
                     print(json.dumps(cached))
                 else:
-                    for app in cached:
-                        print(f"[{app['primary_source']}] {app['name']}")
+                    self._output_installed_pretty(cached)
                 return
 
         installed_list = []
@@ -323,8 +406,7 @@ class OmnistoreBackend:
         if json_mode:
             print(json.dumps(installed_list))
         else:
-            for app in installed_list:
-                print(f"[{app['primary_source']}] {app['name']}")
+            self._output_installed_pretty(installed_list)
 
         self.cache.save_installed_packages(installed_list)
 
@@ -469,6 +551,9 @@ class OmnistoreBackend:
             await self._flutter_callback(m, json_mode)
 
         try:
+            if not json_mode:
+                console.print(Panel("Starting System Cleanup", border_style="blue"))
+
             await cb("[INFO] 正在检测孤立软件包...")
             proc = await asyncio.create_subprocess_exec(
                 "pacman", "-Qtdq",
@@ -505,6 +590,9 @@ class OmnistoreBackend:
             await cb("[INFO] 系统清理完成！")
             if json_mode:
                 print(json.dumps({"status": "success"}))
+            else:
+                console.print(Panel("System Cleanup Finished! ✨", border_style="green"))
+                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
         except Exception as e:
             await cb(f"[ERROR] 清理失败: {e}")
             if json_mode:
@@ -537,24 +625,33 @@ class OmnistoreBackend:
 
     def _output_pretty(self, query, results):
         if not results:
-            print(f"[INFO] No results found for '{query}'")
+            console.print(Panel(f"No results found for [bold cyan]'{query}'[/bold cyan]", title="Search Results", border_style="yellow"))
             return
 
-        print(f"[INFO] Searching: '{query}' | found {len(results)} results")
-        print("=" * 60)
-        for i, item in enumerate(results[:15]):
-            status = "installed" if (item.get("installed") or item.get(
-                "is_installed")) else "not_installed"
-            sources = [v['source'] for v in item.get('variants', [])]
-            source_str = f"({', '.join(sources)})"
+        table = Table(title=f"Search Results for '{query}'", show_header=True, header_style="bold magenta")
+        table.add_column("#", style="dim", width=3)
+        table.add_column("Name", style="bold green")
+        table.add_column("Status", width=12)
+        table.add_column("Sources", style="cyan")
+        table.add_column("Description", style="italic")
 
-            print(f"{i+1:2}. {item['name']:<25} {status:<12} {source_str}")
-            desc = item.get('description', 'no_description')
-            print(f"    {desc[:55]}..." if len(desc) > 55 else f"     {desc}")
-        print("=" * 60)
+        for i, item in enumerate(results[:15]):
+            is_installed = item.get("installed") or item.get("is_installed")
+            status = "[blue]Installed[/blue]" if is_installed else "[dim]Not Installed[/dim]"
+            sources = [v['source'] for v in item.get('variants', [])]
+            source_str = ", ".join(sources)
+            desc = item.get('description', 'No description')
+            if len(desc) > 60:
+                desc = desc[:57] + "..."
+
+            table.add_row(str(i+1), item['name'], status, source_str, desc)
+
+        console.print(table)
+        console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
 
 async def main():
+    main.json_mode_active = "--json" in sys.argv
     parser = argparse.ArgumentParser(
         description="Omnistore: all-in-one software manager for Arch Linux and beyond.\n\n",
         formatter_class=argparse.RawDescriptionHelpFormatter
@@ -616,7 +713,10 @@ async def main():
         sys.exit(1)
 
     args = parser.parse_args()
-    backend = OmnistoreBackend()
+    backend = OmnistoreBackend(json_mode=args.json)
+
+    if not args.json:
+        console.print(Panel.fit(f"[bold blue]OmniStore[/bold blue] v0.1.0\n[dim]{get_friendly_message()}[/dim]", border_style="blue"))
 
     import signal
     def handle_term(sig, frame):

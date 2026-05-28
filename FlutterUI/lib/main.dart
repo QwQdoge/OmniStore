@@ -84,6 +84,9 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
       supportedLocales: const [
         Locale('en'),
         Locale('zh'),
+        Locale('ja'),
+        Locale('es'),
+        Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
       ],
 
       // 1. 实现“跟随系统亮暗”的关键：
