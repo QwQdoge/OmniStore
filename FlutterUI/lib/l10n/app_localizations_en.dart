@@ -323,4 +323,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get update => 'Update';
+
+  @override
+  String get enableSystemTray => 'Enable system tray';
+
+  @override
+  String get systemCleaning => 'System Cleaning';
+
+  @override
+  String get systemCleaningSubtitle =>
+      'Delete orphan packages and clean pacman cache';
+
+  @override
+  String get systemCleaningStarted => 'System cleaning task started';
+
+  @override
+  String get backupAndExport => 'Backup and Export';
+
+  @override
+  String get backupAndExportSubtitle =>
+      'Export current installed app list or import from backup';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get selectExportLocation => 'Select export location';
+
+  @override
+  String exportSuccess(int count) {
+    return 'Export successful: $count packages';
+  }
+
+  @override
+  String exportFailed(String message) {
+    return 'Export failed: $message';
+  }
+
+  @override
+  String get importBackup => 'Import Backup';
+
+  @override
+  String importBackupConfirm(int count) {
+    return 'Read $count packages from backup. Start batch recovery?';
+  }
+
+  @override
+  String get startRecovery => 'Start Recovery';
+
+  @override
+  String get mirrorListSaved => 'Mirror list saved';
+
+  @override
+  String get addMirror => 'Add Mirror';
+
+  @override
+  String get serverUrl => 'Server URL';
+
+  @override
+  String get pacmanMirrorManagement => 'Pacman Mirror Management';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get add => 'Add';
 }

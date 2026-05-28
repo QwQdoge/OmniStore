@@ -303,7 +303,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     (v) => setState(() => closeToTray = v),
                   ),
                   _buildSwitchTile(
-                    "启用系统托盘",
+                    AppLocalizations.of(context)!.enableSystemTray,
                     enableSystemTray,
                     (v) => setState(() => enableSystemTray = v),
                   ),
@@ -368,30 +368,30 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.cleaning_services_rounded),
-                    title: const Text("系统清理"),
-                    subtitle: const Text("删除孤立软件包并清理 pacman 缓存"),
+                    title: Text(AppLocalizations.of(context)!.systemCleaning),
+                    subtitle: Text(AppLocalizations.of(context)!.systemCleaningSubtitle),
                     onTap: () {
                       BackendService.instance.cleanSystem().listen((event) {});
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("系统清理任务已启动")),
+                        SnackBar(content: Text(AppLocalizations.of(context)!.systemCleaningStarted)),
                       );
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup_rounded),
-                    title: const Text("备份与导出"),
-                    subtitle: const Text("导出当前已安装软件列表或从备份导入"),
+                    title: Text(AppLocalizations.of(context)!.backupAndExport),
+                    subtitle: Text(AppLocalizations.of(context)!.backupAndExportSubtitle),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TextButton.icon(
                             onPressed: _exportBackup,
                             icon: const Icon(Icons.upload_rounded),
-                            label: const Text("导出")),
+                            label: Text(AppLocalizations.of(context)!.export)),
                         TextButton.icon(
                             onPressed: _importBackup,
                             icon: const Icon(Icons.download_rounded),
-                            label: const Text("导入")),
+                            label: Text(AppLocalizations.of(context)!.import)),
                       ],
                     ),
                   ),
@@ -493,7 +493,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _exportBackup() async {
     String? outputFile = await FilePicker.platform.saveFile(
-      dialogTitle: '选择导出位置',
+      dialogTitle: AppLocalizations.of(context)!.selectExportLocation,
       fileName: 'omnistore_backup.json',
     );
 
@@ -503,8 +503,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(res['status'] == 'success'
-                  ? "导出成功: ${res['count']}个包"
-                  : "导出失败: ${res['message']}")),
+                  ? AppLocalizations.of(context)!.exportSuccess(res['count'])
+                  : AppLocalizations.of(context)!.exportFailed(res['message']))),
         );
       }
     }
@@ -523,12 +523,12 @@ class _SettingsPageState extends State<SettingsPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text("导入备份"),
-            content: Text("已从备份中读取 ${packages.length} 个软件包。是否开始批量恢复？"),
+            title: Text(AppLocalizations.of(context)!.importBackup),
+            content: Text(AppLocalizations.of(context)!.importBackupConfirm(packages.length)),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("取消")),
+                  child: Text(AppLocalizations.of(context)!.cancel)),
               FilledButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -538,7 +538,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         .listen((_) {});
                   }
                 },
-                child: const Text("开始恢复"),
+                child: Text(AppLocalizations.of(context)!.startRecovery),
               ),
             ],
           ),

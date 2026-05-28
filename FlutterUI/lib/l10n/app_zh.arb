@@ -56,15 +56,15 @@
   "@uninstall": {
     "description": "Description for uninstall"
   },
-  "launch": "启动程序",
+  "launch": "启动",
   "@launch": {
     "description": "Description for launch"
   },
-  "about": "关于此软件",
+  "about": "关于",
   "@about": {
     "description": "Description for about"
   },
-  "details": "详细参数",
+  "details": "详情",
   "@details": {
     "description": "Description for details"
   },
@@ -96,7 +96,7 @@
   "@noResults": {
     "description": "Description for noResults"
   },
-  "searching": "正在寻找...",
+  "searching": "正在搜索...",
   "@searching": {
     "description": "Description for searching"
   },
@@ -200,7 +200,7 @@
   "@waitingForOutput": {
     "description": "Description for waitingForOutput"
   },
-  "screenshots": "软件截图",
+  "screenshots": "应用截图",
   "@screenshots": {
     "description": "Description for screenshots"
   },
@@ -252,7 +252,7 @@
   "@catGraphics": {
     "description": "Category for Graphics"
   },
-  "catUtility": "工具配件",
+  "catUtility": "实用工具",
   "@catUtility": {
     "description": "Category for Utility"
   },
@@ -337,7 +337,7 @@
   "@updateReminders": {
     "description": "Description for updateReminders"
   },
-  "maintenance": "维护与操作",
+  "maintenance": "维护",
   "@maintenance": {
     "description": "Description for maintenance"
   },
@@ -397,7 +397,7 @@
   "@uninstallFailedTitle": {
     "description": "Description for uninstallFailedTitle"
   },
-  "taskCompleted": "任务执行完成",
+  "taskCompleted": "任务已完成",
   "@taskCompleted": {
     "description": "Description for taskCompleted"
   },
@@ -407,5 +407,46 @@
   "currentTask": "当前任务",
   "viewLogs": "查看日志",
   "allUpdated": "所有应用已是最新",
-  "update": "更新"
+  "update": "更新",
+  "enableSystemTray": "启用系统托盘",
+  "systemCleaning": "系统清理",
+  "systemCleaningSubtitle": "删除孤立软件包并清理 pacman 缓存",
+  "systemCleaningStarted": "系统清理任务已启动",
+  "backupAndExport": "备份与导出",
+  "backupAndExportSubtitle": "导出当前已安装应用列表或从备份导入",
+  "export": "导出",
+  "import": "导入",
+  "selectExportLocation": "选择导出位置",
+  "exportSuccess": "导出成功: {count}个软件包",
+  "@exportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "导出失败: {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "importBackup": "导入备份",
+  "importBackupConfirm": "已从备份中读取 {count} 个软件包。是否开始批量恢复？",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "开始恢复",
+  "mirrorListSaved": "镜像列表已保存",
+  "addMirror": "添加镜像",
+  "serverUrl": "服务器 URL",
+  "pacmanMirrorManagement": "Pacman 镜像管理",
+  "save": "保存",
+  "add": "添加"
 }

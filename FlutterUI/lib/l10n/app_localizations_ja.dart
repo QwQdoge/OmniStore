@@ -193,16 +193,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get catGames => 'ゲーム';
 
   @override
-  String get catGraphics => 'Graphics';
+  String get catGraphics => 'グラフィックス';
 
   @override
-  String get catUtility => 'Utilities';
+  String get catUtility => 'ユーティリティ';
 
   @override
-  String get systemAndWindow => 'System & Window';
+  String get systemAndWindow => 'システムとウィンドウ';
 
   @override
-  String get visitWebsite => 'Visit Website';
+  String get visitWebsite => 'ウェブサイトにアクセス';
 
   @override
   String get updates => '更新';
@@ -323,4 +323,71 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get update => '更新';
+
+  @override
+  String get enableSystemTray => 'システムトレイを有効にする';
+
+  @override
+  String get systemCleaning => 'システムクリーニング';
+
+  @override
+  String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
+
+  @override
+  String get systemCleaningStarted => 'システムクリーニングタスクが開始されました';
+
+  @override
+  String get backupAndExport => 'バックアップとエクスポート';
+
+  @override
+  String get backupAndExportSubtitle =>
+      '現在のインストール済みアプリリストをエクスポート、またはバックアップからインポート';
+
+  @override
+  String get export => 'エクスポート';
+
+  @override
+  String get import => 'インポート';
+
+  @override
+  String get selectExportLocation => 'エクスポート先を選択';
+
+  @override
+  String exportSuccess(int count) {
+    return 'エクスポート成功: $count 個のパッケージ';
+  }
+
+  @override
+  String exportFailed(String message) {
+    return 'エクスポート失敗: $message';
+  }
+
+  @override
+  String get importBackup => 'バックアップをインポート';
+
+  @override
+  String importBackupConfirm(int count) {
+    return 'バックアップから $count 個のパッケージを読み込みました。一括復元を開始しますか？';
+  }
+
+  @override
+  String get startRecovery => '復元を開始';
+
+  @override
+  String get mirrorListSaved => 'ミラーリストを保存しました';
+
+  @override
+  String get addMirror => 'ミラーを追加';
+
+  @override
+  String get serverUrl => 'サーバー URL';
+
+  @override
+  String get pacmanMirrorManagement => 'Pacman ミラー管理';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get add => '追加';
 }

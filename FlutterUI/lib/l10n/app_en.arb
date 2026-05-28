@@ -407,5 +407,46 @@
   "currentTask": "Current Task",
   "viewLogs": "View Logs",
   "allUpdated": "All apps are up to date",
-  "update": "Update"
+  "update": "Update",
+  "enableSystemTray": "Enable system tray",
+  "systemCleaning": "System Cleaning",
+  "systemCleaningSubtitle": "Delete orphan packages and clean pacman cache",
+  "systemCleaningStarted": "System cleaning task started",
+  "backupAndExport": "Backup and Export",
+  "backupAndExportSubtitle": "Export current installed app list or import from backup",
+  "export": "Export",
+  "import": "Import",
+  "selectExportLocation": "Select export location",
+  "exportSuccess": "Export successful: {count} packages",
+  "@exportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "Export failed: {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "importBackup": "Import Backup",
+  "importBackupConfirm": "Read {count} packages from backup. Start batch recovery?",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "Start Recovery",
+  "mirrorListSaved": "Mirror list saved",
+  "addMirror": "Add Mirror",
+  "serverUrl": "Server URL",
+  "pacmanMirrorManagement": "Pacman Mirror Management",
+  "save": "Save",
+  "add": "Add"
 }
