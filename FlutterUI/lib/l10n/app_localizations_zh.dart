@@ -193,6 +193,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get catGames => '游戏';
 
   @override
+  String get catGraphics => '图形设计';
+
+  @override
+  String get catUtility => '工具配件';
+
+  @override
+  String get systemAndWindow => '系统与窗口';
+
+  @override
+  String get visitWebsite => '访问官网';
+
+  @override
   String get updates => '更新';
 
   @override
