@@ -193,6 +193,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get catGames => 'ゲーム';
 
   @override
+  String get catGraphics => 'Graphics';
+
+  @override
+  String get catUtility => 'Utilities';
+
+  @override
+  String get systemAndWindow => 'System & Window';
+
+  @override
+  String get visitWebsite => 'Visit Website';
+
+  @override
   String get updates => '更新';
 
   @override

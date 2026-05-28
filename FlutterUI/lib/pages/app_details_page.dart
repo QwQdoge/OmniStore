@@ -297,7 +297,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     onPressed: () => Navigator.pop(context),
                   ),
                   actions: [
-                    if (widget.app.url.isNotEmpty)
+                    if (widget.app.url != null && widget.app.url!.isNotEmpty)
                       IconButton(
                         icon: const Icon(Icons.language_rounded),
                         tooltip: AppLocalizations.of(context)!.visitWebsite,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/category_service.dart';
 import 'searchpage.dart';
 
 class CategoryPage extends StatelessWidget {
@@ -9,23 +10,13 @@ class CategoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-
-    // TODO: Define a proper category model and fetch from backend if possible.
-    // For now, we use a static list based on common Linux app categories.
-    final List<Map<String, dynamic>> categories = [
-      {'id': 'Development', 'name': l10n.catDevelopment, 'icon': Icons.code_rounded, 'color': Colors.blue},
-      {'id': 'AudioVideo', 'name': l10n.catMedia, 'icon': Icons.play_circle_outline_rounded, 'color': Colors.red},
-      {'id': 'Network', 'name': l10n.catInternet, 'icon': Icons.language_rounded, 'color': Colors.orange},
-      {'id': 'System', 'name': l10n.catSystem, 'icon': Icons.settings_input_component_rounded, 'color': Colors.green},
-      {'id': 'Office', 'name': l10n.catOffice, 'icon': Icons.description_outlined, 'color': Colors.teal},
-      {'id': 'Game', 'name': l10n.catGames, 'icon': Icons.sports_esports_rounded, 'color': Colors.purple},
-      {'id': 'Graphics', 'name': l10n.catGraphics, 'icon': Icons.palette_outlined, 'color': Colors.pink},
-      {'id': 'Utility', 'name': l10n.catUtility, 'icon': Icons.build_circle_outlined, 'color': Colors.blueGrey},
-    ];
+    final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: CustomScrollView(
+      body: Material( // Wrap in Material to avoid "No Material widget found" errors in this subpage
+        color: Colors.transparent,
+        child: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text(
@@ -55,14 +46,18 @@ class CategoryPage extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, Map<String, dynamic> cat, ColorScheme colorScheme) {
+  Widget _buildCategoryCard(BuildContext context, CategoryItem cat, ColorScheme colorScheme) {
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
       color: colorScheme.surfaceContainerLow,
       child: InkWell(
         onTap: () {
@@ -70,7 +65,7 @@ class CategoryPage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SearchPage(initialQuery: 'category:${cat['id']}'),
+              builder: (context) => SearchPage(initialQuery: 'category:${cat.id}'),
             ),
           );
         },
@@ -78,13 +73,13 @@ class CategoryPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              cat['icon'] as IconData,
+              cat.icon,
               size: 40,
-              color: cat['color'] as Color,
+              color: cat.color,
             ),
             const SizedBox(height: 12),
             Text(
-              cat['name'] as String,
+              cat.name,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

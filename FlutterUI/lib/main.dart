@@ -437,19 +437,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
             ],
           ),
         ),
-        PopupMenuItem(
-          value: 1,
-          child: Row(
-            children: [
-              const Icon(Icons.settings_rounded, size: 20),
-              const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.settings),
-            ],
-          ),
-        ),
       ],
       onSelected: (val) {
-        if (val == 1) setState(() => _selectedIndex = 3);
+        // Only login handled here for now, settings is in sidebar
       },
       child: Container(
         width: 40,
