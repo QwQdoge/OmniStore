@@ -96,6 +96,7 @@
   "exit": "Salir",
   "trayTooltipUpdates": "OmniStore: Se encontraron {count} actualizaciones",
   "@trayTooltipUpdates": {
+    "description": "Description for trayTooltipUpdates",
     "placeholders": {
       "count": {
         "type": "int"
@@ -138,5 +139,314 @@
   "currentTask": "Tarea actual",
   "viewLogs": "Ver registros",
   "allUpdated": "Todas las aplicaciones están al día",
-  "update": "Actualizar"
+  "update": "Actualizar",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
+  "@featured": {
+    "description": "Description for featured"
+  },
+  "@forYou": {
+    "description": "Description for forYou"
+  },
+  "@essentialTools": {
+    "description": "Description for essentialTools"
+  },
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
+  "@explore": {
+    "description": "Description for explore"
+  },
+  "@search": {
+    "description": "Description for search"
+  },
+  "@settings": {
+    "description": "Description for settings"
+  },
+  "@downloads": {
+    "description": "Description for downloads"
+  },
+  "@help": {
+    "description": "Description for help"
+  },
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
+  "@install": {
+    "description": "Description for install"
+  },
+  "@open": {
+    "description": "Description for open"
+  },
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
+  "@launch": {
+    "description": "Description for launch"
+  },
+  "@about": {
+    "description": "Description for about"
+  },
+  "@details": {
+    "description": "Description for details"
+  },
+  "@source": {
+    "description": "Description for source"
+  },
+  "@variant": {
+    "description": "Description for variant"
+  },
+  "@version": {
+    "description": "Description for version"
+  },
+  "@ready": {
+    "description": "Description for ready"
+  },
+  "@noResults": {
+    "description": "Description for noResults"
+  },
+  "@searching": {
+    "description": "Description for searching"
+  },
+  "@category": {
+    "description": "Category label"
+  },
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
+  "@appImage": {
+    "description": "Description for appImage"
+  },
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
+  "@appearance": {
+    "description": "Description for appearance"
+  },
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
+  "@cancel": {
+    "description": "Description for cancel"
+  },
+  "@confirm": {
+    "description": "Description for confirm"
+  },
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
+  "@developer": {
+    "description": "Description for developer"
+  },
+  "@license": {
+    "description": "Description for license"
+  },
+  "@success": {
+    "description": "Description for success"
+  },
+  "@failed": {
+    "description": "Description for failed"
+  },
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
+  "@catGames": {
+    "description": "Description for catGames"
+  },
+  "catGraphics": "Gráficos",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "Utilidades",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "Sistema y Ventana",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "Visitar sitio web",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
+  "@updates": {
+    "description": "Description for updates"
+  },
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
+  "@notifications": {
+    "description": "Description for notifications"
+  },
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
+  "@completionNotifications": {
+    "description": "Description for completionNotifications"
+  },
+  "@closeToTray": {
+    "description": "Description for closeToTray"
+  },
+  "@useSystemTitleBar": {
+    "description": "Description for useSystemTitleBar"
+  },
+  "@showWindow": {
+    "description": "Description for showWindow"
+  },
+  "@exit": {
+    "description": "Description for exit"
+  },
+  "@trayTooltipUpToDate": {
+    "description": "Description for trayTooltipUpToDate"
+  },
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
+  "@maintenance": {
+    "description": "Description for maintenance"
+  },
+  "@updateAllPackages": {
+    "description": "Description for updateAllPackages"
+  },
+  "@includeAurUpdates": {
+    "description": "Description for includeAurUpdates"
+  },
+  "@resetOnboarding": {
+    "description": "Description for resetOnboarding"
+  },
+  "@resetOnboardingConfirm": {
+    "description": "Description for resetOnboardingConfirm"
+  },
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  },
+  "enableSystemTray": "Activar bandeja del sistema",
+  "systemCleaning": "Limpieza del sistema",
+  "systemCleaningSubtitle": "Eliminar paquetes huérfanos y limpiar caché de pacman",
+  "systemCleaningStarted": "Tarea de limpieza del sistema iniciada",
+  "backupAndExport": "Copia de seguridad y exportación",
+  "backupAndExportSubtitle": "Exportar lista de aplicaciones instaladas o importar desde copia",
+  "export": "Exportar",
+  "import": "Importar",
+  "selectExportLocation": "Seleccionar ubicación de exportación",
+  "exportSuccess": "Exportación exitosa: {count} paquetes",
+  "@exportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "Exportación fallida: {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "importBackup": "Importar copia de seguridad",
+  "importBackupConfirm": "Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "Iniciar recuperación",
+  "mirrorListSaved": "Lista de espejos guardada",
+  "addMirror": "Añadir espejo",
+  "serverUrl": "URL del servidor",
+  "pacmanMirrorManagement": "Gestión de espejos de Pacman",
+  "save": "Guardar",
+  "add": "Añadir"
 }

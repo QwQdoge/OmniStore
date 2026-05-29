@@ -193,16 +193,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get catGames => 'Juegos';
 
   @override
-  String get catGraphics => 'Graphics';
+  String get catGraphics => 'Gráficos';
 
   @override
-  String get catUtility => 'Utilities';
+  String get catUtility => 'Utilidades';
 
   @override
-  String get systemAndWindow => 'System & Window';
+  String get systemAndWindow => 'Sistema y Ventana';
 
   @override
-  String get visitWebsite => 'Visit Website';
+  String get visitWebsite => 'Visitar sitio web';
 
   @override
   String get updates => 'Actualizaciones';
@@ -323,4 +323,72 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get update => 'Actualizar';
+
+  @override
+  String get enableSystemTray => 'Activar bandeja del sistema';
+
+  @override
+  String get systemCleaning => 'Limpieza del sistema';
+
+  @override
+  String get systemCleaningSubtitle =>
+      'Eliminar paquetes huérfanos y limpiar caché de pacman';
+
+  @override
+  String get systemCleaningStarted => 'Tarea de limpieza del sistema iniciada';
+
+  @override
+  String get backupAndExport => 'Copia de seguridad y exportación';
+
+  @override
+  String get backupAndExportSubtitle =>
+      'Exportar lista de aplicaciones instaladas o importar desde copia';
+
+  @override
+  String get export => 'Exportar';
+
+  @override
+  String get import => 'Importar';
+
+  @override
+  String get selectExportLocation => 'Seleccionar ubicación de exportación';
+
+  @override
+  String exportSuccess(int count) {
+    return 'Exportación exitosa: $count paquetes';
+  }
+
+  @override
+  String exportFailed(String message) {
+    return 'Exportación fallida: $message';
+  }
+
+  @override
+  String get importBackup => 'Importar copia de seguridad';
+
+  @override
+  String importBackupConfirm(int count) {
+    return 'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?';
+  }
+
+  @override
+  String get startRecovery => 'Iniciar recuperación';
+
+  @override
+  String get mirrorListSaved => 'Lista de espejos guardada';
+
+  @override
+  String get addMirror => 'Añadir espejo';
+
+  @override
+  String get serverUrl => 'URL del servidor';
+
+  @override
+  String get pacmanMirrorManagement => 'Gestión de espejos de Pacman';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get add => 'Añadir';
 }

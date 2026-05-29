@@ -14,13 +14,13 @@
   "install": "安裝",
   "open": "開啟",
   "uninstall": "解除安裝",
-  "launch": "啟動程式",
-  "about": "關於此軟體",
-  "details": "詳細參數",
+  "launch": "啟動",
+  "about": "關於",
+  "details": "詳情",
   "source": "來源",
   "variant": "變體",
   "version": "版本",
-  "ready": "已就緒",
+  "ready": "就緒",
   "resultsFound": "{count} 個結果",
   "@resultsFound": {
     "placeholders": {
@@ -29,24 +29,24 @@
       }
     }
   },
-  "noResults": "未找到相關應用",
-  "searching": "正在尋找...",
+  "noResults": "未找到結果",
+  "searching": "搜尋中...",
   "category": "分類",
   "packageManager": "套件管理員",
   "pacmanOfficial": "Pacman（官方庫）",
   "aurUser": "AUR（使用者庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "結果源優先級 (拖動排序)",
-  "maxResults": "最大顯示結果數",
-  "appearance": "外觀模式",
-  "themeColor": "主題色種子",
+  "sourcePriority": "來源優先級（拖曳排序）",
+  "maxResults": "最大結果數",
+  "appearance": "外觀",
+  "themeColor": "主題色",
   "followSystem": "跟隨系統",
   "lightMode": "淺色模式",
   "darkMode": "深色模式",
-  "loggingLevel": "日誌記錄等級",
-  "saveAndApply": "儲存並應用",
-  "configSaved": "配置已儲存，部分設定重啟生效",
+  "loggingLevel": "日誌等級",
+  "saveAndApply": "儲存並套用",
+  "configSaved": "配置已儲存",
   "configSaveFailed": "儲存配置失敗",
   "confirmUninstall": "確認解除安裝",
   "confirmInstall": "確認安裝",
@@ -61,8 +61,8 @@
   "cancel": "取消",
   "confirm": "確定",
   "terminalOutput": "終端輸出",
-  "waitingForOutput": "正在等待輸出...",
-  "screenshots": "軟體截圖",
+  "waitingForOutput": "等待輸出中...",
+  "screenshots": "截圖",
   "developer": "開發者",
   "license": "授權",
   "success": "成功",
@@ -75,7 +75,7 @@
   "catOffice": "辦公",
   "catGames": "遊戲",
   "updates": "更新",
-  "upToDate": "所有應用程式已是最新",
+  "upToDate": "已是最新",
   "checkUpdates": "檢查更新",
   "foundUpdates": "發現 {count} 個更新",
   "@foundUpdates": {
@@ -86,31 +86,32 @@
     }
   },
   "updateAll": "全部更新",
-  "notifications": "通知設定",
+  "notifications": "通知",
   "enableNotifications": "啟用通知",
   "progressNotifications": "進度通知",
   "completionNotifications": "完成通知",
-  "closeToTray": "關閉時隱藏到系統托盤",
+  "closeToTray": "關閉時隱藏至系統托盤",
   "useSystemTitleBar": "使用系統標題列",
   "showWindow": "顯示視窗",
   "exit": "退出",
   "trayTooltipUpdates": "OmniStore: 發現 {count} 個更新",
   "@trayTooltipUpdates": {
+    "description": "Description for trayTooltipUpdates",
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "trayTooltipUpToDate": "OmniStore: 應用程式已是最新",
+  "trayTooltipUpToDate": "OmniStore: 已是最新",
   "updateReminders": "更新提醒",
-  "maintenance": "維護與操作",
-  "updateAllPackages": "更新所有應用程式",
-  "includeAurUpdates": "更新所有時包含 AUR",
-  "resetOnboarding": "重置引導 (歡迎頁面)",
-  "resetOnboardingConfirm": "確定要重置引導嗎？下次啟動將重新顯示歡迎頁面。",
-  "checkInterval": "自動檢查更新間隔 (小時)",
-  "remindMeOfUpdates": "提醒我有可用更新",
+  "maintenance": "維護",
+  "updateAllPackages": "更新所有套件",
+  "includeAurUpdates": "全部更新時包含 AUR",
+  "resetOnboarding": "重置引導",
+  "resetOnboardingConfirm": "確定要重置引導嗎？",
+  "checkInterval": "更新檢查間隔（小時）",
+  "remindMeOfUpdates": "有更新時提醒我",
   "installingApp": "正在安裝 {name}",
   "@installingApp": {
     "placeholders": {
@@ -131,12 +132,321 @@
   "uninstallSuccessTitle": "解除安裝成功",
   "installFailedTitle": "安裝失敗",
   "uninstallFailedTitle": "解除安裝失敗",
-  "taskCompleted": "任務執行完成",
+  "taskCompleted": "任務已完成",
   "searchInstalledHint": "搜尋已安裝的應用程式...",
   "refresh": "重新整理",
-  "noActiveTasks": "暫无進行中的任務",
+  "noActiveTasks": "無進行中的任務",
   "currentTask": "目前任務",
   "viewLogs": "查看日誌",
   "allUpdated": "所有應用程式已是最新",
-  "update": "更新"
+  "update": "更新",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
+  "@featured": {
+    "description": "Description for featured"
+  },
+  "@forYou": {
+    "description": "Description for forYou"
+  },
+  "@essentialTools": {
+    "description": "Description for essentialTools"
+  },
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
+  "@explore": {
+    "description": "Description for explore"
+  },
+  "@search": {
+    "description": "Description for search"
+  },
+  "@settings": {
+    "description": "Description for settings"
+  },
+  "@downloads": {
+    "description": "Description for downloads"
+  },
+  "@help": {
+    "description": "Description for help"
+  },
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
+  "@install": {
+    "description": "Description for install"
+  },
+  "@open": {
+    "description": "Description for open"
+  },
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
+  "@launch": {
+    "description": "Description for launch"
+  },
+  "@about": {
+    "description": "Description for about"
+  },
+  "@details": {
+    "description": "Description for details"
+  },
+  "@source": {
+    "description": "Description for source"
+  },
+  "@variant": {
+    "description": "Description for variant"
+  },
+  "@version": {
+    "description": "Description for version"
+  },
+  "@ready": {
+    "description": "Description for ready"
+  },
+  "@noResults": {
+    "description": "Description for noResults"
+  },
+  "@searching": {
+    "description": "Description for searching"
+  },
+  "@category": {
+    "description": "Category label"
+  },
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
+  "@appImage": {
+    "description": "Description for appImage"
+  },
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
+  "@appearance": {
+    "description": "Description for appearance"
+  },
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
+  "@cancel": {
+    "description": "Description for cancel"
+  },
+  "@confirm": {
+    "description": "Description for confirm"
+  },
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
+  "@developer": {
+    "description": "Description for developer"
+  },
+  "@license": {
+    "description": "Description for license"
+  },
+  "@success": {
+    "description": "Description for success"
+  },
+  "@failed": {
+    "description": "Description for failed"
+  },
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
+  "@catGames": {
+    "description": "Description for catGames"
+  },
+  "catGraphics": "圖形設計",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "實用工具",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "系統與視窗",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "造訪官方網站",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
+  "@updates": {
+    "description": "Description for updates"
+  },
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
+  "@notifications": {
+    "description": "Description for notifications"
+  },
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
+  "@completionNotifications": {
+    "description": "Description for completionNotifications"
+  },
+  "@closeToTray": {
+    "description": "Description for closeToTray"
+  },
+  "@useSystemTitleBar": {
+    "description": "Description for useSystemTitleBar"
+  },
+  "@showWindow": {
+    "description": "Description for showWindow"
+  },
+  "@exit": {
+    "description": "Description for exit"
+  },
+  "@trayTooltipUpToDate": {
+    "description": "Description for trayTooltipUpToDate"
+  },
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
+  "@maintenance": {
+    "description": "Description for maintenance"
+  },
+  "@updateAllPackages": {
+    "description": "Description for updateAllPackages"
+  },
+  "@includeAurUpdates": {
+    "description": "Description for includeAurUpdates"
+  },
+  "@resetOnboarding": {
+    "description": "Description for resetOnboarding"
+  },
+  "@resetOnboardingConfirm": {
+    "description": "Description for resetOnboardingConfirm"
+  },
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  },
+  "enableSystemTray": "啟用系統托盤",
+  "systemCleaning": "系統清理",
+  "systemCleaningSubtitle": "刪除孤立套件並清理 pacman 快取",
+  "systemCleaningStarted": "系統清理任務已啟動",
+  "backupAndExport": "備份與匯出",
+  "backupAndExportSubtitle": "匯出目前已安裝應用程式列表或從備份匯入",
+  "export": "匯出",
+  "import": "匯入",
+  "selectExportLocation": "選擇匯出位置",
+  "exportSuccess": "匯出成功: {count}個套件",
+  "@exportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "匯出失敗: {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "importBackup": "匯入備份",
+  "importBackupConfirm": "已從備份中讀取 {count} 個套件。是否開始批量恢復？",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "開始恢復",
+  "mirrorListSaved": "鏡像列表已儲存",
+  "addMirror": "添加鏡像",
+  "serverUrl": "伺服器 URL",
+  "pacmanMirrorManagement": "Pacman 鏡像管理",
+  "save": "儲存",
+  "add": "添加"
 }

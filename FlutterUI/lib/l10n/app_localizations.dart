@@ -708,6 +708,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update'**
   String get update;
+
+  /// No description provided for @enableSystemTray.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable system tray'**
+  String get enableSystemTray;
+
+  /// No description provided for @systemCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'System Cleaning'**
+  String get systemCleaning;
+
+  /// No description provided for @systemCleaningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete orphan packages and clean pacman cache'**
+  String get systemCleaningSubtitle;
+
+  /// No description provided for @systemCleaningStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'System cleaning task started'**
+  String get systemCleaningStarted;
+
+  /// No description provided for @backupAndExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and Export'**
+  String get backupAndExport;
+
+  /// No description provided for @backupAndExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export current installed app list or import from backup'**
+  String get backupAndExportSubtitle;
+
+  /// No description provided for @export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @selectExportLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Select export location'**
+  String get selectExportLocation;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Export successful: {count} packages'**
+  String exportSuccess(int count);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {message}'**
+  String exportFailed(String message);
+
+  /// No description provided for @importBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Backup'**
+  String get importBackup;
+
+  /// No description provided for @importBackupConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Read {count} packages from backup. Start batch recovery?'**
+  String importBackupConfirm(int count);
+
+  /// No description provided for @startRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Recovery'**
+  String get startRecovery;
+
+  /// No description provided for @mirrorListSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mirror list saved'**
+  String get mirrorListSaved;
+
+  /// No description provided for @addMirror.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Mirror'**
+  String get addMirror;
+
+  /// No description provided for @serverUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Server URL'**
+  String get serverUrl;
+
+  /// No description provided for @pacmanMirrorManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacman Mirror Management'**
+  String get pacmanMirrorManagement;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
 }
 
 class _AppLocalizationsDelegate

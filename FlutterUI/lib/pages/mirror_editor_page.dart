@@ -1,5 +1,6 @@
 // lib/pages/mirror_editor_page.dart
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 
 class MirrorEditorPage extends StatefulWidget {
@@ -32,7 +33,7 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
     await BackendService.instance.savePacmanMirrors(_mirrors);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('镜像列表已保存')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.mirrorListSaved)),
     );
   }
 
@@ -41,14 +42,14 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
     final result = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('添加镜像'),
+        title: Text(AppLocalizations.of(context)!.addMirror),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: '服务器 URL'),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.serverUrl),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('确定')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm)),
         ],
       ),
     );
@@ -60,7 +61,7 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pacman 镜像管理')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.pacmanMirrorManagement)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
@@ -83,14 +84,14 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
             heroTag: 'save',
             onPressed: _saveMirrors,
             icon: const Icon(Icons.save),
-            label: const Text('保存'),
+            label: Text(AppLocalizations.of(context)!.save),
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'add',
             onPressed: _addMirror,
             icon: const Icon(Icons.add),
-            label: const Text('添加'),
+            label: Text(AppLocalizations.of(context)!.add),
           ),
         ],
       ),

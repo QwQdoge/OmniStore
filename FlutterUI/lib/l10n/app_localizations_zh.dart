@@ -51,13 +51,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get uninstall => '卸载';
 
   @override
-  String get launch => '启动程序';
+  String get launch => '启动';
 
   @override
-  String get about => '关于此软件';
+  String get about => '关于';
 
   @override
-  String get details => '详细参数';
+  String get details => '详情';
 
   @override
   String get source => '来源';
@@ -80,7 +80,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noResults => '未找到相关应用';
 
   @override
-  String get searching => '正在寻找...';
+  String get searching => '正在搜索...';
 
   @override
   String get category => '分类';
@@ -157,7 +157,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get waitingForOutput => '正在等待输出...';
 
   @override
-  String get screenshots => '软件截图';
+  String get screenshots => '应用截图';
 
   @override
   String get developer => '开发者';
@@ -196,7 +196,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get catGraphics => '图形设计';
 
   @override
-  String get catUtility => '工具配件';
+  String get catUtility => '实用工具';
 
   @override
   String get systemAndWindow => '系统与窗口';
@@ -257,7 +257,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateReminders => '更新提醒';
 
   @override
-  String get maintenance => '维护与操作';
+  String get maintenance => '维护';
 
   @override
   String get updateAllPackages => '更新所有应用';
@@ -300,7 +300,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get uninstallFailedTitle => '卸载失败';
 
   @override
-  String get taskCompleted => '任务执行完成';
+  String get taskCompleted => '任务已完成';
 
   @override
   String get searchInstalledHint => '搜索已安装的应用...';
@@ -322,6 +322,72 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get update => '更新';
+
+  @override
+  String get enableSystemTray => '启用系统托盘';
+
+  @override
+  String get systemCleaning => '系统清理';
+
+  @override
+  String get systemCleaningSubtitle => '删除孤立软件包并清理 pacman 缓存';
+
+  @override
+  String get systemCleaningStarted => '系统清理任务已启动';
+
+  @override
+  String get backupAndExport => '备份与导出';
+
+  @override
+  String get backupAndExportSubtitle => '导出当前已安装应用列表或从备份导入';
+
+  @override
+  String get export => '导出';
+
+  @override
+  String get import => '导入';
+
+  @override
+  String get selectExportLocation => '选择导出位置';
+
+  @override
+  String exportSuccess(int count) {
+    return '导出成功: $count个软件包';
+  }
+
+  @override
+  String exportFailed(String message) {
+    return '导出失败: $message';
+  }
+
+  @override
+  String get importBackup => '导入备份';
+
+  @override
+  String importBackupConfirm(int count) {
+    return '已从备份中读取 $count 个软件包。是否开始批量恢复？';
+  }
+
+  @override
+  String get startRecovery => '开始恢复';
+
+  @override
+  String get mirrorListSaved => '镜像列表已保存';
+
+  @override
+  String get addMirror => '添加镜像';
+
+  @override
+  String get serverUrl => '服务器 URL';
+
+  @override
+  String get pacmanMirrorManagement => 'Pacman 镜像管理';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get add => '添加';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -371,13 +437,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get uninstall => '解除安裝';
 
   @override
-  String get launch => '啟動程式';
+  String get launch => '啟動';
 
   @override
-  String get about => '關於此軟體';
+  String get about => '關於';
 
   @override
-  String get details => '詳細參數';
+  String get details => '詳情';
 
   @override
   String get source => '來源';
@@ -389,7 +455,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get version => '版本';
 
   @override
-  String get ready => '已就緒';
+  String get ready => '就緒';
 
   @override
   String resultsFound(int count) {
@@ -397,10 +463,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get noResults => '未找到相關應用';
+  String get noResults => '未找到結果';
 
   @override
-  String get searching => '正在尋找...';
+  String get searching => '搜尋中...';
 
   @override
   String get category => '分類';
@@ -421,16 +487,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '結果源優先級 (拖動排序)';
+  String get sourcePriority => '來源優先級（拖曳排序）';
 
   @override
-  String get maxResults => '最大顯示結果數';
+  String get maxResults => '最大結果數';
 
   @override
-  String get appearance => '外觀模式';
+  String get appearance => '外觀';
 
   @override
-  String get themeColor => '主題色種子';
+  String get themeColor => '主題色';
 
   @override
   String get followSystem => '跟隨系統';
@@ -442,13 +508,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get darkMode => '深色模式';
 
   @override
-  String get loggingLevel => '日誌記錄等級';
+  String get loggingLevel => '日誌等級';
 
   @override
-  String get saveAndApply => '儲存並應用';
+  String get saveAndApply => '儲存並套用';
 
   @override
-  String get configSaved => '配置已儲存，部分設定重啟生效';
+  String get configSaved => '配置已儲存';
 
   @override
   String get configSaveFailed => '儲存配置失敗';
@@ -474,10 +540,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get terminalOutput => '終端輸出';
 
   @override
-  String get waitingForOutput => '正在等待輸出...';
+  String get waitingForOutput => '等待輸出中...';
 
   @override
-  String get screenshots => '軟體截圖';
+  String get screenshots => '截圖';
 
   @override
   String get developer => '開發者';
@@ -513,10 +579,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get catGames => '遊戲';
 
   @override
+  String get catGraphics => '圖形設計';
+
+  @override
+  String get catUtility => '實用工具';
+
+  @override
+  String get systemAndWindow => '系統與視窗';
+
+  @override
+  String get visitWebsite => '造訪官方網站';
+
+  @override
   String get updates => '更新';
 
   @override
-  String get upToDate => '所有應用程式已是最新';
+  String get upToDate => '已是最新';
 
   @override
   String get checkUpdates => '檢查更新';
@@ -530,7 +608,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get updateAll => '全部更新';
 
   @override
-  String get notifications => '通知設定';
+  String get notifications => '通知';
 
   @override
   String get enableNotifications => '啟用通知';
@@ -542,7 +620,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get completionNotifications => '完成通知';
 
   @override
-  String get closeToTray => '關閉時隱藏到系統托盤';
+  String get closeToTray => '關閉時隱藏至系統托盤';
 
   @override
   String get useSystemTitleBar => '使用系統標題列';
@@ -559,31 +637,31 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore: 應用程式已是最新';
+  String get trayTooltipUpToDate => 'OmniStore: 已是最新';
 
   @override
   String get updateReminders => '更新提醒';
 
   @override
-  String get maintenance => '維護與操作';
+  String get maintenance => '維護';
 
   @override
-  String get updateAllPackages => '更新所有應用程式';
+  String get updateAllPackages => '更新所有套件';
 
   @override
-  String get includeAurUpdates => '更新所有時包含 AUR';
+  String get includeAurUpdates => '全部更新時包含 AUR';
 
   @override
-  String get resetOnboarding => '重置引導 (歡迎頁面)';
+  String get resetOnboarding => '重置引導';
 
   @override
-  String get resetOnboardingConfirm => '確定要重置引導嗎？下次啟動將重新顯示歡迎頁面。';
+  String get resetOnboardingConfirm => '確定要重置引導嗎？';
 
   @override
-  String get checkInterval => '自動檢查更新間隔 (小時)';
+  String get checkInterval => '更新檢查間隔（小時）';
 
   @override
-  String get remindMeOfUpdates => '提醒我有可用更新';
+  String get remindMeOfUpdates => '有更新時提醒我';
 
   @override
   String installingApp(String name) {
@@ -608,7 +686,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get uninstallFailedTitle => '解除安裝失敗';
 
   @override
-  String get taskCompleted => '任務執行完成';
+  String get taskCompleted => '任務已完成';
 
   @override
   String get searchInstalledHint => '搜尋已安裝的應用程式...';
@@ -617,7 +695,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get refresh => '重新整理';
 
   @override
-  String get noActiveTasks => '暫无進行中的任務';
+  String get noActiveTasks => '無進行中的任務';
 
   @override
   String get currentTask => '目前任務';
@@ -630,4 +708,70 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get update => '更新';
+
+  @override
+  String get enableSystemTray => '啟用系統托盤';
+
+  @override
+  String get systemCleaning => '系統清理';
+
+  @override
+  String get systemCleaningSubtitle => '刪除孤立套件並清理 pacman 快取';
+
+  @override
+  String get systemCleaningStarted => '系統清理任務已啟動';
+
+  @override
+  String get backupAndExport => '備份與匯出';
+
+  @override
+  String get backupAndExportSubtitle => '匯出目前已安裝應用程式列表或從備份匯入';
+
+  @override
+  String get export => '匯出';
+
+  @override
+  String get import => '匯入';
+
+  @override
+  String get selectExportLocation => '選擇匯出位置';
+
+  @override
+  String exportSuccess(int count) {
+    return '匯出成功: $count個套件';
+  }
+
+  @override
+  String exportFailed(String message) {
+    return '匯出失敗: $message';
+  }
+
+  @override
+  String get importBackup => '匯入備份';
+
+  @override
+  String importBackupConfirm(int count) {
+    return '已從備份中讀取 $count 個套件。是否開始批量恢復？';
+  }
+
+  @override
+  String get startRecovery => '開始恢復';
+
+  @override
+  String get mirrorListSaved => '鏡像列表已儲存';
+
+  @override
+  String get addMirror => '添加鏡像';
+
+  @override
+  String get serverUrl => '伺服器 URL';
+
+  @override
+  String get pacmanMirrorManagement => 'Pacman 鏡像管理';
+
+  @override
+  String get save => '儲存';
+
+  @override
+  String get add => '添加';
 }
