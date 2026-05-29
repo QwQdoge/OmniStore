@@ -355,33 +355,6 @@ class _SearchPageState extends State<SearchPage> {
                               size: 16,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                          const Spacer(),
-                          if (_history.isNotEmpty)
-                    FilledButton.tonalIcon(
-                              onPressed: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: Text(L10nService.s('clear_history')),
-                                    content: Text(L10nService.s('confirm_clear_history')),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
-                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.confirm)),
-                                    ],
-                                  ),
-                                );
-                                if (confirm == true) _clearAllHistory();
-                              },
-                              icon: const Icon(Icons.delete_sweep_rounded, size: 14),
-                            label: Text(L10nService.s('clear_history')),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: colorScheme.errorContainer,
-                                foregroundColor: colorScheme.onErrorContainer,
-                                visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                              ),
-                            ),
                             const Spacer(),
                             if (_history.isNotEmpty)
                               TextButton.icon(
@@ -1165,55 +1138,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Future<void> _showAIRecommendDialog() async {
-    final query = _controller.text.trim();
-    if (query.isEmpty) return;
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiPromptRecommend),
-          ],
-        ),
-        content: SizedBox(
-          width: 600,
-          child: FutureBuilder<String>(
-            future: BackendService.instance.aiRecommend(query),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 300,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final text = snapshot.data ?? "AI failed to respond.";
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    MarkdownBody(
-                      data: text.split('APPS_JSON:')[0],
-                      selectable: true,
-                    ),
-                    AIAppResolver(aiText: text, jsonPrefix: 'APPS_JSON:'),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showAppDetails(AppPackage app) {
     Navigator.push(

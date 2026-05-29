@@ -1,26 +1,89 @@
 {
   "@@locale": "ja",
   "searchHint": "アプリ、ゲーム、ツールを検索...",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
   "featured": "おすすめ",
+  "@featured": {
+    "description": "Description for featured"
+  },
   "forYou": "あなたへのおすすめ",
+  "@forYou": {
+    "description": "Description for forYou"
+  },
   "essentialTools": "必須ツール",
+  "@essentialTools": {
+    "description": "Description for essentialTools"
+  },
   "hotApps": "注目のアプリ",
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
   "explore": "探索",
+  "@explore": {
+    "description": "Description for explore"
+  },
   "search": "検索",
+  "@search": {
+    "description": "Description for search"
+  },
   "settings": "設定",
+  "@settings": {
+    "description": "Description for settings"
+  },
   "downloads": "ダウンロード",
+  "@downloads": {
+    "description": "Description for downloads"
+  },
   "help": "ヘルプ",
+  "@help": {
+    "description": "Description for help"
+  },
   "userAccount": "ユーザーアカウント",
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
   "install": "インストール",
+  "@install": {
+    "description": "Description for install"
+  },
   "open": "開く",
+  "@open": {
+    "description": "Description for open"
+  },
   "uninstall": "アンインストール",
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
   "launch": "起動",
+  "@launch": {
+    "description": "Description for launch"
+  },
   "about": "このアプリについて",
+  "@about": {
+    "description": "Description for about"
+  },
   "details": "詳細",
+  "@details": {
+    "description": "Description for details"
+  },
   "source": "ソース",
+  "@source": {
+    "description": "Description for source"
+  },
   "variant": "バリアント",
+  "@variant": {
+    "description": "Description for variant"
+  },
   "version": "バージョン",
+  "@version": {
+    "description": "Description for version"
+  },
   "ready": "準備完了",
+  "@ready": {
+    "description": "Description for ready"
+  },
   "resultsFound": "{count} 件の結果が見つかりました",
   "@resultsFound": {
     "placeholders": {
@@ -30,27 +93,93 @@
     }
   },
   "noResults": "結果が見つかりませんでした",
+  "@noResults": {
+    "description": "Description for noResults"
+  },
   "searching": "検索中...",
+  "@searching": {
+    "description": "Description for searching"
+  },
   "activity": "アクティビティ",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "category": "カテゴリー",
+  "@category": {
+    "description": "Category label"
+  },
   "packageManager": "パッケージマネージャー",
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
   "pacmanOfficial": "Pacman (公式)",
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
   "aurUser": "AUR (ユーザー)",
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
   "flatpak": "Flatpak",
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
   "appImage": "AppImage",
+  "@appImage": {
+    "description": "Description for appImage"
+  },
   "sourcePriority": "ソースの優先順位 (ドラッグして並べ替え)",
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
   "maxResults": "最大結果数",
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
   "appearance": "外観",
+  "@appearance": {
+    "description": "Description for appearance"
+  },
   "themeColor": "テーマカラー",
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
   "followSystem": "システムに従う",
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
   "lightMode": "ライトモード",
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
   "darkMode": "ダークモード",
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
   "loggingLevel": "ログレベル",
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
   "saveAndApply": "保存して適用",
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
   "configSaved": "設定を保存しました",
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
   "configSaveFailed": "設定の保存に失敗しました",
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
   "confirmUninstall": "アンインストールの確認",
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
   "confirmInstall": "インストールの確認",
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
   "confirmActionMsg": "{name} に対してこの操作を実行してもよろしいですか？",
   "@confirmActionMsg": {
     "placeholders": {
@@ -60,24 +189,81 @@
     }
   },
   "cancel": "キャンセル",
+  "@cancel": {
+    "description": "Description for cancel"
+  },
   "confirm": "確認",
+  "@confirm": {
+    "description": "Description for confirm"
+  },
   "terminalOutput": "ターミナル出力",
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
   "waitingForOutput": "出力を待機中...",
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
   "screenshots": "スクリーンショット",
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
   "developer": "開発者",
+  "@developer": {
+    "description": "Description for developer"
+  },
   "license": "ライセンス",
+  "@license": {
+    "description": "Description for license"
+  },
   "success": "成功",
+  "@success": {
+    "description": "Description for success"
+  },
   "failed": "失敗",
+  "@failed": {
+    "description": "Description for failed"
+  },
   "taskCancelled": "タスクがキャンセルされました",
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
   "catDevelopment": "開発",
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
   "catMedia": "メディア",
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
   "catInternet": "インターネット",
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
   "catSystem": "システム",
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
   "catOffice": "オフィス",
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
   "catGames": "ゲーム",
+  "@catGames": {
+    "description": "Description for catGames"
+  },
   "updates": "更新",
+  "@updates": {
+    "description": "Description for updates"
+  },
   "upToDate": "すべてのアプリは最新です",
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
   "checkUpdates": "更新を確認",
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
   "foundUpdates": "{count} 件の更新が見つかりました",
   "@foundUpdates": {
     "placeholders": {
@@ -87,14 +273,41 @@
     }
   },
   "updateAll": "すべて更新",
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
   "notifications": "通知",
+  "@notifications": {
+    "description": "Description for notifications"
+  },
   "enableNotifications": "通知を有効にする",
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
   "progressNotifications": "進行状況の通知",
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
   "completionNotifications": "完了通知",
+  "@completionNotifications": {
+    "description": "Description for completionNotifications"
+  },
   "closeToTray": "システムトレイに閉じる",
+  "@closeToTray": {
+    "description": "Description for closeToTray"
+  },
   "useSystemTitleBar": "システムのタイトルバーを使用",
+  "@useSystemTitleBar": {
+    "description": "Description for useSystemTitleBar"
+  },
   "showWindow": "ウィンドウを表示",
+  "@showWindow": {
+    "description": "Description for showWindow"
+  },
   "exit": "終了",
+  "@exit": {
+    "description": "Description for exit"
+  },
   "trayTooltipUpdates": "OmniStore: {count} 件の更新があります",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
@@ -105,14 +318,41 @@
     }
   },
   "trayTooltipUpToDate": "OmniStore: 最新の状態です",
+  "@trayTooltipUpToDate": {
+    "description": "Description for trayTooltipUpToDate"
+  },
   "updateReminders": "更新のリマインダー",
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
   "maintenance": "メンテナンス",
+  "@maintenance": {
+    "description": "Description for maintenance"
+  },
   "updateAllPackages": "すべてのパッケージを更新",
+  "@updateAllPackages": {
+    "description": "Description for updateAllPackages"
+  },
   "includeAurUpdates": "「すべて更新」に AUR を含める",
+  "@includeAurUpdates": {
+    "description": "Description for includeAurUpdates"
+  },
   "resetOnboarding": "オンボーディングをリセット (ウェルカムページ)",
+  "@resetOnboarding": {
+    "description": "Description for resetOnboarding"
+  },
   "resetOnboardingConfirm": "オンボーディングをリセットしてもよろしいですか？次回起動時にウェルカムページが表示されます。",
+  "@resetOnboardingConfirm": {
+    "description": "Description for resetOnboardingConfirm"
+  },
   "checkInterval": "更新確認の間隔 (時間)",
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
   "remindMeOfUpdates": "更新を通知する",
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
   "installingApp": "{name} をインストール中",
   "@installingApp": {
     "placeholders": {
@@ -130,195 +370,48 @@
     }
   },
   "installSuccessTitle": "インストールが成功しました",
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
   "uninstallSuccessTitle": "アンインストールが成功しました",
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
   "installFailedTitle": "インストールに失敗しました",
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
   "uninstallFailedTitle": "アンインストールに失敗しました",
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
   "taskCompleted": "タスクが完了しました",
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  },
   "searchInstalledHint": "インストール済みのアプリを検索...",
   "@searchInstalledHint": {},
   "refresh": "更新",
+  "@refresh": {
+    "description": "refresh"
+  },
   "noActiveTasks": "アクティブなタスクはありません",
   "@noActiveTasks": {},
   "currentTask": "現在のタスク",
+  "@currentTask": {
+    "description": "currentTask"
+  },
   "viewLogs": "ログを表示",
+  "@viewLogs": {
+    "description": "viewLogs"
+  },
   "allUpdated": "すべてのアプリは最新です",
+  "@allUpdated": {
+    "description": "allUpdated"
+  },
   "update": "更新",
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
-  "@featured": {
-    "description": "Description for featured"
-  },
-  "@forYou": {
-    "description": "Description for forYou"
-  },
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
-  "@explore": {
-    "description": "Description for explore"
-  },
-  "@search": {
-    "description": "Description for search"
-  },
-  "@settings": {
-    "description": "Description for settings"
-  },
-  "@downloads": {
-    "description": "Description for downloads"
-  },
-  "@help": {
-    "description": "Description for help"
-  },
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
-  "@install": {
-    "description": "Description for install"
-  },
-  "@open": {
-    "description": "Description for open"
-  },
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
-  "@launch": {
-    "description": "Description for launch"
-  },
-  "@about": {
-    "description": "Description for about"
-  },
-  "@details": {
-    "description": "Description for details"
-  },
-  "@source": {
-    "description": "Description for source"
-  },
-  "@variant": {
-    "description": "Description for variant"
-  },
-  "@version": {
-    "description": "Description for version"
-  },
-  "@ready": {
-    "description": "Description for ready"
-  },
-  "@noResults": {
-    "description": "Description for noResults"
-  },
-  "@searching": {
-    "description": "Description for searching"
-  },
-  "@activity": {
-    "description": "Activity tab label"
-  },
-  "@category": {
-    "description": "Category label"
-  },
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
-  "@appImage": {
-    "description": "Description for appImage"
-  },
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
-  "@appearance": {
-    "description": "Description for appearance"
-  },
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
-  "@cancel": {
-    "description": "Description for cancel"
-  },
-  "@confirm": {
-    "description": "Description for confirm"
-  },
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
-  "@developer": {
-    "description": "Description for developer"
-  },
-  "@license": {
-    "description": "Description for license"
-  },
-  "@success": {
-    "description": "Description for success"
-  },
-  "@failed": {
-    "description": "Description for failed"
-  },
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
-  "@catGames": {
-    "description": "Description for catGames"
+  "@update": {
+    "description": "update"
   },
   "catGraphics": "グラフィックス",
   "@catGraphics": {
@@ -336,93 +429,42 @@
   "@visitWebsite": {
     "description": "Tooltip for visiting website"
   },
-  "@updates": {
-    "description": "Description for updates"
-  },
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
-  "@notifications": {
-    "description": "Description for notifications"
-  },
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
-  "@exit": {
-    "description": "Description for exit"
-  },
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
-  },
   "enableSystemTray": "システムトレイを有効にする",
+  "@enableSystemTray": {
+    "description": "enableSystemTray"
+  },
   "systemCleaning": "システムクリーニング",
+  "@systemCleaning": {
+    "description": "systemCleaning"
+  },
   "systemCleaningSubtitle": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
+  "@systemCleaningSubtitle": {
+    "description": "systemCleaningSubtitle"
+  },
   "systemCleaningStarted": "システムクリーニングタスクが開始されました",
+  "@systemCleaningStarted": {
+    "description": "systemCleaningStarted"
+  },
   "backupAndExport": "バックアップとエクスポート",
+  "@backupAndExport": {
+    "description": "backupAndExport"
+  },
   "backupAndExportSubtitle": "現在のインストール済みアプリリストをエクスポート、またはバックアップからインポート",
+  "@backupAndExportSubtitle": {
+    "description": "backupAndExportSubtitle"
+  },
   "export": "エクスポート",
+  "@export": {
+    "description": "export"
+  },
   "import": "インポート",
+  "@import": {
+    "description": "import"
+  },
   "selectExportLocation": "エクスポート先を選択",
+  "@selectExportLocation": {
+    "description": "selectExportLocation"
+  },
   "exportSuccess": "エクスポート成功: {count} 個のパッケージ",
   "@exportSuccess": {
     "placeholders": {
@@ -440,6 +482,9 @@
     }
   },
   "importBackup": "バックアップをインポート",
+  "@importBackup": {
+    "description": "importBackup"
+  },
   "importBackupConfirm": "バックアップから {count} 個のパッケージを読み込みました。一括復元を開始しますか？",
   "@importBackupConfirm": {
     "placeholders": {
@@ -449,10 +494,155 @@
     }
   },
   "startRecovery": "復元を開始",
+  "@startRecovery": {
+    "description": "startRecovery"
+  },
   "mirrorListSaved": "ミラーリストを保存しました",
+  "@mirrorListSaved": {
+    "description": "mirrorListSaved"
+  },
   "addMirror": "ミラーを追加",
+  "@addMirror": {
+    "description": "addMirror"
+  },
   "serverUrl": "サーバー URL",
+  "@serverUrl": {
+    "description": "serverUrl"
+  },
   "pacmanMirrorManagement": "Pacman ミラー管理",
+  "@pacmanMirrorManagement": {
+    "description": "pacmanMirrorManagement"
+  },
   "save": "保存",
-  "add": "追加"
+  "@save": {
+    "description": "save"
+  },
+  "add": "追加",
+  "@add": {
+    "description": "add"
+  },
+  "aiSettings": "AI Assistant Settings",
+  "@aiSettings": {
+    "description": "aiSettings"
+  },
+  "aiEnabled": "Enable AI Assistant",
+  "@aiEnabled": {
+    "description": "aiEnabled"
+  },
+  "aiProvider": "AI Provider",
+  "@aiProvider": {
+    "description": "aiProvider"
+  },
+  "aiEndpoint": "API Endpoint",
+  "@aiEndpoint": {
+    "description": "aiEndpoint"
+  },
+  "aiModel": "Model Name",
+  "@aiModel": {
+    "description": "aiModel"
+  },
+  "aiApiKey": "API Key",
+  "@aiApiKey": {
+    "description": "aiApiKey"
+  },
+  "aiProxy": "Network Proxy (Optional)",
+  "@aiProxy": {
+    "description": "aiProxy"
+  },
+  "aiTemperature": "Temperature (Creativity)",
+  "@aiTemperature": {
+    "description": "aiTemperature"
+  },
+  "aiMaxTokens": "Max Response Tokens",
+  "@aiMaxTokens": {
+    "description": "aiMaxTokens"
+  },
+  "aiTestButton": "Test AI Connection",
+  "@aiTestButton": {
+    "description": "aiTestButton"
+  },
+  "aiTestSuccess": "AI connection successful!",
+  "@aiTestSuccess": {
+    "description": "aiTestSuccess"
+  },
+  "aiTestFailed": "AI connection failed: {error}",
+  "@aiTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptExplain": "Explain with AI",
+  "@aiPromptExplain": {
+    "description": "aiPromptExplain"
+  },
+  "aiPromptRecommend": "Ask AI for Recommendation",
+  "@aiPromptRecommend": {
+    "description": "aiPromptRecommend"
+  },
+  "aiPromptError": "Analyze Error with AI",
+  "@aiPromptError": {
+    "description": "aiPromptError"
+  },
+  "aiPickDay": "AI Pick of the Day",
+  "@aiPickDay": {
+    "description": "aiPickDay"
+  },
+  "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "@aiPickDaySubtitle": {
+    "description": "aiPickDaySubtitle"
+  },
+  "aiCompareTitle": "AI Variant Comparison",
+  "@aiCompareTitle": {
+    "description": "aiCompareTitle"
+  },
+  "aiHealthTitle": "AI System Health Report",
+  "@aiHealthTitle": {
+    "description": "aiHealthTitle"
+  },
+  "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "@aiHealthSubtitle": {
+    "description": "aiHealthSubtitle"
+  },
+  "aiCorrection": "Did you mean?",
+  "@aiCorrection": {
+    "description": "aiCorrection"
+  },
+  "aiThinking": "AI is thinking...",
+  "@aiThinking": {
+    "description": "aiThinking"
+  },
+  "magicSearch": "Magic Search",
+  "@magicSearch": {
+    "description": "magicSearch"
+  },
+  "aiChangelogTitle": "AI Update Summary",
+  "@aiChangelogTitle": {
+    "description": "aiChangelogTitle"
+  },
+  "aiCliTitle": "AI Command Generator",
+  "@aiCliTitle": {
+    "description": "aiCliTitle"
+  },
+  "aiConflictTitle": "AI Conflict Detection",
+  "@aiConflictTitle": {
+    "description": "aiConflictTitle"
+  },
+  "aiCopyCommand": "Copy Command",
+  "@aiCopyCommand": {
+    "description": "aiCopyCommand"
+  },
+  "aiCommandCopied": "Command copied to clipboard",
+  "@aiCommandCopied": {
+    "description": "aiCommandCopied"
+  },
+  "aiRefineSearch": "Refine search with AI",
+  "@aiRefineSearch": {
+    "description": "aiRefineSearch"
+  },
+  "aiExplainUpdate": "Explain this update",
+  "@aiExplainUpdate": {
+    "description": "aiExplainUpdate"
+  }
 }

@@ -677,27 +677,48 @@ class OmnistoreBackend:
         else:
             print(f"AI Summary:\n{res}")
     def _output_json(self, results):
-        # TODO: Implement pagination or streaming for very large result sets.
-        output = []
-        for item in results:
-            try:
-                output.append({
-                    "name": str(item.get("name", "Unknown")),
-                    "description": str(item.get("description", "")),
-                    "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
-                    "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
-                    "url": str(item.get("url") or ""),
-                    "variants": item.get("variants", []),
-                    "version": str(item.get("last_version") or item.get("version") or "N/A"),
-                    "score": int(item.get("score", 0)),
-                    "icon": item.get("icon"),
-                    "is_exact_match": item.get("is_exact_match", False)
-                })
-            except Exception as e:
-                logging.error(f"Error serializing search result: {e}")
+        """Serialize results to JSON, streaming in chunks if large.
+        This avoids huge memory usage and ensures the frontend can handle
+        very large result sets.
+        """
+        max_chunk = 200  # Number of items per streamed chunk
+        total = len(results)
+        def serialize_item(item):
+            return {
+                "name": str(item.get("name", "Unknown")),
+                "description": str(item.get("description", "")),
+                "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
+                "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
+                "url": str(item.get("url") or ""),
+                "variants": item.get("variants", []),
+                "version": str(item.get("last_version") or item.get("version") or "N/A"),
+                "score": int(item.get("score", 0)),
+                "icon": item.get("icon"),
+                "is_exact_match": item.get("is_exact_match", False),
+            }
+        if total <= max_chunk:
+            output = []
+            for item in results:
+                try:
+                    output.append(serialize_item(item))
+                except Exception as e:
+                    logging.error(f"Error serializing search result: {e}")
+            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            return
+        # Stream in chunks
+        for start in range(0, total, max_chunk):
+            chunk = results[start:start + max_chunk]
+            output = []
+            for item in chunk:
+                try:
+                    output.append(serialize_item(item))
+                except Exception as e:
+                    logging.error(f"Error serializing search result: {e}")
+            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+        # No explicit terminator needed; the consumer can detect EOF.
 
-        sys.stdout.write(json.dumps(output, ensure_ascii=False) + '\n')
-        sys.stdout.flush()
 
     def _output_pretty(self, query, results):
         if not results:

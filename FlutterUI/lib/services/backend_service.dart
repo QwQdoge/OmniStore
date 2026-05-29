@@ -57,6 +57,7 @@ class BackendService {
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
   static final ValueNotifier<String> globalStatus = ValueNotifier("Ready");
   static final ValueNotifier<bool> isDownloading = ValueNotifier(false);
+  static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
 
   // 当前正在操作的 app（用于跨页面状态恢复）
   static final ValueNotifier<AppPackage?> activeApp = ValueNotifier(null);
@@ -64,7 +65,10 @@ class BackendService {
     null,
   ); // "-I" or "-R"
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
-  static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
+  // Navigation and pending search query notifiers
+  static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
+  static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
+
   static Process? activeProcess;
   static Process? activeSearchProcess;
 

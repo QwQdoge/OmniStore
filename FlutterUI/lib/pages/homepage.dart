@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/category_service.dart';
-import '../widgets/magic_pulse_icon.dart';
+
 import '../widgets/ai_app_resolver.dart';
 import './app_details_page.dart';
 import 'searchpage.dart';
@@ -816,34 +816,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSourceChips(List<String> sources) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      return Wrap(
-        spacing: 6,
-        children: sources
-            .map(
-              (s) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6.0),
-                  border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Text(
-                  s,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            )
-            .toList(),
-      );
-    });
-  }
+
 }

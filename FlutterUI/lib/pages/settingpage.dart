@@ -205,11 +205,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: ReorderableListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      onReorder: (oldIndex, newIndex) {
+                      onReorderItem: (oldIndex, newIndex) {
                         setState(() {
-                          if (newIndex > oldIndex) {
-                            newIndex -= 1;
-                          }
                           final item = sourceOrder.removeAt(oldIndex);
                           sourceOrder.insert(newIndex, item);
 

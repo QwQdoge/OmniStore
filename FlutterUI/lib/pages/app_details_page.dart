@@ -852,8 +852,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   },
                 ),
               ),
-            ],
+            ),
           ),
+        ],
+      ),
         ),
       ],
     );

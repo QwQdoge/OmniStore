@@ -1,26 +1,89 @@
 {
   "@@locale": "zh_Hant",
   "searchHint": "搜尋應用程式、遊戲、工具...",
+  "@searchHint": {
+    "description": "Description for searchHint"
+  },
   "featured": "精選推薦",
+  "@featured": {
+    "description": "Description for featured"
+  },
   "forYou": "為您推薦",
+  "@forYou": {
+    "description": "Description for forYou"
+  },
   "essentialTools": "必備工具",
+  "@essentialTools": {
+    "description": "Description for essentialTools"
+  },
   "hotApps": "熱門應用",
+  "@hotApps": {
+    "description": "Description for hotApps"
+  },
   "explore": "探索",
+  "@explore": {
+    "description": "Description for explore"
+  },
   "search": "搜尋",
+  "@search": {
+    "description": "Description for search"
+  },
   "settings": "設定",
+  "@settings": {
+    "description": "Description for settings"
+  },
   "downloads": "下載",
+  "@downloads": {
+    "description": "Description for downloads"
+  },
   "help": "幫助",
+  "@help": {
+    "description": "Description for help"
+  },
   "userAccount": "使用者帳戶",
+  "@userAccount": {
+    "description": "Description for userAccount"
+  },
   "install": "安裝",
+  "@install": {
+    "description": "Description for install"
+  },
   "open": "開啟",
+  "@open": {
+    "description": "Description for open"
+  },
   "uninstall": "解除安裝",
+  "@uninstall": {
+    "description": "Description for uninstall"
+  },
   "launch": "啟動",
+  "@launch": {
+    "description": "Description for launch"
+  },
   "about": "關於",
+  "@about": {
+    "description": "Description for about"
+  },
   "details": "詳情",
+  "@details": {
+    "description": "Description for details"
+  },
   "source": "來源",
+  "@source": {
+    "description": "Description for source"
+  },
   "variant": "變體",
+  "@variant": {
+    "description": "Description for variant"
+  },
   "version": "版本",
+  "@version": {
+    "description": "Description for version"
+  },
   "ready": "就緒",
+  "@ready": {
+    "description": "Description for ready"
+  },
   "resultsFound": "{count} 個結果",
   "@resultsFound": {
     "placeholders": {
@@ -30,26 +93,89 @@
     }
   },
   "noResults": "未找到結果",
+  "@noResults": {
+    "description": "Description for noResults"
+  },
   "searching": "搜尋中...",
+  "@searching": {
+    "description": "Description for searching"
+  },
   "category": "分類",
+  "@category": {
+    "description": "Category label"
+  },
   "packageManager": "套件管理員",
+  "@packageManager": {
+    "description": "Description for packageManager"
+  },
   "pacmanOfficial": "Pacman（官方庫）",
+  "@pacmanOfficial": {
+    "description": "Description for pacmanOfficial"
+  },
   "aurUser": "AUR（使用者庫）",
+  "@aurUser": {
+    "description": "Description for aurUser"
+  },
   "flatpak": "Flatpak",
+  "@flatpak": {
+    "description": "Description for flatpak"
+  },
   "appImage": "AppImage",
+  "@appImage": {
+    "description": "Description for appImage"
+  },
   "sourcePriority": "來源優先級（拖曳排序）",
+  "@sourcePriority": {
+    "description": "Description for sourcePriority"
+  },
   "maxResults": "最大結果數",
+  "@maxResults": {
+    "description": "Description for maxResults"
+  },
   "appearance": "外觀",
+  "@appearance": {
+    "description": "Description for appearance"
+  },
   "themeColor": "主題色",
+  "@themeColor": {
+    "description": "Description for themeColor"
+  },
   "followSystem": "跟隨系統",
+  "@followSystem": {
+    "description": "Description for followSystem"
+  },
   "lightMode": "淺色模式",
+  "@lightMode": {
+    "description": "Description for lightMode"
+  },
   "darkMode": "深色模式",
+  "@darkMode": {
+    "description": "Description for darkMode"
+  },
   "loggingLevel": "日誌等級",
+  "@loggingLevel": {
+    "description": "Description for loggingLevel"
+  },
   "saveAndApply": "儲存並套用",
+  "@saveAndApply": {
+    "description": "Description for saveAndApply"
+  },
   "configSaved": "配置已儲存",
+  "@configSaved": {
+    "description": "Description for configSaved"
+  },
   "configSaveFailed": "儲存配置失敗",
+  "@configSaveFailed": {
+    "description": "Description for configSaveFailed"
+  },
   "confirmUninstall": "確認解除安裝",
+  "@confirmUninstall": {
+    "description": "Description for confirmUninstall"
+  },
   "confirmInstall": "確認安裝",
+  "@confirmInstall": {
+    "description": "Description for confirmInstall"
+  },
   "confirmActionMsg": "確定要對 {name} 執行此操作嗎？",
   "@confirmActionMsg": {
     "placeholders": {
@@ -59,24 +185,81 @@
     }
   },
   "cancel": "取消",
+  "@cancel": {
+    "description": "Description for cancel"
+  },
   "confirm": "確定",
+  "@confirm": {
+    "description": "Description for confirm"
+  },
   "terminalOutput": "終端輸出",
+  "@terminalOutput": {
+    "description": "Description for terminalOutput"
+  },
   "waitingForOutput": "等待輸出中...",
+  "@waitingForOutput": {
+    "description": "Description for waitingForOutput"
+  },
   "screenshots": "截圖",
+  "@screenshots": {
+    "description": "Description for screenshots"
+  },
   "developer": "開發者",
+  "@developer": {
+    "description": "Description for developer"
+  },
   "license": "授權",
+  "@license": {
+    "description": "Description for license"
+  },
   "success": "成功",
+  "@success": {
+    "description": "Description for success"
+  },
   "failed": "失敗",
+  "@failed": {
+    "description": "Description for failed"
+  },
   "taskCancelled": "任務已取消",
+  "@taskCancelled": {
+    "description": "Description for taskCancelled"
+  },
   "catDevelopment": "開發工具",
+  "@catDevelopment": {
+    "description": "Description for catDevelopment"
+  },
   "catMedia": "影音娛樂",
+  "@catMedia": {
+    "description": "Description for catMedia"
+  },
   "catInternet": "網際網路",
+  "@catInternet": {
+    "description": "Description for catInternet"
+  },
   "catSystem": "系統工具",
+  "@catSystem": {
+    "description": "Description for catSystem"
+  },
   "catOffice": "辦公",
+  "@catOffice": {
+    "description": "Description for catOffice"
+  },
   "catGames": "遊戲",
+  "@catGames": {
+    "description": "Description for catGames"
+  },
   "updates": "更新",
+  "@updates": {
+    "description": "Description for updates"
+  },
   "upToDate": "已是最新",
+  "@upToDate": {
+    "description": "Description for upToDate"
+  },
   "checkUpdates": "檢查更新",
+  "@checkUpdates": {
+    "description": "Description for checkUpdates"
+  },
   "foundUpdates": "發現 {count} 個更新",
   "@foundUpdates": {
     "placeholders": {
@@ -86,14 +269,41 @@
     }
   },
   "updateAll": "全部更新",
+  "@updateAll": {
+    "description": "Description for updateAll"
+  },
   "notifications": "通知",
+  "@notifications": {
+    "description": "Description for notifications"
+  },
   "enableNotifications": "啟用通知",
+  "@enableNotifications": {
+    "description": "Description for enableNotifications"
+  },
   "progressNotifications": "進度通知",
+  "@progressNotifications": {
+    "description": "Description for progressNotifications"
+  },
   "completionNotifications": "完成通知",
+  "@completionNotifications": {
+    "description": "Description for completionNotifications"
+  },
   "closeToTray": "關閉時隱藏至系統托盤",
+  "@closeToTray": {
+    "description": "Description for closeToTray"
+  },
   "useSystemTitleBar": "使用系統標題列",
+  "@useSystemTitleBar": {
+    "description": "Description for useSystemTitleBar"
+  },
   "showWindow": "顯示視窗",
+  "@showWindow": {
+    "description": "Description for showWindow"
+  },
   "exit": "退出",
+  "@exit": {
+    "description": "Description for exit"
+  },
   "trayTooltipUpdates": "OmniStore: 發現 {count} 個更新",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
@@ -104,14 +314,41 @@
     }
   },
   "trayTooltipUpToDate": "OmniStore: 已是最新",
+  "@trayTooltipUpToDate": {
+    "description": "Description for trayTooltipUpToDate"
+  },
   "updateReminders": "更新提醒",
+  "@updateReminders": {
+    "description": "Description for updateReminders"
+  },
   "maintenance": "維護",
+  "@maintenance": {
+    "description": "Description for maintenance"
+  },
   "updateAllPackages": "更新所有套件",
+  "@updateAllPackages": {
+    "description": "Description for updateAllPackages"
+  },
   "includeAurUpdates": "全部更新時包含 AUR",
+  "@includeAurUpdates": {
+    "description": "Description for includeAurUpdates"
+  },
   "resetOnboarding": "重置引導",
+  "@resetOnboarding": {
+    "description": "Description for resetOnboarding"
+  },
   "resetOnboardingConfirm": "確定要重置引導嗎？",
+  "@resetOnboardingConfirm": {
+    "description": "Description for resetOnboardingConfirm"
+  },
   "checkInterval": "更新檢查間隔（小時）",
+  "@checkInterval": {
+    "description": "Description for checkInterval"
+  },
   "remindMeOfUpdates": "有更新時提醒我",
+  "@remindMeOfUpdates": {
+    "description": "Description for remindMeOfUpdates"
+  },
   "installingApp": "正在安裝 {name}",
   "@installingApp": {
     "placeholders": {
@@ -129,10 +366,25 @@
     }
   },
   "installSuccessTitle": "安裝成功",
+  "@installSuccessTitle": {
+    "description": "Description for installSuccessTitle"
+  },
   "uninstallSuccessTitle": "解除安裝成功",
+  "@uninstallSuccessTitle": {
+    "description": "Description for uninstallSuccessTitle"
+  },
   "installFailedTitle": "安裝失敗",
+  "@installFailedTitle": {
+    "description": "Description for installFailedTitle"
+  },
   "uninstallFailedTitle": "解除安裝失敗",
+  "@uninstallFailedTitle": {
+    "description": "Description for uninstallFailedTitle"
+  },
   "taskCompleted": "任務已完成",
+  "@taskCompleted": {
+    "description": "Description for taskCompleted"
+  },
   "searchInstalledHint": "搜尋已安裝的應用程式...",
   "@searchInstalledHint": {
     "description": "Hint text for searching within installed applications"
@@ -161,183 +413,9 @@
   "@update": {
     "description": "Update action label"
   },
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
-  "@featured": {
-    "description": "Description for featured"
-  },
-  "@forYou": {
-    "description": "Description for forYou"
-  },
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
-  "@explore": {
-    "description": "Description for explore"
-  },
-  "@search": {
-    "description": "Description for search"
-  },
-  "@settings": {
-    "description": "Description for settings"
-  },
-  "@downloads": {
-    "description": "Description for downloads"
-  },
-  "@help": {
-    "description": "Description for help"
-  },
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
-  "@install": {
-    "description": "Description for install"
-  },
-  "@open": {
-    "description": "Description for open"
-  },
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
-  "@launch": {
-    "description": "Description for launch"
-  },
-  "@about": {
-    "description": "Description for about"
-  },
-  "@details": {
-    "description": "Description for details"
-  },
-  "@source": {
-    "description": "Description for source"
-  },
-  "@variant": {
-    "description": "Description for variant"
-  },
-  "@version": {
-    "description": "Description for version"
-  },
-  "@ready": {
-    "description": "Description for ready"
-  },
-  "@noResults": {
-    "description": "Description for noResults"
-  },
-  "@searching": {
-    "description": "Description for searching"
-  },
   "activity": "動態",
   "@activity": {
     "description": "Activity tab label"
-  },
-  "@category": {
-    "description": "Category label"
-  },
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
-  "@appImage": {
-    "description": "Description for appImage"
-  },
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
-  "@appearance": {
-    "description": "Description for appearance"
-  },
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
-  "@cancel": {
-    "description": "Description for cancel"
-  },
-  "@confirm": {
-    "description": "Description for confirm"
-  },
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
-  "@developer": {
-    "description": "Description for developer"
-  },
-  "@license": {
-    "description": "Description for license"
-  },
-  "@success": {
-    "description": "Description for success"
-  },
-  "@failed": {
-    "description": "Description for failed"
-  },
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
-  "@catGames": {
-    "description": "Description for catGames"
   },
   "catGraphics": "圖形設計",
   "@catGraphics": {
@@ -354,84 +432,6 @@
   "visitWebsite": "造訪官方網站",
   "@visitWebsite": {
     "description": "Tooltip for visiting website"
-  },
-  "@updates": {
-    "description": "Description for updates"
-  },
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
-  "@notifications": {
-    "description": "Description for notifications"
-  },
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
-  "@exit": {
-    "description": "Description for exit"
-  },
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
   },
   "enableSystemTray": "啟用系統托盤",
   "@enableSystemTray": {

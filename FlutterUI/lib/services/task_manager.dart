@@ -74,6 +74,7 @@ class TaskManager {
         BackendService.venvPython,
         args,
         workingDirectory: BackendService.workingDir,
+        runInShell: true,
       );
 
       _activeProcess!.stdout
@@ -195,9 +196,18 @@ class TaskManager {
 
   void cancelTask() {
     if (_activeProcess != null) {
-      // TODO: Implement a cleaner way to handle child processes (e.g. process groups)
-      // to ensure all sub-processes (like pacman/yay) are also killed.
-      _activeProcess!.kill(ProcessSignal.sigterm);
+      // Attempt to kill the entire process group to ensure all child processes are terminated.
+      final pid = _activeProcess!.pid;
+      try {
+        // Negative PID kills the process group on Linux.
+        Process.runSync('kill', ['-TERM', '-$pid']);
+        // Fallback: kill any direct child processes.
+        Process.runSync('pkill', ['-P', pid.toString()]);
+        _activeProcess!.kill(ProcessSignal.sigterm);
+      } catch (e) {
+        // If group kill fails, fall back to killing the main process only.
+        _activeProcess!.kill(ProcessSignal.sigterm);
+      }
       _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
         message: "Task cancelled by user",

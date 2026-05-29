@@ -406,21 +406,69 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "Search installed apps...",
+  "@searchInstalledHint": {
+    "description": "searchInstalledHint"
+  },
   "refresh": "Refresh",
+  "@refresh": {
+    "description": "refresh"
+  },
   "noActiveTasks": "No active tasks",
+  "@noActiveTasks": {
+    "description": "noActiveTasks"
+  },
   "currentTask": "Current Task",
+  "@currentTask": {
+    "description": "currentTask"
+  },
   "viewLogs": "View Logs",
+  "@viewLogs": {
+    "description": "viewLogs"
+  },
   "allUpdated": "All apps are up to date",
+  "@allUpdated": {
+    "description": "allUpdated"
+  },
   "update": "Update",
+  "@update": {
+    "description": "update"
+  },
   "enableSystemTray": "Enable system tray",
+  "@enableSystemTray": {
+    "description": "enableSystemTray"
+  },
   "systemCleaning": "System Cleaning",
+  "@systemCleaning": {
+    "description": "systemCleaning"
+  },
   "systemCleaningSubtitle": "Delete orphan packages and clean pacman cache",
+  "@systemCleaningSubtitle": {
+    "description": "systemCleaningSubtitle"
+  },
   "systemCleaningStarted": "System cleaning task started",
+  "@systemCleaningStarted": {
+    "description": "systemCleaningStarted"
+  },
   "backupAndExport": "Backup and Export",
+  "@backupAndExport": {
+    "description": "backupAndExport"
+  },
   "backupAndExportSubtitle": "Export current installed app list or import from backup",
+  "@backupAndExportSubtitle": {
+    "description": "backupAndExportSubtitle"
+  },
   "export": "Export",
+  "@export": {
+    "description": "export"
+  },
   "import": "Import",
+  "@import": {
+    "description": "import"
+  },
   "selectExportLocation": "Select export location",
+  "@selectExportLocation": {
+    "description": "selectExportLocation"
+  },
   "exportSuccess": "Export successful: {count} packages",
   "@exportSuccess": {
     "placeholders": {
@@ -438,6 +486,9 @@
     }
   },
   "importBackup": "Import Backup",
+  "@importBackup": {
+    "description": "importBackup"
+  },
   "importBackupConfirm": "Read {count} packages from backup. Start batch recovery?",
   "@importBackupConfirm": {
     "placeholders": {
@@ -447,23 +498,77 @@
     }
   },
   "startRecovery": "Start Recovery",
+  "@startRecovery": {
+    "description": "startRecovery"
+  },
   "mirrorListSaved": "Mirror list saved",
+  "@mirrorListSaved": {
+    "description": "mirrorListSaved"
+  },
   "addMirror": "Add Mirror",
+  "@addMirror": {
+    "description": "addMirror"
+  },
   "serverUrl": "Server URL",
+  "@serverUrl": {
+    "description": "serverUrl"
+  },
   "pacmanMirrorManagement": "Pacman Mirror Management",
+  "@pacmanMirrorManagement": {
+    "description": "pacmanMirrorManagement"
+  },
   "save": "Save",
+  "@save": {
+    "description": "save"
+  },
   "add": "Add",
+  "@add": {
+    "description": "add"
+  },
   "aiSettings": "AI Assistant Settings",
+  "@aiSettings": {
+    "description": "aiSettings"
+  },
   "aiEnabled": "Enable AI Assistant",
+  "@aiEnabled": {
+    "description": "aiEnabled"
+  },
   "aiProvider": "AI Provider",
+  "@aiProvider": {
+    "description": "aiProvider"
+  },
   "aiEndpoint": "API Endpoint",
+  "@aiEndpoint": {
+    "description": "aiEndpoint"
+  },
   "aiModel": "Model Name",
+  "@aiModel": {
+    "description": "aiModel"
+  },
   "aiApiKey": "API Key",
+  "@aiApiKey": {
+    "description": "aiApiKey"
+  },
   "aiProxy": "Network Proxy (Optional)",
+  "@aiProxy": {
+    "description": "aiProxy"
+  },
   "aiTemperature": "Temperature (Creativity)",
+  "@aiTemperature": {
+    "description": "aiTemperature"
+  },
   "aiMaxTokens": "Max Response Tokens",
+  "@aiMaxTokens": {
+    "description": "aiMaxTokens"
+  },
   "aiTestButton": "Test AI Connection",
+  "@aiTestButton": {
+    "description": "aiTestButton"
+  },
   "aiTestSuccess": "AI connection successful!",
+  "@aiTestSuccess": {
+    "description": "aiTestSuccess"
+  },
   "aiTestFailed": "AI connection failed: {error}",
   "@aiTestFailed": {
     "placeholders": {
@@ -473,21 +578,75 @@
     }
   },
   "aiPromptExplain": "Explain with AI",
+  "@aiPromptExplain": {
+    "description": "aiPromptExplain"
+  },
   "aiPromptRecommend": "Ask AI for Recommendation",
+  "@aiPromptRecommend": {
+    "description": "aiPromptRecommend"
+  },
   "aiPromptError": "Analyze Error with AI",
+  "@aiPromptError": {
+    "description": "aiPromptError"
+  },
   "aiPickDay": "AI Pick of the Day",
+  "@aiPickDay": {
+    "description": "aiPickDay"
+  },
   "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "@aiPickDaySubtitle": {
+    "description": "aiPickDaySubtitle"
+  },
   "aiCompareTitle": "AI Variant Comparison",
+  "@aiCompareTitle": {
+    "description": "aiCompareTitle"
+  },
   "aiHealthTitle": "AI System Health Report",
+  "@aiHealthTitle": {
+    "description": "aiHealthTitle"
+  },
   "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "@aiHealthSubtitle": {
+    "description": "aiHealthSubtitle"
+  },
   "aiCorrection": "Did you mean?",
+  "@aiCorrection": {
+    "description": "aiCorrection"
+  },
   "aiThinking": "AI is thinking...",
+  "@aiThinking": {
+    "description": "aiThinking"
+  },
   "magicSearch": "Magic Search",
+  "@magicSearch": {
+    "description": "magicSearch"
+  },
   "aiChangelogTitle": "AI Update Summary",
+  "@aiChangelogTitle": {
+    "description": "aiChangelogTitle"
+  },
   "aiCliTitle": "AI Command Generator",
+  "@aiCliTitle": {
+    "description": "aiCliTitle"
+  },
   "aiConflictTitle": "AI Conflict Detection",
+  "@aiConflictTitle": {
+    "description": "aiConflictTitle"
+  },
   "aiCopyCommand": "Copy Command",
+  "@aiCopyCommand": {
+    "description": "aiCopyCommand"
+  },
   "aiCommandCopied": "Command copied to clipboard",
+  "@aiCommandCopied": {
+    "description": "aiCommandCopied"
+  },
   "aiRefineSearch": "Refine search with AI",
-  "aiExplainUpdate": "Explain this update"
+  "@aiRefineSearch": {
+    "description": "aiRefineSearch"
+  },
+  "aiExplainUpdate": "Explain this update",
+  "@aiExplainUpdate": {
+    "description": "aiExplainUpdate"
+  }
 }
