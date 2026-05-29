@@ -673,97 +673,97 @@ abstract class AppLocalizations {
   /// **'Task Completed'**
   String get taskCompleted;
 
-  /// No description provided for @searchInstalledHint.
+  /// searchInstalledHint
   ///
   /// In en, this message translates to:
   /// **'Search installed apps...'**
   String get searchInstalledHint;
 
-  /// No description provided for @refresh.
+  /// refresh
   ///
   /// In en, this message translates to:
   /// **'Refresh'**
   String get refresh;
 
-  /// No description provided for @noActiveTasks.
+  /// noActiveTasks
   ///
   /// In en, this message translates to:
   /// **'No active tasks'**
   String get noActiveTasks;
 
-  /// No description provided for @currentTask.
+  /// currentTask
   ///
   /// In en, this message translates to:
   /// **'Current Task'**
   String get currentTask;
 
-  /// No description provided for @viewLogs.
+  /// viewLogs
   ///
   /// In en, this message translates to:
   /// **'View Logs'**
   String get viewLogs;
 
-  /// No description provided for @allUpdated.
+  /// allUpdated
   ///
   /// In en, this message translates to:
   /// **'All apps are up to date'**
   String get allUpdated;
 
-  /// No description provided for @update.
+  /// update
   ///
   /// In en, this message translates to:
   /// **'Update'**
   String get update;
 
-  /// No description provided for @enableSystemTray.
+  /// enableSystemTray
   ///
   /// In en, this message translates to:
   /// **'Enable system tray'**
   String get enableSystemTray;
 
-  /// No description provided for @systemCleaning.
+  /// systemCleaning
   ///
   /// In en, this message translates to:
   /// **'System Cleaning'**
   String get systemCleaning;
 
-  /// No description provided for @systemCleaningSubtitle.
+  /// systemCleaningSubtitle
   ///
   /// In en, this message translates to:
   /// **'Delete orphan packages and clean pacman cache'**
   String get systemCleaningSubtitle;
 
-  /// No description provided for @systemCleaningStarted.
+  /// systemCleaningStarted
   ///
   /// In en, this message translates to:
   /// **'System cleaning task started'**
   String get systemCleaningStarted;
 
-  /// No description provided for @backupAndExport.
+  /// backupAndExport
   ///
   /// In en, this message translates to:
   /// **'Backup and Export'**
   String get backupAndExport;
 
-  /// No description provided for @backupAndExportSubtitle.
+  /// backupAndExportSubtitle
   ///
   /// In en, this message translates to:
   /// **'Export current installed app list or import from backup'**
   String get backupAndExportSubtitle;
 
-  /// No description provided for @export.
+  /// export
   ///
   /// In en, this message translates to:
   /// **'Export'**
   String get export;
 
-  /// No description provided for @import.
+  /// import
   ///
   /// In en, this message translates to:
   /// **'Import'**
   String get import;
 
-  /// No description provided for @selectExportLocation.
+  /// selectExportLocation
   ///
   /// In en, this message translates to:
   /// **'Select export location'**
@@ -781,7 +781,7 @@ abstract class AppLocalizations {
   /// **'Export failed: {message}'**
   String exportFailed(String message);
 
-  /// No description provided for @importBackup.
+  /// importBackup
   ///
   /// In en, this message translates to:
   /// **'Import Backup'**
@@ -793,109 +793,109 @@ abstract class AppLocalizations {
   /// **'Read {count} packages from backup. Start batch recovery?'**
   String importBackupConfirm(int count);
 
-  /// No description provided for @startRecovery.
+  /// startRecovery
   ///
   /// In en, this message translates to:
   /// **'Start Recovery'**
   String get startRecovery;
 
-  /// No description provided for @mirrorListSaved.
+  /// mirrorListSaved
   ///
   /// In en, this message translates to:
   /// **'Mirror list saved'**
   String get mirrorListSaved;
 
-  /// No description provided for @addMirror.
+  /// addMirror
   ///
   /// In en, this message translates to:
   /// **'Add Mirror'**
   String get addMirror;
 
-  /// No description provided for @serverUrl.
+  /// serverUrl
   ///
   /// In en, this message translates to:
   /// **'Server URL'**
   String get serverUrl;
 
-  /// No description provided for @pacmanMirrorManagement.
+  /// pacmanMirrorManagement
   ///
   /// In en, this message translates to:
   /// **'Pacman Mirror Management'**
   String get pacmanMirrorManagement;
 
-  /// No description provided for @save.
+  /// save
   ///
   /// In en, this message translates to:
   /// **'Save'**
   String get save;
 
-  /// No description provided for @add.
+  /// add
   ///
   /// In en, this message translates to:
   /// **'Add'**
   String get add;
 
-  /// No description provided for @aiSettings.
+  /// aiSettings
   ///
   /// In en, this message translates to:
   /// **'AI Assistant Settings'**
   String get aiSettings;
 
-  /// No description provided for @aiEnabled.
+  /// aiEnabled
   ///
   /// In en, this message translates to:
   /// **'Enable AI Assistant'**
   String get aiEnabled;
 
-  /// No description provided for @aiProvider.
+  /// aiProvider
   ///
   /// In en, this message translates to:
   /// **'AI Provider'**
   String get aiProvider;
 
-  /// No description provided for @aiEndpoint.
+  /// aiEndpoint
   ///
   /// In en, this message translates to:
   /// **'API Endpoint'**
   String get aiEndpoint;
 
-  /// No description provided for @aiModel.
+  /// aiModel
   ///
   /// In en, this message translates to:
   /// **'Model Name'**
   String get aiModel;
 
-  /// No description provided for @aiApiKey.
+  /// aiApiKey
   ///
   /// In en, this message translates to:
   /// **'API Key'**
   String get aiApiKey;
 
-  /// No description provided for @aiProxy.
+  /// aiProxy
   ///
   /// In en, this message translates to:
   /// **'Network Proxy (Optional)'**
   String get aiProxy;
 
-  /// No description provided for @aiTemperature.
+  /// aiTemperature
   ///
   /// In en, this message translates to:
   /// **'Temperature (Creativity)'**
   String get aiTemperature;
 
-  /// No description provided for @aiMaxTokens.
+  /// aiMaxTokens
   ///
   /// In en, this message translates to:
   /// **'Max Response Tokens'**
   String get aiMaxTokens;
 
-  /// No description provided for @aiTestButton.
+  /// aiTestButton
   ///
   /// In en, this message translates to:
   /// **'Test AI Connection'**
   String get aiTestButton;
 
-  /// No description provided for @aiTestSuccess.
+  /// aiTestSuccess
   ///
   /// In en, this message translates to:
   /// **'AI connection successful!'**
@@ -907,109 +907,109 @@ abstract class AppLocalizations {
   /// **'AI connection failed: {error}'**
   String aiTestFailed(String error);
 
-  /// No description provided for @aiPromptExplain.
+  /// aiPromptExplain
   ///
   /// In en, this message translates to:
   /// **'Explain with AI'**
   String get aiPromptExplain;
 
-  /// No description provided for @aiPromptRecommend.
+  /// aiPromptRecommend
   ///
   /// In en, this message translates to:
   /// **'Ask AI for Recommendation'**
   String get aiPromptRecommend;
 
-  /// No description provided for @aiPromptError.
+  /// aiPromptError
   ///
   /// In en, this message translates to:
   /// **'Analyze Error with AI'**
   String get aiPromptError;
 
-  /// No description provided for @aiPickDay.
+  /// aiPickDay
   ///
   /// In en, this message translates to:
   /// **'AI Pick of the Day'**
   String get aiPickDay;
 
-  /// No description provided for @aiPickDaySubtitle.
+  /// aiPickDaySubtitle
   ///
   /// In en, this message translates to:
   /// **'Powered by OmniStore AI'**
   String get aiPickDaySubtitle;
 
-  /// No description provided for @aiCompareTitle.
+  /// aiCompareTitle
   ///
   /// In en, this message translates to:
   /// **'AI Variant Comparison'**
   String get aiCompareTitle;
 
-  /// No description provided for @aiHealthTitle.
+  /// aiHealthTitle
   ///
   /// In en, this message translates to:
   /// **'AI System Health Report'**
   String get aiHealthTitle;
 
-  /// No description provided for @aiHealthSubtitle.
+  /// aiHealthSubtitle
   ///
   /// In en, this message translates to:
   /// **'Intelligent diagnostic for your Arch Linux'**
   String get aiHealthSubtitle;
 
-  /// No description provided for @aiCorrection.
+  /// aiCorrection
   ///
   /// In en, this message translates to:
   /// **'Did you mean?'**
   String get aiCorrection;
 
-  /// No description provided for @aiThinking.
+  /// aiThinking
   ///
   /// In en, this message translates to:
   /// **'AI is thinking...'**
   String get aiThinking;
 
-  /// No description provided for @magicSearch.
+  /// magicSearch
   ///
   /// In en, this message translates to:
   /// **'Magic Search'**
   String get magicSearch;
 
-  /// No description provided for @aiChangelogTitle.
+  /// aiChangelogTitle
   ///
   /// In en, this message translates to:
   /// **'AI Update Summary'**
   String get aiChangelogTitle;
 
-  /// No description provided for @aiCliTitle.
+  /// aiCliTitle
   ///
   /// In en, this message translates to:
   /// **'AI Command Generator'**
   String get aiCliTitle;
 
-  /// No description provided for @aiConflictTitle.
+  /// aiConflictTitle
   ///
   /// In en, this message translates to:
   /// **'AI Conflict Detection'**
   String get aiConflictTitle;
 
-  /// No description provided for @aiCopyCommand.
+  /// aiCopyCommand
   ///
   /// In en, this message translates to:
   /// **'Copy Command'**
   String get aiCopyCommand;
 
-  /// No description provided for @aiCommandCopied.
+  /// aiCommandCopied
   ///
   /// In en, this message translates to:
   /// **'Command copied to clipboard'**
   String get aiCommandCopied;
 
-  /// No description provided for @aiRefineSearch.
+  /// aiRefineSearch
   ///
   /// In en, this message translates to:
   /// **'Refine search with AI'**
   String get aiRefineSearch;
 
-  /// No description provided for @aiExplainUpdate.
+  /// aiExplainUpdate
   ///
   /// In en, this message translates to:
   /// **'Explain this update'**
