@@ -441,4 +441,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiPromptError => 'Analyze Error with AI';
+
+  @override
+  String get aiPickDay => 'AI Pick of the Day';
+
+  @override
+  String get aiPickDaySubtitle => 'Powered by OmniStore AI';
+
+  @override
+  String get aiCompareTitle => 'AI Variant Comparison';
+
+  @override
+  String get aiHealthTitle => 'AI System Health Report';
+
+  @override
+  String get aiHealthSubtitle => 'Intelligent diagnostic for your Arch Linux';
+
+  @override
+  String get aiCorrection => 'Did you mean?';
+
+  @override
+  String get aiThinking => 'AI is thinking...';
+
+  @override
+  String get magicSearch => 'Magic Search';
 }

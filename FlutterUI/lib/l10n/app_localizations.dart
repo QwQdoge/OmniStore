@@ -924,6 +924,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Analyze Error with AI'**
   String get aiPromptError;
+
+  /// No description provided for @aiPickDay.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Pick of the Day'**
+  String get aiPickDay;
+
+  /// No description provided for @aiPickDaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by OmniStore AI'**
+  String get aiPickDaySubtitle;
+
+  /// No description provided for @aiCompareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Variant Comparison'**
+  String get aiCompareTitle;
+
+  /// No description provided for @aiHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI System Health Report'**
+  String get aiHealthTitle;
+
+  /// No description provided for @aiHealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Intelligent diagnostic for your Arch Linux'**
+  String get aiHealthSubtitle;
+
+  /// No description provided for @aiCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you mean?'**
+  String get aiCorrection;
+
+  /// No description provided for @aiThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is thinking...'**
+  String get aiThinking;
+
+  /// No description provided for @magicSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic Search'**
+  String get magicSearch;
 }
 
 class _AppLocalizationsDelegate

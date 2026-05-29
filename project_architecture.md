@@ -81,6 +81,7 @@ The Python backend serves as the CLI logic wrapper executing tasks.
   - Schema: `{"type": "log", "message": "...", "level": "INFO|ERROR|SUCCESS"}`
 
 ### AI Assistant Guidelines:
-- All AI responses should respect the `ui.language` setting.
-- Prompts are defined in `python/core/ai/assistant.py`.
-- When adding new AI features, ensure they fall back gracefully if AI is disabled or the provider is unreachable.
+- **Visual Language**: All AI-driven features must use the `MagicPulseIcon` with `Colors.purple` to maintain a distinct "intelligent" identity.
+- **Language Localization**: All AI responses should respect the `ui.language` setting.
+- **Graceful Degradation**: Prompts are defined in `python/core/ai/assistant.py`. When adding new AI features, ensure they fall back gracefully (e.g., hidden buttons or clear error messages) if AI is disabled or the provider is unreachable.
+- **Contextual Intelligence**: New AI features should be integrated directly where the user needs them (e.g., Error Analysis in terminal, Comparisons in variant pickers).

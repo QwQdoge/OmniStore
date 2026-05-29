@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
+import '../widgets/magic_pulse_icon.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
@@ -353,7 +355,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   if (aiEnabled) ...[
                     ListTile(
-                      leading: const Icon(Icons.smart_toy_outlined, color: Colors.purple),
+                      leading: const MagicPulseIcon(icon: Icons.smart_toy_outlined),
                       title: Text(AppLocalizations.of(context)!.aiProvider),
                       subtitle: const Text("Select your AI model source (Local or Cloud)"),
                       trailing: DropdownButton<String>(
@@ -410,7 +412,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _testAIConnection,
-                              icon: const Icon(Icons.bolt_rounded, color: Colors.purple),
+                              icon: const MagicPulseIcon(icon: Icons.bolt_rounded),
                               label: Text(AppLocalizations.of(context)!.aiTestButton),
                             ),
                           ),
@@ -474,6 +476,12 @@ class _SettingsPageState extends State<SettingsPage> {
                         SnackBar(content: Text(AppLocalizations.of(context)!.systemCleaningStarted)),
                       );
                     },
+                  ),
+                  ListTile(
+                    leading: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                    title: Text(AppLocalizations.of(context)!.aiHealthTitle),
+                    subtitle: Text(AppLocalizations.of(context)!.aiHealthSubtitle),
+                    onTap: _showAIHealthReport,
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup_rounded),
@@ -794,6 +802,47 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       );
     }
+  }
+
+  Future<void> _showAIHealthReport() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiHealthTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiSystemHealth(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
   }
 
   void _saveAll({bool silent = false}) {

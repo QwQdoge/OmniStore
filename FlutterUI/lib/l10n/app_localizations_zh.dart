@@ -438,6 +438,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPromptError => 'AI 分析错误';
+
+  @override
+  String get aiPickDay => 'AI 每日推荐';
+
+  @override
+  String get aiPickDaySubtitle => '由 OmniStore AI 强力驱动';
+
+  @override
+  String get aiCompareTitle => 'AI 版本对比';
+
+  @override
+  String get aiHealthTitle => 'AI 系统健康报告';
+
+  @override
+  String get aiHealthSubtitle => '为您的 Arch Linux 进行智能诊断';
+
+  @override
+  String get aiCorrection => '您是不是要找？';
+
+  @override
+  String get aiThinking => 'AI 正在思考中...';
+
+  @override
+  String get magicSearch => '魔法搜索';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

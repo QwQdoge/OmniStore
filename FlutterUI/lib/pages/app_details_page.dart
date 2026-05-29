@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
@@ -8,6 +9,7 @@ import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
 import '../services/task_manager.dart';
 import '../models/task_state.dart';
+import '../widgets/magic_pulse_icon.dart';
 import '../widgets/smooth_progress_bar.dart';
 
 class AppDetailsPage extends StatefulWidget {
@@ -320,17 +322,25 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       IconButton(
                         icon: const Icon(Icons.language_rounded),
                         tooltip: AppLocalizations.of(context)!.visitWebsite,
-                        onPressed: () {
-                          // TODO: Implement url_launcher to open widget.app.url
+                        onPressed: () async {
+                          final uri = Uri.parse(widget.app.url!);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
                         },
                       ),
                   IconButton(
                     icon: const Badge(
-                        child: Icon(Icons.auto_awesome_rounded,
-                            color: Colors.purple)),
+                        child: MagicPulseIcon(icon: Icons.auto_awesome_rounded)),
                     tooltip: AppLocalizations.of(context)!.aiPromptExplain,
                     onPressed: _showAIExplainDialog,
                   ),
+                  if (widget.app.variants.length > 1)
+                    IconButton(
+                      icon: const MagicPulseIcon(icon: Icons.compare_arrows_rounded),
+                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                      onPressed: _showAICompareDialog,
+                    ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
                       initialData: TaskManager().currentTask,
@@ -881,7 +891,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
             const SizedBox(width: 12),
             Text(AppLocalizations.of(context)!.aiPromptExplain),
           ],
@@ -923,7 +933,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
             const SizedBox(width: 12),
             Text(AppLocalizations.of(context)!.aiPromptError),
           ],
@@ -932,6 +942,47 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           width: 600,
           child: FutureBuilder<String>(
             future: BackendService.instance.aiAnalyzeError(logs),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAICompareDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiCompareTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiCompareVariants(widget.app.name),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(

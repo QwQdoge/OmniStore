@@ -474,5 +474,13 @@
   },
   "aiPromptExplain": "使用 AI 解释",
   "aiPromptRecommend": "咨询 AI 推荐",
-  "aiPromptError": "AI 分析错误"
+  "aiPromptError": "AI 分析错误",
+  "aiPickDay": "AI 每日推荐",
+  "aiPickDaySubtitle": "由 OmniStore AI 强力驱动",
+  "aiCompareTitle": "AI 版本对比",
+  "aiHealthTitle": "AI 系统健康报告",
+  "aiHealthSubtitle": "为您的 Arch Linux 进行智能诊断",
+  "aiCorrection": "您是不是要找？",
+  "aiThinking": "AI 正在思考中...",
+  "magicSearch": "魔法搜索"
 }

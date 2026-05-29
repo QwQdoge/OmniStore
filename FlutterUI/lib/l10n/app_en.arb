@@ -474,5 +474,13 @@
   },
   "aiPromptExplain": "Explain with AI",
   "aiPromptRecommend": "Ask AI for Recommendation",
-  "aiPromptError": "Analyze Error with AI"
+  "aiPromptError": "Analyze Error with AI",
+  "aiPickDay": "AI Pick of the Day",
+  "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "aiCompareTitle": "AI Variant Comparison",
+  "aiHealthTitle": "AI System Health Report",
+  "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "aiCorrection": "Did you mean?",
+  "aiThinking": "AI is thinking...",
+  "magicSearch": "Magic Search"
 }

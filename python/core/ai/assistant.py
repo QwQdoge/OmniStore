@@ -189,6 +189,54 @@ class AIAssistant:
         user_prompt = f"Error log:\n{error_log}"
         return await self._post_request(system_prompt, user_prompt)
 
+    async def compare_variants(self, app_name: str, variants: List[Dict]) -> str:
+        """Compare different installation sources (Flatpak vs AUR vs Native)."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            "Compare the different installation variants for the requested app. "
+            "Explain the pros and cons of each (e.g. Flatpak's sandboxing vs AUR's latest versions vs Native's stability). "
+            "Give a final recommendation on which one the user should pick and why."
+        )
+        variants_str = json.dumps(variants, indent=2)
+        user_prompt = f"Application: {app_name}\nVariants:\n{variants_str}"
+        return await self._post_request(system_prompt, user_prompt)
+
+    async def suggest_correction(self, query: str) -> str:
+        """Suggest better search terms if the current one yields no results."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            "The user searched for something but got no results. Suggest 3-5 alternative keywords or correctly spelled app names. "
+            "Only return the suggestions as a simple bulleted list. Be helpful and concise."
+        )
+        user_prompt = f"User Query: {query}"
+        return await self._post_request(system_prompt, user_prompt)
+
+    async def generate_health_report(self, system_info: Dict) -> str:
+        """Generate an AI-driven system health and maintenance report."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            "Analyze the provided system information (orphaned packages, disk space, mirrors, etc.). "
+            "Provide a 'Health Score' out of 100 and suggest maintenance actions to keep the Arch Linux system clean and fast."
+        )
+        info_str = json.dumps(system_info, indent=2)
+        user_prompt = f"System Info:\n{info_str}"
+        return await self._post_request(system_prompt, user_prompt)
+
+    async def pick_of_the_day(self, trending_apps: List[Dict]) -> str:
+        """Select one app to be the 'AI Pick of the Day' with a catchy description."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            "From the list of trending apps, pick ONE that is particularly interesting or useful. "
+            "Write a very short, catchy 'Pick of the Day' blurb (2 sentences max) to encourage the user to try it."
+        )
+        apps_str = json.dumps([{"name": a.get("name"), "desc": a.get("description")} for a in trending_apps[:10]])
+        user_prompt = f"Trending Apps:\n{apps_str}"
+        return await self._post_request(system_prompt, user_prompt)
+
     async def summarize_project(self) -> str:
         """Generate a concise markdown summary of the OmniStore project."""
         # Use README as the source material if available to keep summary up-to-date

@@ -762,6 +762,10 @@ async def main():
     group.add_argument("--ai-explain", metavar="APP_NAME", help="Ask AI to explain package details")
     group.add_argument("--ai-recommend", metavar="PROMPT", help="Ask AI to recommend apps based on prompt")
     group.add_argument("--ai-analyze-error", metavar="ERROR_LOG", help="Ask AI to analyze installation error logs")
+    group.add_argument("--ai-compare", metavar="APP_NAME", help="Ask AI to compare package variants")
+    group.add_argument("--ai-health", action="store_true", help="Ask AI to generate system health report")
+    group.add_argument("--ai-pick", action="store_true", help="Ask AI to pick an app of the day")
+    group.add_argument("--ai-correct", metavar="QUERY", help="Ask AI to suggest search corrections")
 
     parser.add_argument("--json", action="store_true",
                          help="Output results in JSON format")
@@ -963,6 +967,41 @@ async def main():
 
     elif args.ai_analyze_error:
         await backend.run_ai_analyze_error(args.ai_analyze_error)
+
+    elif args.ai_compare:
+        # Hybrid Search to find variants for comparison
+        timeout = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await backend.initialize(session)
+            candidates = await backend.manager.search_all(args.ai_compare) # type: ignore
+            target_app = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
+            if target_app:
+                res = await backend.ai.compare_variants(args.ai_compare, target_app.get('variants', []))
+                print(json.dumps({"response": res}, ensure_ascii=False))
+            else:
+                print(json.dumps({"response": "App not found for comparison."}, ensure_ascii=False))
+
+    elif args.ai_health:
+        # Collect system info for AI diagnostic
+        status = await backend.env.check_env()
+        # Add orphaned packages count if possible
+        proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+        stdout, _ = await proc.communicate()
+        status["orphaned_count"] = len(stdout.decode().splitlines())
+        res = await backend.ai.generate_health_report(status)
+        print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_pick:
+        timeout = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await backend.initialize(session)
+            trending = (await backend.recommender.get_recommendations()).get('trending', []) # type: ignore
+            res = await backend.ai.pick_of_the_day(trending)
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_correct:
+        res = await backend.ai.suggest_correction(args.ai_correct)
+        print(json.dumps({"response": res}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
