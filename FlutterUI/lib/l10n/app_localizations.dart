@@ -247,6 +247,12 @@ abstract class AppLocalizations {
   /// **'Searching...'**
   String get searching;
 
+  /// Activity tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activity;
+
   /// Category label
   ///
   /// In en, this message translates to:
@@ -828,6 +834,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add'**
   String get add;
+
+  /// No description provided for @aiSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant Settings'**
+  String get aiSettings;
+
+  /// No description provided for @aiEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI Assistant'**
+  String get aiEnabled;
+
+  /// No description provided for @aiProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Provider'**
+  String get aiProvider;
+
+  /// No description provided for @aiEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint'**
+  String get aiEndpoint;
+
+  /// No description provided for @aiModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model Name'**
+  String get aiModel;
+
+  /// No description provided for @aiApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get aiApiKey;
+
+  /// No description provided for @aiProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Proxy (Optional)'**
+  String get aiProxy;
+
+  /// No description provided for @aiTemperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature (Creativity)'**
+  String get aiTemperature;
+
+  /// No description provided for @aiMaxTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Response Tokens'**
+  String get aiMaxTokens;
+
+  /// No description provided for @aiTestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Test AI Connection'**
+  String get aiTestButton;
+
+  /// No description provided for @aiTestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection successful!'**
+  String get aiTestSuccess;
+
+  /// No description provided for @aiTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection failed: {error}'**
+  String aiTestFailed(String error);
+
+  /// No description provided for @aiPromptExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain with AI'**
+  String get aiPromptExplain;
+
+  /// No description provided for @aiPromptRecommend.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI for Recommendation'**
+  String get aiPromptRecommend;
+
+  /// No description provided for @aiPromptError.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Error with AI'**
+  String get aiPromptError;
 }
 
 class _AppLocalizationsDelegate

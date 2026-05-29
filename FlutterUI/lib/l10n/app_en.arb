@@ -452,5 +452,27 @@
   "serverUrl": "Server URL",
   "pacmanMirrorManagement": "Pacman Mirror Management",
   "save": "Save",
-  "add": "Add"
+  "add": "Add",
+  "aiSettings": "AI Assistant Settings",
+  "aiEnabled": "Enable AI Assistant",
+  "aiProvider": "AI Provider",
+  "aiEndpoint": "API Endpoint",
+  "aiModel": "Model Name",
+  "aiApiKey": "API Key",
+  "aiProxy": "Network Proxy (Optional)",
+  "aiTemperature": "Temperature (Creativity)",
+  "aiMaxTokens": "Max Response Tokens",
+  "aiTestButton": "Test AI Connection",
+  "aiTestSuccess": "AI connection successful!",
+  "aiTestFailed": "AI connection failed: {error}",
+  "@aiTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptExplain": "Explain with AI",
+  "aiPromptRecommend": "Ask AI for Recommendation",
+  "aiPromptError": "Analyze Error with AI"
 }

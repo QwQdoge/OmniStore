@@ -1,22 +1,42 @@
 import json
+import asyncio
 import aiohttp
+import os
+from pathlib import Path
 from typing import Dict, List, Optional
 
 
 class AIAssistant:
+    """
+    AI Assistant core for OmniStore.
+    Handles communication with various LLM providers (Ollama, OpenAI, Gemini, etc.)
+    to provide application explanations, search recommendations, and error analysis.
+    """
+
     def __init__(self, config_manager):
+        """
+        Initialize the AI Assistant with a configuration manager.
+
+        Args:
+            config_manager: ConfigManager instance to fetch AI settings.
+        """
         self.cm = config_manager
 
     def _get_ai_config(self) -> Dict:
+        """Fetch AI-specific configuration from the global config."""
         return self.cm.get("ai", {
             "enabled": False,
             "provider": "ollama",
             "endpoint": "http://localhost:11434",
             "model": "qwen2.5:7b",
-            "api_key": ""
+            "api_key": "",
+            "temperature": 0.7,
+            "max_tokens": 2048,
+            "proxy": ""
         })
 
     def _get_language(self) -> str:
+        """Determine the target language based on UI settings for localized AI responses."""
         lang = self.cm.get("ui.language", "zh-CN")
         if "zh" in lang:
             if "TW" in lang or "Hant" in lang:
@@ -27,6 +47,15 @@ class AIAssistant:
         return "English"
 
     async def _post_request(self, system_prompt: str, user_prompt: str) -> str:
+        """
+        Generic POST request handler for AI providers.
+
+        Supports:
+        - Ollama (Local)
+        - OpenAI (Standard API)
+        - Gemini (Google AI API)
+        - Custom (OpenAI-compatible proxies like Yunwu)
+        """
         cfg = self._get_ai_config()
         if not cfg.get("enabled", False):
             return "AI functions are currently disabled in configuration."
@@ -35,53 +64,91 @@ class AIAssistant:
         endpoint = cfg.get("endpoint", "").rstrip('/')
         model = cfg.get("model", "")
         api_key = cfg.get("api_key", "")
+        proxy = cfg.get("proxy", "")
 
-        # Prepare headers & body based on provider
         headers = {"Content-Type": "application/json"}
-        
+        url = ""
+        payload = {}
+
+        # 1. Dispatch based on provider type
         if provider == "ollama":
-            url = f"{endpoint}/api/generate"
+            url = f"{endpoint}/api/generate" if endpoint else "http://localhost:11434/api/generate"
             payload = {
-                "model": model,
+                "model": model or "qwen2.5:7b",
                 "prompt": f"{system_prompt}\n\nUser: {user_prompt}",
-                "stream": False
+                "stream": False,
+                "options": {
+                    "temperature": cfg.get("temperature", 0.7),
+                    "num_predict": cfg.get("max_tokens", 2048)
+                }
             }
-            # Ollama response path is json_data['response']
-        else:  # openai compatible
-            url = f"{endpoint}/v1/chat/completions"
+        elif provider == "gemini":
+            # Native Google Gemini API
+            # Note: API Key is usually passed as a query parameter
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model or 'gemini-1.5-flash'}:generateContent?key={api_key}"
+            payload = {
+                "contents": [{
+                    "role": "user",
+                    "parts": [{"text": f"System Instruction: {system_prompt}\n\nUser Question: {user_prompt}"}]
+                }],
+                "generationConfig": {
+                    "temperature": cfg.get("temperature", 0.7),
+                    "maxOutputTokens": cfg.get("max_tokens", 2048)
+                }
+            }
+        else:
+            # OpenAI compatible (OpenAI, DeepSeek, Yunwu, etc.)
+            url = f"{endpoint}/v1/chat/completions" if endpoint else "https://api.openai.com/v1/chat/completions"
             if api_key:
                 headers["Authorization"] = f"Bearer {api_key}"
+
             payload = {
-                "model": model,
+                "model": model or "gpt-3.5-turbo",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
+                "temperature": cfg.get("temperature", 0.7),
+                "max_tokens": cfg.get("max_tokens", 2048),
                 "stream": False
             }
-            # OpenAI response path is json_data['choices'][0]['message']['content']
 
         try:
-            # Set a standard timeout
             timeout = aiohttp.ClientTimeout(total=45)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.post(url, headers=headers, json=payload) as resp:
+            # Use proxy if configured
+            connector = aiohttp.TCPConnector(ssl=False) if proxy else None
+
+            async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+                async with session.post(url, headers=headers, json=payload, proxy=proxy or None) as resp:
                     if resp.status != 200:
                         err_text = await resp.text()
-                        return f"AI Provider returned error status {resp.status}: {err_text}"
+                        return f"AI Provider ({provider}) returned error status {resp.status}: {err_text}"
                     
                     data = await resp.json()
+
+                    # 2. Extract content based on provider schema
                     if provider == "ollama":
                         return data.get("response", "").strip()
+                    elif provider == "gemini":
+                        candidates = data.get("candidates", [])
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            if parts:
+                                return parts[0].get("text", "").strip()
+                        return "Error: Gemini returned an unexpected response format."
                     else:
                         choices = data.get("choices", [])
                         if choices:
                             return choices[0].get("message", {}).get("content", "").strip()
-                        return "Error: Empty choices returned by OpenAI compatible endpoint."
+                        return f"Error: Empty choices returned by {provider} compatible endpoint."
+
+        except asyncio.TimeoutError:
+            return "Error: AI request timed out (45s). Check your connection or provider status."
         except Exception as e:
-            return f"Failed to connect to AI Provider: {str(e)}"
+            return f"Failed to connect to AI Provider ({provider}): {str(e)}"
 
     async def explain_app(self, app_name: str, app_description: str = "") -> str:
+        """Generate a detailed explanation for a specific application."""
         lang = self._get_language()
         system_prompt = (
             f"You are OmniStore AI assistant, a helpful Linux expert. Provide answers in {lang}. "
@@ -92,6 +159,7 @@ class AIAssistant:
         return await self._post_request(system_prompt, user_prompt)
 
     async def recommend_apps(self, query: str, available_apps: List[Dict]) -> str:
+        """Analyze user intent and recommend the best matching apps from a list of candidates."""
         lang = self._get_language()
         system_prompt = (
             f"You are OmniStore AI assistant, a professional software recommender. Provide response in {lang}.\n"
@@ -101,7 +169,7 @@ class AIAssistant:
             "If no apps in the list fit well, suggest general apps and explain why."
         )
         
-        # Serialize list for context
+        # Serialize list for context, limited to top 40 for token efficiency
         app_list_str = "\n".join([
             f"- Name: {app.get('name')}, Source: {app.get('source') or app.get('primary_source')}, Desc: {app.get('description')}" 
             for app in available_apps[:40]
@@ -111,6 +179,7 @@ class AIAssistant:
         return await self._post_request(system_prompt, user_prompt)
 
     async def analyze_error(self, error_log: str) -> str:
+        """Analyze a technical error log and provide human-readable solutions."""
         lang = self._get_language()
         system_prompt = (
             f"You are OmniStore AI assistant, an expert in Arch Linux system administration. Provide answers in {lang}. "
@@ -119,21 +188,21 @@ class AIAssistant:
         )
         user_prompt = f"Error log:\n{error_log}"
         return await self._post_request(system_prompt, user_prompt)
+
     async def summarize_project(self) -> str:
-        """Generate a concise markdown summary of the OmniStore project using the AI provider."""
-        # Use README as the source material if available
-        readme_path = Path(__file__).resolve().parents[3] / "README.md"
+        """Generate a concise markdown summary of the OmniStore project."""
+        # Use README as the source material if available to keep summary up-to-date
+        root_dir = Path(__file__).resolve().parents[3]
+        readme_path = root_dir / "README.md"
+        readme_text = ""
         if readme_path.exists():
             try:
                 readme_text = readme_path.read_text(encoding="utf-8")
             except Exception:
-                readme_text = ""
-        else:
-            readme_text = ""
+                pass
+
         system_prompt = (
             "You are OmniStore AI assistant. Summarize the OmniStore project in concise markdown, covering its purpose, main features, and architecture."
         )
-        # Include README content if available
         user_prompt = f"Project README:\n{readme_text}" if readme_text else "Provide a brief summary of OmniStore based on your knowledge."
         return await self._post_request(system_prompt, user_prompt)
-    

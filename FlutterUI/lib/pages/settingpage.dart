@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
@@ -41,6 +42,16 @@ class _SettingsPageState extends State<SettingsPage> {
   bool completionNotifications = true;
   double updateCheckInterval = 1;
   bool remindUpdates = true;
+
+  // AI Settings
+  bool aiEnabled = false;
+  String aiProvider = 'ollama';
+  String aiEndpoint = '';
+  String aiModel = '';
+  String aiApiKey = '';
+  String aiProxy = '';
+  double aiTemperature = 0.7;
+  double aiMaxTokens = 2048;
 
   @override
   void initState() {
@@ -98,6 +109,16 @@ class _SettingsPageState extends State<SettingsPage> {
           updateCheckInterval = (upConfig['check_interval_hours'] ?? 1).toDouble();
           remindUpdates = upConfig['remind_updates'] ?? true;
           includeAurUpdates = upConfig['include_aur_in_update_all'] ?? true;
+
+          final ai = config['ai'] as Map<String, dynamic>? ?? {};
+          aiEnabled = ai['enabled'] ?? false;
+          aiProvider = ai['provider'] ?? 'ollama';
+          aiEndpoint = ai['endpoint'] ?? '';
+          aiModel = ai['model'] ?? '';
+          aiApiKey = ai['api_key'] ?? '';
+          aiProxy = ai['proxy'] ?? '';
+          aiTemperature = (ai['temperature'] ?? 0.7).toDouble();
+          aiMaxTokens = (ai['max_tokens'] ?? 2048).toDouble();
         });
       }
     } catch (e) {
@@ -397,6 +418,79 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.aiSettings),
+                _buildGroupCard([
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.aiEnabled,
+                    aiEnabled,
+                    (v) => setState(() => aiEnabled = v),
+                  ),
+                  if (aiEnabled) ...[
+                    ListTile(
+                      leading: const Icon(Icons.smart_toy_outlined),
+                      title: Text(AppLocalizations.of(context)!.aiProvider),
+                      trailing: DropdownButton<String>(
+                        value: aiProvider,
+                        underline: const SizedBox(),
+                        onChanged: (v) => setState(() => aiProvider = v!),
+                        items: const [
+                          DropdownMenuItem(value: 'ollama', child: Text('Ollama (Local)')),
+                          DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
+                          DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
+                        ],
+                      ),
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiEndpoint,
+                      aiEndpoint,
+                      (v) => aiEndpoint = v,
+                      hint: 'http://localhost:11434',
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiModel,
+                      aiModel,
+                      (v) => aiModel = v,
+                      hint: 'qwen2.5:7b',
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiApiKey,
+                      aiApiKey,
+                      (v) => aiApiKey = v,
+                      hint: 'sk-xxxxxxxx',
+                      isPassword: true,
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiProxy,
+                      aiProxy,
+                      (v) => aiProxy = v,
+                      hint: 'http://127.0.0.1:7890',
+                    ),
+                    _buildSliderTile(
+                      AppLocalizations.of(context)!.aiTemperature,
+                      aiTemperature,
+                      (v) => setState(() => aiTemperature = v),
+                      min: 0,
+                      max: 1,
+                    ),
+                    _buildSliderTile(
+                      AppLocalizations.of(context)!.aiMaxTokens,
+                      aiMaxTokens,
+                      (v) => setState(() => aiMaxTokens = v),
+                      min: 256,
+                      max: 8192,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: OutlinedButton.icon(
+                        onPressed: _testAIConnection,
+                        icon: const Icon(Icons.bolt_rounded),
+                        label: Text(AppLocalizations.of(context)!.aiTestButton),
+                      ),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.help),
                 _buildGroupCard([
                   ListTile(
@@ -445,6 +539,25 @@ class _SettingsPageState extends State<SettingsPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Column(children: children),
+    );
+  }
+
+  Widget _buildTextTile(String title, String value, Function(String) onChanged,
+      {String? hint, bool isPassword = false}) {
+    final controller = TextEditingController(text: value);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          labelText: title,
+          hintText: hint,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -636,7 +749,55 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  void _saveAll() {
+  Future<void> _testAIConnection() async {
+    // 1. First save the current config to ensure backend has the latest credentials
+    _saveAll(silent: true);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.searching)),
+    );
+
+    try {
+      // 2. Call a simple AI command to verify connectivity
+      final result = await Process.run(
+        BackendService.venvPython,
+        [BackendService.scriptPath, "--ai-summary", "--json"],
+        workingDirectory: BackendService.workingDir,
+      ).timeout(const Duration(seconds: 30));
+
+      if (!mounted) return;
+      if (result.exitCode == 0) {
+        final data = jsonDecode(result.stdout);
+        if (data['response'] != null && !data['response'].toString().startsWith('Error')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.aiTestSuccess),
+              backgroundColor: Colors.green,
+            ),
+          );
+          return;
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.aiTestFailed(result.stdout + result.stderr)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.aiTestFailed(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _saveAll({bool silent = false}) {
     final config = {
       'search': {
         'sources': {
@@ -672,13 +833,23 @@ class _SettingsPageState extends State<SettingsPage> {
         'remind_updates': remindUpdates,
         'include_aur_in_update_all': includeAurUpdates,
       },
+      'ai': {
+        'enabled': aiEnabled,
+        'provider': aiProvider,
+        'endpoint': aiEndpoint,
+        'model': aiModel,
+        'api_key': aiApiKey,
+        'proxy': aiProxy,
+        'temperature': aiTemperature,
+        'max_tokens': aiMaxTokens.toInt(),
+      },
     };
 
     BackendService.instance.saveConfig(config).then((success) {
       if (success) {
         UpdateService().updateConfig();
       }
-      if (!mounted) return;
+      if (!mounted || silent) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),

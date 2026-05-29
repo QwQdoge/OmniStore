@@ -83,6 +83,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searching => 'Buscando...';
 
   @override
+  String get activity => 'Actividad';
+
+  @override
   String get category => 'Categoría';
 
   @override
@@ -391,4 +394,51 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get add => 'Añadir';
+
+  @override
+  String get aiSettings => 'AI Assistant Settings';
+
+  @override
+  String get aiEnabled => 'Enable AI Assistant';
+
+  @override
+  String get aiProvider => 'AI Provider';
+
+  @override
+  String get aiEndpoint => 'API Endpoint';
+
+  @override
+  String get aiModel => 'Model Name';
+
+  @override
+  String get aiApiKey => 'API Key';
+
+  @override
+  String get aiProxy => 'Network Proxy (Optional)';
+
+  @override
+  String get aiTemperature => 'Temperature (Creativity)';
+
+  @override
+  String get aiMaxTokens => 'Max Response Tokens';
+
+  @override
+  String get aiTestButton => 'Test AI Connection';
+
+  @override
+  String get aiTestSuccess => 'AI connection successful!';
+
+  @override
+  String aiTestFailed(String error) {
+    return 'AI connection failed: $error';
+  }
+
+  @override
+  String get aiPromptExplain => 'Explain with AI';
+
+  @override
+  String get aiPromptRecommend => 'Ask AI for Recommendation';
+
+  @override
+  String get aiPromptError => 'Analyze Error with AI';
 }

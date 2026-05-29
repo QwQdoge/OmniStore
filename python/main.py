@@ -82,6 +82,10 @@ from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
+    """
+    Main backend controller for OmniStore.
+    Coordinates between configuration, cache, searching, and execution modules.
+    """
     def __init__(self, json_mode=False):
         self.config = ConfigManager()
         self.cache = CacheManager()
@@ -152,6 +156,13 @@ class OmnistoreBackend:
                 logging.info(clean_msg)
 
     async def run_search(self, query: str, json_mode: bool = False):
+        """
+        Executes a unified search across all enabled repositories.
+
+        Args:
+            query: The search keyword or 'category:id'.
+            json_mode: If True, output raw JSON results to stdout.
+        """
         try:
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -177,7 +188,14 @@ class OmnistoreBackend:
                 print(f"[Error] {error_msg}")
 
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False):
-        """Installation logic"""
+        """
+        Triggers the installation of a specific package.
+
+        Args:
+            name: Package name or ID.
+            source: Installation source (AUR, Flatpak, Native, etc.).
+            url: Optional direct URL for AppImage downloads.
+        """
         self.is_action = True
         package_data = {"name": name, "source": source, "url": url}
 
