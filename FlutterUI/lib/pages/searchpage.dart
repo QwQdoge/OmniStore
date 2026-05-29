@@ -45,9 +45,15 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _controller.addListener(_onSearchChanged);
     _loadHistory();
+
+    // Listen for global search requests
+    BackendService.pendingSearchQuery.addListener(_onGlobalSearchRequested);
+
     if (widget.initialQuery != null) {
       _controller.text = widget.initialQuery!;
       _search(widget.initialQuery!);
+    } else if (BackendService.pendingSearchQuery.value != null) {
+      _onGlobalSearchRequested();
     } else {
       _loadInitialContent();
     }
@@ -55,6 +61,17 @@ class _SearchPageState extends State<SearchPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
       });
+    }
+  }
+
+  void _onGlobalSearchRequested() {
+    final query = BackendService.pendingSearchQuery.value;
+    if (query != null && mounted) {
+      // Clear the pending query immediately to avoid re-triggering
+      BackendService.pendingSearchQuery.value = null;
+
+      _controller.text = query;
+      _search(query);
     }
   }
 
@@ -81,6 +98,7 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _debounce?.cancel();
     _controller.removeListener(_onSearchChanged);
+    BackendService.pendingSearchQuery.removeListener(_onGlobalSearchRequested);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -393,7 +411,7 @@ class _SearchPageState extends State<SearchPage> {
                           tooltip: '${AppLocalizations.of(context)!.search} ${cat.name}',
                           avatar: Icon(cat.icon, size: 16, color: cat.color),
                           label: Text(cat.name, style: const TextStyle(fontSize: 12)),
-                          onPressed: () => _search('category:${cat.id}'),
+                          onPressed: () => _search('/${cat.id.toLowerCase()}'),
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

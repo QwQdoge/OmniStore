@@ -27,14 +27,19 @@ _orig_print = print
 def print(*args, **kwargs):
     msg = " ".join(map(str, args))
 
+    # Protocol-prefixed messages are always allowed
     if msg.startswith("[CALLBACK]") or msg.startswith("[PROGRESS]") or msg.startswith("[SPEED]"):
         _orig_print(*args, **kwargs, flush=True)
         return
 
     json_mode = getattr(main, "json_mode_active", False)
     if json_mode:
-        # Only allow actual JSON payloads in JSON mode.
-        if msg.startswith("{") or msg.startswith("[") or msg.startswith('"') or msg.startswith("true") or msg.startswith("false") or msg.startswith("null"):
+        # Strict mode: in JSON mode, ONLY allow structured protocol messages or JSON strings
+        # to ensure the frontend's JSON parser never encounters chatter.
+        stripped_msg = msg.strip()
+        if (stripped_msg.startswith("{") and stripped_msg.endswith("}")) or \
+           (stripped_msg.startswith("[") and stripped_msg.endswith("]")) or \
+           (stripped_msg in ("true", "false", "null")):
             _orig_print(*args, **kwargs, flush=True)
         return
 
@@ -160,7 +165,7 @@ class OmnistoreBackend:
         Executes a unified search across all enabled repositories.
 
         Args:
-            query: The search keyword or 'category:id'.
+            query: The search keyword or '/id' or 'category:id'.
             json_mode: If True, output raw JSON results to stdout.
         """
         try:

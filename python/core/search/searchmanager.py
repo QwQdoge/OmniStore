@@ -81,6 +81,14 @@ class SearchManager:
         if not query or len(query) < 2:
             return []
 
+        # Handle category shorthand: /game -> category:Game
+        if query.startswith("/"):
+            cat_id = query[1:].strip().lower()
+            # Map common lowercase IDs back to their standard form if needed
+            # For Flathub and internal mapping, lowercase usually works fine,
+            # but we can capitalize to match common conventions.
+            query = f"category:{cat_id.capitalize()}"
+
         # 记录搜索习惯
         self.habit_tracker.record_search(query)
 
