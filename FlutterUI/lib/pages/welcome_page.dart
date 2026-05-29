@@ -406,14 +406,41 @@ class _WelcomePageState extends State<WelcomePage> {
                     ),
                     TextField(
                       controller: _aiEndpoint,
-                      decoration: const InputDecoration(labelText: "接口地址", hintText: "http://localhost:11434"),
+                      decoration: const InputDecoration(
+                        labelText: "接口地址",
+                        hintText: "http://localhost:11434",
+                        helperText: "Ollama 默认为 http://localhost:11434",
+                      ),
                     ),
                     TextField(
                       controller: _aiApiKey,
-                      decoration: const InputDecoration(labelText: "API 密钥 (可选)"),
+                      decoration: const InputDecoration(
+                        labelText: "API 密钥 (Key)",
+                        helperText: "如果是 Ollama 则留空，OpenAI 请填入 sk-xxx",
+                      ),
                       obscureText: true,
                     ),
                     const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text("如何获取 API 密钥？"),
+                            content: const Text(
+                              "1. Ollama (本地): \n下载并运行 Ollama，无需密钥。请确保设置环境变量 OLLAMA_ORIGINS=\"*\"。\n\n"
+                              "2. 云端 (OpenAI/云雾): \n前往服务商官网（如 OpenAI 或云雾 API）注册并创建 API Key，然后填入此处。",
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("知道了")),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.help_outline_rounded, size: 16),
+                      label: const Text("获取帮助", style: TextStyle(fontSize: 12)),
+                    ),
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(

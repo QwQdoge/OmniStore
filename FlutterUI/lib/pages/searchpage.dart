@@ -1145,6 +1145,56 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  Future<void> _showAIRecommendDialog() async {
+    final query = _controller.text.trim();
+    if (query.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptRecommend),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiRecommend(query),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final text = snapshot.data ?? "AI failed to respond.";
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    MarkdownBody(
+                      data: text.split('APPS_JSON:')[0],
+                      selectable: true,
+                    ),
+                    AIAppResolver(aiText: text, jsonPrefix: 'APPS_JSON:'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showAppDetails(AppPackage app) {
     Navigator.push(
       context,
