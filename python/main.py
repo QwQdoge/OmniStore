@@ -82,6 +82,10 @@ from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
+    """
+    Main backend controller for OmniStore.
+    Coordinates between configuration, cache, searching, and execution modules.
+    """
     def __init__(self, json_mode=False):
         self.config = ConfigManager()
         self.cache = CacheManager()
@@ -152,6 +156,13 @@ class OmnistoreBackend:
                 logging.info(clean_msg)
 
     async def run_search(self, query: str, json_mode: bool = False):
+        """
+        Executes a unified search across all enabled repositories.
+
+        Args:
+            query: The search keyword or 'category:id'.
+            json_mode: If True, output raw JSON results to stdout.
+        """
         try:
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -177,7 +188,14 @@ class OmnistoreBackend:
                 print(f"[Error] {error_msg}")
 
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False):
-        """Installation logic"""
+        """
+        Triggers the installation of a specific package.
+
+        Args:
+            name: Package name or ID.
+            source: Installation source (AUR, Flatpak, Native, etc.).
+            url: Optional direct URL for AppImage downloads.
+        """
         self.is_action = True
         package_data = {"name": name, "source": source, "url": url}
 
@@ -744,6 +762,13 @@ async def main():
     group.add_argument("--ai-explain", metavar="APP_NAME", help="Ask AI to explain package details")
     group.add_argument("--ai-recommend", metavar="PROMPT", help="Ask AI to recommend apps based on prompt")
     group.add_argument("--ai-analyze-error", metavar="ERROR_LOG", help="Ask AI to analyze installation error logs")
+    group.add_argument("--ai-compare", metavar="APP_NAME", help="Ask AI to compare package variants")
+    group.add_argument("--ai-health", action="store_true", help="Ask AI to generate system health report")
+    group.add_argument("--ai-pick", action="store_true", help="Ask AI to pick an app of the day")
+    group.add_argument("--ai-correct", metavar="QUERY", help="Ask AI to suggest search corrections")
+    group.add_argument("--ai-changelog", metavar="NAME,CURRENT,NEW", help="Ask AI to summarize update changelog")
+    group.add_argument("--ai-cli", metavar="NAME,SOURCE", help="Ask AI to generate CLI command")
+    group.add_argument("--ai-conflicts", metavar="NAME", help="Ask AI to detect potential package conflicts")
 
     parser.add_argument("--json", action="store_true",
                          help="Output results in JSON format")
@@ -945,6 +970,61 @@ async def main():
 
     elif args.ai_analyze_error:
         await backend.run_ai_analyze_error(args.ai_analyze_error)
+
+    elif args.ai_compare:
+        # Hybrid Search to find variants for comparison
+        timeout = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await backend.initialize(session)
+            candidates = await backend.manager.search_all(args.ai_compare) # type: ignore
+            target_app = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
+            if target_app:
+                res = await backend.ai.compare_variants(args.ai_compare, target_app.get('variants', []))
+                print(json.dumps({"response": res}, ensure_ascii=False))
+            else:
+                print(json.dumps({"response": "App not found for comparison."}, ensure_ascii=False))
+
+    elif args.ai_health:
+        # Collect system info for AI diagnostic
+        status = await backend.env.check_env()
+        # Add orphaned packages count if possible
+        proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+        stdout, _ = await proc.communicate()
+        status["orphaned_count"] = len(stdout.decode().splitlines())
+        res = await backend.ai.generate_health_report(status)
+        print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_pick:
+        timeout = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await backend.initialize(session)
+            trending = (await backend.recommender.get_recommendations()).get('trending', []) # type: ignore
+            res = await backend.ai.pick_of_the_day(trending)
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_correct:
+        res = await backend.ai.suggest_correction(args.ai_correct)
+        print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_changelog:
+        parts = args.ai_changelog.split(',')
+        if len(parts) >= 3:
+            res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_cli:
+        parts = args.ai_cli.split(',')
+        if len(parts) >= 2:
+            res = await backend.ai.generate_cli_command(parts[0], parts[1])
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_conflicts:
+        # Get subset of installed packages for context
+        proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
+        installed = stdout.decode().splitlines()
+        res = await backend.ai.detect_conflicts(args.ai_conflicts, installed)
+        print(json.dumps({"response": res}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

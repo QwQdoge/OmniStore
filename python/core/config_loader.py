@@ -46,10 +46,13 @@ class ConfigManager:
             },
             "ai": {
                 "enabled": False,
-                "provider": "ollama",
+                "provider": "ollama",  # ollama, openai, gemini, custom
                 "endpoint": "http://localhost:11434",
                 "model": "qwen2.5:7b",
-                "api_key": ""
+                "api_key": "",
+                "temperature": 0.7,
+                "max_tokens": 2048,
+                "proxy": ""
             },
             "custom_repos": {
                 "flatpak": [],

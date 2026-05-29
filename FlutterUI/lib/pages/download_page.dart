@@ -10,6 +10,8 @@ import '../widgets/smooth_progress_bar.dart';
 import 'app_details_page.dart';
 import '../services/l10n_service.dart';
 import '../services/update_service.dart';
+import '../widgets/magic_pulse_icon.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -449,20 +451,62 @@ class _DownloadPageState extends State<DownloadPage>
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(
                     "${update['current_version']} → ${update['new_version']}"),
-                trailing: ElevatedButton(
-                  onPressed: () {
-                    // Start update
-                    UpdateService()
-                        .startUpdate(update['name'], update['source']);
-                    _tabController.animateTo(0);
-                  },
-                  child: Text(L10nService.s('update')),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
+                      tooltip: AppLocalizations.of(context)!.aiExplainUpdate,
+                      onPressed: () => _showAIUpdateSummary(
+                        update['name'],
+                        update['current_version'],
+                        update['new_version'],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        UpdateService().startUpdate(update['name'], update['source']);
+                        _tabController.animateTo(0);
+                      },
+                      child: Text(L10nService.s('update')),
+                    ),
+                  ],
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Future<void> _showAIUpdateSummary(String name, String current, String next) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiChangelogTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiSummarizeUpdate(name, current, next),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+              }
+              return MarkdownBody(data: snapshot.data ?? "AI failed to summarize.", selectable: true);
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
     );
   }
 

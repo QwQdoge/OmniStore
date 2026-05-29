@@ -2,11 +2,13 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/category_service.dart';
+import '../widgets/magic_pulse_icon.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
 import '../services/l10n_service.dart';
@@ -31,6 +33,7 @@ class _SearchPageState extends State<SearchPage> {
   bool _isLoading = false;
   bool _hasInput = false;
   bool _hasSearched = false;
+  String? _aiCorrection;
   ViewMode _viewMode = ViewMode.list;
   List<String> _history = [];
   Timer? _debounce;
@@ -94,6 +97,7 @@ class _SearchPageState extends State<SearchPage> {
           if (!_hasInput) {
             _results = [];
             _hasSearched = false;
+            _aiCorrection = null;
           }
         });
       }
@@ -129,6 +133,7 @@ class _SearchPageState extends State<SearchPage> {
       _isLoading = true;
       _hasSearched = true;
       _hasInput = true;
+      _aiCorrection = null;
     });
 
     try {
@@ -141,6 +146,10 @@ class _SearchPageState extends State<SearchPage> {
         _isLoading = false;
         _history = updatedHistory;
       });
+
+      if (_results.isEmpty) {
+        _fetchAICorrection(q);
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
@@ -149,6 +158,17 @@ class _SearchPageState extends State<SearchPage> {
         );
       }
     }
+  }
+
+  Future<void> _fetchAICorrection(String query) async {
+    try {
+      final corr = await BackendService.instance.aiSuggestCorrection(query);
+      if (mounted && corr.isNotEmpty && _results.isEmpty) {
+        setState(() {
+          _aiCorrection = corr;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -218,6 +238,12 @@ class _SearchPageState extends State<SearchPage> {
                     _focusNode.requestFocus();
                   },
                 ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                tooltip: AppLocalizations.of(context)!.aiPromptRecommend,
+                onPressed: _showAIRecommendDialog,
+              ),
               const SizedBox(width: 8),
               FilledButton(
                 onPressed: _search,
@@ -385,10 +411,52 @@ class _SearchPageState extends State<SearchPage> {
   // ──────────────────────────────────────────────────────────
   Widget _buildResultsArea() {
     if (_isLoading) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+
     if (_hasSearched && _results.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context)!.noResults));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(l10n.noResults),
+            if (_aiCorrection != null) ...[
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.aiCorrection,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.purple.withValues(alpha: 0.1)),
+                  ),
+                  child: MarkdownBody(
+                    data: _aiCorrection!,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: const TextStyle(color: Colors.purple, fontSize: 13, height: 1.4),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
     }
-    if (!_hasSearched) return Center(child: Text(AppLocalizations.of(context)!.searching));
+    if (!_hasSearched) return Center(child: Text(l10n.searching));
 
     return Column(
       children: [
@@ -397,7 +465,7 @@ class _SearchPageState extends State<SearchPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(AppLocalizations.of(context)!.resultsFound(_results.length), style: const TextStyle(fontSize: 12)),
+              Text(l10n.resultsFound(_results.length), style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
                 segments: [
@@ -747,6 +815,50 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showAIRecommendDialog() async {
+    final query = _controller.text.trim();
+    if (query.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptRecommend),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiRecommend(query),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
       ),
     );
   }

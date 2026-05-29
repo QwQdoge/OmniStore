@@ -55,7 +55,7 @@ The Python backend serves as the CLI logic wrapper executing tasks.
   - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
   - `search/`: Unified package search logic.
   - `downloader/`: Process execution for installation/uninstallation flags.
-  - `ai/`: AI Assistant wrapper communicating with Ollama/OpenAI API.
+  - `ai/`: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature.
   - `config_loader.py` & `env_manager.py`: Configuration and environment validation.
 
 ### Rust Daemon (`daemon/`)
@@ -69,3 +69,19 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 2. **Real-time Log Streaming**: Outputs from Python's standard output are parsed line-by-line via `Stream<String>` in Flutter's `BackendService`. Progress percentages marked with `[PROGRESS]` updates the global progress notifier.
 3. **Background Tasks**: Long-running background installs are coordinated using the `TaskManager` service to persist state across page navigation.
 4. **System Tray Integration**: `UpdateService` initializes a background tray icon using `SystemTray` package with the asset `assets/app_icon.png` to support minimize-to-tray.
+
+---
+
+## 4. Communication Protocol & Standards
+
+### Backend to Frontend Streams:
+- **`[PROGRESS] <int>`**: Updates the UI progress bar (0-100). `-1` indicates an indeterminate state (e.g., "Verifying...").
+- **`[SPEED] <string>`**: Displays real-time download speed in the status bar.
+- **`[CALLBACK] <json>`**: Structured logs for the terminal view.
+  - Schema: `{"type": "log", "message": "...", "level": "INFO|ERROR|SUCCESS"}`
+
+### AI Assistant Guidelines:
+- **Visual Language**: All AI-driven features must use the `MagicPulseIcon` with `Colors.purple` to maintain a distinct "intelligent" identity.
+- **Language Localization**: All AI responses should respect the `ui.language` setting.
+- **Graceful Degradation**: Prompts are defined in `python/core/ai/assistant.py`. When adding new AI features, ensure they fall back gracefully (e.g., hidden buttons or clear error messages) if AI is disabled or the provider is unreachable.
+- **Contextual Intelligence**: New AI features should be integrated directly where the user needs them (e.g., Error Analysis in terminal, Comparisons in variant pickers).

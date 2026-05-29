@@ -83,6 +83,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searching => 'Searching...';
 
   @override
+  String get activity => 'Activity';
+
+  @override
   String get category => 'Category';
 
   @override
@@ -391,4 +394,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get add => 'Add';
+
+  @override
+  String get aiSettings => 'AI Assistant Settings';
+
+  @override
+  String get aiEnabled => 'Enable AI Assistant';
+
+  @override
+  String get aiProvider => 'AI Provider';
+
+  @override
+  String get aiEndpoint => 'API Endpoint';
+
+  @override
+  String get aiModel => 'Model Name';
+
+  @override
+  String get aiApiKey => 'API Key';
+
+  @override
+  String get aiProxy => 'Network Proxy (Optional)';
+
+  @override
+  String get aiTemperature => 'Temperature (Creativity)';
+
+  @override
+  String get aiMaxTokens => 'Max Response Tokens';
+
+  @override
+  String get aiTestButton => 'Test AI Connection';
+
+  @override
+  String get aiTestSuccess => 'AI connection successful!';
+
+  @override
+  String aiTestFailed(String error) {
+    return 'AI connection failed: $error';
+  }
+
+  @override
+  String get aiPromptExplain => 'Explain with AI';
+
+  @override
+  String get aiPromptRecommend => 'Ask AI for Recommendation';
+
+  @override
+  String get aiPromptError => 'Analyze Error with AI';
+
+  @override
+  String get aiPickDay => 'AI Pick of the Day';
+
+  @override
+  String get aiPickDaySubtitle => 'Powered by OmniStore AI';
+
+  @override
+  String get aiCompareTitle => 'AI Variant Comparison';
+
+  @override
+  String get aiHealthTitle => 'AI System Health Report';
+
+  @override
+  String get aiHealthSubtitle => 'Intelligent diagnostic for your Arch Linux';
+
+  @override
+  String get aiCorrection => 'Did you mean?';
+
+  @override
+  String get aiThinking => 'AI is thinking...';
+
+  @override
+  String get magicSearch => 'Magic Search';
+
+  @override
+  String get aiChangelogTitle => 'AI Update Summary';
+
+  @override
+  String get aiCliTitle => 'AI Command Generator';
+
+  @override
+  String get aiConflictTitle => 'AI Conflict Detection';
+
+  @override
+  String get aiCopyCommand => 'Copy Command';
+
+  @override
+  String get aiCommandCopied => 'Command copied to clipboard';
+
+  @override
+  String get aiRefineSearch => 'Refine search with AI';
+
+  @override
+  String get aiExplainUpdate => 'Explain this update';
 }

@@ -160,6 +160,166 @@ class BackendService {
     }
   }
 
+  /// AI 解释应用
+  Future<String> aiExplain(String appName, String description) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-explain",
+        appName,
+        "--ai-desc",
+        description,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 更新内容总结
+  Future<String> aiSummarizeUpdate(String name, String current, String next) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-changelog",
+        "$name,$current,$next",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI CLI 命令生成
+  Future<String> aiGenerateCLI(String name, String source) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-cli",
+        "$name,$source",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /// AI 冲突检测
+  Future<String> aiDetectConflicts(String name) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-conflicts",
+        name,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 每日推荐
+  Future<String> aiPickOfTheDay() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-pick",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 搜索纠错
+  Future<String> aiSuggestCorrection(String query) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-correct",
+        query,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /// AI 版本比较
+  Future<String> aiCompareVariants(String appName) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-compare",
+        appName,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 系统健康报告
+  Future<String> aiSystemHealth() async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-health",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 分析错误
+  Future<String> aiAnalyzeError(String errorLog) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-analyze-error",
+        errorLog,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 推荐应用
+  Future<String> aiRecommend(String prompt) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-recommend",
+        prompt,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
       final result = await Process.run(_venvPython, [

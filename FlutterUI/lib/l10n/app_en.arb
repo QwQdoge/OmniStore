@@ -452,5 +452,42 @@
   "serverUrl": "Server URL",
   "pacmanMirrorManagement": "Pacman Mirror Management",
   "save": "Save",
-  "add": "Add"
+  "add": "Add",
+  "aiSettings": "AI Assistant Settings",
+  "aiEnabled": "Enable AI Assistant",
+  "aiProvider": "AI Provider",
+  "aiEndpoint": "API Endpoint",
+  "aiModel": "Model Name",
+  "aiApiKey": "API Key",
+  "aiProxy": "Network Proxy (Optional)",
+  "aiTemperature": "Temperature (Creativity)",
+  "aiMaxTokens": "Max Response Tokens",
+  "aiTestButton": "Test AI Connection",
+  "aiTestSuccess": "AI connection successful!",
+  "aiTestFailed": "AI connection failed: {error}",
+  "@aiTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptExplain": "Explain with AI",
+  "aiPromptRecommend": "Ask AI for Recommendation",
+  "aiPromptError": "Analyze Error with AI",
+  "aiPickDay": "AI Pick of the Day",
+  "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "aiCompareTitle": "AI Variant Comparison",
+  "aiHealthTitle": "AI System Health Report",
+  "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "aiCorrection": "Did you mean?",
+  "aiThinking": "AI is thinking...",
+  "magicSearch": "Magic Search",
+  "aiChangelogTitle": "AI Update Summary",
+  "aiCliTitle": "AI Command Generator",
+  "aiConflictTitle": "AI Conflict Detection",
+  "aiCopyCommand": "Copy Command",
+  "aiCommandCopied": "Command copied to clipboard",
+  "aiRefineSearch": "Refine search with AI",
+  "aiExplainUpdate": "Explain this update"
 }

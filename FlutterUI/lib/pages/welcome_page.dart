@@ -85,6 +85,10 @@ class _WelcomePageState extends State<WelcomePage> {
     }
   }
 
+  void _skipOnboarding() {
+    _finishSetup();
+  }
+
   Future<void> _finishSetup() async {
     final config = await _backend.loadConfig();
     config['first_run'] = false;
@@ -116,6 +120,25 @@ class _WelcomePageState extends State<WelcomePage> {
           ),
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Row(
+                  children: [
+                    ...List.generate(3, (i) => Expanded(
+                      child: Container(
+                        height: 4,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: i <= _currentStep ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    )),
+                    const SizedBox(width: 8),
+                    TextButton(onPressed: _skipOnboarding, child: const Text("Skip")),
+                  ],
+                ),
+              ),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(28),
