@@ -209,6 +209,10 @@
   "@searching": {
     "description": "Description for searching"
   },
+  "activity": "動態",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "@category": {
     "description": "Category label"
   },

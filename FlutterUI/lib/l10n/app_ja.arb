@@ -31,6 +31,7 @@
   },
   "noResults": "結果が見つかりませんでした",
   "searching": "検索中...",
+  "activity": "アクティビティ",
   "category": "カテゴリー",
   "packageManager": "パッケージマネージャー",
   "pacmanOfficial": "Pacman (公式)",
@@ -208,6 +209,9 @@
   },
   "@searching": {
     "description": "Description for searching"
+  },
+  "@activity": {
+    "description": "Activity tab label"
   },
   "@category": {
     "description": "Category label"

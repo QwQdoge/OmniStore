@@ -235,12 +235,25 @@ class _DownloadPageState extends State<DownloadPage>
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: L10nService.s('search_installed_hint'),
+                    hintText: AppLocalizations.of(context)!.searchInstalledHint,
                     prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            tooltip: L10nService.s('clear'),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = "";
+                                _applyFilters();
+                              });
+                            },
+                          )
+                        : null,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                      borderRadius: BorderRadius.circular(28.0),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
@@ -254,7 +267,7 @@ class _DownloadPageState extends State<DownloadPage>
                 isScrollable: false,
                 indicatorSize: TabBarIndicatorSize.label,
                 tabs: [
-                  Tab(text: AppLocalizations.of(context)!.searching),
+                  Tab(text: AppLocalizations.of(context)!.activity),
                   ValueListenableBuilder<List<dynamic>>(
                     valueListenable: UpdateService().availableUpdates,
                     builder: (context, updates, _) {

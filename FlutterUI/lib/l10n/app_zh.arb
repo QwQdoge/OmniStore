@@ -100,6 +100,10 @@
   "@searching": {
     "description": "Description for searching"
   },
+  "activity": "动态",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "category": "分类",
   "@category": {
     "description": "Category label"
