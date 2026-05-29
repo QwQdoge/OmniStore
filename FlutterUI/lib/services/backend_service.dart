@@ -65,11 +65,6 @@ class BackendService {
   ); // "-I" or "-R"
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
-
-  // Navigation & Search State
-  static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
-  static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
-
   static Process? activeProcess;
   static Process? activeSearchProcess;
 

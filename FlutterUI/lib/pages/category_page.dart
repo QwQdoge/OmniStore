@@ -16,7 +16,7 @@ class CategoryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Material(
-        color: Colors.transparent,
+        type: MaterialType.transparency,
         child: CustomScrollView(
         slivers: [
           SliverAppBar.large(

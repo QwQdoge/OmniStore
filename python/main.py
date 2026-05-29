@@ -165,7 +165,7 @@ class OmnistoreBackend:
         Executes a unified search across all enabled repositories.
 
         Args:
-            query: The search keyword or '/id' or 'category:id'.
+            query: The search keyword or 'category:id'.
             json_mode: If True, output raw JSON results to stdout.
         """
         try:
@@ -1025,6 +1025,10 @@ async def main():
 
                 # Limit to a reasonable amount of candidates for the prompt
                 res = await backend.ai.pick_of_the_day(filtered_candidates[:15])
+
+                # Ensure the mandatory JSON block exists even if AI fails to provide it
+                if "PICK_JSON:" not in res and filtered_candidates:
+                    res += f"\nPICK_JSON: [\"{filtered_candidates[0]['name']}\"]"
             else:
                 res = "Today's recommendation: OmniStore itself! Your gateway to a better Arch Linux experience."
 

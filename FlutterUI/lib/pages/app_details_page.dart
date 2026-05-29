@@ -151,13 +151,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Row(
                           children: [
-                            const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 18),
+                            Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.primary, size: 18),
                             const SizedBox(width: 12),
                             const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                             const Spacer(),
                             TextButton(
                               onPressed: () => _showAIErrorAnalysis(logs.join("\n")),
-                              child: const Text("立即分析", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                              child: Text("立即分析", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -351,24 +351,24 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Badge(
-                                child: MagicPulseIcon(icon: Icons.auto_awesome_rounded)),
+                            icon: Badge(
+                                child: Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.primary)),
                             tooltip: AppLocalizations.of(context)!.aiPromptExplain,
                             onPressed: _showAIExplainDialog,
                           ),
                           if (widget.app.variants.length > 1)
                             IconButton(
-                              icon: const MagicPulseIcon(icon: Icons.compare_arrows_rounded),
+                              icon: Icon(Icons.compare_arrows_rounded, color: theme.colorScheme.primary),
                               tooltip: AppLocalizations.of(context)!.aiCompareTitle,
                               onPressed: _showAICompareDialog,
                             ),
                           IconButton(
-                            icon: const MagicPulseIcon(icon: Icons.terminal_rounded),
+                            icon: Icon(Icons.terminal_rounded, color: theme.colorScheme.primary),
                             tooltip: AppLocalizations.of(context)!.aiCliTitle,
                             onPressed: _showAICliDialog,
                           ),
                           IconButton(
-                            icon: const MagicPulseIcon(icon: Icons.report_problem_rounded),
+                            icon: Icon(Icons.report_problem_rounded, color: theme.colorScheme.primary),
                             tooltip: AppLocalizations.of(context)!.aiConflictTitle,
                             onPressed: _showAIConflictDialog,
                           ),

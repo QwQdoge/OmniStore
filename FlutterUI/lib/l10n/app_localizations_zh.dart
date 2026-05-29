@@ -872,4 +872,96 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get add => '添加';
+
+  @override
+  String get aiSettings => 'AI 助手設定';
+
+  @override
+  String get aiEnabled => '啟用 AI 助手';
+
+  @override
+  String get aiProvider => 'AI 服務提供者';
+
+  @override
+  String get aiEndpoint => 'API 端點';
+
+  @override
+  String get aiModel => '模型名稱';
+
+  @override
+  String get aiApiKey => 'API 金鑰';
+
+  @override
+  String get aiProxy => '網路代理（可選）';
+
+  @override
+  String get aiTemperature => '溫度（創意度）';
+
+  @override
+  String get aiMaxTokens => '最大回應長度';
+
+  @override
+  String get aiTestButton => '測試 AI 連線';
+
+  @override
+  String get aiTestSuccess => 'AI 連線成功！';
+
+  @override
+  String aiTestFailed(String error) {
+    return 'AI 連線失敗：$error';
+  }
+
+  @override
+  String get aiPromptExplain => '使用 AI 說明';
+
+  @override
+  String get aiPromptRecommend => '詢問 AI 推薦';
+
+  @override
+  String get aiPromptError => '使用 AI 分析錯誤';
+
+  @override
+  String get aiPickDay => 'AI 今日精選';
+
+  @override
+  String get aiPickDaySubtitle => '由 OmniStore AI 提供支援';
+
+  @override
+  String get aiCompareTitle => 'AI 版本比較';
+
+  @override
+  String get aiHealthTitle => 'AI 系統健康報告';
+
+  @override
+  String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
+
+  @override
+  String get aiCorrection => '您是指？';
+
+  @override
+  String get aiThinking => 'AI 正在思考中...';
+
+  @override
+  String get magicSearch => '魔法搜尋';
+
+  @override
+  String get aiChangelogTitle => 'AI 更新摘要';
+
+  @override
+  String get aiCliTitle => 'AI 命令產生器';
+
+  @override
+  String get aiConflictTitle => 'AI 衝突偵測';
+
+  @override
+  String get aiCopyCommand => '複製命令';
+
+  @override
+  String get aiCommandCopied => '命令已複製到剪貼簿';
+
+  @override
+  String get aiRefineSearch => '使用 AI 精煉搜尋';
+
+  @override
+  String get aiExplainUpdate => '說明此更新';
 }

@@ -406,23 +406,72 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "搜索已安装的应用...",
+  "@searchInstalledHint": {
+    "description": "Hint text for searching installed applications"
+  },
   "refresh": "刷新",
+  "@refresh": {
+    "description": "Refresh action label"
+  },
   "noActiveTasks": "暂无活动中的任务",
+  "@noActiveTasks": {
+    "description": "Message shown when no tasks are running"
+  },
   "currentTask": "当前任务",
+  "@currentTask": {
+    "description": "Label for the currently running task"
+  },
   "viewLogs": "查看日志",
+  "@viewLogs": {
+    "description": "Button label to open task logs"
+  },
   "allUpdated": "所有应用已是最新",
+  "@allUpdated": {
+    "description": "Status text when all applications are up to date"
+  },
   "update": "更新",
+  "@update": {
+    "description": "Update action label"
+  },
   "enableSystemTray": "启用系统托盘",
+  "@enableSystemTray": {
+    "description": "Toggle label for system tray support"
+  },
   "systemCleaning": "系统清理",
+  "@systemCleaning": {
+    "description": "Section title for system cleanup"
+  },
   "systemCleaningSubtitle": "删除孤立软件包并清理 pacman 缓存",
+  "@systemCleaningSubtitle": {
+    "description": "Subtitle for system cleanup feature"
+  },
   "systemCleaningStarted": "系统清理任务已启动",
+  "@systemCleaningStarted": {
+    "description": "Message shown after starting system cleanup"
+  },
   "backupAndExport": "备份与导出",
+  "@backupAndExport": {
+    "description": "Section title for backup and export"
+  },
   "backupAndExportSubtitle": "导出当前已安装应用列表或从备份导入",
+  "@backupAndExportSubtitle": {
+    "description": "Subtitle for backup and export feature"
+  },
   "export": "导出",
+  "@export": {
+    "description": "Export action label"
+  },
   "import": "导入",
+  "@import": {
+    "description": "Import action label"
+  },
   "selectExportLocation": "选择导出位置",
+  "@selectExportLocation": {
+    "description": "Prompt to choose an export location"
+  },
   "exportSuccess": "导出成功: {count}个软件包",
   "@exportSuccess": {
+    "description": "Success message after exporting packages",
     "placeholders": {
       "count": {
         "type": "int"
@@ -431,6 +480,7 @@
   },
   "exportFailed": "导出失败: {message}",
   "@exportFailed": {
+    "description": "Failure message when export fails",
     "placeholders": {
       "message": {
         "type": "String"
@@ -438,8 +488,12 @@
     }
   },
   "importBackup": "导入备份",
+  "@importBackup": {
+    "description": "Label for importing a backup file"
+  },
   "importBackupConfirm": "已从备份中读取 {count} 个软件包。是否开始批量恢复？",
   "@importBackupConfirm": {
+    "description": "Confirmation text for batch recovery from backup",
     "placeholders": {
       "count": {
         "type": "int"
@@ -447,25 +501,80 @@
     }
   },
   "startRecovery": "开始恢复",
+  "@startRecovery": {
+    "description": "Button label to start recovery"
+  },
   "mirrorListSaved": "镜像列表已保存",
+  "@mirrorListSaved": {
+    "description": "Message shown after saving mirror list"
+  },
   "addMirror": "添加镜像",
+  "@addMirror": {
+    "description": "Action label to add a mirror"
+  },
   "serverUrl": "服务器 URL",
+  "@serverUrl": {
+    "description": "Label for server URL input"
+  },
   "pacmanMirrorManagement": "Pacman 镜像管理",
+  "@pacmanMirrorManagement": {
+    "description": "Section title for Pacman mirror management"
+  },
   "save": "保存",
+  "@save": {
+    "description": "Save action label"
+  },
   "add": "添加",
+  "@add": {
+    "description": "Add action label"
+  },
   "aiSettings": "AI 助手设置",
+  "@aiSettings": {
+    "description": "Title for AI assistant settings"
+  },
   "aiEnabled": "启用 AI 助手",
+  "@aiEnabled": {
+    "description": "Toggle to enable the AI assistant"
+  },
   "aiProvider": "AI 服务商",
+  "@aiProvider": {
+    "description": "Label for AI provider selection"
+  },
   "aiEndpoint": "API 接口地址",
+  "@aiEndpoint": {
+    "description": "Label for AI API endpoint"
+  },
   "aiModel": "模型名称",
+  "@aiModel": {
+    "description": "Label for AI model name"
+  },
   "aiApiKey": "API 密钥 (Key)",
+  "@aiApiKey": {
+    "description": "Label for AI API key input"
+  },
   "aiProxy": "网络代理 (可选)",
+  "@aiProxy": {
+    "description": "Label for optional AI proxy setting"
+  },
   "aiTemperature": "温度 (创意度)",
+  "@aiTemperature": {
+    "description": "Label for AI temperature setting"
+  },
   "aiMaxTokens": "最大响应长度",
+  "@aiMaxTokens": {
+    "description": "Label for AI maximum tokens setting"
+  },
   "aiTestButton": "测试 AI 连接",
+  "@aiTestButton": {
+    "description": "Button label to test AI connectivity"
+  },
   "aiTestSuccess": "AI 连接成功！",
+  "@aiTestSuccess": {
+    "description": "Success message after testing AI connection"
+  },
   "aiTestFailed": "AI 连接失败: {error}",
   "@aiTestFailed": {
+    "description": "Error message when AI connection test fails",
     "placeholders": {
       "error": {
         "type": "String"
@@ -473,21 +582,75 @@
     }
   },
   "aiPromptExplain": "使用 AI 解释",
+  "@aiPromptExplain": {
+    "description": "Prompt action to explain content with AI"
+  },
   "aiPromptRecommend": "咨询 AI 推荐",
+  "@aiPromptRecommend": {
+    "description": "Prompt action to ask AI for recommendations"
+  },
   "aiPromptError": "AI 分析错误",
+  "@aiPromptError": {
+    "description": "Prompt action to analyze an error with AI"
+  },
   "aiPickDay": "AI 每日推荐",
+  "@aiPickDay": {
+    "description": "Title for daily AI pick card"
+  },
   "aiPickDaySubtitle": "由 OmniStore AI 强力驱动",
+  "@aiPickDaySubtitle": {
+    "description": "Subtitle for daily AI pick card"
+  },
   "aiCompareTitle": "AI 版本对比",
+  "@aiCompareTitle": {
+    "description": "Title for AI package comparison feature"
+  },
   "aiHealthTitle": "AI 系统健康报告",
+  "@aiHealthTitle": {
+    "description": "Title for AI system health report"
+  },
   "aiHealthSubtitle": "为您的 Arch Linux 进行智能诊断",
+  "@aiHealthSubtitle": {
+    "description": "Subtitle for AI system health report"
+  },
   "aiCorrection": "您是不是要找？",
+  "@aiCorrection": {
+    "description": "Suggestion text for AI correction"
+  },
   "aiThinking": "AI 正在思考中...",
+  "@aiThinking": {
+    "description": "Status text while AI is thinking"
+  },
   "magicSearch": "魔法搜索",
+  "@magicSearch": {
+    "description": "Title for magic search feature"
+  },
   "aiChangelogTitle": "AI 更新内容总结",
+  "@aiChangelogTitle": {
+    "description": "Title for AI changelog summary"
+  },
   "aiCliTitle": "AI 终端命令生成",
+  "@aiCliTitle": {
+    "description": "Title for AI command generation feature"
+  },
   "aiConflictTitle": "AI 冲突检测",
+  "@aiConflictTitle": {
+    "description": "Title for AI conflict detection feature"
+  },
   "aiCopyCommand": "复制命令",
+  "@aiCopyCommand": {
+    "description": "Button label to copy generated command"
+  },
   "aiCommandCopied": "命令已复制到剪贴板",
+  "@aiCommandCopied": {
+    "description": "Message shown after copying a command"
+  },
   "aiRefineSearch": "使用 AI 优化搜索",
-  "aiExplainUpdate": "解释此更新"
+  "@aiRefineSearch": {
+    "description": "Action to refine search using AI"
+  },
+  "aiExplainUpdate": "解释此更新",
+  "@aiExplainUpdate": {
+    "description": "Action to explain an update with AI"
+  }
 }

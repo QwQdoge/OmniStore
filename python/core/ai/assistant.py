@@ -252,9 +252,10 @@ class AIAssistant:
         """Explain what's new in an update for a specific application."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
-            f"Summarize the key changes and improvements for {app_name} from version {current_ver} to {new_version}. "
-            "Focus on features users care about. Keep it readable and bulleted."
+            f"You are the OmniStore Expert Curator. Provide response in {lang}.\n"
+            f"Please explain the value of the update for '{app_name}' ({current_ver} -> {new_version}). "
+            "Instead of a technical changelog, summarize the 'human' impact of the update. "
+            "Are there cool new features? Security fixes? Performance boosts? Be warm and insightful."
         )
         user_prompt = f"Explain update for {app_name}: {current_ver} -> {new_version}"
         return await self._post_request(system_prompt, user_prompt)

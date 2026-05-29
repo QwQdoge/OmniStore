@@ -134,6 +134,7 @@
   "uninstallFailedTitle": "Desinstalación fallida",
   "taskCompleted": "Tarea completada",
   "searchInstalledHint": "Buscar aplicaciones instaladas...",
+  "@searchInstalledHint": {},
   "refresh": "Actualizar",
   "noActiveTasks": "No hay tareas activas",
   "currentTask": "Tarea actual",
