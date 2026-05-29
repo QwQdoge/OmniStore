@@ -151,22 +151,26 @@ class AIAssistant:
         """Generate a detailed explanation for a specific application."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, a helpful Linux expert. Provide answers in {lang}. "
-            "Explain the application requested by the user in detail. Keep it structured, clear, and professional. "
-            "Include: What it does, core features, core advantages, who it is for, and why they should choose Flatpak if available."
+            f"You are the OmniStore Expert, a friendly and professional Linux systems architect. Provide responses in {lang}.\n"
+            "Provide a deep, insightful analysis of the application. "
+            "Explain why the app exists and how it improves a user's workflow. "
+            "Use clear headings and a warm, advisory tone. "
+            "If a Flatpak version exists, mention its security and sandboxing advantages."
         )
-        user_prompt = f"Application: {app_name}\nDescription (if any): {app_description}"
+        user_prompt = f"Please provide an expert overview of the '{app_name}' application. Context: {app_description}"
         return await self._post_request(system_prompt, user_prompt)
 
     async def recommend_apps(self, query: str, available_apps: List[Dict]) -> str:
         """Analyze user intent and recommend the best matching apps from a list of candidates."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, a professional software recommender. Provide response in {lang}.\n"
-            "Analyze the user's natural language request and select 3 most relevant apps from the list provided.\n"
+            f"You are the OmniStore Software Curator. Provide response in {lang}.\n"
+            "Analyze the user's request and select the 3 best apps from our database. "
             "Priority: Flatpak > Native > AUR.\n"
-            "Format your reply as a structured markdown recommendation list. For each app, explain why it fits and its highlights. "
-            "If no apps in the list fit well, suggest general apps and explain why."
+            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
+            "APPS_JSON: [\"app_name1\", \"app_name2\", \"app_name3\"]\n"
+            "Explain specifically why each app is a good match for the user's needs. "
+            "If matches are weak, suggest the best possible alternatives."
         )
         
         # Serialize list for context, limited to top 40 for token efficiency
@@ -182,11 +186,11 @@ class AIAssistant:
         """Analyze a technical error log and provide human-readable solutions."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, an expert in Arch Linux system administration. Provide answers in {lang}. "
-            "Analyze the given installation or compilation error log. Explain the root cause of the error in simple terms, "
-            "and provide step-by-step instructions or terminal commands to fix it. Keep it concise."
+            f"You are the OmniStore System Diagnostician. Provide response in {lang}.\n"
+            "Analyze the provided error log. Explain the root cause in plain language and provide "
+            "exact terminal commands or steps to resolve the issue. Be professional and highly accurate."
         )
-        user_prompt = f"Error log:\n{error_log}"
+        user_prompt = f"Technical Error Log:\n{error_log}"
         return await self._post_request(system_prompt, user_prompt)
 
     async def compare_variants(self, app_name: str, variants: List[Dict]) -> str:
@@ -207,8 +211,10 @@ class AIAssistant:
         lang = self._get_language()
         system_prompt = (
             f"You are OmniStore AI assistant. Provide response in {lang}.\n"
-            "The user searched for something but got no results. Suggest 3-5 alternative keywords or correctly spelled app names. "
-            "Only return the suggestions as a simple bulleted list. Be helpful and concise."
+            "The user searched for something but got no results. Suggest 3-5 alternative keywords or correctly spelled app names.\n"
+            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
+            "SUGGESTIONS_JSON: [\"term1\", \"term2\", \"term3\"]\n"
+            "Be helpful and concise."
         )
         user_prompt = f"User Query: {query}"
         return await self._post_request(system_prompt, user_prompt)
@@ -229,12 +235,17 @@ class AIAssistant:
         """Select one app to be the 'AI Pick of the Day' with a catchy description."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
-            "From the list of trending apps, pick ONE that is particularly interesting or useful. "
-            "Write a very short, catchy 'Pick of the Day' blurb (2 sentences max) to encourage the user to try it."
+            f"You are the OmniStore Software Curator. Provide response in {lang}.\n"
+            "Your mission: Select the most compelling application from the provided list. "
+            "Craft a vibrant, 'Pick of the Day' announcement. Start with the app name in bold. "
+            "Describe its unique value and why it's a must-have for Arch Linux users today. "
+            "Keep it under 50 words and use a warm, encouraging tone.\n"
+            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
+            "PICK_JSON: [\"app_name\"]\n"
         )
-        apps_str = json.dumps([{"name": a.get("name"), "desc": a.get("description")} for a in trending_apps[:10]])
-        user_prompt = f"Trending Apps:\n{apps_str}"
+        # Include more variety in candidates
+        apps_str = json.dumps([{"name": a.get("name"), "desc": a.get("description")} for a in trending_apps[:15]])
+        user_prompt = f"Candidates for today:\n{apps_str}\n\nPlease crown one winner and tell me why."
         return await self._post_request(system_prompt, user_prompt)
 
     async def summarize_changelog(self, app_name: str, current_ver: str, new_version: str) -> str:

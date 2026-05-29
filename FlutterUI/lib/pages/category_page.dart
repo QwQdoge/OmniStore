@@ -8,13 +8,14 @@ class CategoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Material( // Wrap in Material to avoid "No Material widget found" errors in this subpage
+      body: Material(
         color: Colors.transparent,
         child: CustomScrollView(
         slivers: [
@@ -51,7 +52,9 @@ class CategoryPage extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(BuildContext context, CategoryItem cat, ColorScheme colorScheme) {
-    return Card(
+    return Material(
+      color: Colors.transparent,
+      child: Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -87,6 +90,7 @@ class CategoryPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

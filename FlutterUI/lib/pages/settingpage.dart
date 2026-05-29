@@ -479,11 +479,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
                     },
                   ),
-                  ListTile(
-                    leading: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-                    title: Text(l10n.aiHealthTitle),
-                    subtitle: Text(l10n.aiHealthSubtitle),
-                    onTap: _showAIHealthReport,
+                  ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return ListTile(
+                        leading: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                        title: Text(l10n.aiHealthTitle),
+                        subtitle: Text(l10n.aiHealthSubtitle),
+                        onTap: _showAIHealthReport,
+                      );
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup_rounded),
@@ -833,6 +839,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         content: SizedBox(
           width: 600,
+          height: 450,
           child: FutureBuilder<String>(
             future: BackendService.instance.aiSystemHealth(),
             builder: (context, snapshot) {
@@ -913,6 +920,8 @@ class _SettingsPageState extends State<SettingsPage> {
     BackendService.instance.saveConfig(config).then((success) {
       if (success) {
         UpdateService().updateConfig();
+        // Force refresh global AI state
+        BackendService.isAIEnabled.value = aiEnabled;
       }
       if (!mounted || silent) return;
       ScaffoldMessenger.of(context).showSnackBar(

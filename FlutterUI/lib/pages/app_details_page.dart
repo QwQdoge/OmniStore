@@ -137,24 +137,35 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ),
               ),
               // AI 分析按钮 (悬浮)
-              if (BackendService.globalLogs.value.any((l) => l.contains("[ERROR]")))
-                Container(
-                  width: double.infinity,
-                  color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome_rounded, color: Colors.purple, size: 18),
-                      const SizedBox(width: 12),
-                      const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => _showAIErrorAnalysis(BackendService.globalLogs.value.join("\n")),
-                        child: const Text("立即分析", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
+              ValueListenableBuilder<List<String>>(
+                valueListenable: BackendService.globalLogs,
+                builder: (context, logs, _) {
+                  if (!logs.any((l) => l.contains("[ERROR]"))) return const SizedBox.shrink();
+                  return ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return Container(
+                        width: double.infinity,
+                        color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          children: [
+                            const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 18),
+                            const SizedBox(width: 12),
+                            const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () => _showAIErrorAnalysis(logs.join("\n")),
+                              child: const Text("立即分析", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
               // 日志内容
               Expanded(
                 child: ValueListenableBuilder<List<String>>(
@@ -330,27 +341,38 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           }
                         },
                       ),
-                  IconButton(
-                    icon: const Badge(
-                        child: MagicPulseIcon(icon: Icons.auto_awesome_rounded)),
-                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
-                    onPressed: _showAIExplainDialog,
-                  ),
-                  if (widget.app.variants.length > 1)
-                    IconButton(
-                      icon: const MagicPulseIcon(icon: Icons.compare_arrows_rounded),
-                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
-                      onPressed: _showAICompareDialog,
-                    ),
-                  IconButton(
-                    icon: const MagicPulseIcon(icon: Icons.terminal_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
-                    onPressed: _showAICliDialog,
-                  ),
-                  IconButton(
-                    icon: const MagicPulseIcon(icon: Icons.report_problem_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
-                    onPressed: _showAIConflictDialog,
+                  ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Badge(
+                                child: MagicPulseIcon(icon: Icons.auto_awesome_rounded)),
+                            tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                            onPressed: _showAIExplainDialog,
+                          ),
+                          if (widget.app.variants.length > 1)
+                            IconButton(
+                              icon: const MagicPulseIcon(icon: Icons.compare_arrows_rounded),
+                              tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                              onPressed: _showAICompareDialog,
+                            ),
+                          IconButton(
+                            icon: const MagicPulseIcon(icon: Icons.terminal_rounded),
+                            tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                            onPressed: _showAICliDialog,
+                          ),
+                          IconButton(
+                            icon: const MagicPulseIcon(icon: Icons.report_problem_rounded),
+                            tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                            onPressed: _showAIConflictDialog,
+                          ),
+                        ],
+                      );
+                    },
                   ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
@@ -909,6 +931,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 500,
+          height: 400, // Fixed height to prevent overflow in dialog
           child: FutureBuilder<String>(
             future: BackendService.instance.aiExplain(
               widget.app.name,
@@ -921,9 +944,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              return MarkdownBody(
-                data: snapshot.data ?? "AI failed to respond.",
-                selectable: true,
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
               );
             },
           ),
@@ -951,6 +976,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 600,
+          height: 450, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiAnalyzeError(logs),
             builder: (context, snapshot) {
@@ -992,6 +1018,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 600,
+          height: 450, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiCompareVariants(widget.app.name),
             builder: (context, snapshot) {
@@ -1084,13 +1111,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 500,
+          height: 400, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiDetectConflicts(widget.app.name),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
               }
-              return MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true);
+              return SingleChildScrollView(
+                child: MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true),
+              );
             },
           ),
         ),

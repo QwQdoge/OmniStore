@@ -64,6 +64,7 @@ class BackendService {
     null,
   ); // "-I" or "-R"
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
+  static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
   static Process? activeProcess;
 
   static void addLog(String log) {
@@ -153,7 +154,13 @@ class BackendService {
       }
       final output = result.stdout.toString().trim();
       if (output.isEmpty) return {};
-      return jsonDecode(output);
+      final config = jsonDecode(output) as Map<String, dynamic>;
+
+      // Update global AI status
+      final ai = config['ai'] as Map<String, dynamic>?;
+      isAIEnabled.value = ai?['enabled'] ?? false;
+
+      return config;
     } catch (e) {
       debugPrint("loadConfig Exception: $e");
       return {};

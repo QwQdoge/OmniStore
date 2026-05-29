@@ -454,14 +454,20 @@ class _DownloadPageState extends State<DownloadPage>
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
-                      tooltip: AppLocalizations.of(context)!.aiExplainUpdate,
-                      onPressed: () => _showAIUpdateSummary(
-                        update['name'],
-                        update['current_version'],
-                        update['new_version'],
-                      ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: BackendService.isAIEnabled,
+                      builder: (context, enabled, _) {
+                        if (!enabled) return const SizedBox.shrink();
+                        return IconButton(
+                          icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
+                          tooltip: AppLocalizations.of(context)!.aiExplainUpdate,
+                          onPressed: () => _showAIUpdateSummary(
+                            update['name'],
+                            update['current_version'],
+                            update['new_version'],
+                          ),
+                        );
+                      },
                     ),
                     ElevatedButton(
                       onPressed: () {
