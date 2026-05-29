@@ -305,6 +305,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           // TODO: Implement url_launcher to open widget.app.url
                         },
                       ),
+                  IconButton(
+                    icon: const Badge(child: Icon(Icons.auto_awesome_rounded)),
+                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                    onPressed: _showAIExplainDialog,
+                  ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
                       initialData: TaskManager().currentTask,
@@ -846,6 +851,48 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ],
       ],
+    );
+  }
+
+  Future<void> _showAIExplainDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptExplain),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiExplain(
+              widget.app.name,
+              widget.app.description,
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return MarkdownBody(
+                data: snapshot.data ?? "AI failed to respond.",
+                selectable: true,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
     );
   }
 

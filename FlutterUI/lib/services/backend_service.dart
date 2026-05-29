@@ -160,6 +160,40 @@ class BackendService {
     }
   }
 
+  /// AI 解释应用
+  Future<String> aiExplain(String appName, String description) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-explain",
+        appName,
+        "--ai-desc",
+        description,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI 推荐应用
+  Future<String> aiRecommend(String prompt) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-recommend",
+        prompt,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
       final result = await Process.run(_venvPython, [
