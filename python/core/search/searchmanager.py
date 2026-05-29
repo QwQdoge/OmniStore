@@ -14,6 +14,8 @@ import shutil
 import re
 import sys
 
+# Pre-compiled regex for normalization to improve merge performance
+_NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
 class SearchManager:
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession):
@@ -28,6 +30,8 @@ class SearchManager:
         self._setup_sources()
         self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
         self.config = config_manager.current_config  # 直接使用当前配置，避免重复访问 cm.get()
+        # Per-instance cache for normalization to speed up duplicate merging
+        self._norm_cache = {}
 
     def _setup_sources(self):
         self.source_instances = {}
@@ -96,8 +100,9 @@ class SearchManager:
                     f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
         # 1. 初始排序：按智能分和来源优先级排序 (Flatpak 优先)
+        query_lower = query.lower()
         def _sort_key(x):
-            score = self.smart_scoring._calculate_smart_score(x, query)
+            score = self.smart_scoring._calculate_smart_score(x, query_lower)
             source_prio = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}.get(x.get('source'), 0)
             return (score, source_prio)
 
@@ -153,6 +158,9 @@ class SearchManager:
         """
         极致归一化：将各种包名后缀统一，实现真正的跨源合并。
         """
+        if name in self._norm_cache:
+            return self._norm_cache[name]
+
         # 1. 统一转小写，去掉空格
         n = name.lower().strip()
         # 2. 如果是 ID 格式 (com.discordapp.Discord), 提取最后一部分
@@ -163,10 +171,11 @@ class SearchManager:
         n = n.split()[0]
         # 4. 移除常见的 Linux 包名后缀 (关键：让 telegram-desktop-bin 变成 telegram)
         # 我们要移除 -bin, -git, -desktop, -appimage, -a 等干扰项
-        n = re.sub(
-            r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$', '', n)
+        n = _NORM_RE.sub('', n)
         # 5. 移除中间的连字符，处理 TelegramDesktop 这种写法
         n = n.replace("-", "").replace("_", "")
+
+        self._norm_cache[name] = n
         return n
 
     def merge_duplicates(self, items: List[Dict]) -> List[Dict]:

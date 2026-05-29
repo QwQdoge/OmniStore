@@ -1,59 +1,55 @@
 import re
 
+# Pre-compiled regex for library detection to avoid redundant compilation during search
+_LIB_RE = re.compile(r'^lib|-(devel|dev|debug|library)$|^python-|^perl-|^ruby-|^php-|^lua-|^js-|^node-')
+_DESC_KEYWORDS = ["library", "bindings", "header files", "development files", "api for"]
+
 
 class SmartScoring:
     def __init__(self, config_manager, habit_tracker=None):
         self.cm = config_manager
         self.habit_tracker = habit_tracker
+        self._query_re_cache = {}
 
-    def _is_library(self, name, description):
+    def _is_library(self, name_lower: str, desc_lower: str):
         """识别是否为库文件或开发包"""
-        name = name.lower()
-        desc = description.lower() if description else ""
-
-        # 常见库文件前缀/后缀
-        lib_patterns = [
-            r'^lib', r'-devel$', r'-dev$', r'-debug$', r'^python-', r'^perl-',
-            r'^ruby-', r'^php-', r'^lua-', r'^js-', r'-library$', r'^node-'
-        ]
-
-        # 如果名称匹配库文件模式
-        if any(re.search(p, name) for p in lib_patterns):
+        # 1. Check name pattern using pre-compiled regex (Fast)
+        if _LIB_RE.search(name_lower):
             return True
 
-        # 如果描述中明确提到是库、头文件或绑定
-        desc_keywords = ["library", "bindings", "header files", "development files", "api for"]
-        if any(kw in desc for kw in desc_keywords):
-            # 排除掉一些可能是桌面软件但描述里含 keywords 的情况 (模糊处理)
-            if "desktop" in desc or "client" in desc or "editor" in desc:
-                return False
-            return True
+        # 2. Check description keywords
+        if desc_lower:
+            if any(kw in desc_lower for kw in _DESC_KEYWORDS):
+                # 排除掉一些可能是桌面软件但描述里含 keywords 的情况 (模糊处理)
+                if "desktop" in desc_lower or "client" in desc_lower or "editor" in desc_lower:
+                    return False
+                return True
 
         return False
 
-    def _calculate_smart_score(self, item, query):
+    def _calculate_smart_score(self, item, query_lower):
         score = 0
-        name = item.get('name', '').lower()
+        name_lower = item.get('name', '').lower()
         description = item.get('description', '')
-        query = query.lower()
+        desc_lower = description.lower() if description else ""
 
         # --- 维度 1：匹配精准度 (决定性因素) ---
-        if name == query:
+        if name_lower == query_lower:
             score += 5000  # 完全匹配，无条件置顶
-        elif name.startswith(query):
+        elif name_lower.startswith(query_lower):
             score += 1000  # 前缀匹配
-        elif query in name:
+        elif query_lower in name_lower:
             score += 400   # 包含匹配
 
         # --- 维度 2：安装状态 ---
         if item.get('installed') or item.get('is_installed'):
-            if name.startswith(query):
+            if name_lower.startswith(query_lower):
                 score += 1000
             else:
                 score += 100
 
         # --- 维度 3：软件优先 (降权库文件) ---
-        if self._is_library(name, description):
+        if self._is_library(name_lower, desc_lower):
             score -= 2000  # 大幅降权库文件
         else:
             score += 500   # 鼓励普通软件
@@ -73,11 +69,15 @@ class SmartScoring:
             score += user_pref_score * 10  # 放大用户习惯的影响
 
         # --- 维度 5：细节微调 ---
-        length_diff = len(name) - len(query)
+        length_diff = len(name_lower) - len(query_lower)
         if length_diff >= 0:
             score += max(0, 500 - (length_diff * 20))
 
-        if re.search(rf"\b{query}", name):
+        # Optimization: Cache the query regex to avoid recompilation for every item in the result list
+        if query_lower not in self._query_re_cache:
+            self._query_re_cache[query_lower] = re.compile(rf"\b{re.escape(query_lower)}")
+
+        if self._query_re_cache[query_lower].search(name_lower):
             score += 500
 
         return score
