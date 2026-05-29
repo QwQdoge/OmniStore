@@ -178,6 +178,22 @@ class BackendService {
     }
   }
 
+  /// AI 分析错误
+  Future<String> aiAnalyzeError(String errorLog) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-analyze-error",
+        errorLog,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
   /// AI 推荐应用
   Future<String> aiRecommend(String prompt) async {
     try {

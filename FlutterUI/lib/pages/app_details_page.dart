@@ -133,6 +133,25 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ],
                 ),
               ),
+              // AI 分析按钮 (悬浮)
+              if (BackendService.globalLogs.value.any((l) => l.contains("[ERROR]")))
+                Container(
+                  width: double.infinity,
+                  color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded, color: Colors.purple, size: 18),
+                      const SizedBox(width: 12),
+                      const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => _showAIErrorAnalysis(BackendService.globalLogs.value.join("\n")),
+                        child: const Text("立即分析", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
               // 日志内容
               Expanded(
                 child: ValueListenableBuilder<List<String>>(
@@ -306,7 +325,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         },
                       ),
                   IconButton(
-                    icon: const Badge(child: Icon(Icons.auto_awesome_rounded)),
+                    icon: const Badge(
+                        child: Icon(Icons.auto_awesome_rounded,
+                            color: Colors.purple)),
                     tooltip: AppLocalizations.of(context)!.aiPromptExplain,
                     onPressed: _showAIExplainDialog,
                   ),
@@ -882,6 +903,47 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               return MarkdownBody(
                 data: snapshot.data ?? "AI failed to respond.",
                 selectable: true,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAIErrorAnalysis(String logs) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptError),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiAnalyzeError(logs),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
               );
             },
           ),

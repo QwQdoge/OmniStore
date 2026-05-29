@@ -16,6 +16,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  // General settings
   bool pacmanEnabled = true;
   bool aurEnabled = true;
   bool flatpakEnabled = true;
@@ -46,17 +47,28 @@ class _SettingsPageState extends State<SettingsPage> {
   // AI Settings
   bool aiEnabled = false;
   String aiProvider = 'ollama';
-  String aiEndpoint = '';
-  String aiModel = '';
-  String aiApiKey = '';
-  String aiProxy = '';
   double aiTemperature = 0.7;
   double aiMaxTokens = 2048;
+
+  // Persistent Controllers to avoid rebuild issues
+  final TextEditingController _aiEndpointController = TextEditingController();
+  final TextEditingController _aiModelController = TextEditingController();
+  final TextEditingController _aiApiKeyController = TextEditingController();
+  final TextEditingController _aiProxyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadConfig();
+  }
+
+  @override
+  void dispose() {
+    _aiEndpointController.dispose();
+    _aiModelController.dispose();
+    _aiApiKeyController.dispose();
+    _aiProxyController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadConfig() async {
@@ -80,12 +92,10 @@ class _SettingsPageState extends State<SettingsPage> {
           flatpakPriority = (p['flatpak'] ?? 60).toDouble();
           appimagePriority = (p['appimage'] ?? 40).toDouble();
 
-          // 根据权重排序源
           var entries = p.entries.toList()
             ..sort((a, b) => (b.value as num).compareTo(a.value as num));
           sourceOrder =
               entries.map((e) => e.key.toString()).cast<String>().toList();
-          // 补齐缺失的
           for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
             if (!sourceOrder.contains(s)) sourceOrder.add(s);
           }
@@ -113,10 +123,10 @@ class _SettingsPageState extends State<SettingsPage> {
           final ai = config['ai'] as Map<String, dynamic>? ?? {};
           aiEnabled = ai['enabled'] ?? false;
           aiProvider = ai['provider'] ?? 'ollama';
-          aiEndpoint = ai['endpoint'] ?? '';
-          aiModel = ai['model'] ?? '';
-          aiApiKey = ai['api_key'] ?? '';
-          aiProxy = ai['proxy'] ?? '';
+          _aiEndpointController.text = ai['endpoint'] ?? '';
+          _aiModelController.text = ai['model'] ?? '';
+          _aiApiKeyController.text = ai['api_key'] ?? '';
+          _aiProxyController.text = ai['proxy'] ?? '';
           aiTemperature = (ai['temperature'] ?? 0.7).toDouble();
           aiMaxTokens = (ai['max_tokens'] ?? 2048).toDouble();
         });
@@ -148,7 +158,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: TextButton.icon(
-                  onPressed: _saveAll,
+                  onPressed: () => _saveAll(),
                   icon: const Icon(Icons.done_all),
                   label: Text(AppLocalizations.of(context)!.saveAndApply),
                 ),
@@ -198,7 +208,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           final item = sourceOrder.removeAt(oldIndex);
                           sourceOrder.insert(newIndex, item);
 
-                          // 根据新顺序重新分配权重 (100, 80, 60, 40)
                           for (int i = 0; i < sourceOrder.length; i++) {
                             double weight = 100.0 - (i * 20);
                             switch (sourceOrder[i]) {
@@ -335,6 +344,82 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
+                _buildSectionTitle(AppLocalizations.of(context)!.aiSettings),
+                _buildGroupCard([
+                  _buildSwitchTile(
+                    AppLocalizations.of(context)!.aiEnabled,
+                    aiEnabled,
+                    (v) => setState(() => aiEnabled = v),
+                  ),
+                  if (aiEnabled) ...[
+                    ListTile(
+                      leading: const Icon(Icons.smart_toy_outlined, color: Colors.purple),
+                      title: Text(AppLocalizations.of(context)!.aiProvider),
+                      subtitle: const Text("Select your AI model source (Local or Cloud)"),
+                      trailing: DropdownButton<String>(
+                        value: aiProvider,
+                        underline: const SizedBox(),
+                        onChanged: (v) => setState(() => aiProvider = v!),
+                        items: const [
+                          DropdownMenuItem(value: 'ollama', child: Text('Ollama (Local)')),
+                          DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
+                          DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
+                        ],
+                      ),
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiEndpoint,
+                      _aiEndpointController,
+                      hint: 'http://localhost:11434',
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiModel,
+                      _aiModelController,
+                      hint: 'qwen2.5:7b',
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiApiKey,
+                      _aiApiKeyController,
+                      hint: 'sk-xxxxxxxx',
+                      isPassword: true,
+                    ),
+                    _buildTextTile(
+                      AppLocalizations.of(context)!.aiProxy,
+                      _aiProxyController,
+                      hint: 'http://127.0.0.1:7890',
+                    ),
+                    _buildSliderTile(
+                      AppLocalizations.of(context)!.aiTemperature,
+                      aiTemperature,
+                      (v) => setState(() => aiTemperature = v),
+                      min: 0,
+                      max: 1,
+                    ),
+                    _buildSliderTile(
+                      AppLocalizations.of(context)!.aiMaxTokens,
+                      aiMaxTokens,
+                      (v) => setState(() => aiMaxTokens = v),
+                      min: 256,
+                      max: 8192,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _testAIConnection,
+                              icon: const Icon(Icons.bolt_rounded, color: Colors.purple),
+                              label: Text(AppLocalizations.of(context)!.aiTestButton),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),
                 _buildGroupCard([
                   _buildSwitchTile(
@@ -362,19 +447,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     leading: const Icon(Icons.system_update_rounded),
                     title: Text(AppLocalizations.of(context)!.updateAllPackages),
                     onTap: () async {
-                      // 触发更新所有
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(AppLocalizations.of(context)!.searching)),
                       );
                       await UpdateService().checkNow();
                       if (UpdateService().availableUpdates.value.isNotEmpty) {
-                        // 如果有更新，跳转到下载页面
-                        // 这里我们简单的通过通知用户或者直接开始逻辑
-                        // 实际上用户通常希望看到进度，所以我们可以尝试开始更新第一个
-                        // 或者在这里逻辑：UpdateService().startUpdate(...)
-                        // 考虑到 UI 逻辑，跳转到索引 3 是最好的
-                        // 我们需要访问 MainNavigationEntry 的状态，或者使用一个全局导航 key
-                        // 在此 demo 中，我们先提示已检查到更新
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(AppLocalizations.of(context)!.foundUpdates(UpdateService().availableUpdates.value.length))),
@@ -416,79 +493,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                   ),
-                ]),
-                const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.aiSettings),
-                _buildGroupCard([
-                  _buildSwitchTile(
-                    AppLocalizations.of(context)!.aiEnabled,
-                    aiEnabled,
-                    (v) => setState(() => aiEnabled = v),
-                  ),
-                  if (aiEnabled) ...[
-                    ListTile(
-                      leading: const Icon(Icons.smart_toy_outlined),
-                      title: Text(AppLocalizations.of(context)!.aiProvider),
-                      trailing: DropdownButton<String>(
-                        value: aiProvider,
-                        underline: const SizedBox(),
-                        onChanged: (v) => setState(() => aiProvider = v!),
-                        items: const [
-                          DropdownMenuItem(value: 'ollama', child: Text('Ollama (Local)')),
-                          DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
-                          DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
-                        ],
-                      ),
-                    ),
-                    _buildTextTile(
-                      AppLocalizations.of(context)!.aiEndpoint,
-                      aiEndpoint,
-                      (v) => aiEndpoint = v,
-                      hint: 'http://localhost:11434',
-                    ),
-                    _buildTextTile(
-                      AppLocalizations.of(context)!.aiModel,
-                      aiModel,
-                      (v) => aiModel = v,
-                      hint: 'qwen2.5:7b',
-                    ),
-                    _buildTextTile(
-                      AppLocalizations.of(context)!.aiApiKey,
-                      aiApiKey,
-                      (v) => aiApiKey = v,
-                      hint: 'sk-xxxxxxxx',
-                      isPassword: true,
-                    ),
-                    _buildTextTile(
-                      AppLocalizations.of(context)!.aiProxy,
-                      aiProxy,
-                      (v) => aiProxy = v,
-                      hint: 'http://127.0.0.1:7890',
-                    ),
-                    _buildSliderTile(
-                      AppLocalizations.of(context)!.aiTemperature,
-                      aiTemperature,
-                      (v) => setState(() => aiTemperature = v),
-                      min: 0,
-                      max: 1,
-                    ),
-                    _buildSliderTile(
-                      AppLocalizations.of(context)!.aiMaxTokens,
-                      aiMaxTokens,
-                      (v) => setState(() => aiMaxTokens = v),
-                      min: 256,
-                      max: 8192,
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: OutlinedButton.icon(
-                        onPressed: _testAIConnection,
-                        icon: const Icon(Icons.bolt_rounded),
-                        label: Text(AppLocalizations.of(context)!.aiTestButton),
-                      ),
-                    ),
-                  ],
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionTitle(AppLocalizations.of(context)!.help),
@@ -542,9 +546,8 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextTile(String title, String value, Function(String) onChanged,
+  Widget _buildTextTile(String title, TextEditingController controller,
       {String? hint, bool isPassword = false}) {
-    final controller = TextEditingController(text: value);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: TextField(
@@ -556,7 +559,6 @@ class _SettingsPageState extends State<SettingsPage> {
           border: const OutlineInputBorder(),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
-        onChanged: onChanged,
       ),
     );
   }
@@ -596,7 +598,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: value,
             min: min,
             max: max,
-            divisions: (max - min).toInt(),
+            divisions: (max - min).toInt() == 0 ? 1 : (max - min).toInt(),
             onChanged: onChanged,
           ),
         ],
@@ -738,7 +740,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _toggleTitleBar(bool useSystem) async {
     setState(() => useSystemTitleBar = useSystem);
-    // 立即生效
     try {
       final wm.TitleBarStyle style = useSystem
           ? wm.TitleBarStyle.normal
@@ -750,7 +751,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _testAIConnection() async {
-    // 1. First save the current config to ensure backend has the latest credentials
     _saveAll(silent: true);
 
     if (!mounted) return;
@@ -759,7 +759,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     try {
-      // 2. Call a simple AI command to verify connectivity
       final result = await Process.run(
         BackendService.venvPython,
         [BackendService.scriptPath, "--ai-summary", "--json"],
@@ -836,10 +835,10 @@ class _SettingsPageState extends State<SettingsPage> {
       'ai': {
         'enabled': aiEnabled,
         'provider': aiProvider,
-        'endpoint': aiEndpoint,
-        'model': aiModel,
-        'api_key': aiApiKey,
-        'proxy': aiProxy,
+        'endpoint': _aiEndpointController.text,
+        'model': _aiModelController.text,
+        'api_key': _aiApiKeyController.text,
+        'proxy': _aiProxyController.text,
         'temperature': aiTemperature,
         'max_tokens': aiMaxTokens.toInt(),
       },
