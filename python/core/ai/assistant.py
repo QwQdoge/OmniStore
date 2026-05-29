@@ -237,6 +237,37 @@ class AIAssistant:
         user_prompt = f"Trending Apps:\n{apps_str}"
         return await self._post_request(system_prompt, user_prompt)
 
+    async def summarize_changelog(self, app_name: str, current_ver: str, new_version: str) -> str:
+        """Explain what's new in an update for a specific application."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            f"Summarize the key changes and improvements for {app_name} from version {current_ver} to {new_version}. "
+            "Focus on features users care about. Keep it readable and bulleted."
+        )
+        user_prompt = f"Explain update for {app_name}: {current_ver} -> {new_version}"
+        return await self._post_request(system_prompt, user_prompt)
+
+    async def generate_cli_command(self, app_name: str, source: str) -> str:
+        """Generate a terminal command to install the app manually."""
+        system_prompt = (
+            "You are OmniStore AI assistant. Return ONLY the single terminal command required to install the specified app from the specified source on Arch Linux. "
+            "No explanation, no markdown blocks, just the raw command string."
+        )
+        user_prompt = f"App: {app_name}, Source: {source}"
+        return await self._post_request(system_prompt, user_prompt)
+
+    async def detect_conflicts(self, app_name: str, system_packages: List[str]) -> str:
+        """Analyze if the new app might conflict with existing system packages."""
+        lang = self._get_language()
+        system_prompt = (
+            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
+            f"Analyze if installing '{app_name}' might cause conflicts or performance issues with existing system packages. "
+            "Check for duplicate functionality or known dependency clashes."
+        )
+        user_prompt = f"Target App: {app_name}\nExisting Packages (subset): {', '.join(system_packages[:50])}"
+        return await self._post_request(system_prompt, user_prompt)
+
     async def summarize_project(self) -> str:
         """Generate a concise markdown summary of the OmniStore project."""
         # Use README as the source material if available to keep summary up-to-date

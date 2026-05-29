@@ -251,11 +251,20 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
-                child: const Row(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchPage(autoFocus: true),
+                    ),
+                  );
+                },
+                child: Row(
                   children: [
-                    Text("查看更多"),
-                    Icon(Icons.chevron_right_rounded, size: 20),
+                    const Icon(Icons.apps_rounded, size: 16),
+                    const SizedBox(width: 4),
+                    Text(AppLocalizations.of(context)!.about), // Fallback for 'View More'
+                    const Icon(Icons.chevron_right_rounded, size: 20),
                   ],
                 ),
               ),

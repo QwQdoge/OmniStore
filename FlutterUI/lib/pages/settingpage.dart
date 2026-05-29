@@ -141,13 +141,15 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text(
-              AppLocalizations.of(context)!.settings,
+              l10n.settings,
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w900,
@@ -162,7 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: TextButton.icon(
                   onPressed: () => _saveAll(),
                   icon: const Icon(Icons.done_all),
-                  label: Text(AppLocalizations.of(context)!.saveAndApply),
+                  label: Text(l10n.saveAndApply),
                 ),
               ),
             ],
@@ -171,31 +173,31 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle(AppLocalizations.of(context)!.packageManager),
+                _buildSectionTitle(l10n.packageManager, icon: Icons.inventory_2_outlined),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.pacmanOfficial,
+                    l10n.pacmanOfficial,
                     pacmanEnabled,
                     (v) => setState(() => pacmanEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.aurUser,
+                    l10n.aurUser,
                     aurEnabled,
                     (v) => setState(() => aurEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.flatpak,
+                    l10n.flatpak,
                     flatpakEnabled,
                     (v) => setState(() => flatpakEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.appImage,
+                    l10n.appImage,
                     appimageEnabled,
                     (v) => setState(() => appimageEnabled = v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.sourcePriority),
+                _buildSectionTitle(l10n.sourcePriority, icon: Icons.low_priority_rounded),
                 _buildGroupCard([
                   SizedBox(
                     height: 220,
@@ -235,19 +237,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         switch (s) {
                           case 'pacman':
                             icon = Icons.apps;
-                            label = AppLocalizations.of(context)!.pacmanOfficial;
+                            label = l10n.pacmanOfficial;
                             break;
                           case 'aur':
                             icon = Icons.cloud_outlined;
-                            label = AppLocalizations.of(context)!.aurUser;
+                            label = l10n.aurUser;
                             break;
                           case 'flatpak':
                             icon = Icons.inventory_2_outlined;
-                            label = AppLocalizations.of(context)!.flatpak;
+                            label = l10n.flatpak;
                             break;
                           default:
                             icon = Icons.insert_drive_file_outlined;
-                            label = AppLocalizations.of(context)!.appImage;
+                            label = l10n.appImage;
                         }
                         return ListTile(
                           key: ValueKey(s),
@@ -260,21 +262,21 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.search),
+                _buildSectionTitle(l10n.search, icon: Icons.search_rounded),
                 _buildGroupCard([
                   _buildSliderTile(
-                    AppLocalizations.of(context)!.maxResults,
+                    l10n.maxResults,
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.appearance),
+                _buildSectionTitle(l10n.appearance, icon: Icons.palette_outlined),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.palette_outlined),
-                    title: Text(AppLocalizations.of(context)!.themeColor),
+                    title: Text(l10n.themeColor),
                     subtitle: Text(colorSeed),
                     trailing: Container(
                       width: 24,
@@ -292,71 +294,71 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
-                    title: Text(AppLocalizations.of(context)!.appearance),
+                    title: Text(l10n.appearance),
                     trailing: DropdownButton<String>(
                       value: appearance,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => appearance = v!),
                       items: [
-                        DropdownMenuItem(value: 'system', child: Text(AppLocalizations.of(context)!.followSystem)),
-                        DropdownMenuItem(value: 'light', child: Text(AppLocalizations.of(context)!.lightMode)),
-                        DropdownMenuItem(value: 'dark', child: Text(AppLocalizations.of(context)!.darkMode)),
+                        DropdownMenuItem(value: 'system', child: Text(l10n.followSystem)),
+                        DropdownMenuItem(value: 'light', child: Text(l10n.lightMode)),
+                        DropdownMenuItem(value: 'dark', child: Text(l10n.darkMode)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.notifications),
+                _buildSectionTitle(l10n.notifications, icon: Icons.notifications_none_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.enableNotifications,
+                    l10n.enableNotifications,
                     notificationsEnabled,
                     (v) => setState(() => notificationsEnabled = v),
                   ),
                   if (notificationsEnabled) ...[
                     _buildSwitchTile(
-                      AppLocalizations.of(context)!.progressNotifications,
+                      l10n.progressNotifications,
                       progressNotifications,
                       (v) => setState(() => progressNotifications = v),
                     ),
                     _buildSwitchTile(
-                      AppLocalizations.of(context)!.completionNotifications,
+                      l10n.completionNotifications,
                       completionNotifications,
                       (v) => setState(() => completionNotifications = v),
                     ),
                   ],
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.systemAndWindow),
+                _buildSectionTitle(l10n.systemAndWindow, icon: Icons.window_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.closeToTray,
+                    l10n.closeToTray,
                     closeToTray,
                     (v) => setState(() => closeToTray = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.enableSystemTray,
+                    l10n.enableSystemTray,
                     enableSystemTray,
                     (v) => setState(() => enableSystemTray = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.useSystemTitleBar,
+                    l10n.useSystemTitleBar,
                     useSystemTitleBar,
                     (v) => _toggleTitleBar(v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.aiSettings),
+                _buildSectionTitle(l10n.aiSettings, icon: Icons.auto_awesome_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.aiEnabled,
+                    l10n.aiEnabled,
                     aiEnabled,
                     (v) => setState(() => aiEnabled = v),
                   ),
                   if (aiEnabled) ...[
                     ListTile(
                       leading: const MagicPulseIcon(icon: Icons.smart_toy_outlined),
-                      title: Text(AppLocalizations.of(context)!.aiProvider),
+                      title: Text(l10n.aiProvider),
                       subtitle: const Text("Select your AI model source (Local or Cloud)"),
                       trailing: DropdownButton<String>(
                         value: aiProvider,
@@ -370,35 +372,35 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                     _buildTextTile(
-                      AppLocalizations.of(context)!.aiEndpoint,
+                      l10n.aiEndpoint,
                       _aiEndpointController,
                       hint: 'http://localhost:11434',
                     ),
                     _buildTextTile(
-                      AppLocalizations.of(context)!.aiModel,
+                      l10n.aiModel,
                       _aiModelController,
                       hint: 'qwen2.5:7b',
                     ),
                     _buildTextTile(
-                      AppLocalizations.of(context)!.aiApiKey,
+                      l10n.aiApiKey,
                       _aiApiKeyController,
                       hint: 'sk-xxxxxxxx',
                       isPassword: true,
                     ),
                     _buildTextTile(
-                      AppLocalizations.of(context)!.aiProxy,
+                      l10n.aiProxy,
                       _aiProxyController,
                       hint: 'http://127.0.0.1:7890',
                     ),
                     _buildSliderTile(
-                      AppLocalizations.of(context)!.aiTemperature,
+                      l10n.aiTemperature,
                       aiTemperature,
                       (v) => setState(() => aiTemperature = v),
                       min: 0,
                       max: 1,
                     ),
                     _buildSliderTile(
-                      AppLocalizations.of(context)!.aiMaxTokens,
+                      l10n.aiMaxTokens,
                       aiMaxTokens,
                       (v) => setState(() => aiMaxTokens = v),
                       min: 256,
@@ -413,7 +415,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: OutlinedButton.icon(
                               onPressed: _testAIConnection,
                               icon: const MagicPulseIcon(icon: Icons.bolt_rounded),
-                              label: Text(AppLocalizations.of(context)!.aiTestButton),
+                              label: Text(l10n.aiTestButton),
                             ),
                           ),
                         ],
@@ -422,15 +424,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),
+                _buildSectionTitle(l10n.updateReminders, icon: Icons.update_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.remindMeOfUpdates,
+                    l10n.remindMeOfUpdates,
                     remindUpdates,
                     (v) => setState(() => remindUpdates = v),
                   ),
                   _buildSliderTile(
-                    AppLocalizations.of(context)!.checkInterval,
+                    l10n.checkInterval,
                     updateCheckInterval,
                     (v) => setState(() => updateCheckInterval = v),
                     min: 1,
@@ -438,77 +440,77 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.maintenance),
+                _buildSectionTitle(l10n.maintenance, icon: Icons.build_circle_outlined),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.includeAurUpdates,
+                    l10n.includeAurUpdates,
                     includeAurUpdates,
                     (v) => setState(() => includeAurUpdates = v),
                   ),
                   ListTile(
                     leading: const Icon(Icons.system_update_rounded),
-                    title: Text(AppLocalizations.of(context)!.updateAllPackages),
+                    title: Text(l10n.updateAllPackages),
                     onTap: () async {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.searching)),
+                        SnackBar(content: Text(l10n.searching)),
                       );
                       await UpdateService().checkNow();
                       if (UpdateService().availableUpdates.value.isNotEmpty) {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppLocalizations.of(context)!.foundUpdates(UpdateService().availableUpdates.value.length))),
+                          SnackBar(content: Text(l10n.foundUpdates(UpdateService().availableUpdates.value.length))),
                         );
                       }
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.restart_alt_rounded),
-                    title: Text(AppLocalizations.of(context)!.resetOnboarding),
+                    title: Text(l10n.resetOnboarding),
                     onTap: _resetOnboarding,
                   ),
                   ListTile(
                     leading: const Icon(Icons.cleaning_services_rounded),
-                    title: Text(AppLocalizations.of(context)!.systemCleaning),
-                    subtitle: Text(AppLocalizations.of(context)!.systemCleaningSubtitle),
+                    title: Text(l10n.systemCleaning),
+                    subtitle: Text(l10n.systemCleaningSubtitle),
                     onTap: () {
                       BackendService.instance.cleanSystem().listen((event) {});
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.systemCleaningStarted)),
+                        SnackBar(content: Text(l10n.systemCleaningStarted)),
                       );
                     },
                   ),
                   ListTile(
                     leading: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-                    title: Text(AppLocalizations.of(context)!.aiHealthTitle),
-                    subtitle: Text(AppLocalizations.of(context)!.aiHealthSubtitle),
+                    title: Text(l10n.aiHealthTitle),
+                    subtitle: Text(l10n.aiHealthSubtitle),
                     onTap: _showAIHealthReport,
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup_rounded),
-                    title: Text(AppLocalizations.of(context)!.backupAndExport),
-                    subtitle: Text(AppLocalizations.of(context)!.backupAndExportSubtitle),
+                    title: Text(l10n.backupAndExport),
+                    subtitle: Text(l10n.backupAndExportSubtitle),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TextButton.icon(
                             onPressed: _exportBackup,
                             icon: const Icon(Icons.upload_rounded),
-                            label: Text(AppLocalizations.of(context)!.export)),
+                            label: Text(l10n.export)),
                         TextButton.icon(
                             onPressed: _importBackup,
                             icon: const Icon(Icons.download_rounded),
-                            label: Text(AppLocalizations.of(context)!.import)),
+                            label: Text(l10n.import)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.help),
+                _buildSectionTitle(l10n.help, icon: Icons.help_outline_rounded),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
-                    title: Text(AppLocalizations.of(context)!.loggingLevel),
-                    subtitle: Text(AppLocalizations.of(context)!.help),
+                    title: Text(l10n.loggingLevel),
+                    subtitle: Text(l10n.help),
                     trailing: DropdownButton<String>(
                       value: logLevel,
                       underline: const SizedBox(),
@@ -531,16 +533,24 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, {IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Text(
+            title,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -615,8 +625,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _exportBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     String? outputFile = await FilePicker.platform.saveFile(
-      dialogTitle: AppLocalizations.of(context)!.selectExportLocation,
+      dialogTitle: l10n.selectExportLocation,
       fileName: 'omnistore_backup.json',
     );
 
@@ -626,14 +637,15 @@ class _SettingsPageState extends State<SettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(res['status'] == 'success'
-                  ? AppLocalizations.of(context)!.exportSuccess(res['count'])
-                  : AppLocalizations.of(context)!.exportFailed(res['message']))),
+                  ? l10n.exportSuccess(res['count'])
+                  : l10n.exportFailed(res['message']))),
         );
       }
     }
   }
 
   Future<void> _importBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -646,12 +658,12 @@ class _SettingsPageState extends State<SettingsPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.importBackup),
-            content: Text(AppLocalizations.of(context)!.importBackupConfirm(packages.length)),
+            title: Text(l10n.importBackup),
+            content: Text(l10n.importBackupConfirm(packages.length)),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.cancel)),
+                  child: Text(l10n.cancel)),
               FilledButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -661,7 +673,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         .listen((_) {});
                   }
                 },
-                child: Text(AppLocalizations.of(context)!.startRecovery),
+                child: Text(l10n.startRecovery),
               ),
             ],
           ),
@@ -671,19 +683,20 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _resetOnboarding() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.resetOnboarding),
-        content: Text(AppLocalizations.of(context)!.resetOnboardingConfirm),
+        title: Text(l10n.resetOnboarding),
+        content: Text(l10n.resetOnboardingConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(AppLocalizations.of(context)!.confirm),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -696,7 +709,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
+            content: Text(success ? l10n.configSaved : l10n.configSaveFailed),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
         );
@@ -705,10 +718,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showColorPicker() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.themeColor),
+        title: Text(l10n.themeColor),
         content: SingleChildScrollView(
           child: Wrap(
             spacing: 12,
@@ -740,7 +754,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.confirm)),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.confirm)),
         ],
       ),
     );
@@ -759,11 +773,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _testAIConnection() async {
+    final l10n = AppLocalizations.of(context)!;
     _saveAll(silent: true);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.searching)),
+      SnackBar(content: Text(l10n.searching)),
     );
 
     try {
@@ -779,7 +794,7 @@ class _SettingsPageState extends State<SettingsPage> {
         if (data['response'] != null && !data['response'].toString().startsWith('Error')) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.aiTestSuccess),
+              content: Text(l10n.aiTestSuccess),
               backgroundColor: Colors.green,
             ),
           );
@@ -789,7 +804,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.aiTestFailed(result.stdout + result.stderr)),
+          content: Text(l10n.aiTestFailed(result.stdout + result.stderr)),
           backgroundColor: Colors.red,
         ),
       );
@@ -797,7 +812,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.aiTestFailed(e.toString())),
+          content: Text(l10n.aiTestFailed(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -805,6 +820,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _showAIHealthReport() async {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -812,7 +828,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
             const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiHealthTitle),
+            Text(l10n.aiHealthTitle),
           ],
         ),
         content: SizedBox(
@@ -838,7 +854,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -846,6 +862,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _saveAll({bool silent = false}) {
+    final l10n = AppLocalizations.of(context)!;
     final config = {
       'search': {
         'sources': {
@@ -900,7 +917,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted || silent) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
+          content: Text(success ? l10n.configSaved : l10n.configSaveFailed),
           backgroundColor: success ? null : Theme.of(context).colorScheme.error,
         ),
       );

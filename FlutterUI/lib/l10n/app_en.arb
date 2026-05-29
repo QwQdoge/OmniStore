@@ -482,5 +482,12 @@
   "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
   "aiCorrection": "Did you mean?",
   "aiThinking": "AI is thinking...",
-  "magicSearch": "Magic Search"
+  "magicSearch": "Magic Search",
+  "aiChangelogTitle": "AI Update Summary",
+  "aiCliTitle": "AI Command Generator",
+  "aiConflictTitle": "AI Conflict Detection",
+  "aiCopyCommand": "Copy Command",
+  "aiCommandCopied": "Command copied to clipboard",
+  "aiRefineSearch": "Refine search with AI",
+  "aiExplainUpdate": "Explain this update"
 }

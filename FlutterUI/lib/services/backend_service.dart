@@ -178,6 +178,54 @@ class BackendService {
     }
   }
 
+  /// AI 更新内容总结
+  Future<String> aiSummarizeUpdate(String name, String current, String next) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-changelog",
+        "$name,$current,$next",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
+  /// AI CLI 命令生成
+  Future<String> aiGenerateCLI(String name, String source) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-cli",
+        "$name,$source",
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /// AI 冲突检测
+  Future<String> aiDetectConflicts(String name) async {
+    try {
+      final result = await Process.run(_venvPython, [
+        _scriptPath,
+        "--ai-conflicts",
+        name,
+        "--json",
+      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final data = jsonDecode(result.stdout);
+      return data['response'] ?? "AI Error: No response";
+    } catch (e) {
+      return "AI Exception: $e";
+    }
+  }
+
   /// AI 每日推荐
   Future<String> aiPickOfTheDay() async {
     try {

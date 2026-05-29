@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -341,6 +342,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       tooltip: AppLocalizations.of(context)!.aiCompareTitle,
                       onPressed: _showAICompareDialog,
                     ),
+                  IconButton(
+                    icon: const MagicPulseIcon(icon: Icons.terminal_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                    onPressed: _showAICliDialog,
+                  ),
+                  IconButton(
+                    icon: const MagicPulseIcon(icon: Icons.report_problem_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                    onPressed: _showAIConflictDialog,
+                  ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
                       initialData: TaskManager().currentTask,
@@ -1004,6 +1015,87 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(AppLocalizations.of(context)!.confirm),
           ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAICliDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiCliTitle),
+          ],
+        ),
+        content: FutureBuilder<String>(
+          future: BackendService.instance.aiGenerateCLI(widget.app.name, _selectedSource),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+            }
+            final cmd = snapshot.data ?? "";
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(cmd, style: const TextStyle(fontFamily: 'monospace')),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: cmd));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.aiCommandCopied)),
+                    );
+                  },
+                  icon: const Icon(Icons.copy_rounded),
+                  label: Text(AppLocalizations.of(context)!.aiCopyCommand),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAIConflictDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiConflictTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiDetectConflicts(widget.app.name),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+              }
+              return MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true);
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
         ],
       ),
     );

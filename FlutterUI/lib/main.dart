@@ -287,16 +287,26 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
   // 侧边栏布局：探索 + 左下角下载
   Widget _buildSideBar(ColorScheme colorScheme) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 90,
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          _buildSideBarItem(0, Icons.explore_outlined, Icons.explore, AppLocalizations.of(context)!.explore, colorScheme),
+          Tooltip(
+            message: l10n.explore,
+            child: _buildSideBarItem(0, Icons.explore_outlined, Icons.explore, l10n.explore, colorScheme),
+          ),
           const SizedBox(height: 16),
-          _buildSideBarItem(1, Icons.grid_view_outlined, Icons.grid_view_rounded, AppLocalizations.of(context)!.category, colorScheme),
+          Tooltip(
+            message: l10n.category,
+            child: _buildSideBarItem(1, Icons.grid_view_outlined, Icons.grid_view_rounded, l10n.category, colorScheme),
+          ),
           const SizedBox(height: 16),
-          _buildSideBarItem(3, Icons.settings_outlined, Icons.settings, AppLocalizations.of(context)!.settings, colorScheme),
+          Tooltip(
+            message: l10n.settings,
+            child: _buildSideBarItem(3, Icons.settings_outlined, Icons.settings, l10n.settings, colorScheme),
+          ),
           const Spacer(),
           _buildDownloadButton(colorScheme),
           const SizedBox(height: 12),

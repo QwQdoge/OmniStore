@@ -464,4 +464,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get magicSearch => 'Magic Search';
+
+  @override
+  String get aiChangelogTitle => 'AI Update Summary';
+
+  @override
+  String get aiCliTitle => 'AI Command Generator';
+
+  @override
+  String get aiConflictTitle => 'AI Conflict Detection';
+
+  @override
+  String get aiCopyCommand => 'Copy Command';
+
+  @override
+  String get aiCommandCopied => 'Command copied to clipboard';
+
+  @override
+  String get aiRefineSearch => 'Refine search with AI';
+
+  @override
+  String get aiExplainUpdate => 'Explain this update';
 }

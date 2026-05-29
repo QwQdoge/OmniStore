@@ -482,5 +482,12 @@
   "aiHealthSubtitle": "为您的 Arch Linux 进行智能诊断",
   "aiCorrection": "您是不是要找？",
   "aiThinking": "AI 正在思考中...",
-  "magicSearch": "魔法搜索"
+  "magicSearch": "魔法搜索",
+  "aiChangelogTitle": "AI 更新内容总结",
+  "aiCliTitle": "AI 终端命令生成",
+  "aiConflictTitle": "AI 冲突检测",
+  "aiCopyCommand": "复制命令",
+  "aiCommandCopied": "命令已复制到剪贴板",
+  "aiRefineSearch": "使用 AI 优化搜索",
+  "aiExplainUpdate": "解释此更新"
 }

@@ -462,6 +462,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get magicSearch => '魔法搜索';
+
+  @override
+  String get aiChangelogTitle => 'AI 更新内容总结';
+
+  @override
+  String get aiCliTitle => 'AI 终端命令生成';
+
+  @override
+  String get aiConflictTitle => 'AI 冲突检测';
+
+  @override
+  String get aiCopyCommand => '复制命令';
+
+  @override
+  String get aiCommandCopied => '命令已复制到剪贴板';
+
+  @override
+  String get aiRefineSearch => '使用 AI 优化搜索';
+
+  @override
+  String get aiExplainUpdate => '解释此更新';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

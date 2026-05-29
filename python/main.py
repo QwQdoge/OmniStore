@@ -766,6 +766,9 @@ async def main():
     group.add_argument("--ai-health", action="store_true", help="Ask AI to generate system health report")
     group.add_argument("--ai-pick", action="store_true", help="Ask AI to pick an app of the day")
     group.add_argument("--ai-correct", metavar="QUERY", help="Ask AI to suggest search corrections")
+    group.add_argument("--ai-changelog", metavar="NAME,CURRENT,NEW", help="Ask AI to summarize update changelog")
+    group.add_argument("--ai-cli", metavar="NAME,SOURCE", help="Ask AI to generate CLI command")
+    group.add_argument("--ai-conflicts", metavar="NAME", help="Ask AI to detect potential package conflicts")
 
     parser.add_argument("--json", action="store_true",
                          help="Output results in JSON format")
@@ -1001,6 +1004,26 @@ async def main():
 
     elif args.ai_correct:
         res = await backend.ai.suggest_correction(args.ai_correct)
+        print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_changelog:
+        parts = args.ai_changelog.split(',')
+        if len(parts) >= 3:
+            res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_cli:
+        parts = args.ai_cli.split(',')
+        if len(parts) >= 2:
+            res = await backend.ai.generate_cli_command(parts[0], parts[1])
+            print(json.dumps({"response": res}, ensure_ascii=False))
+
+    elif args.ai_conflicts:
+        # Get subset of installed packages for context
+        proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
+        installed = stdout.decode().splitlines()
+        res = await backend.ai.detect_conflicts(args.ai_conflicts, installed)
         print(json.dumps({"response": res}, ensure_ascii=False))
 
 

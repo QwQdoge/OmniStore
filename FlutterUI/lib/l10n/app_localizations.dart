@@ -972,6 +972,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Magic Search'**
   String get magicSearch;
+
+  /// No description provided for @aiChangelogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Update Summary'**
+  String get aiChangelogTitle;
+
+  /// No description provided for @aiCliTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Command Generator'**
+  String get aiCliTitle;
+
+  /// No description provided for @aiConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Conflict Detection'**
+  String get aiConflictTitle;
+
+  /// No description provided for @aiCopyCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Command'**
+  String get aiCopyCommand;
+
+  /// No description provided for @aiCommandCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Command copied to clipboard'**
+  String get aiCommandCopied;
+
+  /// No description provided for @aiRefineSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Refine search with AI'**
+  String get aiRefineSearch;
+
+  /// No description provided for @aiExplainUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain this update'**
+  String get aiExplainUpdate;
 }
 
 class _AppLocalizationsDelegate
