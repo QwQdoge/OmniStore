@@ -65,6 +65,11 @@ class BackendService {
   ); // "-I" or "-R"
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
+
+  // Navigation & Search State
+  static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
+  static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
+
   static Process? activeProcess;
 
   static void addLog(String log) {
@@ -545,6 +550,7 @@ class BackendService {
       final result = await Process.run(_venvPython, [
         _scriptPath,
         "--essentials",
+        "--json",
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
@@ -562,6 +568,7 @@ class BackendService {
         _scriptPath,
         "--import-packages",
         filepath,
+        "--json",
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];

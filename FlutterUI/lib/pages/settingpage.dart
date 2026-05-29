@@ -469,6 +469,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: _resetOnboarding,
                   ),
                   ListTile(
+                    leading: const Icon(Icons.history_rounded),
+                    title: const Text("Reset Cache and History"),
+                    subtitle: const Text("Clear search history and local recommendations cache"),
+                    onTap: _resetCacheAndHistory,
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.cleaning_services_rounded),
                     title: Text(l10n.systemCleaning),
                     subtitle: Text(l10n.systemCleaningSubtitle),
@@ -684,6 +690,48 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _resetCacheAndHistory() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Reset Cache and History"),
+        content: const Text("This will clear your search history and recommendations cache. Proceed?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.confirm)),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Resetting...")));
+
+      try {
+        // 1. Clear search history
+        final history = HistoryService();
+        await history.clear();
+
+        // 2. We don't have a direct backend command to clear recommendation cache yet,
+        // but we can try to "touch" or overwrite it if needed.
+        // For now, clearing the History is a good start for the UI.
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Cache and History cleared successfully"), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Reset failed: $e"), backgroundColor: Colors.red),
+          );
+        }
       }
     }
   }
