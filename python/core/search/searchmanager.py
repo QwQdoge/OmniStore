@@ -82,12 +82,38 @@ class SearchManager:
             return []
 
         # Handle category shorthand: /game -> category:Game
-        if query.startswith("/"):
-            cat_id = query[1:].strip().lower()
-            # Map common lowercase IDs back to their standard form if needed
-            # For Flathub and internal mapping, lowercase usually works fine,
-            # but we can capitalize to match common conventions.
-            query = f"category:{cat_id.capitalize()}"
+        if query.startswith("/") or query.startswith("category:"):
+            cat_id = (query[1:] if query.startswith("/") else query[9:]).strip().lower()
+
+            # Map common lowercase IDs back to their standard form used in .desktop files/Flathub
+            mapping = {
+                "development": "Development",
+                "game": "Game",
+                "games": "Game",
+                "audio": "AudioVideo",
+                "video": "AudioVideo",
+                "media": "AudioVideo",
+                "audiovideo": "AudioVideo",
+                "network": "Network",
+                "internet": "Network",
+                "system": "System",
+                "office": "Office",
+                "graphics": "Graphics",
+                "utility": "Utility",
+                "utilities": "Utility"
+            }
+            standard_id = mapping.get(cat_id, cat_id.capitalize())
+
+            # Special case: categories browse from Flathub
+            try:
+                results = await self.recommender.get_category_apps(standard_id)
+                if results:
+                    return results
+            except Exception as e:
+                sys.stderr.write(f"[SearchManager] Category fetch failed: {e}\n")
+
+            # Fallback to normal search if category fetch fails or returns nothing
+            query = f"category:{standard_id}"
 
         # 记录搜索习惯
         self.habit_tracker.record_search(query)

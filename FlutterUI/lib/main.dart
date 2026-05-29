@@ -456,15 +456,17 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           value: 0,
           child: Row(
             children: [
-              const Icon(Icons.login_rounded, size: 20),
+              const Icon(Icons.settings_outlined, size: 20),
               const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)?.explore ?? "Login"),
+              Text(AppLocalizations.of(context)!.settings),
             ],
           ),
         ),
       ],
       onSelected: (val) {
-        // Only login handled here for now, settings is in sidebar
+        if (val == 0) {
+          BackendService.navigationIndex.value = 3;
+        }
       },
       child: Container(
         width: 40,
