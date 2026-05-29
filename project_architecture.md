@@ -55,7 +55,7 @@ The Python backend serves as the CLI logic wrapper executing tasks.
   - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
   - `search/`: Unified package search logic.
   - `downloader/`: Process execution for installation/uninstallation flags.
-  - `ai/`: AI Assistant wrapper communicating with Ollama/OpenAI API.
+  - `ai/`: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature.
   - `config_loader.py` & `env_manager.py`: Configuration and environment validation.
 
 ### Rust Daemon (`daemon/`)
@@ -69,3 +69,27 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 2. **Real-time Log Streaming**: Outputs from Python's standard output are parsed line-by-line via `Stream<String>` in Flutter's `BackendService`. Progress percentages marked with `[PROGRESS]` updates the global progress notifier.
 3. **Background Tasks**: Long-running background installs are coordinated using the `TaskManager` service to persist state across page navigation.
 4. **System Tray Integration**: `UpdateService` initializes a background tray icon using `SystemTray` package with the asset `assets/app_icon.png` to support minimize-to-tray.
+
+---
+
+## 4. Communication Protocol & Standards
+
+### Backend to Frontend Streams:
+- **`[PROGRESS] <int>`**: Updates the UI progress bar (0-100). `-1` indicates an indeterminate state (e.g., "Verifying...").
+- **`[SPEED] <string>`**: Displays real-time download speed in the status bar.
+- **`[CALLBACK] <json>`**: Structured logs for the terminal view.
+  - Schema: `{"type": "log", "message": "...", "level": "INFO|ERROR|SUCCESS"}`
+
+---
+
+## 5. 7-Part UX & Stability Standards
+
+To ensure a premium and stable experience, all features must adhere to these 7 pillars:
+
+1.  **Onboarding**: First-run experience must be smooth, using the `WelcomePage` with clear progress indicators and configuration defaults.
+2.  **Navigation**: Sidebar must use tooltips for accessibility. Page transitions should be fluid (e.g., `easeInOutExpo`).
+3.  **Discovery**: High-quality Hero banners and horizontal shelves for app exploration. Empty states must provide actionable feedback.
+4.  **Lifecycle**: Background tasks managed by `TaskManager` with real-time log visibility via the Terminal Dialog.
+5.  **Configuration**: Settings must be logically grouped with icons. All text inputs must use persistent controllers in the State to prevent cursor jumps.
+6.  **AI Magic**: Intelligent features are highlighted with the `MagicPulseIcon` (Purple gradient). All AI triggers must respect the global `isAIEnabled` state.
+7.  **Resilience**: Comprehensive error handling for network requests (45s timeouts) and backend CLI failures. UI must handle missing Material ancestors in sub-pages.

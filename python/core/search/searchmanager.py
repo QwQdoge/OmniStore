@@ -18,6 +18,10 @@ import sys
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
 class SearchManager:
+    """
+    Orchestrates search requests across multiple sources (Pacman, AUR, Flatpak, etc.).
+    Handles result merging, smart scoring, and metadata enrichment.
+    """
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession):
         self.cm = config_manager
         self.habit_tracker = HabitTracker()
@@ -67,6 +71,13 @@ class SearchManager:
         return active
 
     async def search_all(self, query: str) -> List[Dict]:
+        """
+        Main entry point for searching.
+        1. Records search habit.
+        2. Dispatches parallel searches.
+        3. Merges duplicates from different sources.
+        4. Enriches top results with icons/descriptions.
+        """
         if not query or len(query) < 2:
             return []
 
@@ -156,7 +167,8 @@ class SearchManager:
 
     def _normalize_app_name(self, name: str) -> str:
         """
-        极致归一化：将各种包名后缀统一，实现真正的跨源合并。
+        Aggressively normalizes app names to enable cross-source merging.
+        e.g., 'com.discordapp.Discord' and 'discord-bin' both become 'discord'.
         """
         if name in self._norm_cache:
             return self._norm_cache[name]

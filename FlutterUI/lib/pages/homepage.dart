@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/category_service.dart';
+import '../widgets/magic_pulse_icon.dart';
+import '../widgets/ai_app_resolver.dart';
 import './app_details_page.dart';
 import 'searchpage.dart';
 
@@ -19,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, List<AppPackage>> _recommendationMap = {};
   List<dynamic> _essentials = [];
   bool _isLoading = true;
+  String? _aiPickBlurb;
 
   @override
   void initState() {
@@ -39,7 +43,19 @@ class _HomePageState extends State<HomePage> {
         _essentials = results[1] as List<dynamic>;
         _isLoading = false;
       });
+      _fetchAIPick();
     }
+  }
+
+  Future<void> _fetchAIPick() async {
+    try {
+      final pick = await BackendService.instance.aiPickOfTheDay();
+      if (mounted) {
+        setState(() {
+          _aiPickBlurb = pick;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _importPackages() async {
@@ -92,6 +108,17 @@ class _HomePageState extends State<HomePage> {
             // 1. Hero Section (Featured)
             SliverToBoxAdapter(
               child: _buildHeroSection(featured),
+            ),
+
+            // AI Pick of the Day
+            ValueListenableBuilder<bool>(
+              valueListenable: BackendService.isAIEnabled,
+              builder: (context, enabled, _) {
+                if (enabled && _aiPickBlurb != null && _aiPickBlurb!.isNotEmpty) {
+                  return SliverToBoxAdapter(child: _buildAIPickSection());
+                }
+                return const SliverToBoxAdapter(child: SizedBox.shrink());
+              },
             ),
 
             // 1.5 Categories Quick Access
@@ -231,11 +258,20 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
-                child: const Row(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchPage(autoFocus: true),
+                    ),
+                  );
+                },
+                child: Row(
                   children: [
-                    Text("查看更多"),
-                    Icon(Icons.chevron_right_rounded, size: 20),
+                    const Icon(Icons.apps_rounded, size: 16),
+                    const SizedBox(width: 4),
+                    Text(AppLocalizations.of(context)!.about), // Fallback for 'View More'
+                    const Icon(Icons.chevron_right_rounded, size: 20),
                   ],
                 ),
               ),
@@ -677,6 +713,65 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAIPickSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      constraints: const BoxConstraints(minHeight: 100, maxHeight: 400),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.purple.withValues(alpha: 0.1), colorScheme.surfaceContainerLow],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                l10n.aiPickDay,
+                style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.purple),
+              ),
+              const Spacer(),
+              Text(
+                l10n.aiPickDaySubtitle,
+                style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MarkdownBody(
+                    data: _aiPickBlurb!.split('PICK_JSON:')[0],
+                    shrinkWrap: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: const TextStyle(fontSize: 14, height: 1.5, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  AIAppResolver(aiText: _aiPickBlurb!, jsonPrefix: 'PICK_JSON:'),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

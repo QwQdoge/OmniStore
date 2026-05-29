@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
@@ -8,6 +10,7 @@ import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
 import '../services/task_manager.dart';
 import '../models/task_state.dart';
+import '../widgets/magic_pulse_icon.dart';
 import '../widgets/smooth_progress_bar.dart';
 
 class AppDetailsPage extends StatefulWidget {
@@ -132,6 +135,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     ),
                   ],
                 ),
+              ),
+              // AI 分析按钮 (悬浮)
+              ValueListenableBuilder<List<String>>(
+                valueListenable: BackendService.globalLogs,
+                builder: (context, logs, _) {
+                  if (!logs.any((l) => l.contains("[ERROR]"))) return const SizedBox.shrink();
+                  return ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return Container(
+                        width: double.infinity,
+                        color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          children: [
+                            Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.primary, size: 18),
+                            const SizedBox(width: 12),
+                            const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () => _showAIErrorAnalysis(logs.join("\n")),
+                              child: Text("立即分析", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
               // 日志内容
               Expanded(
@@ -301,10 +334,46 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       IconButton(
                         icon: const Icon(Icons.language_rounded),
                         tooltip: AppLocalizations.of(context)!.visitWebsite,
-                        onPressed: () {
-                          // TODO: Implement url_launcher to open widget.app.url
+                        onPressed: () async {
+                          final uri = Uri.parse(widget.app.url!);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
                         },
                       ),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Badge(
+                                child: Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.primary)),
+                            tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                            onPressed: _showAIExplainDialog,
+                          ),
+                          if (widget.app.variants.length > 1)
+                            IconButton(
+                              icon: Icon(Icons.compare_arrows_rounded, color: theme.colorScheme.primary),
+                              tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                              onPressed: _showAICompareDialog,
+                            ),
+                          IconButton(
+                            icon: Icon(Icons.terminal_rounded, color: theme.colorScheme.primary),
+                            tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                            onPressed: _showAICliDialog,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.report_problem_rounded, color: theme.colorScheme.primary),
+                            tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                            onPressed: _showAIConflictDialog,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                     StreamBuilder<TaskState?>(
                       stream: TaskManager().taskStateStream,
                       initialData: TaskManager().currentTask,
@@ -846,6 +915,219 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ],
       ],
+    );
+  }
+
+  Future<void> _showAIExplainDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptExplain),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          height: 400, // Fixed height to prevent overflow in dialog
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiExplain(
+              widget.app.name,
+              widget.app.description,
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAIErrorAnalysis(String logs) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptError),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          height: 450, // Fixed height
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiAnalyzeError(logs),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAICompareDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiCompareTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          height: 450, // Fixed height
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiCompareVariants(widget.app.name),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAICliDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiCliTitle),
+          ],
+        ),
+        content: FutureBuilder<String>(
+          future: BackendService.instance.aiGenerateCLI(widget.app.name, _selectedSource),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+            }
+            final cmd = snapshot.data ?? "";
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(cmd, style: const TextStyle(fontFamily: 'monospace')),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: cmd));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.aiCommandCopied)),
+                    );
+                  },
+                  icon: const Icon(Icons.copy_rounded),
+                  label: Text(AppLocalizations.of(context)!.aiCopyCommand),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAIConflictDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiConflictTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          height: 400, // Fixed height
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiDetectConflicts(widget.app.name),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
     );
   }
 

@@ -247,6 +247,12 @@ abstract class AppLocalizations {
   /// **'Searching...'**
   String get searching;
 
+  /// Activity tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activity;
+
   /// Category label
   ///
   /// In en, this message translates to:
@@ -828,6 +834,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add'**
   String get add;
+
+  /// No description provided for @aiSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant Settings'**
+  String get aiSettings;
+
+  /// No description provided for @aiEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI Assistant'**
+  String get aiEnabled;
+
+  /// No description provided for @aiProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Provider'**
+  String get aiProvider;
+
+  /// No description provided for @aiEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint'**
+  String get aiEndpoint;
+
+  /// No description provided for @aiModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model Name'**
+  String get aiModel;
+
+  /// No description provided for @aiApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get aiApiKey;
+
+  /// No description provided for @aiProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Proxy (Optional)'**
+  String get aiProxy;
+
+  /// No description provided for @aiTemperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature (Creativity)'**
+  String get aiTemperature;
+
+  /// No description provided for @aiMaxTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Response Tokens'**
+  String get aiMaxTokens;
+
+  /// No description provided for @aiTestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Test AI Connection'**
+  String get aiTestButton;
+
+  /// No description provided for @aiTestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection successful!'**
+  String get aiTestSuccess;
+
+  /// No description provided for @aiTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection failed: {error}'**
+  String aiTestFailed(String error);
+
+  /// No description provided for @aiPromptExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain with AI'**
+  String get aiPromptExplain;
+
+  /// No description provided for @aiPromptRecommend.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI for Recommendation'**
+  String get aiPromptRecommend;
+
+  /// No description provided for @aiPromptError.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Error with AI'**
+  String get aiPromptError;
+
+  /// No description provided for @aiPickDay.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Pick of the Day'**
+  String get aiPickDay;
+
+  /// No description provided for @aiPickDaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by OmniStore AI'**
+  String get aiPickDaySubtitle;
+
+  /// No description provided for @aiCompareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Variant Comparison'**
+  String get aiCompareTitle;
+
+  /// No description provided for @aiHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI System Health Report'**
+  String get aiHealthTitle;
+
+  /// No description provided for @aiHealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Intelligent diagnostic for your Arch Linux'**
+  String get aiHealthSubtitle;
+
+  /// No description provided for @aiCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you mean?'**
+  String get aiCorrection;
+
+  /// No description provided for @aiThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is thinking...'**
+  String get aiThinking;
+
+  /// No description provided for @magicSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic Search'**
+  String get magicSearch;
+
+  /// No description provided for @aiChangelogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Update Summary'**
+  String get aiChangelogTitle;
+
+  /// No description provided for @aiCliTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Command Generator'**
+  String get aiCliTitle;
+
+  /// No description provided for @aiConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Conflict Detection'**
+  String get aiConflictTitle;
+
+  /// No description provided for @aiCopyCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Command'**
+  String get aiCopyCommand;
+
+  /// No description provided for @aiCommandCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Command copied to clipboard'**
+  String get aiCommandCopied;
+
+  /// No description provided for @aiRefineSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Refine search with AI'**
+  String get aiRefineSearch;
+
+  /// No description provided for @aiExplainUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain this update'**
+  String get aiExplainUpdate;
 }
 
 class _AppLocalizationsDelegate

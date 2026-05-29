@@ -46,6 +46,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   file_picker: ^8.1.0
   path: any
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

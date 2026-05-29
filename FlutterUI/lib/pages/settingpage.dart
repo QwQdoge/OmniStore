@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
+import '../widgets/magic_pulse_icon.dart';
 import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
@@ -15,6 +18,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  // General settings
   bool pacmanEnabled = true;
   bool aurEnabled = true;
   bool flatpakEnabled = true;
@@ -42,10 +46,31 @@ class _SettingsPageState extends State<SettingsPage> {
   double updateCheckInterval = 1;
   bool remindUpdates = true;
 
+  // AI Settings
+  bool aiEnabled = false;
+  String aiProvider = 'ollama';
+  double aiTemperature = 0.7;
+  double aiMaxTokens = 2048;
+
+  // Persistent Controllers to avoid rebuild issues
+  final TextEditingController _aiEndpointController = TextEditingController();
+  final TextEditingController _aiModelController = TextEditingController();
+  final TextEditingController _aiApiKeyController = TextEditingController();
+  final TextEditingController _aiProxyController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _loadConfig();
+  }
+
+  @override
+  void dispose() {
+    _aiEndpointController.dispose();
+    _aiModelController.dispose();
+    _aiApiKeyController.dispose();
+    _aiProxyController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadConfig() async {
@@ -69,12 +94,10 @@ class _SettingsPageState extends State<SettingsPage> {
           flatpakPriority = (p['flatpak'] ?? 60).toDouble();
           appimagePriority = (p['appimage'] ?? 40).toDouble();
 
-          // 根据权重排序源
           var entries = p.entries.toList()
             ..sort((a, b) => (b.value as num).compareTo(a.value as num));
           sourceOrder =
               entries.map((e) => e.key.toString()).cast<String>().toList();
-          // 补齐缺失的
           for (var s in ['pacman', 'aur', 'flatpak', 'appimage']) {
             if (!sourceOrder.contains(s)) sourceOrder.add(s);
           }
@@ -98,6 +121,16 @@ class _SettingsPageState extends State<SettingsPage> {
           updateCheckInterval = (upConfig['check_interval_hours'] ?? 1).toDouble();
           remindUpdates = upConfig['remind_updates'] ?? true;
           includeAurUpdates = upConfig['include_aur_in_update_all'] ?? true;
+
+          final ai = config['ai'] as Map<String, dynamic>? ?? {};
+          aiEnabled = ai['enabled'] ?? false;
+          aiProvider = ai['provider'] ?? 'ollama';
+          _aiEndpointController.text = ai['endpoint'] ?? '';
+          _aiModelController.text = ai['model'] ?? '';
+          _aiApiKeyController.text = ai['api_key'] ?? '';
+          _aiProxyController.text = ai['proxy'] ?? '';
+          aiTemperature = (ai['temperature'] ?? 0.7).toDouble();
+          aiMaxTokens = (ai['max_tokens'] ?? 2048).toDouble();
         });
       }
     } catch (e) {
@@ -108,13 +141,15 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text(
-              AppLocalizations.of(context)!.settings,
+              l10n.settings,
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w900,
@@ -127,9 +162,9 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: TextButton.icon(
-                  onPressed: _saveAll,
+                  onPressed: () => _saveAll(),
                   icon: const Icon(Icons.done_all),
-                  label: Text(AppLocalizations.of(context)!.saveAndApply),
+                  label: Text(l10n.saveAndApply),
                 ),
               ),
             ],
@@ -138,31 +173,31 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionTitle(AppLocalizations.of(context)!.packageManager),
+                _buildSectionTitle(l10n.packageManager, icon: Icons.inventory_2_outlined),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.pacmanOfficial,
+                    l10n.pacmanOfficial,
                     pacmanEnabled,
                     (v) => setState(() => pacmanEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.aurUser,
+                    l10n.aurUser,
                     aurEnabled,
                     (v) => setState(() => aurEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.flatpak,
+                    l10n.flatpak,
                     flatpakEnabled,
                     (v) => setState(() => flatpakEnabled = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.appImage,
+                    l10n.appImage,
                     appimageEnabled,
                     (v) => setState(() => appimageEnabled = v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.sourcePriority),
+                _buildSectionTitle(l10n.sourcePriority, icon: Icons.low_priority_rounded),
                 _buildGroupCard([
                   SizedBox(
                     height: 220,
@@ -177,7 +212,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           final item = sourceOrder.removeAt(oldIndex);
                           sourceOrder.insert(newIndex, item);
 
-                          // 根据新顺序重新分配权重 (100, 80, 60, 40)
                           for (int i = 0; i < sourceOrder.length; i++) {
                             double weight = 100.0 - (i * 20);
                             switch (sourceOrder[i]) {
@@ -203,19 +237,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         switch (s) {
                           case 'pacman':
                             icon = Icons.apps;
-                            label = AppLocalizations.of(context)!.pacmanOfficial;
+                            label = l10n.pacmanOfficial;
                             break;
                           case 'aur':
                             icon = Icons.cloud_outlined;
-                            label = AppLocalizations.of(context)!.aurUser;
+                            label = l10n.aurUser;
                             break;
                           case 'flatpak':
                             icon = Icons.inventory_2_outlined;
-                            label = AppLocalizations.of(context)!.flatpak;
+                            label = l10n.flatpak;
                             break;
                           default:
                             icon = Icons.insert_drive_file_outlined;
-                            label = AppLocalizations.of(context)!.appImage;
+                            label = l10n.appImage;
                         }
                         return ListTile(
                           key: ValueKey(s),
@@ -228,21 +262,21 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.search),
+                _buildSectionTitle(l10n.search, icon: Icons.search_rounded),
                 _buildGroupCard([
                   _buildSliderTile(
-                    AppLocalizations.of(context)!.maxResults,
+                    l10n.maxResults,
                     maxResults,
                     (v) => setState(() => maxResults = v),
                     max: 500,
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.appearance),
+                _buildSectionTitle(l10n.appearance, icon: Icons.palette_outlined),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.palette_outlined),
-                    title: Text(AppLocalizations.of(context)!.themeColor),
+                    title: Text(l10n.themeColor),
                     subtitle: Text(colorSeed),
                     trailing: Container(
                       width: 24,
@@ -260,69 +294,145 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.brightness_medium_outlined),
-                    title: Text(AppLocalizations.of(context)!.appearance),
+                    title: Text(l10n.appearance),
                     trailing: DropdownButton<String>(
                       value: appearance,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => appearance = v!),
                       items: [
-                        DropdownMenuItem(value: 'system', child: Text(AppLocalizations.of(context)!.followSystem)),
-                        DropdownMenuItem(value: 'light', child: Text(AppLocalizations.of(context)!.lightMode)),
-                        DropdownMenuItem(value: 'dark', child: Text(AppLocalizations.of(context)!.darkMode)),
+                        DropdownMenuItem(value: 'system', child: Text(l10n.followSystem)),
+                        DropdownMenuItem(value: 'light', child: Text(l10n.lightMode)),
+                        DropdownMenuItem(value: 'dark', child: Text(l10n.darkMode)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.notifications),
+                _buildSectionTitle(l10n.notifications, icon: Icons.notifications_none_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.enableNotifications,
+                    l10n.enableNotifications,
                     notificationsEnabled,
                     (v) => setState(() => notificationsEnabled = v),
                   ),
                   if (notificationsEnabled) ...[
                     _buildSwitchTile(
-                      AppLocalizations.of(context)!.progressNotifications,
+                      l10n.progressNotifications,
                       progressNotifications,
                       (v) => setState(() => progressNotifications = v),
                     ),
                     _buildSwitchTile(
-                      AppLocalizations.of(context)!.completionNotifications,
+                      l10n.completionNotifications,
                       completionNotifications,
                       (v) => setState(() => completionNotifications = v),
                     ),
                   ],
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.systemAndWindow),
+                _buildSectionTitle(l10n.systemAndWindow, icon: Icons.window_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.closeToTray,
+                    l10n.closeToTray,
                     closeToTray,
                     (v) => setState(() => closeToTray = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.enableSystemTray,
+                    l10n.enableSystemTray,
                     enableSystemTray,
                     (v) => setState(() => enableSystemTray = v),
                   ),
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.useSystemTitleBar,
+                    l10n.useSystemTitleBar,
                     useSystemTitleBar,
                     (v) => _toggleTitleBar(v),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.updateReminders),
+                _buildSectionTitle(l10n.aiSettings, icon: Icons.auto_awesome_rounded),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.remindMeOfUpdates,
+                    l10n.aiEnabled,
+                    aiEnabled,
+                    (v) => setState(() => aiEnabled = v),
+                  ),
+                  if (aiEnabled) ...[
+                    ListTile(
+                      leading: const MagicPulseIcon(icon: Icons.smart_toy_outlined),
+                      title: Text(l10n.aiProvider),
+                      subtitle: const Text("Select your AI model source (Local or Cloud)"),
+                      trailing: DropdownButton<String>(
+                        value: aiProvider,
+                        underline: const SizedBox(),
+                        onChanged: (v) => setState(() => aiProvider = v!),
+                        items: const [
+                          DropdownMenuItem(value: 'ollama', child: Text('Ollama (Local)')),
+                          DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
+                          DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
+                        ],
+                      ),
+                    ),
+                    _buildTextTile(
+                      l10n.aiEndpoint,
+                      _aiEndpointController,
+                      hint: 'http://localhost:11434',
+                    ),
+                    _buildTextTile(
+                      l10n.aiModel,
+                      _aiModelController,
+                      hint: 'qwen2.5:7b',
+                    ),
+                    _buildTextTile(
+                      l10n.aiApiKey,
+                      _aiApiKeyController,
+                      hint: 'sk-xxxxxxxx',
+                      isPassword: true,
+                    ),
+                    _buildTextTile(
+                      l10n.aiProxy,
+                      _aiProxyController,
+                      hint: 'http://127.0.0.1:7890',
+                    ),
+                    _buildSliderTile(
+                      l10n.aiTemperature,
+                      aiTemperature,
+                      (v) => setState(() => aiTemperature = v),
+                      min: 0,
+                      max: 1,
+                    ),
+                    _buildSliderTile(
+                      l10n.aiMaxTokens,
+                      aiMaxTokens,
+                      (v) => setState(() => aiMaxTokens = v),
+                      min: 256,
+                      max: 8192,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _testAIConnection,
+                              icon: const MagicPulseIcon(icon: Icons.bolt_rounded),
+                              label: Text(l10n.aiTestButton),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle(l10n.updateReminders, icon: Icons.update_rounded),
+                _buildGroupCard([
+                  _buildSwitchTile(
+                    l10n.remindMeOfUpdates,
                     remindUpdates,
                     (v) => setState(() => remindUpdates = v),
                   ),
                   _buildSliderTile(
-                    AppLocalizations.of(context)!.checkInterval,
+                    l10n.checkInterval,
                     updateCheckInterval,
                     (v) => setState(() => updateCheckInterval = v),
                     min: 1,
@@ -330,79 +440,83 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.maintenance),
+                _buildSectionTitle(l10n.maintenance, icon: Icons.build_circle_outlined),
                 _buildGroupCard([
                   _buildSwitchTile(
-                    AppLocalizations.of(context)!.includeAurUpdates,
+                    l10n.includeAurUpdates,
                     includeAurUpdates,
                     (v) => setState(() => includeAurUpdates = v),
                   ),
                   ListTile(
                     leading: const Icon(Icons.system_update_rounded),
-                    title: Text(AppLocalizations.of(context)!.updateAllPackages),
+                    title: Text(l10n.updateAllPackages),
                     onTap: () async {
-                      // 触发更新所有
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.searching)),
+                        SnackBar(content: Text(l10n.searching)),
                       );
                       await UpdateService().checkNow();
                       if (UpdateService().availableUpdates.value.isNotEmpty) {
-                        // 如果有更新，跳转到下载页面
-                        // 这里我们简单的通过通知用户或者直接开始逻辑
-                        // 实际上用户通常希望看到进度，所以我们可以尝试开始更新第一个
-                        // 或者在这里逻辑：UpdateService().startUpdate(...)
-                        // 考虑到 UI 逻辑，跳转到索引 3 是最好的
-                        // 我们需要访问 MainNavigationEntry 的状态，或者使用一个全局导航 key
-                        // 在此 demo 中，我们先提示已检查到更新
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppLocalizations.of(context)!.foundUpdates(UpdateService().availableUpdates.value.length))),
+                          SnackBar(content: Text(l10n.foundUpdates(UpdateService().availableUpdates.value.length))),
                         );
                       }
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.restart_alt_rounded),
-                    title: Text(AppLocalizations.of(context)!.resetOnboarding),
+                    title: Text(l10n.resetOnboarding),
                     onTap: _resetOnboarding,
                   ),
                   ListTile(
                     leading: const Icon(Icons.cleaning_services_rounded),
-                    title: Text(AppLocalizations.of(context)!.systemCleaning),
-                    subtitle: Text(AppLocalizations.of(context)!.systemCleaningSubtitle),
+                    title: Text(l10n.systemCleaning),
+                    subtitle: Text(l10n.systemCleaningSubtitle),
                     onTap: () {
                       BackendService.instance.cleanSystem().listen((event) {});
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.systemCleaningStarted)),
+                        SnackBar(content: Text(l10n.systemCleaningStarted)),
+                      );
+                    },
+                  ),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: BackendService.isAIEnabled,
+                    builder: (context, enabled, _) {
+                      if (!enabled) return const SizedBox.shrink();
+                      return ListTile(
+                        leading: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                        title: Text(l10n.aiHealthTitle),
+                        subtitle: Text(l10n.aiHealthSubtitle),
+                        onTap: _showAIHealthReport,
                       );
                     },
                   ),
                   ListTile(
                     leading: const Icon(Icons.backup_rounded),
-                    title: Text(AppLocalizations.of(context)!.backupAndExport),
-                    subtitle: Text(AppLocalizations.of(context)!.backupAndExportSubtitle),
+                    title: Text(l10n.backupAndExport),
+                    subtitle: Text(l10n.backupAndExportSubtitle),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TextButton.icon(
                             onPressed: _exportBackup,
                             icon: const Icon(Icons.upload_rounded),
-                            label: Text(AppLocalizations.of(context)!.export)),
+                            label: Text(l10n.export)),
                         TextButton.icon(
                             onPressed: _importBackup,
                             icon: const Icon(Icons.download_rounded),
-                            label: Text(AppLocalizations.of(context)!.import)),
+                            label: Text(l10n.import)),
                       ],
                     ),
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle(AppLocalizations.of(context)!.help),
+                _buildSectionTitle(l10n.help, icon: Icons.help_outline_rounded),
                 _buildGroupCard([
                   ListTile(
                     leading: const Icon(Icons.bug_report_outlined),
-                    title: Text(AppLocalizations.of(context)!.loggingLevel),
-                    subtitle: Text(AppLocalizations.of(context)!.help),
+                    title: Text(l10n.loggingLevel),
+                    subtitle: Text(l10n.help),
                     trailing: DropdownButton<String>(
                       value: logLevel,
                       underline: const SizedBox(),
@@ -425,16 +539,24 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, {IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+          ],
+          Text(
+            title,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -445,6 +567,23 @@ class _SettingsPageState extends State<SettingsPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Column(children: children),
+    );
+  }
+
+  Widget _buildTextTile(String title, TextEditingController controller,
+      {String? hint, bool isPassword = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          labelText: title,
+          hintText: hint,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+      ),
     );
   }
 
@@ -483,7 +622,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: value,
             min: min,
             max: max,
-            divisions: (max - min).toInt(),
+            divisions: (max - min).toInt() == 0 ? 1 : (max - min).toInt(),
             onChanged: onChanged,
           ),
         ],
@@ -492,8 +631,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _exportBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     String? outputFile = await FilePicker.platform.saveFile(
-      dialogTitle: AppLocalizations.of(context)!.selectExportLocation,
+      dialogTitle: l10n.selectExportLocation,
       fileName: 'omnistore_backup.json',
     );
 
@@ -503,14 +643,15 @@ class _SettingsPageState extends State<SettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(res['status'] == 'success'
-                  ? AppLocalizations.of(context)!.exportSuccess(res['count'])
-                  : AppLocalizations.of(context)!.exportFailed(res['message']))),
+                  ? l10n.exportSuccess(res['count'])
+                  : l10n.exportFailed(res['message']))),
         );
       }
     }
   }
 
   Future<void> _importBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -523,12 +664,12 @@ class _SettingsPageState extends State<SettingsPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.importBackup),
-            content: Text(AppLocalizations.of(context)!.importBackupConfirm(packages.length)),
+            title: Text(l10n.importBackup),
+            content: Text(l10n.importBackupConfirm(packages.length)),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.cancel)),
+                  child: Text(l10n.cancel)),
               FilledButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -538,7 +679,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         .listen((_) {});
                   }
                 },
-                child: Text(AppLocalizations.of(context)!.startRecovery),
+                child: Text(l10n.startRecovery),
               ),
             ],
           ),
@@ -548,19 +689,20 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _resetOnboarding() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.resetOnboarding),
-        content: Text(AppLocalizations.of(context)!.resetOnboardingConfirm),
+        title: Text(l10n.resetOnboarding),
+        content: Text(l10n.resetOnboardingConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(AppLocalizations.of(context)!.confirm),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -573,7 +715,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
+            content: Text(success ? l10n.configSaved : l10n.configSaveFailed),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
         );
@@ -582,10 +724,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showColorPicker() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.themeColor),
+        title: Text(l10n.themeColor),
         content: SingleChildScrollView(
           child: Wrap(
             spacing: 12,
@@ -617,7 +760,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.confirm)),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.confirm)),
         ],
       ),
     );
@@ -625,7 +768,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _toggleTitleBar(bool useSystem) async {
     setState(() => useSystemTitleBar = useSystem);
-    // 立即生效
     try {
       final wm.TitleBarStyle style = useSystem
           ? wm.TitleBarStyle.normal
@@ -636,7 +778,98 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  void _saveAll() {
+  Future<void> _testAIConnection() async {
+    final l10n = AppLocalizations.of(context)!;
+    _saveAll(silent: true);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.searching)),
+    );
+
+    try {
+      final result = await Process.run(
+        BackendService.venvPython,
+        [BackendService.scriptPath, "--ai-summary", "--json"],
+        workingDirectory: BackendService.workingDir,
+      ).timeout(const Duration(seconds: 30));
+
+      if (!mounted) return;
+      if (result.exitCode == 0) {
+        final data = jsonDecode(result.stdout);
+        if (data['response'] != null && !data['response'].toString().startsWith('Error')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.aiTestSuccess),
+              backgroundColor: Colors.green,
+            ),
+          );
+          return;
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.aiTestFailed(result.stdout + result.stderr)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.aiTestFailed(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showAIHealthReport() async {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+            const SizedBox(width: 12),
+            Text(l10n.aiHealthTitle),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          height: 450,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiSystemHealth(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveAll({bool silent = false}) {
+    final l10n = AppLocalizations.of(context)!;
     final config = {
       'search': {
         'sources': {
@@ -672,16 +905,28 @@ class _SettingsPageState extends State<SettingsPage> {
         'remind_updates': remindUpdates,
         'include_aur_in_update_all': includeAurUpdates,
       },
+      'ai': {
+        'enabled': aiEnabled,
+        'provider': aiProvider,
+        'endpoint': _aiEndpointController.text,
+        'model': _aiModelController.text,
+        'api_key': _aiApiKeyController.text,
+        'proxy': _aiProxyController.text,
+        'temperature': aiTemperature,
+        'max_tokens': aiMaxTokens.toInt(),
+      },
     };
 
     BackendService.instance.saveConfig(config).then((success) {
       if (success) {
         UpdateService().updateConfig();
+        // Force refresh global AI state
+        BackendService.isAIEnabled.value = aiEnabled;
       }
-      if (!mounted) return;
+      if (!mounted || silent) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? AppLocalizations.of(context)!.configSaved : AppLocalizations.of(context)!.configSaveFailed),
+          content: Text(success ? l10n.configSaved : l10n.configSaveFailed),
           backgroundColor: success ? null : Theme.of(context).colorScheme.error,
         ),
       );

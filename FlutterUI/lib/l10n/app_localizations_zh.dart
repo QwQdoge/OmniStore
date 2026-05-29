@@ -83,6 +83,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching => '正在搜索...';
 
   @override
+  String get activity => '动态';
+
+  @override
   String get category => '分类';
 
   @override
@@ -388,6 +391,98 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get add => '添加';
+
+  @override
+  String get aiSettings => 'AI 助手设置';
+
+  @override
+  String get aiEnabled => '启用 AI 助手';
+
+  @override
+  String get aiProvider => 'AI 服务商';
+
+  @override
+  String get aiEndpoint => 'API 接口地址';
+
+  @override
+  String get aiModel => '模型名称';
+
+  @override
+  String get aiApiKey => 'API 密钥 (Key)';
+
+  @override
+  String get aiProxy => '网络代理 (可选)';
+
+  @override
+  String get aiTemperature => '温度 (创意度)';
+
+  @override
+  String get aiMaxTokens => '最大响应长度';
+
+  @override
+  String get aiTestButton => '测试 AI 连接';
+
+  @override
+  String get aiTestSuccess => 'AI 连接成功！';
+
+  @override
+  String aiTestFailed(String error) {
+    return 'AI 连接失败: $error';
+  }
+
+  @override
+  String get aiPromptExplain => '使用 AI 解释';
+
+  @override
+  String get aiPromptRecommend => '咨询 AI 推荐';
+
+  @override
+  String get aiPromptError => 'AI 分析错误';
+
+  @override
+  String get aiPickDay => 'AI 每日推荐';
+
+  @override
+  String get aiPickDaySubtitle => '由 OmniStore AI 强力驱动';
+
+  @override
+  String get aiCompareTitle => 'AI 版本对比';
+
+  @override
+  String get aiHealthTitle => 'AI 系统健康报告';
+
+  @override
+  String get aiHealthSubtitle => '为您的 Arch Linux 进行智能诊断';
+
+  @override
+  String get aiCorrection => '您是不是要找？';
+
+  @override
+  String get aiThinking => 'AI 正在思考中...';
+
+  @override
+  String get magicSearch => '魔法搜索';
+
+  @override
+  String get aiChangelogTitle => 'AI 更新内容总结';
+
+  @override
+  String get aiCliTitle => 'AI 终端命令生成';
+
+  @override
+  String get aiConflictTitle => 'AI 冲突检测';
+
+  @override
+  String get aiCopyCommand => '复制命令';
+
+  @override
+  String get aiCommandCopied => '命令已复制到剪贴板';
+
+  @override
+  String get aiRefineSearch => '使用 AI 优化搜索';
+
+  @override
+  String get aiExplainUpdate => '解释此更新';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -467,6 +562,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get searching => '搜尋中...';
+
+  @override
+  String get activity => '動態';
 
   @override
   String get category => '分類';
