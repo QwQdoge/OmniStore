@@ -137,6 +137,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     super.initState();
     wm.windowManager.addListener(this);
 
+    // 监听全局导航状态
+    BackendService.navigationIndex.addListener(_onNavigationRequested);
+
     // 延迟初始化更新服务与系统托盘，确保 UI 已渲染且环境检查更安全
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
@@ -153,6 +156,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     ];
   }
 
+  void _onNavigationRequested() {
+    if (mounted) {
+      setState(() {
+        _selectedIndex = BackendService.navigationIndex.value;
+      });
+    }
+  }
+
   Future<void> _initUpdateService() async {
     try {
       await UpdateService().init().timeout(const Duration(seconds: 10));
@@ -165,6 +176,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   @override
   void dispose() {
     wm.windowManager.removeListener(this);
+    BackendService.navigationIndex.removeListener(_onNavigationRequested);
     super.dispose();
   }
 
@@ -250,9 +262,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 0, 12, 12),
                     decoration: BoxDecoration(
-                      color: theme.brightness == Brightness.light
-                          ? colorScheme.surface
-                          : colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(28.0),
                       boxShadow: [
                         BoxShadow(
@@ -262,8 +271,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                         ),
                       ],
                     ),
-                    child: ClipRRect(
+                    child: Material(
+                      color: theme.brightness == Brightness.light
+                          ? colorScheme.surface
+                          : colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(28.0),
+                      clipBehavior: Clip.antiAlias,
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
                         switchInCurve: Curves.easeInOutExpo,
@@ -318,7 +331,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   Widget _buildSideBarItem(int index, IconData icon, IconData selectedIcon, String label, ColorScheme colorScheme) {
     final isSelected = _selectedIndex == index;
     return InkWell(
-      onTap: () => setState(() => _selectedIndex = index),
+      onTap: () {
+        BackendService.navigationIndex.value = index;
+      },
       borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -383,7 +398,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           // 搜索按钮 (若不在搜索页则显示，点击切换到搜索页)
           if (_selectedIndex != 2)
             IconButton(
-              onPressed: () => setState(() => _selectedIndex = 2),
+              onPressed: () => BackendService.navigationIndex.value = 2,
               icon: Icon(
                 Icons.search_rounded,
                 color: colorScheme.onSurfaceVariant,
@@ -441,15 +456,17 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           value: 0,
           child: Row(
             children: [
-              const Icon(Icons.login_rounded, size: 20),
+              const Icon(Icons.settings_outlined, size: 20),
               const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)?.explore ?? "Login"),
+              Text(AppLocalizations.of(context)!.settings),
             ],
           ),
         ),
       ],
       onSelected: (val) {
-        // Only login handled here for now, settings is in sidebar
+        if (val == 0) {
+          BackendService.navigationIndex.value = 3;
+        }
       },
       child: Container(
         width: 40,
@@ -511,7 +528,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                       ),
                     IconButton(
                       onPressed: () {
-                        setState(() => _selectedIndex = 4);
+                        BackendService.navigationIndex.value = 4;
                       },
                       icon: Icon(
                         isDownloading

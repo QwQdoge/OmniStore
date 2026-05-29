@@ -39,15 +39,20 @@ class _SearchPageState extends State<SearchPage> {
   List<String> _history = [];
   Timer? _debounce;
 
-
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onSearchChanged);
     _loadHistory();
+
+    // Listen for global search requests
+    BackendService.pendingSearchQuery.addListener(_onGlobalSearchRequested);
+
     if (widget.initialQuery != null) {
       _controller.text = widget.initialQuery!;
       _search(widget.initialQuery!);
+    } else if (BackendService.pendingSearchQuery.value != null) {
+      _onGlobalSearchRequested();
     } else {
       _loadInitialContent();
     }
@@ -55,6 +60,17 @@ class _SearchPageState extends State<SearchPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
       });
+    }
+  }
+
+  void _onGlobalSearchRequested() {
+    final query = BackendService.pendingSearchQuery.value;
+    if (query != null && mounted) {
+      // Clear the pending query immediately to avoid re-triggering
+      BackendService.pendingSearchQuery.value = null;
+
+      _controller.text = query;
+      _search(query);
     }
   }
 
@@ -81,6 +97,11 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _debounce?.cancel();
     _controller.removeListener(_onSearchChanged);
+    BackendService.pendingSearchQuery.removeListener(_onGlobalSearchRequested);
+
+    // Cancel any ongoing search process
+    BackendService.activeSearchProcess?.kill();
+
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -155,7 +176,10 @@ class _SearchPageState extends State<SearchPage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.failed}: $e'), backgroundColor: Theme.of(context).colorScheme.error),
+          SnackBar(
+            content: Text('${AppLocalizations.of(context)!.failed}: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     }
@@ -190,8 +214,14 @@ class _SearchPageState extends State<SearchPage> {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: _hasInput
-                ? KeyedSubtree(key: const ValueKey('results'), child: _buildResultsArea())
-                : KeyedSubtree(key: const ValueKey('initial'), child: _buildInitialCard(colorScheme)),
+                ? KeyedSubtree(
+                    key: const ValueKey('results'),
+                    child: _buildResultsArea(),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('initial'),
+                    child: _buildInitialCard(colorScheme),
+                  ),
           ),
         ),
       ],
@@ -224,11 +254,20 @@ class _SearchPageState extends State<SearchPage> {
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(32.0), // 超大圆角
-                side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.2), width: 1.5),
+                side: BorderSide(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  width: 1.5,
+                ),
               ),
             ),
-            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 8)),
-            leading: Icon(Icons.search_rounded, color: colorScheme.primary, size: 28),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            ),
+            leading: Icon(
+              Icons.search_rounded,
+              color: colorScheme.primary,
+              size: 28,
+            ),
             trailing: [
               if (_hasInput)
                 IconButton(
@@ -245,7 +284,9 @@ class _SearchPageState extends State<SearchPage> {
                 builder: (context, enabled, _) {
                   if (!enabled) return const SizedBox.shrink();
                   return IconButton(
-                    icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                    icon: const MagicPulseIcon(
+                      icon: Icons.auto_awesome_rounded,
+                    ),
                     tooltip: AppLocalizations.of(context)!.aiPromptRecommend,
                     onPressed: _showAIRecommendDialog,
                   );
@@ -255,10 +296,18 @@ class _SearchPageState extends State<SearchPage> {
               FilledButton(
                 onPressed: _search,
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: Text(AppLocalizations.of(context)!.search, style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  AppLocalizations.of(context)!.search,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
             onSubmitted: (_) => _search(),
@@ -286,126 +335,199 @@ class _SearchPageState extends State<SearchPage> {
                 clipBehavior: Clip.antiAlias,
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── 历史标题 ──
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 8, 4),
-                      child: Row(
-                        children: [
-                          Icon(Icons.history_rounded, size: 16, color: colorScheme.onSurfaceVariant),
-                          const SizedBox(width: 8),
-                          Text(
-                            AppLocalizations.of(context)!.search,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 历史标题 ──
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 8, 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.history_rounded,
+                              size: 16,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                          const Spacer(),
-                          if (_history.isNotEmpty)
-                            TextButton.icon(
-                              onPressed: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: Text(L10nService.s('clear_history')),
-                                    content: Text(L10nService.s('confirm_clear_history')),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
-                                      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.confirm)),
-                                    ],
-                                  ),
-                                );
-                                if (confirm == true) _clearAllHistory();
-                              },
-                              icon: const Icon(Icons.delete_sweep_rounded, size: 14),
-                            label: Text(L10nService.s('clear_history')),
-                              style: TextButton.styleFrom(
-                                foregroundColor: colorScheme.error,
-                                visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                            const SizedBox(width: 8),
+                            Text(
+                              AppLocalizations.of(context)!.search,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
-                        ],
-                      ),
-                    ),
-
-                    // ── 历史标签 ──
-                    if (_history.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                        child: Text(
-                          AppLocalizations.of(context)!.noResults,
-                          style: TextStyle(color: colorScheme.outline, fontSize: 13),
+                            const Spacer(),
+                            if (_history.isNotEmpty)
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: Text(
+                                        L10nService.s('clear_history'),
+                                      ),
+                                      content: Text(
+                                        L10nService.s('confirm_clear_history'),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: Text(
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.cancel,
+                                          ),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: Text(
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.confirm,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) _clearAllHistory();
+                                },
+                                icon: const Icon(
+                                  Icons.delete_sweep_rounded,
+                                  size: 14,
+                                ),
+                                label: Text(L10nService.s('clear_history')),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: colorScheme.error,
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _history.map((h) => InputChip(
-                            label: Text(h, style: const TextStyle(fontSize: 12)),
-                            onPressed: () => _search(h),
-                            onDeleted: () => _removeHistory(h),
-                            deleteIcon: const Icon(Icons.close_rounded, size: 14),
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          )).toList(),
-                        ),
                       ),
 
-                    Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
-
-                    // ── 分类标题 ──
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: Row(
-                        children: [
-                          Icon(Icons.grid_view_rounded, size: 16, color: colorScheme.onSurfaceVariant),
-                          const SizedBox(width: 8),
-                          Text(
-                            L10nService.s('categories'),
+                      // ── 历史标签 ──
+                      if (_history.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                          child: Text(
+                            AppLocalizations.of(context)!.noResults,
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              color: colorScheme.outline,
                               fontSize: 13,
-                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: _history
+                                .map(
+                                  (h) => InputChip(
+                                    label: Text(
+                                      h,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    onPressed: () => _search(h),
+                                    onDeleted: () => _removeHistory(h),
+                                    deleteIcon: const Icon(
+                                      Icons.close_rounded,
+                                      size: 14,
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
 
-                    // ── 分类网格 ──
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: CategoryService.getCategories(context).map((cat) => ActionChip(
-                          tooltip: '${AppLocalizations.of(context)!.search} ${cat.name}',
-                          avatar: Icon(cat.icon, size: 16, color: cat.color),
-                          label: Text(cat.name, style: const TextStyle(fontSize: 12)),
-                          onPressed: () => _search('category:${cat.id}'),
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
-                          backgroundColor: colorScheme.surface,
-                        )).toList(),
+                      Divider(
+                        height: 1,
+                        color: colorScheme.outlineVariant.withValues(
+                          alpha: 0.4,
+                        ),
                       ),
-                    ),
-                  ],
+
+                      // ── 分类标题 ──
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.grid_view_rounded,
+                              size: 16,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              L10nService.s('categories'),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // ── 分类网格 ──
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: CategoryService.getCategories(context)
+                              .map(
+                                (cat) => ActionChip(
+                                  tooltip:
+                                      '${AppLocalizations.of(context)!.search} ${cat.name}',
+                                  avatar: Icon(
+                                    cat.icon,
+                                    size: 16,
+                                    color: cat.color,
+                                  ),
+                                  label: Text(
+                                    cat.name,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onPressed: () =>
+                                      _search('/${cat.id.toLowerCase()}'),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  side: BorderSide(
+                                    color: colorScheme.outlineVariant
+                                        .withValues(alpha: 0.6),
+                                  ),
+                                  backgroundColor: colorScheme.surface,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             ],
           ),
         ),
@@ -431,11 +553,17 @@ class _SearchPageState extends State<SearchPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 16),
+                  const MagicPulseIcon(
+                    icon: Icons.auto_awesome_rounded,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     l10n.aiCorrection,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple,
+                    ),
                   ),
                 ],
               ),
@@ -448,19 +576,30 @@ class _SearchPageState extends State<SearchPage> {
                   decoration: BoxDecoration(
                     color: Colors.purple.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.purple.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: Colors.purple.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Column(
                     children: [
                       MarkdownBody(
-                        data: _aiCorrection!.split('SUGGESTIONS_JSON:')[0], // Hide JSON from text
+                        data: _aiCorrection!.split(
+                          'SUGGESTIONS_JSON:',
+                        )[0], // Hide JSON from text
                         shrinkWrap: true,
                         selectable: true,
                         styleSheet: MarkdownStyleSheet(
-                          p: const TextStyle(color: Colors.purple, fontSize: 13, height: 1.4),
+                          p: const TextStyle(
+                            color: Colors.purple,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
                         ),
                       ),
-                      AIAppResolver(aiText: _aiCorrection!, jsonPrefix: 'SUGGESTIONS_JSON:'),
+                      AIAppResolver(
+                        aiText: _aiCorrection!,
+                        jsonPrefix: 'SUGGESTIONS_JSON:',
+                      ),
                     ],
                   ),
                 ),
@@ -479,7 +618,10 @@ class _SearchPageState extends State<SearchPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(l10n.resultsFound(_results.length), style: const TextStyle(fontSize: 12)),
+              Text(
+                l10n.resultsFound(_results.length),
+                style: const TextStyle(fontSize: 12),
+              ),
               const SizedBox(width: 12),
               SegmentedButton<ViewMode>(
                 segments: [
@@ -503,7 +645,9 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         Expanded(
-          child: _viewMode == ViewMode.list ? _buildResultList() : _buildResultGrid(),
+          child: _viewMode == ViewMode.list
+              ? _buildResultList()
+              : _buildResultGrid(),
         ),
       ],
     );
@@ -542,7 +686,8 @@ class _SearchPageState extends State<SearchPage> {
                           child: CachedNetworkImage(
                             imageUrl: app.icon!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(strokeWidth: 2),
                             errorWidget: (context, url, error) => Container(
                               decoration: BoxDecoration(
                                 color: Colors.purple,
@@ -552,9 +697,10 @@ class _SearchPageState extends State<SearchPage> {
                               child: const Text(
                                 "M",
                                 style: TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 22,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -568,9 +714,10 @@ class _SearchPageState extends State<SearchPage> {
                           child: const Text(
                             "M",
                             style: TextStyle(
-                                fontSize: 22,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                 ),
@@ -584,7 +731,11 @@ class _SearchPageState extends State<SearchPage> {
                           Flexible(
                             child: Text(
                               app.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                letterSpacing: -0.2,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -592,14 +743,21 @@ class _SearchPageState extends State<SearchPage> {
                           if (app.installed) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 AppLocalizations.of(context)!.ready,
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
                               ),
                             ),
                           ],
@@ -608,13 +766,22 @@ class _SearchPageState extends State<SearchPage> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          ...app.sources.take(2).map((s) => Padding(
-                            padding: const EdgeInsets.only(right: 4),
-                            child: _buildSourceTag(s, isSmall: true),
-                          )),
+                          ...app.sources
+                              .take(2)
+                              .map(
+                                (s) => Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: _buildSourceTag(s, isSmall: true),
+                                ),
+                              ),
                           Text(
                             " • ${app.version}",
-                            style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -626,19 +793,35 @@ class _SearchPageState extends State<SearchPage> {
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           minimumSize: const Size(0, 32),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: Text(AppLocalizations.of(context)!.open, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          AppLocalizations.of(context)!.open,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       )
                     : FilledButton(
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           minimumSize: const Size(0, 32),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                         onPressed: () => _showAppDetails(app),
-                        child: Text(AppLocalizations.of(context)!.install, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          AppLocalizations.of(context)!.install,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
               ],
             ),
@@ -665,7 +848,11 @@ class _SearchPageState extends State<SearchPage> {
           elevation: 0,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: InkWell(
@@ -683,28 +870,48 @@ class _SearchPageState extends State<SearchPage> {
                         ? CachedNetworkImage(
                             imageUrl: app.icon!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                             errorWidget: (context, url, error) => Center(
-                              child: Text(app.name[0].toUpperCase(),
-                                  style: TextStyle(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.bold)),
+                              child: Text(
+                                app.name[0].toUpperCase(),
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           )
                         : Center(
-                            child: Text(app.name[0].toUpperCase(),
-                                style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold)),
+                            child: Text(
+                              app.name[0].toUpperCase(),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  app.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 4,
-                  children: app.sources.take(2).map((s) => _buildSourceTag(s, isSmall: true)).toList(),
+                  children: app.sources
+                      .take(2)
+                      .map((s) => _buildSourceTag(s, isSmall: true))
+                      .toList(),
                 ),
               ],
             ),
@@ -716,11 +923,16 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildSourceTag(String source, {bool isSmall = false}) {
     Color color = Colors.grey;
-    if (source == "Pacman") color = Colors.blue;
-    else if (source == "AUR") color = Colors.orange;
-    else if (source == "Flatpak") color = Colors.purple;
-    else if (source == "AppImage") color = Colors.teal;
-    else if (source == "Native") color = Colors.blue;
+    if (source == "Pacman")
+      color = Colors.blue;
+    else if (source == "AUR")
+      color = Colors.orange;
+    else if (source == "Flatpak")
+      color = Colors.purple;
+    else if (source == "AppImage")
+      color = Colors.teal;
+    else if (source == "Native")
+      color = Colors.blue;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
@@ -731,7 +943,11 @@ class _SearchPageState extends State<SearchPage> {
       ),
       child: Text(
         source,
-        style: TextStyle(color: color, fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: color,
+          fontSize: isSmall ? 9 : 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -743,92 +959,188 @@ class _SearchPageState extends State<SearchPage> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [colorScheme.primaryContainer, colorScheme.surface],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-      child: InkWell(
+      child: Material(
         borderRadius: BorderRadius.circular(28),
-        onTap: () => _showAppDetails(app),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primaryContainer, colorScheme.surface],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+            ),
+          ),
+          child: InkWell(
+            onTap: () => _showAppDetails(app),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)],
-                    ),
-                    child: app.icon != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: CachedNetworkImage(imageUrl: app.icon!, fit: BoxFit.cover),
-                          )
-                        : Icon(Icons.apps_rounded, size: 40, color: colorScheme.primary),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(app.name, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          children: app.sources.map((s) => _buildSourceTag(s)).toList(),
+                  Row(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
-                      ],
+                        child: app.icon != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: CachedNetworkImage(
+                                  imageUrl: app.icon!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(
+                                Icons.apps_rounded,
+                                size: 40,
+                                color: colorScheme.primary,
+                              ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              app.name,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              children: app.sources
+                                  .map((s) => _buildSourceTag(s))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      FilledButton.icon(
+                        onPressed: () => _showAppDetails(app),
+                        icon: Icon(
+                          app.installed
+                              ? Icons.open_in_new_rounded
+                              : Icons.download_rounded,
+                        ),
+                        label: Text(
+                          app.installed
+                              ? AppLocalizations.of(context)!.open
+                              : AppLocalizations.of(context)!.install,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    app.description,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  FilledButton.icon(
-                    onPressed: () => _showAppDetails(app),
-                    icon: Icon(app.installed ? Icons.open_in_new_rounded : Icons.download_rounded),
-                    label: Text(app.installed ? AppLocalizations.of(context)!.open : AppLocalizations.of(context)!.install),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                app.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              if (app.screenshots != null && app.screenshots!.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 160,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: app.screenshots!.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, i) => ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        imageUrl: app.screenshots![i],
-                        height: 160,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _) => Container(width: 200, color: colorScheme.surfaceContainer),
+                  if (app.screenshots != null &&
+                      app.screenshots!.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 160,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: app.screenshots!.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, i) => ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: app.screenshots![i],
+                            height: 160,
+                            fit: BoxFit.cover,
+                            placeholder: (_, _) => Container(
+                              width: 200,
+                              color: colorScheme.surfaceContainer,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ],
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showAIRecommendDialog() async {
+    final query = _controller.text.trim();
+    if (query.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context)!.aiPromptRecommend),
+          ],
+        ),
+        content: SizedBox(
+          width: 600,
+          child: FutureBuilder<String>(
+            future: BackendService.instance.aiRecommend(query),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final text = snapshot.data ?? "AI failed to respond.";
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    MarkdownBody(
+                      data: text.split('APPS_JSON:')[0],
+                      selectable: true,
+                    ),
+                    AIAppResolver(aiText: text, jsonPrefix: 'APPS_JSON:'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
       ),
     );
   }
@@ -893,10 +1205,12 @@ class _SearchPageState extends State<SearchPage> {
           return FadeTransition(
             opacity: animation.drive(CurveTween(curve: Curves.easeInOutExpo)),
             child: SlideTransition(
-              position: animation.drive(Tween<Offset>(
-                begin: const Offset(0.05, 0),
-                end: Offset.zero,
-              ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+              position: animation.drive(
+                Tween<Offset>(
+                  begin: const Offset(0.05, 0),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeInOutExpo)),
+              ),
               child: child,
             ),
           );

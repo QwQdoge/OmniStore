@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/category_service.dart';
-import 'searchpage.dart';
+import '../services/backend_service.dart';
 
 class CategoryPage extends StatelessWidget {
   const CategoryPage({super.key});
@@ -64,13 +64,9 @@ class CategoryPage extends StatelessWidget {
       color: colorScheme.surfaceContainerLow,
       child: InkWell(
         onTap: () {
-          // Navigate to search page with the category filter
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SearchPage(initialQuery: 'category:${cat.id}'),
-            ),
-          );
+          // Trigger search via global state
+          BackendService.pendingSearchQuery.value = '/${cat.id.toLowerCase()}';
+          BackendService.navigationIndex.value = 2; // Switch to Search tab
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -31,8 +31,9 @@ The front-end is built using Flutter with a Material 3 design system. It uses a 
 
 ### Components:
 - **`lib/main.dart` (`MainNavigationEntry`)**:
-  - **Sidebar (`_buildSideBar`)**: Contains a top "Explore" (`Icons.apps_rounded`) button and a bottom "Download" button (`_buildDownloadButton`).
-  - **Top Bar (`_buildTopBar`)**: Displays the current page title, a search action icon (navigates to `SearchPage` when clicked, visible on non-search pages), and the user settings avatar button (`_buildUserAvatar`). The avatar uses Material Design theme colors (`colorScheme.primaryContainer`).
+  - **Sidebar (`_buildSideBar`)**: Contains a top "Explore" (`Icons.apps_rounded`) button and a bottom "Download" button (`_buildDownloadButton`). Now uses global `navigationIndex` for tab switching.
+  - **Top Bar (`_buildTopBar`)**: Displays the current page title, a search action icon (switches to `SearchPage` via global state), and the user settings avatar button (`_buildUserAvatar`).
+  - **Main Content Area**: Wrapped in a `Material` widget to ensure correct ink splash rendering for child `ListTile` components.
   - **Global Status Bar**: At the bottom of the screen, displays background task status, current action logs, and download progress.
 - **Pages (`lib/pages/`)**:
   - `homepage.dart`: Displays featured banner cards (Hero section), essential packages grid, and horizontal category shelves (Trending, For You).
@@ -53,7 +54,7 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 - **Entry point (`python/main.py`)**: Handles CLI arguments parsing and routes them to backend modules. Outputs JSON metadata or streams callback lines in format `[CALLBACK] {"message": "..."}` or `[PROGRESS] 50` back to Flutter.
 - **Core modules (`python/core/`)**:
   - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
-  - `search/`: Unified package search logic.
+  - `search/`: Unified package search logic. Supports `/category` shorthand (e.g., `/game` -> `category:Game`).
   - `downloader/`: Process execution for installation/uninstallation flags.
   - `ai/`: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature.
   - `config_loader.py` & `env_manager.py`: Configuration and environment validation.

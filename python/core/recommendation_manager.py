@@ -188,6 +188,26 @@ class RecommendationManager:
             }
             return fallback
 
+    async def get_category_apps(self, category: str) -> List[Dict]:
+        """Fetch popular apps for a specific category from Flathub"""
+        url = f"https://flathub.org/api/v2/collection/category/{category}"
+        try:
+            apps = await self._fetch_collection(url)
+            # Enrich the top 10 for better UI display
+            await asyncio.gather(*[self._enrich_item(item) for item in apps[:10]])
+            return apps
+        except Exception as e:
+            print(f"[RecommendationManager] Category apps error: {e}")
+            return []
+
+    async def _enrich_item(self, item):
+        if not item.get('id'): return
+        details = await self.get_details(item['id'])
+        if details:
+            item['icon'] = details.get('icon') or item.get('icon')
+            item['screenshots'] = details.get('screenshots') or []
+            item['description'] = details.get('description') or item.get('description')
+
     async def get_details(self, app_id: str) -> Dict:
         """Fetch rich details for a specific app (Flathub API)"""
         url = f"https://flathub.org/api/v2/appstream/{app_id}"

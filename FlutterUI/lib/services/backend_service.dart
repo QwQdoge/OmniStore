@@ -66,6 +66,7 @@ class BackendService {
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
   static Process? activeProcess;
+  static Process? activeSearchProcess;
 
   static void addLog(String log) {
     final currentLogs = globalLogs.value;
@@ -97,29 +98,54 @@ class BackendService {
 
   /// 搜索逻辑
   Future<List<dynamic>> searchPackages(String query) async {
+    // Cancel any ongoing search to prevent race conditions
+    activeSearchProcess?.kill();
+
     try {
-      // TODO: Use a stream-based approach for large search results to prevent UI hangs.
-      final result = await Process.run(_venvPython, [
+      final process = await Process.start(_venvPython, [
         _scriptPath,
         "-S",
         query,
         "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      ], workingDirectory: _workingDir);
 
-      if (result.exitCode != 0) {
-        final errorOutput = result.stderr.toString().trim();
-        final message = errorOutput.isNotEmpty
-            ? errorOutput
-            : 'Backend script exited with code ${result.exitCode}';
-        debugPrint('searchPackages failed: $message');
+      activeSearchProcess = process;
+
+      final outputFuture = process.stdout.transform(utf8.decoder).join();
+      final exitCode = await process.exitCode.timeout(const Duration(seconds: 45));
+
+      activeSearchProcess = null;
+
+      if (exitCode != 0) {
+        debugPrint('searchPackages failed with code $exitCode');
         return [];
       }
 
-      final output = result.stdout.toString().trim();
+      final output = (await outputFuture).trim();
       if (output.isEmpty) return [];
-      return jsonDecode(output);
+      return _tryParseJson(output);
     } catch (e) {
+      activeSearchProcess = null;
       debugPrint('searchPackages Exception: $e');
+      return [];
+    }
+  }
+
+  /// Robust JSON parsing that finds the first JSON block or array
+  List<dynamic> _tryParseJson(String input) {
+    try {
+      return jsonDecode(input);
+    } catch (_) {
+      // If direct parsing fails, try to find the JSON part
+      final start = input.indexOf('[');
+      final end = input.lastIndexOf(']');
+      if (start != -1 && end != -1 && end > start) {
+        try {
+          return jsonDecode(input.substring(start, end + 1));
+        } catch (e) {
+          debugPrint("Failed to parse extracted JSON: $e");
+        }
+      }
       return [];
     }
   }
@@ -134,7 +160,7 @@ class BackendService {
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return [];
-      return jsonDecode(result.stdout.toString().trim());
+      return _tryParseJson(result.stdout.toString().trim());
     } catch (e) {
       debugPrint("ListInstalled Exception: $e");
       return [];
@@ -512,7 +538,7 @@ class BackendService {
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
 
       if (result.exitCode != 0) return [];
-      return jsonDecode(result.stdout.toString().trim());
+      return _tryParseJson(result.stdout.toString().trim());
     } catch (e) {
       debugPrint("CheckUpdates Exception: $e");
       return [];
@@ -545,10 +571,11 @@ class BackendService {
       final result = await Process.run(_venvPython, [
         _scriptPath,
         "--essentials",
+        "--json",
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
-      return jsonDecode(result.stdout.toString().trim());
+      return _tryParseJson(result.stdout.toString().trim());
     } catch (e) {
       debugPrint("getEssentials Exception: $e");
       return [];
@@ -562,10 +589,11 @@ class BackendService {
         _scriptPath,
         "--import-packages",
         filepath,
+        "--json",
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
-      return jsonDecode(result.stdout.toString().trim());
+      return _tryParseJson(result.stdout.toString().trim());
     } catch (e) {
       debugPrint("importPackages Exception: $e");
       return [];
