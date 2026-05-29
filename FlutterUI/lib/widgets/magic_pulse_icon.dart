@@ -46,7 +46,11 @@ class _MagicPulseIconState extends State<MagicPulseIcon>
       child: ShaderMask(
         shaderCallback: (Rect bounds) {
           return LinearGradient(
-            colors: [widget.color, widget.color.withValues(alpha: 0.7), Colors.white],
+            colors: [
+              widget.color,
+              widget.color.withValues(alpha: 0.8),
+              Colors.white.withValues(alpha: 0.9),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ).createShader(bounds);

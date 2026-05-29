@@ -9,6 +9,7 @@ import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/category_service.dart';
 import '../widgets/magic_pulse_icon.dart';
+import '../widgets/ai_app_resolver.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
 import '../services/l10n_service.dart';
@@ -449,13 +450,18 @@ class _SearchPageState extends State<SearchPage> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.purple.withValues(alpha: 0.1)),
                   ),
-                  child: MarkdownBody(
-                    data: _aiCorrection!,
-                    shrinkWrap: true,
-                    selectable: true,
-                    styleSheet: MarkdownStyleSheet(
-                      p: const TextStyle(color: Colors.purple, fontSize: 13, height: 1.4),
-                    ),
+                  child: Column(
+                    children: [
+                      MarkdownBody(
+                        data: _aiCorrection!.split('SUGGESTIONS_JSON:')[0], // Hide JSON from text
+                        shrinkWrap: true,
+                        selectable: true,
+                        styleSheet: MarkdownStyleSheet(
+                          p: const TextStyle(color: Colors.purple, fontSize: 13, height: 1.4),
+                        ),
+                      ),
+                      AIAppResolver(aiText: _aiCorrection!, jsonPrefix: 'SUGGESTIONS_JSON:'),
+                    ],
                   ),
                 ),
               ),
@@ -852,10 +858,16 @@ class _SearchPageState extends State<SearchPage> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
+              final text = snapshot.data ?? "AI failed to respond.";
               return SingleChildScrollView(
-                child: MarkdownBody(
-                  data: snapshot.data ?? "AI failed to respond.",
-                  selectable: true,
+                child: Column(
+                  children: [
+                    MarkdownBody(
+                      data: text.split('APPS_JSON:')[0],
+                      selectable: true,
+                    ),
+                    AIAppResolver(aiText: text, jsonPrefix: 'APPS_JSON:'),
+                  ],
                 ),
               );
             },

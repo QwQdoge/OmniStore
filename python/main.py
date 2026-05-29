@@ -1013,8 +1013,13 @@ async def main():
                     unique_candidates.append(c)
 
             if unique_candidates:
+                # Filter out apps with missing descriptions or names
+                filtered_candidates = [c for c in unique_candidates if c.get('name') and c.get('description')]
+                if not filtered_candidates:
+                    filtered_candidates = unique_candidates # Fallback to all if everyone is "broken"
+
                 # Limit to a reasonable amount of candidates for the prompt
-                res = await backend.ai.pick_of_the_day(unique_candidates[:15])
+                res = await backend.ai.pick_of_the_day(filtered_candidates[:15])
             else:
                 res = "Today's recommendation: OmniStore itself! Your gateway to a better Arch Linux experience."
 

@@ -20,12 +20,26 @@ class _WelcomePageState extends State<WelcomePage> {
   bool _isBootstrapping = false;
   String _bootstrapLog = "";
   bool _enableAUR = true;
+
+  // AI Onboarding State
+  bool _enableAI = false;
+  String _aiProvider = 'ollama';
+  final TextEditingController _aiEndpoint = TextEditingController(text: 'http://localhost:11434');
+  final TextEditingController _aiApiKey = TextEditingController();
+
   final BackendService _backend = BackendService.instance;
 
   @override
   void initState() {
     super.initState();
     _checkEnv();
+  }
+
+  @override
+  void dispose() {
+    _aiEndpoint.dispose();
+    _aiApiKey.dispose();
+    super.dispose();
   }
 
   Future<void> _checkEnv() async {
@@ -78,7 +92,7 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   void _nextStep() {
-    if (_currentStep < 2) {
+    if (_currentStep < 3) {
       setState(() => _currentStep++);
     } else {
       _finishSetup();
@@ -95,6 +109,13 @@ class _WelcomePageState extends State<WelcomePage> {
     config['search'] ??= {};
     config['search']['sources'] ??= {};
     config['search']['sources']['aur'] = _enableAUR;
+
+    config['ai'] ??= {};
+    config['ai']['enabled'] = _enableAI;
+    config['ai']['provider'] = _aiProvider;
+    config['ai']['endpoint'] = _aiEndpoint.text;
+    config['ai']['api_key'] = _aiApiKey.text;
+
     await _backend.saveConfig(config);
     widget.onFinish();
   }
@@ -106,7 +127,7 @@ class _WelcomePageState extends State<WelcomePage> {
       body: Center(
         child: Container(
           width: 600,
-          height: 500,
+          height: 520,
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
@@ -124,7 +145,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                 child: Row(
                   children: [
-                    ...List.generate(3, (i) => Expanded(
+                    ...List.generate(4, (i) => Expanded(
                       child: Container(
                         height: 4,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -176,6 +197,8 @@ class _WelcomePageState extends State<WelcomePage> {
         return _buildEnvCheckStep();
       case 2:
         return _buildSourceStep();
+      case 3:
+        return _buildAIStep();
       default:
         return const SizedBox.shrink();
     }
@@ -348,6 +371,80 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
+  Widget _buildAIStep() {
+    final theme = Theme.of(context);
+    return Padding(
+      key: const ValueKey(3),
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("AI 智能助手", style: theme.textTheme.titleLarge),
+          const Text("开启 AI 辅助搜索、应用解释与错误诊断。"),
+          const SizedBox(height: 20),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    title: const Text("启用 AI 功能"),
+                    value: _enableAI,
+                    onChanged: (v) => setState(() => _enableAI = v),
+                  ),
+                  if (_enableAI) ...[
+                    const Divider(),
+                    ListTile(
+                      title: const Text("服务商"),
+                      trailing: DropdownButton<String>(
+                        value: _aiProvider,
+                        onChanged: (v) => setState(() => _aiProvider = v!),
+                        items: const [
+                          DropdownMenuItem(value: 'ollama', child: Text('Ollama')),
+                          DropdownMenuItem(value: 'openai', child: Text('OpenAI 兼容')),
+                        ],
+                      ),
+                    ),
+                    TextField(
+                      controller: _aiEndpoint,
+                      decoration: const InputDecoration(labelText: "接口地址", hintText: "http://localhost:11434"),
+                    ),
+                    TextField(
+                      controller: _aiApiKey,
+                      decoration: const InputDecoration(labelText: "API 密钥 (可选)"),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量以允许连接。",
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FilledButton(
+                onPressed: _finishSetup,
+                child: const Text("进入商店"),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _buildSourceStep() {
     return Padding(
       key: const ValueKey(2),
@@ -388,8 +485,8 @@ class _WelcomePageState extends State<WelcomePage> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               FilledButton(
-                onPressed: _finishSetup,
-                child: Text(L10nService.s('enter_store')),
+                onPressed: _nextStep,
+                child: const Text("下一步"),
               ),
             ],
           )

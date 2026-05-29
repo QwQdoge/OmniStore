@@ -7,6 +7,7 @@ import '../services/app_package.dart';
 import '../services/backend_service.dart';
 import '../services/category_service.dart';
 import '../widgets/magic_pulse_icon.dart';
+import '../widgets/ai_app_resolver.dart';
 import './app_details_page.dart';
 import 'searchpage.dart';
 
@@ -754,12 +755,13 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 12),
           MarkdownBody(
-            data: _aiPickBlurb!,
+            data: _aiPickBlurb!.split('PICK_JSON:')[0],
             shrinkWrap: true,
             styleSheet: MarkdownStyleSheet(
               p: const TextStyle(fontSize: 14, height: 1.5, fontStyle: FontStyle.italic),
             ),
           ),
+          AIAppResolver(aiText: _aiPickBlurb!, jsonPrefix: 'PICK_JSON:'),
         ],
       ),
     );
