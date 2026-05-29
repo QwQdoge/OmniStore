@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import '../l10n/app_localizations.dart';
@@ -109,10 +110,15 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // AI Pick of the Day
-            if (_aiPickBlurb != null && _aiPickBlurb!.isNotEmpty)
-              SliverToBoxAdapter(
-                child: _buildAIPickSection(),
-              ),
+            ValueListenableBuilder<bool>(
+              valueListenable: BackendService.isAIEnabled,
+              builder: (context, enabled, _) {
+                if (enabled && _aiPickBlurb != null && _aiPickBlurb!.isNotEmpty) {
+                  return SliverToBoxAdapter(child: _buildAIPickSection());
+                }
+                return const SliverToBoxAdapter(child: SizedBox.shrink());
+              },
+            ),
 
             // 1.5 Categories Quick Access
             _buildCategoryQuickAccess(),
@@ -746,9 +752,12 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            _aiPickBlurb!,
-            style: const TextStyle(fontSize: 14, height: 1.5, fontStyle: FontStyle.italic),
+          MarkdownBody(
+            data: _aiPickBlurb!,
+            shrinkWrap: true,
+            styleSheet: MarkdownStyleSheet(
+              p: const TextStyle(fontSize: 14, height: 1.5, fontStyle: FontStyle.italic),
+            ),
           ),
         ],
       ),

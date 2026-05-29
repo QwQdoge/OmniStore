@@ -239,10 +239,16 @@ class _SearchPageState extends State<SearchPage> {
                   },
                 ),
               const SizedBox(width: 8),
-              IconButton(
-                icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-                tooltip: AppLocalizations.of(context)!.aiPromptRecommend,
-                onPressed: _showAIRecommendDialog,
+              ValueListenableBuilder<bool>(
+                valueListenable: BackendService.isAIEnabled,
+                builder: (context, enabled, _) {
+                  if (!enabled) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiPromptRecommend,
+                    onPressed: _showAIRecommendDialog,
+                  );
+                },
               ),
               const SizedBox(width: 8),
               FilledButton(
@@ -436,6 +442,7 @@ class _SearchPageState extends State<SearchPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.purple.withValues(alpha: 0.05),
@@ -444,6 +451,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   child: MarkdownBody(
                     data: _aiCorrection!,
+                    shrinkWrap: true,
                     selectable: true,
                     styleSheet: MarkdownStyleSheet(
                       p: const TextStyle(color: Colors.purple, fontSize: 13, height: 1.4),

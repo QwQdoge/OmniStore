@@ -8,14 +8,15 @@ class CategoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Material( // Wrap in Material to avoid "No Material widget found" errors in this subpage
-        color: Colors.transparent,
+      body: Material(
+        type: MaterialType.transparency,
         child: CustomScrollView(
         slivers: [
           SliverAppBar.large(

@@ -995,11 +995,20 @@ async def main():
         print(json.dumps({"response": res}, ensure_ascii=False))
 
     elif args.ai_pick:
-        timeout = aiohttp.ClientTimeout(total=20)
+        timeout = aiohttp.ClientTimeout(total=30)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             await backend.initialize(session)
-            trending = (await backend.recommender.get_recommendations()).get('trending', []) # type: ignore
-            res = await backend.ai.pick_of_the_day(trending)
+            recs = await backend.recommender.get_recommendations() # type: ignore
+            trending = recs.get('trending', [])
+            if not trending:
+                # Fallback to featured or generic if trending is empty
+                trending = recs.get('featured', [])
+
+            if trending:
+                res = await backend.ai.pick_of_the_day(trending)
+            else:
+                res = "Today's recommendation: OmniStore itself! Explore and manage your apps with ease."
+
             print(json.dumps({"response": res}, ensure_ascii=False))
 
     elif args.ai_correct:

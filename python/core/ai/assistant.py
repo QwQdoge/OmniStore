@@ -151,11 +151,13 @@ class AIAssistant:
         """Generate a detailed explanation for a specific application."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant, a helpful Linux expert. Provide answers in {lang}. "
-            "Explain the application requested by the user in detail. Keep it structured, clear, and professional. "
-            "Include: What it does, core features, core advantages, who it is for, and why they should choose Flatpak if available."
+            f"You are the OmniStore Expert, a friendly and professional Linux systems architect. Provide responses in {lang}.\n"
+            "Your goal is to provide a deep, insightful analysis of the application. "
+            "Don't just list features; explain the 'soul' of the app—why it exists and how it changes a user's workflow.\n"
+            "Structure your response with clear headings: 'What is it?', 'Key Highlights', 'Best Suited For', and 'Expert Tip'.\n"
+            "If a Flatpak version exists, briefly mention its security benefits in a warm, advisory tone."
         )
-        user_prompt = f"Application: {app_name}\nDescription (if any): {app_description}"
+        user_prompt = f"Please explain '{app_name}' to me. Here is some context: {app_description}"
         return await self._post_request(system_prompt, user_prompt)
 
     async def recommend_apps(self, query: str, available_apps: List[Dict]) -> str:
@@ -229,12 +231,13 @@ class AIAssistant:
         """Select one app to be the 'AI Pick of the Day' with a catchy description."""
         lang = self._get_language()
         system_prompt = (
-            f"You are OmniStore AI assistant. Provide response in {lang}.\n"
-            "From the list of trending apps, pick ONE that is particularly interesting or useful. "
-            "Write a very short, catchy 'Pick of the Day' blurb (2 sentences max) to encourage the user to try it."
+            f"You are a sophisticated software curator for OmniStore. Provide response in {lang}.\n"
+            "Your task is to pick the most exciting or impactful app from the trending list. "
+            "Write a single, punchy, and highly persuasive paragraph (under 40 words) that makes the user want to install it IMMEDIATELY.\n"
+            "Use an enthusiastic but professional tone."
         )
         apps_str = json.dumps([{"name": a.get("name"), "desc": a.get("description")} for a in trending_apps[:10]])
-        user_prompt = f"Trending Apps:\n{apps_str}"
+        user_prompt = f"Here are the trending apps today:\n{apps_str}\n\nWhich one is your 'Pick of the Day' and why?"
         return await self._post_request(system_prompt, user_prompt)
 
     async def summarize_changelog(self, app_name: str, current_ver: str, new_version: str) -> str:

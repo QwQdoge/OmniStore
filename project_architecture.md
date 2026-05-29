@@ -80,8 +80,16 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 - **`[CALLBACK] <json>`**: Structured logs for the terminal view.
   - Schema: `{"type": "log", "message": "...", "level": "INFO|ERROR|SUCCESS"}`
 
-### AI Assistant Guidelines:
-- **Visual Language**: All AI-driven features must use the `MagicPulseIcon` with `Colors.purple` to maintain a distinct "intelligent" identity.
-- **Language Localization**: All AI responses should respect the `ui.language` setting.
-- **Graceful Degradation**: Prompts are defined in `python/core/ai/assistant.py`. When adding new AI features, ensure they fall back gracefully (e.g., hidden buttons or clear error messages) if AI is disabled or the provider is unreachable.
-- **Contextual Intelligence**: New AI features should be integrated directly where the user needs them (e.g., Error Analysis in terminal, Comparisons in variant pickers).
+---
+
+## 5. 7-Part UX & Stability Standards
+
+To ensure a premium and stable experience, all features must adhere to these 7 pillars:
+
+1.  **Onboarding**: First-run experience must be smooth, using the `WelcomePage` with clear progress indicators and configuration defaults.
+2.  **Navigation**: Sidebar must use tooltips for accessibility. Page transitions should be fluid (e.g., `easeInOutExpo`).
+3.  **Discovery**: High-quality Hero banners and horizontal shelves for app exploration. Empty states must provide actionable feedback.
+4.  **Lifecycle**: Background tasks managed by `TaskManager` with real-time log visibility via the Terminal Dialog.
+5.  **Configuration**: Settings must be logically grouped with icons. All text inputs must use persistent controllers in the State to prevent cursor jumps.
+6.  **AI Magic**: Intelligent features are highlighted with the `MagicPulseIcon` (Purple gradient). All AI triggers must respect the global `isAIEnabled` state.
+7.  **Resilience**: Comprehensive error handling for network requests (45s timeouts) and backend CLI failures. UI must handle missing Material ancestors in sub-pages.
