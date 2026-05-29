@@ -931,6 +931,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 500,
+          height: 400, // Fixed height to prevent overflow in dialog
           child: FutureBuilder<String>(
             future: BackendService.instance.aiExplain(
               widget.app.name,
@@ -943,9 +944,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              return MarkdownBody(
-                data: snapshot.data ?? "AI failed to respond.",
-                selectable: true,
+              return SingleChildScrollView(
+                child: MarkdownBody(
+                  data: snapshot.data ?? "AI failed to respond.",
+                  selectable: true,
+                ),
               );
             },
           ),
@@ -973,6 +976,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 600,
+          height: 450, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiAnalyzeError(logs),
             builder: (context, snapshot) {
@@ -1014,6 +1018,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 600,
+          height: 450, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiCompareVariants(widget.app.name),
             builder: (context, snapshot) {
@@ -1106,13 +1111,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         content: SizedBox(
           width: 500,
+          height: 400, // Fixed height
           child: FutureBuilder<String>(
             future: BackendService.instance.aiDetectConflicts(widget.app.name),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
               }
-              return MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true);
+              return SingleChildScrollView(
+                child: MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true),
+              );
             },
           ),
         ),

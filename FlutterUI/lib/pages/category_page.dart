@@ -16,7 +16,7 @@ class CategoryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Material(
-        type: MaterialType.transparency,
+        color: Colors.transparent,
         child: CustomScrollView(
         slivers: [
           SliverAppBar.large(
@@ -52,7 +52,9 @@ class CategoryPage extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(BuildContext context, CategoryItem cat, ColorScheme colorScheme) {
-    return Card(
+    return Material(
+      color: Colors.transparent,
+      child: Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -88,6 +90,7 @@ class CategoryPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

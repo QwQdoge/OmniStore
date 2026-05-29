@@ -723,6 +723,7 @@ class _HomePageState extends State<HomePage> {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      constraints: const BoxConstraints(minHeight: 100),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(

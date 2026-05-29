@@ -995,19 +995,28 @@ async def main():
         print(json.dumps({"response": res}, ensure_ascii=False))
 
     elif args.ai_pick:
-        timeout = aiohttp.ClientTimeout(total=30)
+        timeout = aiohttp.ClientTimeout(total=45)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             await backend.initialize(session)
             recs = await backend.recommender.get_recommendations() # type: ignore
-            trending = recs.get('trending', [])
-            if not trending:
-                # Fallback to featured or generic if trending is empty
-                trending = recs.get('featured', [])
+            # Collect all candidates across categories
+            candidates = []
+            for key in ['trending', 'featured', 'for_you']:
+                candidates.extend(recs.get(key, []))
 
-            if trending:
-                res = await backend.ai.pick_of_the_day(trending)
+            # Deduplicate by name
+            seen = set()
+            unique_candidates = []
+            for c in candidates:
+                if c['name'] not in seen:
+                    seen.add(c['name'])
+                    unique_candidates.append(c)
+
+            if unique_candidates:
+                # Limit to a reasonable amount of candidates for the prompt
+                res = await backend.ai.pick_of_the_day(unique_candidates[:15])
             else:
-                res = "Today's recommendation: OmniStore itself! Explore and manage your apps with ease."
+                res = "Today's recommendation: OmniStore itself! Your gateway to a better Arch Linux experience."
 
             print(json.dumps({"response": res}, ensure_ascii=False))
 
