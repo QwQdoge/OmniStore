@@ -523,51 +523,51 @@
   "@add": {
     "description": "add"
   },
-  "aiSettings": "AI Assistant Settings",
+  "aiSettings": "Ajustes del Asistente de IA",
   "@aiSettings": {
     "description": "aiSettings"
   },
-  "aiEnabled": "Enable AI Assistant",
+  "aiEnabled": "Activar Asistente de IA",
   "@aiEnabled": {
     "description": "aiEnabled"
   },
-  "aiProvider": "AI Provider",
+  "aiProvider": "Proveedor de IA",
   "@aiProvider": {
     "description": "aiProvider"
   },
-  "aiEndpoint": "API Endpoint",
+  "aiEndpoint": "Punto de acceso API",
   "@aiEndpoint": {
     "description": "aiEndpoint"
   },
-  "aiModel": "Model Name",
+  "aiModel": "Nombre del modelo",
   "@aiModel": {
     "description": "aiModel"
   },
-  "aiApiKey": "API Key",
+  "aiApiKey": "Clave API",
   "@aiApiKey": {
     "description": "aiApiKey"
   },
-  "aiProxy": "Network Proxy (Optional)",
+  "aiProxy": "Proxy de red (Opcional)",
   "@aiProxy": {
     "description": "aiProxy"
   },
-  "aiTemperature": "Temperature (Creativity)",
+  "aiTemperature": "Temperatura (Creatividad)",
   "@aiTemperature": {
     "description": "aiTemperature"
   },
-  "aiMaxTokens": "Max Response Tokens",
+  "aiMaxTokens": "Tokens máximos",
   "@aiMaxTokens": {
     "description": "aiMaxTokens"
   },
-  "aiTestButton": "Test AI Connection",
+  "aiTestButton": "Probar conexión de IA",
   "@aiTestButton": {
     "description": "aiTestButton"
   },
-  "aiTestSuccess": "AI connection successful!",
+  "aiTestSuccess": "¡Conexión de IA exitosa!",
   "@aiTestSuccess": {
     "description": "aiTestSuccess"
   },
-  "aiTestFailed": "AI connection failed: {error}",
+  "aiTestFailed": "Conexión de IA fallida: {error}",
   "@aiTestFailed": {
     "placeholders": {
       "error": {
@@ -575,75 +575,75 @@
       }
     }
   },
-  "aiPromptExplain": "Explain with AI",
+  "aiPromptExplain": "Explicar con IA",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "Ask AI for Recommendation",
+  "aiPromptRecommend": "Pedir recomendación a la IA",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "Analyze Error with AI",
+  "aiPromptError": "Analizar error con IA",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPickDay": "AI Pick of the Day",
+  "aiPickDay": "Selección del día de la IA",
   "@aiPickDay": {
     "description": "aiPickDay"
   },
-  "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "aiPickDaySubtitle": "Impulsado por OmniStore AI",
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
-  "aiCompareTitle": "AI Variant Comparison",
+  "aiCompareTitle": "Comparación de variantes por IA",
   "@aiCompareTitle": {
     "description": "aiCompareTitle"
   },
-  "aiHealthTitle": "AI System Health Report",
+  "aiHealthTitle": "Informe de salud del sistema por IA",
   "@aiHealthTitle": {
     "description": "aiHealthTitle"
   },
-  "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "aiHealthSubtitle": "Diagnóstico inteligente para su Arch Linux",
   "@aiHealthSubtitle": {
     "description": "aiHealthSubtitle"
   },
-  "aiCorrection": "Did you mean?",
+  "aiCorrection": "¿Quisiste decir?",
   "@aiCorrection": {
     "description": "aiCorrection"
   },
-  "aiThinking": "AI is thinking...",
+  "aiThinking": "La IA está pensando...",
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "Magic Search",
+  "magicSearch": "Búsqueda mágica",
   "@magicSearch": {
     "description": "magicSearch"
   },
-  "aiChangelogTitle": "AI Update Summary",
+  "aiChangelogTitle": "Resumen de actualizaciones por IA",
   "@aiChangelogTitle": {
     "description": "aiChangelogTitle"
   },
-  "aiCliTitle": "AI Command Generator",
+  "aiCliTitle": "Generador de comandos por IA",
   "@aiCliTitle": {
     "description": "aiCliTitle"
   },
-  "aiConflictTitle": "AI Conflict Detection",
+  "aiConflictTitle": "Detección de conflictos por IA",
   "@aiConflictTitle": {
     "description": "aiConflictTitle"
   },
-  "aiCopyCommand": "Copy Command",
+  "aiCopyCommand": "Copiar comando",
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiCommandCopied": "Command copied to clipboard",
+  "aiCommandCopied": "Comando copiado al portapapeles",
   "@aiCommandCopied": {
     "description": "aiCommandCopied"
   },
-  "aiRefineSearch": "Refine search with AI",
+  "aiRefineSearch": "Refinar búsqueda con IA",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Explain this update",
+  "aiExplainUpdate": "Explicar esta actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   }
