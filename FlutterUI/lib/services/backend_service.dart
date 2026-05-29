@@ -102,9 +102,9 @@ class BackendService {
   }
 
   /// 搜索逻辑
-  Future<List<dynamic>> searchPackages(String query) async {
-    // Cancel any ongoing search to prevent race conditions
-    activeSearchProcess?.kill();
+  Future<List<dynamic>> searchPackages(String query, {bool cancelOngoing = true}) async {
+    // Cancel any ongoing search to prevent race conditions (usually for search bar)
+    if (cancelOngoing) activeSearchProcess?.kill();
 
     try {
       final process = await Process.start(_venvPython, [
@@ -114,7 +114,7 @@ class BackendService {
         "--json",
       ], workingDirectory: _workingDir);
 
-      activeSearchProcess = process;
+      if (cancelOngoing) activeSearchProcess = process;
 
       final outputFuture = process.stdout.transform(utf8.decoder).join();
       final exitCode = await process.exitCode.timeout(const Duration(seconds: 45));

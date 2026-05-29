@@ -47,15 +47,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  bool _isAILoading = false;
   Future<void> _fetchAIPick() async {
+    if (!BackendService.isAIEnabled.value) return;
+    setState(() => _isAILoading = true);
     try {
       final pick = await BackendService.instance.aiPickOfTheDay();
       if (mounted) {
         setState(() {
           _aiPickBlurb = pick;
+          _isAILoading = false;
         });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) setState(() => _isAILoading = false);
+    }
   }
 
   Future<void> _importPackages() async {
@@ -114,7 +120,21 @@ class _HomePageState extends State<HomePage> {
             ValueListenableBuilder<bool>(
               valueListenable: BackendService.isAIEnabled,
               builder: (context, enabled, _) {
-                if (enabled && _aiPickBlurb != null && _aiPickBlurb!.isNotEmpty) {
+                if (!enabled) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                if (_isAILoading) {
+                  return SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  );
+                }
+                if (_aiPickBlurb != null && _aiPickBlurb!.isNotEmpty) {
                   return SliverToBoxAdapter(child: _buildAIPickSection());
                 }
                 return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -135,7 +155,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.only(right: 20),
                       child: OutlinedButton.icon(
                         onPressed: _importPackages,
-                        icon: const Icon(Icons.file_upload_outlined, size: 18),
+                        icon: const Icon(Icons.file_upload_rounded, size: 18),
                         label: const Text("导入列表"),
                       ),
                     ),
@@ -209,7 +229,7 @@ class _HomePageState extends State<HomePage> {
               Icon(Icons.cloud_off_rounded, color: Theme.of(context).colorScheme.error, size: 48),
               const SizedBox(height: 12),
               const Text("无法加载推荐内容，请检查后端状态"),
-              TextButton(onPressed: _refresh, child: const Text("重试")),
+              FilledButton.tonal(onPressed: _refresh, child: const Text("重试")),
             ],
           ),
         ),
@@ -294,16 +314,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // (Section 6: HomePage Shelves)
   Widget _buildShelfItem(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Container(
       width: 280,
-      margin: const EdgeInsets.only(right: 8),
-      child: Material(
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        elevation: 0,
         color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => Navigator.push(
@@ -315,17 +340,17 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               children: [
                 Hero(
-                  tag: 'app-icon-${app.name}-${app.primarySource}',
+                  tag: 'app-icon-shelf-${app.name}-${app.primarySource}',
                   child: Container(
-                    width: 64,
-                    height: 64,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
-                      color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(16.0),
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14.0),
                     ),
                     child: app.icon != null
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16.0),
+                            borderRadius: BorderRadius.circular(14.0),
                             child: CachedNetworkImage(
                               imageUrl: app.icon!,
                               fit: BoxFit.cover,
@@ -333,8 +358,8 @@ class _HomePageState extends State<HomePage> {
                                 child: Text(
                                   app.name[0].toUpperCase(),
                                   style: TextStyle(
-                                      color: colorScheme.onSecondaryContainer,
-                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w900,
                                       fontSize: 20),
                                 ),
                               ),
@@ -344,8 +369,8 @@ class _HomePageState extends State<HomePage> {
                             child: Text(
                               app.name[0].toUpperCase(),
                               style: TextStyle(
-                                  color: colorScheme.onSecondaryContainer,
-                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 20),
                             ),
                           ),
@@ -360,16 +385,16 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         app.name,
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.2),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         app.description,
                         style: TextStyle(
                             fontSize: 12, color: colorScheme.onSurfaceVariant),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
@@ -385,6 +410,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // (Section 5: Category Chips)
   Widget _buildCategoryQuickAccess() {
     final categories = CategoryService.getCategories(context);
     final colorScheme = Theme.of(context).colorScheme;
@@ -407,18 +433,19 @@ class _HomePageState extends State<HomePage> {
                 final cat = categories[index];
                 return ActionChip(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SearchPage(initialQuery: 'category:${cat.id}'),
-                      ),
-                    );
+                    BackendService.navigationIndex.value = 2; // Search tab
+                    BackendService.pendingSearchQuery.value = '/${cat.id.toLowerCase()}';
                   },
-                  avatar: Icon(cat.icon, size: 18, color: cat.color),
+                  avatar: Icon(cat.icon, size: 18, color: colorScheme.primary),
                   label: Text(cat.name),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-                  backgroundColor: colorScheme.surfaceContainerLow,
+                  labelStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                    fontSize: 13,
+                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: BorderSide.none,
+                  backgroundColor: colorScheme.surfaceContainerHigh,
                 );
               },
             ),
@@ -429,7 +456,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSectionHeader(String title) {
-    // TODO: Centralize MD3 typography constants (e.g., 26px, w900, -0.8 letter spacing).
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
@@ -437,202 +463,156 @@ class _HomePageState extends State<HomePage> {
         style: const TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.w900,
-          letterSpacing: -0.8,
+          letterSpacing: -1.0,
         ),
       ),
     );
   }
 
+  // (Section 4: HomePage Hero Banner)
   Widget _buildBannerCard(BuildContext context, AppPackage app) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return RepaintBoundary(
-      child: Container(
-        width: 300,
-        decoration: BoxDecoration(
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
         ),
-        child: Material(
-          color: theme.brightness == Brightness.light
-              ? colorScheme.surfaceContainerLow
-              : colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(28.0),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    AppDetailsPage(app: app),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation
-                        .drive(CurveTween(curve: Curves.easeInOutExpo)),
-                    child: SlideTransition(
-                      position: animation.drive(Tween<Offset>(
-                        begin: const Offset(0.05, 0),
-                        end: Offset.zero,
-                      ).chain(CurveTween(curve: Curves.easeInOutExpo))),
-                      child: child,
-                    ),
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 500),
-              ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  AppDetailsPage(app: app),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation
+                      .drive(CurveTween(curve: Curves.easeInOutExpo)),
+                  child: SlideTransition(
+                    position: animation.drive(Tween<Offset>(
+                      begin: const Offset(0.05, 0),
+                      end: Offset.zero,
+                    ).chain(CurveTween(curve: Curves.easeInOutExpo))),
+                    child: child,
+                  ),
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 500),
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28.0),
-                border: Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+          child: SizedBox(
+            width: 320,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 上半部分：宣传图
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: (app.screenshots != null && app.screenshots!.isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: app.screenshots![0],
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: colorScheme.surfaceContainerHigh,
+                                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                ),
+                                errorWidget: (c, e, s) => Container(
+                                  color: colorScheme.surfaceContainerHigh,
+                                  child: Icon(Icons.image_rounded, size: 48, color: colorScheme.primary.withValues(alpha: 0.2)),
+                                ),
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer],
+                                  ),
+                                ),
+                                child: Icon(Icons.image_rounded, size: 48, color: colorScheme.primary.withValues(alpha: 0.2)),
+                              ),
+                      ),
+                      // 渐变蒙层
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)],
+                              stops: const [0.6, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 悬浮源标签
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: _buildTrustLabel(app.primarySource),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 上半部分：类似宣传大图
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.primaryContainer,
-                            colorScheme.tertiaryContainer,
+                // 下半部分：应用信息
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Row(
+                    children: [
+                      Hero(
+                        tag: 'app-icon-banner-${app.name}',
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            borderRadius: BorderRadius.circular(14.0),
+                          ),
+                          child: app.icon != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(14.0),
+                                  child: CachedNetworkImage(imageUrl: app.icon!, fit: BoxFit.cover),
+                                )
+                              : Center(
+                                  child: Text(
+                                    app.name[0].toUpperCase(),
+                                    style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.bold, fontSize: 20),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              app.name,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: -0.4),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              app.description,
+                              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ),
-                      child: (app.screenshots != null &&
-                              app.screenshots!.isNotEmpty)
-                          ? CachedNetworkImage(
-                              imageUrl: app.screenshots![0],
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Center(
-                                child: CircularProgressIndicator(
-                                  color:
-                                      colorScheme.primary.withValues(alpha: 0.3),
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                              errorWidget: (c, e, s) => Container(
-                                color: colorScheme.surfaceContainerHighest,
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  size: 48,
-                                  color: colorScheme.primary.withValues(alpha: 0.5),
-                                ),
-                              ),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    colorScheme.primaryContainer,
-                                    colorScheme.tertiaryContainer,
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  size: 48,
-                                  color: colorScheme.primary
-                                      .withValues(alpha: 0.5),
-                                ),
-                              ),
-                            ),
-                    ),
+                    ],
                   ),
-                  // 下半部分：应用信息
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        // 小图标
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: app.icon != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: app.icon!,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                        const CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                  ),
-                                )
-                              : Text(
-                                  app.name[0].toUpperCase(),
-                                          style: TextStyle(
-                                    color: colorScheme.onPrimary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                app.name,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Rating 4.${(app.name.length % 5) + 5} • ",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                  _buildSourceChips(
-                                      app.sources.take(2).toList()),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -717,6 +697,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // (Section 7: AI Recommendation Section)
   Widget _buildAIPickSection() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -724,43 +705,57 @@ class _HomePageState extends State<HomePage> {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-      constraints: const BoxConstraints(minHeight: 100),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.withValues(alpha: 0.1), colorScheme.surfaceContainerLow],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+        color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: colorScheme.tertiary.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                l10n.aiPickDay,
-                style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.purple),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.tertiary,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.auto_awesome_rounded, size: 16, color: colorScheme.onTertiary),
               ),
-              const Spacer(),
-              Text(
-                l10n.aiPickDaySubtitle,
-                style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.aiPickDay,
+                    style: TextStyle(fontWeight: FontWeight.w900, color: colorScheme.tertiary, fontSize: 16),
+                  ),
+                  Text(
+                    l10n.aiPickDaySubtitle,
+                    style: TextStyle(fontSize: 11, color: colorScheme.onTertiaryContainer.withValues(alpha: 0.7)),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          MarkdownBody(
-            data: _aiPickBlurb!.split('PICK_JSON:')[0],
-            shrinkWrap: true,
-            styleSheet: MarkdownStyleSheet(
-              p: const TextStyle(fontSize: 14, height: 1.5, fontStyle: FontStyle.italic),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: MarkdownBody(
+              data: _aiPickBlurb!.split('PICK_JSON:')[0],
+              shrinkWrap: true,
+              styleSheet: MarkdownStyleSheet(
+                p: TextStyle(fontSize: 14, height: 1.6, color: colorScheme.onSurface, fontWeight: FontWeight.w500),
+              ),
             ),
           ),
+          const SizedBox(height: 16),
           AIAppResolver(aiText: _aiPickBlurb!, jsonPrefix: 'PICK_JSON:'),
         ],
       ),
@@ -768,34 +763,38 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildTrustLabel(String source) {
+    final colorScheme = Theme.of(context).colorScheme;
     String label = "社区";
     Color color = Colors.orange;
-    IconData icon = Icons.people_outline;
+    IconData icon = Icons.people_rounded;
 
     if (source == "Pacman" || source == "Native") {
       label = "官方";
       color = Colors.blue;
-      icon = Icons.verified_user_outlined;
+      icon = Icons.verified_user_rounded;
     } else if (source == "Flatpak") {
       label = "经校验";
       color = Colors.green;
-      icon = Icons.verified_outlined;
+      icon = Icons.verified_rounded;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: colorScheme.surface.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: color),
+          Icon(icon, size: 12, color: color),
           const SizedBox(width: 4),
           Text(label,
               style: TextStyle(
-                  fontSize: 10, color: color, fontWeight: FontWeight.bold)),
+                  fontSize: 10, color: color, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -808,7 +807,11 @@ class _HomePageState extends State<HomePage> {
       // 进度和状态由 BackendService 的 ValueNotifier 自动同步到全局 UI
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("正在安装 $name...")),
+      SnackBar(
+        content: Text("正在安装 $name..."),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 

@@ -49,11 +49,12 @@ class _SearchPageState extends State<SearchPage> {
     // Listen for global search requests
     BackendService.pendingSearchQuery.addListener(_onGlobalSearchRequested);
 
-    if (widget.initialQuery != null) {
-      _controller.text = widget.initialQuery!;
-      _search(widget.initialQuery!);
-    } else if (BackendService.pendingSearchQuery.value != null) {
-      _onGlobalSearchRequested();
+    final q = widget.initialQuery ?? BackendService.pendingSearchQuery.value;
+    if (q != null) {
+      _controller.text = q;
+      _search(q);
+      // We don't clear pendingSearchQuery here because _onGlobalSearchRequested will do it
+      // or we can do it manually if it matches.
     } else {
       _loadInitialContent();
     }
@@ -223,9 +224,10 @@ class _SearchPageState extends State<SearchPage> {
   // ──────────────────────────────────────────────────────────
   // 搜索输入栏
   // ──────────────────────────────────────────────────────────
+  // (Section 3: Global Search Bar)
   Widget _buildSearchArea(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
       alignment: Alignment.center,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 800),
@@ -237,50 +239,59 @@ class _SearchPageState extends State<SearchPage> {
             autoFocus: false,
             hintText: AppLocalizations.of(context)!.searchHint,
             elevation: WidgetStateProperty.all(0),
-            backgroundColor: WidgetStateProperty.all(
-              colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            ),
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.focused)) return colorScheme.surface;
+              return colorScheme.surfaceContainerHigh;
+            }),
             textStyle: WidgetStateProperty.all(
               const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32.0), // 超大圆角
-                side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.2), width: 1.5),
-              ),
+            shape: WidgetStateProperty.resolveWith((states) {
+              final color = states.contains(WidgetState.focused)
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant.withValues(alpha: 0.5);
+              return RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28.0),
+                side: BorderSide(color: color, width: states.contains(WidgetState.focused) ? 2.0 : 1.0),
+              );
+            }),
+            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Icon(Icons.search_rounded, color: colorScheme.primary, size: 24),
             ),
-            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 8)),
-            leading: Icon(Icons.search_rounded, color: colorScheme.primary, size: 28),
             trailing: [
               if (_hasInput)
                 IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close_rounded, size: 20),
                   tooltip: L10nService.s('clear_search'),
                   onPressed: () {
                     _controller.clear();
                     _focusNode.requestFocus();
                   },
                 ),
-              const SizedBox(width: 8),
               ValueListenableBuilder<bool>(
                 valueListenable: BackendService.isAIEnabled,
                 builder: (context, enabled, _) {
                   if (!enabled) return const SizedBox.shrink();
                   return IconButton(
-                    icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+                    icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
                     tooltip: AppLocalizations.of(context)!.aiPromptRecommend,
                     onPressed: _showAIRecommendDialog,
                   );
                 },
               ),
               const SizedBox(width: 8),
-              FilledButton(
-                onPressed: _search,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilledButton(
+                  onPressed: _search,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  ),
+                  child: Text(AppLocalizations.of(context)!.search, style: const TextStyle(fontWeight: FontWeight.w900)),
                 ),
-                child: Text(AppLocalizations.of(context)!.search, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
             onSubmitted: (_) => _search(),
@@ -331,7 +342,7 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           const Spacer(),
                           if (_history.isNotEmpty)
-                            TextButton.icon(
+                    FilledButton.tonalIcon(
                               onPressed: () async {
                                 final confirm = await showDialog<bool>(
                                   context: context,
@@ -348,10 +359,11 @@ class _SearchPageState extends State<SearchPage> {
                               },
                               icon: const Icon(Icons.delete_sweep_rounded, size: 14),
                             label: Text(L10nService.s('clear_history')),
-                              style: TextButton.styleFrom(
-                                foregroundColor: colorScheme.error,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: colorScheme.errorContainer,
+                                foregroundColor: colorScheme.onErrorContainer,
                                 visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
                               ),
                             ),
                         ],
@@ -508,17 +520,17 @@ class _SearchPageState extends State<SearchPage> {
                   ButtonSegment(
                     value: ViewMode.list,
                     icon: const Icon(Icons.view_list_rounded, size: 16),
-                    tooltip: L10nService.s('list_view'),
+                        label: Text(L10nService.s('list_view'), style: const TextStyle(fontSize: 12)),
                   ),
                   ButtonSegment(
                     value: ViewMode.grid,
                     icon: const Icon(Icons.grid_view_rounded, size: 16),
-                    tooltip: L10nService.s('grid_view'),
+                        label: Text(L10nService.s('grid_view'), style: const TextStyle(fontSize: 12)),
                   ),
                 ],
                 selected: {_viewMode},
                 onSelectionChanged: (s) => setState(() => _viewMode = s.first),
-                showSelectedIcon: false,
+                    showSelectedIcon: true,
                 style: const ButtonStyle(visualDensity: VisualDensity.compact),
               ),
             ],

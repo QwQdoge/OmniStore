@@ -94,7 +94,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       builder: (ctx) => Dialog(
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
         child: SizedBox(
           width: 600,
           height: 400,
@@ -103,14 +103,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               // 标题栏
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHigh,
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12.0),
-                    topRight: Radius.circular(12.0),
+                    topLeft: Radius.circular(28.0),
+                    topRight: Radius.circular(28.0),
                   ),
                 ),
                 child: Row(
@@ -271,6 +271,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   child: Text(AppLocalizations.of(context)!.confirm),
                 ),
               ],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
             );
           }
         );
@@ -291,6 +292,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("取消")),
             FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text("继续安装")),
           ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         ),
       );
       if (aurConfirmed != true) return;
@@ -326,7 +328,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   pinned: true,
                   title: Text(widget.app.name, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                   leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    icon: const Icon(Icons.arrow_back_rounded),
                     onPressed: () => Navigator.pop(context),
                   ),
                   actions: [
@@ -388,7 +390,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                             return IconButton(
                               icon: Badge(
                                 isLabelVisible: isBusy,
-                                child: const Icon(Icons.terminal_outlined),
+                                child: const Icon(Icons.terminal_rounded),
                               ),
                               tooltip:
                                   AppLocalizations.of(context)!.terminalOutput,
@@ -436,27 +438,35 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           theme, AppLocalizations.of(context)!.screenshots),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 200,
+                        height: 220,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
                           itemCount:
                               (_extraDetails!['screenshots'] as List).length,
                           separatorBuilder: (context, _) =>
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                           itemBuilder: (context, index) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(12.0),
+                            return Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                              ),
+                              clipBehavior: Clip.antiAlias,
                               child: CachedNetworkImage(
                                 imageUrl: _extraDetails!['screenshots'][index],
+                                width: 360,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
-                                  width: 200,
+                                  width: 360,
                                   color: colorScheme.surfaceContainerHighest,
                                   child: const Center(
-                                      child: CircularProgressIndicator()),
+                                      child: CircularProgressIndicator(strokeWidth: 2)),
                                 ),
                                 errorWidget: (context, url, error) => Container(
-                                  width: 200,
+                                  width: 360,
                                   color: colorScheme.surfaceContainerHighest,
                                   child: const Icon(Icons.broken_image_rounded),
                                 ),
@@ -470,29 +480,29 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     _buildSectionTitle(
                         theme, AppLocalizations.of(context)!.details),
                     _buildInfoRow(
-                      Icons.source,
+          Icons.source_rounded,
                       AppLocalizations.of(context)!.source,
                       widget.app.primarySource,
                     ),
                     _buildInfoRow(
-                      Icons.all_inclusive,
+          Icons.all_inclusive_rounded,
                       AppLocalizations.of(context)!.variant,
                       widget.app.sources.join(", "),
                     ),
                     _buildInfoRow(
-                      Icons.verified_outlined,
+          Icons.verified_rounded,
                       AppLocalizations.of(context)!.version,
                       widget.app.version,
                     ),
                     if (_extraDetails?['developer'] != null)
                       _buildInfoRow(
-                        Icons.person_outline,
+            Icons.person_rounded,
                         AppLocalizations.of(context)!.developer,
                         _extraDetails!['developer'],
                       ),
                     if (_extraDetails?['license'] != null)
                       _buildInfoRow(
-                        Icons.description_outlined,
+            Icons.description_rounded,
                         AppLocalizations.of(context)!.license,
                         _extraDetails!['license'],
                       ),
@@ -531,6 +541,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
+  // (Section 10: App Details Action Buttons)
   Widget _buildActionArea(ColorScheme colorScheme) {
     return StreamBuilder<TaskState?>(
       stream: TaskManager().taskStateStream,
@@ -542,8 +553,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(16.0),
-              border: Border.all(color: colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(20.0),
+              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
             child: SmoothProgressBar(
               taskState: task,
@@ -559,39 +570,39 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         children: [
           Expanded(
             child: SizedBox(
-              height: 54,
+              height: 56,
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colorScheme.error,
-                  side: BorderSide(color: colorScheme.error, width: 1),
+                  side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5), width: 1),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(28.0),
                   ),
                 ),
                 onPressed: isGlobalBusy ? null : () => _handleAction("-R"),
                 child: Text(
                   AppLocalizations.of(context)!.uninstall,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w900),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: SizedBox(
-              height: 54,
+              height: 56,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(28.0),
                   ),
                 ),
                 onPressed: isGlobalBusy ? null : _launchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
                 label: Text(
                   AppLocalizations.of(context)!.launch,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                 ),
               ),
             ),
@@ -602,18 +613,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
         return SizedBox(
           width: double.infinity,
-          height: 54,
+          height: 56,
           child: FilledButton.icon(
             style: FilledButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(28.0),
               ),
             ),
             onPressed: isGlobalBusy ? null : () => _handleAction("-I"),
             icon: const Icon(Icons.download_rounded),
             label: Text(
               AppLocalizations.of(context)!.install,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -632,100 +643,112 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return null;
   }
 
+  // (Section 8: App Details Header)
   Widget _buildHeader(ThemeData theme) {
     final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
+    final colorScheme = theme.colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          alignment: Alignment.center,
-          child: iconUrl != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: CachedNetworkImage(
-                    imageUrl: iconUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        const CircularProgressIndicator(strokeWidth: 2),
-                    errorWidget: (context, url, error) => Container(
-                      decoration: BoxDecoration(
-                        color: Colors.purple,
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "M",
-                        style: TextStyle(
-                          fontSize: 36,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+        Hero(
+          tag: 'app-icon-shelf-${widget.app.name}-${widget.app.primarySource}',
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(24.0),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: iconUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(24.0),
+                    child: CachedNetworkImage(
+                      imageUrl: iconUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(strokeWidth: 2),
+                      errorWidget: (context, url, error) => Container(
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(24.0),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          widget.app.name[0].toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 48,
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                )
-              : Container(
-                  decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "M",
-                    style: TextStyle(
-                      fontSize: 36,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      borderRadius: BorderRadius.circular(24.0),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      widget.app.name[0].toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 48,
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
-                ),
+          ),
         ),
-        const SizedBox(width: 20),
+        const SizedBox(width: 24),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       widget.app.name,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                        letterSpacing: -0.5,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1.0,
                       ),
                     ),
                   ),
                   if (_isAppInstalled)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            Icons.check_circle_outline,
-                            size: 14,
+                            Icons.check_circle_rounded,
+                            size: 16,
                             color: theme.colorScheme.primary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 6),
                           Text(
                             AppLocalizations.of(context)!.ready,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w900,
                               color: theme.colorScheme.primary,
                             ),
                           ),
@@ -734,68 +757,74 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     ),
                 ],
               ),
-              const SizedBox(height: 4),
-              DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedSource,
-                  isDense: true,
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                  items: <String>{
-                    for (var v in widget.app.variants) v.source,
-                    if (_extraDetails != null &&
-                        _extraDetails!['variants'] != null)
-                      for (var v in _extraDetails!['variants'])
-                        v['source'].toString(),
-                    _selectedSource,
-                  }.map((String source) {
-                    // Try to find version for this source
-                    String? version;
-                    if (_extraDetails != null &&
-                        _extraDetails!['variants'] != null) {
-                      for (var v in _extraDetails!['variants']) {
-                        if (v['source'] == source) {
-                          version = v['version'] ?? v['last_version'];
-                          break;
-                        }
-                      }
-                    }
-                    if (version == null) {
-                      for (var v in widget.app.variants) {
-                        if (v.source == source) {
-                          version = v.version;
-                          break;
-                        }
-                      }
-                    }
-
-                    return DropdownMenuItem<String>(
-                      value: source,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildSourceTag(source, isSmall: true),
-                          const SizedBox(width: 8),
-                          Text(source),
-                          if (version != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              "v$version",
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.normal,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ],
+              const SizedBox(height: 12),
+              Material(
+                color: colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedSource,
+                      isDense: true,
+                      borderRadius: BorderRadius.circular(16),
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
+                      items: <String>{
+                        for (var v in widget.app.variants) v.source,
+                        if (_extraDetails != null &&
+                            _extraDetails!['variants'] != null)
+                          for (var v in _extraDetails!['variants'])
+                            v['source'].toString(),
+                        _selectedSource,
+                      }.map((String source) {
+                        // Try to find version for this source
+                        String? version;
+                        if (_extraDetails != null &&
+                            _extraDetails!['variants'] != null) {
+                          for (var v in _extraDetails!['variants']) {
+                            if (v['source'] == source) {
+                              version = v['version'] ?? v['last_version'];
+                              break;
+                            }
+                          }
+                        }
+                        if (version == null) {
+                          for (var v in widget.app.variants) {
+                            if (v.source == source) {
+                              version = v.version;
+                              break;
+                            }
+                          }
+                        }
+
+                        return DropdownMenuItem<String>(
+                          value: source,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildSourceTag(source, isSmall: true),
+                              const SizedBox(width: 8),
+                              Text(source),
+                              if (version != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  "v$version",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
                     if (newValue != null && mounted) {
                       setState(() {
                         _selectedSource = newValue;
@@ -830,14 +859,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
+  // (Section 9: App Details Typography & Content)
   Widget _buildSectionTitle(ThemeData theme, String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 12.0, top: 16),
       child: Text(
         title,
         style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w900,
           color: theme.colorScheme.primary,
+          letterSpacing: -0.5,
         ),
       ),
     );

@@ -39,18 +39,24 @@ class _AIAppResolverState extends State<AIAppResolver> {
 
   Future<void> _resolveApps() async {
     final names = _extractNames(widget.aiText);
-    if (names.isEmpty) return;
+    if (names.isEmpty) {
+      if (mounted) setState(() => _resolvedApps = []);
+      return;
+    }
 
     if (mounted) setState(() => _isLoading = true);
 
     List<AppPackage> found = [];
-    for (final name in names.take(5)) {
-      try {
-        final results = await BackendService.instance.searchPackages(name);
-        if (results.isNotEmpty) {
-          found.add(AppPackage.fromJson(results[0]));
-        }
-      } catch (_) {}
+    // Use Future.wait to speed up name resolution
+    final results = await Future.wait(
+      names.take(5).map((name) => BackendService.instance.searchPackages(name, cancelOngoing: false))
+    );
+
+    for (var i = 0; i < results.length; i++) {
+      final appList = results[i];
+      if (appList.isNotEmpty) {
+        found.add(AppPackage.fromJson(appList[0] as Map<String, dynamic>));
+      }
     }
 
     if (mounted) {
@@ -106,11 +112,11 @@ class _AIAppResolverState extends State<AIAppResolver> {
   Widget _buildAppCard(AppPackage app) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      width: 200,
+      width: 240,
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -124,15 +130,41 @@ class _AIAppResolverState extends State<AIAppResolver> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                Hero(
+                  tag: 'app-icon-shelf-${app.name}-${app.primarySource}',
                   child: Container(
                     width: 48,
                     height: 48,
-                    color: colorScheme.primaryContainer,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
                     child: app.icon != null
-                        ? CachedNetworkImage(imageUrl: app.icon!, fit: BoxFit.cover)
-                        : Center(child: Text(app.name[0].toUpperCase())),
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: CachedNetworkImage(
+                              imageUrl: app.icon!,
+                              fit: BoxFit.cover,
+                              errorWidget: (c, e, s) => Center(
+                                child: Text(
+                                  app.name[0].toUpperCase(),
+                                  style: TextStyle(
+                                      color: colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              app.name[0].toUpperCase(),
+                              style: TextStyle(
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18),
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -143,14 +175,14 @@ class _AIAppResolverState extends State<AIAppResolver> {
                     children: [
                       Text(
                         app.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: -0.2),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         app.description,
-                        style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                        style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

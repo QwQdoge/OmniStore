@@ -69,8 +69,8 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
 
   @override
   Widget build(BuildContext context) {
-    // 按照用户要求，主色调改为经典的 Material 3 Blue
-    const seedColor = Color(0xFF0B57D0);
+    // 按照用户要求，主色调改为经典的 Material 3 Purple
+    const seedColor = Color(0xFF6750A4);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -97,6 +97,8 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         useMaterial3: true,
         colorSchemeSeed: seedColor,
         brightness: Brightness.light,
+        iconTheme: const IconThemeData(size: 24),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
 
       // 暗色模式配置
@@ -104,6 +106,8 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         useMaterial3: true,
         colorSchemeSeed: seedColor,
         brightness: Brightness.dark,
+        iconTheme: const IconThemeData(size: 24),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
 
       home: _isFirstRun
@@ -298,28 +302,19 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   }
 
 
-  // 侧边栏布局：探索 + 左下角下载
+  // 侧边栏布局：探索 + 左下角下载 (Section 1: Sidebar Navigation)
   Widget _buildSideBar(ColorScheme colorScheme) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      width: 90,
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      width: 96,
+      padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
-          Tooltip(
-            message: l10n.explore,
-            child: _buildSideBarItem(0, Icons.explore_outlined, Icons.explore, l10n.explore, colorScheme),
-          ),
-          const SizedBox(height: 16),
-          Tooltip(
-            message: l10n.category,
-            child: _buildSideBarItem(1, Icons.grid_view_outlined, Icons.grid_view_rounded, l10n.category, colorScheme),
-          ),
-          const SizedBox(height: 16),
-          Tooltip(
-            message: l10n.settings,
-            child: _buildSideBarItem(3, Icons.settings_outlined, Icons.settings, l10n.settings, colorScheme),
-          ),
+          _buildSideBarItem(0, Icons.explore_rounded, Icons.explore_rounded, l10n.explore, colorScheme),
+          const SizedBox(height: 24),
+          _buildSideBarItem(1, Icons.grid_view_rounded, Icons.grid_view_rounded, l10n.category, colorScheme),
+          const SizedBox(height: 24),
+          _buildSideBarItem(3, Icons.settings_rounded, Icons.settings_rounded, l10n.settings, colorScheme),
           const Spacer(),
           _buildDownloadButton(colorScheme),
           const SizedBox(height: 12),
@@ -330,42 +325,50 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
   Widget _buildSideBarItem(int index, IconData icon, IconData selectedIcon, String label, ColorScheme colorScheme) {
     final isSelected = _selectedIndex == index;
-    return InkWell(
-      onTap: () {
-        BackendService.navigationIndex.value = index;
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isSelected ? colorScheme.secondaryContainer : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              isSelected ? selectedIcon : icon,
-              color: isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-              size: 24,
-            ),
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: () {
+          BackendService.navigationIndex.value = index;
+        },
+        borderRadius: BorderRadius.circular(28),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 56,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected ? colorScheme.secondaryContainer : Colors.transparent,
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  color: isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                  color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  // 标题栏下方的顶栏布局：标题 + 搜索 + 头像
+  // 标题栏下方的顶栏布局：标题 + 搜索 + 头像 (Section 2: Top Bar)
   Widget _buildTopBar(ColorScheme colorScheme) {
     String pageTitle = "";
     if (_selectedIndex == 0) {
@@ -381,32 +384,28 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     }
 
     return Container(
-      height: 64,
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+      height: 72,
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
       child: Row(
         children: [
           Text(
             pageTitle,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 28,
               fontWeight: FontWeight.w900,
               color: colorScheme.onSurface,
-              letterSpacing: -0.5,
+              letterSpacing: -1.0,
             ),
           ),
           const Spacer(),
           // 搜索按钮 (若不在搜索页则显示，点击切换到搜索页)
           if (_selectedIndex != 2)
-            IconButton(
+            FilledButton.tonalIcon(
               onPressed: () => BackendService.navigationIndex.value = 2,
-              icon: Icon(
-                Icons.search_rounded,
-                color: colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              tooltip: AppLocalizations.of(context)!.search,
+              icon: const Icon(Icons.search_rounded, size: 20),
+              label: Text(AppLocalizations.of(context)!.search),
             ),
-          if (_selectedIndex != 1) const SizedBox(width: 12),
+          const SizedBox(width: 16),
           // 用户头像
           _buildUserAvatar(colorScheme),
         ],
