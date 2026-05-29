@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
 import '../services/l10n_service.dart';
 import '../services/update_service.dart';
+import '../services/history_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

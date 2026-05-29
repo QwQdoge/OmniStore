@@ -3,10 +3,17 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 
+import os
+
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
         # 遵循 XDG 规范
-        self.config_dir = Path.home() / ".config" / "omnistore"
+        xdg_config = os.environ.get('XDG_CONFIG_HOME')
+        if xdg_config:
+            self.config_dir = Path(xdg_config) / "omnistore"
+        else:
+            self.config_dir = Path.home() / ".config" / "omnistore"
+
         self.config_path = self.config_dir / config_name
 
         self.default_config = {

@@ -99,6 +99,10 @@ class _SearchPageState extends State<SearchPage> {
     _debounce?.cancel();
     _controller.removeListener(_onSearchChanged);
     BackendService.pendingSearchQuery.removeListener(_onGlobalSearchRequested);
+
+    // Cancel any ongoing search process
+    BackendService.activeSearchProcess?.kill();
+
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -761,20 +765,25 @@ class _SearchPageState extends State<SearchPage> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [colorScheme.primaryContainer, colorScheme.surface],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
-      child: InkWell(
+      child: Material(
         borderRadius: BorderRadius.circular(28),
-        onTap: () => _showAppDetails(app),
-        child: Padding(
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primaryContainer, colorScheme.surface],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.1)),
+          ),
+          child: InkWell(
+            onTap: () => _showAppDetails(app),
+            child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
