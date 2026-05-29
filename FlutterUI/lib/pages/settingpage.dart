@@ -568,12 +568,19 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  // (Section 11: Settings Page)
   Widget _buildGroupCard(List<Widget> children) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
-      child: Column(children: children),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(children: children),
+      ),
     );
   }
 
