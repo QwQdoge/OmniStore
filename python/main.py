@@ -695,6 +695,7 @@ class OmnistoreBackend:
                 "score": int(item.get("score", 0)),
                 "icon": item.get("icon"),
                 "is_exact_match": item.get("is_exact_match", False),
+                "screenshots": item.get("screenshots", []),
             }
         if total <= max_chunk:
             output = []
