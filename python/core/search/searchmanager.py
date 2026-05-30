@@ -160,7 +160,8 @@ class SearchManager:
         query_norm = self._normalize_app_name(query)
         exact_match_idx = -1
         for idx, item in enumerate(merged):
-            if self._normalize_app_name(item['name']) == query_norm:
+            # Using cached normalized name from merge_duplicates to avoid redundant processing
+            if item.get('_norm_name') == query_norm:
                 exact_match_idx = idx
                 break
 
@@ -175,8 +176,8 @@ class SearchManager:
         top_results = merged[:max_res]
 
         # 4. 异步补全前几个结果的元数据（图标等）
-        # 增加补全数量到 30，确保列表模式下更多图标可见
-        await self._enrich_metadata(top_results[:30])
+        # 补全数量优化：从 30 减少到 15，平衡加载速度与视觉丰富度
+        await self._enrich_metadata(top_results[:15])
 
         return top_results
 
@@ -198,6 +199,8 @@ class SearchManager:
                 item["icon"] = metadata["icon"]
             if metadata.get("description") and len(item.get("description", "")) < 50:
                 item["description"] = metadata["description"]
+            if metadata.get("screenshots"):
+                item["screenshots"] = metadata["screenshots"]
 
     def _normalize_app_name(self, name: str) -> str:
         """
@@ -249,6 +252,8 @@ class SearchManager:
                 entry['primary_source'] = source
                 entry['installed'] = is_installed
                 entry['variants'] = [variant]
+                # Cache normalized name for faster exact match checking later
+                entry['_norm_name'] = norm_key
                 # 记录已有的来源类型，防止重复
                 entry['_source_types'] = {source}
                 seen[norm_key] = entry

@@ -15,6 +15,37 @@ class RecommendationManager:
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
         self.cache_dir = Path.home() / ".cache" / "omnistore"
         self.cache_path = self.cache_dir / "recommendations.json"
+        self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
+        self._metadata_cache = self._load_metadata_cache()
+
+    def _load_metadata_cache(self) -> Dict[str, Any]:
+        """Load metadata cache from disk"""
+        if not self.metadata_cache_path.exists():
+            return {"app_details": {}, "name_mapping": {}}
+        try:
+            with open(self.metadata_cache_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {"app_details": {}, "name_mapping": {}}
+
+    async def _save_metadata_cache(self):
+        """Save metadata cache to disk asynchronously"""
+        try:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+            # Use run_in_executor to avoid blocking the event loop with synchronous file I/O
+            def _write():
+                # Atomically write using a temporary file
+                tmp_path = self.metadata_cache_path.with_suffix(".tmp")
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    json.dump(self._metadata_cache, f, ensure_ascii=False)
+                tmp_path.replace(self.metadata_cache_path)
+
+            await asyncio.get_event_loop().run_in_executor(None, _write)
+        except Exception as e:
+            # Avoid using print in backend to prevent protocol noise, use sys.stderr
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Metadata Cache Save Error: {e}\n")
 
     def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
         """Load recommendations from cache if not expired"""
@@ -209,7 +240,12 @@ class RecommendationManager:
             item['description'] = details.get('description') or item.get('description')
 
     async def get_details(self, app_id: str) -> Dict:
-        """Fetch rich details for a specific app (Flathub API)"""
+        """Fetch rich details for a specific app (Flathub API) with caching"""
+        # 1. Check cache (TTL 24 hours)
+        cache_entry = self._metadata_cache.get("app_details", {}).get(app_id)
+        if cache_entry and time.time() - cache_entry.get("timestamp", 0) < 86400:
+            return cache_entry.get("data", {})
+
         url = f"https://flathub.org/api/v2/appstream/{app_id}"
         try:
             headers = {
@@ -247,7 +283,7 @@ class RecommendationManager:
                                     screenshots.append(details)
                                     break
 
-                    return {
+                    result = {
                         "name": data.get("name"),
                         "description": data.get("description"),
                         "screenshots": screenshots,
@@ -256,12 +292,28 @@ class RecommendationManager:
                         "license": data.get("project_license"),
                         "icon": icon
                     }
+
+                    # 2. Save to cache
+                    self._metadata_cache["app_details"][app_id] = {
+                        "timestamp": time.time(),
+                        "data": result
+                    }
+                    await self._save_metadata_cache()
+                    return result
         except Exception as e:
             print(f"[RecommendationManager] Detail Error: {e}")
         return {}
 
     async def find_metadata(self, name: str) -> Dict:
-        """Try to find metadata (icon, description) for a package name by searching Flathub"""
+        """Try to find metadata (icon, description) for a package name with caching"""
+        name_lower = name.lower()
+        # 1. Check name mapping cache (TTL 24 hours)
+        mapping_entry = self._metadata_cache.get("name_mapping", {}).get(name_lower)
+        if mapping_entry and time.time() - mapping_entry.get("timestamp", 0) < 86400:
+            app_id = mapping_entry.get("app_id")
+            if app_id:
+                return await self.get_details(app_id)
+
         search_url = "https://flathub.org/api/v2/search"
         try:
             async with self.session.post(search_url, json={"query": name}, timeout=5) as resp:
@@ -272,8 +324,15 @@ class RecommendationManager:
                         # Find the best match
                         for hit in hits:
                             hit_name = hit.get("name", "").lower()
-                            app_id = hit.get("app_id", "").lower()
-                            if hit_name == name.lower() or app_id == name.lower() or app_id.endswith(f".{name.lower()}"):
+                            hit_app_id = hit.get("app_id", "").lower()
+                            if hit_name == name_lower or hit_app_id == name_lower or hit_app_id.endswith(f".{name_lower}"):
+                                # 2. Save mapping to cache
+                                self._metadata_cache["name_mapping"][name_lower] = {
+                                    "timestamp": time.time(),
+                                    "app_id": hit.get("app_id")
+                                }
+                                # Save mapping immediately so it's available for other concurrent searches
+                                await self._save_metadata_cache()
                                 return await self.get_details(hit.get("app_id"))
         except Exception as e:
             print(f"[RecommendationManager] Find Metadata Error: {e}")
