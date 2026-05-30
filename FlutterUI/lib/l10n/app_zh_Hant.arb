@@ -200,7 +200,7 @@
   "@waitingForOutput": {
     "description": "Description for waitingForOutput"
   },
-  "screenshots": "截圖",
+  "screenshots": "應用程式截圖",
   "@screenshots": {
     "description": "Description for screenshots"
   },
@@ -536,7 +536,7 @@
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
   },
-  "aiProvider": "AI 服務提供者",
+  "aiProvider": "AI 服務商",
   "@aiProvider": {
     "description": "Label for AI provider selection"
   },

@@ -521,51 +521,51 @@
   "@add": {
     "description": "add"
   },
-  "aiSettings": "AI Assistant Settings",
+  "aiSettings": "AI アシスタント設定",
   "@aiSettings": {
     "description": "aiSettings"
   },
-  "aiEnabled": "Enable AI Assistant",
+  "aiEnabled": "AI アシスタントを有効にする",
   "@aiEnabled": {
     "description": "aiEnabled"
   },
-  "aiProvider": "AI Provider",
+  "aiProvider": "AI プロバイダー",
   "@aiProvider": {
     "description": "aiProvider"
   },
-  "aiEndpoint": "API Endpoint",
+  "aiEndpoint": "API エンドポイント",
   "@aiEndpoint": {
     "description": "aiEndpoint"
   },
-  "aiModel": "Model Name",
+  "aiModel": "モデル名",
   "@aiModel": {
     "description": "aiModel"
   },
-  "aiApiKey": "API Key",
+  "aiApiKey": "API キー",
   "@aiApiKey": {
     "description": "aiApiKey"
   },
-  "aiProxy": "Network Proxy (Optional)",
+  "aiProxy": "ネットワークプロキシ (オプション)",
   "@aiProxy": {
     "description": "aiProxy"
   },
-  "aiTemperature": "Temperature (Creativity)",
+  "aiTemperature": "温度 (創造性)",
   "@aiTemperature": {
     "description": "aiTemperature"
   },
-  "aiMaxTokens": "Max Response Tokens",
+  "aiMaxTokens": "最大トークン数",
   "@aiMaxTokens": {
     "description": "aiMaxTokens"
   },
-  "aiTestButton": "Test AI Connection",
+  "aiTestButton": "AI 接続をテスト",
   "@aiTestButton": {
     "description": "aiTestButton"
   },
-  "aiTestSuccess": "AI connection successful!",
+  "aiTestSuccess": "AI 接続に成功しました！",
   "@aiTestSuccess": {
     "description": "aiTestSuccess"
   },
-  "aiTestFailed": "AI connection failed: {error}",
+  "aiTestFailed": "AI 接続に失敗しました: {error}",
   "@aiTestFailed": {
     "placeholders": {
       "error": {
@@ -573,75 +573,75 @@
       }
     }
   },
-  "aiPromptExplain": "Explain with AI",
+  "aiPromptExplain": "AI で説明",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "Ask AI for Recommendation",
+  "aiPromptRecommend": "AI におすすめを聞く",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "Analyze Error with AI",
+  "aiPromptError": "AI でエラーを分析",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPickDay": "AI Pick of the Day",
+  "aiPickDay": "本日の一押し (AI)",
   "@aiPickDay": {
     "description": "aiPickDay"
   },
-  "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "aiPickDaySubtitle": "OmniStore AI による提供",
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
-  "aiCompareTitle": "AI Variant Comparison",
+  "aiCompareTitle": "AI バリアント比較",
   "@aiCompareTitle": {
     "description": "aiCompareTitle"
   },
-  "aiHealthTitle": "AI System Health Report",
+  "aiHealthTitle": "AI システム健康診断レポート",
   "@aiHealthTitle": {
     "description": "aiHealthTitle"
   },
-  "aiHealthSubtitle": "Intelligent diagnostic for your Arch Linux",
+  "aiHealthSubtitle": "Arch Linux のためのインテリジェント診断",
   "@aiHealthSubtitle": {
     "description": "aiHealthSubtitle"
   },
-  "aiCorrection": "Did you mean?",
+  "aiCorrection": "もしかして：",
   "@aiCorrection": {
     "description": "aiCorrection"
   },
-  "aiThinking": "AI is thinking...",
+  "aiThinking": "AI が考え中...",
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "Magic Search",
+  "magicSearch": "マジック検索",
   "@magicSearch": {
     "description": "magicSearch"
   },
-  "aiChangelogTitle": "AI Update Summary",
+  "aiChangelogTitle": "AI 更新サマリー",
   "@aiChangelogTitle": {
     "description": "aiChangelogTitle"
   },
-  "aiCliTitle": "AI Command Generator",
+  "aiCliTitle": "AI コマンド生成",
   "@aiCliTitle": {
     "description": "aiCliTitle"
   },
-  "aiConflictTitle": "AI Conflict Detection",
+  "aiConflictTitle": "AI 競合検出",
   "@aiConflictTitle": {
     "description": "aiConflictTitle"
   },
-  "aiCopyCommand": "Copy Command",
+  "aiCopyCommand": "コマンドをコピー",
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiCommandCopied": "Command copied to clipboard",
+  "aiCommandCopied": "クリップボードにコピーしました",
   "@aiCommandCopied": {
     "description": "aiCommandCopied"
   },
-  "aiRefineSearch": "Refine search with AI",
+  "aiRefineSearch": "AI で検索を絞り込む",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Explain this update",
+  "aiExplainUpdate": "この更新を説明",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   }

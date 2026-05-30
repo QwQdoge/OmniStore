@@ -128,7 +128,7 @@
   "@appImage": {
     "description": "Description for appImage"
   },
-  "sourcePriority": "结果源优先级 (拖动排序)",
+  "sourcePriority": "软件源优先级 (拖动排序)",
   "@sourcePriority": {
     "description": "Description for sourcePriority"
   },
@@ -140,7 +140,7 @@
   "@appearance": {
     "description": "Description for appearance"
   },
-  "themeColor": "主题色种子",
+  "themeColor": "主题色",
   "@themeColor": {
     "description": "Description for themeColor"
   },
@@ -353,7 +353,7 @@
   "@includeAurUpdates": {
     "description": "Description for includeAurUpdates"
   },
-  "resetOnboarding": "重置引导 (欢迎页面)",
+  "resetOnboarding": "重置新手引导",
   "@resetOnboarding": {
     "description": "Description for resetOnboarding"
   },
