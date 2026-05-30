@@ -644,5 +644,10 @@
   "aiExplainUpdate": "この更新を説明",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
-  }
+  },
+  "windowMinimize": "最小化",
+  "windowMaximize": "最大化",
+  "windowRestore": "元に戻す",
+  "windowClose": "閉じる",
+  "delete": "削除"
 }

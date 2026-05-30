@@ -646,5 +646,10 @@
   "aiExplainUpdate": "Explicar esta actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
-  }
+  },
+  "windowMinimize": "Minimizar",
+  "windowMaximize": "Maximizar",
+  "windowRestore": "Restaurar",
+  "windowClose": "Cerrar",
+  "delete": "Eliminar"
 }
