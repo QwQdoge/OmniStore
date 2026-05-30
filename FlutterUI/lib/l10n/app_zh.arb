@@ -652,5 +652,10 @@
   "aiExplainUpdate": "解释此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
-  }
+  },
+  "windowMinimize": "最小化",
+  "windowMaximize": "最大化",
+  "windowRestore": "还原",
+  "windowClose": "关闭",
+  "delete": "删除"
 }

@@ -72,6 +72,7 @@ class _MirrorEditorPageState extends State<MirrorEditorPage> {
                   title: Text(mirror),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
+                    tooltip: AppLocalizations.of(context)?.delete ?? "Delete",
                     onPressed: () => setState(() => _mirrors.removeAt(index)),
                   ),
                 );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import '../l10n/app_localizations.dart';
 
-class WindowTitleBar extends StatelessWidget {
+class WindowTitleBar extends StatefulWidget {
   final String? title;
   final bool showSearch;
   final VoidCallback? onSearchPressed;
@@ -13,6 +13,56 @@ class WindowTitleBar extends StatelessWidget {
     this.showSearch = false,
     this.onSearchPressed,
   });
+
+  @override
+  State<WindowTitleBar> createState() => _WindowTitleBarState();
+}
+
+class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
+  bool _isMaximized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+    _checkMaximized();
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  Future<void> _checkMaximized() async {
+    final isMax = await windowManager.isMaximized();
+    if (mounted) {
+      setState(() {
+        _isMaximized = isMax;
+      });
+    }
+  }
+
+  @override
+  void onWindowMaximize() {
+    setState(() {
+      _isMaximized = true;
+    });
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    setState(() {
+      _isMaximized = false;
+    });
+  }
+
+  @override
+  void onWindowRestore() {
+    setState(() {
+      _isMaximized = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +97,7 @@ class WindowTitleBar extends StatelessWidget {
                   ),
                   DragToMoveArea(
                     child: Text(
-                      title ?? "OmniStore",
+                      widget.title ?? "OmniStore",
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -59,13 +109,13 @@ class WindowTitleBar extends StatelessWidget {
                   const Expanded(child: DragToMoveArea(child: SizedBox.expand())),
 
                   // Search Bar (Middle)
-                  if (showSearch)
+                  if (widget.showSearch)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Container(
                         constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
                         child: InkWell(
-                          onTap: onSearchPressed,
+                          onTap: widget.onSearchPressed,
                           borderRadius: BorderRadius.circular(28.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -104,22 +154,27 @@ class WindowTitleBar extends StatelessWidget {
                     children: [
                       _buildWindowButton(
                         icon: Icons.minimize_rounded,
+                        tooltip: AppLocalizations.of(context)?.windowMinimize ?? "Minimize",
                         onPressed: () => windowManager.minimize(),
                         colorScheme: colorScheme,
                       ),
                       _buildWindowButton(
-                        icon: Icons.crop_square_rounded,
+                        icon: _isMaximized ? Icons.filter_none_rounded : Icons.crop_square_rounded,
+                        tooltip: _isMaximized
+                            ? (AppLocalizations.of(context)?.windowRestore ?? "Restore")
+                            : (AppLocalizations.of(context)?.windowMaximize ?? "Maximize"),
                         onPressed: () async {
-                          if (await windowManager.isMaximized()) {
-                            windowManager.unmaximize();
+                          if (_isMaximized) {
+                            await windowManager.unmaximize();
                           } else {
-                            windowManager.maximize();
+                            await windowManager.maximize();
                           }
                         },
                         colorScheme: colorScheme,
                       ),
                       _buildWindowButton(
                         icon: Icons.close_rounded,
+                        tooltip: AppLocalizations.of(context)?.windowClose ?? "Close",
                         onPressed: () => windowManager.close(),
                         isClose: true,
                         colorScheme: colorScheme,
@@ -137,6 +192,7 @@ class WindowTitleBar extends StatelessWidget {
 
   Widget _buildWindowButton({
     required IconData icon,
+    required String tooltip,
     required VoidCallback onPressed,
     required ColorScheme colorScheme,
     bool isClose = false,
@@ -146,6 +202,7 @@ class WindowTitleBar extends StatelessWidget {
       height: 38,
       child: IconButton(
         onPressed: onPressed,
+        tooltip: tooltip,
         iconSize: 16,
         style: IconButton.styleFrom(
           shape: const RoundedRectangleBorder(),
