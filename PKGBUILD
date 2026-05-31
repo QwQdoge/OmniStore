@@ -27,6 +27,10 @@ build() {
   pip install -r python/requirements.txt
 
   python auto_build.py --all
+
+  if not any(vars(arg).values()):
+    parser.print_help()
+    sys.exit(1)
 }
 
 package() {
