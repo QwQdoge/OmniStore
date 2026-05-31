@@ -54,8 +54,9 @@ class _DownloadPageState extends State<DownloadPage>
       final results = await _backend.listInstalled();
       if (mounted) {
         setState(() {
-          _installedApps =
-              results.map((json) => AppPackage.fromJson(json)).toList();
+          _installedApps = results
+              .map((json) => AppPackage.fromJson(json))
+              .toList();
           _applyFilters();
         });
       }
@@ -68,10 +69,12 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _applyFilters() {
     _filteredApps = _installedApps.where((app) {
-      final matchesSource = _selectedSourceFilter == "all" ||
+      final matchesSource =
+          _selectedSourceFilter == "all" ||
           app.sources.contains(_selectedSourceFilter) ||
           app.primarySource == _selectedSourceFilter;
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesSearch =
+          _searchQuery.isEmpty ||
           app.name.toLowerCase().contains(_searchQuery) ||
           (app.description.toLowerCase().contains(_searchQuery));
       return matchesSource && matchesSearch;
@@ -127,16 +130,19 @@ class _DownloadPageState extends State<DownloadPage>
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
         child: SizedBox(
           width: 600,
           height: 400,
           child: Column(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHigh,
                   borderRadius: const BorderRadius.only(
@@ -156,10 +162,13 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: Icon(Icons.close,
-                          color: theme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.7),
-                          size: 18),
+                      icon: Icon(
+                        Icons.close,
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.7,
+                        ),
+                        size: 18,
+                      ),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -232,7 +241,10 @@ class _DownloadPageState extends State<DownloadPage>
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -258,8 +270,9 @@ class _DownloadPageState extends State<DownloadPage>
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
               ),
@@ -343,11 +356,7 @@ class _DownloadPageState extends State<DownloadPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildTasksTab(),
-          _buildUpdatesTab(),
-          _buildInstalledTab(),
-        ],
+        children: [_buildTasksTab(), _buildUpdatesTab(), _buildInstalledTab()],
       ),
     );
   }
@@ -363,11 +372,16 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.task_alt,
-                    size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                Icon(
+                  Icons.task_alt,
+                  size: 64,
+                  color: Colors.grey.withValues(alpha: 0.5),
+                ),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)!.noActiveTasks,
-                    style: const TextStyle(color: Colors.grey)),
+                Text(
+                  AppLocalizations.of(context)!.noActiveTasks,
+                  style: const TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 24),
                 if (kDebugMode)
                   OutlinedButton(
@@ -386,13 +400,20 @@ class _DownloadPageState extends State<DownloadPage>
             children: [
               Row(
                 children: [
-                  Text(L10nService.s('current_task'),
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text(
+                    AppLocalizations.of(context)!.currentTask,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
                   if (task.packageName != null) ...[
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
@@ -402,7 +423,9 @@ class _DownloadPageState extends State<DownloadPage>
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),
@@ -420,11 +443,18 @@ class _DownloadPageState extends State<DownloadPage>
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Row(
                             children: [
-                              const Icon(Icons.source_rounded, size: 16, color: Colors.grey),
+                              const Icon(
+                                Icons.source_rounded,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 "${AppLocalizations.of(context)!.source}: ${task.source}",
-                                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ],
                           ),
@@ -464,11 +494,16 @@ class _DownloadPageState extends State<DownloadPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline,
-                    size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 64,
+                  color: Colors.grey.withValues(alpha: 0.5),
+                ),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)!.allUpdated,
-                    style: const TextStyle(color: Colors.grey)),
+                Text(
+                  AppLocalizations.of(context)!.allUpdated,
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
           );
@@ -490,15 +525,20 @@ class _DownloadPageState extends State<DownloadPage>
                     if (mounted) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+                        MaterialPageRoute(
+                          builder: (context) => AppDetailsPage(app: app),
+                        ),
                       );
                     }
                   }
                 },
-                title: Text(update['name'],
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(
+                  update['name'],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(
-                    "${update['current_version']} → ${update['new_version']}"),
+                  "${update['current_version']} → ${update['new_version']}",
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -507,8 +547,13 @@ class _DownloadPageState extends State<DownloadPage>
                       builder: (context, enabled, _) {
                         if (!enabled) return const SizedBox.shrink();
                         return IconButton(
-                          icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded, size: 20),
-                          tooltip: AppLocalizations.of(context)!.aiExplainUpdate,
+                          icon: const MagicPulseIcon(
+                            icon: Icons.auto_awesome_rounded,
+                            size: 20,
+                          ),
+                          tooltip: AppLocalizations.of(
+                            context,
+                          )!.aiExplainUpdate,
                           onPressed: () => _showAIUpdateSummary(
                             update['name'],
                             update['current_version'],
@@ -519,7 +564,10 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        UpdateService().startUpdate(update['name'], update['source']);
+                        UpdateService().startUpdate(
+                          update['name'],
+                          update['source'],
+                        );
                         _tabController.animateTo(0);
                       },
                       child: Text(AppLocalizations.of(context)!.update),
@@ -534,7 +582,11 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
-  Future<void> _showAIUpdateSummary(String name, String current, String next) async {
+  Future<void> _showAIUpdateSummary(
+    String name,
+    String current,
+    String next,
+  ) async {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -548,17 +600,30 @@ class _DownloadPageState extends State<DownloadPage>
         content: SizedBox(
           width: 500,
           child: FutureBuilder<String>(
-            future: BackendService.instance.aiSummarizeUpdate(name, current, next),
+            future: BackendService.instance.aiSummarizeUpdate(
+              name,
+              current,
+              next,
+            ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+                return const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                );
               }
-              return MarkdownBody(data: snapshot.data ?? "AI failed to summarize.", selectable: true);
+              return MarkdownBody(
+                data: snapshot.data ?? "AI failed to summarize.",
+                selectable: true,
+              );
             },
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
         ],
       ),
     );
@@ -581,7 +646,8 @@ class _DownloadPageState extends State<DownloadPage>
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
                   label: Text(
-                      s == "all" ? AppLocalizations.of(context)!.explore : s),
+                    s == "all" ? AppLocalizations.of(context)!.explore : s,
+                  ),
                   selected: isSelected,
                   onSelected: (v) {
                     if (v) {
@@ -596,9 +662,7 @@ class _DownloadPageState extends State<DownloadPage>
             }).toList(),
           ),
         ),
-        Expanded(
-          child: _buildInstalledList(),
-        ),
+        Expanded(child: _buildInstalledList()),
       ],
     );
   }
@@ -611,8 +675,10 @@ class _DownloadPageState extends State<DownloadPage>
           children: [
             const Icon(Icons.search_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text(AppLocalizations.of(context)!.noResults,
-                style: const TextStyle(color: Colors.grey)),
+            Text(
+              AppLocalizations.of(context)!.noResults,
+              style: const TextStyle(color: Colors.grey),
+            ),
           ],
         ),
       );
@@ -640,17 +706,22 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                   )
                 : const Icon(Icons.apps, size: 40),
-            title: Text(app.name,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Row(
               children: [
                 _buildSourceTag(app.primarySource),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: Text(app.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12))),
+                  child: Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
               ],
             ),
             onTap: () => Navigator.push(
@@ -660,18 +731,21 @@ class _DownloadPageState extends State<DownloadPage>
                     AppDetailsPage(app: app),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation
-                        .drive(CurveTween(curve: Curves.easeInOutExpo)),
-                    child: SlideTransition(
-                      position: animation.drive(Tween<Offset>(
-                        begin: const Offset(0.05, 0),
-                        end: Offset.zero,
-                      ).chain(CurveTween(curve: Curves.easeInOutExpo))),
-                      child: child,
-                    ),
-                  );
-                },
+                      return FadeTransition(
+                        opacity: animation.drive(
+                          CurveTween(curve: Curves.easeInOutExpo),
+                        ),
+                        child: SlideTransition(
+                          position: animation.drive(
+                            Tween<Offset>(
+                              begin: const Offset(0.05, 0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.easeInOutExpo)),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
                 transitionDuration: const Duration(milliseconds: 500),
               ),
             ),

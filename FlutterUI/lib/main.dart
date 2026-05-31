@@ -233,13 +233,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                     width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ValueListenableBuilder<String>(
-                    valueListenable: BackendService.globalStatus,
-                    builder: (context, status, _) => Text(
-                      "${AppLocalizations.of(context)!.processing} $status",
-                      style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
-                      overflow: TextOverflow.ellipsis,
-                    ),
                   child: StreamBuilder<TaskState?>(
                     stream: TaskManager().taskStateStream,
                     initialData: TaskManager().currentTask,
@@ -251,7 +244,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                       return ValueListenableBuilder<String>(
                         valueListenable: BackendService.globalStatus,
                         builder: (context, status, _) => Text(
-                          "正在处理: $stageInfo$status$speedInfo",
+                          "${AppLocalizations.of(context)!.processing} $stageInfo$status$speedInfo",
                           style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
                           overflow: TextOverflow.ellipsis,
                         ),

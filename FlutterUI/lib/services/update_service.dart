@@ -7,8 +7,9 @@ import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import 'app_package.dart';
+// import 'app_package.dart';
 import 'backend_service.dart';
+import 'task_manager.dart';
 
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
@@ -31,13 +32,15 @@ class UpdateService {
   String _exitLabel = "Exit";
   String _trayTooltipUpToDate = "OmniStore: Up to date";
   String _notificationTitle = "Updates Available";
-  String _preparingUpdateLabel = "Preparing update...";
+  // String _preparingUpdateLabel = "Preparing update...";
   String _taskCompletedLabel = "Task Completed";
   String _successLabel = "Success";
   String _failedLabel = "Failed";
 
-  String Function(int) _trayTooltipUpdates = (count) => "OmniStore: $count updates";
-  String Function(int) _notificationBody = (count) => "$count applications are available";
+  String Function(int) _trayTooltipUpdates = (count) =>
+      "OmniStore: $count updates";
+  String Function(int) _notificationBody = (count) =>
+      "$count applications are available";
 
   Future<void> init() async {
     // 初始化通知
@@ -54,7 +57,6 @@ class UpdateService {
       // Log error but continue execution to avoid app crash
       debugPrint('System tray init failed: $e');
     }
-
   }
 
   Future<void> updateConfig([AppLocalizations? l10n]) async {
@@ -66,7 +68,7 @@ class UpdateService {
       _exitLabel = l10n.exit;
       _trayTooltipUpToDate = l10n.trayTooltipUpToDate;
       _notificationTitle = l10n.notificationTitle;
-      _preparingUpdateLabel = l10n.preparingUpdate;
+      // _preparingUpdateLabel = l10n.preparingUpdate;
       _taskCompletedLabel = l10n.taskCompleted;
       _successLabel = l10n.success;
       _failedLabel = l10n.failed;
@@ -88,9 +90,10 @@ class UpdateService {
 
       final output = result.stdout.toString();
       bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so');
-      bool hasAppIndicator = output.contains('libappindicator3.so') ||
-                             output.contains('libayatana-appindicator3.so') ||
-                             output.contains('libappindicator-gtk3.so');
+      bool hasAppIndicator =
+          output.contains('libappindicator3.so') ||
+          output.contains('libayatana-appindicator3.so') ||
+          output.contains('libappindicator-gtk3.so');
 
       return hasDbusMenu && hasAppIndicator;
     } catch (e) {
@@ -108,7 +111,9 @@ class UpdateService {
       return;
     }
 
-    final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+    final String home =
+        Platform.environment['HOME'] ??
+        '/home/${Platform.environment['USER'] ?? 'user'}';
     final configDir = Directory(p.join(home, '.config', 'omnistore'));
     final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
@@ -121,7 +126,9 @@ class UpdateService {
 
       final hasDeps = await _checkLinuxTrayDependencies();
       if (!hasDeps) {
-        debugPrint("Skipping system tray initialization due to missing dependencies.");
+        debugPrint(
+          "Skipping system tray initialization due to missing dependencies.",
+        );
         return;
       }
     }
@@ -138,23 +145,24 @@ class UpdateService {
           .timeout(const Duration(seconds: 3));
 
       final Menu menu = Menu();
-      await menu.buildFrom([
-        MenuItemLabel(
-          label: _showWindowLabel,
-          onClicked: (menuItem) => windowManager.show(),
-        ),
-        MenuItemLabel(
-          label: _checkUpdatesLabel,
-          onClicked: (menuItem) => checkNow(),
-        ),
-        MenuSeparator(),
-        MenuItemLabel(
-          label: _exitLabel,
-          onClicked: (menuItem) => exit(0),
-        ),
-      ]).timeout(const Duration(seconds: 2));
+      await menu
+          .buildFrom([
+            MenuItemLabel(
+              label: _showWindowLabel,
+              onClicked: (menuItem) => windowManager.show(),
+            ),
+            MenuItemLabel(
+              label: _checkUpdatesLabel,
+              onClicked: (menuItem) => checkNow(),
+            ),
+            MenuSeparator(),
+            MenuItemLabel(label: _exitLabel, onClicked: (menuItem) => exit(0)),
+          ])
+          .timeout(const Duration(seconds: 2));
 
-      await _systemTray.setContextMenu(menu).timeout(const Duration(seconds: 2));
+      await _systemTray
+          .setContextMenu(menu)
+          .timeout(const Duration(seconds: 2));
       _systemTray.registerSystemTrayEventHandler((eventName) {
         if (eventName == kSystemTrayEventClick) {
           windowManager.show();
@@ -184,25 +192,31 @@ class UpdateService {
   Future<void> checkNow() async {
     debugPrint("Checking for updates...");
     try {
-      final updates = await BackendService.instance.checkUpdates().timeout(const Duration(seconds: 45));
+      final updates = await BackendService.instance.checkUpdates().timeout(
+        const Duration(seconds: 45),
+      );
       availableUpdates.value = updates;
 
-    final remindEnabled = _config['updates']?['remind_updates'] ?? true;
-    final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
+      final remindEnabled = _config['updates']?['remind_updates'] ?? true;
+      final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
 
-    if (updates.isNotEmpty) {
-      final currentHash = updates.map((e) => "${e['name']}-${e['new_version']}").join(",");
-      if (remindEnabled && notificationsEnabled && currentHash != _lastNotifiedUpdateHash) {
-        _showUpdateNotification(updates.length);
-        _lastNotifiedUpdateHash = currentHash;
+      if (updates.isNotEmpty) {
+        final currentHash = updates
+            .map((e) => "${e['name']}-${e['new_version']}")
+            .join(",");
+        if (remindEnabled &&
+            notificationsEnabled &&
+            currentHash != _lastNotifiedUpdateHash) {
+          _showUpdateNotification(updates.length);
+          _lastNotifiedUpdateHash = currentHash;
+        }
+        await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
+      } else {
+        _lastNotifiedUpdateHash = null;
+        try {
+          await _systemTray.setToolTip(_trayTooltipUpToDate);
+        } catch (_) {}
       }
-      await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
-    } else {
-      _lastNotifiedUpdateHash = null;
-      try {
-        await _systemTray.setToolTip(_trayTooltipUpToDate);
-      } catch (_) {}
-    }
     } catch (e) {
       debugPrint("Update check failed: $e");
     }
@@ -230,11 +244,10 @@ class UpdateService {
 
   Future<void> _showUpdateNotification(int count) async {
     const LinuxNotificationDetails linuxPlatformChannelSpecifics =
-        LinuxNotificationDetails(
-      urgency: LinuxNotificationUrgency.normal,
+        LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      linux: linuxPlatformChannelSpecifics,
     );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(linux: linuxPlatformChannelSpecifics);
     await _notificationsPlugin.show(
       0,
       _notificationTitle,
