@@ -51,6 +51,8 @@ class TaskManager {
       status: TaskStatus.pending,
       progress: -1.0,
       message: "Initializing task...",
+      packageName: packageName,
+      source: source,
     ));
 
     BackendService.clearLogs();
@@ -159,6 +161,9 @@ class TaskManager {
       } else if (logMessage.startsWith("[SPEED]")) {
         final s = logMessage.replaceFirst("[SPEED] ", "");
         _updateState(_currentTask?.copyWith(speed: s));
+      } else if (logMessage.startsWith("[STAGE]")) {
+        final stage = logMessage.replaceFirst("[STAGE] ", "");
+        _updateState(_currentTask?.copyWith(stage: stage));
       } else if (logMessage.startsWith("[INFO]")) {
         final msg = logMessage.replaceFirst("[INFO] ", "");
         BackendService.addLog(logMessage);

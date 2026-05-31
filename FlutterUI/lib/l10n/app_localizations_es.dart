@@ -501,4 +501,264 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get delete => 'Eliminar';
+
+  @override
+  String get welcomeTitle => 'Bienvenido a OmniStore';
+
+  @override
+  String get welcomeSubtitle =>
+      'Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux';
+
+  @override
+  String get getStarted => 'Comenzar';
+
+  @override
+  String get skip => 'Omitir';
+
+  @override
+  String get envCheckTitle => 'Comprobación del entorno';
+
+  @override
+  String get envCheckSubtitle => 'Asegurando que su sistema esté listo';
+
+  @override
+  String get envFatalDesc =>
+      'Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.';
+
+  @override
+  String get envWarningDesc =>
+      'Faltan algunos componentes necesarios. Podemos configurarlos por usted.';
+
+  @override
+  String get envOkDesc => '¡Todo listo! Su sistema es perfecto.';
+
+  @override
+  String get fixProblems => 'Corregir / Configurar todo';
+
+  @override
+  String get continueAnyway => 'Continuar de todos modos';
+
+  @override
+  String get sourceConfigTitle => 'Fuentes de software';
+
+  @override
+  String get sourceConfigSubtitle => 'Elija las fuentes que desea habilitar';
+
+  @override
+  String get enableAur => 'Activar AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => 'Activar AUR requiere instalar el asistente yay.';
+
+  @override
+  String get aurWarning =>
+      'Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.';
+
+  @override
+  String get bootstrapNote =>
+      'Nota: La configuración puede requerir introducir su contraseña varias veces.';
+
+  @override
+  String get feedbackDesc =>
+      'Si encuentra problemas, por favor infórmenos en GitHub.';
+
+  @override
+  String get aiAssistant => 'Asistente de IA';
+
+  @override
+  String get aiAssistantDesc =>
+      'Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.';
+
+  @override
+  String get aiProviderDesc =>
+      'Seleccione su fuente de modelo de IA (Local o Nube)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama por defecto es http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper =>
+      'Dejar en blanco para Ollama, introducir sk-xxx para OpenAI';
+
+  @override
+  String get howToGetApiKey => '¿Cómo obtener una clave API?';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.';
+
+  @override
+  String get gotIt => 'Entendido';
+
+  @override
+  String get aiOllamaNote =>
+      'Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".';
+
+  @override
+  String get enterStore => 'Entrar a la tienda';
+
+  @override
+  String get nextStep => 'Siguiente paso';
+
+  @override
+  String get resetCache => 'Restablecer caché e historial';
+
+  @override
+  String get resetCacheDesc =>
+      'Limpiar el historial de búsqueda y el caché de recomendaciones locales';
+
+  @override
+  String get resetCacheConfirm =>
+      'Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?';
+
+  @override
+  String get resetting => 'Restableciendo...';
+
+  @override
+  String get resetSuccess => 'Caché e historial borrados con éxito';
+
+  @override
+  String resetFailed(String error) {
+    return 'Error al restablecer: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (Local)';
+
+  @override
+  String get openaiCompatible => 'Compatible con OpenAI';
+
+  @override
+  String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => 'Importar paquetes';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return 'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?';
+  }
+
+  @override
+  String get allDownloads => 'Descargar todo';
+
+  @override
+  String get importList => 'Importar lista';
+
+  @override
+  String get loadError =>
+      'Error al cargar recomendaciones, por favor compruebe el estado del backend';
+
+  @override
+  String get community => 'Comunidad';
+
+  @override
+  String get official => 'Oficial';
+
+  @override
+  String get verified => 'Verificado';
+
+  @override
+  String installingPkg(String name) {
+    return 'Instalando $name...';
+  }
+
+  @override
+  String get switchSource => 'Cambiar';
+
+  @override
+  String get flatpakBetterDesc =>
+      'Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.';
+
+  @override
+  String get aiAnalysisPrompt =>
+      'Se encontraron registros de errores, ¿necesita un análisis de IA?';
+
+  @override
+  String get analyzeNow => 'Analizar ahora';
+
+  @override
+  String get cleanOrphans => 'Limpiar dependencias no utilizadas (huérfanos)';
+
+  @override
+  String get securityWarning => 'Advertencia de seguridad';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
+
+  @override
+  String get continueInstall => 'Continuar instalación';
+
+  @override
+  String get installInfo => 'Información de instalación';
+
+  @override
+  String get downloadSize => 'Tamaño de descarga';
+
+  @override
+  String get installedSize => 'Tamaño instalado';
+
+  @override
+  String dependenciesCount(int count) {
+    return 'Dependencias ($count)';
+  }
+
+  @override
+  String get runningInBackground =>
+      'OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.';
+
+  @override
+  String get clearSearch => 'Limpiar búsqueda';
+
+  @override
+  String get listView => 'Vista de lista';
+
+  @override
+  String get gridView => 'Vista de cuadrícula';
+
+  @override
+  String get categories => 'Categorías';
+
+  @override
+  String get clearHistory => 'Limpiar historial';
+
+  @override
+  String get confirmClearHistory =>
+      '¿Está seguro de que desea borrar todo el historial?';
+
+  @override
+  String get viewMore => 'Ver más';
+
+  @override
+  String get logDebug => 'DEPURACIÓN (DEBUG)';
+
+  @override
+  String get logInfo => 'INFORMACIÓN (INFO)';
+
+  @override
+  String get logWarning => 'ADVERTENCIA (WARNING)';
+
+  @override
+  String get logError => 'ERROR (ERROR)';
+
+  @override
+  String get notificationTitle => 'Actualizaciones disponibles';
+
+  @override
+  String notificationBody(int count) {
+    return 'Hay $count aplicaciones disponibles para actualizar';
+  }
+
+  @override
+  String get preparingUpdate => 'Preparando actualización...';
+
+  @override
+  String get processing => 'Procesando';
+
+  @override
+  String get clear => 'Limpiar';
+
+  @override
+  String get retry => 'Reintentar';
 }

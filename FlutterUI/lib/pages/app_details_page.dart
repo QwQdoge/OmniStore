@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
-import '../services/l10n_service.dart';
 import '../services/task_manager.dart';
 import '../models/task_state.dart';
 import '../widgets/magic_pulse_icon.dart';
@@ -53,9 +52,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         if (!mounted || _isAppInstalled) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("发现此应用有 Flatpak 源，通常更稳定。"),
+            content: Text(AppLocalizations.of(context)!.flatpakBetterDesc),
             action: SnackBarAction(
-              label: "切换",
+              label: AppLocalizations.of(context)!.switchSource,
               onPressed: () {
                 setState(() {
                   _selectedSource = "Flatpak";
@@ -153,11 +152,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           children: [
                             Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.primary, size: 18),
                             const SizedBox(width: 12),
-                            const Text("发现错误日志，需要 AI 分析吗？", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(AppLocalizations.of(context)!.aiAnalysisPrompt,
+                                style: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
                             const Spacer(),
                             TextButton(
-                              onPressed: () => _showAIErrorAnalysis(logs.join("\n")),
-                              child: Text("立即分析", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                              onPressed: () =>
+                                  _showAIErrorAnalysis(logs.join("\n")),
+                              child: Text(AppLocalizations.of(context)!.analyzeNow,
+                                  style: TextStyle(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -247,7 +252,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       onChanged: (val) {
                         setDialogState(() => cleanOrphans = val ?? false);
                       },
-                      title: const Text("同时清理无用依赖 (孤立包)", style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.cleanOrphans,
+                          style: const TextStyle(fontSize: 14)),
                       contentPadding: EdgeInsets.zero,
                       dense: true,
                       controlAffinity: ListTileControlAffinity.leading,
@@ -285,14 +291,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       final aurConfirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          icon: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 48),
-          title: const Text("安全风险提示"),
-          content: const Text("AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。"),
+          icon: const Icon(Icons.warning_amber_rounded,
+              color: Colors.orange, size: 48),
+          title: Text(AppLocalizations.of(context)!.securityWarning),
+          content: Text(AppLocalizations.of(context)!.aurSecurityDesc),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("取消")),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text("继续安装")),
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(AppLocalizations.of(context)!.cancel)),
+            FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(AppLocalizations.of(context)!.continueInstall)),
           ],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         ),
       );
       if (aurConfirmed != true) return;
@@ -534,7 +546,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L10nService.s('launch_failed', args: [e.toString()])),
+            content: Text("${AppLocalizations.of(context)!.failed}: $e"),
           ),
         );
       }
@@ -926,14 +938,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 24),
-        _buildSectionTitle(theme, "安装信息"),
+        _buildSectionTitle(theme, AppLocalizations.of(context)!.installInfo),
         if (dlSize != null)
-          _buildInfoRow(Icons.downloading_rounded, "下载体积", dlSize.toString()),
+          _buildInfoRow(Icons.downloading_rounded,
+              AppLocalizations.of(context)!.downloadSize, dlSize.toString()),
         if (insSize != null)
-          _buildInfoRow(Icons.storage_rounded, "解压后占用", insSize.toString()),
+          _buildInfoRow(Icons.storage_rounded,
+              AppLocalizations.of(context)!.installedSize, insSize.toString()),
         if (deps != null && deps.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Text("依赖包 (${deps.length})",
+          Text(AppLocalizations.of(context)!.dependenciesCount(deps.length),
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           const SizedBox(height: 8),

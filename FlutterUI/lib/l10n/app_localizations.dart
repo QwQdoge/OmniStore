@@ -1015,35 +1015,497 @@ abstract class AppLocalizations {
   /// **'Explain this update'**
   String get aiExplainUpdate;
 
-  /// No description provided for @windowMinimize.
+  /// Tooltip for window minimize button
   ///
   /// In en, this message translates to:
   /// **'Minimize'**
   String get windowMinimize;
 
-  /// No description provided for @windowMaximize.
+  /// Tooltip for window maximize button
   ///
   /// In en, this message translates to:
   /// **'Maximize'**
   String get windowMaximize;
 
-  /// No description provided for @windowRestore.
+  /// Tooltip for window restore button
   ///
   /// In en, this message translates to:
   /// **'Restore'**
   String get windowRestore;
 
-  /// No description provided for @windowClose.
+  /// Tooltip for window close button
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get windowClose;
 
-  /// No description provided for @delete.
+  /// Label for delete action
   ///
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// Description for welcomeTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to OmniStore'**
+  String get welcomeTitle;
+
+  /// Description for welcomeSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Providing a simple and elegant software management experience for Arch Linux'**
+  String get welcomeSubtitle;
+
+  /// Description for getStarted
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Description for skip
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// Description for envCheckTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Environment Check'**
+  String get envCheckTitle;
+
+  /// Description for envCheckSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Ensuring your system is ready'**
+  String get envCheckSubtitle;
+
+  /// Description for envFatalDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.'**
+  String get envFatalDesc;
+
+  /// Description for envWarningDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Some necessary components are missing. We can configure them for you.'**
+  String get envWarningDesc;
+
+  /// Description for envOkDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is ready! Your system is perfect.'**
+  String get envOkDesc;
+
+  /// Description for fixProblems
+  ///
+  /// In en, this message translates to:
+  /// **'Fix / Configure All'**
+  String get fixProblems;
+
+  /// Description for continueAnyway
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Anyway'**
+  String get continueAnyway;
+
+  /// Description for sourceConfigTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Software Sources'**
+  String get sourceConfigTitle;
+
+  /// Description for sourceConfigSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the sources you want to enable'**
+  String get sourceConfigSubtitle;
+
+  /// Description for enableAur
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AUR (Arch User Repository)'**
+  String get enableAur;
+
+  /// Description for yayDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enabling AUR requires installing the yay helper.'**
+  String get yayDesc;
+
+  /// Description for aurWarning
+  ///
+  /// In en, this message translates to:
+  /// **'Security Warning: AUR packages are user-contributed. Ensure you trust the source.'**
+  String get aurWarning;
+
+  /// Description for bootstrapNote
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Setup may require entering your password multiple times.'**
+  String get bootstrapNote;
+
+  /// Description for feedbackDesc
+  ///
+  /// In en, this message translates to:
+  /// **'If you encounter issues, please report them on GitHub.'**
+  String get feedbackDesc;
+
+  /// Description for aiAssistant
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant'**
+  String get aiAssistant;
+
+  /// Description for aiAssistantDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
+  String get aiAssistantDesc;
+
+  /// Description for aiProviderDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Select your AI model source (Local or Cloud)'**
+  String get aiProviderDesc;
+
+  /// Description for aiEndpointHelper
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama defaults to http://localhost:11434'**
+  String get aiEndpointHelper;
+
+  /// Description for aiApiKeyHelper
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for Ollama, enter sk-xxx for OpenAI'**
+  String get aiApiKeyHelper;
+
+  /// Description for howToGetApiKey
+  ///
+  /// In en, this message translates to:
+  /// **'How to get an API key?'**
+  String get howToGetApiKey;
+
+  /// Description for howToGetApiKeyDesc
+  ///
+  /// In en, this message translates to:
+  /// **'1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.'**
+  String get howToGetApiKeyDesc;
+
+  /// Description for gotIt
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// Description for aiOllamaNote
+  ///
+  /// In en, this message translates to:
+  /// **'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".'**
+  String get aiOllamaNote;
+
+  /// Description for enterStore
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Store'**
+  String get enterStore;
+
+  /// Description for nextStep
+  ///
+  /// In en, this message translates to:
+  /// **'Next Step'**
+  String get nextStep;
+
+  /// Description for resetCache
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Cache and History'**
+  String get resetCache;
+
+  /// Description for resetCacheDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search history and local recommendations cache'**
+  String get resetCacheDesc;
+
+  /// Description for resetCacheConfirm
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear your search history and recommendations cache. Proceed?'**
+  String get resetCacheConfirm;
+
+  /// Description for resetting
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting...'**
+  String get resetting;
+
+  /// Description for resetSuccess
+  ///
+  /// In en, this message translates to:
+  /// **'Cache and History cleared successfully'**
+  String get resetSuccess;
+
+  /// No description provided for @resetFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset failed: {error}'**
+  String resetFailed(String error);
+
+  /// Description for ollamaLocal
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama (Local)'**
+  String get ollamaLocal;
+
+  /// Description for openaiCompatible
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI Compatible'**
+  String get openaiCompatible;
+
+  /// Description for googleGemini
+  ///
+  /// In en, this message translates to:
+  /// **'Google Gemini'**
+  String get googleGemini;
+
+  /// Description for importPackages
+  ///
+  /// In en, this message translates to:
+  /// **'Import Packages'**
+  String get importPackages;
+
+  /// No description provided for @importPackagesConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Read {count} packages from file. Start batch download?'**
+  String importPackagesConfirm(int count);
+
+  /// Description for allDownloads
+  ///
+  /// In en, this message translates to:
+  /// **'Download All'**
+  String get allDownloads;
+
+  /// Description for importList
+  ///
+  /// In en, this message translates to:
+  /// **'Import List'**
+  String get importList;
+
+  /// Description for loadError
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load recommendations, please check backend status'**
+  String get loadError;
+
+  /// Description for community
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// Description for official
+  ///
+  /// In en, this message translates to:
+  /// **'Official'**
+  String get official;
+
+  /// Description for verified
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @installingPkg.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name}...'**
+  String installingPkg(String name);
+
+  /// Description for switchSource
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switchSource;
+
+  /// Description for flatpakBetterDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Found a Flatpak source for this app, which is usually more stable.'**
+  String get flatpakBetterDesc;
+
+  /// Description for aiAnalysisPrompt
+  ///
+  /// In en, this message translates to:
+  /// **'Found error logs, do you need an AI analysis?'**
+  String get aiAnalysisPrompt;
+
+  /// Description for analyzeNow
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Now'**
+  String get analyzeNow;
+
+  /// Description for cleanOrphans
+  ///
+  /// In en, this message translates to:
+  /// **'Clean unused dependencies (orphans)'**
+  String get cleanOrphans;
+
+  /// Description for securityWarning
+  ///
+  /// In en, this message translates to:
+  /// **'Security Warning'**
+  String get securityWarning;
+
+  /// Description for aurSecurityDesc
+  ///
+  /// In en, this message translates to:
+  /// **'AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.'**
+  String get aurSecurityDesc;
+
+  /// Description for continueInstall
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Install'**
+  String get continueInstall;
+
+  /// Description for installInfo
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Info'**
+  String get installInfo;
+
+  /// Description for downloadSize
+  ///
+  /// In en, this message translates to:
+  /// **'Download Size'**
+  String get downloadSize;
+
+  /// Description for installedSize
+  ///
+  /// In en, this message translates to:
+  /// **'Installed Size'**
+  String get installedSize;
+
+  /// No description provided for @dependenciesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Dependencies ({count})'**
+  String dependenciesCount(int count);
+
+  /// Description for runningInBackground
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore is running in the background, you can open it via the tray icon.'**
+  String get runningInBackground;
+
+  /// Description for clearSearch
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Search'**
+  String get clearSearch;
+
+  /// Description for listView
+  ///
+  /// In en, this message translates to:
+  /// **'List View'**
+  String get listView;
+
+  /// Description for gridView
+  ///
+  /// In en, this message translates to:
+  /// **'Grid View'**
+  String get gridView;
+
+  /// Description for categories
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// Description for clearHistory
+  ///
+  /// In en, this message translates to:
+  /// **'Clear History'**
+  String get clearHistory;
+
+  /// Description for confirmClearHistory
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all history?'**
+  String get confirmClearHistory;
+
+  /// Description for viewMore
+  ///
+  /// In en, this message translates to:
+  /// **'View More'**
+  String get viewMore;
+
+  /// Description for logDebug
+  ///
+  /// In en, this message translates to:
+  /// **'DEBUG'**
+  String get logDebug;
+
+  /// Description for logInfo
+  ///
+  /// In en, this message translates to:
+  /// **'INFO'**
+  String get logInfo;
+
+  /// Description for logWarning
+  ///
+  /// In en, this message translates to:
+  /// **'WARNING'**
+  String get logWarning;
+
+  /// Description for logError
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR'**
+  String get logError;
+
+  /// Description for notificationTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Updates Available'**
+  String get notificationTitle;
+
+  /// No description provided for @notificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} applications are available for update'**
+  String notificationBody(int count);
+
+  /// Description for preparingUpdate
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing update...'**
+  String get preparingUpdate;
+
+  /// Description for processing
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get processing;
+
+  /// Description for clear
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// Description for retry
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

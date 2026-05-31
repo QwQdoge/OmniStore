@@ -498,6 +498,250 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get delete => '删除';
+
+  @override
+  String get welcomeTitle => '欢迎来到 OmniStore';
+
+  @override
+  String get welcomeSubtitle => '为您提供简单、优雅的 Arch Linux 应用管理体验';
+
+  @override
+  String get getStarted => '开始使用';
+
+  @override
+  String get skip => '跳过';
+
+  @override
+  String get envCheckTitle => '环境检查';
+
+  @override
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+
+  @override
+  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+
+  @override
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+
+  @override
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
+
+  @override
+  String get fixProblems => '一键修复/配置';
+
+  @override
+  String get continueAnyway => '仍然继续';
+
+  @override
+  String get sourceConfigTitle => '应用源配置';
+
+  @override
+  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
+
+  @override
+  String get enableAur => '启用 AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => '启用 AUR 需要安装 yay 助手。';
+
+  @override
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+
+  @override
+  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
+
+  @override
+  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+
+  @override
+  String get aiAssistant => 'AI 助手';
+
+  @override
+  String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
+
+  @override
+  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper => '如果是 Ollama 则留空，OpenAI 请填入 sk-xxx';
+
+  @override
+  String get howToGetApiKey => '如何获取 API 密钥？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。';
+
+  @override
+  String get gotIt => '知道了';
+
+  @override
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+
+  @override
+  String get enterStore => '进入商店';
+
+  @override
+  String get nextStep => '下一步';
+
+  @override
+  String get resetCache => '重置缓存与历史记录';
+
+  @override
+  String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
+
+  @override
+  String get resetCacheConfirm => '这将清空您的搜索历史和推荐缓存。是否继续？';
+
+  @override
+  String get resetting => '正在重置...';
+
+  @override
+  String get resetSuccess => '缓存与历史记录已成功清空';
+
+  @override
+  String resetFailed(String error) {
+    return '重置失败: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (本地)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 兼容';
+
+  @override
+  String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => '导入软件包';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return '已从文件中读取 $count 个软件包。是否开始批量下载？';
+  }
+
+  @override
+  String get allDownloads => '全部下载';
+
+  @override
+  String get importList => '导入列表';
+
+  @override
+  String get loadError => '无法加载推荐内容，请检查后端状态';
+
+  @override
+  String get community => '社区';
+
+  @override
+  String get official => '官方';
+
+  @override
+  String get verified => '经校验';
+
+  @override
+  String installingPkg(String name) {
+    return '正在安装 $name...';
+  }
+
+  @override
+  String get switchSource => '切换';
+
+  @override
+  String get flatpakBetterDesc => '发现此应用有 Flatpak 源，通常更稳定。';
+
+  @override
+  String get aiAnalysisPrompt => '发现错误日志，需要 AI 分析吗？';
+
+  @override
+  String get analyzeNow => '立即分析';
+
+  @override
+  String get cleanOrphans => '同时清理无用依赖 (孤立包)';
+
+  @override
+  String get securityWarning => '安全风险提示';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。';
+
+  @override
+  String get continueInstall => '继续安装';
+
+  @override
+  String get installInfo => '安装信息';
+
+  @override
+  String get downloadSize => '下载体积';
+
+  @override
+  String get installedSize => '解压后占用';
+
+  @override
+  String dependenciesCount(int count) {
+    return '依赖包 ($count)';
+  }
+
+  @override
+  String get runningInBackground => 'OmniStore 正在后台运行，可通过托盘图标打开';
+
+  @override
+  String get clearSearch => '清除搜索';
+
+  @override
+  String get listView => '列表视图';
+
+  @override
+  String get gridView => '网格视图';
+
+  @override
+  String get categories => '分类';
+
+  @override
+  String get clearHistory => '清空历史记录';
+
+  @override
+  String get confirmClearHistory => '确定要删除所有搜索历史吗？';
+
+  @override
+  String get viewMore => '查看更多';
+
+  @override
+  String get logDebug => '调试 (DEBUG)';
+
+  @override
+  String get logInfo => '信息 (INFO)';
+
+  @override
+  String get logWarning => '警告 (WARNING)';
+
+  @override
+  String get logError => '错误 (ERROR)';
+
+  @override
+  String get notificationTitle => '发现可用更新';
+
+  @override
+  String notificationBody(int count) {
+    return '您的系统中有 $count 个应用可以更新';
+  }
+
+  @override
+  String get preparingUpdate => '正在准备更新...';
+
+  @override
+  String get processing => '正在处理';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get retry => '重试';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -994,4 +1238,248 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get delete => '刪除';
+
+  @override
+  String get welcomeTitle => '歡迎來到 OmniStore';
+
+  @override
+  String get welcomeSubtitle => '為您提供簡單、優雅的 Arch Linux 應用程式管理體驗';
+
+  @override
+  String get getStarted => '開始使用';
+
+  @override
+  String get skip => '跳過';
+
+  @override
+  String get envCheckTitle => '環境檢查';
+
+  @override
+  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
+
+  @override
+  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
+
+  @override
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
+
+  @override
+  String get envOkDesc => '一切就緒！您的系統非常完美。';
+
+  @override
+  String get fixProblems => '一鍵修復/配置';
+
+  @override
+  String get continueAnyway => '仍然繼續';
+
+  @override
+  String get sourceConfigTitle => '應用程式來源配置';
+
+  @override
+  String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
+
+  @override
+  String get enableAur => '啟用 AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
+
+  @override
+  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
+
+  @override
+  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
+
+  @override
+  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
+
+  @override
+  String get aiAssistant => 'AI 助手';
+
+  @override
+  String get aiAssistantDesc => '開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。';
+
+  @override
+  String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper => '如果是 Ollama 則留空，OpenAI 請填入 sk-xxx';
+
+  @override
+  String get howToGetApiKey => '如何獲取 API 金鑰？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。';
+
+  @override
+  String get gotIt => '知道了';
+
+  @override
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+
+  @override
+  String get enterStore => '進入商店';
+
+  @override
+  String get nextStep => '下一步';
+
+  @override
+  String get resetCache => '重置快取與歷史記錄';
+
+  @override
+  String get resetCacheDesc => '清空搜尋歷史與本地推薦快取';
+
+  @override
+  String get resetCacheConfirm => '這將清空您的搜尋歷史和推薦快取。是否繼續？';
+
+  @override
+  String get resetting => '正在重置...';
+
+  @override
+  String get resetSuccess => '快取與歷史記錄已成功清空';
+
+  @override
+  String resetFailed(String error) {
+    return '重置失敗: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (本地)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 相容';
+
+  @override
+  String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => '匯入套件';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return '已從檔案中讀取 $count 個套件。是否開始批次下載？';
+  }
+
+  @override
+  String get allDownloads => '全部下載';
+
+  @override
+  String get importList => '匯入列表';
+
+  @override
+  String get loadError => '無法載入推薦內容，請檢查背景狀態';
+
+  @override
+  String get community => '社群';
+
+  @override
+  String get official => '官方';
+
+  @override
+  String get verified => '經校驗';
+
+  @override
+  String installingPkg(String name) {
+    return '正在安裝 $name...';
+  }
+
+  @override
+  String get switchSource => '切換';
+
+  @override
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 來源，通常更穩定。';
+
+  @override
+  String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
+
+  @override
+  String get analyzeNow => '立即分析';
+
+  @override
+  String get cleanOrphans => '同時清理無用依賴 (孤立套件)';
+
+  @override
+  String get securityWarning => '安全風險提示';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) 是由社群維護的倉庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。';
+
+  @override
+  String get continueInstall => '繼續安裝';
+
+  @override
+  String get installInfo => '安裝資訊';
+
+  @override
+  String get downloadSize => '下載體積';
+
+  @override
+  String get installedSize => '解壓後占用';
+
+  @override
+  String dependenciesCount(int count) {
+    return '依賴套件 ($count)';
+  }
+
+  @override
+  String get runningInBackground => 'OmniStore 正在背景執行，可透過托盤圖示開啟';
+
+  @override
+  String get clearSearch => '清除搜尋';
+
+  @override
+  String get listView => '列表檢視';
+
+  @override
+  String get gridView => '網格檢視';
+
+  @override
+  String get categories => '分類';
+
+  @override
+  String get clearHistory => '清除歷史記錄';
+
+  @override
+  String get confirmClearHistory => '確定要刪除所有搜尋歷史嗎？';
+
+  @override
+  String get viewMore => '查看更多';
+
+  @override
+  String get logDebug => '除錯 (DEBUG)';
+
+  @override
+  String get logInfo => '資訊 (INFO)';
+
+  @override
+  String get logWarning => '警告 (WARNING)';
+
+  @override
+  String get logError => '錯誤 (ERROR)';
+
+  @override
+  String get notificationTitle => '發現可用更新';
+
+  @override
+  String notificationBody(int count) {
+    return '您的系統中有 $count 個應用程式可以更新';
+  }
+
+  @override
+  String get preparingUpdate => '正在準備更新...';
+
+  @override
+  String get processing => '正在處理';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get retry => '重試';
 }

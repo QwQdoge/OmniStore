@@ -5,16 +5,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
+import 'app_package.dart';
 import 'backend_service.dart';
-import 'l10n_service.dart';
-import 'task_manager.dart';
 
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
   factory UpdateService() => _instance;
   UpdateService._internal();
 
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   final SystemTray _systemTray = SystemTray();
 
   final ValueNotifier<List<dynamic>> availableUpdates = ValueNotifier([]);
@@ -22,6 +24,20 @@ class UpdateService {
   Map<String, dynamic> _config = {};
   DateTime? _lastNotificationTime;
   String? _lastNotifiedUpdateHash;
+
+  // Background strings cache for tray and notifications
+  String _showWindowLabel = "Show Window";
+  String _checkUpdatesLabel = "Check for Updates";
+  String _exitLabel = "Exit";
+  String _trayTooltipUpToDate = "OmniStore: Up to date";
+  String _notificationTitle = "Updates Available";
+  String _preparingUpdateLabel = "Preparing update...";
+  String _taskCompletedLabel = "Task Completed";
+  String _successLabel = "Success";
+  String _failedLabel = "Failed";
+
+  String Function(int) _trayTooltipUpdates = (count) => "OmniStore: $count updates";
+  String Function(int) _notificationBody = (count) => "$count applications are available";
 
   Future<void> init() async {
     // 初始化通知
@@ -41,8 +57,23 @@ class UpdateService {
 
   }
 
-  Future<void> updateConfig() async {
+  Future<void> updateConfig([AppLocalizations? l10n]) async {
     _config = await BackendService.instance.loadConfig();
+
+    if (l10n != null) {
+      _showWindowLabel = l10n.showWindow;
+      _checkUpdatesLabel = l10n.checkUpdates;
+      _exitLabel = l10n.exit;
+      _trayTooltipUpToDate = l10n.trayTooltipUpToDate;
+      _notificationTitle = l10n.notificationTitle;
+      _preparingUpdateLabel = l10n.preparingUpdate;
+      _taskCompletedLabel = l10n.taskCompleted;
+      _successLabel = l10n.success;
+      _failedLabel = l10n.failed;
+      _trayTooltipUpdates = (count) => l10n.trayTooltipUpdates(count);
+      _notificationBody = (count) => l10n.notificationBody(count);
+    }
+
     _startUpdateTimer();
     // 重新初始化托盘，确保语言和菜单最新
     await _initSystemTray();
@@ -109,16 +140,16 @@ class UpdateService {
       final Menu menu = Menu();
       await menu.buildFrom([
         MenuItemLabel(
-          label: L10nService.s('show_window'),
+          label: _showWindowLabel,
           onClicked: (menuItem) => windowManager.show(),
         ),
         MenuItemLabel(
-          label: L10nService.s('check_updates'),
+          label: _checkUpdatesLabel,
           onClicked: (menuItem) => checkNow(),
         ),
         MenuSeparator(),
         MenuItemLabel(
-          label: L10nService.s('exit'),
+          label: _exitLabel,
           onClicked: (menuItem) => exit(0),
         ),
       ]).timeout(const Duration(seconds: 2));
@@ -165,11 +196,11 @@ class UpdateService {
         _showUpdateNotification(updates.length);
         _lastNotifiedUpdateHash = currentHash;
       }
-      await _systemTray.setToolTip(L10nService.s('trayTooltipUpdates', args: [updates.length.toString()]));
+      await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
     } else {
       _lastNotifiedUpdateHash = null;
       try {
-        await _systemTray.setToolTip(L10nService.s('trayTooltipUpToDate'));
+        await _systemTray.setToolTip(_trayTooltipUpToDate);
       } catch (_) {}
     }
     } catch (e) {
@@ -206,8 +237,8 @@ class UpdateService {
         NotificationDetails(linux: linuxPlatformChannelSpecifics);
     await _notificationsPlugin.show(
       0,
-      L10nService.s('notification_title'),
-      L10nService.s('notification_body', args: [count.toString()]),
+      _notificationTitle,
+      _notificationBody(count),
       platformChannelSpecifics,
     );
   }
@@ -252,8 +283,8 @@ class UpdateService {
 
     await _notificationsPlugin.show(
       2,
-      L10nService.s('task_completed'),
-      "$title: ${success ? L10nService.s('success') : L10nService.s('failed')}",
+      _taskCompletedLabel,
+      "$title: ${success ? _successLabel : _failedLabel}",
       NotificationDetails(linux: linuxDetails),
     );
   }

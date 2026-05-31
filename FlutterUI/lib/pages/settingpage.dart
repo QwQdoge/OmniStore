@@ -207,7 +207,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       physics: const NeverScrollableScrollPhysics(),
                       onReorder: (oldIndex, newIndex) {
                         setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
                           final item = sourceOrder.removeAt(oldIndex);
                           sourceOrder.insert(newIndex, item);
 
@@ -358,15 +360,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     ListTile(
                       leading: const Icon(Icons.smart_toy_outlined),
                       title: Text(l10n.aiProvider),
-                      subtitle: const Text("Select your AI model source (Local or Cloud)"),
+                    subtitle: Text(l10n.aiProviderDesc),
                       trailing: DropdownButton<String>(
                         value: aiProvider,
                         underline: const SizedBox(),
                         onChanged: (v) => setState(() => aiProvider = v!),
-                        items: const [
-                          DropdownMenuItem(value: 'ollama', child: Text('Ollama (Local)')),
-                          DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
-                          DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
+                      items: [
+                        DropdownMenuItem(value: 'ollama', child: Text(l10n.ollamaLocal)),
+                        DropdownMenuItem(value: 'openai', child: Text(l10n.openaiCompatible)),
+                        DropdownMenuItem(value: 'gemini', child: Text(l10n.googleGemini)),
                         ],
                       ),
                     ),
@@ -469,8 +471,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.history_rounded),
-                    title: const Text("Reset Cache and History"),
-                    subtitle: const Text("Clear search history and local recommendations cache"),
+                    title: Text(l10n.resetCache),
+                    subtitle: Text(l10n.resetCacheDesc),
                     onTap: _resetCacheAndHistory,
                   ),
                   ListTile(
@@ -526,11 +528,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       value: logLevel,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => logLevel = v!),
-                      items: const [
-                        DropdownMenuItem(value: 'DEBUG', child: Text('DEBUG')),
-                        DropdownMenuItem(value: 'INFO', child: Text('INFO')),
-                        DropdownMenuItem(value: 'WARNING', child: Text('WARNING')),
-                        DropdownMenuItem(value: 'ERROR', child: Text('ERROR')),
+                      items: [
+                        DropdownMenuItem(value: 'DEBUG', child: Text(l10n.logDebug)),
+                        DropdownMenuItem(value: 'INFO', child: Text(l10n.logInfo)),
+                        DropdownMenuItem(value: 'WARNING', child: Text(l10n.logWarning)),
+                        DropdownMenuItem(value: 'ERROR', child: Text(l10n.logError)),
                       ],
                     ),
                   ),
@@ -705,18 +707,20 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Reset Cache and History"),
-        content: const Text("This will clear your search history and recommendations cache. Proceed?"),
+        title: Text(l10n.resetCache),
+        content: Text(l10n.resetCacheConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.confirm)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.confirm)),
         ],
       ),
     );
 
     if (confirm == true) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Resetting...")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.resetting)));
 
       try {
         // 1. Clear search history
@@ -729,13 +733,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Cache and History cleared successfully"), backgroundColor: Colors.green),
+            SnackBar(
+                content: Text(l10n.resetSuccess),
+                backgroundColor: Colors.green),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Reset failed: $e"), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text(l10n.resetFailed(e.toString())),
+                backgroundColor: Colors.red),
           );
         }
       }
@@ -973,7 +981,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     BackendService.instance.saveConfig(config).then((success) {
       if (success) {
-        UpdateService().updateConfig();
+        UpdateService().updateConfig(l10n);
         // Force refresh global AI state
         BackendService.isAIEnabled.value = aiEnabled;
       }

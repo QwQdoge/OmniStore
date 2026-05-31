@@ -501,4 +501,263 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get welcomeTitle => 'Welcome to OmniStore';
+
+  @override
+  String get welcomeSubtitle =>
+      'Providing a simple and elegant software management experience for Arch Linux';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get envCheckTitle => 'Environment Check';
+
+  @override
+  String get envCheckSubtitle => 'Ensuring your system is ready';
+
+  @override
+  String get envFatalDesc =>
+      'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.';
+
+  @override
+  String get envWarningDesc =>
+      'Some necessary components are missing. We can configure them for you.';
+
+  @override
+  String get envOkDesc => 'Everything is ready! Your system is perfect.';
+
+  @override
+  String get fixProblems => 'Fix / Configure All';
+
+  @override
+  String get continueAnyway => 'Continue Anyway';
+
+  @override
+  String get sourceConfigTitle => 'Software Sources';
+
+  @override
+  String get sourceConfigSubtitle => 'Choose the sources you want to enable';
+
+  @override
+  String get enableAur => 'Enable AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => 'Enabling AUR requires installing the yay helper.';
+
+  @override
+  String get aurWarning =>
+      'Security Warning: AUR packages are user-contributed. Ensure you trust the source.';
+
+  @override
+  String get bootstrapNote =>
+      'Note: Setup may require entering your password multiple times.';
+
+  @override
+  String get feedbackDesc =>
+      'If you encounter issues, please report them on GitHub.';
+
+  @override
+  String get aiAssistant => 'AI Assistant';
+
+  @override
+  String get aiAssistantDesc =>
+      'Enable AI-powered search, app explanation, and error diagnosis.';
+
+  @override
+  String get aiProviderDesc => 'Select your AI model source (Local or Cloud)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama defaults to http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper =>
+      'Leave blank for Ollama, enter sk-xxx for OpenAI';
+
+  @override
+  String get howToGetApiKey => 'How to get an API key?';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get aiOllamaNote =>
+      'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".';
+
+  @override
+  String get enterStore => 'Enter Store';
+
+  @override
+  String get nextStep => 'Next Step';
+
+  @override
+  String get resetCache => 'Reset Cache and History';
+
+  @override
+  String get resetCacheDesc =>
+      'Clear search history and local recommendations cache';
+
+  @override
+  String get resetCacheConfirm =>
+      'This will clear your search history and recommendations cache. Proceed?';
+
+  @override
+  String get resetting => 'Resetting...';
+
+  @override
+  String get resetSuccess => 'Cache and History cleared successfully';
+
+  @override
+  String resetFailed(String error) {
+    return 'Reset failed: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (Local)';
+
+  @override
+  String get openaiCompatible => 'OpenAI Compatible';
+
+  @override
+  String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => 'Import Packages';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return 'Read $count packages from file. Start batch download?';
+  }
+
+  @override
+  String get allDownloads => 'Download All';
+
+  @override
+  String get importList => 'Import List';
+
+  @override
+  String get loadError =>
+      'Failed to load recommendations, please check backend status';
+
+  @override
+  String get community => 'Community';
+
+  @override
+  String get official => 'Official';
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String installingPkg(String name) {
+    return 'Installing $name...';
+  }
+
+  @override
+  String get switchSource => 'Switch';
+
+  @override
+  String get flatpakBetterDesc =>
+      'Found a Flatpak source for this app, which is usually more stable.';
+
+  @override
+  String get aiAnalysisPrompt =>
+      'Found error logs, do you need an AI analysis?';
+
+  @override
+  String get analyzeNow => 'Analyze Now';
+
+  @override
+  String get cleanOrphans => 'Clean unused dependencies (orphans)';
+
+  @override
+  String get securityWarning => 'Security Warning';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.';
+
+  @override
+  String get continueInstall => 'Continue Install';
+
+  @override
+  String get installInfo => 'Installation Info';
+
+  @override
+  String get downloadSize => 'Download Size';
+
+  @override
+  String get installedSize => 'Installed Size';
+
+  @override
+  String dependenciesCount(int count) {
+    return 'Dependencies ($count)';
+  }
+
+  @override
+  String get runningInBackground =>
+      'OmniStore is running in the background, you can open it via the tray icon.';
+
+  @override
+  String get clearSearch => 'Clear Search';
+
+  @override
+  String get listView => 'List View';
+
+  @override
+  String get gridView => 'Grid View';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get clearHistory => 'Clear History';
+
+  @override
+  String get confirmClearHistory =>
+      'Are you sure you want to clear all history?';
+
+  @override
+  String get viewMore => 'View More';
+
+  @override
+  String get logDebug => 'DEBUG';
+
+  @override
+  String get logInfo => 'INFO';
+
+  @override
+  String get logWarning => 'WARNING';
+
+  @override
+  String get logError => 'ERROR';
+
+  @override
+  String get notificationTitle => 'Updates Available';
+
+  @override
+  String notificationBody(int count) {
+    return '$count applications are available for update';
+  }
+
+  @override
+  String get preparingUpdate => 'Preparing update...';
+
+  @override
+  String get processing => 'Processing';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get retry => 'Retry';
 }

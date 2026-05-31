@@ -8,7 +8,6 @@ import '../services/task_manager.dart';
 import '../models/task_state.dart';
 import '../widgets/smooth_progress_bar.dart';
 import 'app_details_page.dart';
-import '../services/l10n_service.dart';
 import '../services/update_service.dart';
 import '../widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -242,7 +241,7 @@ class _DownloadPageState extends State<DownloadPage>
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.close_rounded, size: 18),
-                            tooltip: L10nService.s('clear'),
+                            tooltip: AppLocalizations.of(context)!.clear,
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -337,7 +336,7 @@ class _DownloadPageState extends State<DownloadPage>
               _loadInstalledApps();
               UpdateService().checkUpdates();
             },
-            tooltip: L10nService.s('refresh'),
+            tooltip: AppLocalizations.of(context)!.refresh,
           ),
           const SizedBox(width: 8),
         ],
@@ -367,7 +366,7 @@ class _DownloadPageState extends State<DownloadPage>
                 Icon(Icons.task_alt,
                     size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                Text(L10nService.s('no_active_tasks'),
+                Text(AppLocalizations.of(context)!.noActiveTasks,
                     style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 24),
                 if (kDebugMode)
@@ -385,15 +384,51 @@ class _DownloadPageState extends State<DownloadPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(L10nService.s('current_task'),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
+              Row(
+                children: [
+                  Text(L10nService.s('current_task'),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18)),
+                  if (task.packageName != null) ...[
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        task.packageName!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
               const SizedBox(height: 20),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
+                      if (task.source != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.source_rounded, size: 16, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text(
+                                "${AppLocalizations.of(context)!.source}: ${task.source}",
+                                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
                       SmoothProgressBar(
                         taskState: task,
                         onCancel: () => TaskManager().cancelTask(),
@@ -405,7 +440,7 @@ class _DownloadPageState extends State<DownloadPage>
                           ElevatedButton.icon(
                             onPressed: () => _showTerminalDialog(context),
                             icon: const Icon(Icons.terminal, size: 18),
-                            label: Text(L10nService.s('view_logs')),
+                            label: Text(AppLocalizations.of(context)!.viewLogs),
                           ),
                         ],
                       ),
@@ -432,7 +467,7 @@ class _DownloadPageState extends State<DownloadPage>
                 Icon(Icons.check_circle_outline,
                     size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                Text(L10nService.s('all_updated'),
+                Text(AppLocalizations.of(context)!.allUpdated,
                     style: const TextStyle(color: Colors.grey)),
               ],
             ),
@@ -487,7 +522,7 @@ class _DownloadPageState extends State<DownloadPage>
                         UpdateService().startUpdate(update['name'], update['source']);
                         _tabController.animateTo(0);
                       },
-                      child: Text(L10nService.s('update')),
+                      child: Text(AppLocalizations.of(context)!.update),
                     ),
                   ],
                 ),
@@ -576,7 +611,7 @@ class _DownloadPageState extends State<DownloadPage>
           children: [
             const Icon(Icons.search_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text(L10nService.s('no_results'),
+            Text(AppLocalizations.of(context)!.noResults,
                 style: const TextStyle(color: Colors.grey)),
           ],
         ),
