@@ -20,6 +20,13 @@ pkgver() {
 build() {
   cd "${srcdir}/omnistore"
 
+  mkdir -p "${pkgdir}/fake_bin"
+  cat << 'EOF' > "${pkgdir}/fake_bin/pip"
+#!/bin/sh
+# 这个脚本是为了绕过 Arch Linux 的安全锁机制而存在的。它会被放在 PATH 前面，冒充 pip 来接管所有 pip 调用。
+/user/bin/pip "$@" --break-system-packages
+EOF
+
   # 1. 🛠️ 核心：强行注入这两个最高优先级的环境变量
   export PIP_BREAK_SYSTEM_PACKAGES=1
   export PIP_EXTERNALLY_MANAGED=0
@@ -34,13 +41,6 @@ build() {
 
 package() {
   cd "$srcdir/omnistore"
-
-  mkdir -p "${pkgdir}/fake_bin"
-  cat << 'EOF' > "${pkgdir}/fake_bin/pip"
- # !/bin/sh
- # 这个脚本是为了绕过 Arch Linux 的安全锁机制而存在的。它会被放在 PATH 前面，冒充 pip 来接管所有 pip 调用。
-/user/bin/pip "$@" --break-system-packages
-EOF
 
   chmod +x "${pkgdir}/fake_bin/pip" 
 
