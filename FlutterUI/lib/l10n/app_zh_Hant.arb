@@ -653,8 +653,17 @@
     "description": "Action to explain an update with AI"
   },
   "windowMinimize": "最小化",
+  "@windowMinimize": {
+    "description": "Tooltip for window minimize button"
+  },
   "windowMaximize": "最大化",
+  "@windowMaximize": {
+    "description": "Tooltip for window maximize button"
+  },
   "windowRestore": "還原",
+  "@windowRestore": {
+    "description": "Tooltip for window restore button"
+  },
   "windowClose": "關閉",
   "delete": "刪除",
   "welcomeTitle": "歡迎來到 OmniStore",

@@ -22,9 +22,9 @@ class SearchManager:
     Orchestrates search requests across multiple sources (Pacman, AUR, Flatpak, etc.).
     Handles result merging, smart scoring, and metadata enrichment.
     """
-    def __init__(self, config_manager: Any, session: aiohttp.ClientSession):
+    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None):
         self.cm = config_manager
-        self.habit_tracker = HabitTracker()
+        self.habit_tracker = habit_tracker or HabitTracker()
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
         # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session
@@ -145,22 +145,36 @@ class SearchManager:
                     f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
         # 1. 初始排序：按智能分和来源优先级排序 (Flatpak 优先)
+        # ⚡ Optimization: Pre-calculate sorting and merging metrics in a single pass
         query_lower = query.lower()
-        def _sort_key(x):
-            score = self.smart_scoring._calculate_smart_score(x, query_lower)
-            source_prio = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}.get(x.get('source'), 0)
-            return (score, source_prio)
+        query_norm = self._normalize_app_name(query)
 
-        combined.sort(key=_sort_key, reverse=True)
+        # Cache configuration and habit weights once before the loop
+        priority_map = self.cm.get("priority", {})
+        source_weights = {
+            s: self.habit_tracker.get_source_weight(s)
+            for s in ["Flatpak", "Native", "Pacman", "AUR", "Snap", "AppImage"]
+        }
+        query_re = re.compile(rf"\b{re.escape(query_lower)}")
+        source_prio_map = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}
+
+        for item in combined:
+            item['_smart_score'] = self.smart_scoring._calculate_smart_score(
+                item, query_lower, priority_map, source_weights, query_re
+            )
+            item['_source_prio'] = source_prio_map.get(item.get('source'), 0)
+            # Pre-calculate normalized name for merging to avoid redundant regex calls
+            item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
+
+        combined.sort(key=lambda x: (x['_smart_score'], x['_source_prio']), reverse=True)
 
         # 2. 合并同名包
         merged = self.merge_duplicates(combined)
 
         # 2.5 检查完全匹配，并将其置顶
-        query_norm = self._normalize_app_name(query)
         exact_match_idx = -1
         for idx, item in enumerate(merged):
-            # Using cached normalized name from merge_duplicates to avoid redundant processing
+            # Using pre-calculated normalized name
             if item.get('_norm_name') == query_norm:
                 exact_match_idx = idx
                 break
@@ -178,6 +192,12 @@ class SearchManager:
         # 4. 异步补全前几个结果的元数据（图标等）
         # 补全数量优化：从 30 减少到 15，平衡加载速度与视觉丰富度
         await self._enrich_metadata(top_results[:15])
+
+        # ⚡ Cleanup internal optimization keys before returning to frontend
+        for item in top_results:
+            item.pop('_smart_score', None)
+            item.pop('_source_prio', None)
+            item.pop('_norm_name', None)
 
         return top_results
 
@@ -232,7 +252,8 @@ class SearchManager:
 
         for item in items:
             raw_name = item.get('name', 'unknown')
-            norm_key = self._normalize_app_name(raw_name)
+            # ⚡ Use pre-calculated normalized name if available
+            norm_key = item.get('_norm_name') or self._normalize_app_name(raw_name)
 
             source = item.get('source', 'Unknown')
             is_installed = item.get('installed', False)

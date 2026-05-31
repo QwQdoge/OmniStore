@@ -1015,31 +1015,31 @@ abstract class AppLocalizations {
   /// **'Explain this update'**
   String get aiExplainUpdate;
 
-  /// No description provided for @windowMinimize.
+  /// Tooltip for window minimize button
   ///
   /// In en, this message translates to:
   /// **'Minimize'**
   String get windowMinimize;
 
-  /// No description provided for @windowMaximize.
+  /// Tooltip for window maximize button
   ///
   /// In en, this message translates to:
   /// **'Maximize'**
   String get windowMaximize;
 
-  /// No description provided for @windowRestore.
+  /// Tooltip for window restore button
   ///
   /// In en, this message translates to:
   /// **'Restore'**
   String get windowRestore;
 
-  /// No description provided for @windowClose.
+  /// Tooltip for window close button
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get windowClose;
 
-  /// No description provided for @delete.
+  /// Label for delete action
   ///
   /// In en, this message translates to:
   /// **'Delete'**

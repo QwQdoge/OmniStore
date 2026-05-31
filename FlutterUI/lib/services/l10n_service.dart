@@ -28,6 +28,9 @@ class L10nService {
     }
   }
 
+  static String s(String key, {List<String>? args}) {
+    return key;
+  }
 
   static void setLanguage(Language lang) {
     language.value = lang;

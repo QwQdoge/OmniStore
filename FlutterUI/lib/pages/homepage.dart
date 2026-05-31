@@ -442,6 +442,7 @@ class _HomePageState extends State<HomePage> {
                     BackendService.navigationIndex.value = 2; // Search tab
                     BackendService.pendingSearchQuery.value = '/${cat.id.toLowerCase()}';
                   },
+                  tooltip: '${AppLocalizations.of(context)!.search} ${cat.name}',
                   avatar: Icon(cat.icon, size: 18, color: colorScheme.primary),
                   label: Text(cat.name),
                   labelStyle: TextStyle(

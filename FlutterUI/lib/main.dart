@@ -11,6 +11,8 @@ import 'pages/welcome_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
+import 'services/task_manager.dart';
+import 'models/task_state.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 
 void main() async {
@@ -238,6 +240,23 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                       style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
                       overflow: TextOverflow.ellipsis,
                     ),
+                  child: StreamBuilder<TaskState?>(
+                    stream: TaskManager().taskStateStream,
+                    initialData: TaskManager().currentTask,
+                    builder: (context, snapshot) {
+                      final task = snapshot.data;
+                      final stageInfo = (task?.stage.isNotEmpty ?? false) ? "[${task!.stage}] " : "";
+                      final speedInfo = (task?.speed.isNotEmpty ?? false) ? " (${task!.speed})" : "";
+
+                      return ValueListenableBuilder<String>(
+                        valueListenable: BackendService.globalStatus,
+                        builder: (context, status, _) => Text(
+                          "正在处理: $stageInfo$status$speedInfo",
+                          style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 ValueListenableBuilder<double?>(

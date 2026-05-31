@@ -57,8 +57,10 @@ class YayDownloader:
 
                         if callback:
                             # --- Progress parsing ---
+                            # Pacman download progress: (1/1) package-name 1.2 MiB 4.5 MiB/s 00:00 [######################] 100%
                             progress_match = re.search(r"(\d+)%", msg)
-                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", msg)
+                            # Match speed like 4.5 MiB/s or 400 KiB/s
+                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", msg)
 
                             if progress_match:
                                 await callback(f"[PROGRESS] {progress_match.group(1)}")
@@ -66,13 +68,17 @@ class YayDownloader:
                             if speed_match:
                                 await callback(f"[SPEED] {speed_match.group(1)}")
 
-                            # --- Status recognition ---
-                            if "Installing" in msg or "正在安装" in msg:
-                                await callback("[INFO] Installing dependencies...")
-                            elif "Verifying" in msg or "正在校验" in msg:
-                                await callback("[INFO] Verifying package...")
-                            elif "Building" in msg or "正在构建" in msg:
-                                await callback("[INFO] Building package...")
+                            # --- Stage recognition ---
+                            if "downloading" in msg.lower() or "正在下载" in msg:
+                                await callback("[STAGE] Downloading")
+                            elif "installing" in msg.lower() or "正在安装" in msg:
+                                await callback("[STAGE] Installing")
+                            elif "verifying" in msg.lower() or "正在校验" in msg:
+                                await callback("[STAGE] Verifying")
+                            elif "building" in msg.lower() or "正在构建" in msg:
+                                await callback("[STAGE] Building")
+                            elif "checking" in msg.lower() or "正在检查" in msg:
+                                await callback("[STAGE] Checking")
 
                             # --- Raw log relay ---
                             await callback(f"[INFO] {msg}")

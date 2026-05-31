@@ -76,6 +76,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
+from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
@@ -95,6 +96,8 @@ class OmnistoreBackend:
         self.config = ConfigManager()
         self.cache = CacheManager()
         self.env = EnvManager()
+        # ⚡ Shared HabitTracker to avoid redundant disk I/O
+        self.habit_tracker = HabitTracker()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
         self.updater = UpdateManager(self.config)
@@ -110,8 +113,9 @@ class OmnistoreBackend:
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
     async def initialize(self, session: aiohttp.ClientSession):
-        self.manager = SearchManager(self.config, session)
-        self.recommender = RecommendationManager(session)
+        # ⚡ Pass shared habit_tracker to managers
+        self.manager = SearchManager(self.config, session, self.habit_tracker)
+        self.recommender = RecommendationManager(session, self.habit_tracker)
         if self.manager is None:
             raise RuntimeError(
                 "Failed to initialize SearchManager. Check configuration and environment.")
