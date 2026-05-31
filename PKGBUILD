@@ -11,6 +11,9 @@ depends=('krita' 'libdbusmenu-gtk3' 'libappindicator-gtk3')
 makedepends=('git' 'cargo' 'pyinstaller' 'python-pip')
 source=('omnistore::git+https://github.com/QwQdoge/OmniStore.git')
 md5sums=('SKIP')
+# Define a user-writable pkgdir to avoid permission issues
+pkgdir=${HOME}/pkg/omnistore
+
 
 pkgver() {
   cd "$srcdir/omnistore"
