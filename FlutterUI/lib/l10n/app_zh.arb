@@ -666,11 +666,161 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "关闭",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "delete": "删除",
-  "@delete": {
-    "description": "Label for delete action"
+  "welcomeTitle": "欢迎来到 OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "为您提供简单、优雅的 Arch Linux 应用管理体验",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "开始使用",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "跳过",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "环境检查",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "一切就绪！您的系统非常完美。",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "一键修复/配置",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "仍然继续",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "应用源配置",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "选择您想要启用的应用来源",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "启用 AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "启用 AUR 需要安装 yay 助手。",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "如果您遇到问题，请通过 GitHub 反馈给我们。",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "AI 助手",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "开启 AI 辅助搜索、应用解释与错误诊断。",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "选择您的 AI 模型来源 (本地或云端)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama 默认为 http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "如果是 Ollama 则留空，OpenAI 请填入 sk-xxx",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "如何获取 API 密钥？",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "知道了",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "进入商店",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "下一步",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "重置缓存与历史记录",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "清空搜索历史与本地推荐缓存",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "这将清空您的搜索历史和推荐缓存。是否继续？",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "正在重置...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "缓存与历史记录已成功清空",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "重置失败: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (本地)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "OpenAI 兼容",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
   }
 }
