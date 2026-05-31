@@ -5,6 +5,8 @@ import sys
 import argparse
 from pathlib import Path
 
+subprocess.run(["python3", "-m", "venv", "build_venv"])
+
 # ==================== 🛠️ 路径配置 ====================
 BASE_DIR = Path(__file__).resolve().parent
 

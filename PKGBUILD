@@ -1,6 +1,6 @@
 # Maintainer: OmniStore Team <contact@omnistore.dev>
 pkgname=omnistore-git
-pkgver=v0.1.0.beta.1.r4.gcf9eaa6
+pkgver=v0.1.0.beta
 pkgrel=1
 pkgdesc="OmniStore: A unified software repository search and management tool built with Flutter, Rust, and Python."
 arch=('x86_64')
@@ -19,6 +19,8 @@ pkgver() {
 
 build() {
   cd "$srcdir/omnistore"
+
+  export PIP_NO_CACHE_DIR=1
 
   echo "=== use auto_build.py to build everything ==="
   # 确保 python 依赖已安装 (PKGBUILD 环境通常需要)
