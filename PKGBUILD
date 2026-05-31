@@ -40,4 +40,23 @@ package() {
   install -d "${pkgdir}/usr/bin"
   echo -e '#!/bin/sh\ncd /opt/omnistore && ./frontend "$@"' > "${pkgdir}/usr/bin/omnistore"
   chmod +x "${pkgdir}/usr/bin/omnistore"
+
+  # 4. 安装图标
+  install -d "${pkgdir}/usr/share/pixmaps"
+  install -m644 omnistore.png "${pkgdir}/usr/share/pixmaps/omnistore.svg"
+
+  # 5. 安装桌面文件
+  install -d "${pkgdir}/usr/share/applications"
+  cat > "${pkgdir}/usr/share/applications/omnistore.desktop" <<EOF
+[Desktop Entry]
+Name=OmniStore
+Comment=A unified software repository search and management tool built with Flutter, Rust, and Python.
+Exec=/opt/omnistore/frontend
+Icon=/opt/omnistore/omnistore.png
+Terminal=false
+Type=Application
+Categories=Utility;
+EOF
+
+  chmod +x "${pkgdir}/usr/share/applications/omnistore.desktop"
 }
