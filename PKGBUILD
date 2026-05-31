@@ -29,6 +29,28 @@ build() {
 # 这个脚本是为了绕过 Arch Linux 的安全锁机制而存在的。它会被放在 PATH 前面，冒充 pip 来接管所有 pip 调用。
 /user/bin/pip "$@" --break-system-packages
 EOF
+    chmod +x "${pkgdir}/fake_bin/pip"
+    export PATH="${pkgdir}/fake_bin:$PATH"
+
+    python auto_build.py --check-deps || {
+      echo "缺少依赖！请先安装：git cargo pyinstaller python-pip"
+      exit 1
+    }
+
+    python auto_build.py --check-safety-lock || {
+      echo "安全锁机制检测到！正在尝试绕过..."
+    }
+
+    python auto_build.py --rust
+    python auto_build.py --flutter
+
+    cd python
+    python -m venv build_venv
+    ./build_venv/bin/pip install -r requirements.txt pyinstaller --break-system-packages
+    ./build_venv/bin/pyinstaller --onefile --name python_server --clean main.py
+
+    cd "${srcdir}/omnistore"
+
 
   # 1. 🛠️ 核心：强行注入这两个最高优先级的环境变量
   export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -38,6 +60,8 @@ EOF
   # 很多偷跑的底层脚本不读环境变量，但这个文件没了它们就绝对无法拦截
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null || true
 
+  
+  cd "${srcdir}/omnistore"  
   # 3. 顺便检查你这里有没有给你的脚本传参！如果是想编译全部，记得加上 --all
   python auto_build.py --all
 }
