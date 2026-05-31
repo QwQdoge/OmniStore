@@ -5,6 +5,45 @@ import sys
 import argparse
 from pathlib import Path
 
+<<<<<<< HEAD
+=======
+subprocess.run(["python3", "-m", "venv", "build_venv" "--clear" "--break-system-packages"], check=True)
+
+# 1. 定义好虚拟环境内部的正确路径（都在 bin 目录下）
+venv_dir = "build_venv"
+venv_pip = os.path.join(venv_dir, "bin", "pip")
+venv_pyinstaller = os.path.join(venv_dir, "bin", "pyinstaller") # 👈 确保拼写正确且在 bin 目录下
+
+# 2. 创建虚拟环境
+print("📦 正在创建 Python 虚拟环境...")
+subprocess.run([sys.executable, "-m", "venv", venv_dir], check=True)
+
+# 3. 升级并安装你的依赖
+print("⚡ 正在升级 pip 并安装依赖...")
+subprocess.run([venv_pip, "install", "--upgrade", "pip"], check=True)
+subprocess.run([venv_pip, "install", "-r", "requirements.txt"], check=True)
+
+# 4. 必须在虚拟环境里也装一下 pyinstaller 才能调用它
+print("📦 正在虚拟环境中安装 PyInstaller...")
+subprocess.run([venv_pip, "install", "pyinstaller"], check=True)
+
+# 5. 打印版本并正式打包
+print("🔍 PyInstaller 版本信息:")
+subprocess.run([venv_pyinstaller, "--version"], check=True)
+
+print("🚀 开始打包 Python 服务后端...")
+subprocess.run([
+    venv_pyinstaller, 
+    "--onefile", 
+    "--name", "python_server", 
+    "--clean", 
+    "main.py"
+], check=True)
+
+print("🎉 Python 后端打包完成！")
+
+
+>>>>>>> 8da03ac899a6deefee596229b2c922262fda6f90
 # ==================== 🛠️ 路径配置 ====================
 
 BASE_DIR = Path(__file__).resolve().parent
