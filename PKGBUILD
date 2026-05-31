@@ -1,13 +1,14 @@
 # Maintainer: OmniStore Team <contact@omnistore.dev>
 pkgname=omnistore-git
-pkgver=0.1.0.r0.g$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+pkgver=v0.1.0.beta.1.r4.gcf9eaa6
 pkgrel=1
 pkgdesc="OmniStore: A unified software repository search and management tool built with Flutter, Rust, and Python."
 arch=('x86_64')
+options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('MIT')
 depends=('krita' 'libdbusmenu-gtk3' 'libappindicator-gtk3')
-makedepends=('git' 'flutter' 'cargo' 'python-pyinstaller' 'python-pip')
+makedepends=('git' 'cargo' 'pyinstaller' 'python-pip')
 source=('omnistore::git+https://github.com/QwQdoge/OmniStore.git')
 md5sums=('SKIP')
 
@@ -43,7 +44,7 @@ package() {
 
   # 4. 安装图标
   install -d "${pkgdir}/usr/share/pixmaps"
-  install -m644 omnistore.png "${pkgdir}/usr/share/pixmaps/omnistore.svg"
+  install -m644 omnistore.svg "${pkgdir}/usr/share/pixmaps/omnistore.svg"
 
   # 5. 安装桌面文件
   install -d "${pkgdir}/usr/share/applications"
@@ -52,7 +53,7 @@ package() {
 Name=OmniStore
 Comment=A unified software repository search and management tool built with Flutter, Rust, and Python.
 Exec=/opt/omnistore/frontend
-Icon=/opt/omnistore/omnistore.png
+Icon=/opt/omnistore/omnistore.svg
 Terminal=false
 Type=Application
 Categories=Utility;
