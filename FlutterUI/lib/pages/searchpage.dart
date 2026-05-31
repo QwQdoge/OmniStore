@@ -12,7 +12,6 @@ import '../widgets/magic_pulse_icon.dart';
 import '../widgets/ai_app_resolver.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
-import '../services/l10n_service.dart';
 
 enum ViewMode { list, grid }
 
@@ -275,7 +274,7 @@ class _SearchPageState extends State<SearchPage> {
               if (_hasInput)
                 IconButton(
                   icon: const Icon(Icons.close_rounded, size: 20),
-                  tooltip: L10nService.s('clear_search'),
+                  tooltip: AppLocalizations.of(context)!.clearSearch,
                   onPressed: () {
                     _controller.clear();
                     _focusNode.requestFocus();
@@ -363,10 +362,10 @@ class _SearchPageState extends State<SearchPage> {
                                     context: context,
                                     builder: (ctx) => AlertDialog(
                                       title: Text(
-                                        L10nService.s('clear_history'),
+                                        AppLocalizations.of(context)!.clearHistory,
                                       ),
                                       content: Text(
-                                        L10nService.s('confirm_clear_history'),
+                                        AppLocalizations.of(context)!.confirmClearHistory,
                                       ),
                                       actions: [
                                         TextButton(
@@ -396,7 +395,7 @@ class _SearchPageState extends State<SearchPage> {
                                   Icons.delete_sweep_rounded,
                                   size: 14,
                                 ),
-                                label: Text(L10nService.s('clear_history')),
+                                label: Text(AppLocalizations.of(context)!.clearHistory),
                                 style: TextButton.styleFrom(
                                   foregroundColor: colorScheme.error,
                                   visualDensity: VisualDensity.compact,
@@ -468,7 +467,7 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              L10nService.s('categories'),
+                              AppLocalizations.of(context)!.categories,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
@@ -621,12 +620,14 @@ class _SearchPageState extends State<SearchPage> {
                   ButtonSegment(
                     value: ViewMode.list,
                     icon: const Icon(Icons.view_list_rounded, size: 16),
-                        label: Text(L10nService.s('list_view'), style: const TextStyle(fontSize: 12)),
+                    label: Text(AppLocalizations.of(context)!.listView,
+                        style: const TextStyle(fontSize: 12)),
                   ),
                   ButtonSegment(
                     value: ViewMode.grid,
                     icon: const Icon(Icons.grid_view_rounded, size: 16),
-                        label: Text(L10nService.s('grid_view'), style: const TextStyle(fontSize: 12)),
+                    label: Text(AppLocalizations.of(context)!.gridView,
+                        style: const TextStyle(fontSize: 12)),
                   ),
                 ],
                 selected: {_viewMode},

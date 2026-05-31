@@ -619,4 +619,132 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => 'パッケージをインポート';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return 'ファイルから $count 個のパッケージを読み込みました。一括ダウンロードを開始しますか？';
+  }
+
+  @override
+  String get allDownloads => 'すべてダウンロード';
+
+  @override
+  String get importList => 'リストをインポート';
+
+  @override
+  String get loadError => '推奨コンテンツの読み込みに失敗しました。バックエンドの状態を確認してください';
+
+  @override
+  String get community => 'コミュニティ';
+
+  @override
+  String get official => '公式';
+
+  @override
+  String get verified => '検証済み';
+
+  @override
+  String installingPkg(String name) {
+    return '$name をインストール中...';
+  }
+
+  @override
+  String get switchSource => '切り替え';
+
+  @override
+  String get flatpakBetterDesc =>
+      'このアプリの Flatpak ソースが見つかりました。通常、こちらの方が安定しています。';
+
+  @override
+  String get aiAnalysisPrompt => 'エラーログが見つかりました。AI で分析しますか？';
+
+  @override
+  String get analyzeNow => '今すぐ分析';
+
+  @override
+  String get cleanOrphans => '未使用の依存関係を削除する (孤立したパッケージ)';
+
+  @override
+  String get securityWarning => 'セキュリティ警告';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
+
+  @override
+  String get continueInstall => 'インストールを続行';
+
+  @override
+  String get installInfo => 'インストール情報';
+
+  @override
+  String get downloadSize => 'ダウンロードサイズ';
+
+  @override
+  String get installedSize => 'インストール後のサイズ';
+
+  @override
+  String dependenciesCount(int count) {
+    return '依存関係 ($count)';
+  }
+
+  @override
+  String get runningInBackground =>
+      'OmniStore はバックグラウンドで実行中です。トレイアイコンから開くことができます。';
+
+  @override
+  String get clearSearch => '検索をクリア';
+
+  @override
+  String get listView => 'リスト表示';
+
+  @override
+  String get gridView => 'グリッド表示';
+
+  @override
+  String get categories => 'カテゴリー';
+
+  @override
+  String get clearHistory => '履歴をクリア';
+
+  @override
+  String get confirmClearHistory => 'すべての履歴を消去してもよろしいですか？';
+
+  @override
+  String get viewMore => 'もっと見る';
+
+  @override
+  String get logDebug => 'デバッグ (DEBUG)';
+
+  @override
+  String get logInfo => '情報 (INFO)';
+
+  @override
+  String get logWarning => '警告 (WARNING)';
+
+  @override
+  String get logError => 'エラー (ERROR)';
+
+  @override
+  String get notificationTitle => 'アップデートが利用可能です';
+
+  @override
+  String notificationBody(int count) {
+    return '$count 件のアプリが更新可能です';
+  }
+
+  @override
+  String get preparingUpdate => '更新を準備中...';
+
+  @override
+  String get processing => '処理中';
+
+  @override
+  String get clear => 'クリア';
+
+  @override
+  String get retry => '再試行';
 }

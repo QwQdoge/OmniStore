@@ -629,4 +629,135 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => 'Import Packages';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return 'Read $count packages from file. Start batch download?';
+  }
+
+  @override
+  String get allDownloads => 'Download All';
+
+  @override
+  String get importList => 'Import List';
+
+  @override
+  String get loadError =>
+      'Failed to load recommendations, please check backend status';
+
+  @override
+  String get community => 'Community';
+
+  @override
+  String get official => 'Official';
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String installingPkg(String name) {
+    return 'Installing $name...';
+  }
+
+  @override
+  String get switchSource => 'Switch';
+
+  @override
+  String get flatpakBetterDesc =>
+      'Found a Flatpak source for this app, which is usually more stable.';
+
+  @override
+  String get aiAnalysisPrompt =>
+      'Found error logs, do you need an AI analysis?';
+
+  @override
+  String get analyzeNow => 'Analyze Now';
+
+  @override
+  String get cleanOrphans => 'Clean unused dependencies (orphans)';
+
+  @override
+  String get securityWarning => 'Security Warning';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.';
+
+  @override
+  String get continueInstall => 'Continue Install';
+
+  @override
+  String get installInfo => 'Installation Info';
+
+  @override
+  String get downloadSize => 'Download Size';
+
+  @override
+  String get installedSize => 'Installed Size';
+
+  @override
+  String dependenciesCount(int count) {
+    return 'Dependencies ($count)';
+  }
+
+  @override
+  String get runningInBackground =>
+      'OmniStore is running in the background, you can open it via the tray icon.';
+
+  @override
+  String get clearSearch => 'Clear Search';
+
+  @override
+  String get listView => 'List View';
+
+  @override
+  String get gridView => 'Grid View';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get clearHistory => 'Clear History';
+
+  @override
+  String get confirmClearHistory =>
+      'Are you sure you want to clear all history?';
+
+  @override
+  String get viewMore => 'View More';
+
+  @override
+  String get logDebug => 'DEBUG';
+
+  @override
+  String get logInfo => 'INFO';
+
+  @override
+  String get logWarning => 'WARNING';
+
+  @override
+  String get logError => 'ERROR';
+
+  @override
+  String get notificationTitle => 'Updates Available';
+
+  @override
+  String notificationBody(int count) {
+    return '$count applications are available for update';
+  }
+
+  @override
+  String get preparingUpdate => 'Preparing update...';
+
+  @override
+  String get processing => 'Processing';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get retry => 'Retry';
 }

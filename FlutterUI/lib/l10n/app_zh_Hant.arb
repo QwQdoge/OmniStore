@@ -821,5 +821,177 @@
   "googleGemini": "Google Gemini",
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "importPackages": "匯入套件",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "已從檔案中讀取 {count} 個套件。是否開始批次下載？",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "全部下載",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "匯入列表",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "無法載入推薦內容，請檢查背景狀態",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "社群",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "官方",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "經校驗",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "正在安裝 {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "切換",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 來源，通常更穩定。",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "立即分析",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "同時清理無用依賴 (孤立套件)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "安全風險提示",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的倉庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "繼續安裝",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "安裝資訊",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "下載體積",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "解壓後占用",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "依賴套件 ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore 正在背景執行，可透過托盤圖示開啟",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "清除搜尋",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "列表檢視",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "網格檢視",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "分類",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "清除歷史記錄",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "確定要刪除所有搜尋歷史嗎？",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "查看更多",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "除錯 (DEBUG)",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "資訊 (INFO)",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "警告 (WARNING)",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "錯誤 (ERROR)",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "發現可用更新",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "您的系統中有 {count} 個應用程式可以更新",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "正在準備更新...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "正在處理",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "清除",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "重試",
+  "@retry": {
+    "description": "Description for retry"
   }
 }

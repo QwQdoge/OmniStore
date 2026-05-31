@@ -616,6 +616,132 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => '导入软件包';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return '已从文件中读取 $count 个软件包。是否开始批量下载？';
+  }
+
+  @override
+  String get allDownloads => '全部下载';
+
+  @override
+  String get importList => '导入列表';
+
+  @override
+  String get loadError => '无法加载推荐内容，请检查后端状态';
+
+  @override
+  String get community => '社区';
+
+  @override
+  String get official => '官方';
+
+  @override
+  String get verified => '经校验';
+
+  @override
+  String installingPkg(String name) {
+    return '正在安装 $name...';
+  }
+
+  @override
+  String get switchSource => '切换';
+
+  @override
+  String get flatpakBetterDesc => '发现此应用有 Flatpak 源，通常更稳定。';
+
+  @override
+  String get aiAnalysisPrompt => '发现错误日志，需要 AI 分析吗？';
+
+  @override
+  String get analyzeNow => '立即分析';
+
+  @override
+  String get cleanOrphans => '同时清理无用依赖 (孤立包)';
+
+  @override
+  String get securityWarning => '安全风险提示';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。';
+
+  @override
+  String get continueInstall => '继续安装';
+
+  @override
+  String get installInfo => '安装信息';
+
+  @override
+  String get downloadSize => '下载体积';
+
+  @override
+  String get installedSize => '解压后占用';
+
+  @override
+  String dependenciesCount(int count) {
+    return '依赖包 ($count)';
+  }
+
+  @override
+  String get runningInBackground => 'OmniStore 正在后台运行，可通过托盘图标打开';
+
+  @override
+  String get clearSearch => '清除搜索';
+
+  @override
+  String get listView => '列表视图';
+
+  @override
+  String get gridView => '网格视图';
+
+  @override
+  String get categories => '分类';
+
+  @override
+  String get clearHistory => '清空历史记录';
+
+  @override
+  String get confirmClearHistory => '确定要删除所有搜索历史吗？';
+
+  @override
+  String get viewMore => '查看更多';
+
+  @override
+  String get logDebug => '调试 (DEBUG)';
+
+  @override
+  String get logInfo => '信息 (INFO)';
+
+  @override
+  String get logWarning => '警告 (WARNING)';
+
+  @override
+  String get logError => '错误 (ERROR)';
+
+  @override
+  String get notificationTitle => '发现可用更新';
+
+  @override
+  String notificationBody(int count) {
+    return '您的系统中有 $count 个应用可以更新';
+  }
+
+  @override
+  String get preparingUpdate => '正在准备更新...';
+
+  @override
+  String get processing => '正在处理';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get retry => '重试';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1230,4 +1356,130 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => '匯入套件';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return '已從檔案中讀取 $count 個套件。是否開始批次下載？';
+  }
+
+  @override
+  String get allDownloads => '全部下載';
+
+  @override
+  String get importList => '匯入列表';
+
+  @override
+  String get loadError => '無法載入推薦內容，請檢查背景狀態';
+
+  @override
+  String get community => '社群';
+
+  @override
+  String get official => '官方';
+
+  @override
+  String get verified => '經校驗';
+
+  @override
+  String installingPkg(String name) {
+    return '正在安裝 $name...';
+  }
+
+  @override
+  String get switchSource => '切換';
+
+  @override
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 來源，通常更穩定。';
+
+  @override
+  String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
+
+  @override
+  String get analyzeNow => '立即分析';
+
+  @override
+  String get cleanOrphans => '同時清理無用依賴 (孤立套件)';
+
+  @override
+  String get securityWarning => '安全風險提示';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) 是由社群維護的倉庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。';
+
+  @override
+  String get continueInstall => '繼續安裝';
+
+  @override
+  String get installInfo => '安裝資訊';
+
+  @override
+  String get downloadSize => '下載體積';
+
+  @override
+  String get installedSize => '解壓後占用';
+
+  @override
+  String dependenciesCount(int count) {
+    return '依賴套件 ($count)';
+  }
+
+  @override
+  String get runningInBackground => 'OmniStore 正在背景執行，可透過托盤圖示開啟';
+
+  @override
+  String get clearSearch => '清除搜尋';
+
+  @override
+  String get listView => '列表檢視';
+
+  @override
+  String get gridView => '網格檢視';
+
+  @override
+  String get categories => '分類';
+
+  @override
+  String get clearHistory => '清除歷史記錄';
+
+  @override
+  String get confirmClearHistory => '確定要刪除所有搜尋歷史嗎？';
+
+  @override
+  String get viewMore => '查看更多';
+
+  @override
+  String get logDebug => '除錯 (DEBUG)';
+
+  @override
+  String get logInfo => '資訊 (INFO)';
+
+  @override
+  String get logWarning => '警告 (WARNING)';
+
+  @override
+  String get logError => '錯誤 (ERROR)';
+
+  @override
+  String get notificationTitle => '發現可用更新';
+
+  @override
+  String notificationBody(int count) {
+    return '您的系統中有 $count 個應用程式可以更新';
+  }
+
+  @override
+  String get preparingUpdate => '正在準備更新...';
+
+  @override
+  String get processing => '正在處理';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get retry => '重試';
 }

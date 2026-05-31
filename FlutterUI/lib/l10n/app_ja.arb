@@ -814,5 +814,177 @@
   "googleGemini": "Google Gemini",
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "importPackages": "パッケージをインポート",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "ファイルから {count} 個のパッケージを読み込みました。一括ダウンロードを開始しますか？",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "すべてダウンロード",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "リストをインポート",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "推奨コンテンツの読み込みに失敗しました。バックエンドの状態を確認してください",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "コミュニティ",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "公式",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "検証済み",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "{name} をインストール中...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "切り替え",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "このアプリの Flatpak ソースが見つかりました。通常、こちらの方が安定しています。",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "エラーログが見つかりました。AI で分析しますか？",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "今すぐ分析",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "未使用の依存関係を削除する (孤立したパッケージ)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "セキュリティ警告",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "インストールを続行",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "インストール情報",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "ダウンロードサイズ",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "インストール後のサイズ",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "依存関係 ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore はバックグラウンドで実行中です。トレイアイコンから開くことができます。",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "検索をクリア",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "リスト表示",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "グリッド表示",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "カテゴリー",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "履歴をクリア",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "すべての履歴を消去してもよろしいですか？",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "もっと見る",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "デバッグ (DEBUG)",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "情報 (INFO)",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "警告 (WARNING)",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "エラー (ERROR)",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "アップデートが利用可能です",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "{count} 件のアプリが更新可能です",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "更新を準備中...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "処理中",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "クリア",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "再試行",
+  "@retry": {
+    "description": "Description for retry"
   }
 }

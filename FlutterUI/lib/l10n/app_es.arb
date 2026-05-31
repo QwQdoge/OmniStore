@@ -816,5 +816,177 @@
   "googleGemini": "Google Gemini",
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "importPackages": "Importar paquetes",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "Descargar todo",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "Importar lista",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "Error al cargar recomendaciones, por favor compruebe el estado del backend",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "Comunidad",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "Oficial",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "Verificado",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "Instalando {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "Cambiar",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "Se encontraron registros de errores, ¿necesita un análisis de IA?",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "Analizar ahora",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "Advertencia de seguridad",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "Continuar instalación",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "Información de instalación",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "Tamaño de descarga",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "Tamaño instalado",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "Dependencias ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "Limpiar búsqueda",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "Vista de lista",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "Vista de cuadrícula",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "Categorías",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "Limpiar historial",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "¿Está seguro de que desea borrar todo el historial?",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "Ver más",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "DEPURACIÓN (DEBUG)",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "INFORMACIÓN (INFO)",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "ADVERTENCIA (WARNING)",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "ERROR (ERROR)",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "Actualizaciones disponibles",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "Hay {count} aplicaciones disponibles para actualizar",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "Preparando actualización...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "Procesando",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "Limpiar",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "Reintentar",
+  "@retry": {
+    "description": "Description for retry"
   }
 }

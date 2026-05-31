@@ -528,11 +528,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       value: logLevel,
                       underline: const SizedBox(),
                       onChanged: (v) => setState(() => logLevel = v!),
-                      items: const [
-                        DropdownMenuItem(value: 'DEBUG', child: Text('DEBUG')),
-                        DropdownMenuItem(value: 'INFO', child: Text('INFO')),
-                        DropdownMenuItem(value: 'WARNING', child: Text('WARNING')),
-                        DropdownMenuItem(value: 'ERROR', child: Text('ERROR')),
+                      items: [
+                        DropdownMenuItem(value: 'DEBUG', child: Text(l10n.logDebug)),
+                        DropdownMenuItem(value: 'INFO', child: Text(l10n.logInfo)),
+                        DropdownMenuItem(value: 'WARNING', child: Text(l10n.logWarning)),
+                        DropdownMenuItem(value: 'ERROR', child: Text(l10n.logError)),
                       ],
                     ),
                   ),
@@ -981,7 +981,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     BackendService.instance.saveConfig(config).then((success) {
       if (success) {
-        UpdateService().updateConfig();
+        UpdateService().updateConfig(l10n);
         // Force refresh global AI state
         BackendService.isAIEnabled.value = aiEnabled;
       }

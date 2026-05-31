@@ -154,15 +154,17 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                     children: [
                       _buildWindowButton(
                         icon: Icons.minimize_rounded,
-                        tooltip: AppLocalizations.of(context)?.windowMinimize ?? "Minimize",
+                        tooltip: AppLocalizations.of(context)!.windowMinimize,
                         onPressed: () => windowManager.minimize(),
                         colorScheme: colorScheme,
                       ),
                       _buildWindowButton(
-                        icon: _isMaximized ? Icons.filter_none_rounded : Icons.crop_square_rounded,
+                        icon: _isMaximized
+                            ? Icons.filter_none_rounded
+                            : Icons.crop_square_rounded,
                         tooltip: _isMaximized
-                            ? (AppLocalizations.of(context)?.windowRestore ?? "Restore")
-                            : (AppLocalizations.of(context)?.windowMaximize ?? "Maximize"),
+                            ? (AppLocalizations.of(context)!.windowRestore)
+                            : (AppLocalizations.of(context)!.windowMaximize),
                         onPressed: () async {
                           if (_isMaximized) {
                             await windowManager.unmaximize();
@@ -174,7 +176,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                       ),
                       _buildWindowButton(
                         icon: Icons.close_rounded,
-                        tooltip: AppLocalizations.of(context)?.windowClose ?? "Close",
+                        tooltip: AppLocalizations.of(context)!.windowClose,
                         onPressed: () => windowManager.close(),
                         isClose: true,
                         colorScheme: colorScheme,

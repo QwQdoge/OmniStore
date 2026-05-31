@@ -818,5 +818,177 @@
   "googleGemini": "Google Gemini",
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "importPackages": "Import Packages",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "Read {count} packages from file. Start batch download?",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "Download All",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "Import List",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "Failed to load recommendations, please check backend status",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "Community",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "Official",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "Verified",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "Installing {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "Switch",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "Found a Flatpak source for this app, which is usually more stable.",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "Found error logs, do you need an AI analysis?",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "Analyze Now",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "Clean unused dependencies (orphans)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "Security Warning",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "Continue Install",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "Installation Info",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "Download Size",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "Installed Size",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "Dependencies ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore is running in the background, you can open it via the tray icon.",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "Clear Search",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "List View",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "Grid View",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "Categories",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "Clear History",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "Are you sure you want to clear all history?",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "View More",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "DEBUG",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "INFO",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "WARNING",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "ERROR",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "Updates Available",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "{count} applications are available for update",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "Preparing update...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "Processing",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Description for retry"
   }
 }

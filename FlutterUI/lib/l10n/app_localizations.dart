@@ -1272,6 +1272,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google Gemini'**
   String get googleGemini;
+
+  /// Description for importPackages
+  ///
+  /// In en, this message translates to:
+  /// **'Import Packages'**
+  String get importPackages;
+
+  /// No description provided for @importPackagesConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Read {count} packages from file. Start batch download?'**
+  String importPackagesConfirm(int count);
+
+  /// Description for allDownloads
+  ///
+  /// In en, this message translates to:
+  /// **'Download All'**
+  String get allDownloads;
+
+  /// Description for importList
+  ///
+  /// In en, this message translates to:
+  /// **'Import List'**
+  String get importList;
+
+  /// Description for loadError
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load recommendations, please check backend status'**
+  String get loadError;
+
+  /// Description for community
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// Description for official
+  ///
+  /// In en, this message translates to:
+  /// **'Official'**
+  String get official;
+
+  /// Description for verified
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @installingPkg.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name}...'**
+  String installingPkg(String name);
+
+  /// Description for switchSource
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switchSource;
+
+  /// Description for flatpakBetterDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Found a Flatpak source for this app, which is usually more stable.'**
+  String get flatpakBetterDesc;
+
+  /// Description for aiAnalysisPrompt
+  ///
+  /// In en, this message translates to:
+  /// **'Found error logs, do you need an AI analysis?'**
+  String get aiAnalysisPrompt;
+
+  /// Description for analyzeNow
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Now'**
+  String get analyzeNow;
+
+  /// Description for cleanOrphans
+  ///
+  /// In en, this message translates to:
+  /// **'Clean unused dependencies (orphans)'**
+  String get cleanOrphans;
+
+  /// Description for securityWarning
+  ///
+  /// In en, this message translates to:
+  /// **'Security Warning'**
+  String get securityWarning;
+
+  /// Description for aurSecurityDesc
+  ///
+  /// In en, this message translates to:
+  /// **'AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.'**
+  String get aurSecurityDesc;
+
+  /// Description for continueInstall
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Install'**
+  String get continueInstall;
+
+  /// Description for installInfo
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Info'**
+  String get installInfo;
+
+  /// Description for downloadSize
+  ///
+  /// In en, this message translates to:
+  /// **'Download Size'**
+  String get downloadSize;
+
+  /// Description for installedSize
+  ///
+  /// In en, this message translates to:
+  /// **'Installed Size'**
+  String get installedSize;
+
+  /// No description provided for @dependenciesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Dependencies ({count})'**
+  String dependenciesCount(int count);
+
+  /// Description for runningInBackground
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore is running in the background, you can open it via the tray icon.'**
+  String get runningInBackground;
+
+  /// Description for clearSearch
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Search'**
+  String get clearSearch;
+
+  /// Description for listView
+  ///
+  /// In en, this message translates to:
+  /// **'List View'**
+  String get listView;
+
+  /// Description for gridView
+  ///
+  /// In en, this message translates to:
+  /// **'Grid View'**
+  String get gridView;
+
+  /// Description for categories
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// Description for clearHistory
+  ///
+  /// In en, this message translates to:
+  /// **'Clear History'**
+  String get clearHistory;
+
+  /// Description for confirmClearHistory
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all history?'**
+  String get confirmClearHistory;
+
+  /// Description for viewMore
+  ///
+  /// In en, this message translates to:
+  /// **'View More'**
+  String get viewMore;
+
+  /// Description for logDebug
+  ///
+  /// In en, this message translates to:
+  /// **'DEBUG'**
+  String get logDebug;
+
+  /// Description for logInfo
+  ///
+  /// In en, this message translates to:
+  /// **'INFO'**
+  String get logInfo;
+
+  /// Description for logWarning
+  ///
+  /// In en, this message translates to:
+  /// **'WARNING'**
+  String get logWarning;
+
+  /// Description for logError
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR'**
+  String get logError;
+
+  /// Description for notificationTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Updates Available'**
+  String get notificationTitle;
+
+  /// No description provided for @notificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} applications are available for update'**
+  String notificationBody(int count);
+
+  /// Description for preparingUpdate
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing update...'**
+  String get preparingUpdate;
+
+  /// Description for processing
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get processing;
+
+  /// Description for clear
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// Description for retry
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

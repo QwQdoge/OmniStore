@@ -630,4 +630,135 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get googleGemini => 'Google Gemini';
+
+  @override
+  String get importPackages => 'Importar paquetes';
+
+  @override
+  String importPackagesConfirm(int count) {
+    return 'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?';
+  }
+
+  @override
+  String get allDownloads => 'Descargar todo';
+
+  @override
+  String get importList => 'Importar lista';
+
+  @override
+  String get loadError =>
+      'Error al cargar recomendaciones, por favor compruebe el estado del backend';
+
+  @override
+  String get community => 'Comunidad';
+
+  @override
+  String get official => 'Oficial';
+
+  @override
+  String get verified => 'Verificado';
+
+  @override
+  String installingPkg(String name) {
+    return 'Instalando $name...';
+  }
+
+  @override
+  String get switchSource => 'Cambiar';
+
+  @override
+  String get flatpakBetterDesc =>
+      'Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.';
+
+  @override
+  String get aiAnalysisPrompt =>
+      'Se encontraron registros de errores, ¿necesita un análisis de IA?';
+
+  @override
+  String get analyzeNow => 'Analizar ahora';
+
+  @override
+  String get cleanOrphans => 'Limpiar dependencias no utilizadas (huérfanos)';
+
+  @override
+  String get securityWarning => 'Advertencia de seguridad';
+
+  @override
+  String get aurSecurityDesc =>
+      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
+
+  @override
+  String get continueInstall => 'Continuar instalación';
+
+  @override
+  String get installInfo => 'Información de instalación';
+
+  @override
+  String get downloadSize => 'Tamaño de descarga';
+
+  @override
+  String get installedSize => 'Tamaño instalado';
+
+  @override
+  String dependenciesCount(int count) {
+    return 'Dependencias ($count)';
+  }
+
+  @override
+  String get runningInBackground =>
+      'OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.';
+
+  @override
+  String get clearSearch => 'Limpiar búsqueda';
+
+  @override
+  String get listView => 'Vista de lista';
+
+  @override
+  String get gridView => 'Vista de cuadrícula';
+
+  @override
+  String get categories => 'Categorías';
+
+  @override
+  String get clearHistory => 'Limpiar historial';
+
+  @override
+  String get confirmClearHistory =>
+      '¿Está seguro de que desea borrar todo el historial?';
+
+  @override
+  String get viewMore => 'Ver más';
+
+  @override
+  String get logDebug => 'DEPURACIÓN (DEBUG)';
+
+  @override
+  String get logInfo => 'INFORMACIÓN (INFO)';
+
+  @override
+  String get logWarning => 'ADVERTENCIA (WARNING)';
+
+  @override
+  String get logError => 'ERROR (ERROR)';
+
+  @override
+  String get notificationTitle => 'Actualizaciones disponibles';
+
+  @override
+  String notificationBody(int count) {
+    return 'Hay $count aplicaciones disponibles para actualizar';
+  }
+
+  @override
+  String get preparingUpdate => 'Preparando actualización...';
+
+  @override
+  String get processing => 'Procesando';
+
+  @override
+  String get clear => 'Limpiar';
+
+  @override
+  String get retry => 'Reintentar';
 }
