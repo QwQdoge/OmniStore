@@ -628,10 +628,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEssentialCard(dynamic item) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final name = item['name'] as String;
-    final source = item['source'] as String? ?? 'Native';
 
     return Container(
       decoration: BoxDecoration(
@@ -651,7 +649,24 @@ class _HomePageState extends State<HomePage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _executeInstall(name, source),
+          onTap: () async {
+            // Navigate to details by searching for the app first
+            final results = await BackendService.instance.searchPackages(name);
+            if (results.isNotEmpty && mounted) {
+              final app = AppPackage.fromJson(results[0]);
+              if (mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+                );
+              }
+            } else if (mounted) {
+               // Fallback: if search fails, just show a message or try to open details with minimal info
+               ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(content: Text(AppLocalizations.of(context)!.noResults)),
+               );
+            }
+          },
           borderRadius: BorderRadius.circular(20.0),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

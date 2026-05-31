@@ -167,8 +167,10 @@ class AIAssistant:
             f"You are the OmniStore Software Curator. Provide response in {lang}.\n"
             "Analyze the user's request and select the 3 best apps from our database. "
             "Priority: Flatpak > Native > AUR.\n"
-            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
-            "APPS_JSON: [\"app_name1\", \"app_name2\", \"app_name3\"]\n"
+            "MANDATORY: You MUST include exactly one JSON array of app names at the very end of your response, prefixed with ###JSON_START###.\n"
+            "Format example:\n"
+            "###JSON_START###\n"
+            "[\"app_name1\", \"app_name2\", \"app_name3\"]\n"
             "Explain specifically why each app is a good match for the user's needs. "
             "If matches are weak, suggest the best possible alternatives."
         )
@@ -212,8 +214,10 @@ class AIAssistant:
         system_prompt = (
             f"You are OmniStore AI assistant. Provide response in {lang}.\n"
             "The user searched for something but got no results. Suggest 3-5 alternative keywords or correctly spelled app names.\n"
-            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
-            "SUGGESTIONS_JSON: [\"term1\", \"term2\", \"term3\"]\n"
+            "MANDATORY: You MUST include exactly one JSON array of terms at the very end of your response, prefixed with ###JSON_START###.\n"
+            "Format example:\n"
+            "###JSON_START###\n"
+            "[\"term1\", \"term2\", \"term3\"]\n"
             "Be helpful and concise."
         )
         user_prompt = f"User Query: {query}"
@@ -240,8 +244,10 @@ class AIAssistant:
             "Craft a vibrant, 'Pick of the Day' announcement. Start with the app name in bold. "
             "Describe its unique value and why it's a must-have for Arch Linux users today. "
             "Keep it under 50 words and use a warm, encouraging tone.\n"
-            "MANDATORY: You must return a JSON block at the end of your response in the following format: \n"
-            "PICK_JSON: [\"app_name\"]\n"
+            "MANDATORY: You MUST include exactly one JSON array containing the app name at the very end of your response, prefixed with ###JSON_START###.\n"
+            "Format example:\n"
+            "###JSON_START###\n"
+            "[\"app_name\"]\n"
         )
         # Include more variety in candidates
         apps_str = json.dumps([{"name": a.get("name"), "desc": a.get("description")} for a in trending_apps[:15]])

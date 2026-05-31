@@ -69,12 +69,14 @@ class _AIAppResolverState extends State<AIAppResolver> {
 
   List<String> _extractNames(String text) {
     try {
-      final startIndex = text.indexOf(widget.jsonPrefix);
-      if (startIndex == -1) return [];
+      String target = text;
+      const separator = "###JSON_START###";
+      if (text.contains(separator)) {
+        target = text.split(separator).last.trim();
+      }
 
-      final jsonPart = text.substring(startIndex + widget.jsonPrefix.length).trim();
       // Match the JSON array [ ... ]
-      final match = RegExp(r'\[.*\]', dotAll: true).firstMatch(jsonPart);
+      final match = RegExp(r'\[.*\]', dotAll: true).firstMatch(target);
       if (match != null) {
         final list = jsonDecode(match.group(0)!) as List;
         return list.map((e) => e.toString()).toList();

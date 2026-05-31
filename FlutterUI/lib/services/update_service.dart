@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
@@ -212,81 +211,20 @@ class UpdateService {
   Future<void> checkUpdates() => checkNow();
 
   Future<void> startUpdate(String name, String source) async {
-    if (BackendService.isDownloading.value) return;
+    if (TaskManager().isBusy) return;
 
-    BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value = _preparingUpdateLabel;
-    BackendService.globalProgress.value = null;
-    BackendService.clearLogs();
-
-    showProgressNotification(_preparingUpdateLabel, 0);
-
-    // Create a dummy AppPackage for tracking if we don't have one
-    final app = AppPackage(
-      name: name,
-      description: "Updating...",
-      installed: true,
-      version: "Latest",
-      variants: [
-        AppVariant(
-          source: source,
-          version: "Latest",
-          installed: true,
-          description: "Updating...",
-        )
-      ],
-      primarySource: source,
+    // Use TaskManager to ensure the update appears in the "Activity" tab
+    final success = await TaskManager().startTask(
+      id: "update-$name",
+      packageName: name,
+      source: source,
+      actionFlag: "-U",
     );
-    BackendService.activeApp.value = app;
 
-    try {
-      final process = await Process.start(
-        BackendService.venvPython,
-        [BackendService.scriptPath, "-U", name, "--source", source, "--json"],
-        workingDirectory: BackendService.workingDir,
-      );
+    showCompletionNotification(name, success);
 
-      BackendService.activeProcess = process;
-
-      process.stdout
-          .transform(const Utf8Decoder())
-          .transform(const LineSplitter())
-          .listen((line) {
-        String cleanLine = line.trim();
-        if (cleanLine.startsWith("[CALLBACK]")) {
-          try {
-            final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-            String log = data['message'] ?? data['log'] ?? "";
-            if (log.isNotEmpty) {
-              if (log.startsWith("[PROGRESS]")) {
-                final p = double.tryParse(log.split(" ")[1]);
-                if (p != null) {
-                  final progressValue = p / 100.0;
-                  BackendService.globalProgress.value = progressValue;
-                  showProgressNotification(name, progressValue);
-                }
-              } else {
-                BackendService.addLog(log);
-              }
-            }
-          } catch (_) {}
-        }
-      });
-
-      final exitCode = await process.exitCode;
-      BackendService.isDownloading.value = false;
-      BackendService.activeApp.value = null;
-      BackendService.activeProcess = null;
-
-      showCompletionNotification(name, exitCode == 0);
-
-      if (exitCode == 0) {
-        checkNow(); // Refresh update list
-      }
-    } catch (e) {
-      BackendService.isDownloading.value = false;
-      BackendService.activeApp.value = null;
-      showCompletionNotification(name, false);
+    if (success) {
+      checkNow(); // Refresh update list
     }
   }
 

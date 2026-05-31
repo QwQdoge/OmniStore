@@ -454,6 +454,22 @@ class OmnistoreBackend:
                         })
         except Exception: pass
 
+        # ⚡ Enrichment step: fetch icons and descriptions for top installed apps
+        if self.recommender:
+            # We don't want to over-request Flathub, but enriching the first few enhances the list
+            # We filter for those without icons (usually Native apps)
+            enrich_targets = [app for app in installed_list if not app.get('icon')]
+
+            async def _enrich_app(app):
+                metadata = await self.recommender.find_metadata(app['name'])
+                if metadata:
+                    if metadata.get('icon'): app['icon'] = metadata['icon']
+                    if metadata.get('description'): app['description'] = metadata['description']
+
+            if enrich_targets:
+                # Limit to 10 for performance
+                await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]])
+
         if json_mode:
             print(json.dumps(installed_list))
         else:

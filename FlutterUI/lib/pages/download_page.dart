@@ -482,6 +482,19 @@ class _DownloadPageState extends State<DownloadPage>
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
+                onTap: () async {
+                  // Navigate to details by searching for the app first
+                  final results = await _backend.searchPackages(update['name']);
+                  if (results.isNotEmpty && mounted) {
+                    final app = AppPackage.fromJson(results[0]);
+                    if (mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+                      );
+                    }
+                  }
+                },
                 title: Text(update['name'],
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(

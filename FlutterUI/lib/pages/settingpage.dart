@@ -358,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   if (aiEnabled) ...[
                     ListTile(
-                      leading: const MagicPulseIcon(icon: Icons.smart_toy_outlined),
+                      leading: const Icon(Icons.smart_toy_outlined),
                       title: Text(l10n.aiProvider),
                     subtitle: Text(l10n.aiProviderDesc),
                       trailing: DropdownButton<String>(
@@ -415,7 +415,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _testAIConnection,
-                              icon: const MagicPulseIcon(icon: Icons.bolt_rounded),
+                              icon: const Icon(Icons.bolt_rounded),
                               label: Text(l10n.aiTestButton),
                             ),
                           ),
