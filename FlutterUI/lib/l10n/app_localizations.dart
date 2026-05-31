@@ -1033,13 +1033,13 @@ abstract class AppLocalizations {
   /// **'Restore'**
   String get windowRestore;
 
-  /// No description provided for @windowClose.
+  /// Tooltip for window close button
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get windowClose;
 
-  /// No description provided for @delete.
+  /// Label for delete action
   ///
   /// In en, this message translates to:
   /// **'Delete'**
