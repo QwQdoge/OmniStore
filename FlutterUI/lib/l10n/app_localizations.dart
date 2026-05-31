@@ -1033,13 +1033,19 @@ abstract class AppLocalizations {
   /// **'Restore'**
   String get windowRestore;
 
-  /// Tooltip for window close button
+  /// No description provided for @windowClose.
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get windowClose;
 
-  /// Label for delete action
+  /// App Name
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore'**
+  String get omnistore;
+
+  /// No description provided for @delete.
   ///
   /// In en, this message translates to:
   /// **'Delete'**

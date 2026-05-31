@@ -499,6 +499,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get windowClose => '閉じる';
 
   @override
+  String get omnistore => 'OmniStore';
+
+  @override
   String get delete => '削除';
 
   @override

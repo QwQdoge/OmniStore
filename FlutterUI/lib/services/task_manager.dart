@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/task_state.dart';
 import 'backend_service.dart';
+import 'update_service.dart';
 
 class TaskManager {
   static final TaskManager _instance = TaskManager._internal();
@@ -90,15 +91,15 @@ class TaskManager {
       });
 
       final exitCode = await _activeProcess!.exitCode;
+      final success = exitCode == 0;
 
-      if (exitCode == 0) {
+      if (success) {
         _updateState(_currentTask?.copyWith(
           status: TaskStatus.success,
           progress: 1.0,
           message: "Task completed successfully",
           speed: "",
         ));
-        return true;
       } else {
         // If it was cancelled, it might have been set to failed already or still in progress
         if (_currentTask?.status != TaskStatus.failed) {
@@ -109,6 +110,16 @@ class TaskManager {
           ));
         }
       }
+
+      // Show completion notification
+      if (_currentTask != null) {
+        UpdateService().showCompletionNotification(
+          _currentTask!.packageName ?? "OmniStore",
+          success,
+        );
+      }
+
+      return success;
     } catch (e) {
       _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
@@ -141,7 +152,7 @@ class TaskManager {
         logMessage = data['message'] ?? data['log'] ?? "";
       } catch (_) {}
     } else if (cleanLine.startsWith("{")) {
-       try {
+      try {
         final data = jsonDecode(cleanLine);
         logMessage = data['message'] ?? data['log'] ?? "";
       } catch (_) {}
@@ -151,12 +162,22 @@ class TaskManager {
 
     if (logMessage != null && logMessage.isNotEmpty) {
       if (logMessage.startsWith("[PROGRESS]")) {
-        final p = double.tryParse(logMessage.split(" ")[1]);
-        if (p != null) {
-          _updateState(_currentTask?.copyWith(
-            progress: p / 100.0,
-            status: TaskStatus.downloading,
-          ));
+        final parts = logMessage.split(" ");
+        if (parts.length > 1) {
+          final p = double.tryParse(parts[1]);
+          if (p != null) {
+            final progress = p / 100.0;
+            _updateState(_currentTask?.copyWith(
+              progress: progress,
+              status: TaskStatus.downloading,
+            ));
+
+            // Also show in system notification
+            UpdateService().showProgressNotification(
+              _currentTask?.packageName ?? "OmniStore",
+              progress,
+            );
+          }
         }
       } else if (logMessage.startsWith("[SPEED]")) {
         final s = logMessage.replaceFirst("[SPEED] ", "");

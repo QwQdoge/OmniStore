@@ -36,7 +36,8 @@ class ConfigManager:
                 "appearance": "system",
                 "color_seed": "#4E7EEF",
                 "language": "zh-CN",
-                "enable_system_tray": False
+                "enable_system_tray": True,
+                "close_to_tray": True
             },
             "logging": {
                 "level": "INFO"

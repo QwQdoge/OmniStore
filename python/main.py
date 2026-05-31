@@ -196,7 +196,7 @@ class OmnistoreBackend:
             else:
                 print(f"[Error] {error_msg}")
 
-    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False):
+    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
         """
         Triggers the installation of a specific package.
 
@@ -223,8 +223,9 @@ class OmnistoreBackend:
             if not json_mode:
                 console.print(Panel(f"Successfully installed [bold green]{name}[/bold green]! 🎉", border_style="green"))
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+        return success
 
-    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R"):
+    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
         """Uninstallation logic"""
         self.is_action = True
         package_data = {"name": package_name, "source": source, "flag": flag}
@@ -241,8 +242,9 @@ class OmnistoreBackend:
             if not json_mode:
                 console.print(Panel(f"Successfully uninstalled [bold red]{package_name}[/bold red]! ✨", border_style="green"))
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+        return success
 
-    async def run_update(self, package_name: str, source: str, json_mode: bool = False):
+    async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
         """Update logic"""
         self.is_action = True
         package_data = {"name": package_name, "source": source}
@@ -258,6 +260,7 @@ class OmnistoreBackend:
         if success and not json_mode:
             console.print(Panel(f"Update completed! 🎉", border_style="green"))
             console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+        return success
 
     async def run_check_updates(self, json_mode: bool = False):
         """Check for updates logic"""
@@ -497,7 +500,7 @@ class OmnistoreBackend:
         }
         print(json.dumps(result, ensure_ascii=False))
 
-    async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False):
+    async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
         self.is_action = True
         async def cb(m):
             await self._flutter_callback(m, json_mode)
@@ -518,8 +521,9 @@ class OmnistoreBackend:
 
         if json_mode:
             print(json.dumps({"status": "success" if success else "error"}))
+        return success
 
-    async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False):
+    async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False) -> bool:
         self.is_action = True
         async def cb(m):
             await self._flutter_callback(m, json_mode)
@@ -541,6 +545,7 @@ class OmnistoreBackend:
 
         if json_mode:
             print(json.dumps({"status": "success" if success else "error"}))
+        return success
 
     # --- AI Features Methods ---
     async def run_ai_explain(self, app_name: str, app_description: str = ""):
@@ -636,7 +641,7 @@ class OmnistoreBackend:
             else:
                 console.print(f"[ERROR] Export failed: {e}")
 
-    async def run_clean_system(self, json_mode: bool = False):
+    async def run_clean_system(self, json_mode: bool = False) -> bool:
         """Cleanup logic: remove orphans and clean cache"""
         async def cb(m):
             await self._flutter_callback(m, json_mode)
@@ -657,7 +662,7 @@ class OmnistoreBackend:
             if orphans:
                 await cb(f"[INFO] 正在清理 {len(orphans)} 个孤立软件包...")
                 if not await self.executor._ensure_privileged(cb):
-                    return
+                    return False
 
                 proc = await asyncio.create_subprocess_exec(
                     "sudo", "pacman", "-Rs", "--noconfirm", *orphans,
@@ -665,18 +670,24 @@ class OmnistoreBackend:
                     stderr=asyncio.subprocess.PIPE
                 )
                 await proc.communicate()
+                if proc.returncode != 0:
+                     await cb(f"[ERROR] 清理孤立软件包失败 (exit code: {proc.returncode})")
+                     return False
             else:
                 await cb("[INFO] 未发现孤立软件包。")
 
             await cb("[INFO] 正在清理包缓存...")
             if not await self.executor._ensure_privileged(cb):
-                return
+                return False
             proc = await asyncio.create_subprocess_exec(
                 "sudo", "pacman", "-Scc", "--noconfirm",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
             await proc.communicate()
+            if proc.returncode != 0:
+                 await cb(f"[ERROR] 清理包缓存失败 (exit code: {proc.returncode})")
+                 return False
 
             await cb("[INFO] 系统清理完成！")
             if json_mode:
@@ -684,10 +695,12 @@ class OmnistoreBackend:
             else:
                 console.print(Panel("System Cleanup Finished! ✨", border_style="green"))
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+            return True
         except Exception as e:
             await cb(f"[ERROR] 清理失败: {e}")
             if json_mode:
                 print(json.dumps({"status": "error", "message": str(e)}))
+            return False
 
     async def run_ai_summary(self, json_mode: bool = False):
         """Generate AI project summary."""
@@ -857,15 +870,18 @@ async def main():
         args.search, args.install, args.remove, args.update, args.check_updates,
         args.get_config, args.set_config, args.list_installed, args.launch,
         args.recommend, args.essentials, args.import_packages, args.export_packages,
-        args.clean_system, args.ai_summary, args.details, args.check_env, 
+        args.clean_system, args.ai_summary, args.details, args.check_env,
         args.bootstrap, args.list_custom_repos, args.add_custom_repo, args.remove_custom_repo,
-        args.ai_explain, args.ai_recommend, args.ai_analyze_error
+        args.ai_explain, args.ai_recommend, args.ai_analyze_error,
+        args.ai_compare, args.ai_health, args.ai_pick, args.ai_correct,
+        args.ai_changelog, args.ai_cli, args.ai_conflicts
     ]
     if not any(active_args):
         parser.print_help()
         return
 
     # --- Dispatch Logic ---
+    exit_code = 0
 
     if args.get_config:
         config = backend.config.data
@@ -886,6 +902,7 @@ async def main():
                 print(json.dumps({"status": "success", "message": "[INFO] Configuration saved successfully"}))
             else:
                 print(json.dumps({"status": "error", "message": "[ERROR] Failed to save configuration"}))
+                exit_code = 1
         except Exception as e:
             print(json.dumps({"status": "error", "message": f"[ERROR] {str(e)}"}))
             sys.exit(1)
@@ -894,27 +911,30 @@ async def main():
         await backend.run_search(args.search, json_mode=args.json)
 
     elif args.install:
-        await backend.run_install(
+        if not await backend.run_install(
             args.install,
             source=args.source,
             url=args.url,
             json_mode=args.json
-        )
+        ):
+            exit_code = 1
 
     elif args.remove:
-        await backend.run_uninstall(
+        if not await backend.run_uninstall(
             args.remove,
             source=args.source,
             json_mode=args.json,
             flag=args.remove
-        )
+        ):
+            exit_code = 1
 
     elif args.update:
-        await backend.run_update(
+        if not await backend.run_update(
             args.update,
             source=args.source,
             json_mode=args.json
-        )
+        ):
+            exit_code = 1
 
     elif args.check_updates:
         await backend.run_check_updates(json_mode=args.json)
@@ -941,7 +961,8 @@ async def main():
         await backend.run_export_packages(args.export_packages)
 
     elif args.clean_system:
-        await backend.run_clean_system(json_mode=args.json)
+        if not await backend.run_clean_system(json_mode=args.json):
+            exit_code = 1
 
     elif args.check_env:
         status = await backend.env.check_env()
@@ -990,23 +1011,30 @@ async def main():
             if len(parts) < 3:
                 # Fallback for AppImage type where name isn't strictly required (url is second param)
                 if len(parts) == 2 and parts[0] == "appimage":
-                    await backend.run_add_custom_repo("appimage", "", parts[1], json_mode=args.json)
+                    if not await backend.run_add_custom_repo("appimage", "", parts[1], json_mode=args.json):
+                        exit_code = 1
                 else:
                     print(json.dumps({"status": "error", "message": "[ERROR] Add custom repo arguments must be: type,name,url"}))
+                    exit_code = 1
             else:
-                await backend.run_add_custom_repo(parts[0], parts[1], parts[2], json_mode=args.json)
+                if not await backend.run_add_custom_repo(parts[0], parts[1], parts[2], json_mode=args.json):
+                    exit_code = 1
         except Exception as e:
             print(json.dumps({"status": "error", "message": f"[ERROR] Add custom repo parsing failed: {e}"}))
+            exit_code = 1
 
     elif args.remove_custom_repo:
         try:
             parts = args.remove_custom_repo.split(',', 1)
             if len(parts) < 2:
                 print(json.dumps({"status": "error", "message": "[ERROR] Remove custom repo arguments must be: type,name"}))
+                exit_code = 1
             else:
-                await backend.run_remove_custom_repo(parts[0], parts[1], json_mode=args.json)
+                if not await backend.run_remove_custom_repo(parts[0], parts[1], json_mode=args.json):
+                    exit_code = 1
         except Exception as e:
             print(json.dumps({"status": "error", "message": f"[ERROR] Remove custom repo parsing failed: {e}"}))
+            exit_code = 1
 
     # AI dispatching
     elif args.ai_explain:
@@ -1099,6 +1127,9 @@ async def main():
         installed = stdout.decode().splitlines()
         res = await backend.ai.detect_conflicts(args.ai_conflicts, installed)
         print(json.dumps({"response": res}, ensure_ascii=False))
+
+    if exit_code != 0:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":

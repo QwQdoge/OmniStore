@@ -658,6 +658,10 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "閉じる",
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
   "delete": "削除",
   "welcomeTitle": "OmniStore へようこそ",
   "@welcomeTitle": {

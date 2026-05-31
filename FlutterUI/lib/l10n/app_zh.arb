@@ -666,6 +666,10 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "关闭",
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
   "delete": "删除",
   "welcomeTitle": "欢迎来到 OmniStore",
   "@welcomeTitle": {

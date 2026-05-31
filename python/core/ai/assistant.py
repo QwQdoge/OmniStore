@@ -114,6 +114,10 @@ class AIAssistant:
             }
 
         try:
+            # Basic validation
+            if not endpoint and provider != "gemini":
+                return f"Error: AI Endpoint is not configured for {provider}."
+
             timeout = aiohttp.ClientTimeout(total=45)
             # Use proxy if configured
             connector = aiohttp.TCPConnector(ssl=False) if proxy else None
