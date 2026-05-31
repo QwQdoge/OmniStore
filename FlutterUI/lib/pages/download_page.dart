@@ -512,7 +512,10 @@ class _DownloadPageState extends State<DownloadPage>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -525,7 +528,9 @@ class _DownloadPageState extends State<DownloadPage>
                       for (final update in updates) {
                         UpdateService().startUpdate(
                           update['name'],
-                          update['source'],
+                          update['source'] == 'Pacman'
+                              ? 'Native'
+                              : update['source'],
                         );
                       }
                       _tabController.animateTo(0);
@@ -539,75 +544,79 @@ class _DownloadPageState extends State<DownloadPage>
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: updates.length,
-          itemBuilder: (context, index) {
-            final update = updates[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                onTap: () async {
-                  // Navigate to details by searching for the app first
-                  final results = await _backend.searchPackages(update['name']);
-                  if (results.isNotEmpty && mounted) {
-                    final app = AppPackage.fromJson(results[0]);
-                    if (mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AppDetailsPage(app: app),
-                        ),
-                      );
-                    }
-                  }
-                },
-                title: Text(
-                  update['name'],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  "${update['current_version']} → ${update['new_version']}",
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ValueListenableBuilder<bool>(
-                      valueListenable: BackendService.isAIEnabled,
-                      builder: (context, enabled, _) {
-                        if (!enabled) return const SizedBox.shrink();
-                        return IconButton(
-                          icon: const MagicPulseIcon(
-                            icon: Icons.auto_awesome_rounded,
-                            size: 20,
-                          ),
-                          tooltip: AppLocalizations.of(
-                            context,
-                          )!.aiExplainUpdate,
-                          onPressed: () => _showAIUpdateSummary(
-                            update['name'],
-                            update['current_version'],
-                            update['new_version'],
-                          ),
-                        );
-                      },
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        UpdateService().startUpdate(
+                itemCount: updates.length,
+                itemBuilder: (context, index) {
+                  final update = updates[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      onTap: () async {
+                        // Navigate to details by searching for the app first
+                        final results = await _backend.searchPackages(
                           update['name'],
-                          update['source'],
                         );
-                        _tabController.animateTo(0);
+                        if (results.isNotEmpty && mounted) {
+                          final app = AppPackage.fromJson(results[0]);
+                          if (mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AppDetailsPage(app: app),
+                              ),
+                            );
+                          }
+                        }
                       },
-                      child: Text(AppLocalizations.of(context)!.update),
+                      title: Text(
+                        update['name'],
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "${update['current_version']} → ${update['new_version']}",
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ValueListenableBuilder<bool>(
+                            valueListenable: BackendService.isAIEnabled,
+                            builder: (context, enabled, _) {
+                              if (!enabled) return const SizedBox.shrink();
+                              return IconButton(
+                                icon: const MagicPulseIcon(
+                                  icon: Icons.auto_awesome_rounded,
+                                  size: 20,
+                                ),
+                                tooltip: AppLocalizations.of(
+                                  context,
+                                )!.aiExplainUpdate,
+                                onPressed: () => _showAIUpdateSummary(
+                                  update['name'],
+                                  update['current_version'],
+                                  update['new_version'],
+                                ),
+                              );
+                            },
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              UpdateService().startUpdate(
+                                update['name'],
+                                update['source'] == 'Pacman'
+                                    ? 'Native'
+                                    : update['source'],
+                              );
+                              _tabController.animateTo(0);
+                            },
+                            child: Text(AppLocalizations.of(context)!.update),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
-    ],
+            ),
+          ],
         );
       },
     );

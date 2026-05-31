@@ -1,3 +1,0 @@
-## 2025-05-15 - [ReorderableListView and Localization Sync]
-**Learning:** In this project's Flutter UI, the `ReorderableListView` requires an explicit index adjustment (`if (newIndex > oldIndex) newIndex -= 1;`) to prevent out-of-bounds errors. Additionally, while some localization keys might exist in the code, they MUST have corresponding entries in the source `.arb` files to be recognized by the generator and pass static analysis.
-**Action:** Always ensure `app_en.arb` is the source of truth for all localization keys and ensure `onReorder` logic is correctly implemented for all reorderable lists.
