@@ -223,8 +223,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     try {
       // Use pkill to find and terminate the Rust daemon
       await Process.run('pkill', ['omnistore-daemon']);
-      // Kill any remaining python backend processes
+      // Kill any remaining python backend processes (dev and packaged)
       await Process.run('pkill', ['-f', 'python/main.py']);
+      await Process.run('pkill', ['python_server']);
     } catch (e) {
       debugPrint("Process cleanup error: $e");
     }

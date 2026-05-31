@@ -41,17 +41,41 @@ class BackendService {
     return Directory.current.path;
   }
 
+  static bool get _isPackaged {
+    final exeDir = p.dirname(Platform.resolvedExecutable);
+    final pythonServer = p.join(exeDir, 'backends', Platform.isWindows ? 'python_server.exe' : 'python_server');
+    return File(pythonServer).existsSync();
+  }
+
   static String get venvPython {
+    if (_isPackaged) {
+      return p.join(p.dirname(Platform.resolvedExecutable), 'backends', Platform.isWindows ? 'python_server.exe' : 'python_server');
+    }
     final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
     return File(candidate).existsSync() ? candidate : 'python';
   }
 
-  static String get scriptPath => p.join(_projectRoot, 'python', 'main.py');
-  static String get workingDir => p.join(_projectRoot, 'python');
+  static String get scriptPath {
+    if (_isPackaged) return ""; // In packaged mode, venvPython IS the script
+    return p.join(_projectRoot, 'python', 'main.py');
+  }
+
+  static String get workingDir {
+    if (_isPackaged) return p.dirname(Platform.resolvedExecutable);
+    return p.join(_projectRoot, 'python');
+  }
 
   String get _venvPython => venvPython;
   String get _scriptPath => scriptPath;
   String get _workingDir => workingDir;
+
+  List<String> _buildArgs(List<String> baseArgs) {
+    if (_isPackaged) {
+      return baseArgs;
+    } else {
+      return [_scriptPath, ...baseArgs];
+    }
+  }
 
   // 全局进度通知器
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
@@ -106,12 +130,15 @@ class BackendService {
     if (cancelOngoing) activeSearchProcess?.kill();
 
     try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath,
-        "-S",
-        query,
-        "--json",
-      ], workingDirectory: _workingDir);
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs([
+          "-S",
+          query,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      );
 
       if (cancelOngoing) activeSearchProcess = process;
 
@@ -165,11 +192,14 @@ class BackendService {
   /// 获取已安装列表
   Future<List<dynamic>> listInstalled() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "-L",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "-L",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return [];
       return _tryParseJson(result.stdout.toString().trim());
@@ -181,11 +211,14 @@ class BackendService {
 
   Future<Map<String, dynamic>> loadConfig() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--get-config",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--get-config",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 10));
       if (result.exitCode != 0) {
         debugPrint("loadConfig failed with exit code ${result.exitCode}: ${result.stderr}");
         return {};
@@ -208,14 +241,17 @@ class BackendService {
   /// AI 解释应用
   Future<String> aiExplain(String appName, String description) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-explain",
-        appName,
-        "--ai-desc",
-        description,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-explain",
+          appName,
+          "--ai-desc",
+          description,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 60));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -226,12 +262,15 @@ class BackendService {
   /// AI 更新内容总结
   Future<String> aiSummarizeUpdate(String name, String current, String next) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-changelog",
-        "$name,$current,$next",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-changelog",
+          "$name,$current,$next",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -242,12 +281,15 @@ class BackendService {
   /// AI CLI 命令生成
   Future<String> aiGenerateCLI(String name, String source) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-cli",
-        "$name,$source",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-cli",
+          "$name,$source",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 20));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "";
     } catch (e) {
@@ -258,12 +300,15 @@ class BackendService {
   /// AI 冲突检测
   Future<String> aiDetectConflicts(String name) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-conflicts",
-        name,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-conflicts",
+          name,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -274,11 +319,14 @@ class BackendService {
   /// AI 每日推荐
   Future<String> aiPickOfTheDay() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-pick",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-pick",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 30));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -289,12 +337,15 @@ class BackendService {
   /// AI 搜索纠错
   Future<String> aiSuggestCorrection(String query) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-correct",
-        query,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-correct",
+          query,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 15));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "";
     } catch (e) {
@@ -305,12 +356,15 @@ class BackendService {
   /// AI 版本比较
   Future<String> aiCompareVariants(String appName) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-compare",
-        appName,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-compare",
+          appName,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -321,11 +375,14 @@ class BackendService {
   /// AI 系统健康报告
   Future<String> aiSystemHealth() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-health",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-health",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -336,12 +393,15 @@ class BackendService {
   /// AI 分析错误
   Future<String> aiAnalyzeError(String errorLog) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-analyze-error",
-        errorLog,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 45));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-analyze-error",
+          errorLog,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -352,12 +412,15 @@ class BackendService {
   /// AI 推荐应用
   Future<String> aiRecommend(String prompt) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--ai-recommend",
-        prompt,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 60));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--ai-recommend",
+          prompt,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 60));
       final data = jsonDecode(result.stdout);
       return data['response'] ?? "AI Error: No response";
     } catch (e) {
@@ -367,12 +430,15 @@ class BackendService {
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath,
-        "--set-config",
-        "stdin",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 5));
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs([
+          "--set-config",
+          "stdin",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 5));
 
       process.stdin.write(jsonEncode(config));
       await process.stdin.close();
@@ -387,11 +453,14 @@ class BackendService {
 
   Future<Map<String, dynamic>> checkEnv() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--check-env",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--check-env",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 10));
       return jsonDecode(result.stdout);
     } catch (e) {
       debugPrint("checkEnv Exception: $e");
@@ -401,11 +470,14 @@ class BackendService {
 
   Stream<String> bootstrap() async* {
     try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath,
-        "--bootstrap",
-        "--json",
-      ], workingDirectory: _workingDir);
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs([
+          "--bootstrap",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      );
 
       yield* process.stdout
           .transform(utf8.decoder)
@@ -418,11 +490,14 @@ class BackendService {
   /// 获取动态推荐 (已分类)
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--recommend",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--recommend",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 20));
 
       if (result.exitCode != 0) return {};
       final output = result.stdout.toString().trim();
@@ -458,12 +533,15 @@ class BackendService {
   /// 获取应用详情 (从 Flathub 等外部源)
   Future<Map<String, dynamic>> getAppDetails(String appId) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--details",
-        appId,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 20));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--details",
+          appId,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 20));
       return jsonDecode(result.stdout);
     } catch (e) {
       debugPrint("getAppDetails Exception: $e");
@@ -515,8 +593,7 @@ class BackendService {
     }
 
     try {
-      List<String> args = [
-        _scriptPath,
+      List<String> baseArgs = [
         flag,
         packageName,
         "--source",
@@ -524,12 +601,12 @@ class BackendService {
         "--json",
       ];
       if (url != null && url.isNotEmpty) {
-        args.addAll(["--url", url]);
+        baseArgs.addAll(["--url", url]);
       }
 
       final process = await Process.start(
         _venvPython,
-        args,
+        _buildArgs(baseArgs),
         workingDirectory: _workingDir,
       );
 
@@ -548,11 +625,14 @@ class BackendService {
   /// 检查更新
   Future<List<dynamic>> checkUpdates() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "-C",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 30));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "-C",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 30));
 
       if (result.exitCode != 0) return [];
       return _tryParseJson(result.stdout.toString().trim());
@@ -565,14 +645,17 @@ class BackendService {
   /// 更新所有
   Stream<String> updateAll(String source) async* {
     try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath,
-        "-U",
-        "all",
-        "--source",
-        source,
-        "--json",
-      ], workingDirectory: _workingDir);
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs([
+          "-U",
+          "all",
+          "--source",
+          source,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      );
 
       yield* process.stdout
           .transform(utf8.decoder)
@@ -585,11 +668,14 @@ class BackendService {
   /// 获取必备包
   Future<List<dynamic>> getEssentials() async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--essentials",
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--essentials",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
       return _tryParseJson(result.stdout.toString().trim());
@@ -602,12 +688,15 @@ class BackendService {
   /// 导入包
   Future<List<dynamic>> importPackages(String filepath) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--import-packages",
-        filepath,
-        "--json",
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 10));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--import-packages",
+          filepath,
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
       return _tryParseJson(result.stdout.toString().trim());
@@ -620,11 +709,14 @@ class BackendService {
   /// 导出包列表
   Future<Map<String, dynamic>> exportPackages(String filepath) async {
     try {
-      final result = await Process.run(_venvPython, [
-        _scriptPath,
-        "--export-packages",
-        filepath,
-      ], workingDirectory: _workingDir).timeout(const Duration(seconds: 15));
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs([
+          "--export-packages",
+          filepath,
+        ]),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return {"status": "error"};
       return jsonDecode(result.stdout.toString().trim());
@@ -637,11 +729,14 @@ class BackendService {
   /// 清理系统（孤立包和缓存）
   Stream<String> cleanSystem() async* {
     try {
-      final process = await Process.start(_venvPython, [
-        _scriptPath,
-        "--clean-system",
-        "--json",
-      ], workingDirectory: _workingDir);
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs([
+          "--clean-system",
+          "--json",
+        ]),
+        workingDirectory: _workingDir,
+      );
 
       yield* process.stdout
           .transform(utf8.decoder)

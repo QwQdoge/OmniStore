@@ -352,6 +352,7 @@ class UpdateService {
     try {
       await Process.run('pkill', ['omnistore-daemon']);
       await Process.run('pkill', ['-f', 'python/main.py']);
+      await Process.run('pkill', ['python_server']);
     } catch (_) {}
     exit(0);
   }
