@@ -142,7 +142,18 @@ class BackendService {
 
       if (cancelOngoing) activeSearchProcess = process;
 
-      final outputFuture = process.stdout.transform(utf8.decoder).join();
+      final results = <dynamic>[];
+      final lines = process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
+
+      await for (final line in lines) {
+        final trimmed = line.trim();
+        if (trimmed.isNotEmpty) {
+          results.addAll(_tryParseJson(trimmed));
+        }
+      }
+
       final exitCode = await process.exitCode.timeout(const Duration(seconds: 45));
 
       activeSearchProcess = null;
@@ -152,9 +163,7 @@ class BackendService {
         return [];
       }
 
-      final output = (await outputFuture).trim();
-      if (output.isEmpty) return [];
-      return _tryParseJson(output);
+      return results;
     } catch (e) {
       activeSearchProcess = null;
       debugPrint('searchPackages Exception: $e');

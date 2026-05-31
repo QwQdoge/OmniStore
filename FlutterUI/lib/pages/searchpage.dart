@@ -108,19 +108,22 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _onSearchChanged() {
+    final text = _controller.text.trim();
+    if (mounted) {
+      setState(() {
+        _hasInput = text.isNotEmpty;
+      });
+    }
+
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      final text = _controller.text.trim();
       if (text.length >= 2) {
         _search(text);
       } else {
         setState(() {
-          _hasInput = text.isNotEmpty;
-          if (!_hasInput) {
-            _results = [];
-            _hasSearched = false;
-            _aiCorrection = null;
-          }
+          _results = [];
+          _hasSearched = false;
+          _aiCorrection = null;
         });
       }
     });
@@ -273,7 +276,7 @@ class _SearchPageState extends State<SearchPage> {
             trailing: [
               if (_hasInput)
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
+                  icon: const Icon(Icons.close_rounded, size: 18),
                   tooltip: AppLocalizations.of(context)!.clearSearch,
                   onPressed: () {
                     _controller.clear();
