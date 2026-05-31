@@ -100,6 +100,10 @@
   "@searching": {
     "description": "Description for searching"
   },
+  "activity": "Actividad",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "category": "Categoría",
   "@category": {
     "description": "Category label"
@@ -247,6 +251,22 @@
   "catGames": "Juegos",
   "@catGames": {
     "description": "Description for catGames"
+  },
+  "catGraphics": "Gráficos",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "Utilidades",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "Sistema y Ventana",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "Visitar sitio web",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
   },
   "updates": "Actualizaciones",
   "@updates": {
@@ -410,26 +430,6 @@
   "update": "Actualizar",
   "@update": {
     "description": "update"
-  },
-  "activity": "Actividad",
-  "@activity": {
-    "description": "Activity tab label"
-  },
-  "catGraphics": "Gráficos",
-  "@catGraphics": {
-    "description": "Category for Graphics"
-  },
-  "catUtility": "Utilidades",
-  "@catUtility": {
-    "description": "Category for Utility"
-  },
-  "systemAndWindow": "Sistema y Ventana",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "visitWebsite": "Visitar sitio web",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
   },
   "enableSystemTray": "Activar bandeja del sistema",
   "@enableSystemTray": {
@@ -651,5 +651,333 @@
   "windowMaximize": "Maximizar",
   "windowRestore": "Restaurar",
   "windowClose": "Cerrar",
-  "delete": "Eliminar"
+  "delete": "Eliminar",
+  "welcomeTitle": "Bienvenido a OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "Comenzar",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "Omitir",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "Comprobación del entorno",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "Asegurando que su sistema esté listo",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "Corregir / Configurar todo",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "Continuar de todos modos",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "Fuentes de software",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "Elija las fuentes que desea habilitar",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "Activar AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "Activar AUR requiere instalar el asistente yay.",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "Nota: La configuración puede requerir introducir su contraseña varias veces.",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "Si encuentra problemas, por favor infórmenos en GitHub.",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "Asistente de IA",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "¿Cómo obtener una clave API?",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "Entendido",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "Entrar a la tienda",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "Siguiente paso",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "Restablecer caché e historial",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "Limpiar el historial de búsqueda y el caché de recomendaciones locales",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "Restableciendo...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "Caché e historial borrados con éxito",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "Error al restablecer: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (Local)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "Compatible con OpenAI",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  },
+  "importPackages": "Importar paquetes",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "Descargar todo",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "Importar lista",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "Error al cargar recomendaciones, por favor compruebe el estado del backend",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "Comunidad",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "Oficial",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "Verificado",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "Instalando {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "Cambiar",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "Se encontraron registros de errores, ¿necesita un análisis de IA?",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "Analizar ahora",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "Advertencia de seguridad",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "Continuar instalación",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "Información de instalación",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "Tamaño de descarga",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "Tamaño instalado",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "Dependencias ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "Limpiar búsqueda",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "Vista de lista",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "Vista de cuadrícula",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "Categorías",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "Limpiar historial",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "¿Está seguro de que desea borrar todo el historial?",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "Ver más",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "DEPURACIÓN (DEBUG)",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "INFORMACIÓN (INFO)",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "ADVERTENCIA (WARNING)",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "ERROR (ERROR)",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "Actualizaciones disponibles",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "Hay {count} aplicaciones disponibles para actualizar",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "Preparando actualización...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "Procesando",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "Limpiar",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "Reintentar",
+  "@retry": {
+    "description": "Description for retry"
+  }
 }

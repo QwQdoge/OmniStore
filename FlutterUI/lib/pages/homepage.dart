@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _importPackages() async {
+    final l10n = AppLocalizations.of(context)!;
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'json'],
@@ -77,10 +78,12 @@ class _HomePageState extends State<HomePage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text("导入软件包"),
-            content: Text("已从文件中读取 ${packages.length} 个软件包。是否开始批量下载？"),
+            title: Text(l10n.importPackages),
+            content: Text(l10n.importPackagesConfirm(packages.length)),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text("取消")),
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(l10n.cancel)),
               FilledButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -90,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                     _executeInstall(name, source);
                   }
                 },
-                child: const Text("全部下载"),
+                child: Text(l10n.allDownloads),
               ),
             ],
           ),
@@ -156,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                       child: OutlinedButton.icon(
                         onPressed: _importPackages,
                         icon: const Icon(Icons.file_upload_rounded, size: 18),
-                        label: const Text("导入列表"),
+                        label: Text(l10n.importList),
                       ),
                     ),
                   ],
@@ -226,10 +229,13 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cloud_off_rounded, color: Theme.of(context).colorScheme.error, size: 48),
+              Icon(Icons.cloud_off_rounded,
+                  color: Theme.of(context).colorScheme.error, size: 48),
               const SizedBox(height: 12),
-              const Text("无法加载推荐内容，请检查后端状态"),
-              FilledButton.tonal(onPressed: _refresh, child: const Text("重试")),
+              Text(AppLocalizations.of(context)!.loadError),
+              FilledButton.tonal(
+                  onPressed: _refresh,
+                  child: Text(AppLocalizations.of(context)!.retry)),
             ],
           ),
         ),
@@ -290,7 +296,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Icon(Icons.apps_rounded, size: 16),
                     const SizedBox(width: 4),
-                    Text(AppLocalizations.of(context)!.about), // Fallback for 'View More'
+                    Text(AppLocalizations.of(context)!.viewMore),
                     const Icon(Icons.chevron_right_rounded, size: 20),
                   ],
                 ),
@@ -765,16 +771,17 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTrustLabel(String source) {
     final colorScheme = Theme.of(context).colorScheme;
-    String label = "社区";
+    final l10n = AppLocalizations.of(context)!;
+    String label = l10n.community;
     Color color = Colors.orange;
     IconData icon = Icons.people_rounded;
 
     if (source == "Pacman" || source == "Native") {
-      label = "官方";
+      label = l10n.official;
       color = Colors.blue;
       icon = Icons.verified_user_rounded;
     } else if (source == "Flatpak") {
-      label = "经校验";
+      label = l10n.verified;
       color = Colors.green;
       icon = Icons.verified_rounded;
     }
@@ -809,7 +816,7 @@ class _HomePageState extends State<HomePage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("正在安装 $name..."),
+        content: Text(AppLocalizations.of(context)!.installingPkg(name)),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

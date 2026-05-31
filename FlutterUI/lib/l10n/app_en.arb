@@ -653,5 +653,333 @@
   "windowMaximize": "Maximize",
   "windowRestore": "Restore",
   "windowClose": "Close",
-  "delete": "Delete"
+  "delete": "Delete",
+  "welcomeTitle": "Welcome to OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "Providing a simple and elegant software management experience for Arch Linux",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "Environment Check",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "Ensuring your system is ready",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "Your system doesn't seem to be Arch-based. Most features will be unavailable.",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "Some necessary components are missing. We can configure them for you.",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "Everything is ready! Your system is perfect.",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "Fix / Configure All",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "Continue Anyway",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "Software Sources",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "Choose the sources you want to enable",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "Enable AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "Enabling AUR requires installing the yay helper.",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "Security Warning: AUR packages are user-contributed. Ensure you trust the source.",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "Note: Setup may require entering your password multiple times.",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "If you encounter issues, please report them on GitHub.",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "AI Assistant",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "Select your AI model source (Local or Cloud)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama defaults to http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "Leave blank for Ollama, enter sk-xxx for OpenAI",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "How to get an API key?",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider's website, create an API Key, and enter it here.",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "Note: If using Ollama, ensure it's running with OLLAMA_ORIGINS=\"*\".",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "Enter Store",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "Next Step",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "Reset Cache and History",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "Clear search history and local recommendations cache",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "This will clear your search history and recommendations cache. Proceed?",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "Resetting...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "Cache and History cleared successfully",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "Reset failed: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (Local)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "OpenAI Compatible",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  },
+  "importPackages": "Import Packages",
+  "@importPackages": {
+    "description": "Description for importPackages"
+  },
+  "importPackagesConfirm": "Read {count} packages from file. Start batch download?",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "Download All",
+  "@allDownloads": {
+    "description": "Description for allDownloads"
+  },
+  "importList": "Import List",
+  "@importList": {
+    "description": "Description for importList"
+  },
+  "loadError": "Failed to load recommendations, please check backend status",
+  "@loadError": {
+    "description": "Description for loadError"
+  },
+  "community": "Community",
+  "@community": {
+    "description": "Description for community"
+  },
+  "official": "Official",
+  "@official": {
+    "description": "Description for official"
+  },
+  "verified": "Verified",
+  "@verified": {
+    "description": "Description for verified"
+  },
+  "installingPkg": "Installing {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "Switch",
+  "@switchSource": {
+    "description": "Description for switchSource"
+  },
+  "flatpakBetterDesc": "Found a Flatpak source for this app, which is usually more stable.",
+  "@flatpakBetterDesc": {
+    "description": "Description for flatpakBetterDesc"
+  },
+  "aiAnalysisPrompt": "Found error logs, do you need an AI analysis?",
+  "@aiAnalysisPrompt": {
+    "description": "Description for aiAnalysisPrompt"
+  },
+  "analyzeNow": "Analyze Now",
+  "@analyzeNow": {
+    "description": "Description for analyzeNow"
+  },
+  "cleanOrphans": "Clean unused dependencies (orphans)",
+  "@cleanOrphans": {
+    "description": "Description for cleanOrphans"
+  },
+  "securityWarning": "Security Warning",
+  "@securityWarning": {
+    "description": "Description for securityWarning"
+  },
+  "aurSecurityDesc": "AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.",
+  "@aurSecurityDesc": {
+    "description": "Description for aurSecurityDesc"
+  },
+  "continueInstall": "Continue Install",
+  "@continueInstall": {
+    "description": "Description for continueInstall"
+  },
+  "installInfo": "Installation Info",
+  "@installInfo": {
+    "description": "Description for installInfo"
+  },
+  "downloadSize": "Download Size",
+  "@downloadSize": {
+    "description": "Description for downloadSize"
+  },
+  "installedSize": "Installed Size",
+  "@installedSize": {
+    "description": "Description for installedSize"
+  },
+  "dependenciesCount": "Dependencies ({count})",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore is running in the background, you can open it via the tray icon.",
+  "@runningInBackground": {
+    "description": "Description for runningInBackground"
+  },
+  "clearSearch": "Clear Search",
+  "@clearSearch": {
+    "description": "Description for clearSearch"
+  },
+  "listView": "List View",
+  "@listView": {
+    "description": "Description for listView"
+  },
+  "gridView": "Grid View",
+  "@gridView": {
+    "description": "Description for gridView"
+  },
+  "categories": "Categories",
+  "@categories": {
+    "description": "Description for categories"
+  },
+  "clearHistory": "Clear History",
+  "@clearHistory": {
+    "description": "Description for clearHistory"
+  },
+  "confirmClearHistory": "Are you sure you want to clear all history?",
+  "@confirmClearHistory": {
+    "description": "Description for confirmClearHistory"
+  },
+  "viewMore": "View More",
+  "@viewMore": {
+    "description": "Description for viewMore"
+  },
+  "logDebug": "DEBUG",
+  "@logDebug": {
+    "description": "Description for logDebug"
+  },
+  "logInfo": "INFO",
+  "@logInfo": {
+    "description": "Description for logInfo"
+  },
+  "logWarning": "WARNING",
+  "@logWarning": {
+    "description": "Description for logWarning"
+  },
+  "logError": "ERROR",
+  "@logError": {
+    "description": "Description for logError"
+  },
+  "notificationTitle": "Updates Available",
+  "@notificationTitle": {
+    "description": "Description for notificationTitle"
+  },
+  "notificationBody": "{count} applications are available for update",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "Preparing update...",
+  "@preparingUpdate": {
+    "description": "Description for preparingUpdate"
+  },
+  "processing": "Processing",
+  "@processing": {
+    "description": "Description for processing"
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Description for clear"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Description for retry"
+  }
 }

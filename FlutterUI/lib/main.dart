@@ -147,7 +147,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     // 延迟初始化更新服务与系统托盘，确保 UI 已渲染且环境检查更安全
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) _initUpdateService();
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          _initUpdateService(l10n);
+        }
       });
     });
 
@@ -168,10 +171,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     }
   }
 
-  Future<void> _initUpdateService() async {
+  Future<void> _initUpdateService(AppLocalizations l10n) async {
     try {
       await UpdateService().init().timeout(const Duration(seconds: 10));
-      await UpdateService().updateConfig().timeout(const Duration(seconds: 5));
+      await UpdateService().updateConfig(l10n).timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint("UpdateService initialization failed: $e");
     }
@@ -194,9 +197,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       await wm.windowManager.hide();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("OmniStore 正在后台运行，可通过托盘图标打开"),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.runningInBackground),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -231,7 +234,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                   child: ValueListenableBuilder<String>(
                     valueListenable: BackendService.globalStatus,
                     builder: (context, status, _) => Text(
-                      "正在处理: $status",
+                      "${AppLocalizations.of(context)!.processing} $status",
                       style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
                       overflow: TextOverflow.ellipsis,
                     ),
