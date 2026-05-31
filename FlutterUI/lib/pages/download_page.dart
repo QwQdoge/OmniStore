@@ -509,8 +509,36 @@ class _DownloadPageState extends State<DownloadPage>
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.foundUpdates(updates.length),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      for (final update in updates) {
+                        UpdateService().startUpdate(
+                          update['name'],
+                          update['source'],
+                        );
+                      }
+                      _tabController.animateTo(0);
+                    },
+                    icon: const Icon(Icons.system_update_alt, size: 18),
+                    label: Text(AppLocalizations.of(context)!.updateAll),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: updates.length,
           itemBuilder: (context, index) {
             final update = updates[index];
@@ -577,6 +605,9 @@ class _DownloadPageState extends State<DownloadPage>
               ),
             );
           },
+        ),
+      ),
+    ],
         );
       },
     );

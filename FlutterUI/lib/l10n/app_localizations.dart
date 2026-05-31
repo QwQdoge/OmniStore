@@ -1039,6 +1039,12 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get windowClose;
 
+  /// App Name
+  ///
+  /// In en, this message translates to:
+  /// **'OmniStore'**
+  String get omnistore;
+
   /// No description provided for @delete.
   ///
   /// In en, this message translates to:

@@ -85,16 +85,16 @@ class InstallExecutor:
             env.pop("TERM", None)
 
             sudo_proc = await asyncio.create_subprocess_exec(
-                "sudo", "-S", "-v",
+                "sudo", "-S", "-p", "", "-v",
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.PIPE,
                 env=env,
             )
 
             # Write password followed by newline, then close stdin
             password_bytes = (password + "\n").encode("utf-8")
-            await sudo_proc.communicate(input=password_bytes)
+            _, stderr_bytes = await sudo_proc.communicate(input=password_bytes)
 
             # Immediately zero out the password string (best-effort in Python)
             password = "\x00" * len(password)
@@ -107,7 +107,8 @@ class InstallExecutor:
                 return True
 
             if callback:
-                await callback("[ERROR] Incorrect password or authorization was denied.")
+                err_msg = stderr_bytes.decode("utf-8", errors="replace").strip()
+                await callback(f"[ERROR] Authorization failed: {err_msg if err_msg else 'Incorrect password'}")
             return False
 
         except Exception as e:
