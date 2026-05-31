@@ -8,9 +8,9 @@ from typing import List, Dict, Any, Optional
 from core.habit_tracker import HabitTracker
 
 class RecommendationManager:
-    def __init__(self, session: aiohttp.ClientSession):
+    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None):
         self.session = session
-        self.habit_tracker = HabitTracker()
+        self.habit_tracker = habit_tracker or HabitTracker()
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
         self.cache_dir = Path.home() / ".cache" / "omnistore"

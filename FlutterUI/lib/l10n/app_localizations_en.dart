@@ -501,4 +501,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get welcomeTitle => 'Welcome to OmniStore';
+
+  @override
+  String get welcomeSubtitle =>
+      'Providing a simple and elegant software management experience for Arch Linux';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get envCheckTitle => 'Environment Check';
+
+  @override
+  String get envCheckSubtitle => 'Ensuring your system is ready';
+
+  @override
+  String get envFatalDesc =>
+      'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.';
+
+  @override
+  String get envWarningDesc =>
+      'Some necessary components are missing. We can configure them for you.';
+
+  @override
+  String get envOkDesc => 'Everything is ready! Your system is perfect.';
+
+  @override
+  String get fixProblems => 'Fix / Configure All';
+
+  @override
+  String get continueAnyway => 'Continue Anyway';
+
+  @override
+  String get sourceConfigTitle => 'Software Sources';
+
+  @override
+  String get sourceConfigSubtitle => 'Choose the sources you want to enable';
+
+  @override
+  String get enableAur => 'Enable AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => 'Enabling AUR requires installing the yay helper.';
+
+  @override
+  String get aurWarning =>
+      'Security Warning: AUR packages are user-contributed. Ensure you trust the source.';
+
+  @override
+  String get bootstrapNote =>
+      'Note: Setup may require entering your password multiple times.';
+
+  @override
+  String get feedbackDesc =>
+      'If you encounter issues, please report them on GitHub.';
+
+  @override
+  String get aiAssistant => 'AI Assistant';
+
+  @override
+  String get aiAssistantDesc =>
+      'Enable AI-powered search, app explanation, and error diagnosis.';
+
+  @override
+  String get aiProviderDesc => 'Select your AI model source (Local or Cloud)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama defaults to http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper =>
+      'Leave blank for Ollama, enter sk-xxx for OpenAI';
+
+  @override
+  String get howToGetApiKey => 'How to get an API key?';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get aiOllamaNote =>
+      'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".';
+
+  @override
+  String get enterStore => 'Enter Store';
+
+  @override
+  String get nextStep => 'Next Step';
+
+  @override
+  String get resetCache => 'Reset Cache and History';
+
+  @override
+  String get resetCacheDesc =>
+      'Clear search history and local recommendations cache';
+
+  @override
+  String get resetCacheConfirm =>
+      'This will clear your search history and recommendations cache. Proceed?';
+
+  @override
+  String get resetting => 'Resetting...';
+
+  @override
+  String get resetSuccess => 'Cache and History cleared successfully';
+
+  @override
+  String resetFailed(String error) {
+    return 'Reset failed: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (Local)';
+
+  @override
+  String get openaiCompatible => 'OpenAI Compatible';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }

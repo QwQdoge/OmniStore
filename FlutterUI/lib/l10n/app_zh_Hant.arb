@@ -100,6 +100,10 @@
   "@searching": {
     "description": "Description for searching"
   },
+  "activity": "動態",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "category": "分類",
   "@category": {
     "description": "Category label"
@@ -247,6 +251,22 @@
   "catGames": "遊戲",
   "@catGames": {
     "description": "Description for catGames"
+  },
+  "catGraphics": "圖形設計",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "實用工具",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "系統與視窗",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "造訪官方網站",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
   },
   "updates": "更新",
   "@updates": {
@@ -412,26 +432,6 @@
   "update": "更新",
   "@update": {
     "description": "Update action label"
-  },
-  "activity": "動態",
-  "@activity": {
-    "description": "Activity tab label"
-  },
-  "catGraphics": "圖形設計",
-  "@catGraphics": {
-    "description": "Category for Graphics"
-  },
-  "catUtility": "實用工具",
-  "@catUtility": {
-    "description": "Category for Utility"
-  },
-  "systemAndWindow": "系統與視窗",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "visitWebsite": "造訪官方網站",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
   },
   "enableSystemTray": "啟用系統托盤",
   "@enableSystemTray": {
@@ -665,11 +665,161 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "關閉",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "delete": "刪除",
-  "@delete": {
-    "description": "Label for delete action"
+  "welcomeTitle": "歡迎來到 OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "為您提供簡單、優雅的 Arch Linux 應用程式管理體驗",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "開始使用",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "跳過",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "環境檢查",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "一切就緒！您的系統非常完美。",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "一鍵修復/配置",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "仍然繼續",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "應用程式來源配置",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "選擇您想要啟用的應用程式來源",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "啟用 AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "AI 助手",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "如何獲取 API 金鑰？",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "知道了",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "進入商店",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "下一步",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "重置快取與歷史記錄",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "正在重置...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "快取與歷史記錄已成功清空",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "重置失敗: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (本地)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "OpenAI 相容",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
   }
 }

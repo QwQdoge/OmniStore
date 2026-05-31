@@ -5,6 +5,9 @@ from .base import SearchSource  # 导入基类
 
 # 这个类专门用来搜索 Arch Linux 的软件包，使用系统的 pacman 命令, 只有在只启用了pacman搜索功能时才会被调用
 
+# Pre-compiled regex for pacman package header to improve parsing performance
+_PKG_HEADER_RE = re.compile(r'^([^\s/]+)/([^\s]+)\s+([^\s]+)(.*)$')
+
 
 class PacmanSearch(SearchSource):
     def __init__(self, session=None):
@@ -50,8 +53,7 @@ class PacmanSearch(SearchSource):
 
                 # 1. 识别标题行：通常以 repo/name 开头
                 # 兼容格式：extra/telegram-desktop 5.11.1-1 [installed]
-                header_match = re.match(
-                    r'^([^\s/]+)/([^\s]+)\s+([^\s]+)(.*)$', line)
+                header_match = _PKG_HEADER_RE.match(line)
 
                 if header_match:
                     # 如果之前存过包，先推入列表

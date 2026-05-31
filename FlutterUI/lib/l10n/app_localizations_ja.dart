@@ -500,4 +500,123 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get delete => '削除';
+
+  @override
+  String get welcomeTitle => 'OmniStore へようこそ';
+
+  @override
+  String get welcomeSubtitle => 'Arch Linux のためのシンプルでエレガントなアプリ管理体験を提供します';
+
+  @override
+  String get getStarted => '始める';
+
+  @override
+  String get skip => 'スキップ';
+
+  @override
+  String get envCheckTitle => '環境チェック';
+
+  @override
+  String get envCheckSubtitle => 'システムの準備が整っていることを確認します';
+
+  @override
+  String get envFatalDesc => 'お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。';
+
+  @override
+  String get envWarningDesc => 'いくつかの必要なコンポーネントが不足しています。自動的に設定できます。';
+
+  @override
+  String get envOkDesc => '準備完了です！お使いのシステムは完璧です。';
+
+  @override
+  String get fixProblems => 'すべて修正 / 設定';
+
+  @override
+  String get continueAnyway => 'とにかく続行';
+
+  @override
+  String get sourceConfigTitle => 'ソフトウェアソース';
+
+  @override
+  String get sourceConfigSubtitle => '有効にするソースを選択してください';
+
+  @override
+  String get enableAur => 'AUR (Arch User Repository) を有効にする';
+
+  @override
+  String get yayDesc => 'AUR を有効にするには yay ヘルパーのインストールが必要です。';
+
+  @override
+  String get aurWarning =>
+      'セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
+
+  @override
+  String get bootstrapNote => '注意: セットアップにはパスワードの入力が数回必要な場合があります。';
+
+  @override
+  String get feedbackDesc => '問題が発生した場合は、GitHub で報告してください。';
+
+  @override
+  String get aiAssistant => 'AI アシスタント';
+
+  @override
+  String get aiAssistantDesc => 'AI による検索補助、アプリの説明、エラー診断を有効にします。';
+
+  @override
+  String get aiProviderDesc => 'AI モデルのソースを選択してください (ローカルまたはクラウド)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama のデフォルトは http://localhost:11434 です';
+
+  @override
+  String get aiApiKeyHelper => 'Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください';
+
+  @override
+  String get howToGetApiKey => 'API キーを取得するには？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
+
+  @override
+  String get gotIt => '了解';
+
+  @override
+  String get aiOllamaNote =>
+      '注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
+
+  @override
+  String get enterStore => 'ストアに入る';
+
+  @override
+  String get nextStep => '次へ';
+
+  @override
+  String get resetCache => 'キャッシュと履歴をリセット';
+
+  @override
+  String get resetCacheDesc => '検索履歴とローカルのおすすめキャッシュをクリアします';
+
+  @override
+  String get resetCacheConfirm => '検索履歴とおすすめキャッシュがクリアされます。続行しますか？';
+
+  @override
+  String get resetting => 'リセット中...';
+
+  @override
+  String get resetSuccess => 'キャッシュと履歴が正常にクリアされました';
+
+  @override
+  String resetFailed(String error) {
+    return 'リセットに失敗しました: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (ローカル)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 互換';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }

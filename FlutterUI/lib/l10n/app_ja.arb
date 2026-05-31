@@ -252,6 +252,22 @@
   "@catGames": {
     "description": "Description for catGames"
   },
+  "catGraphics": "グラフィックス",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "ユーティリティ",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "システムとウィンドウ",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "ウェブサイトにアクセス",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
   "updates": "更新",
   "@updates": {
     "description": "Description for updates"
@@ -412,22 +428,6 @@
   "update": "更新",
   "@update": {
     "description": "update"
-  },
-  "catGraphics": "グラフィックス",
-  "@catGraphics": {
-    "description": "Category for Graphics"
-  },
-  "catUtility": "ユーティリティ",
-  "@catUtility": {
-    "description": "Category for Utility"
-  },
-  "systemAndWindow": "システムとウィンドウ",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "visitWebsite": "ウェブサイトにアクセス",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
   },
   "enableSystemTray": "システムトレイを有効にする",
   "@enableSystemTray": {
@@ -658,11 +658,161 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "閉じる",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "delete": "削除",
-  "@delete": {
-    "description": "Label for delete action"
+  "welcomeTitle": "OmniStore へようこそ",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "Arch Linux のためのシンプルでエレガントなアプリ管理体験を提供します",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "始める",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "スキップ",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "環境チェック",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "システムの準備が整っていることを確認します",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "いくつかの必要なコンポーネントが不足しています。自動的に設定できます。",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "準備完了です！お使いのシステムは完璧です。",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "すべて修正 / 設定",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "とにかく続行",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "ソフトウェアソース",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "有効にするソースを選択してください",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "AUR (Arch User Repository) を有効にする",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "注意: セットアップにはパスワードの入力が数回必要な場合があります。",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "問題が発生した場合は、GitHub で報告してください。",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "AI アシスタント",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "AI による検索補助、アプリの説明、エラー診断を有効にします。",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "AI モデルのソースを選択してください (ローカルまたはクラウド)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama のデフォルトは http://localhost:11434 です",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "API キーを取得するには？",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "了解",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "ストアに入る",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "次へ",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "キャッシュと履歴をリセット",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "検索履歴とローカルのおすすめキャッシュをクリアします",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "検索履歴とおすすめキャッシュがクリアされます。続行しますか？",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "リセット中...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "キャッシュと履歴が正常にクリアされました",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "リセットに失敗しました: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (ローカル)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "OpenAI 互換",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
   }
 }

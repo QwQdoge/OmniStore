@@ -100,6 +100,10 @@
   "@searching": {
     "description": "Description for searching"
   },
+  "activity": "Actividad",
+  "@activity": {
+    "description": "Activity tab label"
+  },
   "category": "Categoría",
   "@category": {
     "description": "Category label"
@@ -247,6 +251,22 @@
   "catGames": "Juegos",
   "@catGames": {
     "description": "Description for catGames"
+  },
+  "catGraphics": "Gráficos",
+  "@catGraphics": {
+    "description": "Category for Graphics"
+  },
+  "catUtility": "Utilidades",
+  "@catUtility": {
+    "description": "Category for Utility"
+  },
+  "systemAndWindow": "Sistema y Ventana",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "visitWebsite": "Visitar sitio web",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
   },
   "updates": "Actualizaciones",
   "@updates": {
@@ -410,26 +430,6 @@
   "update": "Actualizar",
   "@update": {
     "description": "update"
-  },
-  "activity": "Actividad",
-  "@activity": {
-    "description": "Activity tab label"
-  },
-  "catGraphics": "Gráficos",
-  "@catGraphics": {
-    "description": "Category for Graphics"
-  },
-  "catUtility": "Utilidades",
-  "@catUtility": {
-    "description": "Category for Utility"
-  },
-  "systemAndWindow": "Sistema y Ventana",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "visitWebsite": "Visitar sitio web",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
   },
   "enableSystemTray": "Activar bandeja del sistema",
   "@enableSystemTray": {
@@ -660,11 +660,161 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "Cerrar",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "delete": "Eliminar",
-  "@delete": {
-    "description": "Label for delete action"
+  "welcomeTitle": "Bienvenido a OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "Comenzar",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "Omitir",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "Comprobación del entorno",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "Asegurando que su sistema esté listo",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "Corregir / Configurar todo",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "Continuar de todos modos",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "Fuentes de software",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "Elija las fuentes que desea habilitar",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "Activar AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "Activar AUR requiere instalar el asistente yay.",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "Nota: La configuración puede requerir introducir su contraseña varias veces.",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "Si encuentra problemas, por favor infórmenos en GitHub.",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "Asistente de IA",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "¿Cómo obtener una clave API?",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "Entendido",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "Entrar a la tienda",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "Siguiente paso",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "Restablecer caché e historial",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "Limpiar el historial de búsqueda y el caché de recomendaciones locales",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "Restableciendo...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "Caché e historial borrados con éxito",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "Error al restablecer: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (Local)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "Compatible con OpenAI",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
   }
 }
