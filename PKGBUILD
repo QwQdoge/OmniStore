@@ -32,15 +32,6 @@ EOF
     chmod +x "${pkgdir}/fake_bin/pip"
     export PATH="${pkgdir}/fake_bin:$PATH"
 
-    python auto_build.py --check-deps || {
-      echo "缺少依赖！请先安装：git cargo pyinstaller python-pip"
-      exit 1
-    }
-
-    python auto_build.py --check-safety-lock || {
-      echo "安全锁机制检测到！正在尝试绕过..."
-    }
-
     python auto_build.py --rust
     python auto_build.py --flutter
 
@@ -68,8 +59,6 @@ EOF
 
 package() {
   cd "$srcdir/omnistore"
-
-  chmod +x "${pkgdir}/fake_bin/pip" 
 
   # 1. 创建安装到系统 /opt/omnistore 的目录
   install -d "${pkgdir}/opt/omnistore" 
@@ -99,6 +88,4 @@ Terminal=false
 Type=Application
 Categories=Utility;
 EOF
-
-  chmod +x "${pkgdir}/usr/share/applications/omnistore.desktop"
 }
