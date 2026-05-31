@@ -5,7 +5,7 @@ import sys
 import argparse
 from pathlib import Path
 
-subprocess.run(["python3", "-m", "venv", "build_venv"])
+subprocess.run(["python3", "-m", "venv", "build_venv" "--clear" "--break-system-packages"], check=True)
 
 # 1. 定义好虚拟环境内部的正确路径（都在 bin 目录下）
 venv_dir = "build_venv"
