@@ -497,6 +497,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get windowClose => '关闭';
 
   @override
+  String get omnistore => 'OmniStore';
+
+  @override
   String get delete => '删除';
 
   @override
@@ -1235,6 +1238,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get windowClose => '關閉';
+
+  @override
+  String get omnistore => 'OmniStore';
 
   @override
   String get delete => '刪除';

@@ -62,14 +62,17 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 ### Rust Daemon (`daemon/`)
 - A lightweight background service checking package updates and dispatching system notifications using desktop notifications.
 
+### Process Management
+- **Full Exit Strategy**: When the user triggers an "Exit" action (via tray or window close when tray is disabled), the Flutter UI executes `_handleFullExit`. This explicitly sends `pkill` signals to `omnistore-daemon` and any active `python/main.py` processes to ensure zero lingering background resources.
+
 ---
 
 ## 3. Integration & Implementation Methodology
 
 1. **Process Bridge**: The Flutter UI triggers CLI backend tasks asynchronously using `Process.start` on the Python virtualenv executable (`python/.venv/bin/python`) targeting `python/main.py`.
 2. **Real-time Log Streaming**: Outputs from Python's standard output are parsed line-by-line via `Stream<String>` in Flutter's `BackendService`. Progress percentages marked with `[PROGRESS]` updates the global progress notifier.
-3. **Background Tasks**: Long-running background installs are coordinated using the `TaskManager` service to persist state across page navigation.
-4. **System Tray Integration**: `UpdateService` initializes a background tray icon using `SystemTray` package with the asset `assets/app_icon.png` to support minimize-to-tray.
+3. **Background Tasks**: Long-running background installs are coordinated using the `TaskManager` service to persist state across page navigation. Task progress and completion are integrated with system notifications via `UpdateService`.
+4. **System Tray Integration**: `UpdateService` initializes a background tray icon using `SystemTray` package. On Linux, it uses absolute icon paths resolved relative to the executable for maximum compatibility.
 
 ---
 

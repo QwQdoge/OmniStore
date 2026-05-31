@@ -198,18 +198,41 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     if (closeToTray) {
       await wm.windowManager.hide();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.runningInBackground),
+            content: Text(l10n.runningInBackground),
+            behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
         );
+
+        // Also show a system notification if the UI is hidden
+        UpdateService().showSimpleNotification(
+          l10n.omnistore,
+          l10n.runningInBackground,
+        );
       }
     } else {
-      await wm.windowManager.setPreventClose(false);
-      await wm.windowManager.close();
-      exit(0);
+      await _handleFullExit();
     }
+  }
+
+  Future<void> _handleFullExit() async {
+    // 1. Terminate background processes
+    try {
+      // Use pkill to find and terminate the Rust daemon
+      await Process.run('pkill', ['omnistore-daemon']);
+      // Kill any remaining python backend processes
+      await Process.run('pkill', ['-f', 'python/main.py']);
+    } catch (e) {
+      debugPrint("Process cleanup error: $e");
+    }
+
+    // 2. Close window and exit
+    await wm.windowManager.setPreventClose(false);
+    await wm.windowManager.close();
+    exit(0);
   }
 
   @override

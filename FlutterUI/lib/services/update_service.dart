@@ -62,6 +62,16 @@ class UpdateService {
   Future<void> updateConfig([AppLocalizations? l10n]) async {
     _config = await BackendService.instance.loadConfig();
 
+    // Ensure notifications match initial config
+    final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
+    if (notificationsEnabled) {
+      const LinuxInitializationSettings initializationSettingsLinux =
+          LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
+      const InitializationSettings initializationSettings =
+          InitializationSettings(linux: initializationSettingsLinux);
+      await _notificationsPlugin.initialize(initializationSettings);
+    }
+
     if (l10n != null) {
       _showWindowLabel = l10n.showWindow;
       _checkUpdatesLabel = l10n.checkUpdates;
@@ -104,10 +114,9 @@ class UpdateService {
 
   Future<void> _initSystemTray() async {
     final config = await BackendService.instance.loadConfig();
-    // 默认在 Linux 上禁用，除非明确启用且依赖检查通过
-    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? false;
+    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
     if (!trayEnabled) {
-      debugPrint("System tray disabled (default on Linux or user set).");
+      debugPrint("System tray disabled in config.");
       return;
     }
 
@@ -139,9 +148,30 @@ class UpdateService {
         guardFile.createSync();
       }
 
+      // Use absolute path for icon on Linux to prevent loading failures
+      String iconPath = 'assets/app_icon.png';
+      if (Platform.isLinux) {
+        final String executablePath = Platform.resolvedExecutable;
+        final String executableDir = p.dirname(executablePath);
+
+        // Try several common paths for assets in a Linux build
+        final List<String> candidatePaths = [
+          p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
+          p.join(executableDir, 'assets', 'app_icon.png'),
+          p.join(Directory.current.path, 'assets', 'app_icon.png'),
+        ];
+
+        for (final path in candidatePaths) {
+          if (File(path).existsSync()) {
+            iconPath = path;
+            break;
+          }
+        }
+      }
+
       // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
       await _systemTray
-          .initSystemTray(title: "OmniStore", iconPath: 'assets/app_icon.png')
+          .initSystemTray(title: "OmniStore", iconPath: iconPath)
           .timeout(const Duration(seconds: 3));
 
       final Menu menu = Menu();
@@ -156,7 +186,7 @@ class UpdateService {
               onClicked: (menuItem) => checkNow(),
             ),
             MenuSeparator(),
-            MenuItemLabel(label: _exitLabel, onClicked: (menuItem) => exit(0)),
+            MenuItemLabel(label: _exitLabel, onClicked: (menuItem) => _handleFullExit()),
           ])
           .timeout(const Duration(seconds: 2));
 
@@ -300,5 +330,29 @@ class UpdateService {
       "$title: ${success ? _successLabel : _failedLabel}",
       NotificationDetails(linux: linuxDetails),
     );
+  }
+
+  Future<void> showSimpleNotification(String title, String body) async {
+    final enabled = _config['notifications']?['enabled'] ?? true;
+    if (!enabled) return;
+
+    const linuxDetails = LinuxNotificationDetails(
+      urgency: LinuxNotificationUrgency.normal,
+    );
+
+    await _notificationsPlugin.show(
+      3,
+      title,
+      body,
+      const NotificationDetails(linux: linuxDetails),
+    );
+  }
+
+  Future<void> _handleFullExit() async {
+    try {
+      await Process.run('pkill', ['omnistore-daemon']);
+      await Process.run('pkill', ['-f', 'python/main.py']);
+    } catch (_) {}
+    exit(0);
   }
 }

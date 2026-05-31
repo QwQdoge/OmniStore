@@ -500,6 +500,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get windowClose => 'Cerrar';
 
   @override
+  String get omnistore => 'OmniStore';
+
+  @override
   String get delete => 'Eliminar';
 
   @override

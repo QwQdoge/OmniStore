@@ -367,13 +367,18 @@ class BackendService {
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
-      final result = await Process.run(_venvPython, [
+      final process = await Process.start(_venvPython, [
         _scriptPath,
         "--set-config",
-        jsonEncode(config),
+        "stdin",
         "--json",
       ], workingDirectory: _workingDir).timeout(const Duration(seconds: 5));
-      return result.exitCode == 0;
+
+      process.stdin.write(jsonEncode(config));
+      await process.stdin.close();
+
+      final exitCode = await process.exitCode.timeout(const Duration(seconds: 5));
+      return exitCode == 0;
     } catch (e) {
       debugPrint("saveConfig Exception: $e");
       return false;
