@@ -27,7 +27,11 @@ class SmartScoring:
 
         return False
 
-    def _calculate_smart_score(self, item, query_lower):
+    def _calculate_smart_score(self, item, query_lower, priority_map=None, source_weights=None, query_re=None):
+        """
+        Calculates a ranking score for a search result.
+        Optimized with optional pre-calculated maps to avoid redundant lookups in hot loops.
+        """
         score = 0
         name_lower = item.get('name', '').lower()
         description = item.get('description', '')
@@ -55,8 +59,11 @@ class SmartScoring:
             score += 500   # 鼓励普通软件
 
         # --- 维度 4：来源优先级与用户偏好 ---
-        priority_map = self.cm.get("priority", {})
-        source_key = item.get('source', '').lower()
+        if priority_map is None:
+            priority_map = self.cm.get("priority", {})
+
+        source_raw = item.get('source', '')
+        source_key = source_raw.lower()
         # 兼容配置中的 key 名
         if source_key == "native": cfg_key = "pacman"
         else: cfg_key = source_key
@@ -64,8 +71,11 @@ class SmartScoring:
         score += priority_map.get(cfg_key, 50)
 
         # 加入用户偏好权重
-        if self.habit_tracker:
-            user_pref_score = self.habit_tracker.get_source_weight(item.get('source', ''))
+        if source_weights is not None:
+            # use pre-calculated weights if provided
+            score += source_weights.get(source_raw, 0) * 10
+        elif self.habit_tracker:
+            user_pref_score = self.habit_tracker.get_source_weight(source_raw)
             score += user_pref_score * 10  # 放大用户习惯的影响
 
         # --- 维度 5：细节微调 ---
@@ -73,11 +83,14 @@ class SmartScoring:
         if length_diff >= 0:
             score += max(0, 500 - (length_diff * 20))
 
-        # Optimization: Cache the query regex to avoid recompilation for every item in the result list
-        if query_lower not in self._query_re_cache:
-            self._query_re_cache[query_lower] = re.compile(rf"\b{re.escape(query_lower)}")
-
-        if self._query_re_cache[query_lower].search(name_lower):
-            score += 500
+        # Optimization: use pre-compiled query_re if provided
+        if query_re:
+            if query_re.search(name_lower):
+                score += 500
+        else:
+            if query_lower not in self._query_re_cache:
+                self._query_re_cache[query_lower] = re.compile(rf"\b{re.escape(query_lower)}")
+            if self._query_re_cache[query_lower].search(name_lower):
+                score += 500
 
         return score
