@@ -1,6 +1,3 @@
-PKGDEST="${startdir}/arch_pkg"
-BUILDDIR="${startdir}/arch_build"
-SRCDEST="${startdir}/arch_src"
 
 pkgname=omnistore-git
 pkgver=v0.1.0.beta
@@ -60,7 +57,7 @@ EOF
   # 很多偷跑的底层脚本不读环境变量，但这个文件没了它们就绝对无法拦截
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null || true
 
-  
+
   cd "${srcdir}/omnistore"  
   # 3. 顺便检查你这里有没有给你的脚本传参！如果是想编译全部，记得加上 --all
   python auto_build.py --all
