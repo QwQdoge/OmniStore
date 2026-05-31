@@ -104,7 +104,9 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   Future<void> _finishSetup() async {
+    // 强制先获取最新配置，确保不会覆盖掉之前的设置
     final config = await _backend.loadConfig();
+
     config['first_run'] = false;
     config['search'] ??= {};
     config['search']['sources'] ??= {};
@@ -116,8 +118,17 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai']['endpoint'] = _aiEndpoint.text;
     config['ai']['api_key'] = _aiApiKey.text;
 
-    await _backend.saveConfig(config);
-    widget.onFinish();
+    final success = await _backend.saveConfig(config);
+    if (success) {
+      debugPrint("Onboarding configuration saved successfully.");
+      // 确保配置在内存中也是最新的
+      await _backend.loadConfig();
+      widget.onFinish();
+    } else {
+      debugPrint("Failed to save onboarding configuration.");
+      // 如果保存失败，至少也尝试进入主界面，但最好能通知用户
+      widget.onFinish();
+    }
   }
 
   @override

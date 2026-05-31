@@ -665,6 +665,10 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "關閉",
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
   "delete": "刪除",
   "welcomeTitle": "歡迎來到 OmniStore",
   "@welcomeTitle": {
