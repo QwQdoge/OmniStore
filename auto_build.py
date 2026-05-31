@@ -35,7 +35,7 @@ def run_command(cmd, cwd, name):
     print(f"✅ {name} 成功！")
 
 def build_rust():
-    run_command("cargo build --release", RUST_PROJECT_DIR, "Rust Release 编译")
+    run_command("cargo build --release", RUST_PROJECT_DIR, "Rust Release build")
 
 def build_python():
     # 探测 venv 路径
@@ -67,10 +67,10 @@ def build_flutter():
         cmd = "flutter build windows --release"
     else:
         cmd = "flutter build linux --release"
-    run_command(cmd, FLUTTER_PROJECT_DIR, "Flutter Release 编译")
+    run_command(cmd, FLUTTER_PROJECT_DIR, "Flutter Release build")
 
 def assemble():
-    print("\n📦 [正在拼装] 正在将后端二进制文件移入 Flutter Bundle...")
+    print("\n📦 [assemble] assembling Flutter Bundle...")
     TARGET_BACKEND_DIR.mkdir(parents=True, exist_ok=True)
 
     # 复制 Rust 产物
@@ -78,29 +78,29 @@ def assemble():
     rust_src = RUST_PROJECT_DIR / "target" / "release" / rust_bin_name
     if rust_src.exists():
         shutil.copy2(rust_src, TARGET_BACKEND_DIR / rust_bin_name)
-        print(f"✅ 已复制 Rust 守护进程: {rust_bin_name}")
+        print(f"✅ copy rust artifacts: {rust_bin_name}")
     else:
-        print(f"⚠️ 未找到 Rust 产物: {rust_src}")
+        print(f"⚠️ can not find rust artifacts: {rust_src}")
 
     # 复制 Python 产物
     python_bin_name = "python_server" + BINARY_EXT
     python_src = PYTHON_PROJECT_DIR / "dist" / python_bin_name
     if python_src.exists():
         shutil.copy2(python_src, TARGET_BACKEND_DIR / python_bin_name)
-        print(f"✅ 已复制 Python 后端: {python_bin_name}")
+        print(f"✅ copy python artifacts: {python_bin_name}")
     else:
-        print(f"⚠️ 未找到 Python 产物: {python_src}")
+        print(f"⚠️ can not find python artifacts: {python_src}")
 
-    print(f"\n🎉 🎉 🎉 所有打包工作已完美自动完成！")
-    print(f"📁 最终成品目录: {FLUTTER_BUNDLE_DIR}")
+    print(f"\n🎉 🎉 🎉 all done!")
+    print(f"📁 final bundle directory: {FLUTTER_BUNDLE_DIR}")
 
 def main():
-    parser = argparse.ArgumentParser(description="OmniStore 自动化打包工具")
-    parser.add_argument("--all", action="store_true", help="全量打包 (Rust + Python + Flutter)")
-    parser.add_argument("--rust", action="store_true", help="仅打包 Rust 守护进程")
-    parser.add_argument("--python", action="store_true", help="仅打包 Python 后端")
-    parser.add_argument("--flutter", action="store_true", help="仅打包 Flutter 前端")
-    parser.add_argument("--assemble", action="store_true", help="仅执行组装步骤")
+    parser = argparse.ArgumentParser(description="OmniStore auto build script")
+    parser.add_argument("--all", action="store_true", help="build everything (Rust + Python + Flutter)")
+    parser.add_argument("--rust", action="store_true", help="only build Rust daemon")
+    parser.add_argument("--python", action="store_true", help="only build Python backend")
+    parser.add_argument("--flutter", action="store_true", help="only build Flutter frontend")
+    parser.add_argument("--assemble", action="store_true", help="only execute assembly step (copy binaries into Flutter bundle)")
 
     args = parser.parse_args()
 

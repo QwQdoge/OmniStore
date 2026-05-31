@@ -19,9 +19,9 @@ pkgver() {
 build() {
   cd "$srcdir/omnistore"
 
-  echo "=== 使用 auto_build.py 进行全自动化编译 ==="
+  echo "=== use auto_build.py to build everything ==="
   # 确保 python 依赖已安装 (PKGBUILD 环境通常需要)
-  # pip install -r python/requirements.txt
+  pip install -r python/requirements.txt
 
   python auto_build.py --all
 }
@@ -30,7 +30,7 @@ package() {
   cd "$srcdir/omnistore"
 
   # 1. 创建安装到系统 /opt/omnistore 的目录
-  install -d "${pkgdir}/opt/omnistore"
+  install -d "${pkgdir}/opt/omnistore" 
 
   # 2. 拷贝 Flutter bundle 里的所有东西 (由 auto_build.py 生成)
   # 注意：auto_build.py 已经把 backends 组装到了 bundle 目录里
