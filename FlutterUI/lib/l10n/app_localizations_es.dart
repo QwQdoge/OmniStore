@@ -396,94 +396,109 @@ class AppLocalizationsEs extends AppLocalizations {
   String get add => 'Añadir';
 
   @override
-  String get aiSettings => 'AI Assistant Settings';
+  String get aiSettings => 'Ajustes del Asistente de IA';
 
   @override
-  String get aiEnabled => 'Enable AI Assistant';
+  String get aiEnabled => 'Activar Asistente de IA';
 
   @override
-  String get aiProvider => 'AI Provider';
+  String get aiProvider => 'Proveedor de IA';
 
   @override
-  String get aiEndpoint => 'API Endpoint';
+  String get aiEndpoint => 'Punto de acceso API';
 
   @override
-  String get aiModel => 'Model Name';
+  String get aiModel => 'Nombre del modelo';
 
   @override
-  String get aiApiKey => 'API Key';
+  String get aiApiKey => 'Clave API';
 
   @override
-  String get aiProxy => 'Network Proxy (Optional)';
+  String get aiProxy => 'Proxy de red (Opcional)';
 
   @override
-  String get aiTemperature => 'Temperature (Creativity)';
+  String get aiTemperature => 'Temperatura (Creatividad)';
 
   @override
-  String get aiMaxTokens => 'Max Response Tokens';
+  String get aiMaxTokens => 'Tokens máximos';
 
   @override
-  String get aiTestButton => 'Test AI Connection';
+  String get aiTestButton => 'Probar conexión de IA';
 
   @override
-  String get aiTestSuccess => 'AI connection successful!';
+  String get aiTestSuccess => '¡Conexión de IA exitosa!';
 
   @override
   String aiTestFailed(String error) {
-    return 'AI connection failed: $error';
+    return 'Conexión de IA fallida: $error';
   }
 
   @override
-  String get aiPromptExplain => 'Explain with AI';
+  String get aiPromptExplain => 'Explicar con IA';
 
   @override
-  String get aiPromptRecommend => 'Ask AI for Recommendation';
+  String get aiPromptRecommend => 'Pedir recomendación a la IA';
 
   @override
-  String get aiPromptError => 'Analyze Error with AI';
+  String get aiPromptError => 'Analizar error con IA';
 
   @override
-  String get aiPickDay => 'AI Pick of the Day';
+  String get aiPickDay => 'Selección del día de la IA';
 
   @override
-  String get aiPickDaySubtitle => 'Powered by OmniStore AI';
+  String get aiPickDaySubtitle => 'Impulsado por OmniStore AI';
 
   @override
-  String get aiCompareTitle => 'AI Variant Comparison';
+  String get aiCompareTitle => 'Comparación de variantes por IA';
 
   @override
-  String get aiHealthTitle => 'AI System Health Report';
+  String get aiHealthTitle => 'Informe de salud del sistema por IA';
 
   @override
-  String get aiHealthSubtitle => 'Intelligent diagnostic for your Arch Linux';
+  String get aiHealthSubtitle => 'Diagnóstico inteligente para su Arch Linux';
 
   @override
-  String get aiCorrection => 'Did you mean?';
+  String get aiCorrection => '¿Quisiste decir?';
 
   @override
-  String get aiThinking => 'AI is thinking...';
+  String get aiThinking => 'La IA está pensando...';
 
   @override
-  String get magicSearch => 'Magic Search';
+  String get magicSearch => 'Búsqueda mágica';
 
   @override
-  String get aiChangelogTitle => 'AI Update Summary';
+  String get aiChangelogTitle => 'Resumen de actualizaciones por IA';
 
   @override
-  String get aiCliTitle => 'AI Command Generator';
+  String get aiCliTitle => 'Generador de comandos por IA';
 
   @override
-  String get aiConflictTitle => 'AI Conflict Detection';
+  String get aiConflictTitle => 'Detección de conflictos por IA';
 
   @override
-  String get aiCopyCommand => 'Copy Command';
+  String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiCommandCopied => 'Command copied to clipboard';
+  String get aiCommandCopied => 'Comando copiado al portapapeles';
 
   @override
-  String get aiRefineSearch => 'Refine search with AI';
+  String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Explain this update';
+  String get aiExplainUpdate => 'Explicar esta actualización';
+
+  @override
+  String get windowMinimize => 'Minimizar';
+
+  @override
+  String get windowMaximize => 'Maximizar';
+
+  @override
+  String get windowRestore => 'Restaurar';
+
+  @override
+  String get windowClose => 'Cerrar';
+
+  @override
+  String get delete => 'Eliminar';
 }

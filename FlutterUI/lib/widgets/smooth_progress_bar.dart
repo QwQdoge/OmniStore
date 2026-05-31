@@ -25,6 +25,23 @@ class SmoothProgressBar extends StatelessWidget {
       children: [
         Row(
           children: [
+            if (taskState.stage.isNotEmpty && !isFailed)
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  taskState.stage.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
             Expanded(
               child: Text(
                 taskState.message,

@@ -93,6 +93,17 @@ class FlatpakDownloader:
                             await callback(f"[PROGRESS] {total_prog}")
                         last_sent_progress = total_prog
 
+                    # Stage recognition for Flatpak
+                    if callback:
+                        if "downloading" in raw_data.lower():
+                            await callback("[STAGE] Downloading")
+                        elif "installing" in raw_data.lower():
+                            await callback("[STAGE] Installing")
+                        elif "uninstalling" in raw_data.lower():
+                            await callback("[STAGE] Uninstalling")
+                        elif "updating" in raw_data.lower():
+                            await callback("[STAGE] Updating")
+
             await process.wait()
             self.current_process = None
             if is_install and process.returncode == 0:

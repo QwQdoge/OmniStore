@@ -648,8 +648,23 @@
     "description": "aiExplainUpdate"
   },
   "windowMinimize": "Minimizar",
+  "@windowMinimize": {
+    "description": "Tooltip for window minimize button"
+  },
   "windowMaximize": "Maximizar",
+  "@windowMaximize": {
+    "description": "Tooltip for window maximize button"
+  },
   "windowRestore": "Restaurar",
+  "@windowRestore": {
+    "description": "Tooltip for window restore button"
+  },
   "windowClose": "Cerrar",
-  "delete": "Eliminar"
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
+  "delete": "Eliminar",
+  "@delete": {
+    "description": "Label for delete action"
+  }
 }
