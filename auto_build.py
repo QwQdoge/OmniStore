@@ -57,6 +57,8 @@ def build_python():
         "--onefile",
         "--name", "python_server",
         "--clean",
+        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"), # 👈 缓存 spec 丢这里
+        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"), # 👈 缓存 build 丢这里
         str(PYTHON_PROJECT_DIR / "main.py"),
     ], check=True, cwd=str(PYTHON_PROJECT_DIR))
 
