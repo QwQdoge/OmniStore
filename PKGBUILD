@@ -1,4 +1,7 @@
-# Maintainer: OmniStore Team <contact@omnistore.dev>
+PKGDEST="${startdir}/arch_pkg"
+BUILDDIR="${startdir}/arch_build"
+SRCDEST="${startdir}/arch_src"
+
 pkgname=omnistore-git
 pkgver=v0.1.0.beta
 pkgrel=1
