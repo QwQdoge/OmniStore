@@ -1033,17 +1033,245 @@ abstract class AppLocalizations {
   /// **'Restore'**
   String get windowRestore;
 
-  /// Tooltip for window close button
+  /// No description provided for @windowClose.
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get windowClose;
 
-  /// Label for delete action
+  /// No description provided for @delete.
   ///
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// Description for welcomeTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to OmniStore'**
+  String get welcomeTitle;
+
+  /// Description for welcomeSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Providing a simple and elegant software management experience for Arch Linux'**
+  String get welcomeSubtitle;
+
+  /// Description for getStarted
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Description for skip
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// Description for envCheckTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Environment Check'**
+  String get envCheckTitle;
+
+  /// Description for envCheckSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Ensuring your system is ready'**
+  String get envCheckSubtitle;
+
+  /// Description for envFatalDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.'**
+  String get envFatalDesc;
+
+  /// Description for envWarningDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Some necessary components are missing. We can configure them for you.'**
+  String get envWarningDesc;
+
+  /// Description for envOkDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is ready! Your system is perfect.'**
+  String get envOkDesc;
+
+  /// Description for fixProblems
+  ///
+  /// In en, this message translates to:
+  /// **'Fix / Configure All'**
+  String get fixProblems;
+
+  /// Description for continueAnyway
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Anyway'**
+  String get continueAnyway;
+
+  /// Description for sourceConfigTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Software Sources'**
+  String get sourceConfigTitle;
+
+  /// Description for sourceConfigSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the sources you want to enable'**
+  String get sourceConfigSubtitle;
+
+  /// Description for enableAur
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AUR (Arch User Repository)'**
+  String get enableAur;
+
+  /// Description for yayDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enabling AUR requires installing the yay helper.'**
+  String get yayDesc;
+
+  /// Description for aurWarning
+  ///
+  /// In en, this message translates to:
+  /// **'Security Warning: AUR packages are user-contributed. Ensure you trust the source.'**
+  String get aurWarning;
+
+  /// Description for bootstrapNote
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Setup may require entering your password multiple times.'**
+  String get bootstrapNote;
+
+  /// Description for feedbackDesc
+  ///
+  /// In en, this message translates to:
+  /// **'If you encounter issues, please report them on GitHub.'**
+  String get feedbackDesc;
+
+  /// Description for aiAssistant
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant'**
+  String get aiAssistant;
+
+  /// Description for aiAssistantDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
+  String get aiAssistantDesc;
+
+  /// Description for aiProviderDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Select your AI model source (Local or Cloud)'**
+  String get aiProviderDesc;
+
+  /// Description for aiEndpointHelper
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama defaults to http://localhost:11434'**
+  String get aiEndpointHelper;
+
+  /// Description for aiApiKeyHelper
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for Ollama, enter sk-xxx for OpenAI'**
+  String get aiApiKeyHelper;
+
+  /// Description for howToGetApiKey
+  ///
+  /// In en, this message translates to:
+  /// **'How to get an API key?'**
+  String get howToGetApiKey;
+
+  /// Description for howToGetApiKeyDesc
+  ///
+  /// In en, this message translates to:
+  /// **'1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.'**
+  String get howToGetApiKeyDesc;
+
+  /// Description for gotIt
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// Description for aiOllamaNote
+  ///
+  /// In en, this message translates to:
+  /// **'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".'**
+  String get aiOllamaNote;
+
+  /// Description for enterStore
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Store'**
+  String get enterStore;
+
+  /// Description for nextStep
+  ///
+  /// In en, this message translates to:
+  /// **'Next Step'**
+  String get nextStep;
+
+  /// Description for resetCache
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Cache and History'**
+  String get resetCache;
+
+  /// Description for resetCacheDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search history and local recommendations cache'**
+  String get resetCacheDesc;
+
+  /// Description for resetCacheConfirm
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear your search history and recommendations cache. Proceed?'**
+  String get resetCacheConfirm;
+
+  /// Description for resetting
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting...'**
+  String get resetting;
+
+  /// Description for resetSuccess
+  ///
+  /// In en, this message translates to:
+  /// **'Cache and History cleared successfully'**
+  String get resetSuccess;
+
+  /// No description provided for @resetFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset failed: {error}'**
+  String resetFailed(String error);
+
+  /// Description for ollamaLocal
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama (Local)'**
+  String get ollamaLocal;
+
+  /// Description for openaiCompatible
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI Compatible'**
+  String get openaiCompatible;
+
+  /// Description for googleGemini
+  ///
+  /// In en, this message translates to:
+  /// **'Google Gemini'**
+  String get googleGemini;
 }
 
 class _AppLocalizationsDelegate
