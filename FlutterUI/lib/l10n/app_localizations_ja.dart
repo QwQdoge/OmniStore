@@ -395,94 +395,228 @@ class AppLocalizationsJa extends AppLocalizations {
   String get add => '追加';
 
   @override
-  String get aiSettings => 'AI Assistant Settings';
+  String get aiSettings => 'AI アシスタント設定';
 
   @override
-  String get aiEnabled => 'Enable AI Assistant';
+  String get aiEnabled => 'AI アシスタントを有効にする';
 
   @override
-  String get aiProvider => 'AI Provider';
+  String get aiProvider => 'AI プロバイダー';
 
   @override
-  String get aiEndpoint => 'API Endpoint';
+  String get aiEndpoint => 'API エンドポイント';
 
   @override
-  String get aiModel => 'Model Name';
+  String get aiModel => 'モデル名';
 
   @override
-  String get aiApiKey => 'API Key';
+  String get aiApiKey => 'API キー';
 
   @override
-  String get aiProxy => 'Network Proxy (Optional)';
+  String get aiProxy => 'ネットワークプロキシ (オプション)';
 
   @override
-  String get aiTemperature => 'Temperature (Creativity)';
+  String get aiTemperature => '温度 (創造性)';
 
   @override
-  String get aiMaxTokens => 'Max Response Tokens';
+  String get aiMaxTokens => '最大トークン数';
 
   @override
-  String get aiTestButton => 'Test AI Connection';
+  String get aiTestButton => 'AI 接続をテスト';
 
   @override
-  String get aiTestSuccess => 'AI connection successful!';
+  String get aiTestSuccess => 'AI 接続に成功しました！';
 
   @override
   String aiTestFailed(String error) {
-    return 'AI connection failed: $error';
+    return 'AI 接続に失敗しました: $error';
   }
 
   @override
-  String get aiPromptExplain => 'Explain with AI';
+  String get aiPromptExplain => 'AI で説明';
 
   @override
-  String get aiPromptRecommend => 'Ask AI for Recommendation';
+  String get aiPromptRecommend => 'AI におすすめを聞く';
 
   @override
-  String get aiPromptError => 'Analyze Error with AI';
+  String get aiPromptError => 'AI でエラーを分析';
 
   @override
-  String get aiPickDay => 'AI Pick of the Day';
+  String get aiPickDay => '本日の一押し (AI)';
 
   @override
-  String get aiPickDaySubtitle => 'Powered by OmniStore AI';
+  String get aiPickDaySubtitle => 'OmniStore AI による提供';
 
   @override
-  String get aiCompareTitle => 'AI Variant Comparison';
+  String get aiCompareTitle => 'AI バリアント比較';
 
   @override
-  String get aiHealthTitle => 'AI System Health Report';
+  String get aiHealthTitle => 'AI システム健康診断レポート';
 
   @override
-  String get aiHealthSubtitle => 'Intelligent diagnostic for your Arch Linux';
+  String get aiHealthSubtitle => 'Arch Linux のためのインテリジェント診断';
 
   @override
-  String get aiCorrection => 'Did you mean?';
+  String get aiCorrection => 'もしかして：';
 
   @override
-  String get aiThinking => 'AI is thinking...';
+  String get aiThinking => 'AI が考え中...';
 
   @override
-  String get magicSearch => 'Magic Search';
+  String get magicSearch => 'マジック検索';
 
   @override
-  String get aiChangelogTitle => 'AI Update Summary';
+  String get aiChangelogTitle => 'AI 更新サマリー';
 
   @override
-  String get aiCliTitle => 'AI Command Generator';
+  String get aiCliTitle => 'AI コマンド生成';
 
   @override
-  String get aiConflictTitle => 'AI Conflict Detection';
+  String get aiConflictTitle => 'AI 競合検出';
 
   @override
-  String get aiCopyCommand => 'Copy Command';
+  String get aiCopyCommand => 'コマンドをコピー';
 
   @override
-  String get aiCommandCopied => 'Command copied to clipboard';
+  String get aiCommandCopied => 'クリップボードにコピーしました';
 
   @override
-  String get aiRefineSearch => 'Refine search with AI';
+  String get aiRefineSearch => 'AI で検索を絞り込む';
 
   @override
-  String get aiExplainUpdate => 'Explain this update';
+  String get aiExplainUpdate => 'この更新を説明';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowRestore => '元に戻す';
+
+  @override
+  String get windowClose => '閉じる';
+
+  @override
+  String get delete => '削除';
+
+  @override
+  String get welcomeTitle => 'OmniStore へようこそ';
+
+  @override
+  String get welcomeSubtitle => 'Arch Linux のためのシンプルでエレガントなアプリ管理体験を提供します';
+
+  @override
+  String get getStarted => '始める';
+
+  @override
+  String get skip => 'スキップ';
+
+  @override
+  String get envCheckTitle => '環境チェック';
+
+  @override
+  String get envCheckSubtitle => 'システムの準備が整っていることを確認します';
+
+  @override
+  String get envFatalDesc => 'お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。';
+
+  @override
+  String get envWarningDesc => 'いくつかの必要なコンポーネントが不足しています。自動的に設定できます。';
+
+  @override
+  String get envOkDesc => '準備完了です！お使いのシステムは完璧です。';
+
+  @override
+  String get fixProblems => 'すべて修正 / 設定';
+
+  @override
+  String get continueAnyway => 'とにかく続行';
+
+  @override
+  String get sourceConfigTitle => 'ソフトウェアソース';
+
+  @override
+  String get sourceConfigSubtitle => '有効にするソースを選択してください';
+
+  @override
+  String get enableAur => 'AUR (Arch User Repository) を有効にする';
+
+  @override
+  String get yayDesc => 'AUR を有効にするには yay ヘルパーのインストールが必要です。';
+
+  @override
+  String get aurWarning =>
+      'セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
+
+  @override
+  String get bootstrapNote => '注意: セットアップにはパスワードの入力が数回必要な場合があります。';
+
+  @override
+  String get feedbackDesc => '問題が発生した場合は、GitHub で報告してください。';
+
+  @override
+  String get aiAssistant => 'AI アシスタント';
+
+  @override
+  String get aiAssistantDesc => 'AI による検索補助、アプリの説明、エラー診断を有効にします。';
+
+  @override
+  String get aiProviderDesc => 'AI モデルのソースを選択してください (ローカルまたはクラウド)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama のデフォルトは http://localhost:11434 です';
+
+  @override
+  String get aiApiKeyHelper => 'Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください';
+
+  @override
+  String get howToGetApiKey => 'API キーを取得するには？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
+
+  @override
+  String get gotIt => '了解';
+
+  @override
+  String get aiOllamaNote =>
+      '注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
+
+  @override
+  String get enterStore => 'ストアに入る';
+
+  @override
+  String get nextStep => '次へ';
+
+  @override
+  String get resetCache => 'キャッシュと履歴をリセット';
+
+  @override
+  String get resetCacheDesc => '検索履歴とローカルのおすすめキャッシュをクリアします';
+
+  @override
+  String get resetCacheConfirm => '検索履歴とおすすめキャッシュがクリアされます。続行しますか？';
+
+  @override
+  String get resetting => 'リセット中...';
+
+  @override
+  String get resetSuccess => 'キャッシュと履歴が正常にクリアされました';
+
+  @override
+  String resetFailed(String error) {
+    return 'リセットに失敗しました: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (ローカル)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 互換';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }

@@ -396,94 +396,238 @@ class AppLocalizationsEs extends AppLocalizations {
   String get add => 'Añadir';
 
   @override
-  String get aiSettings => 'AI Assistant Settings';
+  String get aiSettings => 'Ajustes del Asistente de IA';
 
   @override
-  String get aiEnabled => 'Enable AI Assistant';
+  String get aiEnabled => 'Activar Asistente de IA';
 
   @override
-  String get aiProvider => 'AI Provider';
+  String get aiProvider => 'Proveedor de IA';
 
   @override
-  String get aiEndpoint => 'API Endpoint';
+  String get aiEndpoint => 'Punto de acceso API';
 
   @override
-  String get aiModel => 'Model Name';
+  String get aiModel => 'Nombre del modelo';
 
   @override
-  String get aiApiKey => 'API Key';
+  String get aiApiKey => 'Clave API';
 
   @override
-  String get aiProxy => 'Network Proxy (Optional)';
+  String get aiProxy => 'Proxy de red (Opcional)';
 
   @override
-  String get aiTemperature => 'Temperature (Creativity)';
+  String get aiTemperature => 'Temperatura (Creatividad)';
 
   @override
-  String get aiMaxTokens => 'Max Response Tokens';
+  String get aiMaxTokens => 'Tokens máximos';
 
   @override
-  String get aiTestButton => 'Test AI Connection';
+  String get aiTestButton => 'Probar conexión de IA';
 
   @override
-  String get aiTestSuccess => 'AI connection successful!';
+  String get aiTestSuccess => '¡Conexión de IA exitosa!';
 
   @override
   String aiTestFailed(String error) {
-    return 'AI connection failed: $error';
+    return 'Conexión de IA fallida: $error';
   }
 
   @override
-  String get aiPromptExplain => 'Explain with AI';
+  String get aiPromptExplain => 'Explicar con IA';
 
   @override
-  String get aiPromptRecommend => 'Ask AI for Recommendation';
+  String get aiPromptRecommend => 'Pedir recomendación a la IA';
 
   @override
-  String get aiPromptError => 'Analyze Error with AI';
+  String get aiPromptError => 'Analizar error con IA';
 
   @override
-  String get aiPickDay => 'AI Pick of the Day';
+  String get aiPickDay => 'Selección del día de la IA';
 
   @override
-  String get aiPickDaySubtitle => 'Powered by OmniStore AI';
+  String get aiPickDaySubtitle => 'Impulsado por OmniStore AI';
 
   @override
-  String get aiCompareTitle => 'AI Variant Comparison';
+  String get aiCompareTitle => 'Comparación de variantes por IA';
 
   @override
-  String get aiHealthTitle => 'AI System Health Report';
+  String get aiHealthTitle => 'Informe de salud del sistema por IA';
 
   @override
-  String get aiHealthSubtitle => 'Intelligent diagnostic for your Arch Linux';
+  String get aiHealthSubtitle => 'Diagnóstico inteligente para su Arch Linux';
 
   @override
-  String get aiCorrection => 'Did you mean?';
+  String get aiCorrection => '¿Quisiste decir?';
 
   @override
-  String get aiThinking => 'AI is thinking...';
+  String get aiThinking => 'La IA está pensando...';
 
   @override
-  String get magicSearch => 'Magic Search';
+  String get magicSearch => 'Búsqueda mágica';
 
   @override
-  String get aiChangelogTitle => 'AI Update Summary';
+  String get aiChangelogTitle => 'Resumen de actualizaciones por IA';
 
   @override
-  String get aiCliTitle => 'AI Command Generator';
+  String get aiCliTitle => 'Generador de comandos por IA';
 
   @override
-  String get aiConflictTitle => 'AI Conflict Detection';
+  String get aiConflictTitle => 'Detección de conflictos por IA';
 
   @override
-  String get aiCopyCommand => 'Copy Command';
+  String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiCommandCopied => 'Command copied to clipboard';
+  String get aiCommandCopied => 'Comando copiado al portapapeles';
 
   @override
-  String get aiRefineSearch => 'Refine search with AI';
+  String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Explain this update';
+  String get aiExplainUpdate => 'Explicar esta actualización';
+
+  @override
+  String get windowMinimize => 'Minimizar';
+
+  @override
+  String get windowMaximize => 'Maximizar';
+
+  @override
+  String get windowRestore => 'Restaurar';
+
+  @override
+  String get windowClose => 'Cerrar';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get welcomeTitle => 'Bienvenido a OmniStore';
+
+  @override
+  String get welcomeSubtitle =>
+      'Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux';
+
+  @override
+  String get getStarted => 'Comenzar';
+
+  @override
+  String get skip => 'Omitir';
+
+  @override
+  String get envCheckTitle => 'Comprobación del entorno';
+
+  @override
+  String get envCheckSubtitle => 'Asegurando que su sistema esté listo';
+
+  @override
+  String get envFatalDesc =>
+      'Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.';
+
+  @override
+  String get envWarningDesc =>
+      'Faltan algunos componentes necesarios. Podemos configurarlos por usted.';
+
+  @override
+  String get envOkDesc => '¡Todo listo! Su sistema es perfecto.';
+
+  @override
+  String get fixProblems => 'Corregir / Configurar todo';
+
+  @override
+  String get continueAnyway => 'Continuar de todos modos';
+
+  @override
+  String get sourceConfigTitle => 'Fuentes de software';
+
+  @override
+  String get sourceConfigSubtitle => 'Elija las fuentes que desea habilitar';
+
+  @override
+  String get enableAur => 'Activar AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => 'Activar AUR requiere instalar el asistente yay.';
+
+  @override
+  String get aurWarning =>
+      'Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.';
+
+  @override
+  String get bootstrapNote =>
+      'Nota: La configuración puede requerir introducir su contraseña varias veces.';
+
+  @override
+  String get feedbackDesc =>
+      'Si encuentra problemas, por favor infórmenos en GitHub.';
+
+  @override
+  String get aiAssistant => 'Asistente de IA';
+
+  @override
+  String get aiAssistantDesc =>
+      'Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.';
+
+  @override
+  String get aiProviderDesc =>
+      'Seleccione su fuente de modelo de IA (Local o Nube)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama por defecto es http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper =>
+      'Dejar en blanco para Ollama, introducir sk-xxx para OpenAI';
+
+  @override
+  String get howToGetApiKey => '¿Cómo obtener una clave API?';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.';
+
+  @override
+  String get gotIt => 'Entendido';
+
+  @override
+  String get aiOllamaNote =>
+      'Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".';
+
+  @override
+  String get enterStore => 'Entrar a la tienda';
+
+  @override
+  String get nextStep => 'Siguiente paso';
+
+  @override
+  String get resetCache => 'Restablecer caché e historial';
+
+  @override
+  String get resetCacheDesc =>
+      'Limpiar el historial de búsqueda y el caché de recomendaciones locales';
+
+  @override
+  String get resetCacheConfirm =>
+      'Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?';
+
+  @override
+  String get resetting => 'Restableciendo...';
+
+  @override
+  String get resetSuccess => 'Caché e historial borrados con éxito';
+
+  @override
+  String resetFailed(String error) {
+    return 'Error al restablecer: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (Local)';
+
+  @override
+  String get openaiCompatible => 'Compatible con OpenAI';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }

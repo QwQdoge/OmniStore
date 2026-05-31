@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/backend_service.dart';
-import '../services/l10n_service.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -123,6 +123,8 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Center(
         child: Container(
@@ -156,7 +158,7 @@ class _WelcomePageState extends State<WelcomePage> {
                       ),
                     )),
                     const SizedBox(width: 8),
-                    TextButton(onPressed: _skipOnboarding, child: const Text("Skip")),
+                    TextButton(onPressed: _skipOnboarding, child: Text(l10n.skip)),
                   ],
                 ),
               ),
@@ -165,23 +167,23 @@ class _WelcomePageState extends State<WelcomePage> {
                   borderRadius: BorderRadius.circular(28),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: animation.drive(
-                      Tween(begin: const Offset(0, 0.1), end: Offset.zero)
-                          .chain(CurveTween(curve: Curves.easeOutCubic)),
-                    ),
-                    child: child,
-                  ),
-                );
-              },
-                    child: _buildCurrentStep(),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: animation.drive(
+                            Tween(begin: const Offset(0, 0.1), end: Offset.zero)
+                                .chain(CurveTween(curve: Curves.easeOutCubic)),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: _buildCurrentStep(l10n),
                   ),
                 ),
               ),
-              _buildFeedbackArea(),
+              _buildFeedbackArea(l10n),
             ],
           ),
         ),
@@ -189,22 +191,22 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget _buildCurrentStep() {
+  Widget _buildCurrentStep(AppLocalizations l10n) {
     switch (_currentStep) {
       case 0:
-        return _buildWelcomeStep();
+        return _buildWelcomeStep(l10n);
       case 1:
-        return _buildEnvCheckStep();
+        return _buildEnvCheckStep(l10n);
       case 2:
-        return _buildSourceStep();
+        return _buildSourceStep(l10n);
       case 3:
-        return _buildAIStep();
+        return _buildAIStep(l10n);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildWelcomeStep() {
+  Widget _buildWelcomeStep(AppLocalizations l10n) {
     return Column(
       key: const ValueKey(0),
       mainAxisAlignment: MainAxisAlignment.center,
@@ -212,14 +214,14 @@ class _WelcomePageState extends State<WelcomePage> {
         Icon(Icons.shop_two_rounded, size: 80, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 24),
         Text(
-          L10nService.s('welcome_title'),
+          l10n.welcomeTitle,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Text(
-            L10nService.s('welcome_subtitle'),
+            l10n.welcomeSubtitle,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
@@ -231,13 +233,13 @@ class _WelcomePageState extends State<WelcomePage> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           onPressed: _nextStep,
-          child: Text(L10nService.s('get_started'), style: const TextStyle(fontSize: 16)),
+          child: Text(l10n.getStarted, style: const TextStyle(fontSize: 16)),
         ),
       ],
     );
   }
 
-  Widget _buildEnvCheckStep() {
+  Widget _buildEnvCheckStep(AppLocalizations l10n) {
     return Padding(
       key: const ValueKey(1),
       padding: const EdgeInsets.all(32.0),
@@ -251,8 +253,8 @@ class _WelcomePageState extends State<WelcomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(L10nService.s('env_check_title'), style: Theme.of(context).textTheme.titleLarge),
-                    Text(L10nService.s('env_check_subtitle'), style: Theme.of(context).textTheme.bodyMedium),
+                    Text(l10n.envCheckTitle, style: Theme.of(context).textTheme.titleLarge),
+                    Text(l10n.envCheckSubtitle, style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ),
               ),
@@ -288,8 +290,8 @@ class _WelcomePageState extends State<WelcomePage> {
           const SizedBox(height: 16),
           Text(
             _hasFatal
-                ? L10nService.s('env_fatal_desc')
-                : (_hasWarning ? L10nService.s('env_warning_desc') : L10nService.s('env_ok_desc')),
+                ? l10n.envFatalDesc
+                : (_hasWarning ? l10n.envWarningDesc : l10n.envOkDesc),
             style: TextStyle(color: _hasFatal ? Colors.red : (_hasWarning ? Colors.orange : Colors.green)),
             textAlign: TextAlign.center,
           ),
@@ -301,18 +303,18 @@ class _WelcomePageState extends State<WelcomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (_hasFatal || _hasWarning)
-                  TextButton(onPressed: _nextStep, child: Text(L10nService.s('continue_anyway'))),
+                  TextButton(onPressed: _nextStep, child: Text(l10n.continueAnyway)),
                 const SizedBox(width: 8),
                 if (_hasWarning && !_hasFatal)
-                  FilledButton(onPressed: _runBootstrap, child: Text(L10nService.s('fix_problems')))
+                  FilledButton(onPressed: _runBootstrap, child: Text(l10n.fixProblems))
                 else if (!_hasFatal)
-                  FilledButton(onPressed: _nextStep, child: Text(L10nService.s('confirm'))),
+                  FilledButton(onPressed: _nextStep, child: Text(l10n.confirm)),
               ],
             ),
           if (_isBootstrapping)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: Text(L10nService.s('bootstrap_note'), style: Theme.of(context).textTheme.labelSmall),
+              child: Text(l10n.bootstrapNote, style: Theme.of(context).textTheme.labelSmall),
             ),
         ],
       ),
@@ -353,7 +355,7 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget _buildFeedbackArea() {
+  Widget _buildFeedbackArea(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -362,7 +364,7 @@ class _WelcomePageState extends State<WelcomePage> {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Text(
-        L10nService.s('feedback_desc'),
+        l10n.feedbackDesc,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -371,7 +373,7 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget _buildAIStep() {
+  Widget _buildAIStep(AppLocalizations l10n) {
     final theme = Theme.of(context);
     return Padding(
       key: const ValueKey(3),
@@ -379,44 +381,44 @@ class _WelcomePageState extends State<WelcomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("AI 智能助手", style: theme.textTheme.titleLarge),
-          const Text("开启 AI 辅助搜索、应用解释与错误诊断。"),
+          Text(l10n.aiAssistant, style: theme.textTheme.titleLarge),
+          Text(l10n.aiAssistantDesc),
           const SizedBox(height: 20),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   SwitchListTile(
-                    title: const Text("启用 AI 功能"),
+                    title: Text(l10n.aiEnabled),
                     value: _enableAI,
                     onChanged: (v) => setState(() => _enableAI = v),
                   ),
                   if (_enableAI) ...[
                     const Divider(),
                     ListTile(
-                      title: const Text("服务商"),
+                      title: Text(l10n.aiProvider),
                       trailing: DropdownButton<String>(
                         value: _aiProvider,
                         onChanged: (v) => setState(() => _aiProvider = v!),
-                        items: const [
-                          DropdownMenuItem(value: 'ollama', child: Text('Ollama')),
-                          DropdownMenuItem(value: 'openai', child: Text('OpenAI 兼容')),
+                        items: [
+                          DropdownMenuItem(value: 'ollama', child: Text(l10n.ollamaLocal)),
+                          DropdownMenuItem(value: 'openai', child: Text(l10n.openaiCompatible)),
                         ],
                       ),
                     ),
                     TextField(
                       controller: _aiEndpoint,
-                      decoration: const InputDecoration(
-                        labelText: "接口地址",
+                      decoration: InputDecoration(
+                        labelText: l10n.aiEndpoint,
                         hintText: "http://localhost:11434",
-                        helperText: "Ollama 默认为 http://localhost:11434",
+                        helperText: l10n.aiEndpointHelper,
                       ),
                     ),
                     TextField(
                       controller: _aiApiKey,
-                      decoration: const InputDecoration(
-                        labelText: "API 密钥 (Key)",
-                        helperText: "如果是 Ollama 则留空，OpenAI 请填入 sk-xxx",
+                      decoration: InputDecoration(
+                        labelText: l10n.aiApiKey,
+                        helperText: l10n.aiApiKeyHelper,
                       ),
                       obscureText: true,
                     ),
@@ -426,19 +428,16 @@ class _WelcomePageState extends State<WelcomePage> {
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text("如何获取 API 密钥？"),
-                            content: const Text(
-                              "1. Ollama (本地): \n下载并运行 Ollama，无需密钥。请确保设置环境变量 OLLAMA_ORIGINS=\"*\"。\n\n"
-                              "2. 云端 (OpenAI/云雾): \n前往服务商官网（如 OpenAI 或云雾 API）注册并创建 API Key，然后填入此处。",
-                            ),
+                            title: Text(l10n.howToGetApiKey),
+                            content: Text(l10n.howToGetApiKeyDesc),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("知道了")),
+                              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.gotIt)),
                             ],
                           ),
                         );
                       },
                       icon: const Icon(Icons.help_outline_rounded, size: 16),
-                      label: const Text("获取帮助", style: TextStyle(fontSize: 12)),
+                      label: Text(l10n.help, style: const TextStyle(fontSize: 12)),
                     ),
                     const SizedBox(height: 8),
                     Container(
@@ -447,9 +446,9 @@ class _WelcomePageState extends State<WelcomePage> {
                         color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量以允许连接。",
-                        style: TextStyle(fontSize: 11),
+                      child: Text(
+                        l10n.aiOllamaNote,
+                        style: const TextStyle(fontSize: 11),
                       ),
                     ),
                   ],
@@ -463,7 +462,7 @@ class _WelcomePageState extends State<WelcomePage> {
             children: [
               FilledButton(
                 onPressed: _finishSetup,
-                child: const Text("进入商店"),
+                child: Text(l10n.enterStore),
               ),
             ],
           )
@@ -472,15 +471,15 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget _buildSourceStep() {
+  Widget _buildSourceStep(AppLocalizations l10n) {
     return Padding(
       key: const ValueKey(2),
       padding: const EdgeInsets.all(32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(L10nService.s('source_config_title'), style: Theme.of(context).textTheme.titleLarge),
-          Text(L10nService.s('source_config_subtitle'), style: Theme.of(context).textTheme.bodyMedium),
+          Text(l10n.sourceConfigTitle, style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.sourceConfigSubtitle, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 24),
           Card(
             elevation: 0,
@@ -490,8 +489,8 @@ class _WelcomePageState extends State<WelcomePage> {
               child: Column(
                 children: [
                   SwitchListTile(
-                    title: Text(L10nService.s('enable_aur')),
-                    subtitle: Text(L10nService.s('yay_desc')),
+                    title: Text(l10n.enableAur),
+                    subtitle: Text(l10n.yayDesc),
                     value: _enableAUR,
                     onChanged: (v) => setState(() => _enableAUR = v),
                   ),
@@ -499,7 +498,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        L10nService.s('aur_warning'),
+                        l10n.aurWarning,
                         style: const TextStyle(color: Colors.orange, fontSize: 12),
                       ),
                     ),
@@ -513,7 +512,7 @@ class _WelcomePageState extends State<WelcomePage> {
             children: [
               FilledButton(
                 onPressed: _nextStep,
-                child: const Text("下一步"),
+                child: Text(l10n.nextStep),
               ),
             ],
           )

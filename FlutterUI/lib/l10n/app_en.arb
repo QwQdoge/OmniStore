@@ -653,5 +653,161 @@
   "windowMaximize": "Maximize",
   "windowRestore": "Restore",
   "windowClose": "Close",
-  "delete": "Delete"
+  "delete": "Delete",
+  "welcomeTitle": "Welcome to OmniStore",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "welcomeSubtitle": "Providing a simple and elegant software management experience for Arch Linux",
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "envCheckTitle": "Environment Check",
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "envCheckSubtitle": "Ensuring your system is ready",
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "envFatalDesc": "Your system doesn't seem to be Arch-based. Most features will be unavailable.",
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "envWarningDesc": "Some necessary components are missing. We can configure them for you.",
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "envOkDesc": "Everything is ready! Your system is perfect.",
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "fixProblems": "Fix / Configure All",
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "continueAnyway": "Continue Anyway",
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "sourceConfigTitle": "Software Sources",
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "sourceConfigSubtitle": "Choose the sources you want to enable",
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "enableAur": "Enable AUR (Arch User Repository)",
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "yayDesc": "Enabling AUR requires installing the yay helper.",
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "aurWarning": "Security Warning: AUR packages are user-contributed. Ensure you trust the source.",
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "bootstrapNote": "Note: Setup may require entering your password multiple times.",
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "feedbackDesc": "If you encounter issues, please report them on GitHub.",
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "aiAssistant": "AI Assistant",
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "aiAssistantDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "aiProviderDesc": "Select your AI model source (Local or Cloud)",
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "aiEndpointHelper": "Ollama defaults to http://localhost:11434",
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "aiApiKeyHelper": "Leave blank for Ollama, enter sk-xxx for OpenAI",
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "howToGetApiKey": "How to get an API key?",
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "howToGetApiKeyDesc": "1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider's website, create an API Key, and enter it here.",
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "aiOllamaNote": "Note: If using Ollama, ensure it's running with OLLAMA_ORIGINS=\"*\".",
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "enterStore": "Enter Store",
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "nextStep": "Next Step",
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "resetCache": "Reset Cache and History",
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "resetCacheDesc": "Clear search history and local recommendations cache",
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "resetCacheConfirm": "This will clear your search history and recommendations cache. Proceed?",
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "resetting": "Resetting...",
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "resetSuccess": "Cache and History cleared successfully",
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "resetFailed": "Reset failed: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (Local)",
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "openaiCompatible": "OpenAI Compatible",
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "googleGemini": "Google Gemini",
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  }
 }

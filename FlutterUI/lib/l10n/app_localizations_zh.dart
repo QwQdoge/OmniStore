@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '结果源优先级 (拖动排序)';
+  String get sourcePriority => '软件源优先级 (拖动排序)';
 
   @override
   String get maxResults => '最大显示结果数';
@@ -113,7 +113,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appearance => '外观模式';
 
   @override
-  String get themeColor => '主题色种子';
+  String get themeColor => '主题色';
 
   @override
   String get followSystem => '跟随系统';
@@ -269,7 +269,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get includeAurUpdates => '更新所有时包含 AUR';
 
   @override
-  String get resetOnboarding => '重置引导 (欢迎页面)';
+  String get resetOnboarding => '重置新手引导';
 
   @override
   String get resetOnboardingConfirm => '确定要重置引导吗？下次启动将重新显示欢迎页面。';
@@ -483,6 +483,139 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiExplainUpdate => '解释此更新';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowRestore => '还原';
+
+  @override
+  String get windowClose => '关闭';
+
+  @override
+  String get delete => '删除';
+
+  @override
+  String get welcomeTitle => '欢迎来到 OmniStore';
+
+  @override
+  String get welcomeSubtitle => '为您提供简单、优雅的 Arch Linux 应用管理体验';
+
+  @override
+  String get getStarted => '开始使用';
+
+  @override
+  String get skip => '跳过';
+
+  @override
+  String get envCheckTitle => '环境检查';
+
+  @override
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+
+  @override
+  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+
+  @override
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+
+  @override
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
+
+  @override
+  String get fixProblems => '一键修复/配置';
+
+  @override
+  String get continueAnyway => '仍然继续';
+
+  @override
+  String get sourceConfigTitle => '应用源配置';
+
+  @override
+  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
+
+  @override
+  String get enableAur => '启用 AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => '启用 AUR 需要安装 yay 助手。';
+
+  @override
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+
+  @override
+  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
+
+  @override
+  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+
+  @override
+  String get aiAssistant => 'AI 助手';
+
+  @override
+  String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
+
+  @override
+  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper => '如果是 Ollama 则留空，OpenAI 请填入 sk-xxx';
+
+  @override
+  String get howToGetApiKey => '如何获取 API 密钥？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。';
+
+  @override
+  String get gotIt => '知道了';
+
+  @override
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+
+  @override
+  String get enterStore => '进入商店';
+
+  @override
+  String get nextStep => '下一步';
+
+  @override
+  String get resetCache => '重置缓存与历史记录';
+
+  @override
+  String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
+
+  @override
+  String get resetCacheConfirm => '这将清空您的搜索历史和推荐缓存。是否继续？';
+
+  @override
+  String get resetting => '正在重置...';
+
+  @override
+  String get resetSuccess => '缓存与历史记录已成功清空';
+
+  @override
+  String resetFailed(String error) {
+    return '重置失败: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (本地)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 兼容';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -641,7 +774,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get waitingForOutput => '等待輸出中...';
 
   @override
-  String get screenshots => '截圖';
+  String get screenshots => '應用程式截圖';
 
   @override
   String get developer => '開發者';
@@ -880,7 +1013,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEnabled => '啟用 AI 助手';
 
   @override
-  String get aiProvider => 'AI 服務提供者';
+  String get aiProvider => 'AI 服務商';
 
   @override
   String get aiEndpoint => 'API 端點';
@@ -964,4 +1097,137 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiExplainUpdate => '說明此更新';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowRestore => '還原';
+
+  @override
+  String get windowClose => '關閉';
+
+  @override
+  String get delete => '刪除';
+
+  @override
+  String get welcomeTitle => '歡迎來到 OmniStore';
+
+  @override
+  String get welcomeSubtitle => '為您提供簡單、優雅的 Arch Linux 應用程式管理體驗';
+
+  @override
+  String get getStarted => '開始使用';
+
+  @override
+  String get skip => '跳過';
+
+  @override
+  String get envCheckTitle => '環境檢查';
+
+  @override
+  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
+
+  @override
+  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
+
+  @override
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
+
+  @override
+  String get envOkDesc => '一切就緒！您的系統非常完美。';
+
+  @override
+  String get fixProblems => '一鍵修復/配置';
+
+  @override
+  String get continueAnyway => '仍然繼續';
+
+  @override
+  String get sourceConfigTitle => '應用程式來源配置';
+
+  @override
+  String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
+
+  @override
+  String get enableAur => '啟用 AUR (Arch User Repository)';
+
+  @override
+  String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
+
+  @override
+  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
+
+  @override
+  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
+
+  @override
+  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
+
+  @override
+  String get aiAssistant => 'AI 助手';
+
+  @override
+  String get aiAssistantDesc => '開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。';
+
+  @override
+  String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
+
+  @override
+  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
+
+  @override
+  String get aiApiKeyHelper => '如果是 Ollama 則留空，OpenAI 請填入 sk-xxx';
+
+  @override
+  String get howToGetApiKey => '如何獲取 API 金鑰？';
+
+  @override
+  String get howToGetApiKeyDesc =>
+      '1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。';
+
+  @override
+  String get gotIt => '知道了';
+
+  @override
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+
+  @override
+  String get enterStore => '進入商店';
+
+  @override
+  String get nextStep => '下一步';
+
+  @override
+  String get resetCache => '重置快取與歷史記錄';
+
+  @override
+  String get resetCacheDesc => '清空搜尋歷史與本地推薦快取';
+
+  @override
+  String get resetCacheConfirm => '這將清空您的搜尋歷史和推薦快取。是否繼續？';
+
+  @override
+  String get resetting => '正在重置...';
+
+  @override
+  String get resetSuccess => '快取與歷史記錄已成功清空';
+
+  @override
+  String resetFailed(String error) {
+    return '重置失敗: $error';
+  }
+
+  @override
+  String get ollamaLocal => 'Ollama (本地)';
+
+  @override
+  String get openaiCompatible => 'OpenAI 相容';
+
+  @override
+  String get googleGemini => 'Google Gemini';
 }
