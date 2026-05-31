@@ -8,9 +8,9 @@ from typing import List, Dict, Any, Optional
 from core.habit_tracker import HabitTracker
 
 class RecommendationManager:
-    def __init__(self, session: aiohttp.ClientSession):
+    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None):
         self.session = session
-        self.habit_tracker = HabitTracker()
+        self.habit_tracker = habit_tracker or HabitTracker()
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
         self.cache_dir = Path.home() / ".cache" / "omnistore"
@@ -47,6 +47,10 @@ class RecommendationManager:
             import sys
             sys.stderr.write(f"[RecommendationManager] Metadata Cache Save Error: {e}\n")
 
+    async def _safe_print_error(self, msg: str):
+        import sys
+        sys.stderr.write(f"{msg}\n")
+
     def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
         """Load recommendations from cache if not expired"""
         if not self.cache_path.exists():
@@ -71,7 +75,8 @@ class RecommendationManager:
                     "recommendations": recommendations
                 }, f, ensure_ascii=False)
         except Exception as e:
-            print(f"[RecommendationManager] Cache Save Error: {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Cache Save Error: {e}\n")
 
     async def _fetch_collection(self, url: str) -> List[Dict]:
         """Fetch a collection of apps from Flathub"""
@@ -100,7 +105,8 @@ class RecommendationManager:
                         })
                     return apps
         except Exception as e:
-            print(f"[RecommendationManager] Collection Fetch Error ({url}): {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Collection Fetch Error ({url}): {e}\n")
         return []
 
     async def get_recommendations(self, force_refresh: bool = False) -> Dict[str, List[Dict]]:
@@ -171,7 +177,8 @@ class RecommendationManager:
             return result
 
         except Exception as e:
-            print(f"[RecommendationManager] Error: {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Error: {e}\n")
             # Fallback data in the correct structure
             fallback = {
                 "featured": [
@@ -228,7 +235,8 @@ class RecommendationManager:
             await asyncio.gather(*[self._enrich_item(item) for item in apps[:10]])
             return apps
         except Exception as e:
-            print(f"[RecommendationManager] Category apps error: {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Category apps error: {e}\n")
             return []
 
     async def _enrich_item(self, item):
@@ -301,7 +309,8 @@ class RecommendationManager:
                     await self._save_metadata_cache()
                     return result
         except Exception as e:
-            print(f"[RecommendationManager] Detail Error: {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Detail Error: {e}\n")
         return {}
 
     async def find_metadata(self, name: str) -> Dict:
@@ -335,5 +344,6 @@ class RecommendationManager:
                                 await self._save_metadata_cache()
                                 return await self.get_details(hit.get("app_id"))
         except Exception as e:
-            print(f"[RecommendationManager] Find Metadata Error: {e}")
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Find Metadata Error: {e}\n")
         return {}

@@ -138,16 +138,24 @@ class BackendService {
   /// Robust JSON parsing that finds the first JSON block or array
   List<dynamic> _tryParseJson(String input) {
     try {
+      // 1. Try direct decoding
       return jsonDecode(input);
     } catch (_) {
-      // If direct parsing fails, try to find the JSON part
-      final start = input.indexOf('[');
-      final end = input.lastIndexOf(']');
+      // 2. Handle AI special separator
+      const separator = "###JSON_START###";
+      String target = input;
+      if (input.contains(separator)) {
+        target = input.split(separator).last.trim();
+      }
+
+      // 3. Fallback: Find the last [ ... ] block (usually where AI or backend puts the results)
+      final start = target.lastIndexOf('[');
+      final end = target.lastIndexOf(']');
       if (start != -1 && end != -1 && end > start) {
         try {
-          return jsonDecode(input.substring(start, end + 1));
+          return jsonDecode(target.substring(start, end + 1));
         } catch (e) {
-          debugPrint("Failed to parse extracted JSON: $e");
+          debugPrint("Failed to parse extracted JSON block: $e");
         }
       }
       return [];

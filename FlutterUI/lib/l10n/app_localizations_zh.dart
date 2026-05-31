@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '结果源优先级 (拖动排序)';
+  String get sourcePriority => '软件源优先级 (拖动排序)';
 
   @override
   String get maxResults => '最大显示结果数';
@@ -113,7 +113,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appearance => '外观模式';
 
   @override
-  String get themeColor => '主题色种子';
+  String get themeColor => '主题色';
 
   @override
   String get followSystem => '跟随系统';
@@ -269,7 +269,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get includeAurUpdates => '更新所有时包含 AUR';
 
   @override
-  String get resetOnboarding => '重置引导 (欢迎页面)';
+  String get resetOnboarding => '重置新手引导';
 
   @override
   String get resetOnboardingConfirm => '确定要重置引导吗？下次启动将重新显示欢迎页面。';
@@ -483,6 +483,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiExplainUpdate => '解释此更新';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowRestore => '还原';
+
+  @override
+  String get windowClose => '关闭';
+
+  @override
+  String get delete => '删除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -641,7 +656,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get waitingForOutput => '等待輸出中...';
 
   @override
-  String get screenshots => '截圖';
+  String get screenshots => '應用程式截圖';
 
   @override
   String get developer => '開發者';
@@ -880,7 +895,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEnabled => '啟用 AI 助手';
 
   @override
-  String get aiProvider => 'AI 服務提供者';
+  String get aiProvider => 'AI 服務商';
 
   @override
   String get aiEndpoint => 'API 端點';
@@ -964,4 +979,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiExplainUpdate => '說明此更新';
+
+  @override
+  String get windowMinimize => '最小化';
+
+  @override
+  String get windowMaximize => '最大化';
+
+  @override
+  String get windowRestore => '還原';
+
+  @override
+  String get windowClose => '關閉';
+
+  @override
+  String get delete => '刪除';
 }

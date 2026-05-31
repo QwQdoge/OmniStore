@@ -76,6 +76,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
+from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
@@ -95,6 +96,8 @@ class OmnistoreBackend:
         self.config = ConfigManager()
         self.cache = CacheManager()
         self.env = EnvManager()
+        # ⚡ Shared HabitTracker to avoid redundant disk I/O
+        self.habit_tracker = HabitTracker()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
         self.updater = UpdateManager(self.config)
@@ -110,8 +113,9 @@ class OmnistoreBackend:
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
     async def initialize(self, session: aiohttp.ClientSession):
-        self.manager = SearchManager(self.config, session)
-        self.recommender = RecommendationManager(session)
+        # ⚡ Pass shared habit_tracker to managers
+        self.manager = SearchManager(self.config, session, self.habit_tracker)
+        self.recommender = RecommendationManager(session, self.habit_tracker)
         if self.manager is None:
             raise RuntimeError(
                 "Failed to initialize SearchManager. Check configuration and environment.")
@@ -449,6 +453,22 @@ class OmnistoreBackend:
                             "version": "Local"
                         })
         except Exception: pass
+
+        # ⚡ Enrichment step: fetch icons and descriptions for top installed apps
+        if self.recommender:
+            # We don't want to over-request Flathub, but enriching the first few enhances the list
+            # We filter for those without icons (usually Native apps)
+            enrich_targets = [app for app in installed_list if not app.get('icon')]
+
+            async def _enrich_app(app):
+                metadata = await self.recommender.find_metadata(app['name'])
+                if metadata:
+                    if metadata.get('icon'): app['icon'] = metadata['icon']
+                    if metadata.get('description'): app['description'] = metadata['description']
+
+            if enrich_targets:
+                # Limit to 10 for performance
+                await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]])
 
         if json_mode:
             print(json.dumps(installed_list))

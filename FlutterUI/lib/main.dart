@@ -501,10 +501,15 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
         return ValueListenableBuilder<double?>(
           valueListenable: BackendService.globalProgress,
           builder: (context, progress, child) {
+            String tooltipMsg = AppLocalizations.of(context)!.downloads;
+            if (isDownloading) {
+              final status = BackendService.globalStatus.value;
+              final percentage = progress != null ? "(${(progress * 100).toInt()}%)" : "";
+              tooltipMsg = "$status $percentage".trim();
+            }
+
             return Tooltip(
-              message: isDownloading
-                  ? "${AppLocalizations.of(context)!.searching} ${BackendService.globalStatus.value}"
-                  : AppLocalizations.of(context)!.downloads,
+              message: tooltipMsg,
               child: Container(
                 width: 48,
                 height: 48,

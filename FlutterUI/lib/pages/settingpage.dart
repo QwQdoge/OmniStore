@@ -205,8 +205,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: ReorderableListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      onReorderItem: (oldIndex, newIndex) {
+                      onReorder: (oldIndex, newIndex) {
                         setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
                           final item = sourceOrder.removeAt(oldIndex);
                           sourceOrder.insert(newIndex, item);
 
@@ -355,7 +356,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   if (aiEnabled) ...[
                     ListTile(
-                      leading: const MagicPulseIcon(icon: Icons.smart_toy_outlined),
+                      leading: const Icon(Icons.smart_toy_outlined),
                       title: Text(l10n.aiProvider),
                       subtitle: const Text("Select your AI model source (Local or Cloud)"),
                       trailing: DropdownButton<String>(
@@ -412,7 +413,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _testAIConnection,
-                              icon: const MagicPulseIcon(icon: Icons.bolt_rounded),
+                              icon: const Icon(Icons.bolt_rounded),
                               label: Text(l10n.aiTestButton),
                             ),
                           ),
