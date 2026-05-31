@@ -5,43 +5,8 @@ import sys
 import argparse
 from pathlib import Path
 
-subprocess.run(["python3", "-m", "venv", "build_venv"])
-
-# 1. 定义好虚拟环境内部的正确路径（都在 bin 目录下）
-venv_dir = "build_venv"
-venv_pip = os.path.join(venv_dir, "bin", "pip")
-venv_pyinstaller = os.path.join(venv_dir, "bin", "pyinstaller") # 👈 确保拼写正确且在 bin 目录下
-
-# 2. 创建虚拟环境
-print("📦 正在创建 Python 虚拟环境...")
-subprocess.run([sys.executable, "-m", "venv", venv_dir], check=True)
-
-# 3. 升级并安装你的依赖
-print("⚡ 正在升级 pip 并安装依赖...")
-subprocess.run([venv_pip, "install", "--upgrade", "pip"], check=True)
-subprocess.run([venv_pip, "install", "-r", "requirements.txt"], check=True)
-
-# 4. 必须在虚拟环境里也装一下 pyinstaller 才能调用它
-print("📦 正在虚拟环境中安装 PyInstaller...")
-subprocess.run([venv_pip, "install", "pyinstaller"], check=True)
-
-# 5. 打印版本并正式打包
-print("🔍 PyInstaller 版本信息:")
-subprocess.run([venv_pyinstaller, "--version"], check=True)
-
-print("🚀 开始打包 Python 服务后端...")
-subprocess.run([
-    venv_pyinstaller, 
-    "--onefile", 
-    "--name", "python_server", 
-    "--clean", 
-    "main.py"
-], check=True)
-
-print("🎉 Python 后端打包完成！")
-
-
 # ==================== 🛠️ 路径配置 ====================
+
 BASE_DIR = Path(__file__).resolve().parent
 
 RUST_PROJECT_DIR = BASE_DIR / "daemon"
@@ -74,29 +39,26 @@ def build_rust():
     run_command("cargo build --release", RUST_PROJECT_DIR, "Rust Release build")
 
 def build_python():
-    # 探测 venv 路径
-    if sys.platform == "win32":
-        pyinstaller_path = PYTHON_PROJECT_DIR / "build_venv" / "Scripts" / "pyinstaller.exe"
-    else:
-        pyinstaller_path = PYTHON_PROJECT_DIR / ".venv" / "bin" / "pyinstaller"
+    # 1. 创建属于沙盒自己的虚拟环境
+    venv_dir = PYTHON_PROJECT_DIR / "build_venv"
+    venv_pip = venv_dir / "bin" / "pip"
+    venv_pyinstaller = venv_dir / "bin" / "pyinstaller"
 
-    if not pyinstaller_path.exists():
-        # 尝试直接使用系统 pyinstaller
-        pyinstaller_path = "pyinstaller"
+    subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, cwd=str(PYTHON_PROJECT_DIR))
 
-    # 增加一些隐藏导入以确保 FastAPI/Uvicorn 正常运行
-    hidden_imports = [
-        "--hidden-import=uvicorn",
-        "--hidden-import=fastapi",
-        "--hidden-import=fastapi.middleware.cors",
-        "--hidden-import=uvicorn.protocols.http.httptools_impl",
-        "--hidden-import=uvicorn.protocols.http.h11_impl",
-        "--hidden-import=uvicorn.protocols.websockets.websockets_impl",
-        "--hidden-import=uvicorn.lifespan.on",
-    ]
+    # 2. 用虚拟环境隔离的 pip 装东西（绝对不会触发 PEP 668 报错）
+    subprocess.run([str(venv_pip), "install", "--upgrade", "pip"], check=True, cwd=str(PYTHON_PROJECT_DIR))
+    subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=True, cwd=str(PYTHON_PROJECT_DIR))
+    subprocess.run([str(venv_pip), "install", "pyinstaller"], check=True, cwd=str(PYTHON_PROJECT_DIR))
 
-    cmd = f"{pyinstaller_path} --onefile {' '.join(hidden_imports)} --name python_server --clean main.py"
-    run_command(cmd, PYTHON_PROJECT_DIR, "Python PyInstaller 打包")
+    # 3. 隔离打包
+    subprocess.run([
+        str(venv_pyinstaller),
+        "--onefile",
+        "--name", "python_server",
+        "--clean",
+        "main.py",
+    ], check=True, cwd=str(PYTHON_PROJECT_DIR))
 
 def build_flutter():
     if sys.platform == "win32":
