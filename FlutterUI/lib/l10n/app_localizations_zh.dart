@@ -12,10 +12,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchHint => '搜索应用、游戏、工具...';
 
   @override
-  String get featured => '精选推荐';
+  String get featured => '精选';
 
   @override
-  String get forYou => '为您推荐';
+  String get forYou => '为你推荐';
 
   @override
   String get essentialTools => '必备工具';
@@ -77,7 +77,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get noResults => '未找到相关应用';
+  String get noResults => '未找到结果';
 
   @override
   String get searching => '正在搜索...';
@@ -92,10 +92,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get packageManager => '包管理器';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方库）';
+  String get pacmanOfficial => 'Pacman (官方)';
 
   @override
-  String get aurUser => 'AUR（用户库）';
+  String get aurUser => 'AUR (用户)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '软件源优先级 (拖动排序)';
+  String get sourcePriority => '应用源优先级 (拖动排序)';
 
   @override
   String get maxResults => '最大显示结果数';
@@ -211,7 +211,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updates => '更新';
 
   @override
-  String get upToDate => '所有应用已是最新';
+  String get upToDate => '应用已是最新';
 
   @override
   String get checkUpdates => '检查更新';
@@ -266,7 +266,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateAllPackages => '更新所有应用';
 
   @override
-  String get includeAurUpdates => '更新所有时包含 AUR';
+  String get includeAurUpdates => '全部更新时包含 AUR';
 
   @override
   String get resetOnboarding => '重置新手引导';
@@ -321,7 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '所有应用已是最新';
+  String get allUpdated => '应用已是最新';
 
   @override
   String get update => '更新';
@@ -355,7 +355,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return '导出成功: $count个软件包';
+    return '导出成功: $count 个软件包';
   }
 
   @override
@@ -408,7 +408,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModel => '模型名称';
 
   @override
-  String get aiApiKey => 'API 密钥 (Key)';
+  String get aiApiKey => 'API 密钥';
 
   @override
   String get aiProxy => '网络代理 (可选)';
@@ -440,10 +440,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptError => 'AI 分析错误';
 
   @override
-  String get aiPickDay => 'AI 每日推荐';
+  String get aiPickDay => 'AI 今日精选';
 
   @override
-  String get aiPickDaySubtitle => '由 OmniStore AI 强力驱动';
+  String get aiPickDaySubtitle => '由 OmniStore AI 驱动';
 
   @override
   String get aiCompareTitle => 'AI 版本对比';
@@ -452,22 +452,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => '为您的 Arch Linux 进行智能诊断';
+  String get aiHealthSubtitle => '为你的 Arch Linux 进行智能诊断';
 
   @override
-  String get aiCorrection => '您是不是要找？';
+  String get aiCorrection => '你是说？';
 
   @override
-  String get aiThinking => 'AI 正在思考中...';
+  String get aiThinking => 'AI 正在思考...';
 
   @override
   String get magicSearch => '魔法搜索';
 
   @override
-  String get aiChangelogTitle => 'AI 更新内容总结';
+  String get aiChangelogTitle => 'AI 更新总结';
 
   @override
-  String get aiCliTitle => 'AI 终端命令生成';
+  String get aiCliTitle => 'AI 命令生成';
 
   @override
   String get aiConflictTitle => 'AI 冲突检测';
@@ -503,10 +503,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get delete => '删除';
 
   @override
-  String get welcomeTitle => '欢迎来到 OmniStore';
+  String get welcomeTitle => '欢迎使用 OmniStore';
 
   @override
-  String get welcomeSubtitle => '为您提供简单、优雅的 Arch Linux 应用管理体验';
+  String get welcomeSubtitle => '为你提供简单、优雅的 Arch Linux 应用管理体验';
 
   @override
   String get getStarted => '开始使用';
@@ -518,16 +518,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+  String get envCheckSubtitle => '我们需要确保你的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+  String get envFatalDesc => '你的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为你自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！您的系统非常完美。';
+  String get envOkDesc => '一切就绪！你的系统非常完美。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -539,7 +539,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigTitle => '应用源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
+  String get sourceConfigSubtitle => '选择你想要启用的应用来源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
@@ -548,13 +548,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+  String get aurWarning => '安全警告：AUR 软件包由用户上传，请确保你信任其来源。';
 
   @override
   String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+  String get feedbackDesc => '如果你遇到问题，请通过 GitHub 反馈给我们。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -563,7 +563,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
 
   @override
-  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
+  String get aiProviderDesc => '选择你的 AI 模型来源 (本地或云端)';
 
   @override
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
@@ -583,7 +583,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：如果你使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -598,7 +598,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
 
   @override
-  String get resetCacheConfirm => '这将清空您的搜索历史和推荐缓存。是否继续？';
+  String get resetCacheConfirm => '这将清空你的搜索历史和推荐缓存。是否继续？';
 
   @override
   String get resetting => '正在重置...';
@@ -644,7 +644,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get official => '官方';
 
   @override
-  String get verified => '经校验';
+  String get verified => '官方认证';
 
   @override
   String installingPkg(String name) {
@@ -664,14 +664,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '同时清理无用依赖 (孤立包)';
+  String get cleanOrphans => '同时清理无用依赖 (孤立软件包)';
 
   @override
   String get securityWarning => '安全风险提示';
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。';
+      'AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传软件包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。';
 
   @override
   String get continueInstall => '继续安装';
@@ -680,14 +680,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get installInfo => '安装信息';
 
   @override
-  String get downloadSize => '下载体积';
+  String get downloadSize => '下载大小';
 
   @override
-  String get installedSize => '解压后占用';
+  String get installedSize => '安装后大小';
 
   @override
   String dependenciesCount(int count) {
-    return '依赖包 ($count)';
+    return '依赖软件包 ($count)';
   }
 
   @override
@@ -731,7 +731,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return '您的系统中有 $count 个应用可以更新';
+    return '你的系统中有 $count 个应用可以更新';
   }
 
   @override
@@ -1064,7 +1064,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get viewLogs => '查看日誌';
 
   @override
-  String get allUpdated => '所有應用程式已是最新';
+  String get allUpdated => '已是最新';
 
   @override
   String get update => '更新';
@@ -1098,7 +1098,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String exportSuccess(int count) {
-    return '匯出成功: $count個套件';
+    return '匯出成功: $count 個套件';
   }
 
   @override

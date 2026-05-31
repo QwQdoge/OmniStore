@@ -406,13 +406,17 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "インストール済みのアプリを検索...",
-  "@searchInstalledHint": {},
+  "@searchInstalledHint": {
+    "description": "searchInstalledHint"
+  },
   "refresh": "更新",
   "@refresh": {
     "description": "refresh"
   },
   "noActiveTasks": "アクティブなタスクはありません",
-  "@noActiveTasks": {},
+  "@noActiveTasks": {
+    "description": "noActiveTasks"
+  },
   "currentTask": "現在のタスク",
   "@currentTask": {
     "description": "currentTask"
@@ -658,11 +662,17 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "閉じる",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
   "delete": "削除",
+  "@delete": {
+    "description": "Description for delete"
+  },
   "welcomeTitle": "OmniStore へようこそ",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"

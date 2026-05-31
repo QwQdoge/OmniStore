@@ -4,11 +4,11 @@
   "@searchHint": {
     "description": "Description for searchHint"
   },
-  "featured": "精选推荐",
+  "featured": "精选",
   "@featured": {
     "description": "Description for featured"
   },
-  "forYou": "为您推荐",
+  "forYou": "为你推荐",
   "@forYou": {
     "description": "Description for forYou"
   },
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "未找到相关应用",
+  "noResults": "未找到结果",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -112,11 +112,11 @@
   "@packageManager": {
     "description": "Description for packageManager"
   },
-  "pacmanOfficial": "Pacman（官方库）",
+  "pacmanOfficial": "Pacman (官方)",
   "@pacmanOfficial": {
     "description": "Description for pacmanOfficial"
   },
-  "aurUser": "AUR（用户库）",
+  "aurUser": "AUR (用户)",
   "@aurUser": {
     "description": "Description for aurUser"
   },
@@ -128,7 +128,7 @@
   "@appImage": {
     "description": "Description for appImage"
   },
-  "sourcePriority": "软件源优先级 (拖动排序)",
+  "sourcePriority": "应用源优先级 (拖动排序)",
   "@sourcePriority": {
     "description": "Description for sourcePriority"
   },
@@ -272,7 +272,7 @@
   "@updates": {
     "description": "Description for updates"
   },
-  "upToDate": "所有应用已是最新",
+  "upToDate": "应用已是最新",
   "@upToDate": {
     "description": "Description for upToDate"
   },
@@ -349,7 +349,7 @@
   "@updateAllPackages": {
     "description": "Description for updateAllPackages"
   },
-  "includeAurUpdates": "更新所有时包含 AUR",
+  "includeAurUpdates": "全部更新时包含 AUR",
   "@includeAurUpdates": {
     "description": "Description for includeAurUpdates"
   },
@@ -425,7 +425,7 @@
   "@viewLogs": {
     "description": "Button label to open task logs"
   },
-  "allUpdated": "所有应用已是最新",
+  "allUpdated": "应用已是最新",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -469,7 +469,7 @@
   "@selectExportLocation": {
     "description": "Prompt to choose an export location"
   },
-  "exportSuccess": "导出成功: {count}个软件包",
+  "exportSuccess": "导出成功: {count} 个软件包",
   "@exportSuccess": {
     "description": "Success message after exporting packages",
     "placeholders": {
@@ -548,7 +548,7 @@
   "@aiModel": {
     "description": "Label for AI model name"
   },
-  "aiApiKey": "API 密钥 (Key)",
+  "aiApiKey": "API 密钥",
   "@aiApiKey": {
     "description": "Label for AI API key input"
   },
@@ -593,11 +593,11 @@
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },
-  "aiPickDay": "AI 每日推荐",
+  "aiPickDay": "AI 今日精选",
   "@aiPickDay": {
     "description": "Title for daily AI pick card"
   },
-  "aiPickDaySubtitle": "由 OmniStore AI 强力驱动",
+  "aiPickDaySubtitle": "由 OmniStore AI 驱动",
   "@aiPickDaySubtitle": {
     "description": "Subtitle for daily AI pick card"
   },
@@ -609,15 +609,15 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "为您的 Arch Linux 进行智能诊断",
+  "aiHealthSubtitle": "为你的 Arch Linux 进行智能诊断",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiCorrection": "您是不是要找？",
+  "aiCorrection": "你是说？",
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
-  "aiThinking": "AI 正在思考中...",
+  "aiThinking": "AI 正在思考...",
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
@@ -625,11 +625,11 @@
   "@magicSearch": {
     "description": "Title for magic search feature"
   },
-  "aiChangelogTitle": "AI 更新内容总结",
+  "aiChangelogTitle": "AI 更新总结",
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 终端命令生成",
+  "aiCliTitle": "AI 命令生成",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },
@@ -666,16 +666,22 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "关闭",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
   "delete": "删除",
-  "welcomeTitle": "欢迎来到 OmniStore",
+  "@delete": {
+    "description": "Description for delete"
+  },
+  "welcomeTitle": "欢迎使用 OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
   },
-  "welcomeSubtitle": "为您提供简单、优雅的 Arch Linux 应用管理体验",
+  "welcomeSubtitle": "为你提供简单、优雅的 Arch Linux 应用管理体验",
   "@welcomeSubtitle": {
     "description": "Description for welcomeSubtitle"
   },
@@ -691,19 +697,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
+  "envCheckSubtitle": "我们需要确保你的系统已准备就绪",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
+  "envFatalDesc": "你的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
+  "envWarningDesc": "缺少一些必要的组件，我们可以为你自动配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！您的系统非常完美。",
+  "envOkDesc": "一切就绪！你的系统非常完美。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -719,7 +725,7 @@
   "@sourceConfigTitle": {
     "description": "Description for sourceConfigTitle"
   },
-  "sourceConfigSubtitle": "选择您想要启用的应用来源",
+  "sourceConfigSubtitle": "选择你想要启用的应用来源",
   "@sourceConfigSubtitle": {
     "description": "Description for sourceConfigSubtitle"
   },
@@ -731,7 +737,7 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
+  "aurWarning": "安全警告：AUR 软件包由用户上传，请确保你信任其来源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
@@ -739,7 +745,7 @@
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
-  "feedbackDesc": "如果您遇到问题，请通过 GitHub 反馈给我们。",
+  "feedbackDesc": "如果你遇到问题，请通过 GitHub 反馈给我们。",
   "@feedbackDesc": {
     "description": "Description for feedbackDesc"
   },
@@ -751,7 +757,7 @@
   "@aiAssistantDesc": {
     "description": "Description for aiAssistantDesc"
   },
-  "aiProviderDesc": "选择您的 AI 模型来源 (本地或云端)",
+  "aiProviderDesc": "选择你的 AI 模型来源 (本地或云端)",
   "@aiProviderDesc": {
     "description": "Description for aiProviderDesc"
   },
@@ -775,7 +781,7 @@
   "@gotIt": {
     "description": "Description for gotIt"
   },
-  "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "aiOllamaNote": "提示：如果你使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
   "@aiOllamaNote": {
     "description": "Description for aiOllamaNote"
   },
@@ -795,7 +801,7 @@
   "@resetCacheDesc": {
     "description": "Description for resetCacheDesc"
   },
-  "resetCacheConfirm": "这将清空您的搜索历史和推荐缓存。是否继续？",
+  "resetCacheConfirm": "这将清空你的搜索历史和推荐缓存。是否继续？",
   "@resetCacheConfirm": {
     "description": "Description for resetCacheConfirm"
   },
@@ -859,7 +865,7 @@
   "@official": {
     "description": "Description for official"
   },
-  "verified": "经校验",
+  "verified": "官方认证",
   "@verified": {
     "description": "Description for verified"
   },
@@ -887,7 +893,7 @@
   "@analyzeNow": {
     "description": "Description for analyzeNow"
   },
-  "cleanOrphans": "同时清理无用依赖 (孤立包)",
+  "cleanOrphans": "同时清理无用依赖 (孤立软件包)",
   "@cleanOrphans": {
     "description": "Description for cleanOrphans"
   },
@@ -895,7 +901,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。",
+  "aurSecurityDesc": "AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传软件包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -907,15 +913,15 @@
   "@installInfo": {
     "description": "Description for installInfo"
   },
-  "downloadSize": "下载体积",
+  "downloadSize": "下载大小",
   "@downloadSize": {
     "description": "Description for downloadSize"
   },
-  "installedSize": "解压后占用",
+  "installedSize": "安装后大小",
   "@installedSize": {
     "description": "Description for installedSize"
   },
-  "dependenciesCount": "依赖包 ({count})",
+  "dependenciesCount": "依赖软件包 ({count})",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -975,7 +981,7 @@
   "@notificationTitle": {
     "description": "Description for notificationTitle"
   },
-  "notificationBody": "您的系统中有 {count} 个应用可以更新",
+  "notificationBody": "你的系统中有 {count} 个应用可以更新",
   "@notificationBody": {
     "placeholders": {
       "count": {
