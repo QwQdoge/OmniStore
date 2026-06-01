@@ -662,11 +662,17 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "Close",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
   "delete": "Delete",
+  "@delete": {
+    "description": "Description for delete"
+  },
   "welcomeTitle": "Welcome to OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"

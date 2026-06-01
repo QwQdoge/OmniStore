@@ -406,7 +406,9 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "Buscar aplicaciones instaladas...",
-  "@searchInstalledHint": {},
+  "@searchInstalledHint": {
+    "description": "searchInstalledHint"
+  },
   "refresh": "Actualizar",
   "@refresh": {
     "description": "refresh"
@@ -660,11 +662,17 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "Cerrar",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
   "delete": "Eliminar",
+  "@delete": {
+    "description": "Description for delete"
+  },
   "welcomeTitle": "Bienvenido a OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"

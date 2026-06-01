@@ -425,7 +425,7 @@
   "@viewLogs": {
     "description": "Button label to open task logs"
   },
-  "allUpdated": "所有應用程式已是最新",
+  "allUpdated": "已是最新",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -469,7 +469,7 @@
   "@selectExportLocation": {
     "description": "Prompt to choose an export location"
   },
-  "exportSuccess": "匯出成功: {count}個套件",
+  "exportSuccess": "匯出成功: {count} 個套件",
   "@exportSuccess": {
     "description": "Success message after exporting packages",
     "placeholders": {
@@ -665,11 +665,17 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "關閉",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
   "delete": "刪除",
+  "@delete": {
+    "description": "Description for delete"
+  },
   "welcomeTitle": "歡迎來到 OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
