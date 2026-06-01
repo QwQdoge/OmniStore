@@ -459,28 +459,35 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           separatorBuilder: (context, _) =>
                               const SizedBox(width: 16),
                           itemBuilder: (context, index) {
-                            return Card(
-                              elevation: 0,
-                              margin: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: CachedNetworkImage(
-                                imageUrl: _extraDetails!['screenshots'][index],
-                                width: 360,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  width: 360,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Center(
-                                      child: CircularProgressIndicator(strokeWidth: 2)),
+                            final imageUrl = _extraDetails!['screenshots'][index];
+                            return Hero(
+                              tag: 'screenshot-$imageUrl',
+                              child: Card(
+                                elevation: 0,
+                                margin: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                                 ),
-                                errorWidget: (context, url, error) => Container(
-                                  width: 360,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Icon(Icons.broken_image_rounded),
+                                clipBehavior: Clip.antiAlias,
+                                child: InkWell(
+                                  onTap: () => _showScreenshotViewer(imageUrl),
+                                  child: CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 360,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      width: 360,
+                                      color: colorScheme.surfaceContainerHighest,
+                                      child: const Center(
+                                          child: CircularProgressIndicator(strokeWidth: 2)),
+                                    ),
+                                    errorWidget: (context, url, error) => Container(
+                                      width: 360,
+                                      color: colorScheme.surfaceContainerHighest,
+                                      child: const Icon(Icons.broken_image_rounded),
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
@@ -502,9 +509,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       widget.app.sources.join(", "),
                     ),
                     _buildInfoRow(
-          Icons.verified_rounded,
+                      Icons.verified_rounded,
                       AppLocalizations.of(context)!.version,
                       widget.app.version,
+                    ),
+                    _buildInfoRow(
+                      Icons.source_rounded,
+                      AppLocalizations.of(context)!.source,
+                      widget.app.primarySource,
                     ),
                     if (_extraDetails?['developer'] != null)
                       _buildInfoRow(
@@ -770,74 +782,64 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              Material(
-                color: colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedSource,
-                      isDense: true,
-                      borderRadius: BorderRadius.circular(16),
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                      ),
-                      items: <String>{
-                        for (var v in widget.app.variants) v.source,
-                        if (_extraDetails != null &&
-                            _extraDetails!['variants'] != null)
-                          for (var v in _extraDetails!['variants'])
-                            v['source'].toString(),
-                        _selectedSource,
-                      }.map((String source) {
-                        // Try to find version for this source
-                        String? version;
-                        if (_extraDetails != null &&
-                            _extraDetails!['variants'] != null) {
-                          for (var v in _extraDetails!['variants']) {
-                            if (v['source'] == source) {
-                              version = v['version'] ?? v['last_version'];
-                              break;
-                            }
-                          }
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SegmentedButton<String>(
+                  segments: <String>{
+                    for (var v in widget.app.variants) v.source,
+                    if (_extraDetails != null &&
+                        _extraDetails!['variants'] != null)
+                      for (var v in _extraDetails!['variants'])
+                        v['source'].toString(),
+                    _selectedSource,
+                  }.map((String source) {
+                    // Try to find version for this source
+                    String? version;
+                    if (_extraDetails != null &&
+                        _extraDetails!['variants'] != null) {
+                      for (var v in _extraDetails!['variants']) {
+                        if (v['source'] == source) {
+                          version = v['version'] ?? v['last_version'];
+                          break;
                         }
-                        if (version == null) {
-                          for (var v in widget.app.variants) {
-                            if (v.source == source) {
-                              version = v.version;
-                              break;
-                            }
-                          }
+                      }
+                    }
+                    if (version == null) {
+                      for (var v in widget.app.variants) {
+                        if (v.source == source) {
+                          version = v.version;
+                          break;
                         }
+                      }
+                    }
 
-                        return DropdownMenuItem<String>(
-                          value: source,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildSourceTag(source, isSmall: true),
-                              const SizedBox(width: 8),
-                              Text(source),
-                              if (version != null) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  "v$version",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
+                    return ButtonSegment<String>(
+                      value: source,
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(source, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            if (version != null)
+                              Text(
+                                "v$version",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                                 ),
-                              ],
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                    if (newValue != null && mounted) {
+                              ),
+                          ],
+                        ),
+                      ),
+                      icon: _getSourceIcon(source),
+                    );
+                  }).toList(),
+                  selected: {_selectedSource},
+                  onSelectionChanged: (Set<String> newSelection) {
+                    final newValue = newSelection.first;
+                    if (mounted) {
                       setState(() {
                         _selectedSource = newValue;
                         // 更新安装状态（基于当前选择的来源）
@@ -862,12 +864,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       });
                     }
                   },
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
         ),
       ],
     );
@@ -888,39 +893,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Widget _buildSourceTag(String source, {bool isSmall = false}) {
-    return Builder(builder: (context) {
-      final colorScheme = Theme.of(context).colorScheme;
-      Color color = colorScheme.secondary;
-      if (source == "Pacman") {
-        color = Colors.blue;
-      } else if (source == "AUR") {
-        color = Colors.orange;
-      } else if (source == "Flatpak") {
-        color = Colors.purple;
-      } else if (source == "AppImage") {
-        color = Colors.teal;
-      } else if (source == "Native") {
-        color = Colors.blue;
-      }
-
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6.0),
-          border: Border.all(color: color.withValues(alpha: 0.5)),
-        ),
-        child: Text(
-          source,
-          style: TextStyle(
-              color: color,
-              fontSize: isSmall ? 9 : 10,
-              fontWeight: FontWeight.bold),
-        ),
-      );
-    });
-  }
 
   Widget _buildDependencySection(ThemeData theme) {
     final variant = _getVariantForSource(_selectedSource);
@@ -1174,6 +1146,59 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.confirm)),
         ],
+      ),
+    );
+  }
+
+  Widget? _getSourceIcon(String source) {
+    IconData? iconData;
+    if (source == "Pacman" || source == "Native") {
+      iconData = Icons.apps_rounded;
+    } else if (source == "AUR") {
+      iconData = Icons.cloud_outlined;
+    } else if (source == "Flatpak") {
+      iconData = Icons.inventory_2_outlined;
+    } else if (source == "AppImage") {
+      iconData = Icons.insert_drive_file_outlined;
+    }
+    if (iconData == null) return null;
+    return Icon(iconData, size: 16);
+  }
+
+  void _showScreenshotViewer(String url) {
+    showDialog(
+      context: context,
+      useSafeArea: false,
+      builder: (context) => Scaffold(
+        backgroundColor: Colors.black.withValues(alpha: 0.9),
+        body: Stack(
+          children: [
+            Center(
+              child: Hero(
+                tag: 'screenshot-$url',
+                child: InteractiveViewer(
+                  maxScale: 4.0,
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton.filled(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: 0.3),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

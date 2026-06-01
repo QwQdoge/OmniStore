@@ -786,7 +786,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildTrustLabel(String source) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     String label = l10n.community;
     Color color = Colors.orange;
@@ -803,22 +804,20 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.8),
+        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
-        ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
           Text(label,
               style: TextStyle(
-                  fontSize: 10, color: color, fontWeight: FontWeight.w900)),
+                  fontSize: 11, color: color, fontWeight: FontWeight.w900)),
         ],
       ),
     );
