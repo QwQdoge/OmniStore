@@ -920,7 +920,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildSourceTag(String source, {bool isSmall = false}) {
     Color color = Colors.grey;
-    if (source == "Pacman")
+    if (source == "Pacman" || source == "Native")
       color = Colors.blue;
     else if (source == "AUR")
       color = Colors.orange;
@@ -928,22 +928,20 @@ class _SearchPageState extends State<SearchPage> {
       color = Colors.purple;
     else if (source == "AppImage")
       color = Colors.teal;
-    else if (source == "Native")
-      color = Colors.blue;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 8, vertical: 1),
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 6 : 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         source,
         style: TextStyle(
           color: color,
-          fontSize: isSmall ? 9 : 10,
-          fontWeight: FontWeight.bold,
+          fontSize: isSmall ? 10 : 11,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
