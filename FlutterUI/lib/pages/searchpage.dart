@@ -10,6 +10,7 @@ import '../services/backend_service.dart';
 import '../services/category_service.dart';
 import '../widgets/magic_pulse_icon.dart';
 import '../widgets/ai_app_resolver.dart';
+import '../widgets/app_source_tag.dart';
 import 'app_details_page.dart';
 import '../services/history_service.dart';
 
@@ -768,7 +769,7 @@ class _SearchPageState extends State<SearchPage> {
                               .map(
                                 (s) => Padding(
                                   padding: const EdgeInsets.only(right: 4),
-                                  child: _buildSourceTag(s, isSmall: true),
+                                  child: AppSourceTag(source: s, isSmall: true),
                                 ),
                               ),
                           Text(
@@ -907,7 +908,7 @@ class _SearchPageState extends State<SearchPage> {
                   spacing: 4,
                   children: app.sources
                       .take(2)
-                      .map((s) => _buildSourceTag(s, isSmall: true))
+                      .map((s) => AppSourceTag(source: s, isSmall: true))
                       .toList(),
                 ),
               ],
@@ -915,35 +916,6 @@ class _SearchPageState extends State<SearchPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSourceTag(String source, {bool isSmall = false}) {
-    Color color = Colors.grey;
-    if (source == "Pacman" || source == "Native")
-      color = Colors.blue;
-    else if (source == "AUR")
-      color = Colors.orange;
-    else if (source == "Flatpak")
-      color = Colors.purple;
-    else if (source == "AppImage")
-      color = Colors.teal;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isSmall ? 6 : 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        source,
-        style: TextStyle(
-          color: color,
-          fontSize: isSmall ? 10 : 11,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
     );
   }
 
@@ -1027,7 +999,7 @@ class _SearchPageState extends State<SearchPage> {
                             Wrap(
                               spacing: 8,
                               children: app.sources
-                                  .map((s) => _buildSourceTag(s))
+                                  .map((s) => AppSourceTag(source: s))
                                   .toList(),
                             ),
                           ],
