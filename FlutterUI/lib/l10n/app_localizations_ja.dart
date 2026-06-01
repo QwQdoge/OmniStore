@@ -750,4 +750,37 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String get aiResponseFailed => 'AI の応答に失敗しました。';
+
+  @override
+  String get aiAnalysisFailed => 'AI による分析に失敗しました。';
+
+  @override
+  String cannotConnectToBackend(String error) {
+    return 'バックエンドサービスに接続できません: $error';
+  }
+
+  @override
+  String get taskInitializing => 'タスクを初期化中...';
+
+  @override
+  String get taskStarting => '起動中...';
+
+  @override
+  String get taskSuccess => 'タスクが正常に完了しました';
+
+  @override
+  String taskFailedWithCode(int code) {
+    return 'タスクが終了コード $code で失敗しました';
+  }
+
+  @override
+  String get taskCancelledByUser => 'タスクがユーザーによってキャンセルされました';
+
+  @override
+  String taskError(String error) {
+    return 'エラー: $error';
+  }
 }

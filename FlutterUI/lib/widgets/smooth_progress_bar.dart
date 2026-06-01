@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/task_state.dart';
+import '../l10n/app_localizations.dart';
 
 class SmoothProgressBar extends StatelessWidget {
   final TaskState taskState;
@@ -18,6 +19,31 @@ class SmoothProgressBar extends StatelessWidget {
     final isIndeterminate = taskState.progress < 0;
 
     final color = isFailed ? theme.colorScheme.error : theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
+
+    String displayMessage = taskState.message;
+    if (taskState.messageKey != null) {
+      switch (taskState.messageKey) {
+        case "taskInitializing":
+          displayMessage = l10n.taskInitializing;
+          break;
+        case "taskStarting":
+          displayMessage = l10n.taskStarting;
+          break;
+        case "taskSuccess":
+          displayMessage = l10n.taskSuccess;
+          break;
+        case "taskFailedWithCode":
+          displayMessage = l10n.taskFailedWithCode(taskState.messageArgs?['code'] ?? -1);
+          break;
+        case "taskCancelledByUser":
+          displayMessage = l10n.taskCancelledByUser;
+          break;
+        case "taskError":
+          displayMessage = l10n.taskError(taskState.messageArgs?['error'] ?? "Unknown error");
+          break;
+      }
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -44,7 +70,7 @@ class SmoothProgressBar extends StatelessWidget {
               ),
             Expanded(
               child: Text(
-                taskState.message,
+                displayMessage,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: isFailed ? theme.colorScheme.error : theme.colorScheme.onSurface,

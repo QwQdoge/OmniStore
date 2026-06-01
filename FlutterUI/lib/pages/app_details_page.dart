@@ -973,7 +973,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               }
               return SingleChildScrollView(
                 child: MarkdownBody(
-                  data: snapshot.data ?? "AI failed to respond.",
+                  data: snapshot.data ?? AppLocalizations.of(context)!.aiResponseFailed,
                   selectable: true,
                 ),
               );
@@ -1015,7 +1015,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               }
               return SingleChildScrollView(
                 child: MarkdownBody(
-                  data: snapshot.data ?? "AI failed to respond.",
+                  data: snapshot.data ?? AppLocalizations.of(context)!.aiResponseFailed,
                   selectable: true,
                 ),
               );
@@ -1057,7 +1057,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               }
               return SingleChildScrollView(
                 child: MarkdownBody(
-                  data: snapshot.data ?? "AI failed to respond.",
+                  data: snapshot.data ?? AppLocalizations.of(context)!.aiResponseFailed,
                   selectable: true,
                 ),
               );
@@ -1146,7 +1146,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
               }
               return SingleChildScrollView(
-                child: MarkdownBody(data: snapshot.data ?? "AI failed to analyze.", selectable: true),
+                child: MarkdownBody(data: snapshot.data ?? AppLocalizations.of(context)!.aiAnalysisFailed, selectable: true),
               );
             },
           ),

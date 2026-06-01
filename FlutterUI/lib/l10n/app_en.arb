@@ -1000,5 +1000,56 @@
   "retry": "Retry",
   "@retry": {
     "description": "Description for retry"
+  },
+  "aiResponseFailed": "AI failed to respond.",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "AI failed to analyze.",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
+  "cannotConnectToBackend": "Cannot connect to backend service: {error}",
+  "@cannotConnectToBackend": {
+    "description": "Error message when backend is unreachable",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskInitializing": "Initializing task...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskStarting": "Starting...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "Task completed successfully",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "taskFailedWithCode": "Task failed with exit code {code}",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskCancelledByUser": "Task cancelled by user",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "Error: {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

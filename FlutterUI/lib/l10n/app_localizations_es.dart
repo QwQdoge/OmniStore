@@ -764,4 +764,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get retry => 'Reintentar';
+
+  @override
+  String get aiResponseFailed => 'La IA no pudo responder.';
+
+  @override
+  String get aiAnalysisFailed => 'La IA no pudo analizar.';
+
+  @override
+  String cannotConnectToBackend(String error) {
+    return 'No se puede conectar al servicio backend: $error';
+  }
+
+  @override
+  String get taskInitializing => 'Inicializando tarea...';
+
+  @override
+  String get taskStarting => 'Iniciando...';
+
+  @override
+  String get taskSuccess => 'Tarea completada con éxito';
+
+  @override
+  String taskFailedWithCode(int code) {
+    return 'La tarea falló con el código de salida $code';
+  }
+
+  @override
+  String get taskCancelledByUser => 'Tarea cancelada por el usuario';
+
+  @override
+  String taskError(String error) {
+    return 'Error: $error';
+  }
 }

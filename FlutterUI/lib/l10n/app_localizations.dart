@@ -1512,6 +1512,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// Message shown when AI fails to respond
+  ///
+  /// In en, this message translates to:
+  /// **'AI failed to respond.'**
+  String get aiResponseFailed;
+
+  /// Message shown when AI fails to analyze error logs
+  ///
+  /// In en, this message translates to:
+  /// **'AI failed to analyze.'**
+  String get aiAnalysisFailed;
+
+  /// Error message when backend is unreachable
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot connect to backend service: {error}'**
+  String cannotConnectToBackend(String error);
+
+  /// Status message when a task is initializing
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing task...'**
+  String get taskInitializing;
+
+  /// Status message when a task is starting
+  ///
+  /// In en, this message translates to:
+  /// **'Starting...'**
+  String get taskStarting;
+
+  /// Status message when a task completes successfully
+  ///
+  /// In en, this message translates to:
+  /// **'Task completed successfully'**
+  String get taskSuccess;
+
+  /// Status message when a task fails with an exit code
+  ///
+  /// In en, this message translates to:
+  /// **'Task failed with exit code {code}'**
+  String taskFailedWithCode(int code);
+
+  /// Status message when a task is cancelled by the user
+  ///
+  /// In en, this message translates to:
+  /// **'Task cancelled by user'**
+  String get taskCancelledByUser;
+
+  /// Status message when a task encounters an error
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String taskError(String error);
 }
 
 class _AppLocalizationsDelegate

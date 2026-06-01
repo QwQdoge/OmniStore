@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "变体",
+  "variant": "安装源",
   "@variant": {
     "description": "Description for variant"
   },
@@ -1004,5 +1004,56 @@
   "retry": "重试",
   "@retry": {
     "description": "Description for retry"
+  },
+  "aiResponseFailed": "AI 响应失败。",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "AI 分析失败。",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
+  "cannotConnectToBackend": "无法连接到后端服务: {error}",
+  "@cannotConnectToBackend": {
+    "description": "Error message when backend is unreachable",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskInitializing": "正在初始化任务...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskStarting": "正在启动...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "任务成功完成",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "taskFailedWithCode": "任务失败，退出码 {code}",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskCancelledByUser": "任务已由用户取消",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "错误: {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

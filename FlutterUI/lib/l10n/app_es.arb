@@ -1000,5 +1000,56 @@
   "retry": "Reintentar",
   "@retry": {
     "description": "Description for retry"
+  },
+  "aiResponseFailed": "La IA no pudo responder.",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "La IA no pudo analizar.",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
+  "cannotConnectToBackend": "No se puede conectar al servicio backend: {error}",
+  "@cannotConnectToBackend": {
+    "description": "Error message when backend is unreachable",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskInitializing": "Inicializando tarea...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskStarting": "Iniciando...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "Tarea completada con éxito",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "taskFailedWithCode": "La tarea falló con el código de salida {code}",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskCancelledByUser": "Tarea cancelada por el usuario",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "Error: {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

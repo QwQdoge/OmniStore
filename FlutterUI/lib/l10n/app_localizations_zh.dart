@@ -63,7 +63,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source => '来源';
 
   @override
-  String get variant => '变体';
+  String get variant => '安装源';
 
   @override
   String get version => '版本';
@@ -745,6 +745,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retry => '重试';
+
+  @override
+  String get aiResponseFailed => 'AI 响应失败。';
+
+  @override
+  String get aiAnalysisFailed => 'AI 分析失败。';
+
+  @override
+  String cannotConnectToBackend(String error) {
+    return '无法连接到后端服务: $error';
+  }
+
+  @override
+  String get taskInitializing => '正在初始化任务...';
+
+  @override
+  String get taskStarting => '正在启动...';
+
+  @override
+  String get taskSuccess => '任务成功完成';
+
+  @override
+  String taskFailedWithCode(int code) {
+    return '任务失败，退出码 $code';
+  }
+
+  @override
+  String get taskCancelledByUser => '任务已由用户取消';
+
+  @override
+  String taskError(String error) {
+    return '错误: $error';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -806,7 +839,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source => '來源';
 
   @override
-  String get variant => '變體';
+  String get variant => '安裝源';
 
   @override
   String get version => '版本';
@@ -1387,7 +1420,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get official => '官方';
 
   @override
-  String get verified => '經校驗';
+  String get verified => '官方認證';
 
   @override
   String installingPkg(String name) {
@@ -1488,4 +1521,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get retry => '重試';
+
+  @override
+  String get aiResponseFailed => 'AI 回應失敗。';
+
+  @override
+  String get aiAnalysisFailed => 'AI 分析失敗。';
+
+  @override
+  String cannotConnectToBackend(String error) {
+    return '無法連線至後端服務：$error';
+  }
+
+  @override
+  String get taskInitializing => '正在初始化任務...';
+
+  @override
+  String get taskStarting => '正在啟動...';
+
+  @override
+  String get taskSuccess => '任務成功完成';
+
+  @override
+  String taskFailedWithCode(int code) {
+    return '任務失敗，結束代碼 $code';
+  }
+
+  @override
+  String get taskCancelledByUser => '任務已由使用者取消';
+
+  @override
+  String taskError(String error) {
+    return '錯誤：$error';
+  }
 }

@@ -51,14 +51,14 @@ class TaskManager {
       id: id,
       status: TaskStatus.pending,
       progress: -1.0,
-      message: "Initializing task...",
+      messageKey: "taskInitializing",
       packageName: packageName,
       source: source,
     ));
 
     BackendService.clearLogs();
     BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value = "Starting...";
+    BackendService.globalStatus.value = ""; // Clear status, let stage/message handle it
 
     try {
       List<String> args = [
@@ -97,7 +97,7 @@ class TaskManager {
         _updateState(_currentTask?.copyWith(
           status: TaskStatus.success,
           progress: 1.0,
-          message: "Task completed successfully",
+          messageKey: "taskSuccess",
           speed: "",
         ));
       } else {
@@ -105,7 +105,8 @@ class TaskManager {
         if (_currentTask?.status != TaskStatus.failed) {
           _updateState(_currentTask?.copyWith(
             status: TaskStatus.failed,
-            message: "Task failed with exit code $exitCode",
+            messageKey: "taskFailedWithCode",
+            messageArgs: {"code": exitCode},
             speed: "",
           ));
         }
@@ -123,7 +124,8 @@ class TaskManager {
     } catch (e) {
       _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
-        message: "Error: $e",
+        messageKey: "taskError",
+        messageArgs: {"error": e.toString()},
         speed: "",
       ));
     } finally {
@@ -236,7 +238,7 @@ class TaskManager {
       }
       _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
-        message: "Task cancelled by user",
+        messageKey: "taskCancelledByUser",
         speed: "",
       ));
 
