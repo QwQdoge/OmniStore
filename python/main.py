@@ -113,9 +113,10 @@ class OmnistoreBackend:
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
     async def initialize(self, session: aiohttp.ClientSession):
-        # ⚡ Pass shared habit_tracker to managers
-        self.manager = SearchManager(self.config, session, self.habit_tracker)
+        # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
+        # This prevents redundant disk reads and memory overhead from duplicate RecommendationManager instances.
         self.recommender = RecommendationManager(session, self.habit_tracker)
+        self.manager = SearchManager(self.config, session, self.habit_tracker, recommender=self.recommender)
         if self.manager is None:
             raise RuntimeError(
                 "Failed to initialize SearchManager. Check configuration and environment.")
