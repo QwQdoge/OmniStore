@@ -12,6 +12,8 @@ class TaskState {
   final double progress; // 0.0 to 1.0, or -1.0 for indeterminate
   final String speed;
   final String message;
+  final String? messageKey;
+  final Map<String, dynamic>? messageArgs;
   final String stage;
   final String? packageName;
   final String? source;
@@ -22,6 +24,8 @@ class TaskState {
     required this.progress,
     this.speed = "",
     this.message = "",
+    this.messageKey,
+    this.messageArgs,
     this.stage = "",
     this.packageName,
     this.source,
@@ -33,6 +37,8 @@ class TaskState {
     double? progress,
     String? speed,
     String? message,
+    String? messageKey,
+    Map<String, dynamic>? messageArgs,
     String? stage,
     String? packageName,
     String? source,
@@ -43,6 +49,8 @@ class TaskState {
       progress: progress ?? this.progress,
       speed: speed ?? this.speed,
       message: message ?? this.message,
+      messageKey: messageKey ?? this.messageKey,
+      messageArgs: messageArgs ?? this.messageArgs,
       stage: stage ?? this.stage,
       packageName: packageName ?? this.packageName,
       source: source ?? this.source,

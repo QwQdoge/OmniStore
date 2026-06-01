@@ -1000,5 +1000,56 @@
   "retry": "再試行",
   "@retry": {
     "description": "Description for retry"
+  },
+  "aiResponseFailed": "AI の応答に失敗しました。",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "AI による分析に失敗しました。",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
+  "cannotConnectToBackend": "バックエンドサービスに接続できません: {error}",
+  "@cannotConnectToBackend": {
+    "description": "Error message when backend is unreachable",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskInitializing": "タスクを初期化中...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskStarting": "起動中...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "タスクが正常に完了しました",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "taskFailedWithCode": "タスクが終了コード {code} で失敗しました",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskCancelledByUser": "タスクがユーザーによってキャンセルされました",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "エラー: {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

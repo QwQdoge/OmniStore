@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "變體",
+  "variant": "安裝源",
   "@variant": {
     "description": "Description for variant"
   },
@@ -864,7 +864,7 @@
   "@official": {
     "description": "Description for official"
   },
-  "verified": "經校驗",
+  "verified": "官方認證",
   "@verified": {
     "description": "Description for verified"
   },
@@ -1003,5 +1003,56 @@
   "retry": "重試",
   "@retry": {
     "description": "Description for retry"
+  },
+  "aiResponseFailed": "AI 回應失敗。",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "AI 分析失敗。",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
+  "cannotConnectToBackend": "無法連線至後端服務：{error}",
+  "@cannotConnectToBackend": {
+    "description": "Error message when backend is unreachable",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskInitializing": "正在初始化任務...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskStarting": "正在啟動...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "任務成功完成",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "taskFailedWithCode": "任務失敗，結束代碼 {code}",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskCancelledByUser": "任務已由使用者取消",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "錯誤：{error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -57,7 +57,7 @@ class _WelcomePageState extends State<WelcomePage> {
         setState(() {
           _hasFatal = true;
           _envStatus = {
-            "Backend": {"status": "fatal", "message": "无法连接到后端服务: $e"}
+            "Backend": {"status": "fatal", "message": AppLocalizations.of(context)!.cannotConnectToBackend(e.toString())}
           };
         });
       }
