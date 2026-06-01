@@ -22,13 +22,14 @@ class SearchManager:
     Orchestrates search requests across multiple sources (Pacman, AUR, Flatpak, etc.).
     Handles result merging, smart scoring, and metadata enrichment.
     """
-    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None):
+    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, recommender: RecommendationManager = None):
         self.cm = config_manager
         self.habit_tracker = habit_tracker or HabitTracker()
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
         # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session
-        self.recommender = RecommendationManager(session)
+        # ⚡ Optimization: share recommender instance to avoid redundant metadata cache loading
+        self.recommender = recommender or RecommendationManager(session, self.habit_tracker)
         self.source_instances = {}
         # 根据环境和配置动态加载搜索源实例，确保只有启用且环境支持的源才会被初始化
         self._setup_sources()

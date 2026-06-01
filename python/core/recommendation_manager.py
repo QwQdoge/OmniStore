@@ -17,6 +17,9 @@ class RecommendationManager:
         self.cache_path = self.cache_dir / "recommendations.json"
         self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
         self._metadata_cache = self._load_metadata_cache()
+        # ⚡ Optimization: flags for coalesced saving
+        self._is_saving = False
+        self._needs_another_save = False
 
     def _load_metadata_cache(self) -> Dict[str, Any]:
         """Load metadata cache from disk"""
@@ -29,23 +32,40 @@ class RecommendationManager:
             return {"app_details": {}, "name_mapping": {}}
 
     async def _save_metadata_cache(self):
-        """Save metadata cache to disk asynchronously"""
+        """Save metadata cache to disk asynchronously with coalescing"""
+        if self._is_saving:
+            self._needs_another_save = True
+            return
+
+        self._is_saving = True
+        self._needs_another_save = False
+
         try:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
             # Use run_in_executor to avoid blocking the event loop with synchronous file I/O
-            def _write():
+            def _write(data_snapshot):
                 # Atomically write using a temporary file
                 tmp_path = self.metadata_cache_path.with_suffix(".tmp")
                 with open(tmp_path, "w", encoding="utf-8") as f:
-                    json.dump(self._metadata_cache, f, ensure_ascii=False)
+                    json.dump(data_snapshot, f, ensure_ascii=False)
                 tmp_path.replace(self.metadata_cache_path)
 
-            await asyncio.get_event_loop().run_in_executor(None, _write)
+            # ⚡ Snapshot the data to avoid "dict changed size" during JSON serialization in the executor
+            data_snapshot = {
+                "app_details": dict(self._metadata_cache.get("app_details", {})),
+                "name_mapping": dict(self._metadata_cache.get("name_mapping", {}))
+            }
+
+            await asyncio.get_event_loop().run_in_executor(None, _write, data_snapshot)
         except Exception as e:
-            # Avoid using print in backend to prevent protocol noise, use sys.stderr
             import sys
             sys.stderr.write(f"[RecommendationManager] Metadata Cache Save Error: {e}\n")
+        finally:
+            self._is_saving = False
+            if self._needs_another_save:
+                # Schedule another save if needed
+                asyncio.create_task(self._save_metadata_cache())
 
     async def _safe_print_error(self, msg: str):
         import sys
