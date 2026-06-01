@@ -11,6 +11,7 @@ import '../services/task_manager.dart';
 import '../models/task_state.dart';
 import '../widgets/magic_pulse_icon.dart';
 import '../widgets/smooth_progress_bar.dart';
+import '../widgets/app_source_tag.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -499,12 +500,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     _buildSectionTitle(
                         theme, AppLocalizations.of(context)!.details),
                     _buildInfoRow(
-          Icons.source_rounded,
+                      Icons.source_rounded,
                       AppLocalizations.of(context)!.source,
                       widget.app.primarySource,
                     ),
                     _buildInfoRow(
-          Icons.all_inclusive_rounded,
+                      Icons.all_inclusive_rounded,
                       AppLocalizations.of(context)!.variant,
                       widget.app.sources.join(", "),
                     ),
@@ -512,11 +513,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       Icons.verified_rounded,
                       AppLocalizations.of(context)!.version,
                       widget.app.version,
-                    ),
-                    _buildInfoRow(
-                      Icons.source_rounded,
-                      AppLocalizations.of(context)!.source,
-                      widget.app.primarySource,
                     ),
                     if (_extraDetails?['developer'] != null)
                       _buildInfoRow(
@@ -750,35 +746,46 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                     ),
                   ),
-                  if (_isAppInstalled)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            size: 16,
-                            color: theme.colorScheme.primary,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_isAppInstalled) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            AppLocalizations.of(context)!.ready,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: theme.colorScheme.primary,
-                            ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 16,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                AppLocalizations.of(context)!.ready,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      AppSourceTag(
+                        source: _selectedSource,
+                        mode: AppSourceTagMode.trust,
                       ),
-                    ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -884,10 +891,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       padding: const EdgeInsets.only(bottom: 12.0, top: 16),
       child: Text(
         title,
-        style: theme.textTheme.titleMedium?.copyWith(
+        style: TextStyle(
+          fontSize: 26,
           fontWeight: FontWeight.w900,
           color: theme.colorScheme.primary,
-          letterSpacing: -0.5,
+          letterSpacing: -1.0,
         ),
       ),
     );
@@ -1204,13 +1212,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.grey),
+          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(label, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
           const Spacer(),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],

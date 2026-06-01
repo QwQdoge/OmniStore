@@ -8,6 +8,7 @@ import '../services/backend_service.dart';
 import '../services/category_service.dart';
 
 import '../widgets/ai_app_resolver.dart';
+import '../widgets/app_source_tag.dart';
 import './app_details_page.dart';
 import 'searchpage.dart';
 
@@ -404,7 +405,10 @@ class _HomePageState extends State<HomePage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
-                      _buildTrustLabel(app.primarySource),
+                      AppSourceTag(
+                        source: app.primarySource,
+                        mode: AppSourceTagMode.trust,
+                      ),
                     ],
                   ),
                 ),
@@ -563,7 +567,10 @@ class _HomePageState extends State<HomePage> {
                       Positioned(
                         top: 12,
                         right: 12,
-                        child: _buildTrustLabel(app.primarySource),
+                        child: AppSourceTag(
+                          source: app.primarySource,
+                          mode: AppSourceTagMode.trust,
+                        ),
                       ),
                     ],
                   ),
@@ -780,44 +787,6 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
           AIAppResolver(aiText: _aiPickBlurb!, jsonPrefix: 'PICK_JSON:'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrustLabel(String source) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    String label = l10n.community;
-    Color color = Colors.orange;
-    IconData icon = Icons.people_rounded;
-
-    if (source == "Pacman" || source == "Native") {
-      label = l10n.official;
-      color = Colors.blue;
-      icon = Icons.verified_user_rounded;
-    } else if (source == "Flatpak") {
-      label = l10n.verified;
-      color = Colors.green;
-      icon = Icons.verified_rounded;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: color, fontWeight: FontWeight.w900)),
         ],
       ),
     );
