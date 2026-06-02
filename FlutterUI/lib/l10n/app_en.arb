@@ -669,6 +669,22 @@
   "@omnistore": {
     "description": "App Name"
   },
+  "installedApps": "Installed Apps",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "GitHub Store",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Flatpak Store",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "Locate Installation",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
   "delete": "Delete",
   "@delete": {
     "description": "Description for delete"

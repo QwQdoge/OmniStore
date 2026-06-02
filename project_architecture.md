@@ -31,17 +31,15 @@ The front-end is built using Flutter with a Material 3 design system. It uses a 
 
 ### Components:
 - **`lib/main.dart` (`MainNavigationEntry`)**:
-  - **Sidebar (`_buildSideBar`)**: Contains a top "Explore" (`Icons.apps_rounded`) button and a bottom "Download" button (`_buildDownloadButton`). Now uses global `navigationIndex` for tab switching.
-  - **Top Bar (`_buildTopBar`)**: Displays the current page title, a search action icon (switches to `SearchPage` via global state), and the user settings avatar button (`_buildUserAvatar`).
-  - **Main Content Area**: Wrapped in a `Material` widget to ensure correct ink splash rendering for child `ListTile` components.
-  - **Global Status Bar**: At the bottom of the screen, displays background task status, current action logs, and download progress.
-- **Features (`lib/feature/`)**:
-  - `home/`: Aggregated discovery with GitHub trending and essentials.
-  - `search/`: Multi-source search with advanced filters and pagination.
-  - `apps/`: Installed apps manager for local and system packages.
-  - `details/`: Rich application details with multi-variant selection (SegmentedButton).
-  - `tweaks/`: Advanced settings, source management, and weighting.
-  - `auth/`: GitHub PAT management.
+  - **Sidebar (`_buildSideBar`)**: Navigation rail with icons for Explore, Categories, Installed, GitHub Store, Flatpak Store, Settings, and Downloads. Uses `NavigationController` for state.
+  - **Top Bar (`_buildTopBar`)**: Displays the localized page title, a search action button (switches to `SearchPage`), and the user settings avatar.
+  - **Main Content Area**: Features a large container with 28.0px rounded corners and an `AnimatedSwitcher` for smooth page transitions.
+  - **Bottom Status Bar**: Visible during active tasks, showing real-time logs, speed, and progress.
+- **Features (`lib/features/`)**:
+  - `package_browse/`: Contains `HomePage`, `CategoryPage`, `SearchPage`, `DetailsPage`, `AppsPage`, `GitHubStorePage`, and `FlatpakStorePage`.
+  - `settings/`: Includes `TweaksPage` and `SettingsController`.
+  - `task_manager/`: Includes `DownloadPage` and `TaskController` for background execution.
+  - `onboarding/`: `WelcomePage` for first-run configuration.
 - **Widgets (`lib/widgets/`)**:
   - `window_title_bar.dart`: Custom draggable window headers.
   - `smooth_progress_bar.dart`: Animated progress display for background installations.

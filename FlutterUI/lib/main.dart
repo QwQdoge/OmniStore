@@ -341,13 +341,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     ColorScheme colorScheme,
     NavigationController nav,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final items = [
-      {'title': 'Explore', 'icon': Icons.apps_rounded, 'index': 0},
-      {'title': 'Categories', 'icon': Icons.grid_view_rounded, 'index': 1},
-      {'title': 'Installed', 'icon': Icons.inventory_2_rounded, 'index': 5},
-      {'title': 'GitHub Store', 'icon': Icons.code_rounded, 'index': 6},
+      {'title': l10n.explore, 'icon': Icons.apps_rounded, 'index': 0},
+      {'title': l10n.category, 'icon': Icons.grid_view_rounded, 'index': 1},
+      {'title': l10n.installedApps, 'icon': Icons.inventory_2_rounded, 'index': 5},
+      {'title': l10n.githubStore, 'icon': Icons.code_rounded, 'index': 6},
       {
-        'title': 'Flatpak Store',
+        'title': l10n.flatpakStore,
         'icon': Icons.shopping_bag_rounded,
         'index': 7,
       },
@@ -453,15 +454,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     NavigationController nav,
   ) {
     String pageTitle = "";
+    final l10n = AppLocalizations.of(context)!;
     final titles = {
-      0: AppLocalizations.of(context)!.explore,
-      1: AppLocalizations.of(context)!.category,
-      2: AppLocalizations.of(context)!.search,
-      3: AppLocalizations.of(context)!.settings,
-      4: AppLocalizations.of(context)!.downloads,
-      5: "Installed Apps",
-      6: "GitHub Store",
-      7: "Flatpak Store",
+      0: l10n.explore,
+      1: l10n.category,
+      2: l10n.search,
+      3: l10n.settings,
+      4: l10n.downloads,
+      5: l10n.installedApps,
+      6: l10n.githubStore,
+      7: l10n.flatpakStore,
     };
     pageTitle = titles[nav.selectedIndex] ?? "";
 

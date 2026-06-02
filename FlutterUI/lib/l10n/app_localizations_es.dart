@@ -503,6 +503,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get omnistore => 'OmniStore';
 
   @override
+  String get installedApps => 'Installed Apps';
+
+  @override
+  String get githubStore => 'GitHub Store';
+
+  @override
+  String get flatpakStore => 'Flatpak Store';
+
+  @override
+  String get locateInstallation => 'Locate Installation';
+
+  @override
   String get delete => 'Eliminar';
 
   @override

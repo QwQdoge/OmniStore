@@ -1045,6 +1045,30 @@ abstract class AppLocalizations {
   /// **'OmniStore'**
   String get omnistore;
 
+  /// Title for the installed apps page
+  ///
+  /// In en, this message translates to:
+  /// **'Installed Apps'**
+  String get installedApps;
+
+  /// Title for the GitHub store page
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Store'**
+  String get githubStore;
+
+  /// Title for the Flatpak store page
+  ///
+  /// In en, this message translates to:
+  /// **'Flatpak Store'**
+  String get flatpakStore;
+
+  /// Tooltip for locating the app installation folder
+  ///
+  /// In en, this message translates to:
+  /// **'Locate Installation'**
+  String get locateInstallation;
+
   /// Description for delete
   ///
   /// In en, this message translates to:

@@ -500,6 +500,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get omnistore => 'OmniStore';
 
   @override
+  String get installedApps => '已安装应用';
+
+  @override
+  String get githubStore => 'GitHub 商店';
+
+  @override
+  String get flatpakStore => 'Flatpak 商店';
+
+  @override
+  String get locateInstallation => '定位安装位置';
+
+  @override
   String get delete => '删除';
 
   @override
@@ -1274,6 +1286,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get omnistore => 'OmniStore';
+
+  @override
+  String get installedApps => '已安裝應用程式';
+
+  @override
+  String get githubStore => 'GitHub 商店';
+
+  @override
+  String get flatpakStore => 'Flatpak 商店';
+
+  @override
+  String get locateInstallation => '定位安裝位置';
 
   @override
   String get delete => '刪除';

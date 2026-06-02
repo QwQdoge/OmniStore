@@ -592,7 +592,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           IconButton.filledTonal(
             onPressed: _locateApp,
             icon: const Icon(Icons.folder_open_rounded),
-            tooltip: "Locate Installation",
+            tooltip: AppLocalizations.of(context)!.locateInstallation,
             style: IconButton.styleFrom(
               minimumSize: const Size(56, 56),
               shape: RoundedRectangleBorder(
