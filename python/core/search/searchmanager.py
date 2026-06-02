@@ -36,7 +36,7 @@ class SearchManager:
         self.sources["aur"] = AurSource(self.session)
         self.sources["flatpak"] = FlatpakSource()
         self.sources["appimage"] = AppImageSource(self.session, self.cm)
-        self.sources["github"] = GitHubSource(self.session)
+        self.sources["github"] = GitHubSource(self.session, self.cm)
 
         # Auto-discover external sources
         winget = WingetSource()

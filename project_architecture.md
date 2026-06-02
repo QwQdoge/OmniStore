@@ -35,12 +35,13 @@ The front-end is built using Flutter with a Material 3 design system. It uses a 
   - **Top Bar (`_buildTopBar`)**: Displays the current page title, a search action icon (switches to `SearchPage` via global state), and the user settings avatar button (`_buildUserAvatar`).
   - **Main Content Area**: Wrapped in a `Material` widget to ensure correct ink splash rendering for child `ListTile` components.
   - **Global Status Bar**: At the bottom of the screen, displays background task status, current action logs, and download progress.
-- **Pages (`lib/pages/`)**:
-  - `homepage.dart`: Displays featured banner cards (Hero section), essential packages grid, and horizontal category shelves (Trending, For You).
-  - `searchpage.dart`: Allows querying across different sources (Pacman, AUR, Flatpak, AppImage).
-  - `settingpage.dart`: Detailed settings editor (sources toggles, source priorities drag-and-drop list using `onReorderItem`, log levels, backups, etc.).
-  - `download_page.dart`: Displays detailed process logs and cancellation actions.
-  - `welcome_page.dart`: First-run onboarding wizard.
+- **Features (`lib/feature/`)**:
+  - `home/`: Aggregated discovery with GitHub trending and essentials.
+  - `search/`: Multi-source search with advanced filters and pagination.
+  - `apps/`: Installed apps manager for local and system packages.
+  - `details/`: Rich application details with multi-variant selection (SegmentedButton).
+  - `tweaks/`: Advanced settings, source management, and weighting.
+  - `auth/`: GitHub PAT management.
 - **Widgets (`lib/widgets/`)**:
   - `window_title_bar.dart`: Custom draggable window headers.
   - `smooth_progress_bar.dart`: Animated progress display for background installations.

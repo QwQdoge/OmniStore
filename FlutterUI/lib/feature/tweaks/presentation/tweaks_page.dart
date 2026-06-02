@@ -5,27 +5,29 @@ import 'package:path/path.dart' as p;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
-import '../widgets/magic_pulse_icon.dart';
-import '../l10n/app_localizations.dart';
-import '../services/backend_service.dart';
-import '../services/l10n_service.dart';
-import '../services/update_service.dart';
-import '../services/history_service.dart';
+import '../../../widgets/magic_pulse_icon.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/backend_service.dart';
+import '../../../services/l10n_service.dart';
+import '../../../services/update_service.dart';
+import '../../../services/history_service.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class TweaksPage extends StatefulWidget {
+  const TweaksPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<TweaksPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends State<TweaksPage> {
   // General settings
   bool pacmanEnabled = true;
   bool aurEnabled = true;
   bool flatpakEnabled = true;
   bool appimageEnabled = true;
   bool githubEnabled = true;
+  bool includePreReleases = false;
+  bool showAllPlatforms = false;
 
   double maxResults = 100;
   double pacmanPriority = 100;
@@ -192,7 +194,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildSwitchTile(
                     l10n.flatpak,
                     flatpakEnabled,
-                    (v) => setState(() => flatpakEnabled = v),
+                    (v) => _toggleSidebarItem("Flatpak Store", 7, v),
                   ),
                   _buildSwitchTile(
                     l10n.appImage,
@@ -202,8 +204,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildSwitchTile(
                     "GitHub Store",
                     githubEnabled,
-                    (v) => _toggleSidebarItem("GitHub Store", 5, v),
+                    (v) => _toggleSidebarItem("GitHub Store", 6, v),
                   ),
+                  if (githubEnabled) ...[
+                    _buildSwitchTile("Include Pre-releases", includePreReleases, (v) => setState(() => includePreReleases = v)),
+                    _buildSwitchTile("Show All Platforms", showAllPlatforms, (v) => setState(() => showAllPlatforms = v)),
+                  ],
                   const Divider(indent: 20, endIndent: 20, height: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -958,11 +964,18 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _toggleSidebarItem(String title, int index, bool enabled) {
-    setState(() => githubEnabled = enabled);
+    if (title == "GitHub Store") setState(() => githubEnabled = enabled);
+    if (title == "Flatpak Store") setState(() => flatpakEnabled = enabled);
+
     final items = List<Map<String, dynamic>>.from(BackendService.sidebarItems.value);
     if (enabled) {
       if (!items.any((i) => i['index'] == index)) {
-        items.add({'title': title, 'icon': index == 5 ? 'code_rounded' : 'shopping_bag_rounded', 'index': index});
+        String icon = 'help_outline_rounded';
+        if (index == 5) icon = 'inventory_2_rounded';
+        else if (index == 6) icon = 'code_rounded';
+        else if (index == 7) icon = 'shopping_bag_rounded';
+
+        items.add({'title': title, 'icon': icon, 'index': index});
         items.sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
       }
     } else {
@@ -983,6 +996,10 @@ class _SettingsPageState extends State<SettingsPage> {
           'github': githubEnabled,
         },
         'max_results': maxResults.toInt(),
+      },
+      'github_store': {
+        'include_pre_releases': includePreReleases,
+        'show_all_platforms': showAllPlatforms,
       },
       'priority': {
         'pacman': pacmanPriority.toInt(),

@@ -2,14 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-import 'pages/homepage.dart';
 import 'pages/category_page.dart';
-import 'pages/searchpage.dart';
-import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
 import 'pages/welcome_page.dart';
-import 'pages/github_store_page.dart';
 import 'pages/flatpak_store_page.dart';
+import 'feature/home/presentation/home_page.dart';
+import 'feature/home/presentation/github_store_page.dart';
+import 'feature/search/presentation/search_page.dart';
+import 'feature/tweaks/presentation/tweaks_page.dart';
+import 'feature/apps/presentation/apps_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
@@ -162,8 +163,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const HomePage(),
       const CategoryPage(),
       const SearchPage(autoFocus: false),
-      const SettingsPage(),
+      const TweaksPage(),
       const DownloadPage(),
+      const AppsPage(),
       const GitHubStorePage(),
       const FlatpakStorePage(),
     ];
@@ -389,6 +391,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       case 'code_rounded': return Icons.code_rounded;
       case 'shopping_bag_rounded': return Icons.shopping_bag_rounded;
       case 'explore_rounded': return Icons.explore_rounded;
+      case 'inventory_2_rounded': return Icons.inventory_2_rounded;
       default: return Icons.help_outline_rounded;
     }
   }
@@ -452,8 +455,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     } else if (_selectedIndex == 4) {
       pageTitle = AppLocalizations.of(context)!.downloads;
     } else if (_selectedIndex == 5) {
-      pageTitle = "GitHub Store";
+      pageTitle = "Installed Apps";
     } else if (_selectedIndex == 6) {
+      pageTitle = "GitHub Store";
+    } else if (_selectedIndex == 7) {
       pageTitle = "Flatpak Store";
     }
 

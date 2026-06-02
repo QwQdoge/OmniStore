@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../l10n/app_localizations.dart';
-import '../services/app_package.dart';
-import '../services/backend_service.dart';
-import '../services/task_manager.dart';
-import '../models/task_state.dart';
-import '../widgets/magic_pulse_icon.dart';
-import '../widgets/smooth_progress_bar.dart';
-import '../widgets/app_source_tag.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/app_package.dart';
+import '../../../services/backend_service.dart';
+import '../../../services/task_manager.dart';
+import '../../../models/task_state.dart';
+import '../../../widgets/magic_pulse_icon.dart';
+import '../../../widgets/smooth_progress_bar.dart';
+import '../../../widgets/app_source_tag.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;

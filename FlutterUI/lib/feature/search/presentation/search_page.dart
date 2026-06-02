@@ -4,15 +4,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../l10n/app_localizations.dart';
-import '../services/app_package.dart';
-import '../services/backend_service.dart';
-import '../services/category_service.dart';
-import '../widgets/magic_pulse_icon.dart';
-import '../widgets/ai_app_resolver.dart';
-import '../widgets/app_source_tag.dart';
-import 'app_details_page.dart';
-import '../services/history_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/app_package.dart';
+import '../../../services/backend_service.dart';
+import '../../../services/category_service.dart';
+import '../../../widgets/magic_pulse_icon.dart';
+import '../../../widgets/ai_app_resolver.dart';
+import '../../../widgets/app_source_tag.dart';
+import '../../details/presentation/details_page.dart';
+import '../../../services/history_service.dart';
 
 enum ViewMode { list, grid }
 

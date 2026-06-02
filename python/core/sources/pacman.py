@@ -14,7 +14,7 @@ class PacmanSource(UnifiedSource):
         self.enabled = os.path.exists("/usr/bin/pacman")
         self.privilege = PrivilegeManager()
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
 

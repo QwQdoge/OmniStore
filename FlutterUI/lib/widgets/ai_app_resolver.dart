@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/app_package.dart';
 import '../services/backend_service.dart';
-import '../pages/app_details_page.dart';
+import '../feature/details/presentation/details_page.dart';
 
 class AIAppResolver extends StatefulWidget {
   final String aiText;

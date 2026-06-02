@@ -11,7 +11,7 @@ class WingetSource(UnifiedSource):
         super().__init__(name="Winget", weight=weight)
         self.enabled = shutil.which("winget") is not None
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         # Implement winget search logic
         return []
 
@@ -38,7 +38,7 @@ class ScoopSource(UnifiedSource):
         super().__init__(name="Scoop", weight=weight)
         self.enabled = shutil.which("scoop") is not None
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
@@ -64,7 +64,7 @@ class BrewSource(UnifiedSource):
         super().__init__(name="Homebrew", weight=weight)
         self.enabled = shutil.which("brew") is not None
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:

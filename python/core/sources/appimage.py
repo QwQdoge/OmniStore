@@ -55,7 +55,7 @@ class AppImageSource(UnifiedSource):
         if not apps_dir.exists(): return False
         return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         feed_items = await self._fetch_feed()
         query_lower = query.lower()
         results = []

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../services/backend_service.dart';
-import '../services/app_package.dart';
-import '../l10n/app_localizations.dart';
-import '../widgets/app_source_tag.dart';
-import 'app_details_page.dart';
+import '../../../services/backend_service.dart';
+import '../../../services/app_package.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../widgets/app_source_tag.dart';
+import '../../details/presentation/details_page.dart';
 
 class GitHubStorePage extends StatefulWidget {
   const GitHubStorePage({super.key});

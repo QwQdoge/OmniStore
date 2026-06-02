@@ -13,7 +13,7 @@ abstract class UnifiedSource {
   });
 
   /// Search for packages in this source.
-  Future<List<Map<String, dynamic>>> search(String query);
+  Future<List<Map<String, dynamic>>> search(String query, {int page = 1, Map<String, dynamic>? filters});
 
   /// Install a package.
   Future<bool> install(Map<String, dynamic> package, {Function(String)? onProgress});

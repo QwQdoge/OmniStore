@@ -97,8 +97,9 @@ class BackendService {
   static final ValueNotifier<List<Map<String, dynamic>>> sidebarItems = ValueNotifier([
     {'title': 'Explore', 'icon': 'apps_rounded', 'index': 0},
     {'title': 'Categories', 'icon': 'grid_view_rounded', 'index': 1},
-    {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 5},
-    {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 6},
+    {'title': 'Installed', 'icon': 'inventory_2_rounded', 'index': 5},
+    {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 6},
+    {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 7},
   ]);
 
   static Process? activeProcess;
