@@ -16,16 +16,23 @@ class PrivilegeManager:
 
     async def ensure_privileged(self, callback: Optional[Callable[[str], Awaitable[None]]] = None) -> bool:
         """Acquire sudo privileges safely without a TTY."""
-        # 1. Silent check
-        check = await asyncio.create_subprocess_exec(
-            "sudo", "-n", "true",
-            stderr=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.DEVNULL,
-        )
-        await check.wait()
-        if check.returncode == 0:
-            self._last_auth_time = time.time()
+        # Check if we are already root
+        if os.getuid() == 0:
             return True
+
+        # 1. Silent check with timeout
+        try:
+            check = await asyncio.create_subprocess_exec(
+                "sudo", "-n", "true",
+                stderr=asyncio.subprocess.DEVNULL,
+                stdout=asyncio.subprocess.DEVNULL,
+            )
+            await asyncio.wait_for(check.wait(), timeout=5)
+            if check.returncode == 0:
+                self._last_auth_time = time.time()
+                return True
+        except (asyncio.TimeoutError, Exception):
+            pass
 
         # 2. Memory cache
         if self._is_auth_cached():
@@ -39,7 +46,7 @@ class PrivilegeManager:
             askpass_tool = await self._find_askpass()
             if not askpass_tool:
                 if callback:
-                    await callback("[ERROR] No graphical askpass tool found (zenity/ksshaskpass).")
+                    await callback("[ERROR] No graphical askpass tool found (zenity/ksshaskpass). Please install zenity or run with sudo.")
                 return False
 
             try:
@@ -54,6 +61,9 @@ class PrivilegeManager:
 
             env = os.environ.copy()
             env.pop("TERM", None)
+            # Ensure DISPLAY is set for GUI tools if possible
+            if "DISPLAY" not in env:
+                env["DISPLAY"] = ":0"
 
             sudo_proc = await asyncio.create_subprocess_exec(
                 "sudo", "-S", "-p", "", "-v",
@@ -64,7 +74,14 @@ class PrivilegeManager:
             )
 
             password_bytes = (password + "\n").encode("utf-8")
-            _, stderr_bytes = await sudo_proc.communicate(input=password_bytes)
+            try:
+                _, stderr_bytes = await asyncio.wait_for(sudo_proc.communicate(input=password_bytes), timeout=15)
+            except asyncio.TimeoutError:
+                if sudo_proc.returncode is None:
+                    try: sudo_proc.kill()
+                    except: pass
+                if callback: await callback("[ERROR] Sudo verification timed out.")
+                return False
 
             if sudo_proc.returncode == 0:
                 self._last_auth_time = time.time()

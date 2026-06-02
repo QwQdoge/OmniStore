@@ -142,56 +142,85 @@ class BackendService {
     }
   }
 
-  /// 搜索逻辑
+  /// 搜索逻辑 (Harden with timeouts and robust process management)
   Future<List<dynamic>> searchPackages(
     String query, {
     bool cancelOngoing = true,
   }) async {
-    // Cancel any ongoing search to prevent race conditions (usually for search bar)
-    if (cancelOngoing) activeSearchProcess?.kill();
+    // Defensive check
+    if (query.trim().isEmpty) return [];
 
+    // Cancel any ongoing search to prevent race conditions
+    if (cancelOngoing && activeSearchProcess != null) {
+      try {
+        activeSearchProcess!.kill(ProcessSignal.sigkill);
+      } catch (_) {}
+      activeSearchProcess = null;
+    }
+
+    Process? process;
     try {
-      final process = await Process.start(
+      process = await Process.start(
         _venvPython,
         _buildArgs(["-S", query, "--json"]),
         workingDirectory: _workingDir,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (cancelOngoing) activeSearchProcess = process;
 
       final results = <dynamic>[];
-      final lines = process.stdout
+      // Use a subscription to allow for explicit cancellation/timeout
+      final stream = process.stdout
           .transform(utf8.decoder)
-          .transform(const LineSplitter());
+          .transform(const LineSplitter())
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: (sink) {
+              debugPrint("Search stream timed out");
+              sink.close();
+            },
+          );
 
-      await for (final line in lines) {
+      await for (final line in stream) {
         final trimmed = line.trim();
         if (trimmed.isNotEmpty) {
-          results.addAll(_tryParseJson(trimmed));
+          final parsed = _tryParseJson(trimmed);
+          if (parsed is List) {
+            results.addAll(parsed);
+          }
         }
       }
 
       final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 45),
+        const Duration(seconds: 5),
+        onTimeout: () {
+          try {
+            process?.kill(ProcessSignal.sigkill);
+          } catch (_) {}
+          return -1;
+        },
       );
 
-      activeSearchProcess = null;
+      if (cancelOngoing) activeSearchProcess = null;
 
-      if (exitCode != 0) {
+      if (exitCode != 0 && exitCode != -1) {
         debugPrint('searchPackages failed with code $exitCode');
-        return [];
       }
 
       return results;
     } catch (e) {
-      activeSearchProcess = null;
+      if (cancelOngoing) activeSearchProcess = null;
+      try {
+        process?.kill(ProcessSignal.sigkill);
+      } catch (_) {}
       debugPrint('searchPackages Exception: $e');
       return [];
     }
   }
 
   /// Robust JSON parsing that finds the first JSON block or array
-  List<dynamic> _tryParseJson(String input) {
+  dynamic _tryParseJson(String input) {
+    if (input.trim().isEmpty) return null;
     try {
       // 1. Try direct decoding
       return jsonDecode(input);
@@ -213,7 +242,19 @@ class BackendService {
           debugPrint("Failed to parse extracted JSON block: $e");
         }
       }
-      return [];
+
+      // 4. Fallback: Find the last { ... } block
+      final startBrace = target.lastIndexOf('{');
+      final endBrace = target.lastIndexOf('}');
+      if (startBrace != -1 && endBrace != -1 && endBrace > startBrace) {
+        try {
+          return jsonDecode(target.substring(startBrace, endBrace + 1));
+        } catch (e) {
+          debugPrint("Failed to parse extracted JSON object: $e");
+        }
+      }
+
+      return null;
     }
   }
 
@@ -224,10 +265,11 @@ class BackendService {
         _venvPython,
         _buildArgs(["-L", "--json"]),
         workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 20));
 
       if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
+      final parsed = _tryParseJson(result.stdout.toString().trim());
+      return parsed is List ? parsed : [];
     } catch (e) {
       debugPrint("ListInstalled Exception: $e");
       return [];
@@ -240,7 +282,7 @@ class BackendService {
         _venvPython,
         _buildArgs(["--get-config", "--json"]),
         workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
       if (result.exitCode != 0) {
         debugPrint(
           "loadConfig failed with exit code ${result.exitCode}: ${result.stderr}",
@@ -249,7 +291,10 @@ class BackendService {
       }
       final output = result.stdout.toString().trim();
       if (output.isEmpty) return {};
-      final config = jsonDecode(output) as Map<String, dynamic>;
+      final data = jsonDecode(output);
+      if (data is! Map<String, dynamic>) return {};
+
+      final config = data;
 
       // Update global AI status
       final ai = config['ai'] as Map<String, dynamic>?;
@@ -276,8 +321,9 @@ class BackendService {
         ]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 60));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
+      final data = _tryParseJson(result.stdout.toString().trim());
+      if (data is Map) return data['response'] ?? "AI Error: No response";
+      return "AI Error: Invalid response format";
     } catch (e) {
       return "AI Exception: $e";
     }
@@ -551,7 +597,9 @@ class BackendService {
         _buildArgs(["--details", appId, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 20));
-      return jsonDecode(result.stdout);
+      final data = _tryParseJson(result.stdout.toString().trim());
+      if (data is Map<String, dynamic>) return data;
+      return {};
     } catch (e) {
       debugPrint("getAppDetails Exception: $e");
       return {};
@@ -632,10 +680,11 @@ class BackendService {
         _venvPython,
         _buildArgs(["-C", "--json"]),
         workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 45));
 
       if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
+      final parsed = _tryParseJson(result.stdout.toString().trim());
+      return parsed is List ? parsed : [];
     } catch (e) {
       debugPrint("CheckUpdates Exception: $e");
       return [];

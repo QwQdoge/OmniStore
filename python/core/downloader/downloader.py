@@ -8,37 +8,59 @@ class InstallExecutor:
         self.is_running = False
 
     async def install(self, package: Dict[str, Any], callback) -> bool:
+        """Execute installation with state lock protection."""
         if self.is_running:
-            if callback: await callback("[ERROR] Another task is already in progress.")
+            if callback: await callback("[ERROR] Another task is already in progress. Please wait for completion.")
+            return False
+
+        # Robust input check
+        if not package or not package.get("name"):
+            if callback: await callback("[ERROR] Invalid package data provided for installation.")
             return False
 
         source_name = package.get("source", "").lower()
-        if source_name not in self.backend.manager.sources:
-            if callback: await callback(f"[ERROR] Source {source_name} not found.")
+        if not self.backend.manager or source_name not in self.backend.manager.sources:
+            if callback: await callback(f"[ERROR] Installation source '{source_name}' is unavailable or not supported.")
             return False
 
         source = self.backend.manager.sources[source_name]
         try:
             self.is_running = True
-            return await source.install(package, callback=callback)
+            # Defensive wrapper for source-specific implementation
+            success = await source.install(package, callback=callback)
+            return bool(success)
+        except Exception as e:
+            if callback: await callback(f"[ERROR] Unexpected failure during installation: {e}")
+            return False
         finally:
+            # Absolute state reset to prevent permanent lock
             self.is_running = False
 
     async def uninstall(self, package: Dict[str, Any], callback) -> bool:
+        """Execute uninstallation with state lock protection."""
         if self.is_running:
-            if callback: await callback("[ERROR] System is busy.")
+            if callback: await callback("[ERROR] System is currently busy with another operation.")
+            return False
+
+        if not package or not package.get("name"):
+            if callback: await callback("[ERROR] Invalid package data provided for uninstallation.")
             return False
 
         source_name = package.get("source", "").lower()
-        if source_name not in self.backend.manager.sources:
-            if callback: await callback(f"[ERROR] Source {source_name} not found.")
+        if not self.backend.manager or source_name not in self.backend.manager.sources:
+            if callback: await callback(f"[ERROR] Uninstallation source '{source_name}' not found.")
             return False
 
         source = self.backend.manager.sources[source_name]
         try:
             self.is_running = True
-            return await source.uninstall(package, callback=callback)
+            success = await source.uninstall(package, callback=callback)
+            return bool(success)
+        except Exception as e:
+            if callback: await callback(f"[ERROR] Unexpected failure during uninstallation: {e}")
+            return False
         finally:
+            # Absolute state reset to prevent permanent lock
             self.is_running = False
 
     async def update(self, package: Dict[str, Any], callback) -> bool:
