@@ -8,6 +8,8 @@ import 'pages/searchpage.dart';
 import 'pages/settingpage.dart';
 import 'pages/download_page.dart';
 import 'pages/welcome_page.dart';
+import 'pages/github_store_page.dart';
+import 'pages/flatpak_store_page.dart';
 import 'services/backend_service.dart';
 import 'services/l10n_service.dart';
 import 'services/update_service.dart';
@@ -162,6 +164,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       const SearchPage(autoFocus: false),
       const SettingsPage(),
       const DownloadPage(),
+      const GitHubStorePage(),
+      const FlatpakStorePage(),
     ];
   }
 
@@ -343,23 +347,50 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
 
   // 侧边栏布局：探索 + 左下角下载 (Section 1: Sidebar Navigation)
   Widget _buildSideBar(ColorScheme colorScheme) {
-    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 96,
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
-          _buildSideBarItem(0, Icons.explore_rounded, Icons.explore_rounded, l10n.explore, colorScheme),
-          const SizedBox(height: 24),
-          _buildSideBarItem(1, Icons.grid_view_rounded, Icons.grid_view_rounded, l10n.category, colorScheme),
-          const SizedBox(height: 24),
-          _buildSideBarItem(3, Icons.settings_rounded, Icons.settings_rounded, l10n.settings, colorScheme),
+          ValueListenableBuilder<List<Map<String, dynamic>>>(
+            valueListenable: BackendService.sidebarItems,
+            builder: (context, items, _) {
+              return Column(
+                children: items.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: _buildSideBarItem(
+                      item['index'],
+                      _getIconData(item['icon']),
+                      _getIconData(item['icon']),
+                      item['title'],
+                      colorScheme,
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
           const Spacer(),
+          _buildSideBarItem(3, Icons.settings_rounded, Icons.settings_rounded,
+              AppLocalizations.of(context)!.settings, colorScheme),
+          const SizedBox(height: 12),
           _buildDownloadButton(colorScheme),
           const SizedBox(height: 12),
         ],
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'apps_rounded': return Icons.apps_rounded;
+      case 'grid_view_rounded': return Icons.grid_view_rounded;
+      case 'code_rounded': return Icons.code_rounded;
+      case 'shopping_bag_rounded': return Icons.shopping_bag_rounded;
+      case 'explore_rounded': return Icons.explore_rounded;
+      default: return Icons.help_outline_rounded;
+    }
   }
 
   Widget _buildSideBarItem(int index, IconData icon, IconData selectedIcon, String label, ColorScheme colorScheme) {
@@ -420,6 +451,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
       pageTitle = AppLocalizations.of(context)!.settings;
     } else if (_selectedIndex == 4) {
       pageTitle = AppLocalizations.of(context)!.downloads;
+    } else if (_selectedIndex == 5) {
+      pageTitle = "GitHub Store";
+    } else if (_selectedIndex == 6) {
+      pageTitle = "Flatpak Store";
     }
 
     return Container(

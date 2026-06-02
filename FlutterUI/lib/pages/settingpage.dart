@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:file_picker/file_picker.dart';
@@ -24,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool aurEnabled = true;
   bool flatpakEnabled = true;
   bool appimageEnabled = true;
+  bool githubEnabled = true;
 
   double maxResults = 100;
   double pacmanPriority = 100;
@@ -87,6 +89,7 @@ class _SettingsPageState extends State<SettingsPage> {
           aurEnabled = src['aur'] ?? true;
           flatpakEnabled = src['flatpak'] ?? true;
           appimageEnabled = src['appimage'] ?? true;
+          githubEnabled = src['github'] ?? true;
           maxResults = (s['max_results'] ?? 100).toDouble();
 
           final p = config['priority'] as Map<String, dynamic>? ?? {};
@@ -195,6 +198,30 @@ class _SettingsPageState extends State<SettingsPage> {
                     l10n.appImage,
                     appimageEnabled,
                     (v) => setState(() => appimageEnabled = v),
+                  ),
+                  _buildSwitchTile(
+                    "GitHub Store",
+                    githubEnabled,
+                    (v) => _toggleSidebarItem("GitHub Store", 5, v),
+                  ),
+                  const Divider(indent: 20, endIndent: 20, height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+                            final pluginPath = p.join(BackendService.workingDir, 'plugins');
+                            Directory(pluginPath).createSync(recursive: true);
+                            String cmd = Platform.isWindows ? 'explorer' : (Platform.isMacOS ? 'open' : 'xdg-open');
+                            Process.run(cmd, [pluginPath]);
+                          }
+                        },
+                        icon: const Icon(Icons.folder_open_rounded, size: 18),
+                        label: const Text("Open Plugin Folder"),
+                      ),
+                    ),
                   ),
                 ]),
                 const SizedBox(height: 24),
@@ -930,6 +957,20 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _toggleSidebarItem(String title, int index, bool enabled) {
+    setState(() => githubEnabled = enabled);
+    final items = List<Map<String, dynamic>>.from(BackendService.sidebarItems.value);
+    if (enabled) {
+      if (!items.any((i) => i['index'] == index)) {
+        items.add({'title': title, 'icon': index == 5 ? 'code_rounded' : 'shopping_bag_rounded', 'index': index});
+        items.sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
+      }
+    } else {
+      items.removeWhere((i) => i['index'] == index);
+    }
+    BackendService.sidebarItems.value = items;
+  }
+
   void _saveAll({bool silent = false}) {
     final l10n = AppLocalizations.of(context)!;
     final config = {
@@ -939,6 +980,7 @@ class _SettingsPageState extends State<SettingsPage> {
           'aur': aurEnabled,
           'flatpak': flatpakEnabled,
           'appimage': appimageEnabled,
+          'github': githubEnabled,
         },
         'max_results': maxResults.toInt(),
       },

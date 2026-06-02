@@ -129,7 +129,7 @@ class RecommendationManager:
             sys.stderr.write(f"[RecommendationManager] Collection Fetch Error ({url}): {e}\n")
         return []
 
-    async def get_recommendations(self, force_refresh: bool = False) -> Dict[str, List[Dict]]:
+    async def get_recommendations(self, force_refresh: bool = False, sources: List = None) -> Dict[str, List[Dict]]:
         """Fetch categorized recommendations"""
         if not force_refresh:
             cached = self._load_cache()
@@ -193,6 +193,17 @@ class RecommendationManager:
                 "trending": trending[:15],
                 "for_you": for_you[:15]
             }
+
+            # Merge recommendations from other sources
+            if sources:
+                tasks = [src.get_recommendations() for src in sources if hasattr(src, "get_recommendations")]
+                source_recs = await asyncio.gather(*tasks, return_exceptions=True)
+                for rec in source_recs:
+                    if isinstance(rec, dict):
+                        result["featured"].extend(rec.get("featured", []))
+                        result["trending"].extend(rec.get("trending", []))
+                        result["for_you"].extend(rec.get("for_you", []))
+
             self._save_cache(result)
             return result
 

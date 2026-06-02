@@ -1,315 +1,227 @@
 import asyncio
 import aiohttp
-from typing import List, Dict, Any
-
-from core.search.base import SearchSource
+from typing import List, Dict, Any, Optional
+from core.sources.base import UnifiedSource
+from core.sources.pacman import PacmanSource
+from core.sources.aur import AurSource
+from core.sources.flatpak import FlatpakSource
+from core.sources.appimage import AppImageSource
+from core.sources.github import GitHubSource
+from core.sources.external import WingetSource, ScoopSource, BrewSource
+from core.sources.loader import PluginLoader
 from .smart_scoring import SmartScoring
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
-from .snap import SnapSearch
-from .aur import AurSearch
-from .flatpak import FlatpakSearch
-from .appimage import AppImageSearch
 import shutil
 import re
 import sys
 
-# Pre-compiled regex for normalization to improve merge performance
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
 class SearchManager:
-    """
-    Orchestrates search requests across multiple sources (Pacman, AUR, Flatpak, etc.).
-    Handles result merging, smart scoring, and metadata enrichment.
-    """
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, recommender: RecommendationManager = None):
         self.cm = config_manager
         self.habit_tracker = habit_tracker or HabitTracker()
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
-        # session 主要用于 AUR 搜索，其他源如果需要网络请求也可以复用这个 session
         self.session = session
-        # ⚡ Optimization: share recommender instance to avoid redundant metadata cache loading
         self.recommender = recommender or RecommendationManager(session, self.habit_tracker)
-        self.source_instances = {}
-        # 根据环境和配置动态加载搜索源实例，确保只有启用且环境支持的源才会被初始化
+        self.sources: Dict[str, UnifiedSource] = {}
         self._setup_sources()
-        self.executor = None  # 线程池将在需要时创建，避免不必要的资源占用
-        self.config = config_manager.current_config  # 直接使用当前配置，避免重复访问 cm.get()
-        # Per-instance cache for normalization to speed up duplicate merging
         self._norm_cache = {}
 
     def _setup_sources(self):
-        self.source_instances = {}
-        # 只有环境支持才加载
-        if shutil.which("pacman"):
-            from .pacman import PacmanSearch
-            self.source_instances["pacman"] = PacmanSearch(self.session)
+        self.sources = {}
+        # Default internal sources
+        self.sources["pacman"] = PacmanSource()
+        self.sources["aur"] = AurSource(self.session)
+        self.sources["flatpak"] = FlatpakSource()
+        self.sources["appimage"] = AppImageSource(self.session, self.cm)
+        self.sources["github"] = GitHubSource(self.session)
 
-        from .aur import AurSearch
-        self.source_instances["aur"] = AurSearch(self.session)
+        # Auto-discover external sources
+        winget = WingetSource()
+        if winget.enabled: self.sources["winget"] = winget
 
-        if shutil.which("flatpak"):
-            from .flatpak import FlatpakSearch
-            self.source_instances["flatpak"] = FlatpakSearch(self.session)
-        if shutil.which("snap"):
-            self.source_instances["snap"] = SnapSearch(self.session)
+        scoop = ScoopSource()
+        if scoop.enabled: self.sources["scoop"] = scoop
 
-    def _get_active_sources(self) -> List[SearchSource]:
+        brew = BrewSource()
+        if brew.enabled: self.sources["brew"] = brew
+
+        # Load external plugins
+        self.plugin_loader = PluginLoader(self)
+        self.plugin_loader.load_plugins()
+
+        # Load custom weights from config
+        weights = self.cm.get("sources.weights", {})
+        for name, weight in weights.items():
+            if name in self.sources:
+                self.sources[name].weight = weight
+
+    def _get_active_sources(self) -> List[UnifiedSource]:
         active = []
-        active_keys = self._get_active_source_keys()
-        for key in active_keys:
-            active.append(self.source_instances[key])
-
-        if not active:
-            sys.stderr.write("[SearchManager] Warning: No search sources are enabled in config.\n")
-
+        for key, source in self.sources.items():
+            if source.enabled and self.cm.get(f"search.sources.{key}", True):
+                active.append(source)
         return active
 
-    def _get_active_source_keys(self) -> List[str]:
-        """⚡ Optimization: Get only the keys of active sources to minimize overhead during sorting/scoring."""
-        active_keys = []
-        for key in self.source_instances.keys():
-            path = f"search.sources.{key}"
-            # 特殊处理：pacman 和 aur 默认开启，如果配置没显式关掉的话
-            default_val = True if key in ["pacman", "aur"] else False
-            if self.cm.get(path, default_val):
-                active_keys.append(key)
-            else:
-                sys.stderr.write(f"[SearchManager] Search source '{key}' is disabled in config.\n")
-        return active_keys
-
     async def search_all(self, query: str) -> List[Dict]:
-        """
-        Main entry point for searching.
-        1. Records search habit.
-        2. Dispatches parallel searches.
-        3. Merges duplicates from different sources.
-        4. Enriches top results with icons/descriptions.
-        """
         if not query or len(query) < 2:
             return []
 
-        # Handle category shorthand: /game -> category:Game
         if query.startswith("/") or query.startswith("category:"):
             cat_id = (query[1:] if query.startswith("/") else query[9:]).strip().lower()
-
-            # Map common lowercase IDs back to their standard form used in .desktop files/Flathub
             mapping = {
-                "development": "Development",
-                "game": "Game",
-                "games": "Game",
-                "audio": "AudioVideo",
-                "video": "AudioVideo",
-                "media": "AudioVideo",
-                "audiovideo": "AudioVideo",
-                "network": "Network",
-                "internet": "Network",
-                "system": "System",
-                "office": "Office",
-                "graphics": "Graphics",
-                "utility": "Utility",
-                "utilities": "Utility"
+                "development": "Development", "game": "Game", "games": "Game",
+                "audio": "AudioVideo", "video": "AudioVideo", "media": "AudioVideo",
+                "audiovideo": "AudioVideo", "network": "Network", "internet": "Network",
+                "system": "System", "office": "Office", "graphics": "Graphics",
+                "utility": "Utility", "utilities": "Utility"
             }
             standard_id = mapping.get(cat_id, cat_id.capitalize())
-
-            # Special case: categories browse from Flathub
             try:
                 results = await self.recommender.get_category_apps(standard_id)
-                if results:
-                    return results
-            except Exception as e:
-                sys.stderr.write(f"[SearchManager] Category fetch failed: {e}\n")
-
-            # Fallback to normal search if category fetch fails or returns nothing
+                if results: return results
+            except Exception: pass
             query = f"category:{standard_id}"
 
-        # 记录搜索习惯
         self.habit_tracker.record_search(query)
-
         active_sources = self._get_active_sources()
 
-        # 并发搜索
         tasks = [src.search(query) for src in active_sources]
-        
-        # 使用 asyncio.wait_for 给整个搜索加一个总超时，防止无限等待
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
-        except asyncio.TimeoutError:
-            sys.stderr.write("[SearchManager] Global search timeout\n")
-            return []
-        except Exception as e:
-            sys.stderr.write(f"[SearchManager] Global search crash: {e}\n")
+        except Exception:
             return []
 
         combined = []
         for i, res in enumerate(responses):
-            source_name = active_sources[i].name if i < len(
-                active_sources) else f"Source_{i}"
             if isinstance(res, list):
                 combined.extend(res)
-            elif isinstance(res, Exception):
-                # ❌ 不要 print，改用 stderr，确保 stdout 只有干净的 JSON
-                sys.stderr.write(
-                    f"[SearchManager] Source '{source_name}' failed: {res}\n")
 
-        # 1. 初始排序：按智能分和来源优先级排序 (Flatpak 优先)
-        # ⚡ Optimization: Pre-calculate sorting and merging metrics in a single pass
         query_lower = query.lower()
         query_norm = self._normalize_app_name(query)
-
-        # Cache configuration and habit weights once before the loop
         priority_map = self.cm.get("priority", {})
-        # Map source weights for all potential sources in one pass
-        potential_sources = ["Flatpak", "Native", "Pacman", "AUR", "Snap", "AppImage"]
+        potential_sources = list(self.sources.keys())
         source_weights = {s: self.habit_tracker.get_source_weight(s) for s in potential_sources}
-
         query_re = re.compile(rf"\b{re.escape(query_lower)}")
-        source_prio_map = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}
+
+        # AI Ranking (Optional)
+        ai_ranked_names = []
+        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True):
+            try:
+                # Ask AI to rank the top results
+                candidates = [f"{i['name']} ({i['source']})" for i in combined[:10]]
+                if candidates:
+                    from core.ai.assistant import AIAssistant
+                    ai = AIAssistant(self.cm)
+                    prompt = f"Rank these apps for query '{query}': {', '.join(candidates)}"
+                    # Simplified AI ranking logic
+                    res = await ai.recommend_apps(prompt, combined[:10])
+                    # Parse AI response for preferred names
+                    ai_ranked_names = [n.strip() for n in res.split("\n") if n.strip()]
+            except Exception: pass
 
         for item in combined:
-            item['_smart_score'] = self.smart_scoring._calculate_smart_score(
+            # Base smart score
+            base_score = self.smart_scoring._calculate_smart_score(
                 item, query_lower, priority_map, source_weights, query_re
             )
-            item['_source_prio'] = source_prio_map.get(item.get('source'), 0)
-            # Pre-calculate normalized name for merging to avoid redundant regex calls
+
+            # Apply manual source weights
+            source_weight = self.sources.get(item.get("source", "").lower()).weight if self.sources.get(item.get("source", "").lower()) else 1.0
+            item['_smart_score'] = base_score * source_weight
+
+            # AI boost
+            if item['name'] in ai_ranked_names:
+                item['_smart_score'] *= 1.5
+
             item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
 
-        combined.sort(key=lambda x: (x['_smart_score'], x['_source_prio']), reverse=True)
-
-        # 2. 合并同名包
+        combined.sort(key=lambda x: x['_smart_score'], reverse=True)
         merged = self.merge_duplicates(combined)
 
-        # 2.5 检查完全匹配，并将其置顶
         exact_match_idx = -1
         for idx, item in enumerate(merged):
-            # Using pre-calculated normalized name
             if item.get('_norm_name') == query_norm:
                 exact_match_idx = idx
                 break
 
         if exact_match_idx != -1:
             exact_match = merged.pop(exact_match_idx)
-            # 标记为精确匹配，前端可以据此展示大卡片
             exact_match["is_exact_match"] = True
             merged.insert(0, exact_match)
 
-        # 3. 截断结果，提升 Flutter 端渲染性能
         max_res = self.cm.get("search.max_results", 50)
         top_results = merged[:max_res]
-
-        # 4. 异步补全前几个结果的元数据（图标等）
-        # 补全数量优化：从 30 减少到 15，平衡加载速度与视觉丰富度
         await self._enrich_metadata(top_results[:15])
 
-        # ⚡ Cleanup internal optimization keys before returning to frontend
         for item in top_results:
             item.pop('_smart_score', None)
-            item.pop('_source_prio', None)
             item.pop('_norm_name', None)
 
         return top_results
 
     async def _enrich_metadata(self, items: List[Dict]):
-        """并发补全元数据"""
-        tasks = []
-        for item in items:
-            # 即使有图标，如果没描述也尝试补全
-            if not item.get("icon") or not item.get("description"):
-                tasks.append(self._enrich_single(item))
-
-        if tasks:
-            await asyncio.gather(*tasks)
+        tasks = [self._enrich_single(item) for item in items if not item.get("icon") or not item.get("description")]
+        if tasks: await asyncio.gather(*tasks)
 
     async def _enrich_single(self, item: Dict):
         metadata = await self.recommender.find_metadata(item['name'])
         if metadata:
-            if metadata.get("icon"):
-                item["icon"] = metadata["icon"]
+            if metadata.get("icon"): item["icon"] = metadata["icon"]
             if metadata.get("description") and len(item.get("description", "")) < 50:
                 item["description"] = metadata["description"]
-            if metadata.get("screenshots"):
-                item["screenshots"] = metadata["screenshots"]
+            if metadata.get("screenshots"): item["screenshots"] = metadata["screenshots"]
 
     def _normalize_app_name(self, name: str) -> str:
-        """
-        Aggressively normalizes app names to enable cross-source merging.
-        e.g., 'com.discordapp.Discord' and 'discord-bin' both become 'discord'.
-        """
-        if name in self._norm_cache:
-            return self._norm_cache[name]
-
-        # 1. 统一转小写，去掉空格
+        if name in self._norm_cache: return self._norm_cache[name]
         n = name.lower().strip()
-        # 2. 如果是 ID 格式 (com.discordapp.Discord), 提取最后一部分
-        if "." in n and len(n.split(".")) > 2:
-            n = n.split(".")[-1]
-
-        # 3. 移除版本号或架构信息（如果有）
+        if "." in n and len(n.split(".")) > 2: n = n.split(".")[-1]
         n = n.split()[0]
-        # 4. 移除常见的 Linux 包名后缀 (关键：让 telegram-desktop-bin 变成 telegram)
-        # 我们要移除 -bin, -git, -desktop, -appimage, -a 等干扰项
         n = _NORM_RE.sub('', n)
-        # 5. 移除中间的连字符，处理 TelegramDesktop 这种写法
         n = n.replace("-", "").replace("_", "")
-
         self._norm_cache[name] = n
         return n
 
     def merge_duplicates(self, items: List[Dict]) -> List[Dict]:
         seen: Dict[str, Dict] = {}
-
         for item in items:
             raw_name = item.get('name', 'unknown')
-            # ⚡ Use pre-calculated normalized name if available
             norm_key = item.get('_norm_name') or self._normalize_app_name(raw_name)
-
             source = item.get('source', 'Unknown')
             is_installed = item.get('installed', False)
-            version = item.get('last_version', 'Unknown')
 
-            # 准备变体数据
             variant = {
                 "source": source,
-                "version": version,
+                "version": item.get('last_version', 'Unknown'),
                 "installed": is_installed,
                 "description": item.get('description', ''),
+                "id": item.get("id"),
+                "url": item.get("url")
             }
 
             if norm_key not in seen:
-                # 第一次初始化条目
                 entry = item.copy()
                 entry['primary_source'] = source
-                entry['installed'] = is_installed
                 entry['variants'] = [variant]
-                # Cache normalized name for faster exact match checking later
                 entry['_norm_name'] = norm_key
-                # 记录已有的来源类型，防止重复
                 entry['_source_types'] = {source}
                 seen[norm_key] = entry
             else:
-                # 核心改进：检查该来源是否已在 variants 中，防止出现 [AUR, AUR]
                 if source not in seen[norm_key]['_source_types']:
                     seen[norm_key]['variants'].append(variant)
                     seen[norm_key]['_source_types'].add(source)
-
-                # 更新全局安装状态
                 if is_installed:
                     seen[norm_key]['installed'] = True
 
-                # 优先级抢占：Flatpak 优先，其次是 Native，最后是 AUR
-                current_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(seen[norm_key]['primary_source'], 0)
-                new_prio = {"Flatpak": 3, "Native": 2, "Pacman": 2, "AUR": 1}.get(source, 0)
-
-                if new_prio > current_prio:
+                # Priority mapping
+                prio = {"Flatpak": 3, "Pacman": 2, "AUR": 1}
+                if prio.get(source, 0) > prio.get(seen[norm_key]['primary_source'], 0):
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source
-                    seen[norm_key]['description'] = item.get(
-                        'description', seen[norm_key]['description'])
-                    if item.get("icon"):
-                        seen[norm_key]['icon'] = item["icon"]
+                    seen[norm_key]['description'] = item.get('description', seen[norm_key]['description'])
+                    if item.get("icon"): seen[norm_key]['icon'] = item["icon"]
 
-        # 清理掉用于内部逻辑的辅助字段
-        for entry in seen.values():
-            entry.pop('_source_types', None)
-
+        for entry in seen.values(): entry.pop('_source_types', None)
         return list(seen.values())

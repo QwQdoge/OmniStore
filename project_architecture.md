@@ -54,9 +54,9 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 - **Entry point (`python/main.py`)**: Handles CLI arguments parsing and routes them to backend modules. Outputs JSON metadata or streams callback lines in format `[CALLBACK] {"message": "..."}` or `[PROGRESS] 50` back to Flutter.
 - **Core modules (`python/core/`)**:
   - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
-  - `search/`: Unified package search logic. Supports `/category` shorthand (e.g., `/game` -> `category:Game`).
-  - `downloader/`: Process execution for installation/uninstallation flags.
-  - `ai/`: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature.
+- **`sources/`**: Unified software sources (Pacman, AUR, Flatpak, AppImage, GitHub, Plugins). Each source implements a `UnifiedSource` interface covering search, install, uninstall, launch, and locate.
+- **`downloader/`**: Refactored to delegate execution to the appropriate `UnifiedSource` instance.
+- **`ai/`**: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature. Used for intelligent search ranking and health reports.
   - `config_loader.py` & `env_manager.py`: Configuration and environment validation.
 
 ### Rust Daemon (`daemon/`)
@@ -88,7 +88,10 @@ The Python backend serves as the CLI logic wrapper executing tasks.
 
 ---
 
-## 5. Build and Distribution
+## 5. Plugin System
+The project supports dynamic Python plugins. Users can drop `.py` files into the `plugins/` directory. If they subclass `UnifiedSource`, they are automatically detected and integrated into the search and installation pipeline.
+
+## 6. Build and Distribution
 
 ### Automated Build Script (`auto_build.py`)
 A unified Python script in the root directory manages the entire build pipeline:
@@ -101,7 +104,7 @@ Usage: `python auto_build.py --all` (or selective flags like `--rust`, `--python
 
 ---
 
-## 6. 7-Part UX & Stability Standards
+## 7. 7-Part UX & Stability Standards
 
 To ensure a premium and stable experience, all features must adhere to these 7 pillars:
 
