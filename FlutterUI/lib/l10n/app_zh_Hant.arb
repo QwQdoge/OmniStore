@@ -672,6 +672,22 @@
   "@omnistore": {
     "description": "App Name"
   },
+  "installedApps": "已安裝應用程式",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "GitHub 商店",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Flatpak 商店",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "定位安裝位置",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
   "delete": "刪除",
   "@delete": {
     "description": "Description for delete"
