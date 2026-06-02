@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "バリアント",
+  "variant": "インストール源",
   "@variant": {
     "description": "Description for variant"
   },
@@ -669,6 +669,22 @@
   "@omnistore": {
     "description": "App Name"
   },
+  "installedApps": "インストール済みアプリ",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "GitHub ストア",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Flatpak ストア",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "インストール先を表示",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
   "delete": "削除",
   "@delete": {
     "description": "Description for delete"
@@ -1051,5 +1067,25 @@
         "type": "String"
       }
     }
+  },
+  "githubAuthTitle": "GitHub 認証",
+  "githubPatSaved": "GitHub PAT が正常に保存されました",
+  "saveToken": "トークンを保存",
+  "back": "戻る",
+  "next": "次へ",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
   }
 }

@@ -4,7 +4,7 @@
   "@searchHint": {
     "description": "Description for searchHint"
   },
-  "featured": "精選推薦",
+  "featured": "精選",
   "@featured": {
     "description": "Description for featured"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "就緒",
+  "ready": "已安裝",
   "@ready": {
     "description": "Description for ready"
   },
@@ -928,11 +928,11 @@
   "@installInfo": {
     "description": "Description for installInfo"
   },
-  "downloadSize": "下載體積",
+  "downloadSize": "下載大小",
   "@downloadSize": {
     "description": "Description for downloadSize"
   },
-  "installedSize": "解壓後占用",
+  "installedSize": "安裝後大小",
   "@installedSize": {
     "description": "Description for installedSize"
   },
@@ -1070,5 +1070,25 @@
         "type": "String"
       }
     }
+  },
+  "githubAuthTitle": "GitHub 身份驗證",
+  "githubPatSaved": "GitHub 存取權杖已成功儲存",
+  "saveToken": "儲存權杖",
+  "back": "返回",
+  "next": "下一步",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
   }
 }

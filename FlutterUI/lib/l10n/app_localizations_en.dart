@@ -808,4 +808,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String taskError(String error) {
     return 'Error: $error';
   }
+
+  @override
+  String get githubAuthTitle => 'GitHub Authentication';
+
+  @override
+  String get githubPatSaved => 'GitHub PAT saved successfully';
+
+  @override
+  String get saveToken => 'Save Token';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get next => 'Next';
 }

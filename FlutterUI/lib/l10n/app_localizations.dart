@@ -1590,6 +1590,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error: {error}'**
   String taskError(String error);
+
+  /// Title for GitHub auth page
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Authentication'**
+  String get githubAuthTitle;
+
+  /// Success message for saving GitHub PAT
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub PAT saved successfully'**
+  String get githubPatSaved;
+
+  /// Button label to save token
+  ///
+  /// In en, this message translates to:
+  /// **'Save Token'**
+  String get saveToken;
+
+  /// Back button label
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// Next button label
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
 }
 
 class _AppLocalizationsDelegate

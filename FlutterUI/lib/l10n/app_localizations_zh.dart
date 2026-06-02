@@ -69,7 +69,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get version => '版本';
 
   @override
-  String get ready => '已就绪';
+  String get ready => '已安装';
 
   @override
   String resultsFound(int count) {
@@ -790,6 +790,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String taskError(String error) {
     return '错误: $error';
   }
+
+  @override
+  String get githubAuthTitle => 'GitHub 身份验证';
+
+  @override
+  String get githubPatSaved => 'GitHub 访问令牌已成功保存';
+
+  @override
+  String get saveToken => '保存令牌';
+
+  @override
+  String get back => '返回';
+
+  @override
+  String get next => '下一步';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -800,7 +815,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchHint => '搜尋應用程式、遊戲、工具...';
 
   @override
-  String get featured => '精選推薦';
+  String get featured => '精選';
 
   @override
   String get forYou => '為您推薦';
@@ -857,7 +872,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get version => '版本';
 
   @override
-  String get ready => '就緒';
+  String get ready => '已安裝';
 
   @override
   String resultsFound(int count) {
@@ -1480,10 +1495,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get installInfo => '安裝資訊';
 
   @override
-  String get downloadSize => '下載體積';
+  String get downloadSize => '下載大小';
 
   @override
-  String get installedSize => '解壓後占用';
+  String get installedSize => '安裝後大小';
 
   @override
   String dependenciesCount(int count) {
@@ -1578,4 +1593,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String taskError(String error) {
     return '錯誤：$error';
   }
+
+  @override
+  String get githubAuthTitle => 'GitHub 身份驗證';
+
+  @override
+  String get githubPatSaved => 'GitHub 存取權杖已成功儲存';
+
+  @override
+  String get saveToken => '儲存權杖';
+
+  @override
+  String get back => '返回';
+
+  @override
+  String get next => '下一步';
 }

@@ -40,7 +40,7 @@ class _AuthPageState extends State<AuthPage> {
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("GitHub PAT saved successfully")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.githubPatSaved)),
       );
     }
   }
@@ -48,7 +48,7 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("GitHub Authentication")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.githubAuthTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -63,7 +63,7 @@ class _AuthPageState extends State<AuthPage> {
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _isSaving ? null : _savePat,
-              child: const Text("Save Token"),
+              child: Text(AppLocalizations.of(context)!.saveToken),
             ),
           ],
         ),
