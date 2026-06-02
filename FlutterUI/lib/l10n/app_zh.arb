@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已就绪",
+  "ready": "已安装",
   "@ready": {
     "description": "Description for ready"
   },
@@ -1071,5 +1071,25 @@
         "type": "String"
       }
     }
+  },
+  "githubAuthTitle": "GitHub 身份验证",
+  "githubPatSaved": "GitHub 访问令牌已成功保存",
+  "saveToken": "保存令牌",
+  "back": "返回",
+  "next": "下一步",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
   }
 }

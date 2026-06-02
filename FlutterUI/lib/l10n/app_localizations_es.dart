@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Variante';
+  String get variant => 'Fuente de instalación';
 
   @override
   String get version => 'Versión';
@@ -144,7 +144,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String confirmActionMsg(String name) {
-    return '¿Estás seguro de que quieres realizar esta acción en $name?';
+    return '¿Confirmas que deseas realizar esta acción en $name?';
   }
 
   @override
@@ -503,16 +503,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get omnistore => 'OmniStore';
 
   @override
-  String get installedApps => 'Installed Apps';
+  String get installedApps => 'Aplicaciones instaladas';
 
   @override
-  String get githubStore => 'GitHub Store';
+  String get githubStore => 'Tienda de GitHub';
 
   @override
-  String get flatpakStore => 'Flatpak Store';
+  String get flatpakStore => 'Tienda de Flatpak';
 
   @override
-  String get locateInstallation => 'Locate Installation';
+  String get locateInstallation => 'Localizar instalación';
 
   @override
   String get delete => 'Eliminar';
@@ -809,4 +809,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String taskError(String error) {
     return 'Error: $error';
   }
+
+  @override
+  String get githubAuthTitle => 'Autenticación de GitHub';
+
+  @override
+  String get githubPatSaved => 'GitHub PAT guardado con éxito';
+
+  @override
+  String get saveToken => 'Guardar token';
+
+  @override
+  String get back => 'Atrás';
+
+  @override
+  String get next => 'Siguiente';
 }

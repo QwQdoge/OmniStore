@@ -63,7 +63,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => 'バリアント';
+  String get variant => 'インストール源';
 
   @override
   String get version => 'バージョン';
@@ -502,16 +502,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get omnistore => 'OmniStore';
 
   @override
-  String get installedApps => 'Installed Apps';
+  String get installedApps => 'インストール済みアプリ';
 
   @override
-  String get githubStore => 'GitHub Store';
+  String get githubStore => 'GitHub ストア';
 
   @override
-  String get flatpakStore => 'Flatpak Store';
+  String get flatpakStore => 'Flatpak ストア';
 
   @override
-  String get locateInstallation => 'Locate Installation';
+  String get locateInstallation => 'インストール先を表示';
 
   @override
   String get delete => '削除';
@@ -795,4 +795,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String taskError(String error) {
     return 'エラー: $error';
   }
+
+  @override
+  String get githubAuthTitle => 'GitHub 認証';
+
+  @override
+  String get githubPatSaved => 'GitHub PAT が正常に保存されました';
+
+  @override
+  String get saveToken => 'トークンを保存';
+
+  @override
+  String get back => '戻る';
+
+  @override
+  String get next => '次へ';
 }

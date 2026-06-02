@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "Variante",
+  "variant": "Fuente de instalación",
   "@variant": {
     "description": "Description for variant"
   },
@@ -180,7 +180,7 @@
   "@confirmInstall": {
     "description": "Description for confirmInstall"
   },
-  "confirmActionMsg": "¿Estás seguro de que quieres realizar esta acción en {name}?",
+  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
   "@confirmActionMsg": {
     "placeholders": {
       "name": {
@@ -669,6 +669,22 @@
   "@omnistore": {
     "description": "App Name"
   },
+  "installedApps": "Aplicaciones instaladas",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "Tienda de GitHub",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Tienda de Flatpak",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "Localizar instalación",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
   "delete": "Eliminar",
   "@delete": {
     "description": "Description for delete"
@@ -1051,5 +1067,25 @@
         "type": "String"
       }
     }
+  },
+  "githubAuthTitle": "Autenticación de GitHub",
+  "githubPatSaved": "GitHub PAT guardado con éxito",
+  "saveToken": "Guardar token",
+  "back": "Atrás",
+  "next": "Siguiente",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
   }
 }

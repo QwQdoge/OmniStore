@@ -35,7 +35,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.ease,
                 ),
-                child: Text("Back"),
+                child: Text(l10n.back),
               ),
             const Spacer(),
             FilledButton(
@@ -53,7 +53,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   widget.onFinish();
                 }
               },
-              child: Text(_currentPage < 1 ? "Next" : l10n.getStarted),
+              child: Text(_currentPage < 1 ? l10n.next : l10n.getStarted),
             ),
           ],
         ),
