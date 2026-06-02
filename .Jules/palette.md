@@ -31,3 +31,9 @@
 **Learning:** Hardcoded colors and font sizes lead to inconsistency and theme breakage.
 
 **Action:** Prefer `theme.colorScheme` tokens (like `onSurfaceVariant`) and standardized typography styles (e.g., 26px w900 for section headers) across all pages.
+
+## 2026-06-02 - Enhanced Search Discovery & Interaction
+
+**Learning:** Search discovery can be significantly improved by preloading trending data and displaying it when the search field is empty, reducing "empty screen" fatigue on large viewports. Additionally, "No Results" states should never be dead ends; always provide alternatives like categories or AI-driven suggestions.
+
+**Action:** Implement discovery shelves in empty states and ensure that input logic (like clear buttons) remains responsive even when the main results view hasn't triggered yet.
