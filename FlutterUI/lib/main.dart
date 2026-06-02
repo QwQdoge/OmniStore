@@ -1,38 +1,50 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
-import 'pages/category_page.dart';
-import 'pages/download_page.dart';
-import 'pages/welcome_page.dart';
-import 'pages/flatpak_store_page.dart';
-import 'feature/home/presentation/home_page.dart';
-import 'feature/home/presentation/github_store_page.dart';
-import 'feature/search/presentation/search_page.dart';
-import 'feature/tweaks/presentation/tweaks_page.dart';
-import 'feature/apps/presentation/apps_page.dart';
-import 'services/backend_service.dart';
-import 'services/l10n_service.dart';
-import 'services/update_service.dart';
-import 'services/task_manager.dart';
-import 'models/task_state.dart';
+import 'package:provider/provider.dart';
+import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/navigation_controller.dart';
+import 'package:frontend/features/package_browse/home_page.dart';
+import 'package:frontend/features/package_browse/category_page.dart';
+import 'package:frontend/features/package_browse/search_page.dart';
+import 'package:frontend/features/package_browse/apps_page.dart';
+import 'package:frontend/features/package_browse/github_store_page.dart';
+import 'package:frontend/features/package_browse/flatpak_store_page.dart';
+import 'package:frontend/features/settings/tweaks_page.dart';
+import 'package:frontend/features/settings/settings_controller.dart';
+import 'package:frontend/features/task_manager/download_page.dart';
+import 'package:frontend/features/task_manager/task_controller.dart';
+import 'package:frontend/features/package_browse/browse_controller.dart';
+import 'package:frontend/features/onboarding/welcome_page.dart';
+import 'package:frontend/backend/repositories/config_repository.dart';
+import 'package:frontend/backend/repositories/package_repository.dart';
+import 'package:frontend/backend/repositories/task_repository.dart';
+import 'package:frontend/backend/repositories/ai_repository.dart';
+import 'package:frontend/services/l10n_service.dart';
+import 'package:frontend/services/update_service.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 并行初始化核心服务以提升加载速度
-  final results = await Future.wait([
-    wm.windowManager.ensureInitialized().timeout(const Duration(seconds: 5)),
-    BackendService.instance.loadConfig().timeout(const Duration(seconds: 10)),
-  ]).catchError((e) {
-    debugPrint("Initialization error: $e");
-    return [null, <String, dynamic>{}];
-  });
+  final configRepo = ConfigRepository();
+  final packageRepo = PackageRepository();
+  final taskRepo = TaskRepository();
+  final aiRepo = AIRepository();
 
-  final Map<String, dynamic> config = (results[1] as Map<String, dynamic>?) ?? {};
+  final results =
+      await Future.wait([
+        wm.windowManager.ensureInitialized().timeout(
+          const Duration(seconds: 5),
+        ),
+        configRepo.loadConfig().timeout(const Duration(seconds: 10)),
+      ]).catchError((e) {
+        debugPrint("Initialization error: $e");
+        return [null, <String, dynamic>{}];
+      });
 
-  // 初始化语言服务（依赖配置）
+  final Map<String, dynamic> config =
+      (results[1] as Map<String, dynamic>?) ?? {};
   await L10nService.init(config);
 
   wm.WindowOptions windowOptions = const wm.WindowOptions(
@@ -51,8 +63,26 @@ void main() async {
     await wm.windowManager.focus();
     await wm.windowManager.setPreventClose(true);
   });
-  
-  runApp(OmnistoreApp(initialConfig: config));
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider.value(value: configRepo),
+        Provider.value(value: packageRepo),
+        Provider.value(value: taskRepo),
+        Provider.value(value: aiRepo),
+        ChangeNotifierProvider(create: (_) => NavigationController()),
+        ChangeNotifierProvider(
+          create: (_) => SettingsController(configRepo)..loadConfig(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => BrowseController(packageRepo)..fetchRecommendations(),
+        ),
+        ChangeNotifierProvider(create: (_) => TaskController(taskRepo)),
+      ],
+      child: OmnistoreApp(initialConfig: config),
+    ),
+  );
 }
 
 class OmnistoreApp extends StatefulWidget {
@@ -74,7 +104,6 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
 
   @override
   Widget build(BuildContext context) {
-    // 按照用户要求，主色调改为经典的 Material 3 Purple
     const seedColor = Color(0xFF6750A4);
 
     return MaterialApp(
@@ -93,11 +122,7 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         Locale('es'),
         Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
       ],
-
-      // 1. 实现“跟随系统亮暗”的关键：
       themeMode: ThemeMode.system,
-
-      // 亮色模式配置
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: seedColor,
@@ -105,8 +130,6 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         iconTheme: const IconThemeData(size: 24),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-
-      // 暗色模式配置
       darkTheme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: seedColor,
@@ -114,31 +137,28 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         iconTheme: const IconThemeData(size: 24),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-
       home: _isFirstRun
           ? WelcomePage(
-              onFinish: () async {
-                await BackendService.instance.loadConfig();
+              onFinish: () {
                 setState(() {
                   _isFirstRun = false;
                 });
               },
             )
-          : MainNavigationEntry(initialConfig: widget.initialConfig),
+          : const MainNavigationEntry(),
     );
   }
 }
 
 class MainNavigationEntry extends StatefulWidget {
-  final Map<String, dynamic> initialConfig;
-  const MainNavigationEntry({super.key, required this.initialConfig});
+  const MainNavigationEntry({super.key});
 
   @override
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
 }
 
-class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.WindowListener {
-  int _selectedIndex = 0;
+class _MainNavigationEntryState extends State<MainNavigationEntry>
+    with wm.WindowListener {
   late final List<Widget> _subPages;
 
   @override
@@ -146,10 +166,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     super.initState();
     wm.windowManager.addListener(this);
 
-    // 监听全局导航状态
-    BackendService.navigationIndex.addListener(_onNavigationRequested);
-
-    // 延迟初始化更新服务与系统托盘，确保 UI 已渲染且环境检查更安全
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
@@ -171,18 +187,12 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     ];
   }
 
-  void _onNavigationRequested() {
-    if (mounted) {
-      setState(() {
-        _selectedIndex = BackendService.navigationIndex.value;
-      });
-    }
-  }
-
   Future<void> _initUpdateService(AppLocalizations l10n) async {
     try {
       await UpdateService().init().timeout(const Duration(seconds: 10));
-      await UpdateService().updateConfig(l10n).timeout(const Duration(seconds: 5));
+      await UpdateService()
+          .updateConfig(l10n)
+          .timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint("UpdateService initialization failed: $e");
     }
@@ -191,15 +201,13 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   @override
   void dispose() {
     wm.windowManager.removeListener(this);
-    BackendService.navigationIndex.removeListener(_onNavigationRequested);
     super.dispose();
   }
 
   @override
   void onWindowClose() async {
-    // 动态检查配置中的“关闭至托盘”设置
-    final config = await BackendService.instance.loadConfig();
-    final bool closeToTray = config['ui']?['close_to_tray'] ?? true;
+    final settings = context.read<SettingsController>();
+    final bool closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
       await wm.windowManager.hide();
@@ -212,8 +220,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
             duration: const Duration(seconds: 2),
           ),
         );
-
-        // Also show a system notification if the UI is hidden
         UpdateService().showSimpleNotification(
           l10n.omnistore,
           l10n.runningInBackground,
@@ -225,18 +231,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   }
 
   Future<void> _handleFullExit() async {
-    // 1. Terminate background processes
     try {
-      // Use pkill to find and terminate the Rust daemon
       await Process.run('pkill', ['omnistore-daemon']);
-      // Kill any remaining python backend processes (dev and packaged)
       await Process.run('pkill', ['-f', 'python/main.py']);
       await Process.run('pkill', ['python_server']);
     } catch (e) {
       debugPrint("Process cleanup error: $e");
     }
 
-    // 2. Close window and exit
     await wm.windowManager.setPreventClose(false);
     await wm.windowManager.close();
     exit(0);
@@ -246,67 +248,55 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final nav = context.watch<NavigationController>();
+    final task = context.watch<TaskController>();
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      bottomNavigationBar: ValueListenableBuilder<bool>(
-        valueListenable: BackendService.isDownloading,
-        builder: (context, isDownloading, _) {
-          if (!isDownloading) return const SizedBox.shrink();
-          return Container(
-            height: 32,
-            color: colorScheme.primaryContainer,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                const SizedBox(
-                    width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: StreamBuilder<TaskState?>(
-                    stream: TaskManager().taskStateStream,
-                    initialData: TaskManager().currentTask,
-                    builder: (context, snapshot) {
-                      final task = snapshot.data;
-                      final stageInfo = (task?.stage.isNotEmpty ?? false) ? "[${task!.stage}] " : "";
-                      final speedInfo = (task?.speed.isNotEmpty ?? false) ? " (${task!.speed})" : "";
-
-                      return ValueListenableBuilder<String>(
-                        valueListenable: BackendService.globalStatus,
-                        builder: (context, status, _) => Text(
-                          "${AppLocalizations.of(context)!.processing} $stageInfo$status$speedInfo",
-                          style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    },
+      bottomNavigationBar: task.isBusy
+          ? Container(
+              height: 32,
+              color: colorScheme.primaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                ),
-                ValueListenableBuilder<double?>(
-                  valueListenable: BackendService.globalProgress,
-                  builder: (context, progress, _) => Text(
-                    progress != null ? "${(progress * 100).toInt()}%" : "",
-                    style: TextStyle(
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "${AppLocalizations.of(context)!.processing} ${task.status} ${task.speed}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (task.progress != null)
+                    Text(
+                      "${(task.progress! * 100).toInt()}%",
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: colorScheme.onPrimaryContainer),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(),
       body: Row(
         children: [
-          // 左侧导航列
-          _buildSideBar(colorScheme),
-          // 右侧内容区
+          _buildSideBar(context, colorScheme, nav),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildTopBar(colorScheme),
+                _buildTopBar(context, colorScheme, nav),
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 0, 12, 12),
@@ -331,8 +321,8 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                         switchInCurve: Curves.easeInOutExpo,
                         switchOutCurve: Curves.easeInOutExpo,
                         child: KeyedSubtree(
-                          key: ValueKey<int>(_selectedIndex),
-                          child: _subPages[_selectedIndex],
+                          key: ValueKey<int>(nav.selectedIndex),
+                          child: _subPages[nav.selectedIndex],
                         ),
                       ),
                     ),
@@ -346,64 +336,74 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     );
   }
 
+  Widget _buildSideBar(
+    BuildContext context,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
+    final items = [
+      {'title': 'Explore', 'icon': Icons.apps_rounded, 'index': 0},
+      {'title': 'Categories', 'icon': Icons.grid_view_rounded, 'index': 1},
+      {'title': 'Installed', 'icon': Icons.inventory_2_rounded, 'index': 5},
+      {'title': 'GitHub Store', 'icon': Icons.code_rounded, 'index': 6},
+      {
+        'title': 'Flatpak Store',
+        'icon': Icons.shopping_bag_rounded,
+        'index': 7,
+      },
+    ];
 
-  // 侧边栏布局：探索 + 左下角下载 (Section 1: Sidebar Navigation)
-  Widget _buildSideBar(ColorScheme colorScheme) {
     return Container(
       width: 96,
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
-          ValueListenableBuilder<List<Map<String, dynamic>>>(
-            valueListenable: BackendService.sidebarItems,
-            builder: (context, items, _) {
-              return Column(
-                children: items.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: _buildSideBarItem(
-                      item['index'],
-                      _getIconData(item['icon']),
-                      _getIconData(item['icon']),
-                      item['title'],
-                      colorScheme,
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
+          ...items.map((item) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: _buildSideBarItem(
+                context,
+                item['index'] as int,
+                item['icon'] as IconData,
+                item['icon'] as IconData,
+                item['title'] as String,
+                colorScheme,
+                nav,
+              ),
+            );
+          }),
           const Spacer(),
-          _buildSideBarItem(3, Icons.settings_rounded, Icons.settings_rounded,
-              AppLocalizations.of(context)!.settings, colorScheme),
+          _buildSideBarItem(
+            context,
+            3,
+            Icons.settings_rounded,
+            Icons.settings_rounded,
+            AppLocalizations.of(context)!.settings,
+            colorScheme,
+            nav,
+          ),
           const SizedBox(height: 12),
-          _buildDownloadButton(colorScheme),
+          _buildDownloadButton(context, colorScheme, nav),
           const SizedBox(height: 12),
         ],
       ),
     );
   }
 
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'apps_rounded': return Icons.apps_rounded;
-      case 'grid_view_rounded': return Icons.grid_view_rounded;
-      case 'code_rounded': return Icons.code_rounded;
-      case 'shopping_bag_rounded': return Icons.shopping_bag_rounded;
-      case 'explore_rounded': return Icons.explore_rounded;
-      case 'inventory_2_rounded': return Icons.inventory_2_rounded;
-      default: return Icons.help_outline_rounded;
-    }
-  }
-
-  Widget _buildSideBarItem(int index, IconData icon, IconData selectedIcon, String label, ColorScheme colorScheme) {
-    final isSelected = _selectedIndex == index;
+  Widget _buildSideBarItem(
+    BuildContext context,
+    int index,
+    IconData icon,
+    IconData selectedIcon,
+    String label,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
+    final isSelected = nav.selectedIndex == index;
     return Tooltip(
       message: label,
       child: InkWell(
-        onTap: () {
-          BackendService.navigationIndex.value = index;
-        },
+        onTap: () => nav.setIndex(index),
         borderRadius: BorderRadius.circular(28),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -415,12 +415,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                 width: 56,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: isSelected ? colorScheme.secondaryContainer : Colors.transparent,
+                  color: isSelected
+                      ? colorScheme.secondaryContainer
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Icon(
                   isSelected ? selectedIcon : icon,
-                  color: isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
+                  color: isSelected
+                      ? colorScheme.onSecondaryContainer
+                      : colorScheme.onSurfaceVariant,
                   size: 24,
                 ),
               ),
@@ -430,7 +434,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
-                  color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+                  color: isSelected
+                      ? colorScheme.onSurface
+                      : colorScheme.onSurfaceVariant,
                   letterSpacing: -0.2,
                 ),
               ),
@@ -441,26 +447,23 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     );
   }
 
-  // 标题栏下方的顶栏布局：标题 + 搜索 + 头像 (Section 2: Top Bar)
-  Widget _buildTopBar(ColorScheme colorScheme) {
+  Widget _buildTopBar(
+    BuildContext context,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
     String pageTitle = "";
-    if (_selectedIndex == 0) {
-      pageTitle = AppLocalizations.of(context)!.explore;
-    } else if (_selectedIndex == 1) {
-      pageTitle = AppLocalizations.of(context)!.category;
-    } else if (_selectedIndex == 2) {
-      pageTitle = AppLocalizations.of(context)!.search;
-    } else if (_selectedIndex == 3) {
-      pageTitle = AppLocalizations.of(context)!.settings;
-    } else if (_selectedIndex == 4) {
-      pageTitle = AppLocalizations.of(context)!.downloads;
-    } else if (_selectedIndex == 5) {
-      pageTitle = "Installed Apps";
-    } else if (_selectedIndex == 6) {
-      pageTitle = "GitHub Store";
-    } else if (_selectedIndex == 7) {
-      pageTitle = "Flatpak Store";
-    }
+    final titles = {
+      0: AppLocalizations.of(context)!.explore,
+      1: AppLocalizations.of(context)!.category,
+      2: AppLocalizations.of(context)!.search,
+      3: AppLocalizations.of(context)!.settings,
+      4: AppLocalizations.of(context)!.downloads,
+      5: "Installed Apps",
+      6: "GitHub Store",
+      7: "Flatpak Store",
+    };
+    pageTitle = titles[nav.selectedIndex] ?? "";
 
     return Container(
       height: 72,
@@ -469,37 +472,40 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
         children: [
           Text(
             pageTitle,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: colorScheme.onSurface,
+              color: Colors.black,
               letterSpacing: -1.0,
             ),
           ),
           const Spacer(),
-          // 搜索按钮 (若不在搜索页则显示，点击切换到搜索页)
-          if (_selectedIndex != 2)
+          if (nav.selectedIndex != 2)
             FilledButton.tonalIcon(
-              onPressed: () => BackendService.navigationIndex.value = 2,
+              onPressed: () => nav.setIndex(2),
               icon: const Icon(Icons.search_rounded, size: 20),
               label: Text(AppLocalizations.of(context)!.search),
             ),
           const SizedBox(width: 16),
-          // 用户头像
-          _buildUserAvatar(colorScheme),
+          _buildUserAvatar(context, colorScheme, nav),
         ],
       ),
     );
   }
 
-  Widget _buildDownloadButton(ColorScheme colorScheme) {
-    return ValueListenableBuilder<List<dynamic>>(
-      valueListenable: UpdateService().availableUpdates,
-      builder: (context, updates, _) {
+  Widget _buildDownloadButton(
+    BuildContext context,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
+    return ListenableBuilder(
+      listenable: UpdateService().availableUpdates,
+      builder: (context, _) {
+        final updates = UpdateService().availableUpdates.value;
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            _buildDownloadButtonBase(colorScheme),
+            _buildDownloadButtonBase(context, colorScheme, nav),
             if (updates.isNotEmpty)
               Positioned(
                 top: -2,
@@ -511,10 +517,17 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
                     shape: BoxShape.circle,
                     border: Border.all(color: colorScheme.surface, width: 2),
                   ),
-                  constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                  constraints: const BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
                   child: Text(
                     updates.length.toString(),
-                    style: TextStyle(color: colorScheme.onError, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: colorScheme.onError,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -525,7 +538,59 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
     );
   }
 
-  Widget _buildUserAvatar(ColorScheme colorScheme) {
+  Widget _buildDownloadButtonBase(
+    BuildContext context,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
+    final task = context.watch<TaskController>();
+    return Tooltip(
+      message: AppLocalizations.of(context)!.downloads,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: nav.selectedIndex == 4
+              ? colorScheme.primary
+              : task.isBusy
+              ? colorScheme.primary.withValues(alpha: 0.1)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          shape: BoxShape.circle,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (task.isBusy)
+              CircularProgressIndicator(
+                value: task.progress,
+                strokeWidth: 3,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+              ),
+            IconButton(
+              onPressed: () => nav.setIndex(4),
+              icon: Icon(
+                task.isBusy
+                    ? Icons.downloading_rounded
+                    : Icons.download_for_offline_rounded,
+                color: nav.selectedIndex == 4
+                    ? colorScheme.onPrimary
+                    : task.isBusy
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+                size: 26,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserAvatar(
+    BuildContext context,
+    ColorScheme colorScheme,
+    NavigationController nav,
+  ) {
     return PopupMenuButton<int>(
       offset: const Offset(0, 44),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -542,9 +607,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
         ),
       ],
       onSelected: (val) {
-        if (val == 0) {
-          BackendService.navigationIndex.value = 3;
-        }
+        if (val == 0) nav.setIndex(3);
       },
       child: Container(
         width: 40,
@@ -570,68 +633,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry> with wm.Windo
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDownloadButtonBase(ColorScheme colorScheme) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: BackendService.isDownloading,
-      builder: (context, isDownloading, child) {
-        return ValueListenableBuilder<double?>(
-          valueListenable: BackendService.globalProgress,
-          builder: (context, progress, child) {
-            String tooltipMsg = AppLocalizations.of(context)!.downloads;
-            if (isDownloading) {
-              final status = BackendService.globalStatus.value;
-              final percentage = progress != null ? "(${(progress * 100).toInt()}%)" : "";
-              tooltipMsg = "$status $percentage".trim();
-            }
-
-            return Tooltip(
-              message: tooltipMsg,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: _selectedIndex == 4
-                      ? colorScheme.primary
-                      : isDownloading
-                          ? colorScheme.primary.withValues(alpha: 0.1)
-                          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (isDownloading)
-                      CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 3,
-                        backgroundColor: colorScheme.surfaceContainerHighest,
-                      ),
-                    IconButton(
-                      onPressed: () {
-                        BackendService.navigationIndex.value = 4;
-                      },
-                      icon: Icon(
-                        isDownloading
-                            ? Icons.downloading_rounded
-                            : Icons.download_for_offline_rounded,
-                        color: _selectedIndex == 4
-                            ? colorScheme.onPrimary
-                            : isDownloading
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                        size: 26,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

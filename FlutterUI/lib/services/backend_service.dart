@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'app_package.dart';
+import '../../models/app_package.dart';
 
 class BackendService {
   static final BackendService instance = BackendService._internal();
@@ -43,13 +43,21 @@ class BackendService {
 
   static bool get _isPackaged {
     final exeDir = p.dirname(Platform.resolvedExecutable);
-    final pythonServer = p.join(exeDir, 'backends', Platform.isWindows ? 'python_server.exe' : 'python_server');
+    final pythonServer = p.join(
+      exeDir,
+      'backends',
+      Platform.isWindows ? 'python_server.exe' : 'python_server',
+    );
     return File(pythonServer).existsSync();
   }
 
   static String get venvPython {
     if (_isPackaged) {
-      return p.join(p.dirname(Platform.resolvedExecutable), 'backends', Platform.isWindows ? 'python_server.exe' : 'python_server');
+      return p.join(
+        p.dirname(Platform.resolvedExecutable),
+        'backends',
+        Platform.isWindows ? 'python_server.exe' : 'python_server',
+      );
     }
     final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
     return File(candidate).existsSync() ? candidate : 'python';
@@ -94,13 +102,14 @@ class BackendService {
   static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
 
   // Dynamic Sidebar items
-  static final ValueNotifier<List<Map<String, dynamic>>> sidebarItems = ValueNotifier([
-    {'title': 'Explore', 'icon': 'apps_rounded', 'index': 0},
-    {'title': 'Categories', 'icon': 'grid_view_rounded', 'index': 1},
-    {'title': 'Installed', 'icon': 'inventory_2_rounded', 'index': 5},
-    {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 6},
-    {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 7},
-  ]);
+  static final ValueNotifier<List<Map<String, dynamic>>> sidebarItems =
+      ValueNotifier([
+        {'title': 'Explore', 'icon': 'apps_rounded', 'index': 0},
+        {'title': 'Categories', 'icon': 'grid_view_rounded', 'index': 1},
+        {'title': 'Installed', 'icon': 'inventory_2_rounded', 'index': 5},
+        {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 6},
+        {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 7},
+      ]);
 
   static Process? activeProcess;
   static Process? activeSearchProcess;
@@ -134,18 +143,17 @@ class BackendService {
   }
 
   /// 搜索逻辑
-  Future<List<dynamic>> searchPackages(String query, {bool cancelOngoing = true}) async {
+  Future<List<dynamic>> searchPackages(
+    String query, {
+    bool cancelOngoing = true,
+  }) async {
     // Cancel any ongoing search to prevent race conditions (usually for search bar)
     if (cancelOngoing) activeSearchProcess?.kill();
 
     try {
       final process = await Process.start(
         _venvPython,
-        _buildArgs([
-          "-S",
-          query,
-          "--json",
-        ]),
+        _buildArgs(["-S", query, "--json"]),
         workingDirectory: _workingDir,
       );
 
@@ -163,7 +171,9 @@ class BackendService {
         }
       }
 
-      final exitCode = await process.exitCode.timeout(const Duration(seconds: 45));
+      final exitCode = await process.exitCode.timeout(
+        const Duration(seconds: 45),
+      );
 
       activeSearchProcess = null;
 
@@ -212,10 +222,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "-L",
-          "--json",
-        ]),
+        _buildArgs(["-L", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 15));
 
@@ -231,14 +238,13 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--get-config",
-          "--json",
-        ]),
+        _buildArgs(["--get-config", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 10));
       if (result.exitCode != 0) {
-        debugPrint("loadConfig failed with exit code ${result.exitCode}: ${result.stderr}");
+        debugPrint(
+          "loadConfig failed with exit code ${result.exitCode}: ${result.stderr}",
+        );
         return {};
       }
       final output = result.stdout.toString().trim();
@@ -278,15 +284,15 @@ class BackendService {
   }
 
   /// AI 更新内容总结
-  Future<String> aiSummarizeUpdate(String name, String current, String next) async {
+  Future<String> aiSummarizeUpdate(
+    String name,
+    String current,
+    String next,
+  ) async {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-changelog",
-          "$name,$current,$next",
-          "--json",
-        ]),
+        _buildArgs(["--ai-changelog", "$name,$current,$next", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
@@ -301,11 +307,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-cli",
-          "$name,$source",
-          "--json",
-        ]),
+        _buildArgs(["--ai-cli", "$name,$source", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 20));
       final data = jsonDecode(result.stdout);
@@ -320,11 +322,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-conflicts",
-          name,
-          "--json",
-        ]),
+        _buildArgs(["--ai-conflicts", name, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
@@ -339,10 +337,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-pick",
-          "--json",
-        ]),
+        _buildArgs(["--ai-pick", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 30));
       final data = jsonDecode(result.stdout);
@@ -357,11 +352,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-correct",
-          query,
-          "--json",
-        ]),
+        _buildArgs(["--ai-correct", query, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 15));
       final data = jsonDecode(result.stdout);
@@ -376,11 +367,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-compare",
-          appName,
-          "--json",
-        ]),
+        _buildArgs(["--ai-compare", appName, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
@@ -395,10 +382,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-health",
-          "--json",
-        ]),
+        _buildArgs(["--ai-health", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
@@ -413,11 +397,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-analyze-error",
-          errorLog,
-          "--json",
-        ]),
+        _buildArgs(["--ai-analyze-error", errorLog, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 45));
       final data = jsonDecode(result.stdout);
@@ -432,11 +412,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--ai-recommend",
-          prompt,
-          "--json",
-        ]),
+        _buildArgs(["--ai-recommend", prompt, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 60));
       final data = jsonDecode(result.stdout);
@@ -450,18 +426,16 @@ class BackendService {
     try {
       final process = await Process.start(
         _venvPython,
-        _buildArgs([
-          "--set-config",
-          "stdin",
-          "--json",
-        ]),
+        _buildArgs(["--set-config", "stdin", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 5));
 
       process.stdin.write(jsonEncode(config));
       await process.stdin.close();
 
-      final exitCode = await process.exitCode.timeout(const Duration(seconds: 5));
+      final exitCode = await process.exitCode.timeout(
+        const Duration(seconds: 5),
+      );
       return exitCode == 0;
     } catch (e) {
       debugPrint("saveConfig Exception: $e");
@@ -473,10 +447,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--check-env",
-          "--json",
-        ]),
+        _buildArgs(["--check-env", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 10));
       return jsonDecode(result.stdout);
@@ -490,10 +461,7 @@ class BackendService {
     try {
       final process = await Process.start(
         _venvPython,
-        _buildArgs([
-          "--bootstrap",
-          "--json",
-        ]),
+        _buildArgs(["--bootstrap", "--json"]),
         workingDirectory: _workingDir,
       );
 
@@ -510,10 +478,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--recommend",
-          "--json",
-        ]),
+        _buildArgs(["--recommend", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 20));
 
@@ -528,7 +493,9 @@ class BackendService {
         data.forEach((key, value) {
           if (value is List) {
             categories[key] = value
-                .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+                .map(
+                  (item) => AppPackage.fromJson(item as Map<String, dynamic>),
+                )
                 .toList();
           }
         });
@@ -538,7 +505,7 @@ class BackendService {
         return {
           "featured": data
               .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
-              .toList()
+              .toList(),
         };
       }
       return {};
@@ -581,11 +548,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--details",
-          appId,
-          "--json",
-        ]),
+        _buildArgs(["--details", appId, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 20));
       return jsonDecode(result.stdout);
@@ -639,13 +602,7 @@ class BackendService {
     }
 
     try {
-      List<String> baseArgs = [
-        flag,
-        packageName,
-        "--source",
-        source,
-        "--json",
-      ];
+      List<String> baseArgs = [flag, packageName, "--source", source, "--json"];
       if (url != null && url.isNotEmpty) {
         baseArgs.addAll(["--url", url]);
       }
@@ -673,10 +630,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "-C",
-          "--json",
-        ]),
+        _buildArgs(["-C", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 30));
 
@@ -693,13 +647,7 @@ class BackendService {
     try {
       final process = await Process.start(
         _venvPython,
-        _buildArgs([
-          "-U",
-          "all",
-          "--source",
-          source,
-          "--json",
-        ]),
+        _buildArgs(["-U", "all", "--source", source, "--json"]),
         workingDirectory: _workingDir,
       );
 
@@ -716,10 +664,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--essentials",
-          "--json",
-        ]),
+        _buildArgs(["--essentials", "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 10));
 
@@ -736,11 +681,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--import-packages",
-          filepath,
-          "--json",
-        ]),
+        _buildArgs(["--import-packages", filepath, "--json"]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 10));
 
@@ -757,10 +698,7 @@ class BackendService {
     try {
       final result = await Process.run(
         _venvPython,
-        _buildArgs([
-          "--export-packages",
-          filepath,
-        ]),
+        _buildArgs(["--export-packages", filepath]),
         workingDirectory: _workingDir,
       ).timeout(const Duration(seconds: 15));
 
@@ -777,10 +715,7 @@ class BackendService {
     try {
       final process = await Process.start(
         _venvPython,
-        _buildArgs([
-          "--clean-system",
-          "--json",
-        ]),
+        _buildArgs(["--clean-system", "--json"]),
         workingDirectory: _workingDir,
       );
 

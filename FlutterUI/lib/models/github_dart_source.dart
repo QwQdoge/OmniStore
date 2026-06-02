@@ -19,12 +19,18 @@ class GitHubDartSource extends UnifiedSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> search(String query, {int page = 1, Map<String, dynamic>? filters}) async {
+  Future<List<Map<String, dynamic>>> search(
+    String query, {
+    int page = 1,
+    Map<String, dynamic>? filters,
+  }) async {
     final sort = filters?['sort'] ?? 'stars';
     final order = filters?['order'] ?? 'desc';
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/search/repositories?q=$query&sort=$sort&order=$order&page=$page'),
+      Uri.parse(
+        '$_baseUrl/search/repositories?q=$query&sort=$sort&order=$order&page=$page',
+      ),
       headers: _headers,
     );
 
@@ -45,7 +51,9 @@ class GitHubDartSource extends UnifiedSource {
       'icon': repo['owner']['avatar_url'],
       'url': repo['html_url'],
       'installed': false,
-      'variants': [{'source': 'GitHub', 'id': repo['full_name']}]
+      'variants': [
+        {'source': 'GitHub', 'id': repo['full_name']},
+      ],
     };
   }
 
@@ -54,7 +62,10 @@ class GitHubDartSource extends UnifiedSource {
   }
 
   @override
-  Future<bool> install(Map<String, dynamic> package, {Function(String)? onProgress}) async {
+  Future<bool> install(
+    Map<String, dynamic> package, {
+    Function(String)? onProgress,
+  }) async {
     // Android implementation:
     // 1. Fetch latest release
     // 2. Filter for APK
@@ -63,7 +74,10 @@ class GitHubDartSource extends UnifiedSource {
   }
 
   @override
-  Future<bool> uninstall(Map<String, dynamic> package, {Function(String)? onProgress}) async {
+  Future<bool> uninstall(
+    Map<String, dynamic> package, {
+    Function(String)? onProgress,
+  }) async {
     return false;
   }
 
@@ -79,7 +93,10 @@ class GitHubDartSource extends UnifiedSource {
 
   @override
   Future<Map<String, dynamic>> getDetails(String packageId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/repos/$packageId'), headers: _headers);
+    final response = await http.get(
+      Uri.parse('$_baseUrl/repos/$packageId'),
+      headers: _headers,
+    );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }

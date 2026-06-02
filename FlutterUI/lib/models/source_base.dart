@@ -6,20 +6,26 @@ abstract class UnifiedSource {
   bool enabled;
   double weight;
 
-  UnifiedSource({
-    required this.name,
-    this.enabled = true,
-    this.weight = 1.0,
-  });
+  UnifiedSource({required this.name, this.enabled = true, this.weight = 1.0});
 
   /// Search for packages in this source.
-  Future<List<Map<String, dynamic>>> search(String query, {int page = 1, Map<String, dynamic>? filters});
+  Future<List<Map<String, dynamic>>> search(
+    String query, {
+    int page = 1,
+    Map<String, dynamic>? filters,
+  });
 
   /// Install a package.
-  Future<bool> install(Map<String, dynamic> package, {Function(String)? onProgress});
+  Future<bool> install(
+    Map<String, dynamic> package, {
+    Function(String)? onProgress,
+  });
 
   /// Uninstall a package.
-  Future<bool> uninstall(Map<String, dynamic> package, {Function(String)? onProgress});
+  Future<bool> uninstall(
+    Map<String, dynamic> package, {
+    Function(String)? onProgress,
+  });
 
   /// Launch the application.
   Future<bool> launch(Map<String, dynamic> package);
@@ -34,10 +40,6 @@ abstract class UnifiedSource {
   Future<Map<String, dynamic>?> checkUpdate(String packageId);
 
   Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'enabled': enabled,
-      'weight': weight,
-    };
+    return {'name': name, 'enabled': enabled, 'weight': weight};
   }
 }

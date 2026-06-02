@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/window_manager.dart' as wm;
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 // import 'app_package.dart';
@@ -113,6 +113,9 @@ class UpdateService {
   }
 
   Future<void> _initSystemTray() async {
+    // 1. Defensively check environment
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return;
+
     final config = await BackendService.instance.loadConfig();
     final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
     if (!trayEnabled) {
@@ -127,12 +130,13 @@ class UpdateService {
     final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
     if (Platform.isLinux) {
-      // 检查崩溃守卫
+      // 2. Crash guard to prevent boot loops if Native C code segfaults
       if (guardFile.existsSync()) {
         debugPrint("System tray previously crashed. Skipping to prevent loop.");
         return;
       }
 
+      // 3. Dependency check for libappindicator
       final hasDeps = await _checkLinuxTrayDependencies();
       if (!hasDeps) {
         debugPrint(
@@ -148,28 +152,35 @@ class UpdateService {
         guardFile.createSync();
       }
 
-      // Use absolute path for icon on Linux to prevent loading failures
+      // 4. Robust absolute path resolution for Linux Native assets
       String iconPath = 'assets/app_icon.png';
       if (Platform.isLinux) {
         final String executablePath = Platform.resolvedExecutable;
         final String executableDir = p.dirname(executablePath);
 
-        // Try several common paths for assets in a Linux build
         final List<String> candidatePaths = [
-          p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
+          p.join(
+            executableDir,
+            'data',
+            'flutter_assets',
+            'assets',
+            'app_icon.png',
+          ),
           p.join(executableDir, 'assets', 'app_icon.png'),
+          p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
           p.join(Directory.current.path, 'assets', 'app_icon.png'),
         ];
 
         for (final path in candidatePaths) {
           if (File(path).existsSync()) {
             iconPath = path;
+            debugPrint("Found tray icon at: $path");
             break;
           }
         }
       }
 
-      // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
+      // 5. Timeout to prevent DBus / StatusNotifierItem blocking
       await _systemTray
           .initSystemTray(title: "OmniStore", iconPath: iconPath)
           .timeout(const Duration(seconds: 3));
@@ -179,33 +190,39 @@ class UpdateService {
           .buildFrom([
             MenuItemLabel(
               label: _showWindowLabel,
-              onClicked: (menuItem) => windowManager.show(),
+              onClicked: (menuItem) => wm.windowManager.show(),
             ),
             MenuItemLabel(
               label: _checkUpdatesLabel,
               onClicked: (menuItem) => checkNow(),
             ),
             MenuSeparator(),
-            MenuItemLabel(label: _exitLabel, onClicked: (menuItem) => _handleFullExit()),
+            MenuItemLabel(
+              label: _exitLabel,
+              onClicked: (menuItem) => _handleFullExit(),
+            ),
           ])
           .timeout(const Duration(seconds: 2));
 
       await _systemTray
           .setContextMenu(menu)
           .timeout(const Duration(seconds: 2));
+
       _systemTray.registerSystemTrayEventHandler((eventName) {
         if (eventName == kSystemTrayEventClick) {
-          windowManager.show();
+          wm.windowManager.show();
         } else if (eventName == kSystemTrayEventRightClick) {
           _systemTray.popUpContextMenu();
         }
       });
 
-      // 初始化成功，清除崩溃守卫
-      if (guardFile.existsSync()) guardFile.deleteSync();
+      // 6. Success: Clear crash guard
+      if (Platform.isLinux && guardFile.existsSync()) {
+        guardFile.deleteSync();
+      }
     } catch (e) {
-      debugPrint("System tray initialization failed or timed out: $e");
-      // 注意：这里不删除 guardFile，以便下次启动知道这次失败了
+      debugPrint("System tray initialization failed gracefully: $e");
+      // Keep guard file to skip initialization on next restart
     }
   }
 

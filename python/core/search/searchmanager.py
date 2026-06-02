@@ -2,11 +2,7 @@ import asyncio
 import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
-from core.sources.pacman import PacmanSource
-from core.sources.aur import AurSource
-from core.sources.flatpak import FlatpakSource
-from core.sources.appimage import AppImageSource
-from core.sources.github import GitHubSource
+from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource
 from core.sources.external import WingetSource, ScoopSource, BrewSource
 from core.sources.loader import PluginLoader
 from .smart_scoring import SmartScoring
