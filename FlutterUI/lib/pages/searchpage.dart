@@ -31,6 +31,7 @@ class _SearchPageState extends State<SearchPage> {
   final HistoryService _historyService = HistoryService();
 
   List<AppPackage> _results = [];
+  List<AppPackage> _trendingApps = [];
   bool _isLoading = false;
   bool _hasInput = false;
   bool _hasSearched = false;
@@ -80,13 +81,14 @@ class _SearchPageState extends State<SearchPage> {
     setState(() => _isLoading = true);
     try {
       final resultsMap = await BackendService.instance.getRecommendations();
-      if (mounted && _controller.text.isEmpty) {
+      if (mounted) {
         setState(() {
-          // 在搜索页预加载时，优先展示 "trending" 列表，如果没有则尝试 "featured"
-          _results = resultsMap['trending'] ?? resultsMap['featured'] ?? [];
+          _trendingApps = resultsMap['trending'] ?? resultsMap['featured'] ?? [];
+          if (_controller.text.isEmpty) {
+            _results = _trendingApps;
+            _hasSearched = true;
+          }
           _isLoading = false;
-          _hasSearched = true;
-          // 注意：不要设置 _hasInput，让它保持在初始卡片状态但带有结果预加载
         });
       }
     } catch (_) {
@@ -205,6 +207,8 @@ class _SearchPageState extends State<SearchPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final bool showResults = _hasInput && _controller.text.trim().length >= 2;
+
     return Column(
       children: [
         // ─── 顶部搜索区域（始终居中显示）───
@@ -217,7 +221,7 @@ class _SearchPageState extends State<SearchPage> {
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
-            child: _hasInput
+            child: showResults
                 ? KeyedSubtree(
                     key: const ValueKey('results'),
                     child: _buildResultsArea(),
@@ -326,6 +330,7 @@ class _SearchPageState extends State<SearchPage> {
   // 初始状态：一个大卡片，内含历史 + 分类
   // ──────────────────────────────────────────────────────────
   Widget _buildInitialCard(ColorScheme colorScheme) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
       child: Center(
@@ -524,8 +529,81 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
               ),
+              if (_trendingApps.isNotEmpty) ...[
+                const SizedBox(height: 48),
+                Row(
+                  children: [
+                    Icon(Icons.trending_up_rounded, size: 20, color: colorScheme.primary),
+                    const SizedBox(width: 12),
+                    Text(
+                      AppLocalizations.of(context)!.hotApps,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 180,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _trendingApps.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 16),
+                    itemBuilder: (context, index) => _buildCompactAppCard(context, _trendingApps[index]),
+                  ),
+                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactAppCard(BuildContext context, AppPackage app) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SizedBox(
+      width: 140,
+      child: InkWell(
+        onTap: () => _showAppDetails(app),
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 140,
+              height: 100,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: app.icon != null
+                  ? CachedNetworkImage(
+                      imageUrl: app.icon!,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, _) => Icon(Icons.apps_rounded, color: colorScheme.primary, size: 40),
+                    )
+                  : Icon(Icons.apps_rounded, color: colorScheme.primary, size: 40),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              app.primarySource,
+              style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+            ),
+          ],
         ),
       ),
     );
@@ -535,75 +613,25 @@ class _SearchPageState extends State<SearchPage> {
   // 搜索结果区域
   // ──────────────────────────────────────────────────────────
   Widget _buildResultsArea() {
-    if (_isLoading) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    if (_hasSearched && _results.isEmpty) {
+    if (_isLoading && _results.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(l10n.noResults),
-            if (_aiCorrection != null) ...[
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const MagicPulseIcon(
-                    icon: Icons.auto_awesome_rounded,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.aiCorrection,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.purple.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.purple.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      MarkdownBody(
-                        data: _aiCorrection!.split(
-                          'SUGGESTIONS_JSON:',
-                        )[0], // Hide JSON from text
-                        shrinkWrap: true,
-                        selectable: true,
-                        styleSheet: MarkdownStyleSheet(
-                          p: const TextStyle(
-                            color: Colors.purple,
-                            fontSize: 13,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                      AIAppResolver(
-                        aiText: _aiCorrection!,
-                        jsonPrefix: 'SUGGESTIONS_JSON:',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            Text(l10n.searching, style: const TextStyle(fontSize: 16)),
           ],
         ),
       );
+    }
+
+    if (_hasSearched && _results.isEmpty) {
+      return _buildEmptyState(theme, colorScheme, l10n);
     }
     if (!_hasSearched) return Center(child: Text(l10n.searching));
 
@@ -1113,6 +1141,116 @@ class _SearchPageState extends State<SearchPage> {
   }
 
 
+
+  Widget _buildEmptyState(ThemeData theme, ColorScheme colorScheme, AppLocalizations l10n) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off_rounded, size: 80, color: colorScheme.outline.withValues(alpha: 0.3)),
+            const SizedBox(height: 24),
+            Text(
+              l10n.noResults,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Try searching for something else or browse by category.",
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
+            if (_aiCorrection != null) ...[
+              const SizedBox(height: 48),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Card(
+                  elevation: 0,
+                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: BorderSide(color: colorScheme.tertiary.withValues(alpha: 0.1)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            MagicPulseIcon(
+                              icon: Icons.auto_awesome_rounded,
+                              size: 18,
+                              color: colorScheme.tertiary,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              l10n.aiCorrection,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: colorScheme.tertiary,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        MarkdownBody(
+                          data: _aiCorrection!.split('SUGGESTIONS_JSON:')[0],
+                          shrinkWrap: true,
+                          selectable: true,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(
+                              color: colorScheme.onTertiaryContainer,
+                              fontSize: 14,
+                              height: 1.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AIAppResolver(
+                          aiText: _aiCorrection!,
+                          jsonPrefix: 'SUGGESTIONS_JSON:',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 48),
+            Text(
+              l10n.categories,
+              style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: CategoryService.getCategories(context)
+                  .take(6)
+                  .map(
+                    (cat) => ActionChip(
+                      avatar: Icon(cat.icon, size: 16),
+                      label: Text(cat.name),
+                      onPressed: () => _search('/${cat.id.toLowerCase()}'),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _showAppDetails(AppPackage app) {
     Navigator.push(
