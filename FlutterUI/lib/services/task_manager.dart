@@ -31,7 +31,9 @@ class TaskManager {
     final now = DateTime.now();
     // Always emit terminal states or null immediately.
     // Otherwise, throttle based on _throttleDuration.
-    if (state == null || state.status == TaskStatus.success || state.status == TaskStatus.failed ||
+    if (state == null ||
+        state.status == TaskStatus.success ||
+        state.status == TaskStatus.failed ||
         now.difference(_lastUpdateTime) >= _throttleDuration) {
       _taskStateController.add(state);
       _lastUpdateTime = now;
@@ -47,18 +49,21 @@ class TaskManager {
   }) async {
     if (isBusy) return false;
 
-    _updateState(TaskState(
-      id: id,
-      status: TaskStatus.pending,
-      progress: -1.0,
-      messageKey: "taskInitializing",
-      packageName: packageName,
-      source: source,
-    ));
+    _updateState(
+      TaskState(
+        id: id,
+        status: TaskStatus.pending,
+        progress: -1.0,
+        messageKey: "taskInitializing",
+        packageName: packageName,
+        source: source,
+      ),
+    );
 
     BackendService.clearLogs();
     BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value = ""; // Clear status, let stage/message handle it
+    BackendService.globalStatus.value =
+        ""; // Clear status, let stage/message handle it
 
     try {
       List<String> args = [
@@ -94,21 +99,25 @@ class TaskManager {
       final success = exitCode == 0;
 
       if (success) {
-        _updateState(_currentTask?.copyWith(
-          status: TaskStatus.success,
-          progress: 1.0,
-          messageKey: "taskSuccess",
-          speed: "",
-        ));
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.success,
+            progress: 1.0,
+            messageKey: "taskSuccess",
+            speed: "",
+          ),
+        );
       } else {
         // If it was cancelled, it might have been set to failed already or still in progress
         if (_currentTask?.status != TaskStatus.failed) {
-          _updateState(_currentTask?.copyWith(
-            status: TaskStatus.failed,
-            messageKey: "taskFailedWithCode",
-            messageArgs: {"code": exitCode},
-            speed: "",
-          ));
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.failed,
+              messageKey: "taskFailedWithCode",
+              messageArgs: {"code": exitCode},
+              speed: "",
+            ),
+          );
         }
       }
 
@@ -122,19 +131,22 @@ class TaskManager {
 
       return success;
     } catch (e) {
-      _updateState(_currentTask?.copyWith(
-        status: TaskStatus.failed,
-        messageKey: "taskError",
-        messageArgs: {"error": e.toString()},
-        speed: "",
-      ));
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.failed,
+          messageKey: "taskError",
+          messageArgs: {"error": e.toString()},
+          speed: "",
+        ),
+      );
     } finally {
       _activeProcess = null;
       BackendService.isDownloading.value = false;
       // Keep the final state for a moment or let UI handle it
       Future.delayed(const Duration(seconds: 5), () {
-        if (_currentTask?.status == TaskStatus.success || _currentTask?.status == TaskStatus.failed) {
-           _updateState(null);
+        if (_currentTask?.status == TaskStatus.success ||
+            _currentTask?.status == TaskStatus.failed) {
+          _updateState(null);
         }
       });
     }
@@ -169,10 +181,12 @@ class TaskManager {
           final p = double.tryParse(parts[1]);
           if (p != null) {
             final progress = p / 100.0;
-            _updateState(_currentTask?.copyWith(
-              progress: progress,
-              status: TaskStatus.downloading,
-            ));
+            _updateState(
+              _currentTask?.copyWith(
+                progress: progress,
+                status: TaskStatus.downloading,
+              ),
+            );
 
             // Also show in system notification
             UpdateService().showProgressNotification(
@@ -204,18 +218,22 @@ class TaskManager {
           status = TaskStatus.downloading;
         }
 
-        _updateState(_currentTask?.copyWith(
-          message: msg,
-          status: status,
-          progress: progress,
-        ));
+        _updateState(
+          _currentTask?.copyWith(
+            message: msg,
+            status: status,
+            progress: progress,
+          ),
+        );
         BackendService.globalStatus.value = msg;
       } else if (logMessage.startsWith("[ERROR]")) {
         BackendService.addLog(logMessage);
-        _updateState(_currentTask?.copyWith(
-          status: TaskStatus.failed,
-          message: logMessage.replaceFirst("[ERROR] ", ""),
-        ));
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.failed,
+            message: logMessage.replaceFirst("[ERROR] ", ""),
+          ),
+        );
       } else {
         BackendService.addLog(logMessage);
       }
@@ -236,11 +254,13 @@ class TaskManager {
         // If group kill fails, fall back to killing the main process only.
         _activeProcess!.kill(ProcessSignal.sigterm);
       }
-      _updateState(_currentTask?.copyWith(
-        status: TaskStatus.failed,
-        messageKey: "taskCancelledByUser",
-        speed: "",
-      ));
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.failed,
+          messageKey: "taskCancelledByUser",
+          speed: "",
+        ),
+      );
 
       // Force kill after a short delay if it hasn't exited
       Future.delayed(const Duration(seconds: 2), () {
@@ -263,35 +283,43 @@ class TaskManager {
   void startMockTask() async {
     if (isBusy) return;
 
-    _updateState(TaskState(
-      id: "mock-task",
-      status: TaskStatus.downloading,
-      progress: 0.0,
-      message: "Simulating high-frequency updates...",
-    ));
+    _updateState(
+      TaskState(
+        id: "mock-task",
+        status: TaskStatus.downloading,
+        progress: 0.0,
+        message: "Simulating high-frequency updates...",
+      ),
+    );
 
     for (int i = 0; i <= 100; i++) {
       if (!isBusy) break;
       await Future.delayed(const Duration(milliseconds: 5)); // > 60Hz
-      _updateState(_currentTask?.copyWith(
-        progress: i / 100.0,
-        speed: "${(10 + i % 5).toStringAsFixed(1)} MB/s",
-        message: "Mock downloading part $i...",
-      ));
+      _updateState(
+        _currentTask?.copyWith(
+          progress: i / 100.0,
+          speed: "${(10 + i % 5).toStringAsFixed(1)} MB/s",
+          message: "Mock downloading part $i...",
+        ),
+      );
     }
 
     if (isBusy) {
-      _updateState(_currentTask?.copyWith(
-        status: TaskStatus.installing,
-        progress: -1.0,
-        message: "Mock installing...",
-      ));
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.installing,
+          progress: -1.0,
+          message: "Mock installing...",
+        ),
+      );
       await Future.delayed(const Duration(seconds: 2));
-      _updateState(_currentTask?.copyWith(
-        status: TaskStatus.success,
-        progress: 1.0,
-        message: "Mock task finished",
-      ));
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.success,
+          progress: 1.0,
+          message: "Mock task finished",
+        ),
+      );
 
       Future.delayed(const Duration(seconds: 2), () {
         _updateState(null);

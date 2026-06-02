@@ -1,10 +1,4 @@
-enum TaskStatus {
-  pending,
-  downloading,
-  installing,
-  success,
-  failed,
-}
+enum TaskStatus { pending, downloading, installing, success, failed }
 
 class TaskState {
   final String id;

@@ -6,11 +6,7 @@ class SmoothProgressBar extends StatelessWidget {
   final TaskState taskState;
   final VoidCallback? onCancel;
 
-  const SmoothProgressBar({
-    super.key,
-    required this.taskState,
-    this.onCancel,
-  });
+  const SmoothProgressBar({super.key, required this.taskState, this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +14,9 @@ class SmoothProgressBar extends StatelessWidget {
     final isFailed = taskState.status == TaskStatus.failed;
     final isIndeterminate = taskState.progress < 0;
 
-    final color = isFailed ? theme.colorScheme.error : theme.colorScheme.primary;
+    final color = isFailed
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
     final l10n = AppLocalizations.of(context)!;
 
     String displayMessage = taskState.message;
@@ -34,13 +32,17 @@ class SmoothProgressBar extends StatelessWidget {
           displayMessage = l10n.taskSuccess;
           break;
         case "taskFailedWithCode":
-          displayMessage = l10n.taskFailedWithCode(taskState.messageArgs?['code'] ?? -1);
+          displayMessage = l10n.taskFailedWithCode(
+            taskState.messageArgs?['code'] ?? -1,
+          );
           break;
         case "taskCancelledByUser":
           displayMessage = l10n.taskCancelledByUser;
           break;
         case "taskError":
-          displayMessage = l10n.taskError(taskState.messageArgs?['error'] ?? "Unknown error");
+          displayMessage = l10n.taskError(
+            taskState.messageArgs?['error'] ?? "Unknown error",
+          );
           break;
       }
     }
@@ -73,7 +75,9 @@ class SmoothProgressBar extends StatelessWidget {
                 displayMessage,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: isFailed ? theme.colorScheme.error : theme.colorScheme.onSurface,
+                  color: isFailed
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.onSurface,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -106,7 +110,10 @@ class SmoothProgressBar extends StatelessWidget {
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       )
                     : TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0, end: isFailed ? 1.0 : taskState.progress),
+                        tween: Tween<double>(
+                          begin: 0,
+                          end: isFailed ? 1.0 : taskState.progress,
+                        ),
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOutCubic,
                         builder: (context, value, _) {
@@ -119,7 +126,9 @@ class SmoothProgressBar extends StatelessWidget {
                       ),
               ),
             ),
-            if (onCancel != null && taskState.status != TaskStatus.success && taskState.status != TaskStatus.failed)
+            if (onCancel != null &&
+                taskState.status != TaskStatus.success &&
+                taskState.status != TaskStatus.failed)
               Positioned(
                 right: 0,
                 child: GestureDetector(
@@ -133,15 +142,18 @@ class SmoothProgressBar extends StatelessWidget {
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
-                        )
+                        ),
                       ],
                     ),
                     child: Icon(
-                      taskState.status == TaskStatus.failed || taskState.status == TaskStatus.success
+                      taskState.status == TaskStatus.failed ||
+                              taskState.status == TaskStatus.success
                           ? Icons.check
                           : Icons.close,
                       size: 14,
-                      color: taskState.status == TaskStatus.failed ? theme.colorScheme.error : theme.colorScheme.primary,
+                      color: taskState.status == TaskStatus.failed
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.primary,
                     ),
                   ),
                 ),

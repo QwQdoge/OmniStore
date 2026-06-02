@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 enum AppSourceTagMode {
   /// Displays the trust level (Official, Verified, Community)
   trust,
+
   /// Displays the raw source name (Pacman, AUR, Flatpak, etc.)
   source,
 }
@@ -67,9 +68,7 @@ class AppSourceTag extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(isSmall ? 6 : 8),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
