@@ -8,9 +8,9 @@ from core.downloader.downloader import InstallExecutor
 
 
 class CustomRepoManager:
-    def __init__(self, config_manager):
+    def __init__(self, config_manager, executor):
         self.cm = config_manager
-        self.executor = InstallExecutor()
+        self.executor = executor
 
     # --- Flatpak Custom Remotes ---
     async def list_flatpak_remotes(self) -> List[Dict[str, str]]:

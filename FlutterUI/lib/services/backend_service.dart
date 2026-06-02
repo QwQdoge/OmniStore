@@ -93,6 +93,15 @@ class BackendService {
   static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
   static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
 
+  // Dynamic Sidebar items
+  static final ValueNotifier<List<Map<String, dynamic>>> sidebarItems = ValueNotifier([
+    {'title': 'Explore', 'icon': 'apps_rounded', 'index': 0},
+    {'title': 'Categories', 'icon': 'grid_view_rounded', 'index': 1},
+    {'title': 'Installed', 'icon': 'inventory_2_rounded', 'index': 5},
+    {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 6},
+    {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 7},
+  ]);
+
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
@@ -536,6 +545,34 @@ class BackendService {
     } catch (e) {
       debugPrint("Recommendations Exception: $e");
       return {};
+    }
+  }
+
+  /// 启动应用
+  Future<bool> launchApp(String name, String source) async {
+    try {
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs(["--launch", name, "--source", source, "--json"]),
+        workingDirectory: _workingDir,
+      );
+      return result.exitCode == 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 定位应用
+  Future<bool> locateApp(String name, String source) async {
+    try {
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs(["--locate", name, "--source", source, "--json"]),
+        workingDirectory: _workingDir,
+      );
+      return result.exitCode == 0;
+    } catch (e) {
+      return false;
     }
   }
 

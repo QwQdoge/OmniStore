@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../l10n/app_localizations.dart';
-import '../services/app_package.dart';
-import '../services/backend_service.dart';
-import '../services/task_manager.dart';
-import '../models/task_state.dart';
-import '../widgets/magic_pulse_icon.dart';
-import '../widgets/smooth_progress_bar.dart';
-import '../widgets/app_source_tag.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/app_package.dart';
+import '../../../services/backend_service.dart';
+import '../../../services/task_manager.dart';
+import '../../../models/task_state.dart';
+import '../../../widgets/magic_pulse_icon.dart';
+import '../../../widgets/smooth_progress_bar.dart';
+import '../../../widgets/app_source_tag.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -536,28 +536,30 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _launchApp() async {
-    // 找到对应的 variant
     final variant = _getVariantForSource(_selectedSource);
     String target = (variant?['id'] != null && _selectedSource == "Flatpak")
         ? variant!['id']!
         : widget.app.name.trim();
 
-    try {
-      await Process.start(BackendService.venvPython, [
-        BackendService.scriptPath,
-        '--launch',
-        target,
-        '--source',
-        _selectedSource,
-      ], workingDirectory: BackendService.workingDir);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${AppLocalizations.of(context)!.failed}: $e"),
-          ),
-        );
-      }
+    final success = await BackendService.instance.launchApp(target, _selectedSource);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.loadError)),
+      );
+    }
+  }
+
+  Future<void> _locateApp() async {
+    final variant = _getVariantForSource(_selectedSource);
+    String target = (variant?['id'] != null && _selectedSource == "Flatpak")
+        ? variant!['id']!
+        : widget.app.name.trim();
+
+    final success = await BackendService.instance.locateApp(target, _selectedSource);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.loadError)),
+      );
     }
   }
 
@@ -587,49 +589,61 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
         if (_isAppInstalled) {
           return Row(
-        children: [
-          Expanded(
-            child: SizedBox(
-              height: 56,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5), width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.0),
-                  ),
-                ),
-                onPressed: isGlobalBusy ? null : () => _handleAction("-R"),
-                child: Text(
-                  AppLocalizations.of(context)!.uninstall,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+            children: [
+              IconButton.filledTonal(
+                onPressed: isGlobalBusy ? null : _locateApp,
+                icon: const Icon(Icons.folder_open_rounded),
+                tooltip: "Locate Installation",
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(56, 56),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: SizedBox(
-              height: 56,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.0),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 56,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.error,
+                      side: BorderSide(
+                          color: colorScheme.error.withValues(alpha: 0.5), width: 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28.0),
+                      ),
+                    ),
+                    onPressed: isGlobalBusy ? null : () => _handleAction("-R"),
+                    child: Text(
+                      AppLocalizations.of(context)!.uninstall,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ),
-                onPressed: isGlobalBusy ? null : _launchApp,
-                icon: const Icon(Icons.rocket_launch_rounded),
-                label: Text(
-                  AppLocalizations.of(context)!.launch,
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 56,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28.0),
+                      ),
+                    ),
+                    onPressed: isGlobalBusy ? null : _launchApp,
+                    icon: const Icon(Icons.rocket_launch_rounded),
+                    label: Text(
+                      AppLocalizations.of(context)!.launch,
+                      style:
+                          const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
-      );
-    }
+            ],
+          );
+        }
 
         return SizedBox(
           width: double.infinity,

@@ -7,7 +7,7 @@ import '../services/app_package.dart';
 import '../services/task_manager.dart';
 import '../models/task_state.dart';
 import '../widgets/smooth_progress_bar.dart';
-import 'app_details_page.dart';
+import '../feature/details/presentation/details_page.dart';
 import '../services/update_service.dart';
 import '../widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';

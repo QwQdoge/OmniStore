@@ -101,13 +101,13 @@ class OmnistoreBackend:
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
         self.updater = UpdateManager(self.config)
-        self.executor = InstallExecutor()
+        self.executor = InstallExecutor(self)
         self.is_action = False
         self.json_mode = json_mode
         
         # Initialize new features
         self.ai = AIAssistant(self.config)
-        self.repo_manager = CustomRepoManager(self.config)
+        self.repo_manager = CustomRepoManager(self.config, self.executor)
         self.essentials = EssentialsManager(self.config)
 
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
@@ -291,7 +291,8 @@ class OmnistoreBackend:
             timeout = aiohttp.ClientTimeout(total=15)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 await self.initialize(session)
-                results = await self.recommender.get_recommendations() # type: ignore
+                sources = list(self.manager.sources.values()) if self.manager else []
+                results = await self.recommender.get_recommendations(sources=sources) # type: ignore
                 if json_mode:
                     print(json.dumps(results, ensure_ascii=False))
                 else:
@@ -804,6 +805,7 @@ async def main():
                        help="List all installed AppImage and Flatpak packages")
     parser.add_argument("--force-refresh", action="store_true", help="Force refresh installed cache")
     group.add_argument("--launch", metavar="PACKAGE", help="Launch a software package")
+    group.add_argument("--locate", metavar="PACKAGE", help="Locate a software package")
     group.add_argument("--recommend", action="store_true", help="Get dynamic recommendations")
     group.add_argument("--essentials", action="store_true", help="Get essential packages")
     group.add_argument("--import-packages", metavar="FILEPATH", help="Import packages from file")
@@ -977,30 +979,24 @@ async def main():
             print(json.dumps({"status": "success" if success else "error"}))
 
     elif args.launch:
-        import subprocess
-        try:
-            target = args.launch
-            if args.source == "Flatpak":
-                subprocess.Popen(["flatpak", "run", target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            elif args.source == "AppImage":
-                app_path = Path.home() / f"Applications/{target}.AppImage"
-                if app_path.exists():
-                    subprocess.Popen([str(app_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                else:
-                    found = list((Path.home() / "Applications").glob(f"*{target}*.AppImage"))
-                    if found:
-                        subprocess.Popen([str(found[0])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            else:
-                subprocess.Popen([target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        source_name = args.source.lower()
+        if source_name in backend.manager.sources:
+            success = await backend.manager.sources[source_name].launch({"name": args.launch, "id": args.launch})
             if args.json:
-                print(json.dumps({"status": "success", "message": f"[INFO] Launched {target}"}))
-            else:
-                print(f"[INFO] Launched {target}")
-        except Exception as e:
+                print(json.dumps({"status": "success" if success else "error"}))
+        else:
             if args.json:
-                print(json.dumps({"status": "error", "message": f"[ERROR] Launch failed: {str(e)}"}))
-            else:
-                print(f"[ERROR] Launch failed: {str(e)}")
+                print(json.dumps({"status": "error", "message": f"Source {args.source} not found"}))
+
+    elif args.locate:
+        source_name = args.source.lower()
+        if source_name in backend.manager.sources:
+            success = await backend.manager.sources[source_name].locate({"name": args.locate, "id": args.locate})
+            if args.json:
+                print(json.dumps({"status": "success" if success else "error"}))
+        else:
+            if args.json:
+                print(json.dumps({"status": "error", "message": f"Source {args.source} not found"}))
 
     # Custom repo dispatching
     elif args.list_custom_repos:
