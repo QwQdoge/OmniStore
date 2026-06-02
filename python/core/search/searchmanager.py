@@ -56,20 +56,27 @@ class SearchManager:
 
     def _get_active_sources(self) -> List[SearchSource]:
         active = []
-        for key, instance in self.source_instances.items():
-            # 统一查找 search.sources.pacman 这种布尔值
-            path = f"search.sources.{key}"
-            # 特殊处理：pacman 和 aur 默认开启，如果配置没显式关掉的话
-            default_val = True if key in ["pacman", "aur"] else False
-            if self.cm.get(path, default_val):
-                active.append(instance)
-            else:
-                sys.stderr.write(f"[SearchManager] Search source '{key}' is disabled in config.\n")
+        active_keys = self._get_active_source_keys()
+        for key in active_keys:
+            active.append(self.source_instances[key])
 
         if not active:
             sys.stderr.write("[SearchManager] Warning: No search sources are enabled in config.\n")
 
         return active
+
+    def _get_active_source_keys(self) -> List[str]:
+        """⚡ Optimization: Get only the keys of active sources to minimize overhead during sorting/scoring."""
+        active_keys = []
+        for key in self.source_instances.keys():
+            path = f"search.sources.{key}"
+            # 特殊处理：pacman 和 aur 默认开启，如果配置没显式关掉的话
+            default_val = True if key in ["pacman", "aur"] else False
+            if self.cm.get(path, default_val):
+                active_keys.append(key)
+            else:
+                sys.stderr.write(f"[SearchManager] Search source '{key}' is disabled in config.\n")
+        return active_keys
 
     async def search_all(self, query: str) -> List[Dict]:
         """
@@ -152,10 +159,10 @@ class SearchManager:
 
         # Cache configuration and habit weights once before the loop
         priority_map = self.cm.get("priority", {})
-        source_weights = {
-            s: self.habit_tracker.get_source_weight(s)
-            for s in ["Flatpak", "Native", "Pacman", "AUR", "Snap", "AppImage"]
-        }
+        # Map source weights for all potential sources in one pass
+        potential_sources = ["Flatpak", "Native", "Pacman", "AUR", "Snap", "AppImage"]
+        source_weights = {s: self.habit_tracker.get_source_weight(s) for s in potential_sources}
+
         query_re = re.compile(rf"\b{re.escape(query_lower)}")
         source_prio_map = {"Flatpak": 100, "Native": 50, "Pacman": 50, "AUR": 10}
 
