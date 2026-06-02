@@ -84,10 +84,22 @@ class SearchManager:
         self.habit_tracker.record_search(query)
         active_sources = self._get_active_sources()
 
-        tasks = [src.search(query) for src in active_sources]
+        # Defensive source execution: failures in one source shouldn't crash everything
+        async def safe_search(source: UnifiedSource, q: str):
+            try:
+                return await asyncio.wait_for(source.search(q), timeout=10)
+            except asyncio.TimeoutError:
+                logging.warning(f"Search timeout (10s) for source: {source.name}")
+                return []
+            except Exception as e:
+                logging.error(f"Search failed for source {source.name}: {e}")
+                return []
+
+        tasks = [safe_search(src, query) for src in active_sources]
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
-        except Exception:
+        except Exception as e:
+            logging.error(f"Global search gather failed: {e}")
             return []
 
         combined = []
