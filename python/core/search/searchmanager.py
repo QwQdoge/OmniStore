@@ -162,7 +162,8 @@ class SearchManager:
 
         max_res = self.cm.get("search.max_results", 50)
         top_results = merged[:max_res]
-        await self._enrich_metadata(top_results[:15])
+        # ⚡ Optimization: Reduce metadata enrichment limit from 15 to 10 for better search latency.
+        await self._enrich_metadata(top_results[:10])
 
         for item in top_results:
             item.pop('_smart_score', None)
@@ -171,11 +172,25 @@ class SearchManager:
         return top_results
 
     async def _enrich_metadata(self, items: List[Dict]):
-        tasks = [self._enrich_single(item) for item in items if not item.get("icon") or not item.get("description")]
-        if tasks: await asyncio.gather(*tasks)
+        # Tiered enrichment: top 5 with network, rest without network (cache only)
+        tasks = []
+        for i, item in enumerate(items):
+            if item.get("icon") and item.get("description") and len(item.get("description", "")) >= 50:
+                continue
 
-    async def _enrich_single(self, item: Dict):
-        metadata = await self.recommender.find_metadata(item['name'])
+            use_network = (i < 5)
+            tasks.append(self._enrich_single(item, use_network=use_network))
+
+        if tasks:
+            await asyncio.gather(*tasks)
+
+    async def _enrich_single(self, item: Dict, use_network: bool = True):
+        source = item.get("source", "").lower()
+        if source == "flatpak" and item.get("id"):
+            metadata = await self.recommender.get_details(item["id"], use_network=use_network)
+        else:
+            metadata = await self.recommender.find_metadata(item['name'], use_network=use_network)
+
         if metadata:
             if metadata.get("icon"): item["icon"] = metadata["icon"]
             if metadata.get("description") and len(item.get("description", "")) < 50:
