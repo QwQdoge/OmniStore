@@ -805,6 +805,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get next => '下一步';
+
+  @override
+  String get advanced => '高级';
+
+  @override
+  String get general => '常规';
+
+  @override
+  String get repositories => '软件仓库';
+
+  @override
+  String get aurFull => 'AUR (Arch 用户软件仓库)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1261,7 +1276,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCorrection => '您是指？';
 
   @override
-  String get aiThinking => 'AI 正在思考中...';
+  String get aiThinking => 'AI 正在思考...';
 
   @override
   String get magicSearch => '魔法搜尋';
@@ -1608,4 +1623,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get next => '下一步';
+
+  @override
+  String get advanced => '進階';
+
+  @override
+  String get general => '一般';
+
+  @override
+  String get repositories => '軟體倉庫';
+
+  @override
+  String get aurFull => 'AUR (Arch 使用者軟體倉庫)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }

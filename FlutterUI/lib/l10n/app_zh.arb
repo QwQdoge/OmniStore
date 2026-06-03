@@ -1091,5 +1091,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "高级",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "常规",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "软件仓库",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch 用户软件仓库)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }
