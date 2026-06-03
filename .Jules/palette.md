@@ -37,3 +37,13 @@
 **Learning:** Search discovery can be significantly improved by preloading trending data and displaying it when the search field is empty, reducing "empty screen" fatigue on large viewports. Additionally, "No Results" states should never be dead ends; always provide alternatives like categories or AI-driven suggestions.
 
 **Action:** Implement discovery shelves in empty states and ensure that input logic (like clear buttons) remains responsive even when the main results view hasn't triggered yet.
+
+## 2026-06-03 - Search Discovery & Empty State Resilience
+
+**Learning:** "No Results" states should never be dead ends. By providing actionable alternatives like category chips, we keep users in the "flow" even when their specific query fails. Using `SingleChildScrollView` ensures this discovery content is accessible across different screen orientations.
+
+**Action:** Always include alternative discovery paths (e.g., categories, trending) in empty search result states.
+
+**Learning:** Consistency in "loud" UI elements (like section headers) requires a unified typography standard. Standardizing on 26px, w900, -1.0 spacing, and `primary` color ensures a modern, high-contrast look that feels native to the app's design language.
+
+**Action:** Use the standardized headline style (26px, w900, -1.0 spacing) for all major section headers to maintain visual hierarchy.
