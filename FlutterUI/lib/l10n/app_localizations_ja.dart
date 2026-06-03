@@ -69,7 +69,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get version => 'バージョン';
 
   @override
-  String get ready => '準備完了';
+  String get ready => 'インストール済み';
 
   @override
   String resultsFound(int count) {
@@ -77,7 +77,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get noResults => '結果が見つかりませんでした';
+  String get noResults => '検索結果が見つかりませんでした';
 
   @override
   String get searching => '検索中...';
@@ -810,4 +810,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get next => '次へ';
+
+  @override
+  String get advanced => '詳細設定';
+
+  @override
+  String get general => '全般';
+
+  @override
+  String get repositories => 'リポジトリ';
+
+  @override
+  String get aurFull => 'AUR (Arch User Repository)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }

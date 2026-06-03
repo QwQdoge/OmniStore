@@ -823,4 +823,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'Next';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get repositories => 'Repositories';
+
+  @override
+  String get aurFull => 'AUR (Arch User Repository)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }

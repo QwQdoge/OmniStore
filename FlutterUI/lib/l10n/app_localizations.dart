@@ -1620,6 +1620,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next'**
   String get next;
+
+  /// Label for advanced settings toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// Section title for general settings
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// Section title for software repositories
+  ///
+  /// In en, this message translates to:
+  /// **'Repositories'**
+  String get repositories;
+
+  /// Full name for AUR
+  ///
+  /// In en, this message translates to:
+  /// **'AUR (Arch User Repository)'**
+  String get aurFull;
+
+  /// Full name for Flatpak
+  ///
+  /// In en, this message translates to:
+  /// **'Flatpak (Flathub)'**
+  String get flatpakFull;
 }
 
 class _AppLocalizationsDelegate

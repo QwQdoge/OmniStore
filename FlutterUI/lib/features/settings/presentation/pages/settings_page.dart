@@ -1,4 +1,4 @@
-import "package:frontend/backend/repositories/task_repository.dart";
+import "package:frontend/data/repositories/task_repository.dart";
 import "package:provider/provider.dart";
 import "../controllers/settings_controller.dart";
 import 'package:flutter/material.dart';
@@ -72,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSection(l10n.general),
           SwitchListTile(
             title: Text(l10n.aiEnabled),
-            subtitle: Text(l10n.aiEnabledDesc),
+            subtitle: Text(l10n.aiAssistantDesc),
             value: settings.isAIEnabled,
             onChanged: (val) {
               final config = Map<String, dynamic>.from(settings.config);
@@ -83,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
             title: Text(l10n.systemCleaning),
-            subtitle: Text(l10n.systemCleaningDesc),
+            subtitle: Text(l10n.systemCleaningSubtitle),
             trailing: const Icon(Icons.delete_sweep_rounded),
             onTap: () {
               context.read<TaskRepository>().cleanSystem().listen((_) {});
@@ -123,12 +123,12 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 24),
             _buildSection(l10n.repositories),
             CheckboxListTile(
-              title: const Text("AUR (Arch User Repository)"),
+              title: Text(l10n.aurFull),
               value: settings.config['sources']?['aur'] ?? true,
               onChanged: (val) => _updateSourceConfig('aur', val, settings),
             ),
             CheckboxListTile(
-              title: const Text("Flatpak (Flathub)"),
+              title: Text(l10n.flatpakFull),
               value: settings.config['sources']?['flatpak'] ?? true,
               onChanged: (val) => _updateSourceConfig('flatpak', val, settings),
             ),
