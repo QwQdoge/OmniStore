@@ -4,6 +4,7 @@ import "package:frontend/features/explore/presentation/controllers/browse_contro
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class CategoryPage extends StatelessWidget {
   const CategoryPage({super.key});
@@ -27,11 +28,7 @@ class CategoryPage extends StatelessWidget {
                 children: [
                   Text(
                     l10n.explore,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.0,
-                    ),
+                    style: OmnistoreTheme.standardHeader(context),
                   ),
                   const SizedBox(height: 8),
                   Text(

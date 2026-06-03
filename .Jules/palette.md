@@ -47,3 +47,17 @@
 **Learning:** Consistency in "loud" UI elements (like section headers) requires a unified typography standard. Standardizing on 26px, w900, -1.0 spacing, and `primary` color ensures a modern, high-contrast look that feels native to the app's design language.
 
 **Action:** Use the standardized headline style (26px, w900, -1.0 spacing) for all major section headers to maintain visual hierarchy.
+
+## 2026-06-04 - Hero Tag Management & Immersive Banner UI
+
+**Learning:** `Hero` tags must be unique within a single route. In complex pages like `HomePage` where an app might appear in multiple sections (Featured Banner vs. Trending Shelf), using simple tags like `'icon-${name}'` leads to runtime crashes.
+
+**Action:** Use section-specific prefixes for Hero tags (e.g., `hero-banner-`, `app-shelf-`, `search-result-`) and pass these tags explicitly to the target page's constructor to ensure smooth, error-free transitions.
+
+**Learning:** Featured sections benefit from immersive visuals. Using an app's screenshot as a background with a content-aware gradient overlay provides a more high-end feel than simple icon/text cards.
+
+**Action:** For "Hero" or "Featured" cards, prefer large aspect ratios (e.g., width 440), high corner radii (24px), and background screenshots with bottom-aligned text on a dark gradient.
+
+**Learning:** Duplicating complex `TextStyle` definitions for headers across multiple files makes theme updates difficult.
+
+**Action:** Consolidate standardized typography into static methods in the theme class (e.g., `OmnistoreTheme.standardHeader(context)`) to ensure effortless consistency.

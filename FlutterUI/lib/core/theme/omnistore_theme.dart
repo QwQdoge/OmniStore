@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// MD3 palette: deep purple seed with pink-blue tertiary accent.
@@ -9,6 +8,16 @@ abstract final class OmnistoreTheme {
   static ThemeData light() => _build(Brightness.light);
 
   static ThemeData dark() => _build(Brightness.dark);
+
+  static TextStyle standardHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    return TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.w900,
+      color: theme.colorScheme.primary,
+      letterSpacing: -1.0,
+    );
+  }
 
   static ThemeData _build(Brightness brightness) {
     final base = ColorScheme.fromSeed(
