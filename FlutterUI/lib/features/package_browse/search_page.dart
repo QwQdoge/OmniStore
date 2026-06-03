@@ -224,15 +224,56 @@ class _SearchPageState extends State<SearchPage> {
     AppLocalizations l10n,
     SettingsController settings,
   ) {
+    final theme = Theme.of(context);
     if (browse.searchResults.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off_rounded, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(l10n.noResults, style: const TextStyle(color: Colors.grey)),
-          ],
+      final categories = CategoryService.getCategories(context);
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: 64,
+                color: theme.colorScheme.outline,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.noResults,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+              const SizedBox(height: 48),
+              Text(
+                l10n.categories,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: theme.colorScheme.primary,
+                  letterSpacing: -1.0,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: categories.map((cat) => ActionChip(
+                  onPressed: () {
+                    _searchController.text = '/${cat.id.toLowerCase()}';
+                    _performSearch(_searchController.text);
+                  },
+                  label: Text(cat.name),
+                  avatar: Icon(cat.icon, size: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                )).toList(),
+              ),
+            ],
+          ),
         ),
       );
     }
