@@ -824,4 +824,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get next => 'Siguiente';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get aiEnabledDesc =>
+      'Enable AI-powered search, app explanation, and error diagnosis.';
+
+  @override
+  String get systemCleaningDesc =>
+      'Delete orphan packages and clean pacman cache';
+
+  @override
+  String get endpoint => 'API Endpoint';
+
+  @override
+  String get model => 'Model Name';
+
+  @override
+  String get apiKey => 'API Key';
+
+  @override
+  String get repositories => 'Repositories';
 }

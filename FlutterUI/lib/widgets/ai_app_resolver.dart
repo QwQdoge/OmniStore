@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/features/package_browse/details_page.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 
 class AIAppResolver extends StatefulWidget {
   final String aiText;

@@ -1,6 +1,6 @@
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
-import "browse_controller.dart";
+import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';

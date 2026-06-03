@@ -1087,5 +1087,21 @@
   },
   "@next": {
     "description": "Next button label"
-  }
+  },
+  "advanced": "Advanced",
+  "@advanced": {},
+  "general": "General",
+  "@general": {},
+  "aiEnabledDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
+  "@aiEnabledDesc": {},
+  "systemCleaningDesc": "Delete orphan packages and clean pacman cache",
+  "@systemCleaningDesc": {},
+  "endpoint": "API Endpoint",
+  "@endpoint": {},
+  "model": "Model Name",
+  "@model": {},
+  "apiKey": "API Key",
+  "@apiKey": {},
+  "repositories": "Repositories",
+  "@repositories": {}
 }

@@ -3,8 +3,8 @@ import "package:frontend/backend/repositories/ai_repository.dart";
 import "package:frontend/backend/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
-import "browse_controller.dart";
-import "details_page.dart";
+import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
+import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,8 +13,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/widgets/ai_app_resolver.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
-import 'package:frontend/features/settings/settings_controller.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,7 +40,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fetchAIPick() async {
     final settings = context.read<SettingsController>();
-    if (!settings.isAIEnabled) return;
+    if (!settings.isAIEnabled) {
+      return;
+    }
 
     setState(() => _isAILoading = true);
     try {
@@ -54,7 +55,9 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _isAILoading = false);
+      if (mounted) {
+        setState(() => _isAILoading = false);
+      }
     }
   }
 
@@ -66,6 +69,9 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (result != null) {
+      if (!mounted) {
+        return;
+      }
       final path = result.files.single.path!;
       final packageRepo = context.read<PackageRepository>();
       final packages = await packageRepo.importPackages(path);
@@ -173,7 +179,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeroSection(List<AppPackage> apps) {
-    if (apps.isEmpty) return const SizedBox.shrink();
+    if (apps.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,7 +238,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
-    if (apps.isEmpty) return const SizedBox.shrink();
+    if (apps.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -243,7 +253,7 @@ class _HomePageState extends State<HomePage> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: apps.length,
-            itemBuilder: (context, index) => Container(
+            itemBuilder: (context, index) => SizedBox(
               width: 150,
               child: Card(
                 child: InkWell(

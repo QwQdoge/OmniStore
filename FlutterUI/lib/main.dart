@@ -4,17 +4,19 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/navigation_controller.dart';
-import 'package:frontend/features/package_browse/home_page.dart';
-import 'package:frontend/features/package_browse/category_page.dart';
-import 'package:frontend/features/package_browse/search_page.dart';
-import 'package:frontend/features/package_browse/apps_page.dart';
-import 'package:frontend/features/package_browse/github_store_page.dart';
-import 'package:frontend/features/package_browse/flatpak_store_page.dart';
-import 'package:frontend/features/settings/tweaks_page.dart';
-import 'package:frontend/features/settings/settings_controller.dart';
-import 'package:frontend/features/task_manager/download_page.dart';
-import 'package:frontend/features/task_manager/task_controller.dart';
-import 'package:frontend/features/package_browse/browse_controller.dart';
+import 'package:frontend/core/theme/app_theme.dart';
+import 'package:frontend/core/navigation/adaptive_scaffold.dart';
+import 'package:frontend/features/home/home_page.dart';
+import 'package:frontend/features/explore/presentation/pages/category_page.dart';
+import 'package:frontend/features/settings/presentation/pages/settings_page.dart';
+import 'package:frontend/features/explore/presentation/pages/search_page.dart';
+import 'package:frontend/features/apps/apps_page.dart';
+import 'package:frontend/features/explore/presentation/pages/github_store_page.dart';
+import 'package:frontend/features/explore/presentation/pages/flatpak_store_page.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/features/task_manager/presentation/pages/download_page.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
 import 'package:frontend/features/onboarding/welcome_page.dart';
 import 'package:frontend/backend/repositories/config_repository.dart';
 import 'package:frontend/backend/repositories/package_repository.dart';
@@ -22,6 +24,7 @@ import 'package:frontend/backend/repositories/task_repository.dart';
 import 'package:frontend/backend/repositories/ai_repository.dart';
 import 'package:frontend/services/l10n_service.dart';
 import 'package:frontend/services/update_service.dart';
+import 'package:frontend/services/window_service.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 
 void main() async {
@@ -49,6 +52,7 @@ void main() async {
 
   wm.WindowOptions windowOptions = const wm.WindowOptions(
     size: Size(1150, 800),
+    minimumSize: Size(800, 600),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
@@ -63,6 +67,9 @@ void main() async {
     await wm.windowManager.focus();
     await wm.windowManager.setPreventClose(true);
   });
+
+  // Init tray
+  WindowService().initTray();
 
   runApp(
     MultiProvider(
@@ -104,8 +111,6 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
 
   @override
   Widget build(BuildContext context) {
-    const seedColor = Color(0xFF6750A4);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Omnistore',
@@ -123,20 +128,8 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
       ],
       themeMode: ThemeMode.system,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: seedColor,
-        brightness: Brightness.light,
-        iconTheme: const IconThemeData(size: 24),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: seedColor,
-        brightness: Brightness.dark,
-        iconTheme: const IconThemeData(size: 24),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
       home: _isFirstRun
           ? WelcomePage(
               onFinish: () {
@@ -179,7 +172,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       const HomePage(),
       const CategoryPage(),
       const SearchPage(autoFocus: false),
-      const TweaksPage(),
+      const SettingsPage(),
       const DownloadPage(),
       const AppsPage(),
       const GitHubStorePage(),
@@ -251,87 +244,105 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     final nav = context.watch<NavigationController>();
     final task = context.watch<TaskController>();
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      bottomNavigationBar: task.isBusy
-          ? Container(
-              height: 32,
-              color: colorScheme.primaryContainer,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  const SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "${AppLocalizations.of(context)!.processing} ${task.status} ${task.speed}",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onPrimaryContainer,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+    final l10n = AppLocalizations.of(context)!;
+
+    return PopScope(
+      canPop: nav.selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          nav.setIndex(0);
+        }
+      },
+      child: AdaptiveScaffold(
+        sideBar: _buildSideBar(context, colorScheme, nav),
+        bottomNav: NavigationBar(
+          selectedIndex: (nav.selectedIndex >= 0 && nav.selectedIndex <= 1)
+              ? nav.selectedIndex
+              : (nav.selectedIndex == 3 ? 2 : 0),
+          onDestinationSelected: (idx) {
+            if (idx == 0) nav.setIndex(0);
+            if (idx == 1) nav.setIndex(1);
+            if (idx == 2) nav.setIndex(3);
+          },
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.apps_rounded),
+              label: l10n.explore,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.grid_view_rounded),
+              label: l10n.category,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.settings_rounded),
+              label: l10n.settings,
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            if (task.isBusy)
+              Container(
+                height: 32,
+                color: colorScheme.primaryContainer,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                  ),
-                  if (task.progress != null)
-                    Text(
-                      "${(task.progress! * 100).toInt()}%",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onPrimaryContainer,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "${AppLocalizations.of(context)!.processing} ${task.status} ${task.speed}",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                ],
+                    if (task.progress != null)
+                      Text(
+                        "${(task.progress! * 100).toInt()}%",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            )
-          : const SizedBox.shrink(),
-      body: Row(
-        children: [
-          _buildSideBar(context, colorScheme, nav),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTopBar(context, colorScheme, nav),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 0, 12, 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: theme.brightness == Brightness.light
-                          ? colorScheme.surface
-                          : colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(28.0),
-                      clipBehavior: Clip.antiAlias,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        switchInCurve: Curves.easeInOutExpo,
-                        switchOutCurve: Curves.easeInOutExpo,
-                        child: KeyedSubtree(
-                          key: ValueKey<int>(nav.selectedIndex),
-                          child: _subPages[nav.selectedIndex],
-                        ),
-                      ),
+            _buildTopBar(context, colorScheme, nav),
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(0, 0, 12, 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28.0),
+                ),
+                child: Material(
+                  color: theme.brightness == Brightness.light
+                      ? colorScheme.surface
+                      : colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(28.0),
+                  clipBehavior: Clip.antiAlias,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    switchInCurve: Curves.easeInOutExpo,
+                    switchOutCurve: Curves.easeInOutExpo,
+                    child: KeyedSubtree(
+                      key: ValueKey<int>(nav.selectedIndex),
+                      child: _subPages[nav.selectedIndex],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -345,7 +356,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     final items = [
       {'title': l10n.explore, 'icon': Icons.apps_rounded, 'index': 0},
       {'title': l10n.category, 'icon': Icons.grid_view_rounded, 'index': 1},
-      {'title': l10n.installedApps, 'icon': Icons.inventory_2_rounded, 'index': 5},
       {'title': l10n.githubStore, 'icon': Icons.code_rounded, 'index': 6},
       {
         'title': l10n.flatpakStore,
@@ -477,16 +487,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: Colors.black,
               letterSpacing: -1.0,
             ),
           ),
           const Spacer(),
           if (nav.selectedIndex != 2)
-            FilledButton.tonalIcon(
+            IconButton.filledTonal(
               onPressed: () => nav.setIndex(2),
               icon: const Icon(Icons.search_rounded, size: 20),
-              label: Text(AppLocalizations.of(context)!.search),
             ),
           const SizedBox(width: 16),
           _buildUserAvatar(context, colorScheme, nav),
@@ -593,6 +601,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     ColorScheme colorScheme,
     NavigationController nav,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<int>(
       offset: const Offset(0, 44),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -601,15 +610,29 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
           value: 0,
           child: Row(
             children: [
+              const Icon(Icons.inventory_2_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.installedApps),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: [
               const Icon(Icons.settings_outlined, size: 20),
               const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.settings),
+              Text(l10n.settings),
             ],
           ),
         ),
       ],
       onSelected: (val) {
-        if (val == 0) nav.setIndex(3);
+        if (val == 0) {
+          nav.setIndex(5);
+        } else if (val == 1) {
+          nav.setIndex(3);
+        }
       },
       child: Container(
         width: 40,

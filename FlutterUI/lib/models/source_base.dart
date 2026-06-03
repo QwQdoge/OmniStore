@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 /// Unified interface for all software sources on Android and Desktop frontend logic.
 abstract class UnifiedSource {

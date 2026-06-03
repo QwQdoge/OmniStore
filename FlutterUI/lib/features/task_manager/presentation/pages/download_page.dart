@@ -7,12 +7,12 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/widgets/smooth_progress_bar.dart';
-import '../package_browse/details_page.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'task_controller.dart';
-import '../settings/settings_controller.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -49,38 +49,41 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Future<void> _loadInstalledApps() async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _isLoadingInstalled = true);
     try {
       final packageRepo = context.read<PackageRepository>();
       final results = await packageRepo.listInstalled();
       if (mounted) {
         setState(() {
-          _installedApps = results
-              .map((json) => AppPackage.fromJson(json))
-              .toList();
+          _installedApps =
+              results.map((json) => AppPackage.fromJson(json)).toList();
           _applyFilters();
         });
       }
     } catch (e) {
       debugPrint("Error loading installed apps: $e");
     } finally {
-      if (mounted) setState(() => _isLoadingInstalled = false);
+      if (mounted) {
+        setState(() => _isLoadingInstalled = false);
+      }
     }
   }
 
   void _applyFilters() {
-    _filteredApps = _installedApps.where((app) {
-      final matchesSource =
-          _selectedSourceFilter == "all" ||
-          app.sources.contains(_selectedSourceFilter) ||
-          app.primarySource == _selectedSourceFilter;
-      final matchesSearch =
-          _searchQuery.isEmpty ||
-          app.name.toLowerCase().contains(_searchQuery) ||
-          (app.description.toLowerCase().contains(_searchQuery));
-      return matchesSource && matchesSearch;
-    }).toList();
+    setState(() {
+      _filteredApps = _installedApps.where((app) {
+        final matchesSource = _selectedSourceFilter == "all" ||
+            app.sources.contains(_selectedSourceFilter) ||
+            app.primarySource == _selectedSourceFilter;
+        final matchesSearch = _searchQuery.isEmpty ||
+            app.name.toLowerCase().contains(_searchQuery) ||
+            (app.description.toLowerCase().contains(_searchQuery));
+        return matchesSource && matchesSearch;
+      }).toList();
+    });
   }
 
   @override
@@ -155,10 +158,12 @@ class _DownloadPageState extends State<DownloadPage>
                             itemBuilder: (context, i) {
                               final log = logs[logs.length - 1 - i];
                               Color textColor = theme.colorScheme.onSurface;
-                              if (log.contains("[ERROR]"))
+                              if (log.contains("[ERROR]")) {
                                 textColor = Colors.redAccent;
-                              if (log.contains("[INFO]"))
+                              }
+                              if (log.contains("[INFO]")) {
                                 textColor = Colors.greenAccent.shade400;
+                              }
                               return Text(
                                 log,
                                 style: TextStyle(
@@ -311,7 +316,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   Widget _buildTasksTab() {
     final taskController = context.watch<TaskController>();
-    if (!taskController.isBusy)
+    if (!taskController.isBusy) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -329,6 +334,7 @@ class _DownloadPageState extends State<DownloadPage>
           ],
         ),
       );
+    }
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -381,7 +387,7 @@ class _DownloadPageState extends State<DownloadPage>
       listenable: UpdateService().availableUpdates,
       builder: (context, _) {
         final updates = UpdateService().availableUpdates.value;
-        if (updates.isEmpty)
+        if (updates.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -399,6 +405,7 @@ class _DownloadPageState extends State<DownloadPage>
               ],
             ),
           );
+        }
         return Column(
           children: [
             Padding(
@@ -438,10 +445,9 @@ class _DownloadPageState extends State<DownloadPage>
                     margin: const EdgeInsets.only(bottom: 12),
                     child: ListTile(
                       onTap: () async {
-                        final results = await packageRepo.searchPackages(
-                          update['name'],
-                        );
-                        if (results.isNotEmpty && mounted) {
+                        final results =
+                            await packageRepo.searchPackages(update['name']);
+                        if (results.isNotEmpty && context.mounted) {
                           final app = AppPackage.fromJson(results[0]);
                           Navigator.push(
                             context,
@@ -463,16 +469,16 @@ class _DownloadPageState extends State<DownloadPage>
                         children: [
                           Consumer<SettingsController>(
                             builder: (context, settings, _) {
-                              if (!settings.isAIEnabled)
+                              if (!settings.isAIEnabled) {
                                 return const SizedBox.shrink();
+                              }
                               return IconButton(
                                 icon: const MagicPulseIcon(
                                   icon: Icons.auto_awesome_rounded,
                                   size: 20,
                                 ),
-                                tooltip: AppLocalizations.of(
-                                  context,
-                                )!.aiExplainUpdate,
+                                tooltip: AppLocalizations.of(context)!
+                                    .aiExplainUpdate,
                                 onPressed: () => _showAIUpdateSummary(
                                   update['name'],
                                   update['current_version'],
@@ -527,11 +533,12 @@ class _DownloadPageState extends State<DownloadPage>
           child: FutureBuilder<String>(
             future: aiRepo.aiSummarizeUpdate(name, current, next),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 200,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return MarkdownBody(
                 data: snapshot.data ?? "AI failed to summarize.",
                 selectable: true,
@@ -550,8 +557,9 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildInstalledTab() {
-    if (_isLoadingInstalled)
+    if (_isLoadingInstalled) {
       return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         SingleChildScrollView(
@@ -587,7 +595,7 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildInstalledList() {
-    if (_filteredApps.isEmpty)
+    if (_filteredApps.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -601,6 +609,7 @@ class _DownloadPageState extends State<DownloadPage>
           ],
         ),
       );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _filteredApps.length,

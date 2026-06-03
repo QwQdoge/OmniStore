@@ -1620,6 +1620,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next'**
   String get next;
+
+  /// No description provided for @advanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// No description provided for @general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// No description provided for @aiEnabledDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
+  String get aiEnabledDesc;
+
+  /// No description provided for @systemCleaningDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete orphan packages and clean pacman cache'**
+  String get systemCleaningDesc;
+
+  /// No description provided for @endpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'API Endpoint'**
+  String get endpoint;
+
+  /// No description provided for @model.
+  ///
+  /// In en, this message translates to:
+  /// **'Model Name'**
+  String get model;
+
+  /// No description provided for @apiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get apiKey;
+
+  /// No description provided for @repositories.
+  ///
+  /// In en, this message translates to:
+  /// **'Repositories'**
+  String get repositories;
 }
 
 class _AppLocalizationsDelegate
