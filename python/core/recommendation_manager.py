@@ -278,12 +278,15 @@ class RecommendationManager:
             item['screenshots'] = details.get('screenshots') or []
             item['description'] = details.get('description') or item.get('description')
 
-    async def get_details(self, app_id: str) -> Dict:
+    async def get_details(self, app_id: str, use_network: bool = True) -> Dict:
         """Fetch rich details for a specific app (Flathub API) with caching"""
         # 1. Check cache (TTL 24 hours)
         cache_entry = self._metadata_cache.get("app_details", {}).get(app_id)
         if cache_entry and time.time() - cache_entry.get("timestamp", 0) < 86400:
             return cache_entry.get("data", {})
+
+        if not use_network:
+            return {}
 
         url = f"https://flathub.org/api/v2/appstream/{app_id}"
         try:
@@ -344,7 +347,7 @@ class RecommendationManager:
             sys.stderr.write(f"[RecommendationManager] Detail Error: {e}\n")
         return {}
 
-    async def find_metadata(self, name: str) -> Dict:
+    async def find_metadata(self, name: str, use_network: bool = True) -> Dict:
         """Try to find metadata (icon, description) for a package name with caching"""
         name_lower = name.lower()
         # 1. Check name mapping cache (TTL 24 hours)
@@ -352,7 +355,10 @@ class RecommendationManager:
         if mapping_entry and time.time() - mapping_entry.get("timestamp", 0) < 86400:
             app_id = mapping_entry.get("app_id")
             if app_id:
-                return await self.get_details(app_id)
+                return await self.get_details(app_id, use_network=use_network)
+
+        if not use_network:
+            return {}
 
         search_url = "https://flathub.org/api/v2/search"
         try:

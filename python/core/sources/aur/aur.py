@@ -17,7 +17,7 @@ class AurSource(UnifiedSource):
     async def _get_installed_aur_packages(self):
         try:
             proc = await asyncio.create_subprocess_exec(
-                'pacman', '-Qm',
+                'pacman', '-Qmq',
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
             )
