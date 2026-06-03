@@ -14,6 +14,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -182,7 +183,7 @@ class _HomePageState extends State<HomePage> {
         _buildSectionHeader(AppLocalizations.of(context)!.featured),
         const SizedBox(height: 16),
         SizedBox(
-          height: 240,
+          height: 260,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
@@ -196,31 +197,124 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBannerCard(AppPackage app) {
+    final theme = Theme.of(context);
+    final screenshot = (app.screenshots != null && app.screenshots!.isNotEmpty)
+        ? app.screenshots!.first
+        : null;
+    final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
+
     return Card(
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: InkWell(
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+          MaterialPageRoute(
+            builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+          ),
         ),
-        child: SizedBox(
-          width: 300,
-          child: Column(
+        child: Container(
+          width: 440,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHigh,
+          ),
+          child: Stack(
             children: [
-              Expanded(
-                child: app.icon != null
-                    ? CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        fit: BoxFit.cover,
-                        errorWidget: (c, e, s) => const Icon(Icons.image),
-                      )
-                    : const Icon(Icons.image),
+              if (screenshot != null)
+                Positioned.fill(
+                  child: CachedNetworkImage(
+                    imageUrl: screenshot,
+                    fit: BoxFit.cover,
+                    errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
+                  ),
+                )
+              else
+                Center(
+                  child: Icon(
+                    Icons.apps_rounded,
+                    size: 80,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.8),
+                      ],
+                      stops: const [0.5, 1.0],
+                    ),
+                  ),
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  app.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+              Positioned(
+                left: 20,
+                bottom: 20,
+                right: 20,
+                child: Row(
+                  children: [
+                    Hero(
+                      tag: heroTag,
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: app.icon != null
+                            ? CachedNetworkImage(
+                                imageUrl: app.icon!,
+                                fit: BoxFit.cover,
+                                errorWidget: (c, e, s) =>
+                                    const Icon(Icons.apps, color: Colors.black),
+                              )
+                            : const Icon(Icons.apps, color: Colors.black),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            app.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            app.description,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -232,51 +326,74 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
         _buildSectionHeader(title),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         SizedBox(
-          height: 180,
-          child: ListView.builder(
+          height: 160,
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: apps.length,
-            itemBuilder: (context, index) => Container(
-              width: 150,
-              child: Card(
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final app = apps[index];
+              final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
+              return SizedBox(
+                width: 130,
                 child: InkWell(
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AppDetailsPage(app: apps[index]),
+                      builder: (context) =>
+                          AppDetailsPage(app: app, heroTag: heroTag),
                     ),
                   ),
+                  borderRadius: BorderRadius.circular(20),
                   child: Column(
                     children: [
-                      Expanded(
-                        child: apps[index].icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: apps[index].icon!,
-                                fit: BoxFit.cover,
-                              )
-                            : const Icon(Icons.apps),
+                      Hero(
+                        tag: heroTag,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: app.icon != null
+                              ? CachedNetworkImage(
+                                  imageUrl: app.icon!,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (c, e, s) => const Icon(Icons.apps),
+                                )
+                              : const Icon(Icons.apps, size: 40),
+                        ),
                       ),
+                      const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
-                          apps[index].name,
+                          app.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -314,7 +431,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: OmnistoreTheme.standardHeader(context),
       ),
     );
   }

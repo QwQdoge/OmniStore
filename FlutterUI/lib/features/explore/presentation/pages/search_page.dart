@@ -7,6 +7,7 @@ import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -105,11 +106,7 @@ class _SearchPageState extends State<SearchPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
               l10n.categories,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-              ),
+              style: OmnistoreTheme.standardHeader(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -159,11 +156,7 @@ class _SearchPageState extends State<SearchPage> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 l10n.hotApps,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
+                style: OmnistoreTheme.standardHeader(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -175,6 +168,8 @@ class _SearchPageState extends State<SearchPage> {
                 itemCount: trending.length,
                 itemBuilder: (context, index) {
                   final app = trending[index];
+                  final trendingHeroTag =
+                      'trending-shelf-${app.name}-${app.primarySource}';
                   return Container(
                     width: 150,
                     margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -183,18 +178,24 @@ class _SearchPageState extends State<SearchPage> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AppDetailsPage(app: app),
+                            builder: (context) => AppDetailsPage(
+                              app: app,
+                              heroTag: trendingHeroTag,
+                            ),
                           ),
                         ),
                         child: Column(
                           children: [
                             Expanded(
-                              child: app.icon != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: app.icon!,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : const Icon(Icons.apps, size: 48),
+                              child: Hero(
+                                tag: trendingHeroTag,
+                                child: app.icon != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: app.icon!,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Icon(Icons.apps, size: 48),
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8),
@@ -248,12 +249,7 @@ class _SearchPageState extends State<SearchPage> {
               const SizedBox(height: 48),
               Text(
                 l10n.categories,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: theme.colorScheme.primary,
-                  letterSpacing: -1.0,
-                ),
+                style: OmnistoreTheme.standardHeader(context),
               ),
               const SizedBox(height: 24),
               Wrap(
@@ -283,11 +279,12 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: browse.searchResults.length,
       itemBuilder: (context, index) {
         final app = browse.searchResults[index];
+        final heroTag = 'search-result-${app.name}-${app.primarySource}';
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             leading: Hero(
-              tag: 'app-icon-${app.name}',
+              tag: heroTag,
               child: app.icon != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -315,7 +312,10 @@ class _SearchPageState extends State<SearchPage> {
             ),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+              MaterialPageRoute(
+                builder: (context) =>
+                    AppDetailsPage(app: app, heroTag: heroTag),
+              ),
             ),
           ),
         );

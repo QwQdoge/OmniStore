@@ -19,8 +19,9 @@ import 'package:frontend/widgets/github_star_badge.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
+  final String? heroTag;
 
-  const AppDetailsPage({super.key, required this.app});
+  const AppDetailsPage({super.key, required this.app, this.heroTag});
 
   @override
   State<AppDetailsPage> createState() => _AppDetailsPageState();
@@ -727,7 +728,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Hero(
-          tag: 'app-icon-shelf-${widget.app.name}-${widget.app.primarySource}',
+          tag: widget.heroTag ??
+              'app-icon-${widget.app.name}-${widget.app.primarySource}',
           child: Container(
             width: 100,
             height: 100,
