@@ -7,12 +7,12 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/widgets/smooth_progress_bar.dart';
-import '../package_browse/details_page.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'task_controller.dart';
-import '../settings/settings_controller.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});

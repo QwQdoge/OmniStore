@@ -1,19 +1,19 @@
 import "package:frontend/backend/repositories/package_repository.dart";
 import "package:provider/provider.dart";
-import "details_page.dart";
+import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
 
-class GitHubStorePage extends StatefulWidget {
-  const GitHubStorePage({super.key});
+class AppsPage extends StatefulWidget {
+  const AppsPage({super.key});
 
   @override
-  State<GitHubStorePage> createState() => _GitHubStorePageState();
+  State<AppsPage> createState() => _AppsPageState();
 }
 
-class _GitHubStorePageState extends State<GitHubStorePage> {
+class _AppsPageState extends State<AppsPage> {
   List<AppPackage> _apps = [];
   bool _isLoading = true;
 
@@ -27,7 +27,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> {
     if (!mounted) return;
     setState(() => _isLoading = true);
     final packageRepo = context.read<PackageRepository>();
-    final results = await packageRepo.searchPackages("source:github");
+    final results = await packageRepo.listInstalled();
     if (mounted) {
       setState(() {
         _apps = results.map((json) => AppPackage.fromJson(json)).toList();
@@ -60,10 +60,10 @@ class _GitHubStorePageState extends State<GitHubStorePage> {
                                 width: 40,
                                 height: 40,
                                 errorWidget: (c, e, s) =>
-                                    const Icon(Icons.code_rounded),
+                                    const Icon(Icons.apps),
                               ),
                             )
-                          : const Icon(Icons.code_rounded, size: 40),
+                          : const Icon(Icons.apps, size: 40),
                       title: Text(
                         app.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),

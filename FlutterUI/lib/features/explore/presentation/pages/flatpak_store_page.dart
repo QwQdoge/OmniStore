@@ -1,6 +1,6 @@
 import "package:frontend/backend/repositories/package_repository.dart";
 import "package:provider/provider.dart";
-import "details_page.dart";
+import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';

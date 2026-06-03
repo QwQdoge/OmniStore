@@ -1,8 +1,8 @@
 import "package:frontend/backend/repositories/ai_repository.dart";
 import "package:frontend/backend/repositories/package_repository.dart";
 import "package:provider/provider.dart";
-import "package:frontend/features/settings/settings_controller.dart";
-import "package:frontend/features/task_manager/task_controller.dart";
+import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
+import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,9 +11,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/models/task_state.dart';
+import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
+import 'package:frontend/widgets/github_star_badge.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -38,7 +40,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchExtraDetails().then((_) {
-        if (mounted) _checkSourceSuggestion();
+        if (mounted) {
+          _checkSourceSuggestion();
+        }
       });
     });
   }
@@ -46,7 +50,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   void _checkSourceSuggestion() {
     if (_selectedSource != "Flatpak" &&
         widget.app.sources.contains("Flatpak")) {
-      if (!mounted || _isAppInstalled) return;
+      if (!mounted || _isAppInstalled) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.flatpakBetterDesc),
@@ -64,7 +70,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _fetchExtraDetails() async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _isLoadingDetails = true);
     final target = widget.app.id ?? widget.app.name;
     final packageRepo = context.read<PackageRepository>();
@@ -127,9 +135,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
               Consumer2<SettingsController, TaskController>(
                 builder: (context, settings, task, _) {
-                  if (!task.logs.any((l) => l.contains("[ERROR]")))
+                  if (!task.logs.any((l) => l.contains("[ERROR]"))) {
                     return const SizedBox.shrink();
-                  if (!settings.isAIEnabled) return const SizedBox.shrink();
+                  }
+                  if (!settings.isAIEnabled) {
+                    return const SizedBox.shrink();
+                  }
 
                   return Container(
                     width: double.infinity,
@@ -193,10 +204,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                             itemBuilder: (context, i) {
                               final log = logs[logs.length - 1 - i];
                               Color textColor = theme.colorScheme.onSurface;
-                              if (log.contains("[ERROR]"))
+                              if (log.contains("[ERROR]")) {
                                 textColor = theme.colorScheme.error;
-                              if (log.contains("[INFO]"))
+                              }
+                              if (log.contains("[INFO]")) {
                                 textColor = Colors.greenAccent.shade400;
+                              }
                               return Text(
                                 log,
                                 style: TextStyle(
@@ -220,7 +233,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Future<void> _handleAction(String flag) async {
     final taskController = context.read<TaskController>();
-    if (taskController.isBusy) return;
+    if (taskController.isBusy) {
+      return;
+    }
 
     final isUninstall = flag == "-R";
     bool cleanOrphans = false;
@@ -289,7 +304,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       },
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      return;
+    }
 
     if (_selectedSource == "AUR" && mounted) {
       final aurConfirmed = await showDialog<bool>(
@@ -317,7 +334,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ),
       );
-      if (aurConfirmed != true) return;
+      if (aurConfirmed != true) {
+        return;
+      }
     }
 
     final taskFlag = isUninstall && cleanOrphans ? "-Rsn" : flag;
@@ -330,8 +349,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     if (mounted) {
       setState(() {
-        if (flag == "-I") _isAppInstalled = true;
-        if (flag == "-R") _isAppInstalled = false;
+        if (flag == "-I") {
+          _isAppInstalled = true;
+        }
+        if (flag == "-R") {
+          _isAppInstalled = false;
+        }
       });
     }
   }
@@ -366,7 +389,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   tooltip: AppLocalizations.of(context)!.visitWebsite,
                   onPressed: () async {
                     final uri = Uri.parse(widget.app.url!);
-                    if (await canLaunchUrl(uri)) await launchUrl(uri);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    }
                   },
                 ),
               if (settings.isAIEnabled) ...[
@@ -669,10 +694,27 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
+  String? get _githubRepositoryUrl {
+    final candidates = <String?>[
+      widget.app.url,
+      widget.app.homepage,
+      _extraDetails?['url'] as String?,
+      _extraDetails?['homepage'] as String?,
+    ];
+    for (final candidate in candidates) {
+      if (candidate != null && GitHubClient.parseUrl(candidate) != null) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
   Map<String, dynamic>? _getVariantForSource(String source) {
     if (_extraDetails != null && _extraDetails!['variants'] != null) {
       for (var v in _extraDetails!['variants']) {
-        if (v['source'] == source) return v;
+        if (v['source'] == source) {
+          return v;
+        }
       }
     }
     return null;
@@ -691,14 +733,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             height: 100,
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(24.0),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(16.0),
             ),
             alignment: Alignment.center,
             child: iconUrl != null
@@ -738,7 +773,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                     ),
                   ),
+                  if (_githubRepositoryUrl != null) ...[
+                    const SizedBox(width: 8),
+                    GitHubStarBadge(
+                      client: context.read<GitHubClient>(),
+                      repositoryUrl: _githubRepositoryUrl,
+                    ),
+                  ],
                   if (_isAppInstalled) ...[
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -894,12 +937,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Widget _buildDependencySection(ThemeData theme) {
     final variant = _getVariantForSource(_selectedSource);
-    if (variant == null) return const SizedBox.shrink();
+    if (variant == null) {
+      return const SizedBox.shrink();
+    }
     final deps = variant['depends'] as List?;
     final dlSize = variant['download_size'];
     final insSize = variant['installed_size'];
-    if ((deps == null || deps.isEmpty) && dlSize == null && insSize == null)
+    if ((deps == null || deps.isEmpty) && dlSize == null && insSize == null) {
       return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -967,11 +1013,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               widget.app.description,
             ),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 200,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return SingleChildScrollView(
                 child: MarkdownBody(
                   data:
@@ -1010,11 +1057,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           child: FutureBuilder<String>(
             future: context.read<AIRepository>().aiAnalyzeError(logs),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 300,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return SingleChildScrollView(
                 child: MarkdownBody(
                   data:
@@ -1055,11 +1103,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               widget.app.name,
             ),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 300,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return SingleChildScrollView(
                 child: MarkdownBody(
                   data:
@@ -1098,11 +1147,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _selectedSource,
           ),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(
                 height: 100,
                 child: Center(child: CircularProgressIndicator()),
               );
+            }
             final cmd = snapshot.data ?? "";
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -1166,11 +1216,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               widget.app.name,
             ),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 200,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return SingleChildScrollView(
                 child: MarkdownBody(
                   data:
@@ -1203,7 +1254,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     } else if (source == "AppImage") {
       iconData = Icons.insert_drive_file_outlined;
     }
-    if (iconData == null) return null;
+    if (iconData == null) {
+      return null;
+    }
     return Icon(iconData, size: 16);
   }
 
