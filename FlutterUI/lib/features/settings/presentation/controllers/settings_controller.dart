@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/backend/repositories/config_repository.dart';
+import 'package:frontend/data/repositories/config_repository.dart';
 
 class SettingsController with ChangeNotifier {
   final ConfigRepository _configRepository;

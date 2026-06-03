@@ -1,116 +1,182 @@
-# OmniStore Project Architecture & Details
+# OmniStore Project Architecture
 
-This document outlines the layout, backend details, implementation methods, and critical rules for modifying the project.
-
-> [!IMPORTANT]
-> **CRITICAL RULE FOR AI DEVELOPERS:**
-> When any files or architectures in this project are modified, you **MUST** update this file (`project_architecture.md`) to keep it aligned with the current implementation and UI layout.
+> **Maintain this file** when you change repo layout, navigation, or cross-process protocols.  
+> Flutter details: [`FlutterUI/ARCHITECTURE.md`](FlutterUI/ARCHITECTURE.md)
 
 ---
 
-## 1. UI Layout Structure (Flutter Frontend)
+## 1. Repository overview
 
-The front-end is built using Flutter with a Material 3 design system. It uses a modern dual-pane layout:
+```mermaid
+flowchart LR
+  subgraph repo["Omnistore repo"]
+    UI["FlutterUI/"]
+    PY["python/"]
+    DAEMON["daemon/ Rust"]
+    PLUG["plugins/"]
+  end
 
-```
-+-----------------------------------------------------------------------+
-|                               Window Title Bar                        |
-+-------------------+---------------------------------------------------+
-|  Sidebar          |  Top Bar (Page Title, Search Button, User Avatar) |
-|  - Explore (Top)  +---------------------------------------------------+
-|                   |  Main Content Container (Glassmorphism & Rounded) |
-|                   |  - HomePage / Explore                             |
-|                   |  - SearchPage                                     |
-|                   |  - SettingsPage                                   |
-|                   |  - DownloadPage                                   |
-|  - Download (Bot) |                                                   |
-+-------------------+---------------------------------------------------+
-|                   |  Global Status Bar (Only visible when downloading)|
-+-------------------+---------------------------------------------------+
+  UI -->|"CLI stdout"| PY
+  DAEMON -.->|"update notifications"| UI
+  PY --> PLUG
 ```
 
-### Components:
-- **`lib/main.dart` (`MainNavigationEntry`)**:
-  - **Sidebar (`_buildSideBar`)**: Navigation rail with icons for Explore, Categories, Installed, GitHub Store, Flatpak Store, Settings, and Downloads. Uses `NavigationController` for state.
-  - **Top Bar (`_buildTopBar`)**: Displays the localized page title, a search action button (switches to `SearchPage`), and the user settings avatar.
-  - **Main Content Area**: Features a large container with 28.0px rounded corners and an `AnimatedSwitcher` for smooth page transitions.
-  - **Bottom Status Bar**: Visible during active tasks, showing real-time logs, speed, and progress.
-- **Features (`lib/features/`)**:
-  - `package_browse/`: Contains `HomePage`, `CategoryPage`, `SearchPage`, `DetailsPage`, `AppsPage`, `GitHubStorePage`, and `FlatpakStorePage`.
-  - `settings/`: Includes `TweaksPage` and `SettingsController`.
-  - `task_manager/`: Includes `DownloadPage` and `TaskController` for background execution.
-  - `onboarding/`: `WelcomePage` for first-run configuration.
-- **Widgets (`lib/widgets/`)**:
-  - `window_title_bar.dart`: Custom draggable window headers.
-  - `smooth_progress_bar.dart`: Animated progress display for background installations.
+| Directory | Technology | Responsibility |
+|-----------|------------|----------------|
+| `FlutterUI/` | Dart / Flutter | MD3 UI, navigation, tray, GitHub stars (HTTP) |
+| `python/` | Python | Package search/install, sources, AI CLI |
+| `daemon/` | Rust | Background update checks, desktop notifications |
+| `plugins/` | Python | Userdropped `UnifiedSource` plugins |
 
 ---
 
-## 2. Backend Architecture (Python & Rust)
+## 2. FlutterUI layout (current)
 
-### Python Backend Daemon (`python/`)
-The Python backend serves as the CLI logic wrapper executing tasks.
-- **Entry point (`python/main.py`)**: Handles CLI arguments parsing and routes them to backend modules. Outputs JSON metadata or streams callback lines in format `[CALLBACK] {"message": "..."}` or `[PROGRESS] 50` back to Flutter.
-- **Core modules (`python/core/`)**:
-  - `recommendation_manager.py`: Fetches categorized collections (featured, trending, for_you) from Flathub APIs and integrates user habits for personalization. Implements a 1-hour local JSON cache.
-- **`sources/`**: Unified software sources (Pacman, AUR, Flatpak, AppImage, GitHub, Plugins). Each source implements a `UnifiedSource` interface covering search, install, uninstall, launch, and locate.
-- **`downloader/`**: Refactored to delegate execution to the appropriate `UnifiedSource` instance.
-- **`ai/`**: AI Assistant wrapper. Supports **Ollama, Gemini, and OpenAI-compatible** endpoints (e.g., DeepSeek, Yunwu). Includes proxy support and configurable temperature. Used for intelligent search ranking and health reports.
-  - `config_loader.py` & `env_manager.py`: Configuration and environment validation.
+### 2.1 Layered `lib/`
 
-### Rust Daemon (`daemon/`)
-- A lightweight background service checking package updates and dispatching system notifications using desktop notifications.
+```mermaid
+flowchart TB
+  main["main.dart"] --> app["app/"]
+  app --> features["features/"]
+  app --> core["core/"]
+  features --> data["data/repositories"]
+  features --> widgets["widgets/"]
+  data --> py["python/main.py"]
+  services["services/"] --> data
+```
 
-### Process Management
-- **Full Exit Strategy**: When the user triggers an "Exit" action (via tray or window close when tray is disabled), the Flutter UI executes `_handleFullExit`. This explicitly sends `pkill` signals to `omnistore-daemon`, `python_server` (packaged), and any active `python/main.py` processes to ensure zero lingering background resources.
+| Layer | Path | Notes |
+|-------|------|-------|
+| Entry | `lib/main.dart` | Calls `bootstrapOmniStore()` only |
+| App shell | `lib/app/` | Providers, `MaterialApp`, `MainNavigationEntry` |
+| Features | `lib/features/` | Feature-first `presentation/pages` + `controllers` |
+| Core | `lib/core/` | Theme, adaptive shell, GitHub client, desktop window |
+| Data bridge | `lib/data/` | **`PythonBridge` + repositories** (not `python/`) |
+| Services | `lib/services/` | `BackendService`, `TaskManager`, `UpdateService` |
+
+**Renamed (clarity):** `lib/backend/` → `lib/data/`, `BackendConstants` → `PythonBridge`.
+
+### 2.2 Feature modules
+
+| Module | Location | Screens |
+|--------|----------|---------|
+| Home | `features/home/` | Explore landing |
+| Explore | `features/explore/presentation/` | Category, Search, Details, GitHub/Flatpak stores |
+| Apps | `features/apps/` | Installed list |
+| Settings | `features/settings/presentation/` | `TweaksPage`, `SettingsController` |
+| Task manager | `features/task_manager/presentation/` | Downloads, `TaskController` |
+| Onboarding | `features/onboarding/` | `WelcomePage` |
+
+### 2.3 UI shell (responsive)
+
+```mermaid
+flowchart TB
+  subgraph wide["Width ≥ 600px — desktop / tablet"]
+    WTB["WindowTitleBar optional"]
+    Rail["NavigationRail + extended labels"]
+    Content["AnimatedSwitcher page"]
+    WTB --> Rail --> Content
+  end
+
+  subgraph compact["Width < 600px — phone"]
+    AppBar["AppBar + search"]
+    Body["Page content"]
+    Bar["NavigationBar"]
+    Pop["PopScope → home tab"]
+    AppBar --> Body --> Bar
+    Pop --- Bar
+  end
+```
+
+- Implementation: `core/layout/adaptive_navigation_shell.dart`
+- State: `core/navigation_controller.dart` (tab indices 0–7, see `FlutterUI/ARCHITECTURE.md`)
+- Desktop: `core/platform/desktop_window_service.dart` — min size 900×640, tray minimize, hidden title bar
+- GitHub stars: `core/network/github_client.dart` + `widgets/github_star_badge.dart`
 
 ---
 
-## 3. Integration & Implementation Methodology
+## 3. Python backend (`python/`)
 
-1. **Process Bridge**: The Flutter UI triggers CLI backend tasks asynchronously.
-   - **Dev Mode**: Uses the Python virtualenv executable (`python/.venv/bin/python`) targeting `python/main.py`.
-   - **Packaged Mode**: Detects `backends/python_server` and invokes it directly as a standalone binary.
-2. **Real-time Log Streaming**: Outputs from Python's standard output are parsed line-by-line via `Stream<String>` in Flutter's `BackendService`. Progress percentages marked with `[PROGRESS]` updates the global progress notifier.
-3. **Background Tasks**: Long-running background installs are coordinated using the `TaskManager` service to persist state across page navigation. Task progress and completion are integrated with system notifications via `UpdateService`.
-4. **System Tray Integration**: `UpdateService` initializes a background tray icon using `SystemTray` package. On Linux, it uses absolute icon paths resolved relative to the executable for maximum compatibility.
+- **Entry:** `python/main.py` — CLI router, JSON/`[PROGRESS]` streams to Flutter
+- **`sources/`:** Pacman, AUR, Flatpak, AppImage, GitHub, plugins (`UnifiedSource`)
+- **`core/`:** e.g. `recommendation_manager.py` (Flathub + cache)
+- **`ai/`:** Ollama, Gemini, OpenAI-compatible providers
+- **`downloader/`:** Delegates to source implementations
 
----
-
-## 4. Communication Protocol & Standards
-
-### Backend to Frontend Streams:
-- **`[PROGRESS] <int>`**: Updates the UI progress bar (0-100). `-1` indicates an indeterminate state (e.g., "Verifying...").
-- **`[SPEED] <string>`**: Displays real-time download speed in the status bar.
-- **`[CALLBACK] <json>`**: Structured logs for the terminal view.
-  - Schema: `{"type": "log", "message": "...", "level": "INFO|ERROR|SUCCESS"}`
+Flutter invokes via `data/repositories/*` → `PythonBridge.venvPython` + `buildArgs()`.
 
 ---
 
-## 5. Plugin System
-The project supports dynamic Python plugins. Users can drop `.py` files into the `plugins/` directory. If they subclass `UnifiedSource`, they are automatically detected and integrated into the search and installation pipeline.
+## 4. Rust daemon (`daemon/`)
 
-## 6. Build and Distribution
-
-### Automated Build Script (`auto_build.py`)
-A unified Python script in the root directory manages the entire build pipeline:
-- **Rust**: Compiles `daemon/` into `omnistore-daemon`.
-- **Python**: Packages `python/main.py` into a single-file binary `python_server` using PyInstaller, including all necessary hidden imports for FastAPI/Uvicorn.
-- **Flutter**: Builds the release bundle for Linux or Windows.
-- **Assembly**: Automatically gathers all binaries into the `backends/` folder within the Flutter bundle for a "portable" distribution.
-
-Usage: `python auto_build.py --all` (or selective flags like `--rust`, `--python`, `--flutter`).
+Lightweight service: periodic update checks and system notifications. Stopped on full app exit (`pkill omnistore-daemon` in `MainNavigationEntry`).
 
 ---
 
-## 7. 7-Part UX & Stability Standards
+## 5. Integration flow
 
-To ensure a premium and stable experience, all features must adhere to these 7 pillars:
+```mermaid
+sequenceDiagram
+  participant UI as Feature Page
+  participant Repo as data/repositories
+  participant Bridge as PythonBridge
+  participant PY as python/main.py
 
-1.  **Onboarding**: First-run experience must be smooth, using the `WelcomePage` with clear progress indicators and configuration defaults.
-2.  **Navigation**: Sidebar must use tooltips for accessibility. Page transitions should be fluid (e.g., `easeInOutExpo`).
-3.  **Discovery**: High-quality Hero banners and horizontal shelves for app exploration. Empty states must provide actionable feedback.
-4.  **Lifecycle**: Background tasks managed by `TaskManager` with real-time log visibility via the Terminal Dialog.
-5.  **Configuration**: Settings must be logically grouped with icons. All text inputs must use persistent controllers in the State to prevent cursor jumps.
-6.  **AI Magic**: Intelligent features are highlighted with the `MagicPulseIcon` (Purple gradient). All AI triggers must respect the global `isAIEnabled` state.
-7.  **Resilience**: Comprehensive error handling for network requests (45s timeouts) and backend CLI failures. UI must handle missing Material ancestors in sub-pages.
+  UI->>Repo: search / install / config
+  Repo->>Bridge: venvPython + buildArgs
+  Bridge->>PY: Process.run
+  PY-->>Repo: stdout lines
+  Repo-->>UI: JSON / TaskController stream
+```
+
+1. **Dev:** `python/.venv/bin/python` + `python/main.py`
+2. **Release:** `backends/python_server` next to Flutter binary
+3. **Streaming:** `[PROGRESS]`, `[SPEED]`, `[CALLBACK]` parsed in `BackendService` / `TaskManager`
+4. **Tray:** `UpdateService` + `system_tray`; close → hide or full exit
+
+---
+
+## 6. Stream protocol (Python → Flutter)
+
+| Token | Meaning |
+|-------|---------|
+| `[PROGRESS] <int>` | 0–100 progress; `-1` indeterminate |
+| `[SPEED] <string>` | Download speed label |
+| `[CALLBACK] <json>` | Terminal log `{type, message, level}` |
+
+---
+
+## 7. Plugins
+
+Drop `.py` plugins under `plugins/` subclassing `UnifiedSource` — auto-registered in search/install pipeline.
+
+---
+
+## 8. Build (`auto_build.py`)
+
+- Rust → `omnistore-daemon`
+- PyInstaller → `python_server` in `backends/`
+- Flutter release bundle
+- `python auto_build.py --all`
+
+---
+
+## 9. UX pillars (summary)
+
+1. Onboarding — `WelcomePage`, first-run config  
+2. Navigation — adaptive shell, fluid `AnimatedSwitcher`  
+3. Discovery — shelves, Hero banners, empty states  
+4. Lifecycle — `TaskManager`, terminal dialog  
+5. Configuration — grouped settings, stable text controllers  
+6. AI — `MagicPulseIcon`, `isAIEnabled` gate  
+7. Resilience — timeouts, stale GitHub cache, no red-screen on network errors  
+
+---
+
+## 10. Changelog (architecture)
+
+| Date | Change |
+|------|--------|
+| 2026-06 | Feature-first `features/explore/presentation/`; removed `package_browse/` |
+| 2026-06 | `lib/backend/` → `lib/data/`; `PythonBridge`; `lib/app/` shell split |
+| 2026-06 | `AdaptiveNavigationShell`, `GitHubClient`, `OmnistoreTheme` |

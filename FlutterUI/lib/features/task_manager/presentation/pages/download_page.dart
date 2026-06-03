@@ -1,5 +1,5 @@
-import "package:frontend/backend/repositories/ai_repository.dart";
-import "package:frontend/backend/repositories/package_repository.dart";
+import "package:frontend/data/repositories/ai_repository.dart";
+import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
 import 'package:cached_network_image/cached_network_image.dart';

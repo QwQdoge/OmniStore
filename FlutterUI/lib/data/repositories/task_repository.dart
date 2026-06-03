@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../backend_constants.dart';
+import '../python_bridge.dart';
 
 class TaskRepository {
   Process? _activeProcess;
@@ -24,9 +24,9 @@ class TaskRepository {
       }
 
       final process = await Process.start(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(baseArgs),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(baseArgs),
+        workingDirectory: PythonBridge.workingDir,
       );
 
       _activeProcess = process;
@@ -50,9 +50,9 @@ class TaskRepository {
   Future<List<dynamic>> checkUpdates() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["-C", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["-C", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 30));
 
       if (result.exitCode != 0) return [];
@@ -66,9 +66,9 @@ class TaskRepository {
   Stream<String> updateAll(String source) async* {
     try {
       final process = await Process.start(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["-U", "all", "--source", source, "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["-U", "all", "--source", source, "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       );
 
       _activeProcess = process;
@@ -108,9 +108,9 @@ class TaskRepository {
   Future<Map<String, dynamic>> exportPackages(String filepath) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--export-packages", filepath]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--export-packages", filepath]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return {"status": "error"};
@@ -124,9 +124,9 @@ class TaskRepository {
   Stream<String> cleanSystem() async* {
     try {
       final process = await Process.start(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--clean-system", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--clean-system", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       );
 
       yield* process.stdout

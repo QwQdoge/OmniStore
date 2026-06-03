@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/app_package.dart';
-import '../backend_constants.dart';
+import '../python_bridge.dart';
 
 class PackageRepository {
   Process? _activeSearchProcess;
@@ -15,9 +15,9 @@ class PackageRepository {
 
     try {
       final process = await Process.start(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["-S", query, "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["-S", query, "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       );
 
       if (cancelOngoing) _activeSearchProcess = process;
@@ -78,9 +78,9 @@ class PackageRepository {
   Future<List<dynamic>> listInstalled() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["-L", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["-L", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 15));
 
       if (result.exitCode != 0) return [];
@@ -94,9 +94,9 @@ class PackageRepository {
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--recommend", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--recommend", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 20));
 
       if (result.exitCode != 0) return {};
@@ -134,9 +134,9 @@ class PackageRepository {
   Future<Map<String, dynamic>> getAppDetails(String appId) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--details", appId, "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--details", appId, "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 20));
       return jsonDecode(result.stdout);
     } catch (e) {
@@ -148,9 +148,9 @@ class PackageRepository {
   Future<List<dynamic>> getEssentials() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--essentials", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--essentials", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];
@@ -164,15 +164,15 @@ class PackageRepository {
   Future<bool> launchApp(String name, String source) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs([
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs([
           "--launch",
           name,
           "--source",
           source,
           "--json",
         ]),
-        workingDirectory: BackendConstants.workingDir,
+        workingDirectory: PythonBridge.workingDir,
       );
       return result.exitCode == 0;
     } catch (e) {
@@ -183,15 +183,15 @@ class PackageRepository {
   Future<bool> locateApp(String name, String source) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs([
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs([
           "--locate",
           name,
           "--source",
           source,
           "--json",
         ]),
-        workingDirectory: BackendConstants.workingDir,
+        workingDirectory: PythonBridge.workingDir,
       );
       return result.exitCode == 0;
     } catch (e) {
@@ -202,9 +202,9 @@ class PackageRepository {
   Future<List<dynamic>> importPackages(String filepath) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--import-packages", filepath, "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--import-packages", filepath, "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) return [];

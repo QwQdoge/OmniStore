@@ -1,7 +1,10 @@
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
 
-class BackendConstants {
+/// Resolves paths to `python/main.py` or the packaged `python_server` binary.
+/// Lives in `lib/data/` (Flutter-side bridge), not the `python/` backend tree.
+class PythonBridge {
   static String get projectRoot {
     final searchRoots = <String>{Directory.current.path};
 

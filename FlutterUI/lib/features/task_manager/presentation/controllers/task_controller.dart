@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:frontend/backend/repositories/task_repository.dart';
+import 'package:frontend/data/repositories/task_repository.dart';
 
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;

@@ -1,4 +1,4 @@
-import "package:frontend/backend/repositories/package_repository.dart";
+import "package:frontend/data/repositories/package_repository.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
 

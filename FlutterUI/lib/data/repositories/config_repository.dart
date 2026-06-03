@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../backend_constants.dart';
+import '../python_bridge.dart';
 
 class ConfigRepository {
   Future<Map<String, dynamic>> loadConfig() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--get-config", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--get-config", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
 
       if (result.exitCode != 0) {
@@ -31,9 +31,9 @@ class ConfigRepository {
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
       final process = await Process.start(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--set-config", "stdin", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 5));
 
       process.stdin.write(jsonEncode(config));
@@ -52,9 +52,9 @@ class ConfigRepository {
   Future<Map<String, dynamic>> checkEnv() async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs(["--check-env", "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--check-env", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
       return jsonDecode(result.stdout);
     } catch (e) {

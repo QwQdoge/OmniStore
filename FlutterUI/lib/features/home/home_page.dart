@@ -1,6 +1,6 @@
-import "package:frontend/backend/repositories/task_repository.dart";
-import "package:frontend/backend/repositories/ai_repository.dart";
-import "package:frontend/backend/repositories/package_repository.dart";
+import "package:frontend/data/repositories/task_repository.dart";
+import "package:frontend/data/repositories/ai_repository.dart";
+import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";

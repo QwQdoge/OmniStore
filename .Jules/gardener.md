@@ -6,7 +6,7 @@
 
 **Learning:** `project_architecture.md` can drift quickly from the actual file structure. Maintaining this file is critical for agent onboarding and consistent development.
 
-**Action:** Update `project_architecture.md` whenever features are reorganized into new subdirectories (e.g., `lib/pages` to `lib/features/package_browse`).
+**Action:** Update `project_architecture.md` and `FlutterUI/ARCHITECTURE.md` whenever features move (e.g. under `lib/features/<name>/presentation/`). Keep `lib/data/` vs `python/` naming distinct in docs.
 
 **Learning:** Empty search states are high-value real estate. Providing category quick-access and trending apps instead of a blank screen improves user engagement and discovery.
 

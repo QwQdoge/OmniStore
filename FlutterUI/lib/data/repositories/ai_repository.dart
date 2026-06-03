@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import '../backend_constants.dart';
+import '../python_bridge.dart';
 
 class AIRepository {
   Future<String> aiExplain(String appName, String description) async =>
@@ -28,9 +28,9 @@ class AIRepository {
   Future<String> _aiCall(List<String> args, {int timeout = 45}) async {
     try {
       final result = await Process.run(
-        BackendConstants.venvPython,
-        BackendConstants.buildArgs([...args, "--json"]),
-        workingDirectory: BackendConstants.workingDir,
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs([...args, "--json"]),
+        workingDirectory: PythonBridge.workingDir,
       ).timeout(Duration(seconds: timeout));
 
       final data = jsonDecode(result.stdout);

@@ -86,7 +86,14 @@ daemon:
 ---
 
 ## Development
-For detailed architecture, UI layout, and core module principles, please refer to [project_architecture.md](project_architecture.md).
+
+| Document | Contents |
+|----------|----------|
+| [project_architecture.md](project_architecture.md) | Whole-repo diagram, Python/Rust, protocols |
+| [FlutterUI/ARCHITECTURE.md](FlutterUI/ARCHITECTURE.md) | Flutter layers, features, navigation indices |
+| [FlutterUI/lib/README.md](FlutterUI/lib/README.md) | Quick `lib/` tree index |
+
+**Flutter `lib/` layers:** `app/` → `features/` → `data/` (Python CLI) · `core/` · `services/` · `widgets/`
 
 ### Contribution
 1. Fork the repository.

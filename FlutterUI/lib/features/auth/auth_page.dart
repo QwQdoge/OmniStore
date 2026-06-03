@@ -1,4 +1,4 @@
-import "package:frontend/backend/repositories/config_repository.dart";
+import "package:frontend/data/repositories/config_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
