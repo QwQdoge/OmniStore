@@ -1651,27 +1651,6 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
-<<<<<<< HEAD
-=======
-  /// Label for advanced settings toggle
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  /// String get advanced;
-
-  /// Section title for general settings
-  ///
-  /// In en, this message translates to:
-  /// **'General'**
-  /// String get general;
-
-  /// Section title for software repositories
-  ///
-  /// In en, this message translates to:
-  /// **'Repositories'**
-  /// String get repositories;
-
->>>>>>> f9750fe (Add Windows support for Flutter application)
   /// Full name for AUR
   ///
   /// In en, this message translates to:
