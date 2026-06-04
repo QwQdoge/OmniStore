@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "Listo",
+  "ready": "Instalado",
   "@ready": {
     "description": "Description for ready"
   },
@@ -637,7 +637,7 @@
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "Búsqueda mágica",
+  "magicSearch": "Búsqueda inteligente",
   "@magicSearch": {
     "description": "magicSearch"
   },

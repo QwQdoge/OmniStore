@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "动态",
+  "activity": "任务动态",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -192,7 +192,7 @@
   "@cancel": {
     "description": "Description for cancel"
   },
-  "confirm": "确定",
+  "confirm": "确认",
   "@confirm": {
     "description": "Description for confirm"
   },
@@ -641,7 +641,7 @@
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
-  "magicSearch": "魔法搜索",
+  "magicSearch": "智能搜索",
   "@magicSearch": {
     "description": "Title for magic search feature"
   },
@@ -649,7 +649,7 @@
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 命令生成",
+  "aiCliTitle": "AI 命令行助手",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },
