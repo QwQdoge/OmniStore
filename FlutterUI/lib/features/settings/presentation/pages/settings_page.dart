@@ -1,6 +1,6 @@
-import "package:frontend/data/repositories/task_repository.dart";
-import "package:provider/provider.dart";
-import "../controllers/settings_controller.dart";
+import 'package:frontend/data/repositories/task_repository.dart';
+import 'package:provider/provider.dart';
+import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 

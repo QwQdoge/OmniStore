@@ -333,6 +333,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaning => '系统清理';
 
   @override
+  String get systemCleaningDesc => '删除孤立软件包并清理 pacman 缓存';
+
+  @override
   String get systemCleaningSubtitle => '删除孤立软件包并清理 pacman 缓存';
 
   @override
@@ -393,10 +396,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get add => '添加';
 
   @override
+  String get general => '通用';
+
+  @override
+  String get advanced => '高级';
+
+  @override
+  String get repositories => '软件仓库';
+
+  @override
   String get aiSettings => 'AI 助手设置';
 
   @override
   String get aiEnabled => '启用 AI 助手';
+
+  @override
+  String get aiEnabledDesc => '启用 AI 驱动的搜索、应用解释和错误诊断。';
 
   @override
   String get aiProvider => 'AI 服务商';
@@ -1151,6 +1166,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaning => '系統清理';
 
   @override
+  String get systemCleaningDesc => '刪除孤立套件並清理 pacman 快取';
+
+  @override
   String get systemCleaningSubtitle => '刪除孤立套件並清理 pacman 快取';
 
   @override
@@ -1211,10 +1229,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get add => '添加';
 
   @override
+  String get general => '一般';
+
+  @override
+  String get advanced => '進階';
+
+  @override
+  String get repositories => '軟體庫';
+
+  @override
   String get aiSettings => 'AI 助手設定';
 
   @override
   String get aiEnabled => '啟用 AI 助手';
+
+  @override
+  String get aiEnabledDesc => '啟用 AI 驅動的搜尋、應用程式解釋和錯誤診斷。';
 
   @override
   String get aiProvider => 'AI 服務商';

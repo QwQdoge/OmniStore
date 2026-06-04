@@ -334,6 +334,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemCleaning => 'システムクリーニング';
 
   @override
+  String get systemCleaningDesc => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
+
+  @override
   String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
 
   @override
@@ -395,10 +398,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get add => '追加';
 
   @override
+  String get general => '全般';
+
+  @override
+  String get advanced => '詳細設定';
+
+  @override
+  String get repositories => 'リポジトリ';
+
+  @override
   String get aiSettings => 'AI アシスタント設定';
 
   @override
   String get aiEnabled => 'AI アシスタントを有効にする';
+
+  @override
+  String get aiEnabledDesc => 'AI を活用した検索、アプリの説明、エラー診断を有効にします。';
 
   @override
   String get aiProvider => 'AI プロバイダー';

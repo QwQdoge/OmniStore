@@ -441,6 +441,10 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
+  "systemCleaningDesc": "Eliminar paquetes huérfanos y limpiar caché de pacman",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
   "systemCleaningSubtitle": "Eliminar paquetes huérfanos y limpiar caché de pacman",
   "@systemCleaningSubtitle": {
     "description": "systemCleaningSubtitle"
@@ -525,6 +529,18 @@
   "@add": {
     "description": "add"
   },
+  "general": "General",
+  "@general": {
+    "description": "general"
+  },
+  "advanced": "Avanzado",
+  "@advanced": {
+    "description": "advanced"
+  },
+  "repositories": "Repositorios",
+  "@repositories": {
+    "description": "repositories"
+  },
   "aiSettings": "Ajustes del Asistente de IA",
   "@aiSettings": {
     "description": "aiSettings"
@@ -532,6 +548,10 @@
   "aiEnabled": "Activar Asistente de IA",
   "@aiEnabled": {
     "description": "aiEnabled"
+  },
+  "aiEnabledDesc": "Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
   },
   "aiProvider": "Proveedor de IA",
   "@aiProvider": {

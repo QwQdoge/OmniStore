@@ -727,6 +727,12 @@ abstract class AppLocalizations {
   /// **'System Cleaning'**
   String get systemCleaning;
 
+  /// systemCleaningDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Delete orphan packages and clean pacman cache'**
+  String get systemCleaningDesc;
+
   /// systemCleaningSubtitle
   ///
   /// In en, this message translates to:
@@ -835,6 +841,24 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get add;
 
+  /// general
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// advanced
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// repositories
+  ///
+  /// In en, this message translates to:
+  /// **'Repositories'**
+  String get repositories;
+
   /// aiSettings
   ///
   /// In en, this message translates to:
@@ -846,6 +870,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable AI Assistant'**
   String get aiEnabled;
+
+  /// aiEnabledDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
+  String get aiEnabledDesc;
 
   /// aiProvider
   ///

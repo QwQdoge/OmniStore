@@ -86,25 +86,21 @@ class OmnistoreBackend:
     """
     Main backend controller for OmniStore.
     Coordinates between configuration, cache, searching, and execution modules.
+    Ensures fail-safe execution and proper resource lifecycle management.
     """
-    def __init__(self, json_mode=False):
+    def __init__(self, json_mode: bool = False):
         self.config = ConfigManager()
         self.cache = CacheManager()
         self.env = EnvManager()
         # ⚡ Shared HabitTracker to avoid redundant disk I/O
         self.habit_tracker = HabitTracker()
-        self.manager: SearchManager | None = None
-        self.recommender: RecommendationManager | None = None
-
-        # ⚡ Lazy-loaded components to improve startup performance
-        self._updater = None
-        self._executor = None
-        self._ai = None
-        self._repo_manager = None
-        self._essentials = None
-
+        self.manager: Optional[SearchManager] = None
+        self.recommender: Optional[RecommendationManager] = None
+        self.updater = UpdateManager(self.config)
+        self.executor = InstallExecutor(self)
         self.is_action = False
         self.json_mode = json_mode
+        self.session: Optional[aiohttp.ClientSession] = None
         
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
@@ -145,12 +141,15 @@ class OmnistoreBackend:
 
     async def initialize(self, session: aiohttp.ClientSession):
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
-        # This prevents redundant disk reads and memory overhead from duplicate RecommendationManager instances.
-        self.recommender = RecommendationManager(session, self.habit_tracker)
-        self.manager = SearchManager(self.config, session, self.habit_tracker, recommender=self.recommender)
-        if self.manager is None:
-            raise RuntimeError(
-                "Failed to initialize SearchManager. Check configuration and environment.")
+        self.recommender = RecommendationManager(self.session, self.habit_tracker)
+        self.manager = SearchManager(self.config, self.session, self.habit_tracker, recommender=self.recommender)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Guaranteed cleanup of network sessions to prevent leaks."""
+        if self.session:
+            await self.session.close()
+            self.session = None
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
@@ -184,7 +183,7 @@ class OmnistoreBackend:
 
             output = json.dumps(
                 {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
-            sys.stdout.write(f"[CALLBACK] {output}\n")
+            sys.stdout.write(f"[CALLBACK] {output}\n"); sys.stdout.flush()
             sys.stdout.flush()
         else:
             if level == "ERROR":
@@ -205,14 +204,11 @@ class OmnistoreBackend:
             json_mode: If True, output raw JSON results to stdout.
         """
         try:
-            timeout = aiohttp.ClientTimeout(total=30)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                await self.initialize(session)
-                results = await self.manager.search_all(query)  # type: ignore
-
+            async with self:
                 if not self.manager:
                     raise RuntimeError("SearchManager is not initialized.")
 
+                results = await self.manager.search_all(query)
                 if results is None:
                     results = []
 
@@ -224,7 +220,7 @@ class OmnistoreBackend:
         except Exception as e:
             error_msg = f"Backend Error: {str(e)}"
             if json_mode:
-                print(json.dumps({"error": error_msg, "results": []}))
+                sys.stdout.write(json.dumps({"error": error_msg, "results": []}) + "\n"); sys.stdout.flush()
             else:
                 print(f"[Error] {error_msg}")
 
@@ -306,7 +302,7 @@ class OmnistoreBackend:
         try:
             updates = await self.updater.check_all_updates()
             if json_mode:
-                print(json.dumps(updates, ensure_ascii=False))
+                sys.stdout.write(json.dumps(updates, ensure_ascii=False) + "\n"); sys.stdout.flush()
             else:
                 if not updates:
                     console.print(Panel("All apps are up to date! ✨", border_style="green"))
@@ -325,48 +321,49 @@ class OmnistoreBackend:
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
         except Exception as e:
             if json_mode:
-                print(json.dumps({"error": str(e), "updates": []}))
+                sys.stdout.write(json.dumps({"error": str(e), "updates": []}) + "\n"); sys.stdout.flush()
             else:
                 print(f"[Error] Update check failed: {e}")
 
     async def run_recommendations(self, json_mode: bool = False):
         """Fetch dynamic recommendations"""
         try:
-            timeout = aiohttp.ClientTimeout(total=15)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                await self.initialize(session)
+            async with self:
+                if not self.recommender:
+                    raise RuntimeError("RecommendationManager is not initialized.")
+
                 sources = list(self.manager.sources.values()) if self.manager else []
-                results = await self.recommender.get_recommendations(sources=sources) # type: ignore
+                results = await self.recommender.get_recommendations(sources=sources)
                 if json_mode:
-                    print(json.dumps(results, ensure_ascii=False))
+                    sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
                 else:
                     for app in results:
                         print(f"推荐: {app['name']} ({app['id']})")
         except Exception as e:
             if json_mode:
-                print(json.dumps({"error": str(e), "results": []}))
+                sys.stdout.write(json.dumps({"error": str(e), "results": []}) + "\n"); sys.stdout.flush()
             else:
                 print(f"[Error] {e}")
 
     async def run_app_details(self, app_id: str, json_mode: bool = False):
         """Fetch dynamic app details"""
         try:
-            timeout = aiohttp.ClientTimeout(total=15)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                await self.initialize(session)
+            async with self:
+                if not self.recommender or not self.manager:
+                    raise RuntimeError("Managers are not initialized.")
 
                 if "." in app_id:
-                    details = await self.recommender.get_details(app_id) # type: ignore
+                    details = await self.recommender.get_details(app_id)
                 else:
-                    details = await self.recommender.find_metadata(app_id) # type: ignore
+                    details = await self.recommender.find_metadata(app_id)
 
                 search_name = details.get("name") or app_id.split(".")[-1]
-                variants_results = await self.manager.search_all(search_name) # type: ignore
+                variants_results = await self.manager.search_all(search_name)
 
-                norm_target = self.manager._normalize_app_name(search_name) # type: ignore
+                norm_target = self.manager._normalize_app_name(search_name)
                 matched_app = None
                 for res in variants_results:
-                    if self.manager._normalize_app_name(res['name']) == norm_target: # type: ignore
+                    if self.manager._normalize_app_name(res['name']) == norm_target:
                         matched_app = res
                         break
 
@@ -403,9 +400,9 @@ class OmnistoreBackend:
                                     variant["installed_size"] = ins_size_match.group(1).strip()
                         except Exception: pass
 
-                print(json.dumps(details, ensure_ascii=False))
+                sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
         except Exception as e:
-            print(json.dumps({"error": str(e)}))
+            sys.stdout.write(json.dumps({"error": str(e)}) + "\n"); sys.stdout.flush()
 
     def _output_installed_pretty(self, installed_list):
         if not installed_list:
@@ -436,103 +433,105 @@ class OmnistoreBackend:
                 cached = self.cache.get_installed_packages()
                 if cached:
                     if json_mode:
-                        print(json.dumps(cached))
+                        sys.stdout.write(json.dumps(cached) + "\n"); sys.stdout.flush()
                     else:
                         self._output_installed_pretty(cached)
                     return
 
             installed_list = []
 
-            # 1. Scan AppImage
-            apps_dir = Path.home() / "Applications"
-            if apps_dir.exists():
-                for f in apps_dir.glob("*.AppImage"):
-                    installed_list.append({
-                        "name": f.stem,
-                        "primary_source": "AppImage",
-                        "variants": [{"source": "AppImage"}],
-                        "installed": True,
-                        "description": f"Local AppImage at {f}",
-                        "version": "Local",
-                        "url": f.as_uri()
-                    })
+            async with self:
+                # 1. Scan AppImage
+                apps_dir = Path.home() / "Applications"
+                if apps_dir.exists():
+                    for f in apps_dir.glob("*.AppImage"):
+                        installed_list.append({
+                            "name": f.stem,
+                            "primary_source": "AppImage",
+                            "variants": [{"source": "AppImage"}],
+                            "installed": True,
+                            "description": f"Local AppImage at {f}",
+                            "version": "Local",
+                            "url": f.as_uri()
+                        })
 
-            # 2. Scan Flatpak
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    "flatpak", "list", "--app", "--columns=name,application,version,description",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.DEVNULL
-                )
-                stdout, _ = await proc.communicate()
-                if stdout:
-                    lines = stdout.decode().strip().splitlines()
-                    for line in lines:
-                        parts = [p.strip() for p in line.split('\t')]
-                        if len(parts) >= 2:
-                            installed_list.append({
-                                "name": parts[0],
-                                "id": parts[1],
-                                "primary_source": "Flatpak",
-                                "variants": [{"source": "Flatpak"}],
-                                "installed": True,
-                                "version": parts[2] if len(parts) > 2 else "Unknown",
-                                "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
-                            })
-            except Exception as e:
-                if not json_mode:
-                    await self._flutter_callback(f"Failed to scan Flatpaks: {e}", json_mode, level="ERROR")
+                # 2. Scan Flatpak
+                try:
+                    proc = await asyncio.create_subprocess_exec(
+                        "flatpak", "list", "--app", "--columns=name,application,version,description",
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.DEVNULL
+                    )
+                    stdout, _ = await proc.communicate()
+                    if stdout:
+                        lines = stdout.decode().strip().splitlines()
+                        for line in lines:
+                            parts = [p.strip() for p in line.split('\t')]
+                            if len(parts) >= 2:
+                                installed_list.append({
+                                    "name": parts[0],
+                                    "id": parts[1],
+                                    "primary_source": "Flatpak",
+                                    "variants": [{"source": "Flatpak"}],
+                                    "installed": True,
+                                    "version": parts[2] if len(parts) > 2 else "Unknown",
+                                    "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
+                                })
+                except Exception as e:
+                    if not json_mode:
+                        await self._flutter_callback(f"Failed to scan Flatpaks: {e}", json_mode, level="ERROR")
 
-            # 3. Scan Native (Pacman)
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    "pacman", "-Qqne",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.DEVNULL
-                )
-                stdout, _ = await proc.communicate()
-                if stdout:
-                    for line in stdout.decode().strip().splitlines():
-                        if line:
-                            installed_list.append({
-                                "name": line,
-                                "primary_source": "Native",
-                                "variants": [{"source": "Native"}],
-                                "installed": True,
-                                "description": "Native/AUR package",
-                                "version": "Local"
-                            })
-            except Exception: pass
+                # 3. Scan Native (Pacman)
+                try:
+                    proc = await asyncio.create_subprocess_exec(
+                        "pacman", "-Qqne",
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.DEVNULL
+                    )
+                    stdout, _ = await proc.communicate()
+                    if stdout:
+                        for line in stdout.decode().strip().splitlines():
+                            if line:
+                                installed_list.append({
+                                    "name": line,
+                                    "primary_source": "Native",
+                                    "variants": [{"source": "Native"}],
+                                    "installed": True,
+                                    "description": "Native/AUR package",
+                                    "version": "Local"
+                                })
+                except Exception: pass
 
-            # ⚡ Enrichment step: fetch icons and descriptions for top installed apps
-            if self.recommender:
-                # We don't want to over-request Flathub, but enriching the first few enhances the list
-                # We filter for those without icons (usually Native apps)
-                enrich_targets = [app for app in installed_list if not app.get('icon')]
+                # ⚡ Enrichment step: fetch icons and descriptions for top installed apps
+                if self.recommender:
+                    # We don't want to over-request Flathub, but enriching the first few enhances the list
+                    # We filter for those without icons (usually Native apps)
+                    enrich_targets = [app for app in installed_list if not app.get('icon')]
 
-                async def _enrich_app(app):
-                    try:
-                        metadata = await self.recommender.find_metadata(app['name'])
-                        if metadata:
-                            if metadata.get('icon'): app['icon'] = metadata['icon']
-                            if metadata.get('description'): app['description'] = metadata['description']
-                    except Exception: pass
+                    async def _enrich_app(app):
+                        try:
+                            metadata = await self.recommender.find_metadata(app['name'])
+                            if metadata:
+                                if metadata.get('icon'): app['icon'] = metadata['icon']
+                                if metadata.get('description'): app['description'] = metadata['description']
+                        except Exception: pass
 
-                if enrich_targets:
-                    # Limit to 10 for performance
-                    await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
+                    if enrich_targets:
+                        # Limit to 10 for performance
+                        await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
 
-            if json_mode:
-                print(json.dumps(installed_list))
-            else:
-                self._output_installed_pretty(installed_list)
+                if json_mode:
+                    sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
+                else:
+                    self._output_installed_pretty(installed_list)
 
-            self.cache.save_installed_packages(installed_list)
+                self.cache.save_installed_packages(installed_list)
         except Exception as e:
+            error_msg = f"Failed to list installed apps: {e}"
             if json_mode:
-                print(json.dumps({"error": f"Failed to list installed apps: {e}", "results": []}))
+                sys.stdout.write(json.dumps({"error": error_msg, "results": []}) + "\n"); sys.stdout.flush()
             else:
-                print(f"[Error] Failed to list installed apps: {e}")
+                logging.error(error_msg)
 
     # --- Custom Repositories Methods ---
     async def run_list_custom_repos(self):
@@ -552,7 +551,7 @@ class OmnistoreBackend:
             "config_flatpak": config_flatpak,
             "config_pacman": config_pacman
         }
-        print(json.dumps(result, ensure_ascii=False))
+        sys.stdout.write(json.dumps(result, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
         self.is_action = True
@@ -574,7 +573,7 @@ class OmnistoreBackend:
             await cb(f"[ERROR] Invalid repo type: {repo_type}")
 
         if json_mode:
-            print(json.dumps({"status": "success" if success else "error"}))
+            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
         return success
 
     async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False) -> bool:
@@ -598,38 +597,45 @@ class OmnistoreBackend:
             await cb(f"[ERROR] Invalid repo type: {repo_type}")
 
         if json_mode:
-            print(json.dumps({"status": "success" if success else "error"}))
+            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
         return success
 
     # --- AI Features Methods ---
     async def run_ai_explain(self, app_name: str, app_description: str = ""):
         res = await self.ai.explain_app(app_name, app_description)
-        print(json.dumps({"response": res}, ensure_ascii=False))
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def run_ai_recommend(self, prompt: str):
         # Hybrid Search: search locally for the query to provide candidates context to AI
-        timeout = aiohttp.ClientTimeout(total=20)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            await self.initialize(session)
-            # Find candidate apps matching query keyword (e.g. search broad keywords first)
-            keywords = prompt.split()
-            broad_query = keywords[0] if keywords else prompt
-            candidates = await self.manager.search_all(broad_query) # type: ignore
-            
-            res = await self.ai.recommend_apps(prompt, candidates)
-            print(json.dumps({"response": res}, ensure_ascii=False))
+        try:
+            async with self:
+                if not self.manager:
+                    raise RuntimeError("SearchManager is not initialized.")
+                # Find candidate apps matching query keyword (e.g. search broad keywords first)
+                keywords = prompt.split()
+                broad_query = keywords[0] if keywords else prompt
+                candidates = await self.manager.search_all(broad_query)
+
+                res = await self.ai.recommend_apps(prompt, candidates)
+                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        except Exception as e:
+            error_msg = f"AI Recommend Error: {str(e)}"
+            if self.json_mode:
+                sys.stdout.write(json.dumps({"response": f"Error: {error_msg}"}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            else:
+                logging.error(error_msg)
 
     async def run_ai_analyze_error(self, error_log: str):
         res = await self.ai.analyze_error(error_log)
-        print(json.dumps({"response": res}, ensure_ascii=False))
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def run_get_essentials(self):
         res = self.essentials.get_essentials()
-        print(json.dumps(res, ensure_ascii=False))
+        sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def run_import_packages(self, filepath: str):
         res = self.essentials.import_from_file(filepath)
-        print(json.dumps(res, ensure_ascii=False))
+        sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def run_export_packages(self, filepath: str):
         """Fetch all installed packages and export to a file"""
@@ -686,12 +692,12 @@ class OmnistoreBackend:
 
             # Use unified callback if in JSON mode to show progress/log
             if self.json_mode:
-                print(json.dumps({"status": "success", "count": len(installed)}))
+                sys.stdout.write(json.dumps({"status": "success", "count": len(installed)}) + "\n"); sys.stdout.flush()
             else:
                 console.print(Panel(f"Successfully exported {len(installed)} packages to {filepath}", border_style="green"))
         except Exception as e:
             if self.json_mode:
-                print(json.dumps({"status": "error", "message": str(e)}))
+                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n"); sys.stdout.flush()
             else:
                 console.print(f"[ERROR] Export failed: {e}")
 
@@ -745,7 +751,7 @@ class OmnistoreBackend:
 
             await cb("[INFO] 系统清理完成！")
             if json_mode:
-                print(json.dumps({"status": "success"}))
+                sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
             else:
                 console.print(Panel("System Cleanup Finished! ✨", border_style="green"))
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
@@ -753,14 +759,14 @@ class OmnistoreBackend:
         except Exception as e:
             await cb(f"[ERROR] 清理失败: {e}")
             if json_mode:
-                print(json.dumps({"status": "error", "message": str(e)}))
+                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n"); sys.stdout.flush()
             return False
 
     async def run_ai_summary(self, json_mode: bool = False):
         """Generate AI project summary."""
         res = await self.ai.summarize_project()
         if json_mode:
-            print(json.dumps({"response": res}, ensure_ascii=False))
+            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
         else:
             print(f"AI Summary:\n{res}")
     def _output_json(self, results):
@@ -791,7 +797,7 @@ class OmnistoreBackend:
                     output.append(serialize_item(item))
                 except Exception as e:
                     logging.error(f"Error serializing search result: {e}")
-            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n"); sys.stdout.flush()
             sys.stdout.flush()
             return
         # Stream in chunks
@@ -803,7 +809,7 @@ class OmnistoreBackend:
                     output.append(serialize_item(item))
                 except Exception as e:
                     logging.error(f"Error serializing search result: {e}")
-            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n"); sys.stdout.flush()
             sys.stdout.flush()
         # No explicit terminator needed; the consumer can detect EOF.
 
@@ -941,7 +947,7 @@ async def main():
     try:
         if args.get_config:
             config = backend.config.data
-            print(json.dumps(config, ensure_ascii=False))
+            sys.stdout.write(json.dumps(config, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.set_config is not None:
             try:
@@ -950,24 +956,28 @@ async def main():
                     input_data = args.set_config
 
                 if not input_data or input_data == "true":
-                    print(json.dumps({"status": "error", "message": "[ERROR] No configuration data provided"}))
+                    sys.stdout.write(json.dumps({"status": "error", "message": "[ERROR] No configuration data provided"}) + "\n"); sys.stdout.flush()
                     sys.exit(1)
 
                 success = backend.config.save(new_config=json.loads(input_data))
                 if success:
-                    print(json.dumps({"status": "success", "message": "[INFO] Configuration saved successfully"}))
+                    sys.stdout.write(json.dumps({"status": "success", "message": "[INFO] Configuration saved successfully"}) + "\n"); sys.stdout.flush()
                 else:
-                    print(json.dumps({"status": "error", "message": "[ERROR] Failed to save configuration"}))
+                    sys.stdout.write(json.dumps({"status": "error", "message": "[ERROR] Failed to save configuration"}) + "\n"); sys.stdout.flush()
                     exit_code = 1
             except (json.JSONDecodeError, Exception) as e:
-                print(json.dumps({"status": "error", "message": f"[ERROR] Invalid configuration format: {str(e)}"}))
+                sys.stdout.write(json.dumps({"status": "error", "message": f"[ERROR] Invalid configuration format: {str(e)}"}) + "\n"); sys.stdout.flush()
                 sys.exit(1)
 
         elif args.search is not None:
             # Defensive check for search query
             query = (args.search or "").strip()
             if not query:
-                print(json.dumps([]) if args.json else "[Error] Search query cannot be empty.")
+                if args.json:
+                    sys.stdout.write(json.dumps([]) + "\n"); sys.stdout.flush()
+                else:
+                    logging.error("Search query cannot be empty.")
+                    exit_code = 1
             else:
                 await backend.run_search(query, json_mode=args.json)
 
@@ -975,136 +985,186 @@ async def main():
             # Defensive check for package name
             pkg = (args.install or "").strip()
             if not pkg:
-                print(json.dumps({"status": "error", "message": "Package name cannot be empty"}) if args.json else "[Error] Package name required.")
+                if args.json:
+                    sys.stdout.write(json.dumps({"status": "error", "message": "Package name cannot be empty"}) + "\n"); sys.stdout.flush()
+                else:
+                    logging.error("Package name required.")
                 exit_code = 1
             else:
-                if not await backend.run_install(
-                    pkg,
-                    source=args.source,
-                    url=args.url,
-                    json_mode=args.json
-                ):
-                    exit_code = 1
+                async with backend:
+                    if not await backend.run_install(
+                        pkg,
+                        source=args.source,
+                        url=args.url,
+                        json_mode=args.json
+                    ):
+                        exit_code = 1
 
         elif args.remove is not None:
             pkg = (args.remove or "").strip()
             if not pkg:
-                print(json.dumps({"status": "error", "message": "Package name cannot be empty"}) if args.json else "[Error] Package name required.")
+                if args.json:
+                    sys.stdout.write(json.dumps({"status": "error", "message": "Package name cannot be empty"}) + "\n"); sys.stdout.flush()
+                else:
+                    logging.error("Package name required.")
                 exit_code = 1
             else:
-                if not await backend.run_uninstall(
-                    pkg,
-                    source=args.source,
-                    json_mode=args.json,
-                    flag=args.remove
-                ):
-                    exit_code = 1
+                async with backend:
+                    if not await backend.run_uninstall(
+                        pkg,
+                        source=args.source,
+                        json_mode=args.json,
+                        flag=args.remove
+                    ):
+                        exit_code = 1
 
         elif args.update is not None:
             pkg = (args.update or "").strip()
             if not pkg:
-                print(json.dumps({"status": "error", "message": "Package name cannot be empty"}) if args.json else "[Error] Package name required.")
+                if args.json:
+                    sys.stdout.write(json.dumps({"status": "error", "message": "Package name cannot be empty"}) + "\n"); sys.stdout.flush()
+                else:
+                    logging.error("Package name required.")
                 exit_code = 1
             else:
-                if not await backend.run_update(
-                    pkg,
-                    source=args.source,
-                    json_mode=args.json
-                ):
-                    exit_code = 1
+                async with backend:
+                    if not await backend.run_update(
+                        pkg,
+                        source=args.source,
+                        json_mode=args.json
+                    ):
+                        exit_code = 1
 
         elif args.check_updates:
-            await backend.run_check_updates(json_mode=args.json)
+            async with backend:
+                await backend.run_check_updates(json_mode=args.json)
 
         elif args.list_installed:
             await backend.run_list_installed(json_mode=args.json, force_refresh=args.force_refresh)
 
         elif args.ai_summary:
-            await backend.run_ai_summary(json_mode=args.json)
+            async with backend:
+                await backend.run_ai_summary(json_mode=args.json)
 
         elif args.details:
-            await backend.run_app_details(args.details, json_mode=args.json)
+            pkg = (args.details or "").strip()
+            if not pkg:
+                if args.json: sys.stdout.write(json.dumps({"error": "App ID required"}) + "\n"); sys.stdout.flush()
+                exit_code = 1
+            else:
+                await backend.run_app_details(pkg, json_mode=args.json)
 
         elif args.recommend:
             await backend.run_recommendations(json_mode=args.json)
 
         elif args.essentials:
-            await backend.run_get_essentials()
+            async with backend:
+                await backend.run_get_essentials()
 
         elif args.import_packages:
-            await backend.run_import_packages(args.import_packages)
+            pkg = (args.import_packages or "").strip()
+            if not pkg:
+                if args.json: sys.stdout.write(json.dumps({"status": "error", "message": "Filepath required"}) + "\n"); sys.stdout.flush()
+                exit_code = 1
+            else:
+                async with backend:
+                    await backend.run_import_packages(pkg)
 
         elif args.export_packages:
-            await backend.run_export_packages(args.export_packages)
+            pkg = (args.export_packages or "").strip()
+            if not pkg:
+                if args.json: sys.stdout.write(json.dumps({"status": "error", "message": "Filepath required"}) + "\n"); sys.stdout.flush()
+                exit_code = 1
+            else:
+                async with backend:
+                    await backend.run_export_packages(pkg)
 
         elif args.clean_system:
-            if not await backend.run_clean_system(json_mode=args.json):
-                exit_code = 1
+            async with backend:
+                if not await backend.run_clean_system(json_mode=args.json):
+                    exit_code = 1
 
         elif args.check_env:
             status = await backend.env.check_env()
-            print(json.dumps(status, ensure_ascii=False))
+            sys.stdout.write(json.dumps(status, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.bootstrap:
             async def cb(m):
                 await backend._flutter_callback(m, args.json)
             success = await backend.env.bootstrap(callback=cb)
             if args.json:
-                print(json.dumps({"status": "success" if success else "error"}))
+                sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
 
         elif args.launch:
-            source_name = args.source.lower()
-            if source_name in backend.manager.sources:
-                success = await backend.manager.sources[source_name].launch({"name": args.launch, "id": args.launch})
-                if args.json:
-                    print(json.dumps({"status": "success" if success else "error"}))
+            pkg = (args.launch or "").strip()
+            if not pkg:
+                if args.json: sys.stdout.write(json.dumps({"status": "error", "message": "Package name required"}) + "\n"); sys.stdout.flush()
+                exit_code = 1
             else:
-                if args.json:
-                    print(json.dumps({"status": "error", "message": f"Source {args.source} not found"}))
+                async with backend:
+                    source_name = args.source.lower()
+                    if backend.manager and source_name in backend.manager.sources:
+                        success = await backend.manager.sources[source_name].launch({"name": pkg, "id": pkg})
+                        if args.json:
+                            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
+                    else:
+                        if args.json:
+                            sys.stdout.write(json.dumps({"status": "error", "message": f"Source {args.source} not found"}) + "\n"); sys.stdout.flush()
+                        exit_code = 1
 
         elif args.locate:
-            source_name = args.source.lower()
-            if source_name in backend.manager.sources:
-                success = await backend.manager.sources[source_name].locate({"name": args.locate, "id": args.locate})
-                if args.json:
-                    print(json.dumps({"status": "success" if success else "error"}))
+            pkg = (args.locate or "").strip()
+            if not pkg:
+                if args.json: sys.stdout.write(json.dumps({"status": "error", "message": "Package name required"}) + "\n"); sys.stdout.flush()
+                exit_code = 1
             else:
-                if args.json:
-                    print(json.dumps({"status": "error", "message": f"Source {args.source} not found"}))
+                async with backend:
+                    source_name = args.source.lower()
+                    if backend.manager and source_name in backend.manager.sources:
+                        success = await backend.manager.sources[source_name].locate({"name": pkg, "id": pkg})
+                        if args.json:
+                            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
+                    else:
+                        if args.json:
+                            sys.stdout.write(json.dumps({"status": "error", "message": f"Source {args.source} not found"}) + "\n"); sys.stdout.flush()
+                        exit_code = 1
 
         # Custom repo dispatching
         elif args.list_custom_repos:
-            await backend.run_list_custom_repos()
+            async with backend:
+                await backend.run_list_custom_repos()
 
         elif args.add_custom_repo:
             try:
-                parts = args.add_custom_repo.split(',', 2)
-                if len(parts) < 3:
-                    # Fallback for AppImage type where name isn't strictly required (url is second param)
-                    if len(parts) == 2 and parts[0] == "appimage":
-                        if not await backend.run_add_custom_repo("appimage", "", parts[1], json_mode=args.json):
+                parts = [p.strip() for p in (args.add_custom_repo or "").split(',', 2)]
+                async with backend:
+                    if len(parts) < 3:
+                        # Fallback for AppImage type where name isn't strictly required (url is second param)
+                        if len(parts) == 2 and parts[0] == "appimage":
+                            if not await backend.run_add_custom_repo("appimage", "", parts[1], json_mode=args.json):
+                                exit_code = 1
+                        else:
+                            sys.stdout.write(json.dumps({"status": "error", "message": "[ERROR] Add custom repo arguments must be: type,name,url"}) + "\n"); sys.stdout.flush()
                             exit_code = 1
                     else:
-                        print(json.dumps({"status": "error", "message": "[ERROR] Add custom repo arguments must be: type,name,url"}))
-                        exit_code = 1
-                else:
-                    if not await backend.run_add_custom_repo(parts[0], parts[1], parts[2], json_mode=args.json):
-                        exit_code = 1
+                        if not await backend.run_add_custom_repo(parts[0], parts[1], parts[2], json_mode=args.json):
+                            exit_code = 1
             except Exception as e:
-                print(json.dumps({"status": "error", "message": f"[ERROR] Add custom repo parsing failed: {e}"}))
+                sys.stdout.write(json.dumps({"status": "error", "message": f"[ERROR] Add custom repo parsing failed: {e}"}) + "\n"); sys.stdout.flush()
                 exit_code = 1
 
         elif args.remove_custom_repo:
             try:
-                parts = args.remove_custom_repo.split(',', 1)
+                parts = [p.strip() for p in (args.remove_custom_repo or "").split(',', 1)]
                 if len(parts) < 2:
-                    print(json.dumps({"status": "error", "message": "[ERROR] Remove custom repo arguments must be: type,name"}))
+                    sys.stdout.write(json.dumps({"status": "error", "message": "[ERROR] Remove custom repo arguments must be: type,name"}) + "\n"); sys.stdout.flush()
                     exit_code = 1
                 else:
-                    if not await backend.run_remove_custom_repo(parts[0], parts[1], json_mode=args.json):
-                        exit_code = 1
+                    async with backend:
+                        if not await backend.run_remove_custom_repo(parts[0], parts[1], json_mode=args.json):
+                            exit_code = 1
             except Exception as e:
-                print(json.dumps({"status": "error", "message": f"[ERROR] Remove custom repo parsing failed: {e}"}))
+                sys.stdout.write(json.dumps({"status": "error", "message": f"[ERROR] Remove custom repo parsing failed: {e}"}) + "\n"); sys.stdout.flush()
                 exit_code = 1
 
         # AI dispatching
@@ -1125,77 +1185,88 @@ async def main():
 
         elif args.ai_compare:
             # Hybrid Search to find variants for comparison
-            timeout = aiohttp.ClientTimeout(total=20)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                await backend.initialize(session)
-                candidates = await backend.manager.search_all(args.ai_compare) # type: ignore
-                target_app = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
-                if target_app:
-                    res = await backend.ai.compare_variants(args.ai_compare, target_app.get('variants', []))
-                    print(json.dumps({"response": res}, ensure_ascii=False))
-                else:
-                    print(json.dumps({"response": "App not found for comparison."}, ensure_ascii=False))
+            async with backend:
+                if backend.manager:
+                    candidates = await backend.manager.search_all(args.ai_compare)
+                    target_app = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
+                    if target_app:
+                        res = await backend.ai.compare_variants(args.ai_compare, target_app.get('variants', []))
+                        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+                    else:
+                        sys.stdout.write(json.dumps({"response": "App not found for comparison."}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_health:
             # Collect system info for AI diagnostic
             status = await backend.env.check_env()
             # Add orphaned packages count if possible
-            proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-            stdout, _ = await proc.communicate()
-            status["orphaned_count"] = len(stdout.decode().splitlines())
+            proc = None
+            try:
+                proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                status["orphaned_count"] = len(stdout.decode().splitlines())
+            except Exception:
+                status["orphaned_count"] = 0
+                if proc and proc.returncode is None:
+                    try:
+                        proc.kill()
+                        await proc.wait()
+                    except: pass
             res = await backend.ai.generate_health_report(status)
-            print(json.dumps({"response": res}, ensure_ascii=False))
+            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_pick:
-            timeout = aiohttp.ClientTimeout(total=45)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                await backend.initialize(session)
-                recs = await backend.recommender.get_recommendations() # type: ignore
-                # Collect all candidates across categories
-                candidates = []
-                for key in ['trending', 'featured', 'for_you']:
-                    candidates.extend(recs.get(key, []))
+            async with backend:
+                if backend.recommender:
+                    recs = await backend.recommender.get_recommendations()
+                    # Collect all candidates across categories
+                    candidates = []
+                    for key in ['trending', 'featured', 'for_you']:
+                        candidates.extend(recs.get(key, []))
 
-                # Deduplicate by name
-                seen = set()
-                unique_candidates = []
-                for c in candidates:
-                    if c['name'] not in seen:
-                        seen.add(c['name'])
-                        unique_candidates.append(c)
+                    # Deduplicate by name
+                    seen = set()
+                    unique_candidates = []
+                    for c in candidates:
+                        if c['name'] not in seen:
+                            seen.add(c['name'])
+                            unique_candidates.append(c)
 
-                if unique_candidates:
-                    # Filter out apps with missing descriptions or names
-                    filtered_candidates = [c for c in unique_candidates if c.get('name') and c.get('description')]
-                    if not filtered_candidates:
-                        filtered_candidates = unique_candidates # Fallback to all if everyone is "broken"
+                    if unique_candidates:
+                        # Filter out apps with missing descriptions or names
+                        filtered_candidates = [c for c in unique_candidates if c.get('name') and c.get('description')]
+                        if not filtered_candidates:
+                            filtered_candidates = unique_candidates # Fallback to all if everyone is "broken"
 
-                    # Limit to a reasonable amount of candidates for the prompt
-                    res = await backend.ai.pick_of_the_day(filtered_candidates[:15])
+                        # Limit to a reasonable amount of candidates for the prompt
+                        res = await backend.ai.pick_of_the_day(filtered_candidates[:15])
 
-                    # Ensure the mandatory JSON block exists even if AI fails to provide it
-                    if "PICK_JSON:" not in res and filtered_candidates:
-                        res += f"\nPICK_JSON: [\"{filtered_candidates[0]['name']}\"]"
-                else:
-                    res = "Today's recommendation: OmniStore itself! Your gateway to a better Arch Linux experience."
+                        # Ensure the mandatory JSON block exists even if AI fails to provide it
+                        if "PICK_JSON:" not in res and filtered_candidates:
+                            res += f"\nPICK_JSON: [\"{filtered_candidates[0]['name']}\"]"
+                    else:
+                        res = "Today's recommendation: OmniStore itself! Your gateway to a better Arch Linux experience."
 
-                print(json.dumps({"response": res}, ensure_ascii=False))
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_correct:
-            res = await backend.ai.suggest_correction(args.ai_correct)
-            print(json.dumps({"response": res}, ensure_ascii=False))
+            query = (args.ai_correct or "").strip()
+            if not query:
+                if args.json: sys.stdout.write(json.dumps({"response": ""}) + "\n"); sys.stdout.flush()
+            else:
+                res = await backend.ai.suggest_correction(query)
+                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_changelog:
             parts = args.ai_changelog.split(',')
             if len(parts) >= 3:
                 res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
-                print(json.dumps({"response": res}, ensure_ascii=False))
+                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_cli:
             parts = args.ai_cli.split(',')
             if len(parts) >= 2:
                 res = await backend.ai.generate_cli_command(parts[0], parts[1])
-                print(json.dumps({"response": res}, ensure_ascii=False))
+                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
         elif args.ai_conflicts:
             pkg = (args.ai_conflicts or "").strip()
@@ -1206,15 +1277,15 @@ async def main():
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     installed = stdout.decode().splitlines()
                     res = await backend.ai.detect_conflicts(pkg, installed)
-                    print(json.dumps({"response": res}, ensure_ascii=False))
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
                 except Exception as e:
-                    print(json.dumps({"response": f"Error detecting conflicts: {e}"}))
+                    sys.stdout.write(json.dumps({"response": f"Error detecting conflicts: {e}"}) + "\n"); sys.stdout.flush()
 
     except Exception as e:
         # Global fail-safe: catch all dispatch errors to prevent crash
         error_msg = f"Fatal Dispatch Error: {str(e)}"
         if args.json:
-            print(json.dumps({"status": "error", "message": error_msg, "results": []}))
+            sys.stdout.write(json.dumps({"status": "error", "message": error_msg, "results": []}) + "\n"); sys.stdout.flush()
         else:
             print(f"[Error] {error_msg}")
         exit_code = 1

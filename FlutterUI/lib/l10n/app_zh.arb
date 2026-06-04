@@ -441,6 +441,10 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
+  "systemCleaningDesc": "删除孤立软件包并清理 pacman 缓存",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
   "systemCleaningSubtitle": "删除孤立软件包并清理 pacman 缓存",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
@@ -528,6 +532,18 @@
   "@add": {
     "description": "Add action label"
   },
+  "general": "通用",
+  "@general": {
+    "description": "general"
+  },
+  "advanced": "高级",
+  "@advanced": {
+    "description": "advanced"
+  },
+  "repositories": "软件仓库",
+  "@repositories": {
+    "description": "repositories"
+  },
   "aiSettings": "AI 助手设置",
   "@aiSettings": {
     "description": "Title for AI assistant settings"
@@ -535,6 +551,10 @@
   "aiEnabled": "启用 AI 助手",
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
+  },
+  "aiEnabledDesc": "启用 AI 驱动的搜索、应用解释和错误诊断。",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI 服务商",
   "@aiProvider": {

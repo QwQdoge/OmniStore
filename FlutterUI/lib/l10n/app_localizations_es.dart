@@ -334,6 +334,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get systemCleaning => 'Limpieza del sistema';
 
   @override
+  String get systemCleaningDesc =>
+      'Eliminar paquetes huérfanos y limpiar caché de pacman';
+
+  @override
   String get systemCleaningSubtitle =>
       'Eliminar paquetes huérfanos y limpiar caché de pacman';
 
@@ -396,10 +400,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String get add => 'Añadir';
 
   @override
+  String get general => 'General';
+
+  @override
+  String get advanced => 'Avanzado';
+
+  @override
+  String get repositories => 'Repositorios';
+
+  @override
   String get aiSettings => 'Ajustes del Asistente de IA';
 
   @override
   String get aiEnabled => 'Activar Asistente de IA';
+
+  @override
+  String get aiEnabledDesc =>
+      'Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.';
 
   @override
   String get aiProvider => 'Proveedor de IA';

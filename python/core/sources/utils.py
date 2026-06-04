@@ -50,9 +50,13 @@ class PrivilegeManager:
                 return False
 
             try:
+                # Security: password entry must have a strict timeout
                 password = await asyncio.wait_for(self._run_askpass(askpass_tool), timeout=60)
             except asyncio.TimeoutError:
                 if callback: await callback("[ERROR] Password request timed out.")
+                return False
+            except Exception as e:
+                if callback: await callback(f"[ERROR] Askpass tool failed: {e}")
                 return False
 
             if password is None:
@@ -65,23 +69,31 @@ class PrivilegeManager:
             if "DISPLAY" not in env:
                 env["DISPLAY"] = ":0"
 
-            sudo_proc = await asyncio.create_subprocess_exec(
-                "sudo", "-S", "-p", "", "-v",
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.PIPE,
-                env=env,
-            )
-
-            password_bytes = (password + "\n").encode("utf-8")
+            sudo_proc = None
             try:
+                sudo_proc = await asyncio.create_subprocess_exec(
+                    "sudo", "-S", "-p", "", "-v",
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=env,
+                )
+
+                password_bytes = (password + "\n").encode("utf-8")
+                # Absolute safety: Never wait indefinitely for sudo
                 _, stderr_bytes = await asyncio.wait_for(sudo_proc.communicate(input=password_bytes), timeout=15)
             except asyncio.TimeoutError:
-                if sudo_proc.returncode is None:
-                    try: sudo_proc.kill()
+                if sudo_proc and sudo_proc.returncode is None:
+                    try:
+                        sudo_proc.kill()
+                        await sudo_proc.wait()
                     except: pass
                 if callback: await callback("[ERROR] Sudo verification timed out.")
                 return False
+            finally:
+                # Clear password from memory immediately
+                password = None
+                password_bytes = None
 
             if sudo_proc.returncode == 0:
                 self._last_auth_time = time.time()

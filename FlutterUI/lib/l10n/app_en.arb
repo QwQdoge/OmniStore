@@ -441,6 +441,10 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
+  "systemCleaningDesc": "Delete orphan packages and clean pacman cache",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
   "systemCleaningSubtitle": "Delete orphan packages and clean pacman cache",
   "@systemCleaningSubtitle": {
     "description": "systemCleaningSubtitle"
@@ -525,6 +529,18 @@
   "@add": {
     "description": "add"
   },
+  "general": "General",
+  "@general": {
+    "description": "general"
+  },
+  "advanced": "Advanced",
+  "@advanced": {
+    "description": "advanced"
+  },
+  "repositories": "Repositories",
+  "@repositories": {
+    "description": "repositories"
+  },
   "aiSettings": "AI Assistant Settings",
   "@aiSettings": {
     "description": "aiSettings"
@@ -532,6 +548,10 @@
   "aiEnabled": "Enable AI Assistant",
   "@aiEnabled": {
     "description": "aiEnabled"
+  },
+  "aiEnabledDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI Provider",
   "@aiProvider": {
