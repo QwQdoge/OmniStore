@@ -821,6 +821,18 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get next => '下一步';
 
+<<<<<<< HEAD
+=======
+/*   @override
+  String get advanced => '高级';
+
+  @override
+  String get general => '常规';
+
+  @override
+  String get repositories => '软件仓库'; */
+
+>>>>>>> f9750fe (Add Windows support for Flutter application)
   @override
   String get aurFull => 'AUR (Arch 用户软件仓库)';
 
@@ -1645,6 +1657,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get next => '下一步';
 
+<<<<<<< HEAD
+=======
+/*   @override
+  String get advanced => '進階';
+
+  @override
+  String get general => '一般';
+
+  @override
+  String get repositories => '軟體倉庫';  */
+
+>>>>>>> f9750fe (Add Windows support for Flutter application)
   @override
   String get aurFull => 'AUR (Arch 使用者軟體倉庫)';
 

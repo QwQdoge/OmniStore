@@ -826,6 +826,18 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get next => '次へ';
 
+<<<<<<< HEAD
+=======
+ /*  @override
+  String get advanced => '詳細設定';
+
+  @override
+  String get general => '全般';
+
+  @override
+  String get repositories => 'リポジトリ'; */
+
+>>>>>>> f9750fe (Add Windows support for Flutter application)
   @override
   String get aurFull => 'AUR (Arch User Repository)';
 
