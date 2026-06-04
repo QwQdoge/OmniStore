@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:provider/provider.dart';
 import '../controllers/settings_controller.dart';
@@ -13,11 +15,17 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _showAdvanced = false;
+  Timer? _debounce;
   
   late TextEditingController _endpointController;
   late TextEditingController _modelController;
   late TextEditingController _apiKeyController;
   late TextEditingController _tempController;
+
+  final FocusNode _endpointFocus = FocusNode();
+  final FocusNode _modelFocus = FocusNode();
+  final FocusNode _apiKeyFocus = FocusNode();
+  final FocusNode _tempFocus = FocusNode();
 
   @override
   void initState() {
@@ -30,17 +38,44 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   @override
+  void didUpdateWidget(SettingsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncControllers();
+  }
+
+  void _syncControllers() {
+    final settings = context.read<SettingsController>();
+    _updateIfChanged(_endpointController, settings.config['ai']?['endpoint'] ?? '', _endpointFocus);
+    _updateIfChanged(_modelController, settings.config['ai']?['model'] ?? '', _modelFocus);
+    _updateIfChanged(_apiKeyController, settings.config['ai']?['api_key'] ?? '', _apiKeyFocus);
+    _updateIfChanged(_tempController, (settings.config['ai']?['temperature'] ?? 0.7).toString(), _tempFocus);
+  }
+
+  void _updateIfChanged(TextEditingController controller, String value, FocusNode focus) {
+    if (controller.text != value && !focus.hasFocus) {
+      controller.text = value;
+    }
+  }
+
+  @override
   void dispose() {
+    _debounce?.cancel();
     _endpointController.dispose();
     _modelController.dispose();
     _apiKeyController.dispose();
     _tempController.dispose();
+    _endpointFocus.dispose();
+    _modelFocus.dispose();
+    _apiKeyFocus.dispose();
+    _tempFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
+    // We still call sync here in case of external config changes (like from another page)
+    _syncControllers();
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -76,7 +111,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: settings.isAIEnabled,
             onChanged: (val) {
               final config = Map<String, dynamic>.from(settings.config);
-              config['ai'] ??= {};
+              config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
               config['ai']['enabled'] = val;
               settings.updateConfig(config);
             },
@@ -99,37 +134,43 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildTextField(
               l10n.aiEndpoint,
               _endpointController,
-              (val) => _updateAIConfig('endpoint', val, settings),
+              _endpointFocus,
+              (val) => _debounceUpdateAIConfig('endpoint', val, settings),
             ),
             _buildTextField(
               l10n.aiModel,
               _modelController,
-              (val) => _updateAIConfig('model', val, settings),
+              _modelFocus,
+              (val) => _debounceUpdateAIConfig('model', val, settings),
             ),
             _buildTextField(
               l10n.aiApiKey,
               _apiKeyController,
-              (val) => _updateAIConfig('api_key', val, settings),
+              _apiKeyFocus,
+              (val) => _debounceUpdateAIConfig('api_key', val, settings),
               isPassword: true,
             ),
             _buildTextField(
               l10n.aiTemperature,
               _tempController,
+              _tempFocus,
               (val) {
                 final d = double.tryParse(val);
-                if (d != null) _updateAIConfig('temperature', d, settings);
+                if (d != null) {
+                  _debounceUpdateAIConfig('temperature', d, settings);
+                }
               },
             ),
             const SizedBox(height: 24),
             _buildSection(l10n.repositories),
             CheckboxListTile(
               title: Text(l10n.aurFull),
-              value: settings.config['sources']?['aur'] ?? true,
+              value: settings.config['search']?['sources']?['aur'] ?? true,
               onChanged: (val) => _updateSourceConfig('aur', val, settings),
             ),
             CheckboxListTile(
               title: Text(l10n.flatpakFull),
-              value: settings.config['sources']?['flatpak'] ?? true,
+              value: settings.config['search']?['sources']?['flatpak'] ?? true,
               onChanged: (val) => _updateSourceConfig('flatpak', val, settings),
             ),
           ],
@@ -152,11 +193,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, Function(String) onChanged, {bool isPassword = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, FocusNode focusNode, Function(String) onChanged, {bool isPassword = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
+        focusNode: focusNode,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
@@ -170,15 +212,23 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _updateAIConfig(String key, dynamic value, SettingsController settings) {
     final config = Map<String, dynamic>.from(settings.config);
-    config['ai'] ??= {};
+    config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
     config['ai'][key] = value;
     settings.updateConfig(config);
   }
 
+  void _debounceUpdateAIConfig(String key, dynamic value, SettingsController settings) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _updateAIConfig(key, value, settings);
+    });
+  }
+
   void _updateSourceConfig(String key, dynamic value, SettingsController settings) {
     final config = Map<String, dynamic>.from(settings.config);
-    config['sources'] ??= {};
-    config['sources'][key] = value;
+    config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
+    config['search']['sources'] = Map<String, dynamic>.from(config['search']['sources'] ?? {});
+    config['search']['sources'][key] = value;
     settings.updateConfig(config);
   }
 }
