@@ -334,6 +334,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get systemCleaning => 'System Cleaning';
 
   @override
+  String get systemCleaningDesc =>
+      'Delete orphan packages and clean pacman cache';
+
+  @override
   String get systemCleaningSubtitle =>
       'Delete orphan packages and clean pacman cache';
 
@@ -396,10 +400,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get add => 'Add';
 
   @override
+  String get general => 'General';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get repositories => 'Repositories';
+
+  @override
   String get aiSettings => 'AI Assistant Settings';
 
   @override
   String get aiEnabled => 'Enable AI Assistant';
+
+  @override
+  String get aiEnabledDesc =>
+      'Enable AI-powered search, app explanation, and error diagnosis.';
 
   @override
   String get aiProvider => 'AI Provider';
@@ -823,4 +840,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'Next';
+
+  @override
+  String get aurFull => 'AUR (Arch User Repository)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }

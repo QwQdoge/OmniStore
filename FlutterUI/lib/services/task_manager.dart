@@ -14,6 +14,8 @@ class TaskManager {
   final _taskStateController = StreamController<TaskState?>.broadcast();
   TaskState? _currentTask;
   Process? _activeProcess;
+  StreamSubscription<String>? _stdoutSubscription;
+  StreamSubscription<String>? _stderrSubscription;
 
   Stream<TaskState?> get taskStateStream => _taskStateController.stream;
   TaskState? get currentTask => _currentTask;
@@ -66,36 +68,50 @@ class TaskManager {
         ""; // Clear status, let stage/message handle it
 
     try {
-      List<String> args = [
+      final List<String> args = [
         BackendService.scriptPath,
         actionFlag,
         packageName,
         "--source",
         source,
         "--json",
+        if (url != null && url.isNotEmpty) ...["--url", url],
       ];
-      if (url != null && url.isNotEmpty) {
-        args.addAll(["--url", url]);
-      }
 
       _activeProcess = await Process.start(
         BackendService.venvPython,
         args,
         workingDirectory: BackendService.workingDir,
-        runInShell: true,
+        // Using runInShell: false on Linux to get direct access to the process PID for group killing.
+        runInShell: Platform.isWindows,
       );
 
-      _activeProcess!.stdout
+      _stdoutSubscription = _activeProcess!.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter())
-          .listen(_handleOutput);
-
-      _activeProcess!.stderr.transform(utf8.decoder).listen((data) {
-        debugPrint("TaskManager Stderr: $data");
-        BackendService.addLog("stderr: $data");
+          .listen(_handleOutput, onError: (e) {
+        debugPrint("TaskManager Stdout Error: $e");
       });
 
-      final exitCode = await _activeProcess!.exitCode;
+      _stderrSubscription = _activeProcess!.stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((data) {
+        debugPrint("TaskManager Stderr: $data");
+        BackendService.addLog("stderr: $data");
+      }, onError: (e) {
+        debugPrint("TaskManager Stderr Error: $e");
+      });
+
+      // We wait for exit code with a very long timeout (installation can take time)
+      final exitCode = await _activeProcess!.exitCode.timeout(
+        const Duration(hours: 2),
+        onTimeout: () {
+          debugPrint("TaskManager: Process timed out after 2 hours.");
+          _activeProcess?.kill(ProcessSignal.sigkill);
+          return -1;
+        },
+      );
       final success = exitCode == 0;
 
       if (success) {
@@ -131,6 +147,7 @@ class TaskManager {
 
       return success;
     } catch (e) {
+      debugPrint("TaskManager execution exception: $e");
       _updateState(
         _currentTask?.copyWith(
           status: TaskStatus.failed,
@@ -140,9 +157,21 @@ class TaskManager {
         ),
       );
     } finally {
+      _stdoutSubscription?.cancel();
+      _stderrSubscription?.cancel();
+      _stdoutSubscription = null;
+      _stderrSubscription = null;
       _activeProcess = null;
       BackendService.isDownloading.value = false;
-      // Keep the final state for a moment or let UI handle it
+
+      // Ensure state is finalized
+      if (_currentTask != null &&
+          _currentTask!.status != TaskStatus.success &&
+          _currentTask!.status != TaskStatus.failed) {
+        _updateState(_currentTask!.copyWith(status: TaskStatus.failed));
+      }
+
+      // Automatically clear the task after a delay
       Future.delayed(const Duration(seconds: 5), () {
         if (_currentTask?.status == TaskStatus.success ||
             _currentTask?.status == TaskStatus.failed) {
@@ -240,20 +269,24 @@ class TaskManager {
     }
   }
 
-  void cancelTask() {
+  Future<void> cancelTask() async {
     if (_activeProcess != null) {
-      // Attempt to kill the entire process group to ensure all child processes are terminated.
       final pid = _activeProcess!.pid;
+      debugPrint("TaskManager: User requested cancellation for PID $pid");
+
       try {
-        // Negative PID kills the process group on Linux.
-        Process.runSync('kill', ['-TERM', '-$pid']);
-        // Fallback: kill any direct child processes.
-        Process.runSync('pkill', ['-P', pid.toString()]);
-        _activeProcess!.kill(ProcessSignal.sigterm);
+        if (Platform.isLinux || Platform.isMacOS) {
+          // Use PGID (negative PID) to kill the entire process group
+          // This is critical to kill pacman/yay started by the Python backend.
+          await Process.run('kill', ['-TERM', '-$pid']);
+          await Process.run('pkill', ['-P', pid.toString()]);
+        }
+        _activeProcess?.kill(ProcessSignal.sigterm);
       } catch (e) {
-        // If group kill fails, fall back to killing the main process only.
-        _activeProcess!.kill(ProcessSignal.sigterm);
+        debugPrint("TaskManager cancellation error: $e");
+        _activeProcess?.kill(ProcessSignal.sigterm);
       }
+
       _updateState(
         _currentTask?.copyWith(
           status: TaskStatus.failed,
@@ -262,15 +295,20 @@ class TaskManager {
         ),
       );
 
-      // Force kill after a short delay if it hasn't exited
-      Future.delayed(const Duration(seconds: 2), () {
+      // Robust cleanup: Force kill if process remains after timeout
+      Timer(const Duration(seconds: 3), () {
         if (_activeProcess != null) {
-          _activeProcess!.kill(ProcessSignal.sigkill);
+          debugPrint("TaskManager: Force killing stalled process $pid");
+          try {
+            if (Platform.isLinux || Platform.isMacOS) {
+              Process.run('kill', ['-9', '-$pid']);
+            }
+            _activeProcess?.kill(ProcessSignal.sigkill);
+          } catch (_) {}
           _activeProcess = null;
         }
       });
     } else if (_currentTask != null) {
-      // Clear if not running
       _updateState(null);
     }
   }

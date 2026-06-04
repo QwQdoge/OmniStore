@@ -69,7 +69,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get version => 'バージョン';
 
   @override
-  String get ready => '準備完了';
+  String get ready => 'インストール済み';
 
   @override
   String resultsFound(int count) {
@@ -77,7 +77,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get noResults => '結果が見つかりませんでした';
+  String get noResults => '検索結果が見つかりませんでした';
 
   @override
   String get searching => '検索中...';
@@ -334,6 +334,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemCleaning => 'システムクリーニング';
 
   @override
+  String get systemCleaningDesc => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
+
+  @override
   String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
 
   @override
@@ -395,10 +398,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get add => '追加';
 
   @override
+  String get general => '全般';
+
+  @override
+  String get advanced => '詳細設定';
+
+  @override
+  String get repositories => 'リポジトリ';
+
+  @override
   String get aiSettings => 'AI アシスタント設定';
 
   @override
   String get aiEnabled => 'AI アシスタントを有効にする';
+
+  @override
+  String get aiEnabledDesc => 'AI を活用した検索、アプリの説明、エラー診断を有効にします。';
 
   @override
   String get aiProvider => 'AI プロバイダー';
@@ -810,4 +825,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get next => '次へ';
+
+  @override
+  String get aurFull => 'AUR (Arch User Repository)';
+
+  @override
+  String get flatpakFull => 'Flatpak (Flathub)';
 }

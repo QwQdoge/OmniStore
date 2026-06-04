@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "準備完了",
+  "ready": "インストール済み",
   "@ready": {
     "description": "Description for ready"
   },
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "結果が見つかりませんでした",
+  "noResults": "検索結果が見つかりませんでした",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -441,6 +441,10 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
+  "systemCleaningDesc": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
   "systemCleaningSubtitle": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
   "@systemCleaningSubtitle": {
     "description": "systemCleaningSubtitle"
@@ -525,6 +529,18 @@
   "@add": {
     "description": "add"
   },
+  "general": "全般",
+  "@general": {
+    "description": "general"
+  },
+  "advanced": "詳細設定",
+  "@advanced": {
+    "description": "advanced"
+  },
+  "repositories": "リポジトリ",
+  "@repositories": {
+    "description": "repositories"
+  },
   "aiSettings": "AI アシスタント設定",
   "@aiSettings": {
     "description": "aiSettings"
@@ -532,6 +548,10 @@
   "aiEnabled": "AI アシスタントを有効にする",
   "@aiEnabled": {
     "description": "aiEnabled"
+  },
+  "aiEnabledDesc": "AI を活用した検索、アプリの説明、エラー診断を有効にします。",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI プロバイダー",
   "@aiProvider": {
@@ -1087,5 +1107,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "詳細設定",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "全般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "リポジトリ",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch User Repository)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }
