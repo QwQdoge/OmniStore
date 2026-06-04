@@ -16,18 +16,18 @@ abstract final class DesktopWindowService {
     };
   }
 
-  static Future<void> initialize() async {
+  static Future<void> initialize({bool useSystemTitleBar = false}) async {
     if (!isSupported) return;
 
     await wm.windowManager.ensureInitialized();
 
-    const options = wm.WindowOptions(
+    final options = wm.WindowOptions(
       size: defaultWindowSize,
       minimumSize: minWindowSize,
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: wm.TitleBarStyle.hidden,
+      titleBarStyle: useSystemTitleBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
       title: 'OmniStore',
     );
 

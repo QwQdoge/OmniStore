@@ -15,7 +15,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _showAdvanced = false;
-  Timer? _debounce;
+  final Map<String, Timer?> _debounces = {};
   
   late TextEditingController _endpointController;
   late TextEditingController _modelController;
@@ -53,13 +53,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _updateIfChanged(TextEditingController controller, String value, FocusNode focus) {
     if (controller.text != value && !focus.hasFocus) {
+      final selection = controller.selection;
       controller.text = value;
+      // Maintain cursor position if it was within bounds (just in case)
+      if (selection.baseOffset <= value.length && selection.extentOffset <= value.length) {
+        controller.selection = selection;
+      }
     }
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    for (final timer in _debounces.values) {
+      timer?.cancel();
+    }
     _endpointController.dispose();
     _modelController.dispose();
     _apiKeyController.dispose();
@@ -218,8 +225,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _debounceUpdateAIConfig(String key, dynamic value, SettingsController settings) {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    if (_debounces[key]?.isActive ?? false) _debounces[key]?.cancel();
+    _debounces[key] = Timer(const Duration(milliseconds: 500), () {
       _updateAIConfig(key, value, settings);
     });
   }
