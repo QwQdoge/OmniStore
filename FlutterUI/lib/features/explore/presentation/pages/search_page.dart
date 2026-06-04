@@ -113,32 +113,13 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Skeleton(width: 40, height: 40, borderRadius: 8),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Skeleton(width: 120, height: 16),
-                      const SizedBox(height: 8),
-                      Skeleton(
-                        width: double.infinity,
-                        height: 12,
-                        borderRadius: 4,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Skeleton(width: 60, height: 24, borderRadius: 6),
-              ],
-            ),
+        return const Card(
+          margin: EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(width: double.infinity, height: 12, borderRadius: 4),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
         );
       },
