@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -114,6 +115,90 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
+  /// Safe wrapper for Process.run with mandatory timeout and exception handling.
+  Future<ProcessResult?> _safeRun(List<String> args,
+      {Duration timeout = const Duration(seconds: 30)}) async {
+    try {
+      final result = await Process.run(
+        _venvPython,
+        _buildArgs(args),
+        workingDirectory: _workingDir,
+      ).timeout(timeout);
+
+      if (result.exitCode != 0) {
+        debugPrint(
+          "BackendService._safeRun failed (code ${result.exitCode}) [args: $args]: ${result.stderr}",
+        );
+      }
+      return result;
+    } catch (e) {
+      debugPrint("BackendService._safeRun Exception [args: $args]: $e");
+      return null;
+    }
+  }
+
+  /// Safe wrapper for Process.start with exception handling.
+  Future<Process?> _safeStart(List<String> args) async {
+    try {
+      return await Process.start(
+        _venvPython,
+        _buildArgs(args),
+        workingDirectory: _workingDir,
+      );
+    } catch (e) {
+      debugPrint("BackendService._safeStart Exception [args: $args]: $e");
+      return null;
+    }
+  }
+
+  /// Safe wrapper for Process.start that returns a stream and handles process lifecycle.
+  Stream<String> _safeStream(List<String> args) async* {
+    Process? process;
+    final controller = StreamController<String>();
+
+    try {
+      process = await Process.start(
+        _venvPython,
+        _buildArgs(args),
+        workingDirectory: _workingDir,
+      );
+
+      process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen(
+        (data) {
+          if (!controller.isClosed) controller.add(data);
+        },
+        onError: (e) {
+          debugPrint("Process [${args.firstOrNull}] Stdout Error: $e");
+          if (!controller.isClosed) {
+            controller.add("[CALLBACK] {\"log\": \"[ERROR] 数据流异常: $e\"}");
+          }
+        },
+        onDone: () {
+          if (!controller.isClosed) controller.close();
+        },
+      );
+
+      process.stderr.transform(utf8.decoder).listen((data) {
+        debugPrint("Process [${args.firstOrNull}] Stderr: $data");
+      });
+
+      controller.onCancel = () {
+        debugPrint("Stream cancelled, killing process [${args.firstOrNull}]");
+        process?.kill();
+        process = null;
+      };
+
+      yield* controller.stream;
+    } catch (e) {
+      debugPrint("BackendService._safeStream Exception [args: $args]: $e");
+      yield "[CALLBACK] {\"log\": \"[ERROR] 启动进程失败: $e\"}";
+      if (!controller.isClosed) controller.close();
+    }
+  }
+
   static void addLog(String log) {
     final currentLogs = globalLogs.value;
     if (currentLogs.length > 500) {
@@ -147,8 +232,8 @@ class BackendService {
     String query, {
     bool cancelOngoing = true,
   }) async {
-    // Defensive check
-    if (query.trim().isEmpty) return [];
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) return [];
 
     // Cancel any ongoing search to prevent race conditions
     if (cancelOngoing && activeSearchProcess != null) {
@@ -158,63 +243,40 @@ class BackendService {
       activeSearchProcess = null;
     }
 
-    Process? process;
-    try {
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(["-S", query, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10));
+    Process? process = await _safeStart(["-S", trimmedQuery, "--json"]);
+    if (process == null) return [];
 
+    try {
       if (cancelOngoing) activeSearchProcess = process;
 
       final results = <dynamic>[];
-      // Use a subscription to allow for explicit cancellation/timeout
       final stream = process.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .timeout(
             const Duration(seconds: 30),
             onTimeout: (sink) {
-              debugPrint("Search stream timed out");
+              debugPrint("searchPackages: stream timeout");
+              process.kill(ProcessSignal.sigkill);
               sink.close();
             },
           );
 
       await for (final line in stream) {
-        final trimmed = line.trim();
-        if (trimmed.isNotEmpty) {
-          final parsed = _tryParseJson(trimmed);
-          if (parsed is List) {
-            results.addAll(parsed);
-          }
+        final parsed = _tryParseJson(line);
+        if (parsed is List) {
+          results.addAll(parsed);
+        } else if (parsed is Map) {
+          results.add(parsed);
         }
-      }
-
-      final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          try {
-            process?.kill(ProcessSignal.sigkill);
-          } catch (_) {}
-          return -1;
-        },
-      );
-
-      if (cancelOngoing) activeSearchProcess = null;
-
-      if (exitCode != 0 && exitCode != -1) {
-        debugPrint('searchPackages failed with code $exitCode');
       }
 
       return results;
     } catch (e) {
-      if (cancelOngoing) activeSearchProcess = null;
-      try {
-        process?.kill(ProcessSignal.sigkill);
-      } catch (_) {}
-      debugPrint('searchPackages Exception: $e');
+      debugPrint("searchPackages Exception: $e");
       return [];
+    } finally {
+      if (activeSearchProcess == process) activeSearchProcess = null;
     }
   }
 
@@ -260,73 +322,43 @@ class BackendService {
 
   /// 获取已安装列表
   Future<List<dynamic>> listInstalled() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["-L", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 20));
+    final result = await _safeRun(["-L", "--json"],
+        timeout: const Duration(seconds: 30));
+    if (result == null || result.exitCode != 0) return [];
 
-      if (result.exitCode != 0) return [];
-      final parsed = _tryParseJson(result.stdout.toString().trim());
-      return parsed is List ? parsed : [];
-    } catch (e) {
-      debugPrint("ListInstalled Exception: $e");
-      return [];
-    }
+    final parsed = _tryParseJson(result.stdout.toString());
+    return parsed is List ? parsed : [];
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--get-config", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 15));
-      if (result.exitCode != 0) {
-        debugPrint(
-          "loadConfig failed with exit code ${result.exitCode}: ${result.stderr}",
-        );
-        return {};
-      }
-      final output = result.stdout.toString().trim();
-      if (output.isEmpty) return {};
-      final data = jsonDecode(output);
-      if (data is! Map<String, dynamic>) return {};
+    final result = await _safeRun(
+      ["--get-config", "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    if (result == null || result.exitCode != 0) return {};
 
-      final config = data;
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is! Map<String, dynamic>) return {};
 
-      // Update global AI status
-      final ai = config['ai'] as Map<String, dynamic>?;
-      isAIEnabled.value = ai?['enabled'] ?? false;
+    // Update global AI status
+    final ai = data['ai'] as Map<String, dynamic>?;
+    isAIEnabled.value = ai?['enabled'] ?? false;
 
-      return config;
-    } catch (e) {
-      debugPrint("loadConfig Exception: $e");
-      return {};
-    }
+    return data;
   }
 
   /// AI 解释应用
   Future<String> aiExplain(String appName, String description) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs([
-          "--ai-explain",
-          appName,
-          "--ai-desc",
-          description,
-          "--json",
-        ]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 60));
-      final data = _tryParseJson(result.stdout.toString().trim());
-      if (data is Map) return data['response'] ?? "AI Error: No response";
-      return "AI Error: Invalid response format";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (appName.trim().isEmpty) return "Error: appName is empty";
+    final result = await _safeRun(
+      ["--ai-explain", appName, "--ai-desc", description, "--json"],
+      timeout: const Duration(seconds: 60),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 更新内容总结
@@ -335,152 +367,138 @@ class BackendService {
     String current,
     String next,
   ) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-changelog", "$name,$current,$next", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (name.trim().isEmpty) return "Error: name is empty";
+    final result = await _safeRun(
+      ["--ai-changelog", "$name,$current,$next", "--json"],
+      timeout: const Duration(seconds: 45),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI CLI 命令生成
   Future<String> aiGenerateCLI(String name, String source) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-cli", "$name,$source", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 20));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "";
-    } catch (e) {
-      return "";
-    }
+    if (name.trim().isEmpty) return "";
+    final result = await _safeRun(
+      ["--ai-cli", "$name,$source", "--json"],
+      timeout: const Duration(seconds: 20),
+    );
+    if (result == null) return "";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "";
+    return "";
   }
 
   /// AI 冲突检测
   Future<String> aiDetectConflicts(String name) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-conflicts", name, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (name.trim().isEmpty) return "Error: name is empty";
+    final result = await _safeRun(
+      ["--ai-conflicts", name, "--json"],
+      timeout: const Duration(seconds: 45),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 每日推荐
   Future<String> aiPickOfTheDay() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-pick", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 30));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    final result = await _safeRun(
+      ["--ai-pick", "--json"],
+      timeout: const Duration(seconds: 30),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 搜索纠错
   Future<String> aiSuggestCorrection(String query) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-correct", query, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 15));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "";
-    } catch (e) {
-      return "";
-    }
+    if (query.trim().isEmpty) return "";
+    final result = await _safeRun(
+      ["--ai-correct", query, "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    if (result == null) return "";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "";
+    return "";
   }
 
   /// AI 版本比较
   Future<String> aiCompareVariants(String appName) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-compare", appName, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (appName.trim().isEmpty) return "Error: appName is empty";
+    final result = await _safeRun(
+      ["--ai-compare", appName, "--json"],
+      timeout: const Duration(seconds: 45),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 系统健康报告
   Future<String> aiSystemHealth() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-health", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    final result = await _safeRun(
+      ["--ai-health", "--json"],
+      timeout: const Duration(seconds: 45),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 分析错误
   Future<String> aiAnalyzeError(String errorLog) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-analyze-error", errorLog, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (errorLog.trim().isEmpty) return "Error: errorLog is empty";
+    final result = await _safeRun(
+      ["--ai-analyze-error", errorLog, "--json"],
+      timeout: const Duration(seconds: 45),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   /// AI 推荐应用
   Future<String> aiRecommend(String prompt) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--ai-recommend", prompt, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 60));
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
-    } catch (e) {
-      return "AI Exception: $e";
-    }
+    if (prompt.trim().isEmpty) return "Error: prompt is empty";
+    final result = await _safeRun(
+      ["--ai-recommend", prompt, "--json"],
+      timeout: const Duration(seconds: 60),
+    );
+    if (result == null) return "AI Error: execution failed";
+
+    final data = _tryParseJson(result.stdout.toString());
+    if (data is Map) return data['response'] ?? "AI Error: No response";
+    return "AI Error: Invalid response format";
   }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["--set-config", "stdin", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 5));
+      final process = await _safeStart(["--set-config", "stdin", "--json"]);
+      if (process == null) return false;
 
       process.stdin.write(jsonEncode(config));
       await process.stdin.close();
 
       final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 5),
+        const Duration(seconds: 10),
       );
       return exitCode == 0;
     } catch (e) {
@@ -490,50 +508,29 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--check-env", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10));
-      return jsonDecode(result.stdout);
-    } catch (e) {
-      debugPrint("checkEnv Exception: $e");
-      return {};
-    }
+    final result = await _safeRun(
+      ["--check-env", "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    if (result == null) return {};
+
+    final data = _tryParseJson(result.stdout.toString());
+    return data is Map<String, dynamic> ? data : {};
   }
 
-  Stream<String> bootstrap() async* {
-    try {
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["--bootstrap", "--json"]),
-        workingDirectory: _workingDir,
-      );
-
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-    } catch (e) {
-      yield "[CALLBACK] {\"log\": \"[ERROR] 启动引导失败: $e\"}";
-    }
-  }
+  Stream<String> bootstrap() => _safeStream(["--bootstrap", "--json"]);
 
   /// 获取动态推荐 (已分类)
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
+    final result = await _safeRun(["--recommend", "--json"],
+        timeout: const Duration(seconds: 20));
+    if (result == null || result.exitCode != 0) return {};
+
+    final output = result.stdout.toString().trim();
+    if (output.isEmpty) return {};
+
     try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--recommend", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 20));
-
-      if (result.exitCode != 0) return {};
-      final output = result.stdout.toString().trim();
-      if (output.isEmpty) return {};
-
       final dynamic data = jsonDecode(output);
-
       if (data is Map<String, dynamic>) {
         final Map<String, List<AppPackage>> categories = {};
         data.forEach((key, value) {
@@ -547,18 +544,16 @@ class BackendService {
         });
         return categories;
       } else if (data is List) {
-        // 向后兼容旧的列表格式
         return {
           "featured": data
               .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
               .toList(),
         };
       }
-      return {};
     } catch (e) {
-      debugPrint("Recommendations Exception: $e");
-      return {};
+      debugPrint("getRecommendations JSON parse error: $e");
     }
+    return {};
   }
 
   /// 启动应用
@@ -577,33 +572,25 @@ class BackendService {
 
   /// 定位应用
   Future<bool> locateApp(String name, String source) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--locate", name, "--source", source, "--json"]),
-        workingDirectory: _workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    if (name.trim().isEmpty) return false;
+    final result = await _safeRun(
+      ["--launch", name, "--source", source, "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    return result?.exitCode == 0;
   }
 
   /// 获取应用详情 (从 Flathub 等外部源)
   Future<Map<String, dynamic>> getAppDetails(String appId) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--details", appId, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 20));
-      final data = _tryParseJson(result.stdout.toString().trim());
-      if (data is Map<String, dynamic>) return data;
-      return {};
-    } catch (e) {
-      debugPrint("getAppDetails Exception: $e");
-      return {};
-    }
+    final trimmedId = appId.trim();
+    if (trimmedId.isEmpty) return {};
+
+    final result = await _safeRun(["--details", trimmedId, "--json"],
+        timeout: const Duration(seconds: 20));
+    if (result == null || result.exitCode != 0) return {};
+
+    final data = _tryParseJson(result.stdout.toString());
+    return data is Map<String, dynamic> ? data : {};
   }
 
   Future<List<String>> getPacmanMirrors() async {
@@ -644,135 +631,71 @@ class BackendService {
     String source, {
     String? url,
   }) async* {
-    if (packageName.isEmpty) {
+    final trimmedPkg = packageName.trim();
+    if (trimmedPkg.isEmpty) {
       yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";
       return;
     }
 
-    try {
-      List<String> baseArgs = [flag, packageName, "--source", source, "--json"];
-      if (url != null && url.isNotEmpty) {
-        baseArgs.addAll(["--url", url]);
-      }
-
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(baseArgs),
-        workingDirectory: _workingDir,
-      );
-
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-
-      process.stderr.transform(utf8.decoder).listen((data) {
-        debugPrint("Python Stderr: $data");
-      });
-    } catch (e) {
-      yield "[CALLBACK] {\"log\": \"启动失败: $e\"}";
+    List<String> args = [flag, trimmedPkg, "--source", source, "--json"];
+    if (url != null && url.trim().isNotEmpty) {
+      args.addAll(["--url", url.trim()]);
     }
+
+    yield* _safeStream(args);
   }
 
   /// 检查更新
   Future<List<dynamic>> checkUpdates() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["-C", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 45));
+    final result = await _safeRun(["-C", "--json"],
+        timeout: const Duration(seconds: 45));
+    if (result == null || result.exitCode != 0) return [];
 
-      if (result.exitCode != 0) return [];
-      final parsed = _tryParseJson(result.stdout.toString().trim());
-      return parsed is List ? parsed : [];
-    } catch (e) {
-      debugPrint("CheckUpdates Exception: $e");
-      return [];
-    }
+    final parsed = _tryParseJson(result.stdout.toString());
+    return parsed is List ? parsed : [];
   }
 
   /// 更新所有
-  Stream<String> updateAll(String source) async* {
-    try {
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["-U", "all", "--source", source, "--json"]),
-        workingDirectory: _workingDir,
-      );
-
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-    } catch (e) {
-      yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
-    }
-  }
+  Stream<String> updateAll(String source) =>
+      _safeStream(["-U", "all", "--source", source, "--json"]);
 
   /// 获取必备包
   Future<List<dynamic>> getEssentials() async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--essentials", "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("getEssentials Exception: $e");
-      return [];
-    }
+    final result = await _safeRun(
+      ["--essentials", "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    if (result == null || result.exitCode != 0) return [];
+    final data = _tryParseJson(result.stdout.toString());
+    return data is List ? data : [];
   }
 
   /// 导入包
   Future<List<dynamic>> importPackages(String filepath) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--import-packages", filepath, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("importPackages Exception: $e");
-      return [];
-    }
+    if (filepath.trim().isEmpty) return [];
+    final result = await _safeRun(
+      ["--import-packages", filepath, "--json"],
+      timeout: const Duration(seconds: 15),
+    );
+    if (result == null || result.exitCode != 0) return [];
+    final data = _tryParseJson(result.stdout.toString());
+    return data is List ? data : [];
   }
 
   /// 导出包列表
   Future<Map<String, dynamic>> exportPackages(String filepath) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--export-packages", filepath]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 15));
-
-      if (result.exitCode != 0) return {"status": "error"};
-      return jsonDecode(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("exportPackages Exception: $e");
-      return {"status": "error", "message": e.toString()};
+    if (filepath.trim().isEmpty) return {"status": "error", "message": "empty path"};
+    final result = await _safeRun(
+      ["--export-packages", filepath],
+      timeout: const Duration(seconds: 20),
+    );
+    if (result == null || result.exitCode != 0) {
+      return {"status": "error", "message": "execution failed"};
     }
+    final data = _tryParseJson(result.stdout.toString());
+    return data is Map<String, dynamic> ? data : {"status": "error"};
   }
 
   /// 清理系统（孤立包和缓存）
-  Stream<String> cleanSystem() async* {
-    try {
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["--clean-system", "--json"]),
-        workingDirectory: _workingDir,
-      );
-
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-    } catch (e) {
-      yield "[CALLBACK] {\"log\": \"清理失败: $e\"}";
-    }
-  }
+  Stream<String> cleanSystem() => _safeStream(["--clean-system", "--json"]);
 }
