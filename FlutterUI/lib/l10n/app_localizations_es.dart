@@ -843,15 +843,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get next => 'Siguiente';
 
   @override
-  String get advanced => 'Avanzado';
-
-  @override
-  String get general => 'General';
-
-  @override
-  String get repositories => 'Repositorios';
-
-  @override
   String get aurFull => 'AUR (Arch User Repository)';
 
   @override

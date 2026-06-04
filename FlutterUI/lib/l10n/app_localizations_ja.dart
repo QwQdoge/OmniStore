@@ -827,15 +827,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get next => '次へ';
 
   @override
-  String get advanced => '詳細設定';
-
-  @override
-  String get general => '全般';
-
-  @override
-  String get repositories => 'リポジトリ';
-
-  @override
   String get aurFull => 'AUR (Arch User Repository)';
 
   @override

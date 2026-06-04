@@ -841,19 +841,19 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get add;
 
-  /// general
+  /// Section title for general settings
   ///
   /// In en, this message translates to:
   /// **'General'**
   String get general;
 
-  /// advanced
+  /// Label for advanced settings toggle
   ///
   /// In en, this message translates to:
   /// **'Advanced'**
   String get advanced;
 
-  /// repositories
+  /// Section title for software repositories
   ///
   /// In en, this message translates to:
   /// **'Repositories'**
@@ -1650,24 +1650,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next'**
   String get next;
-
-  /// Label for advanced settings toggle
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get advanced;
-
-  /// Section title for general settings
-  ///
-  /// In en, this message translates to:
-  /// **'General'**
-  String get general;
-
-  /// Section title for software repositories
-  ///
-  /// In en, this message translates to:
-  /// **'Repositories'**
-  String get repositories;
 
   /// Full name for AUR
   ///

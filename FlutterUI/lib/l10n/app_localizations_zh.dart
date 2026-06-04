@@ -396,7 +396,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get add => '添加';
 
   @override
-  String get general => '通用';
+  String get general => '常规';
 
   @override
   String get advanced => '高级';
@@ -822,15 +822,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get next => '下一步';
 
   @override
-  String get advanced => '高级';
-
-  @override
-  String get general => '常规';
-
-  @override
-  String get repositories => '软件仓库';
-
-  @override
   String get aurFull => 'AUR (Arch 用户软件仓库)';
 
   @override
@@ -1235,7 +1226,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get advanced => '進階';
 
   @override
-  String get repositories => '軟體庫';
+  String get repositories => '軟體倉庫';
 
   @override
   String get aiSettings => 'AI 助手設定';
@@ -1653,15 +1644,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get next => '下一步';
-
-  @override
-  String get advanced => '進階';
-
-  @override
-  String get general => '一般';
-
-  @override
-  String get repositories => '軟體倉庫';
 
   @override
   String get aurFull => 'AUR (Arch 使用者軟體倉庫)';
