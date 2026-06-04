@@ -74,17 +74,12 @@ if hasattr(sys.stderr, 'reconfigure'):
         errors='replace'
     )
 
-from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
-from core.update_manager import UpdateManager
-from core.ai.assistant import AIAssistant
-from core.search.custom_repo import CustomRepoManager
-from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
@@ -100,17 +95,53 @@ class OmnistoreBackend:
         self.habit_tracker = HabitTracker()
         self.manager: SearchManager | None = None
         self.recommender: RecommendationManager | None = None
-        self.updater = UpdateManager(self.config)
-        self.executor = InstallExecutor(self)
+
+        # ⚡ Lazy-loaded components to improve startup performance
+        self._updater = None
+        self._executor = None
+        self._ai = None
+        self._repo_manager = None
+        self._essentials = None
+
         self.is_action = False
         self.json_mode = json_mode
         
-        # Initialize new features
-        self.ai = AIAssistant(self.config)
-        self.repo_manager = CustomRepoManager(self.config, self.executor)
-        self.essentials = EssentialsManager(self.config)
-
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
+
+    @property
+    def updater(self):
+        if self._updater is None:
+            from core.update_manager import UpdateManager
+            self._updater = UpdateManager(self.config)
+        return self._updater
+
+    @property
+    def executor(self):
+        if self._executor is None:
+            from core.downloader.downloader import InstallExecutor
+            self._executor = InstallExecutor(self)
+        return self._executor
+
+    @property
+    def ai(self):
+        if self._ai is None:
+            from core.ai.assistant import AIAssistant
+            self._ai = AIAssistant(self.config)
+        return self._ai
+
+    @property
+    def repo_manager(self):
+        if self._repo_manager is None:
+            from core.search.custom_repo import CustomRepoManager
+            self._repo_manager = CustomRepoManager(self.config, self.executor)
+        return self._repo_manager
+
+    @property
+    def essentials(self):
+        if self._essentials is None:
+            from core.essentials_manager import EssentialsManager
+            self._essentials = EssentialsManager(self.config)
+        return self._essentials
 
     async def initialize(self, session: aiohttp.ClientSession):
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
