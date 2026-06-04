@@ -74,17 +74,12 @@ if hasattr(sys.stderr, 'reconfigure'):
         errors='replace'
     )
 
-from core.downloader.downloader import InstallExecutor
 from core.search.searchmanager import SearchManager
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
-from core.update_manager import UpdateManager
-from core.ai.assistant import AIAssistant
-from core.search.custom_repo import CustomRepoManager
-from core.essentials_manager import EssentialsManager
 
 
 class OmnistoreBackend:
@@ -107,17 +102,44 @@ class OmnistoreBackend:
         self.json_mode = json_mode
         self.session: Optional[aiohttp.ClientSession] = None
         
-        # Initialize core components
-        self.ai = AIAssistant(self.config)
-        self.repo_manager = CustomRepoManager(self.config, self.executor)
-        self.essentials = EssentialsManager(self.config)
-
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
-    async def __aenter__(self):
-        """Context manager entry for session lifecycle management."""
-        timeout = aiohttp.ClientTimeout(total=60, connect=10)
-        self.session = aiohttp.ClientSession(timeout=timeout)
+    @property
+    def updater(self):
+        if self._updater is None:
+            from core.update_manager import UpdateManager
+            self._updater = UpdateManager(self.config)
+        return self._updater
+
+    @property
+    def executor(self):
+        if self._executor is None:
+            from core.downloader.downloader import InstallExecutor
+            self._executor = InstallExecutor(self)
+        return self._executor
+
+    @property
+    def ai(self):
+        if self._ai is None:
+            from core.ai.assistant import AIAssistant
+            self._ai = AIAssistant(self.config)
+        return self._ai
+
+    @property
+    def repo_manager(self):
+        if self._repo_manager is None:
+            from core.search.custom_repo import CustomRepoManager
+            self._repo_manager = CustomRepoManager(self.config, self.executor)
+        return self._repo_manager
+
+    @property
+    def essentials(self):
+        if self._essentials is None:
+            from core.essentials_manager import EssentialsManager
+            self._essentials = EssentialsManager(self.config)
+        return self._essentials
+
+    async def initialize(self, session: aiohttp.ClientSession):
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
         self.manager = SearchManager(self.config, self.session, self.habit_tracker, recommender=self.recommender)

@@ -155,10 +155,12 @@ class _DownloadPageState extends State<DownloadPage>
                             itemBuilder: (context, i) {
                               final log = logs[logs.length - 1 - i];
                               Color textColor = theme.colorScheme.onSurface;
-                              if (log.contains("[ERROR]"))
+                              if (log.contains("[ERROR]")) {
                                 textColor = Colors.redAccent;
-                              if (log.contains("[INFO]"))
+                              }
+                              if (log.contains("[INFO]")) {
                                 textColor = Colors.greenAccent.shade400;
+                              }
                               return Text(
                                 log,
                                 style: TextStyle(
@@ -311,7 +313,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   Widget _buildTasksTab() {
     final taskController = context.watch<TaskController>();
-    if (!taskController.isBusy)
+    if (!taskController.isBusy) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -329,6 +331,7 @@ class _DownloadPageState extends State<DownloadPage>
           ],
         ),
       );
+    }
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(

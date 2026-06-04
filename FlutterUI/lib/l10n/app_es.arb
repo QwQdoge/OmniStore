@@ -1107,5 +1107,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "Avanzado",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "General",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "Repositorios",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch User Repository)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }

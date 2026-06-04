@@ -2,9 +2,6 @@ import asyncio
 import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
-from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource
-from core.sources.external import WingetSource, ScoopSource, BrewSource
-from core.sources.loader import PluginLoader
 from .smart_scoring import SmartScoring
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
@@ -22,31 +19,45 @@ class SearchManager:
         self.session = session
         self.recommender = recommender or RecommendationManager(session, self.habit_tracker)
         self.sources: Dict[str, UnifiedSource] = {}
+        self.plugin_loader = None
         self._setup_sources()
         self._norm_cache = {}
 
     def _setup_sources(self):
         self.sources = {}
-        # Default internal sources
-        self.sources["pacman"] = PacmanSource()
-        self.sources["aur"] = AurSource(self.session)
-        self.sources["flatpak"] = FlatpakSource()
-        self.sources["appimage"] = AppImageSource(self.session, self.cm)
-        self.sources["github"] = GitHubSource(self.session, self.cm)
+        from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource
+        from core.sources.external import WingetSource, ScoopSource, BrewSource
 
-        # Auto-discover external sources
-        winget = WingetSource()
-        if winget.enabled: self.sources["winget"] = winget
+        # Default internal sources - only instantiate if enabled in config
+        if self.cm.get("search.sources.pacman", True):
+            self.sources["pacman"] = PacmanSource()
+        if self.cm.get("search.sources.aur", True):
+            self.sources["aur"] = AurSource(self.session)
+        if self.cm.get("search.sources.flatpak", True):
+            self.sources["flatpak"] = FlatpakSource()
+        if self.cm.get("search.sources.appimage", True):
+            self.sources["appimage"] = AppImageSource(self.session, self.cm)
+        if self.cm.get("search.sources.github", True):
+            self.sources["github"] = GitHubSource(self.session, self.cm)
 
-        scoop = ScoopSource()
-        if scoop.enabled: self.sources["scoop"] = scoop
+        # Auto-discover external sources - only if not explicitly disabled
+        if self.cm.get("search.sources.winget", True):
+            winget = WingetSource()
+            if winget.enabled: self.sources["winget"] = winget
 
-        brew = BrewSource()
-        if brew.enabled: self.sources["brew"] = brew
+        if self.cm.get("search.sources.scoop", True):
+            scoop = ScoopSource()
+            if scoop.enabled: self.sources["scoop"] = scoop
 
-        # Load external plugins
-        self.plugin_loader = PluginLoader(self)
-        self.plugin_loader.load_plugins()
+        if self.cm.get("search.sources.brew", True):
+            brew = BrewSource()
+            if brew.enabled: self.sources["brew"] = brew
+
+        # Load external plugins - only if enabled
+        if self.cm.get("search.sources.plugins", True):
+            from core.sources.loader import PluginLoader
+            self.plugin_loader = PluginLoader(self)
+            self.plugin_loader.load_plugins()
 
         # Load custom weights from config
         weights = self.cm.get("sources.weights", {})

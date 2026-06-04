@@ -636,7 +636,7 @@
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
-  "aiThinking": "AI 正在思考中...",
+  "aiThinking": "AI 正在思考...",
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
@@ -1110,5 +1110,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "進階",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "一般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "軟體倉庫",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch 使用者軟體倉庫)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }

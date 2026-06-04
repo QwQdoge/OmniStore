@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "準備完了",
+  "ready": "インストール済み",
   "@ready": {
     "description": "Description for ready"
   },
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "結果が見つかりませんでした",
+  "noResults": "検索結果が見つかりませんでした",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -1107,5 +1107,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "詳細設定",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "全般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "リポジトリ",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch User Repository)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }
