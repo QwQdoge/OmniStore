@@ -10,7 +10,7 @@ import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/widgets/magic_pulse_icon.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 
@@ -384,7 +384,7 @@ class _DownloadPageState extends State<DownloadPage>
       listenable: UpdateService().availableUpdates,
       builder: (context, _) {
         final updates = UpdateService().availableUpdates.value;
-        if (updates.isEmpty)
+        if (updates.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -402,6 +402,7 @@ class _DownloadPageState extends State<DownloadPage>
               ],
             ),
           );
+        }
         return Column(
           children: [
             Padding(
@@ -444,12 +445,13 @@ class _DownloadPageState extends State<DownloadPage>
                         final results = await packageRepo.searchPackages(
                           update['name'],
                         );
-                        if (results.isNotEmpty && mounted) {
+                        if (!context.mounted) return;
+                        if (results.isNotEmpty) {
                           final app = AppPackage.fromJson(results[0]);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AppDetailsPage(app: app),
+                              builder: (_) => AppDetailsPage(app: app),
                             ),
                           );
                         }
@@ -466,8 +468,9 @@ class _DownloadPageState extends State<DownloadPage>
                         children: [
                           Consumer<SettingsController>(
                             builder: (context, settings, _) {
-                              if (!settings.isAIEnabled)
+                              if (!settings.isAIEnabled) {
                                 return const SizedBox.shrink();
+                              }
                               return IconButton(
                                 icon: const MagicPulseIcon(
                                   icon: Icons.auto_awesome_rounded,
@@ -530,11 +533,12 @@ class _DownloadPageState extends State<DownloadPage>
           child: FutureBuilder<String>(
             future: aiRepo.aiSummarizeUpdate(name, current, next),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox(
                   height: 200,
                   child: Center(child: CircularProgressIndicator()),
                 );
+              }
               return MarkdownBody(
                 data: snapshot.data ?? "AI failed to summarize.",
                 selectable: true,
@@ -553,8 +557,9 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildInstalledTab() {
-    if (_isLoadingInstalled)
+    if (_isLoadingInstalled) {
       return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         SingleChildScrollView(
@@ -590,7 +595,7 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildInstalledList() {
-    if (_filteredApps.isEmpty)
+    if (_filteredApps.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -604,6 +609,7 @@ class _DownloadPageState extends State<DownloadPage>
           ],
         ),
       );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _filteredApps.length,

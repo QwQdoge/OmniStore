@@ -6,7 +6,7 @@ import "package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
@@ -728,7 +728,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Hero(
-          tag: widget.heroTag ??
+          tag:
+              widget.heroTag ??
               'app-icon-${widget.app.name}-${widget.app.primarySource}',
           child: Container(
             width: 100,

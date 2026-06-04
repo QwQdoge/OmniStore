@@ -48,7 +48,7 @@ class UpdateService {
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =
         InitializationSettings(linux: initializationSettingsLinux);
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(settings: initializationSettings);
 
     // Initialize tray with error handling
     try {
@@ -69,7 +69,7 @@ class UpdateService {
           LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
       const InitializationSettings initializationSettings =
           InitializationSettings(linux: initializationSettingsLinux);
-      await _notificationsPlugin.initialize(initializationSettings);
+      await _notificationsPlugin.initialize(settings: initializationSettings);
     }
 
     if (l10n != null) {
@@ -296,10 +296,10 @@ class UpdateService {
       linux: linuxPlatformChannelSpecifics,
     );
     await _notificationsPlugin.show(
-      0,
-      _notificationTitle,
-      _notificationBody(count),
-      platformChannelSpecifics,
+      id: 0,
+      title: _notificationTitle,
+      body: _notificationBody(count),
+      notificationDetails: platformChannelSpecifics,
     );
   }
 
@@ -325,10 +325,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      1,
-      title,
-      "${(progress * 100).toInt()}%",
-      NotificationDetails(linux: linuxDetails),
+      id: 1,
+      title: title,
+      body: "${(progress * 100).toInt()}%",
+      notificationDetails: NotificationDetails(linux: linuxDetails),
     );
   }
 
@@ -342,10 +342,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      2,
-      _taskCompletedLabel,
-      "$title: ${success ? _successLabel : _failedLabel}",
-      NotificationDetails(linux: linuxDetails),
+      id: 2,
+      title: _taskCompletedLabel,
+      body: "$title: ${success ? _successLabel : _failedLabel}",
+      notificationDetails: NotificationDetails(linux: linuxDetails),
     );
   }
 
@@ -358,10 +358,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      3,
-      title,
-      body,
-      const NotificationDetails(linux: linuxDetails),
+      id: 3,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(linux: linuxDetails),
     );
   }
 

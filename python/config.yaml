@@ -1,5 +1,10 @@
 # ==============================================================================
-# OmniStore Global Configuration Template
+# OmniStore Global Configuration Template 
+# This YAML file defines all configurable settings for OmniStore, including search parameters, source priorities, UI preferences, logging, notifications, update management, AI assistant integration, GitHub connectivity, and more.
+# ⚠️ WARNING TO AI / DEVELOPER:
+# 1. This file is the single source of truth for all user-configurable settings. DO NOT hardcode any of these values in the application codebase. Always read from this config.
+# 2. When adding new settings, ensure they are properly namespaced and documented. Follow the existing structure for consistency.
+# 3. Do NOT include any sensitive information (like API keys) in this file. Use environment variables or secure vaults for secrets management.
 # ==============================================================================
 
 # --- Search Settings ---

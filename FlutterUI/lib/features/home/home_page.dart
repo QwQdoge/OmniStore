@@ -6,7 +6,7 @@ import "package:frontend/core/navigation_controller.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _importPackages() async {
     final l10n = AppLocalizations.of(context)!;
     final packageRepo = context.read<PackageRepository>();
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'json'],
     );
@@ -370,7 +370,8 @@ class _HomePageState extends State<HomePage> {
                               ? CachedNetworkImage(
                                   imageUrl: app.icon!,
                                   fit: BoxFit.cover,
-                                  errorWidget: (c, e, s) => const Icon(Icons.apps),
+                                  errorWidget: (c, e, s) =>
+                                      const Icon(Icons.apps),
                                 )
                               : const Icon(Icons.apps, size: 40),
                         ),
@@ -429,10 +430,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        title,
-        style: OmnistoreTheme.standardHeader(context),
-      ),
+      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
     );
   }
 
