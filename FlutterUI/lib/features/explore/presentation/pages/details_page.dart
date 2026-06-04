@@ -16,6 +16,7 @@ import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/widgets/github_star_badge.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -834,24 +835,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                             v['source'].toString(),
                         _selectedSource,
                       }.map((String source) {
-                        String? version;
-                        if (_extraDetails != null &&
-                            _extraDetails!['variants'] != null) {
-                          for (var v in _extraDetails!['variants']) {
-                            if (v['source'] == source) {
-                              version = v['version'] ?? v['last_version'];
-                              break;
-                            }
-                          }
-                        }
-                        if (version == null) {
-                          for (var v in widget.app.variants) {
-                            if (v.source == source) {
-                              version = v.version;
-                              break;
-                            }
-                          }
-                        }
+                        final version = _getVersionForSource(source);
                         return ButtonSegment<String>(
                           value: source,
                           label: Padding(
@@ -887,24 +871,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     final newValue = newSelection.first;
                     setState(() {
                       _selectedSource = newValue;
-                      bool isInstalled = false;
-                      if (_extraDetails != null &&
-                          _extraDetails!['variants'] != null) {
-                        for (var v in _extraDetails!['variants']) {
-                          if (v['source'] == newValue) {
-                            isInstalled = v['installed'] ?? false;
-                            break;
-                          }
-                        }
-                      } else {
-                        for (var v in widget.app.variants) {
-                          if (v.source == newValue) {
-                            isInstalled = v.installed;
-                            break;
-                          }
-                        }
-                      }
-                      _isAppInstalled = isInstalled;
+                      _isAppInstalled = _isSourceInstalled(newValue);
                     });
                   },
                   showSelectedIcon: false,
@@ -926,16 +893,40 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget _buildSectionTitle(ThemeData theme, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0, top: 16),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w900,
-          color: theme.colorScheme.primary,
-          letterSpacing: -1.0,
-        ),
-      ),
+      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
     );
+  }
+
+  String? _getVersionForSource(String source) {
+    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+      for (var v in _extraDetails!['variants']) {
+        if (v['source'] == source) {
+          return v['version'] ?? v['last_version'];
+        }
+      }
+    }
+    for (var v in widget.app.variants) {
+      if (v.source == source) {
+        return v.version;
+      }
+    }
+    return null;
+  }
+
+  bool _isSourceInstalled(String source) {
+    if (_extraDetails != null && _extraDetails!['variants'] != null) {
+      for (var v in _extraDetails!['variants']) {
+        if (v['source'] == source) {
+          return v['installed'] ?? false;
+        }
+      }
+    }
+    for (var v in widget.app.variants) {
+      if (v.source == source) {
+        return v.installed;
+      }
+    }
+    return false;
   }
 
   Widget _buildDependencySection(ThemeData theme) {
