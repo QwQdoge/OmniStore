@@ -52,9 +52,10 @@ class RecommendationManager:
                 tmp_path.replace(self.metadata_cache_path)
 
             # ⚡ Snapshot the data to avoid "dict changed size" during JSON serialization in the executor
+            # We use a deeper snapshot for the inner dictionaries as well.
             data_snapshot = {
-                "app_details": dict(self._metadata_cache.get("app_details", {})),
-                "name_mapping": dict(self._metadata_cache.get("name_mapping", {}))
+                "app_details": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("app_details", {}).items()},
+                "name_mapping": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("name_mapping", {}).items()}
             }
 
             await asyncio.get_event_loop().run_in_executor(None, _write, data_snapshot)
@@ -112,6 +113,7 @@ class RecommendationManager:
                     hits = data.get("hits", [])
                     apps = []
                     for app in hits:
+                        if not isinstance(app, dict): continue
                         apps.append({
                             "name": app.get("name", "Unknown"),
                             "id": app.get("app_id"),

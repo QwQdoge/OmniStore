@@ -35,7 +35,7 @@ Future<void> bootstrapOmniStore() async {
       DesktopWindowService.initialize(useSystemTitleBar: useSystemTitleBar).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
     ]);
-    prefs = results[2] as SharedPreferences;
+    prefs = results[1] as SharedPreferences;
   } catch (e) {
     debugPrint('Initialization error: $e');
     prefs = await SharedPreferences.getInstance();

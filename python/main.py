@@ -193,10 +193,15 @@ class OmnistoreBackend:
 
             decorated_msg = f"{icon} {clean_msg}"
 
-            output = json.dumps(
-                {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
-            sys.stdout.write(f"[CALLBACK] {output}\n"); sys.stdout.flush()
-            sys.stdout.flush()
+            try:
+                output = json.dumps(
+                    {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
+                sys.stdout.write(f"[CALLBACK] {output}\n")
+                sys.stdout.flush()
+            except Exception as e:
+                # Fallback to plain string if JSON serialization fails
+                sys.stdout.write(f"[CALLBACK] {{\"type\": \"log\", \"message\": \"[ERROR] Log serialization error: {str(e)}\", \"level\": \"ERROR\"}}\n")
+                sys.stdout.flush()
         else:
             if level == "ERROR":
                 logging.error(clean_msg)
@@ -414,7 +419,8 @@ class OmnistoreBackend:
 
                 sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
         except Exception as e:
-            sys.stdout.write(json.dumps({"error": str(e)}) + "\n"); sys.stdout.flush()
+            sys.stdout.write(json.dumps({"error": str(e)}) + "\n")
+            sys.stdout.flush()
 
     def _output_installed_pretty(self, installed_list):
         if not installed_list:
@@ -698,8 +704,11 @@ class OmnistoreBackend:
 
         try:
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
-            with open(filepath, 'w') as f:
+            export_dir = os.path.dirname(os.path.abspath(filepath))
+            if export_dir:
+                os.makedirs(export_dir, exist_ok=True)
+
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(installed, f, ensure_ascii=False, indent=2)
 
             # Use unified callback if in JSON mode to show progress/log
@@ -715,6 +724,7 @@ class OmnistoreBackend:
 
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         """Cleanup logic: remove orphans and clean cache"""
+        import shutil
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
@@ -723,13 +733,21 @@ class OmnistoreBackend:
                 console.print(Panel("Starting System Cleanup", border_style="blue"))
 
             await cb("[INFO] 正在检测孤立软件包...")
+            # ⚡ Check if pacman exists first
+            if shutil.which("pacman") is None:
+                await cb("[INFO] 系统未安装 pacman，跳过清理。")
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+                    sys.stdout.flush()
+                return True
+
             proc = await asyncio.create_subprocess_exec(
                 "pacman", "-Qtdq",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, _ = await proc.communicate()
-            orphans = stdout.decode().strip().splitlines()
+            orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
 
             if orphans:
                 await cb(f"[INFO] 正在清理 {len(orphans)} 个孤立软件包...")
@@ -771,7 +789,8 @@ class OmnistoreBackend:
         except Exception as e:
             await cb(f"[ERROR] 清理失败: {e}")
             if json_mode:
-                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n"); sys.stdout.flush()
+                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n")
+                sys.stdout.flush()
             return False
 
     async def run_ai_summary(self, json_mode: bool = False):

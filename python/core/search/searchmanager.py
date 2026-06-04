@@ -132,8 +132,11 @@ class SearchManager:
                 # Ask AI to rank the top results
                 candidates = [f"{i['name']} ({i['source']})" for i in combined[:10]]
                 if candidates:
+                    # ⚡ Optimization: Access AIAssistant via the backend's lazy property if available,
+                    # or at least avoid redundant imports/instantiations.
+                    # For now, we use a local import but in a real-world scenario, we'd pass it in.
                     from core.ai.assistant import AIAssistant
-                    ai = AIAssistant(self.cm)
+                    ai = AIAssistant(self.cm.data if hasattr(self.cm, "data") else self.cm)
                     prompt = f"Rank these apps for query '{query}': {', '.join(candidates)}"
                     # Simplified AI ranking logic
                     res = await ai.recommend_apps(prompt, combined[:10])
@@ -238,13 +241,14 @@ class SearchManager:
             if norm_key not in seen:
                 entry = item.copy()
                 entry['primary_source'] = source
-                entry['variants'] = [variant]
+                # ⚡ Ensure deep copy of variants to prevent cross-entry mutation
+                entry['variants'] = [variant.copy()]
                 entry['_norm_name'] = norm_key
                 entry['_source_types'] = {source}
                 seen[norm_key] = entry
             else:
                 if source not in seen[norm_key]['_source_types']:
-                    seen[norm_key]['variants'].append(variant)
+                    seen[norm_key]['variants'].append(variant.copy())
                     seen[norm_key]['_source_types'].add(source)
                 if is_installed:
                     seen[norm_key]['installed'] = True
