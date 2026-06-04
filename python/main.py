@@ -96,13 +96,17 @@ class OmnistoreBackend:
         self.habit_tracker = HabitTracker()
         self.manager: Optional[SearchManager] = None
         self.recommender: Optional[RecommendationManager] = None
-        # Lazy-load UpdateManager via property; initialize placeholder
-        self._updater: Optional[any] = None
-        self.executor = InstallExecutor(self)
+
+        self._updater = None
+        self._executor = None
+        self._ai = None
+        self._repo_manager = None
+        self._essentials = None
+
         self.is_action = False
         self.json_mode = json_mode
         self.session: Optional[aiohttp.ClientSession] = None
-        
+
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
     @property
@@ -140,11 +144,18 @@ class OmnistoreBackend:
             self._essentials = EssentialsManager(self.config)
         return self._essentials
 
-    async def initialize(self, session: aiohttp.ClientSession):
+    async def initialize(self):
+        """Asynchronous initialization of components requiring a network session."""
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
         self.manager = SearchManager(self.config, self.session, self.habit_tracker, recommender=self.recommender)
         return self
+
+    async def __aenter__(self):
+        return await self.initialize()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Guaranteed cleanup of network sessions to prevent leaks."""
@@ -182,10 +193,15 @@ class OmnistoreBackend:
 
             decorated_msg = f"{icon} {clean_msg}"
 
-            output = json.dumps(
-                {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
-            sys.stdout.write(f"[CALLBACK] {output}\n"); sys.stdout.flush()
-            sys.stdout.flush()
+            try:
+                output = json.dumps(
+                    {"type": "log", "message": f"[{level.upper()}] {decorated_msg}", "level": level.upper()}, ensure_ascii=False)
+                sys.stdout.write(f"[CALLBACK] {output}\n")
+                sys.stdout.flush()
+            except Exception as e:
+                # Fallback to plain string if JSON serialization fails
+                sys.stdout.write(f"[CALLBACK] {{\"type\": \"log\", \"message\": \"[ERROR] Log serialization error: {str(e)}\", \"level\": \"ERROR\"}}\n")
+                sys.stdout.flush()
         else:
             if level == "ERROR":
                 logging.error(clean_msg)
@@ -403,7 +419,8 @@ class OmnistoreBackend:
 
                 sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
         except Exception as e:
-            sys.stdout.write(json.dumps({"error": str(e)}) + "\n"); sys.stdout.flush()
+            sys.stdout.write(json.dumps({"error": str(e)}) + "\n")
+            sys.stdout.flush()
 
     def _output_installed_pretty(self, installed_list):
         if not installed_list:
@@ -687,8 +704,11 @@ class OmnistoreBackend:
 
         try:
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
-            with open(filepath, 'w') as f:
+            export_dir = os.path.dirname(os.path.abspath(filepath))
+            if export_dir:
+                os.makedirs(export_dir, exist_ok=True)
+
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(installed, f, ensure_ascii=False, indent=2)
 
             # Use unified callback if in JSON mode to show progress/log
@@ -704,6 +724,7 @@ class OmnistoreBackend:
 
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         """Cleanup logic: remove orphans and clean cache"""
+        import shutil
         async def cb(m):
             await self._flutter_callback(m, json_mode)
 
@@ -712,13 +733,21 @@ class OmnistoreBackend:
                 console.print(Panel("Starting System Cleanup", border_style="blue"))
 
             await cb("[INFO] 正在检测孤立软件包...")
+            # ⚡ Check if pacman exists first
+            if shutil.which("pacman") is None:
+                await cb("[INFO] 系统未安装 pacman，跳过清理。")
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+                    sys.stdout.flush()
+                return True
+
             proc = await asyncio.create_subprocess_exec(
                 "pacman", "-Qtdq",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, _ = await proc.communicate()
-            orphans = stdout.decode().strip().splitlines()
+            orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
 
             if orphans:
                 await cb(f"[INFO] 正在清理 {len(orphans)} 个孤立软件包...")
@@ -760,7 +789,8 @@ class OmnistoreBackend:
         except Exception as e:
             await cb(f"[ERROR] 清理失败: {e}")
             if json_mode:
-                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n"); sys.stdout.flush()
+                sys.stdout.write(json.dumps({"status": "error", "message": str(e)}) + "\n")
+                sys.stdout.flush()
             return False
 
     async def run_ai_summary(self, json_mode: bool = False):
@@ -771,17 +801,16 @@ class OmnistoreBackend:
         else:
             print(f"AI Summary:\n{res}")
     def _output_json(self, results):
-        """Serialize results to JSON, streaming in chunks if large.
-        This avoids huge memory usage and ensures the frontend can handle
-        very large result sets.
+        """Serialize results to JSON.
+        We ensure consistent naming for 'installed' status to prevent frontend bugs.
         """
-        max_chunk = 200  # Number of items per streamed chunk
-        total = len(results)
         def serialize_item(item):
+            # Normalize 'installed' status
+            is_installed = bool(item.get("installed", False) or item.get("is_installed", False))
             return {
                 "name": str(item.get("name", "Unknown")),
                 "description": str(item.get("description", "")),
-                "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
+                "installed": is_installed,
                 "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
                 "url": str(item.get("url") or ""),
                 "variants": item.get("variants", []),
@@ -791,27 +820,16 @@ class OmnistoreBackend:
                 "is_exact_match": item.get("is_exact_match", False),
                 "screenshots": item.get("screenshots", []),
             }
-        if total <= max_chunk:
-            output = []
-            for item in results:
-                try:
-                    output.append(serialize_item(item))
-                except Exception as e:
-                    logging.error(f"Error serializing search result: {e}")
-            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n"); sys.stdout.flush()
-            sys.stdout.flush()
-            return
-        # Stream in chunks
-        for start in range(0, total, max_chunk):
-            chunk = results[start:start + max_chunk]
-            output = []
-            for item in chunk:
-                try:
-                    output.append(serialize_item(item))
-                except Exception as e:
-                    logging.error(f"Error serializing search result: {e}")
-            sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n"); sys.stdout.flush()
-            sys.stdout.flush()
+
+        output = []
+        for item in results:
+            try:
+                output.append(serialize_item(item))
+            except Exception as e:
+                logging.error(f"Error serializing search result: {e}")
+
+        sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
         # No explicit terminator needed; the consumer can detect EOF.
 
 

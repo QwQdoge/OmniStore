@@ -63,7 +63,7 @@ class HabitTracker:
 
                 # ⚡ Snapshot using dict() to avoid blocking the main thread with full serialization
                 # and to avoid "dict changed size" during the background write.
-                snapshot = {k: dict(v) if isinstance(v, dict) else v for k, v in self.habits.items()}
+                snapshot = {k: {ik: iv.copy() if isinstance(iv, dict) else iv for ik, iv in v.items()} if isinstance(v, dict) else v for k, v in self.habits.items()}
                 await loop.run_in_executor(None, _write, snapshot)
             except Exception as e:
                 import sys

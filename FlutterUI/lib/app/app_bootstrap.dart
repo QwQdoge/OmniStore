@@ -27,20 +27,22 @@ Future<void> bootstrapOmniStore() async {
   late final SharedPreferences prefs;
 
   try {
+    // ⚡ Load config first to know window style
+    config = await configRepo.loadConfig();
+    final useSystemTitleBar = config['ui']?['use_system_title_bar'] ?? false;
+
     final results = await Future.wait([
-      DesktopWindowService.initialize().timeout(const Duration(seconds: 5)),
-      configRepo.loadConfig().timeout(const Duration(seconds: 10)),
+      DesktopWindowService.initialize(useSystemTitleBar: useSystemTitleBar).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
     ]);
-    config = (results[1] as Map<String, dynamic>?) ?? {};
-    prefs = results[2] as SharedPreferences;
+    prefs = results[1] as SharedPreferences;
   } catch (e) {
     debugPrint('Initialization error: $e');
     prefs = await SharedPreferences.getInstance();
   }
 
   await L10nService.init(config);
-  final githubToken = config['github']?['token'] as String?;
+  final githubToken = config['github']?['pat'] as String?;
 
   runApp(
     MultiProvider(
