@@ -27,7 +27,7 @@ class TweaksPage extends StatelessWidget {
             value: settings.isAIEnabled,
             onChanged: (val) {
               final config = Map<String, dynamic>.from(settings.config);
-              config['ai'] ??= {};
+              config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
               config['ai']['enabled'] = val;
               settings.updateConfig(config);
             },

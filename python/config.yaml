@@ -50,6 +50,14 @@ ai:
   endpoint: "http://localhost:11434" # Ollama default API URL or Custom LLM Gateway
   model: "qwen2.5:7b"  # Model tag to run (e.g. qwen2.5:7b, deepseek-chat, llama3)
   api_key: ""          # Required for OpenAI/DeepSeek endpoints, leave empty for Ollama
+  temperature: 0.7     # AI generation temperature
+
+# --- GitHub Integration ---
+github:
+  pat: ""              # GitHub Personal Access Token
+
+# --- Initial Setup ---
+first_run: true        # Whether this is the first time the app is run
 
 # --- Custom Repositories ---
 custom_repos:
