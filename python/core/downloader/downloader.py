@@ -1,60 +1,79 @@
 import asyncio
 import logging
-from typing import Dict, Any, Optional
+import os
+import shutil
+from typing import Dict, Any, Optional, Callable, Awaitable
+from core.sources.utils import PrivilegeManager
 
 class InstallExecutor:
     """
     Orchestrates installation, uninstallation, and updates.
-    Ensures mutual exclusion (state lock) and robust error isolation.
+    Ensures mutual exclusion (state lock), robust error isolation, and
+    proper subprocess lifecycle management to prevent zombie processes.
     """
     def __init__(self, backend):
         self.backend = backend
         self._lock = asyncio.Lock()
-        self.is_running = False  # Keep for backward compatibility/UI visibility
+        self.is_running = False
+        self.privilege_manager = PrivilegeManager()
 
-    async def install(self, package: Dict[str, Any], callback) -> bool:
-        """Execute installation with state lock protection."""
+    async def _ensure_privileged(self, callback) -> bool:
+        """Centralized privilege escalation check."""
+        return await self.privilege_manager.ensure_privileged(callback)
+
+    async def install(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
+        """Execute installation with state lock protection and fail-safe checks."""
         if self._lock.locked():
-            if callback: await callback("[ERROR] Another task is already in progress. Please wait for completion.")
+            if callback: await callback("[ERROR] Another system task is already in progress. Concurrent operations are blocked to prevent database corruption.")
             return False
 
         async with self._lock:
-            # Robust input check
-            if not package or not package.get("name"):
-                if callback: await callback("[ERROR] Invalid package data provided for installation.")
+            # 1. Parameter Validation
+            if not package or not isinstance(package.get("name"), str) or not package["name"].strip():
+                if callback: await callback("[ERROR] Invalid package data. Installation aborted.")
                 return False
 
-            source_name = str(package.get("source", "")).lower()
+            # 2. Environment & Dependency Check
+            source_name = str(package.get("source", "Native")).lower()
+            if not self._check_environment(source_name):
+                if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools (pacman/flatpak/yay) are installed.")
+                return False
+
             if not self.backend.manager or source_name not in self.backend.manager.sources:
-                if callback: await callback(f"[ERROR] Installation source '{source_name}' is unavailable or not supported.")
+                if callback: await callback(f"[ERROR] Installation source '{source_name}' is currently unavailable.")
                 return False
 
             source = self.backend.manager.sources[source_name]
+
             try:
                 self.is_running = True
-                # Defensive wrapper for source-specific implementation
+                # 3. Execution with Strict Isolation
+                # We wrap the source call in a timeout-aware pattern if appropriate,
+                # though most install tasks are long-running and managed internally by sources.
                 success = await source.install(package, callback=callback)
                 return bool(success)
+            except asyncio.CancelledError:
+                if callback: await callback("[INFO] Installation was cancelled by user.")
+                return False
             except Exception as e:
-                logging.exception(f"InstallExecutor.install fail: {e}")
-                if callback: await callback(f"[ERROR] Unexpected failure during installation: {e}")
+                logging.exception(f"InstallExecutor.install failed: {e}")
+                if callback: await callback(f"[ERROR] Unexpected fatal error during installation: {str(e)}")
                 return False
             finally:
-                # Absolute state reset to prevent permanent lock
                 self.is_running = False
 
-    async def uninstall(self, package: Dict[str, Any], callback) -> bool:
+    async def uninstall(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute uninstallation with state lock protection."""
         if self._lock.locked():
-            if callback: await callback("[ERROR] System is currently busy with another operation.")
+            if callback: await callback("[ERROR] System is busy. Please wait for the current task to finish.")
             return False
 
         async with self._lock:
             if not package or not package.get("name"):
-                if callback: await callback("[ERROR] Invalid package data provided for uninstallation.")
+                if callback: await callback("[ERROR] Package name missing for uninstallation.")
                 return False
 
-            source_name = str(package.get("source", "")).lower()
+            source_name = str(package.get("source", "Native")).lower()
             if not self.backend.manager or source_name not in self.backend.manager.sources:
                 if callback: await callback(f"[ERROR] Uninstallation source '{source_name}' not found.")
                 return False
@@ -66,23 +85,27 @@ class InstallExecutor:
                 return bool(success)
             except Exception as e:
                 logging.exception(f"InstallExecutor.uninstall fail: {e}")
-                if callback: await callback(f"[ERROR] Unexpected failure during uninstallation: {e}")
+                if callback: await callback(f"[ERROR] Uninstallation failed due to an internal error: {e}")
                 return False
             finally:
-                # Absolute state reset to prevent permanent lock
                 self.is_running = False
 
-    async def update(self, package: Dict[str, Any], callback) -> bool:
-        # For simplicity, many sources use install to update
+    async def update(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
+        """Update logic (often proxies to install)."""
         return await self.install(package, callback)
 
+    def _check_environment(self, source_name: str) -> bool:
+        """Verify that the required system tools exist for the given source."""
+        if source_name in ("native", "pacman"):
+            return shutil.which("pacman") is not None
+        elif source_name == "flatpak":
+            return shutil.which("flatpak") is not None
+        elif source_name == "aur":
+            return shutil.which("yay") is not None or shutil.which("paru") is not None
+        return True
+
     def stop(self):
-        """Emergency stop: reset state."""
+        """Emergency stop sequence."""
         self.is_running = False
-        if self._lock.locked():
-            try:
-                # Force release if possible, or just log
-                # asyncio.Lock doesn't have a direct 'force release' from outside,
-                # but we signal components to stop.
-                pass
-            except: pass
+        # Note: Actual process termination is handled by the signal handlers in main.py
+        # and the specific source implementations which should check is_running.

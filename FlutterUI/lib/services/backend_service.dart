@@ -65,7 +65,7 @@ class BackendService {
   }
 
   static String get scriptPath {
-    if (_isPackaged) return ""; // In packaged mode, venvPython IS the script
+    if (_isPackaged) return "";
     return p.join(_projectRoot, 'python', 'main.py');
   }
 
@@ -86,72 +86,64 @@ class BackendService {
     }
   }
 
-  // 全局进度通知器
+  // Reactive State Notifiers
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
   static final ValueNotifier<String> globalStatus = ValueNotifier("Ready");
   static final ValueNotifier<bool> isDownloading = ValueNotifier(false);
   static final ValueNotifier<bool> isAIEnabled = ValueNotifier(false);
-
-  // 当前正在操作的 app（用于跨页面状态恢复）
   static final ValueNotifier<AppPackage?> activeApp = ValueNotifier(null);
-  static final ValueNotifier<String?> activeFlag = ValueNotifier(
-    null,
-  ); // "-I" or "-R"
+  static final ValueNotifier<String?> activeFlag = ValueNotifier(null);
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
-  // Navigation and pending search query notifiers
   static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
   static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
-
-  // Dynamic Sidebar items
-  static final ValueNotifier<List<Map<String, dynamic>>> sidebarItems =
-      ValueNotifier([
-        {'title': 'Explore', 'icon': 'apps_rounded', 'index': 0},
-        {'title': 'Categories', 'icon': 'grid_view_rounded', 'index': 1},
-        {'title': 'Installed', 'icon': 'inventory_2_rounded', 'index': 5},
-        {'title': 'GitHub Store', 'icon': 'code_rounded', 'index': 6},
-        {'title': 'Flatpak Store', 'icon': 'shopping_bag_rounded', 'index': 7},
-      ]);
 
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
+  /// Kill a process and its children using process groups on Linux.
+  Future<void> _killProcess(Process? process) async {
+    if (process == null) return;
+    try {
+      if (Platform.isLinux) {
+        // Send SIGTERM to the entire process group
+        await Process.run('kill', ['-TERM', '-${process.pid}']);
+        // Wait a bit and force kill if still alive
+        await Future.delayed(const Duration(milliseconds: 500));
+        await Process.run('kill', ['-KILL', '-${process.pid}']);
+      } else {
+        process.kill(ProcessSignal.sigkill);
+      }
+    } catch (e) {
+      debugPrint("Error killing process ${process.pid}: $e");
+      process.kill(ProcessSignal.sigkill); // Fallback
+    }
+  }
+
   /// Safe wrapper for Process.run with mandatory timeout and exception handling.
   Future<ProcessResult?> _safeRun(List<String> args,
       {Duration timeout = const Duration(seconds: 30)}) async {
+    // 防呆：检查执行环境
+    if (!File(_venvPython).existsSync() && _venvPython != 'python') {
+      debugPrint("Backend Error: Python executable not found at $_venvPython");
+      return null;
+    }
+
     try {
-      final result = await Process.run(
+      return await Process.run(
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
-      ).timeout(timeout);
-
-      if (result.exitCode != 0) {
-        debugPrint(
-          "BackendService._safeRun failed (code ${result.exitCode}) [args: $args]: ${result.stderr}",
-        );
-      }
-      return result;
+      ).timeout(timeout, onTimeout: () {
+        debugPrint("BackendService._safeRun Timeout: $args");
+        throw TimeoutException("Operation timed out after ${timeout.inSeconds}s");
+      });
     } catch (e) {
       debugPrint("BackendService._safeRun Exception [args: $args]: $e");
       return null;
     }
   }
 
-  /// Safe wrapper for Process.start with exception handling.
-  Future<Process?> _safeStart(List<String> args) async {
-    try {
-      return await Process.start(
-        _venvPython,
-        _buildArgs(args),
-        workingDirectory: _workingDir,
-      );
-    } catch (e) {
-      debugPrint("BackendService._safeStart Exception [args: $args]: $e");
-      return null;
-    }
-  }
-
-  /// Safe wrapper for Process.start that returns a stream and handles process lifecycle.
+  /// Safe wrapper for Process.start returns a stream and handles process lifecycle.
   Stream<String> _safeStream(List<String> args) async* {
     Process? process;
     final controller = StreamController<String>();
@@ -161,7 +153,11 @@ class BackendService {
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
+        runInShell: true, // Needed for proper signal propagation in some environments
       );
+
+      // Bind to global lifecycle
+      activeProcess = process;
 
       process.stdout
           .transform(utf8.decoder)
@@ -171,531 +167,231 @@ class BackendService {
           if (!controller.isClosed) controller.add(data);
         },
         onError: (e) {
-          debugPrint("Process [${args.firstOrNull}] Stdout Error: $e");
+          debugPrint("Process Stdout Error: $e");
           if (!controller.isClosed) {
-            controller.add("[CALLBACK] {\"log\": \"[ERROR] 数据流异常: $e\"}");
+            controller.add("[CALLBACK] {\"log\": \"[ERROR] 致命数据流异常: $e\"}");
           }
         },
         onDone: () {
           if (!controller.isClosed) controller.close();
+          if (activeProcess == process) activeProcess = null;
         },
       );
 
-      process.stderr.transform(utf8.decoder).listen((data) {
-        debugPrint("Process [${args.firstOrNull}] Stderr: $data");
-      });
+      process.stderr.transform(utf8.decoder).listen((data) => debugPrint("Backend Stderr: $data"));
 
-      controller.onCancel = () {
-        debugPrint("Stream cancelled, killing process [${args.firstOrNull}]");
-        process?.kill();
-        process = null;
+      controller.onCancel = () async {
+        debugPrint("Stream cancelled, performing deep cleanup for process ${process?.pid}");
+        await _killProcess(process);
+        if (activeProcess == process) activeProcess = null;
       };
 
       yield* controller.stream;
     } catch (e) {
-      debugPrint("BackendService._safeStream Exception [args: $args]: $e");
-      yield "[CALLBACK] {\"log\": \"[ERROR] 启动进程失败: $e\"}";
+      debugPrint("BackendService._safeStream Exception: $e");
+      yield "[CALLBACK] {\"log\": \"[ERROR] 进程启动失败，请检查环境配置: $e\"}";
       if (!controller.isClosed) controller.close();
     }
   }
 
   static void addLog(String log) {
     final currentLogs = globalLogs.value;
-    if (currentLogs.length > 500) {
-      globalLogs.value = [
-        ...currentLogs.sublist(currentLogs.length - 499),
-        log,
-      ];
+    if (currentLogs.length > 1000) {
+      globalLogs.value = [...currentLogs.sublist(currentLogs.length - 999), log];
     } else {
       globalLogs.value = [...currentLogs, log];
     }
   }
 
-  static void clearLogs() {
-    globalLogs.value = [];
-  }
+  static void clearLogs() => globalLogs.value = [];
 
-  static void cancelCurrentTask() {
+  static Future<void> cancelCurrentTask() async {
     if (activeProcess != null) {
-      activeProcess!.kill(ProcessSignal.sigterm);
+      await BackendService.instance._killProcess(activeProcess);
       activeProcess = null;
       isDownloading.value = false;
-      globalStatus.value = "任务已取消";
+      globalStatus.value = "任务已强制终止";
       globalProgress.value = null;
       activeApp.value = null;
       activeFlag.value = null;
     }
   }
 
-  /// 搜索逻辑 (Harden with timeouts and robust process management)
-  Future<List<dynamic>> searchPackages(
-    String query, {
-    bool cancelOngoing = true,
-  }) async {
+  Future<List<dynamic>> searchPackages(String query, {bool cancelOngoing = true}) async {
     final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty) return [];
+    if (trimmedQuery.length < 2) return [];
 
-    // Cancel any ongoing search to prevent race conditions
     if (cancelOngoing && activeSearchProcess != null) {
-      try {
-        activeSearchProcess!.kill(ProcessSignal.sigkill);
-      } catch (_) {}
+      await _killProcess(activeSearchProcess);
       activeSearchProcess = null;
     }
 
-    Process? process = await _safeStart(["-S", trimmedQuery, "--json"]);
-    if (process == null) return [];
-
     try {
-      if (cancelOngoing) activeSearchProcess = process;
+      final process = await Process.start(_venvPython, _buildArgs(["-S", trimmedQuery, "--json"]), workingDirectory: _workingDir);
+      activeSearchProcess = process;
 
       final results = <dynamic>[];
-      final stream = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: (sink) {
-              debugPrint("searchPackages: stream timeout");
-              process.kill(ProcessSignal.sigkill);
-              sink.close();
-            },
-          );
+      final output = await process.stdout.transform(utf8.decoder).join().timeout(const Duration(seconds: 20));
 
-      await for (final line in stream) {
-        final parsed = _tryParseJson(line);
-        if (parsed is List) {
-          results.addAll(parsed);
-        } else if (parsed is Map) {
-          results.add(parsed);
-        }
+      final parsed = _tryParseJson(output);
+      if (parsed is List) {
+        results.addAll(parsed);
+      } else if (parsed != null) {
+        results.add(parsed);
       }
 
       return results;
     } catch (e) {
-      debugPrint("searchPackages Exception: $e");
+      debugPrint("searchPackages Error: $e");
       return [];
     } finally {
-      if (activeSearchProcess == process) activeSearchProcess = null;
+      activeSearchProcess = null;
     }
   }
 
-  /// Robust JSON parsing that finds the first JSON block or array
   dynamic _tryParseJson(String input) {
-    if (input.trim().isEmpty) return null;
+    final cleanInput = input.trim();
+    if (cleanInput.isEmpty) return null;
     try {
-      // 1. Try direct decoding
-      return jsonDecode(input);
+      return jsonDecode(cleanInput);
     } catch (_) {
-      // 2. Handle AI special separator
-      const separator = "###JSON_START###";
-      String target = input;
-      if (input.contains(separator)) {
-        target = input.split(separator).last.trim();
-      }
-
-      // 3. Fallback: Find the last [ ... ] block (usually where AI or backend puts the results)
-      final start = target.lastIndexOf('[');
-      final end = target.lastIndexOf(']');
-      if (start != -1 && end != -1 && end > start) {
+      // Defensive: search for valid JSON blocks if output is noisy
+      final jsonPattern = RegExp(r'(\[.*\]|\{.*\})', dotAll: true);
+      final matches = jsonPattern.allMatches(cleanInput);
+      if (matches.isNotEmpty) {
+        final match = matches.last;
         try {
-          return jsonDecode(target.substring(start, end + 1));
+          return jsonDecode(match.group(0)!);
         } catch (e) {
-          debugPrint("Failed to parse extracted JSON block: $e");
+          debugPrint("Defensive JSON parse failed: $e");
         }
       }
-
-      // 4. Fallback: Find the last { ... } block
-      final startBrace = target.lastIndexOf('{');
-      final endBrace = target.lastIndexOf('}');
-      if (startBrace != -1 && endBrace != -1 && endBrace > startBrace) {
-        try {
-          return jsonDecode(target.substring(startBrace, endBrace + 1));
-        } catch (e) {
-          debugPrint("Failed to parse extracted JSON object: $e");
-        }
-      }
-
       return null;
     }
   }
 
-  /// 获取已安装列表
   Future<List<dynamic>> listInstalled() async {
-    final result = await _safeRun(["-L", "--json"],
-        timeout: const Duration(seconds: 30));
-    if (result == null || result.exitCode != 0) return [];
-
-    final parsed = _tryParseJson(result.stdout.toString());
-    return parsed is List ? parsed : [];
+    final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
+    if (res == null || res.exitCode != 0) return [];
+    final data = _tryParseJson(res.stdout.toString());
+    return data is List ? data : [];
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
-    final result = await _safeRun(
-      ["--get-config", "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    if (result == null || result.exitCode != 0) return {};
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is! Map<String, dynamic>) return {};
-
-    // Update global AI status
-    final ai = data['ai'] as Map<String, dynamic>?;
-    isAIEnabled.value = ai?['enabled'] ?? false;
-
-    return data;
+    final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
+    if (res == null) return {};
+    final data = _tryParseJson(res.stdout.toString());
+    if (data is Map<String, dynamic>) {
+      isAIEnabled.value = data['ai']?['enabled'] ?? false;
+      return data;
+    }
+    return {};
   }
 
-  /// AI 解释应用
-  Future<String> aiExplain(String appName, String description) async {
-    if (appName.trim().isEmpty) return "Error: appName is empty";
-    final result = await _safeRun(
-      ["--ai-explain", appName, "--ai-desc", description, "--json"],
-      timeout: const Duration(seconds: 60),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
+  Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
+    final res = await _safeRun([...args, "--json"], timeout: timeout);
+    if (res == null) return "AI 连接超时，请稍后重试。";
+    final data = _tryParseJson(res.stdout.toString());
+    return (data is Map) ? (data['response'] ?? "AI 未能提供有效响应。") : "AI 响应解析失败。";
   }
 
-  /// AI 更新内容总结
-  Future<String> aiSummarizeUpdate(
-    String name,
-    String current,
-    String next,
-  ) async {
-    if (name.trim().isEmpty) return "Error: name is empty";
-    final result = await _safeRun(
-      ["--ai-changelog", "$name,$current,$next", "--json"],
-      timeout: const Duration(seconds: 45),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI CLI 命令生成
-  Future<String> aiGenerateCLI(String name, String source) async {
-    if (name.trim().isEmpty) return "";
-    final result = await _safeRun(
-      ["--ai-cli", "$name,$source", "--json"],
-      timeout: const Duration(seconds: 20),
-    );
-    if (result == null) return "";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "";
-    return "";
-  }
-
-  /// AI 冲突检测
-  Future<String> aiDetectConflicts(String name) async {
-    if (name.trim().isEmpty) return "Error: name is empty";
-    final result = await _safeRun(
-      ["--ai-conflicts", name, "--json"],
-      timeout: const Duration(seconds: 45),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI 每日推荐
-  Future<String> aiPickOfTheDay() async {
-    final result = await _safeRun(
-      ["--ai-pick", "--json"],
-      timeout: const Duration(seconds: 30),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI 搜索纠错
-  Future<String> aiSuggestCorrection(String query) async {
-    if (query.trim().isEmpty) return "";
-    final result = await _safeRun(
-      ["--ai-correct", query, "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    if (result == null) return "";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "";
-    return "";
-  }
-
-  /// AI 版本比较
-  Future<String> aiCompareVariants(String appName) async {
-    if (appName.trim().isEmpty) return "Error: appName is empty";
-    final result = await _safeRun(
-      ["--ai-compare", appName, "--json"],
-      timeout: const Duration(seconds: 45),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI 系统健康报告
-  Future<String> aiSystemHealth() async {
-    final result = await _safeRun(
-      ["--ai-health", "--json"],
-      timeout: const Duration(seconds: 45),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI 分析错误
-  Future<String> aiAnalyzeError(String errorLog) async {
-    if (errorLog.trim().isEmpty) return "Error: errorLog is empty";
-    final result = await _safeRun(
-      ["--ai-analyze-error", errorLog, "--json"],
-      timeout: const Duration(seconds: 45),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
-
-  /// AI 推荐应用
-  Future<String> aiRecommend(String prompt) async {
-    if (prompt.trim().isEmpty) return "Error: prompt is empty";
-    final result = await _safeRun(
-      ["--ai-recommend", prompt, "--json"],
-      timeout: const Duration(seconds: 60),
-    );
-    if (result == null) return "AI Error: execution failed";
-
-    final data = _tryParseJson(result.stdout.toString());
-    if (data is Map) return data['response'] ?? "AI Error: No response";
-    return "AI Error: Invalid response format";
-  }
+  Future<String> aiExplain(String name, String desc) => _aiCall(["--ai-explain", name, "--ai-desc", desc]);
+  Future<String> aiSummarizeUpdate(String n, String c, String next) => _aiCall(["--ai-changelog", "$n,$c,$next"]);
+  Future<String> aiGenerateCLI(String n, String s) => _aiCall(["--ai-cli", "$n,$s"], timeout: const Duration(seconds: 20));
+  Future<String> aiDetectConflicts(String n) => _aiCall(["--ai-conflicts", n]);
+  Future<String> aiPickOfTheDay() => _aiCall(["--ai-pick"]);
+  Future<String> aiSuggestCorrection(String q) => _aiCall(["--ai-correct", q], timeout: const Duration(seconds: 15));
+  Future<String> aiCompareVariants(String n) => _aiCall(["--ai-compare", n]);
+  Future<String> aiSystemHealth() => _aiCall(["--ai-health"]);
+  Future<String> aiAnalyzeError(String log) => _aiCall(["--ai-analyze-error", log]);
+  Future<String> aiRecommend(String p) => _aiCall(["--ai-recommend", p], timeout: const Duration(seconds: 90));
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     try {
-      final process = await _safeStart(["--set-config", "stdin", "--json"]);
-      if (process == null) return false;
-
+      final process = await Process.start(_venvPython, _buildArgs(["--set-config", "stdin", "--json"]), workingDirectory: _workingDir);
       process.stdin.write(jsonEncode(config));
       await process.stdin.close();
-
-      final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 10),
-      );
-      return exitCode == 0;
+      final code = await process.exitCode.timeout(const Duration(seconds: 10));
+      return code == 0;
     } catch (e) {
-      debugPrint("saveConfig Exception: $e");
+      debugPrint("saveConfig Error: $e");
       return false;
     }
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
-    final result = await _safeRun(
-      ["--check-env", "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    if (result == null) return {};
-
-    final data = _tryParseJson(result.stdout.toString());
-    return data is Map<String, dynamic> ? data : {};
+    final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
+    return (data is Map<String, dynamic>) ? data : {};
   }
 
   Stream<String> bootstrap() => _safeStream(["--bootstrap", "--json"]);
 
-  /// 获取动态推荐 (已分类)
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    final result = await _safeRun(["--recommend", "--json"],
-        timeout: const Duration(seconds: 20));
-    if (result == null || result.exitCode != 0) return {};
-
-    final output = result.stdout.toString().trim();
-    if (output.isEmpty) return {};
-
-    try {
-      final dynamic data = jsonDecode(output);
-      if (data is Map<String, dynamic>) {
-        final Map<String, List<AppPackage>> categories = {};
-        data.forEach((key, value) {
-          if (value is List) {
-            categories[key] = value
-                .map(
-                  (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-                )
-                .toList();
-          }
-        });
-        return categories;
-      } else if (data is List) {
-        return {
-          "featured": data
-              .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
-              .toList(),
-        };
-      }
-    } catch (e) {
-      debugPrint("getRecommendations JSON parse error: $e");
+    final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
+    if (res == null) return {};
+    final data = _tryParseJson(res.stdout.toString());
+    final Map<String, List<AppPackage>> result = {};
+    if (data is Map) {
+      data.forEach((k, v) {
+        if (v is List) {
+          result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
+        }
+      });
+    } else if (data is List) {
+      result["featured"] = data.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
     }
-    return {};
+    return result;
   }
 
-  /// 启动应用
-  Future<bool> launchApp(String name, String source) async {
-    try {
-      final result = await Process.run(
-        _venvPython,
-        _buildArgs(["--launch", name, "--source", source, "--json"]),
-        workingDirectory: _workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+  Future<bool> launchApp(String n, String s) async {
+    final res = await _safeRun(["--launch", n, "--source", s, "--json"], timeout: const Duration(seconds: 10));
+    return res?.exitCode == 0;
   }
 
-  /// 定位应用
-  Future<bool> locateApp(String name, String source) async {
-    if (name.trim().isEmpty) return false;
-    final result = await _safeRun(
-      ["--launch", name, "--source", source, "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    return result?.exitCode == 0;
+  Future<bool> locateApp(String n, String s) async {
+    final res = await _safeRun(["--locate", n, "--source", s, "--json"], timeout: const Duration(seconds: 10));
+    return res?.exitCode == 0;
   }
 
-  /// 获取应用详情 (从 Flathub 等外部源)
-  Future<Map<String, dynamic>> getAppDetails(String appId) async {
-    final trimmedId = appId.trim();
-    if (trimmedId.isEmpty) return {};
-
-    final result = await _safeRun(["--details", trimmedId, "--json"],
-        timeout: const Duration(seconds: 20));
-    if (result == null || result.exitCode != 0) return {};
-
-    final data = _tryParseJson(result.stdout.toString());
-    return data is Map<String, dynamic> ? data : {};
+  Future<Map<String, dynamic>> getAppDetails(String id) async {
+    final res = await _safeRun(["--details", id, "--json"], timeout: const Duration(seconds: 25));
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
+    return (data is Map<String, dynamic>) ? data : {};
   }
 
-  Future<List<String>> getPacmanMirrors() async {
-    final config = await loadConfig();
-    final customRepos = config['custom_repos'] as Map<String, dynamic>?;
-    final pacman = customRepos?['pacman'] as List<dynamic>? ?? [];
-    return pacman.map((entry) {
-      if (entry is Map<String, dynamic>) {
-        final name = entry['name']?.toString() ?? '';
-        final url = entry['url']?.toString() ?? '';
-        return name.isNotEmpty && url.isNotEmpty
-            ? '$name|$url'
-            : entry.toString();
-      }
-      return entry.toString();
-    }).toList();
+  Stream<String> executeAction(String f, String n, String s, {String? url}) {
+    if (n.trim().isEmpty) return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
+    List<String> args = [f, n, "--source", s, "--json"];
+    if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
+    return _safeStream(args);
   }
 
-  Future<bool> savePacmanMirrors(List<String> mirrors) async {
-    final config = await loadConfig();
-    final customRepos = Map<String, dynamic>.from(
-      config['custom_repos'] as Map? ?? {},
-    );
-    customRepos['pacman'] = mirrors.map((entry) {
-      final parts = entry.split('|');
-      if (parts.length == 2) {
-        return {'name': parts[0].trim(), 'url': parts[1].trim()};
-      }
-      return {'name': entry.trim(), 'url': entry.trim()};
-    }).toList();
-    config['custom_repos'] = customRepos;
-    return saveConfig(config);
-  }
-
-  Stream<String> executeAction(
-    String flag,
-    String packageName,
-    String source, {
-    String? url,
-  }) async* {
-    final trimmedPkg = packageName.trim();
-    if (trimmedPkg.isEmpty) {
-      yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";
-      return;
-    }
-
-    List<String> args = [flag, trimmedPkg, "--source", source, "--json"];
-    if (url != null && url.trim().isNotEmpty) {
-      args.addAll(["--url", url.trim()]);
-    }
-
-    yield* _safeStream(args);
-  }
-
-  /// 检查更新
   Future<List<dynamic>> checkUpdates() async {
-    final result = await _safeRun(["-C", "--json"],
-        timeout: const Duration(seconds: 45));
-    if (result == null || result.exitCode != 0) return [];
-
-    final parsed = _tryParseJson(result.stdout.toString());
-    return parsed is List ? parsed : [];
+    final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
+    return data is List ? data : [];
   }
 
-  /// 更新所有
-  Stream<String> updateAll(String source) =>
-      _safeStream(["-U", "all", "--source", source, "--json"]);
+  Stream<String> updateAll(String s) => _safeStream(["-U", "all", "--source", s, "--json"]);
 
-  /// 获取必备包
   Future<List<dynamic>> getEssentials() async {
-    final result = await _safeRun(
-      ["--essentials", "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    if (result == null || result.exitCode != 0) return [];
-    final data = _tryParseJson(result.stdout.toString());
+    final res = await _safeRun(["--essentials", "--json"]);
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
     return data is List ? data : [];
   }
 
-  /// 导入包
-  Future<List<dynamic>> importPackages(String filepath) async {
-    if (filepath.trim().isEmpty) return [];
-    final result = await _safeRun(
-      ["--import-packages", filepath, "--json"],
-      timeout: const Duration(seconds: 15),
-    );
-    if (result == null || result.exitCode != 0) return [];
-    final data = _tryParseJson(result.stdout.toString());
+  Future<List<dynamic>> importPackages(String path) async {
+    final res = await _safeRun(["--import-packages", path, "--json"]);
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
     return data is List ? data : [];
   }
 
-  /// 导出包列表
-  Future<Map<String, dynamic>> exportPackages(String filepath) async {
-    if (filepath.trim().isEmpty) return {"status": "error", "message": "empty path"};
-    final result = await _safeRun(
-      ["--export-packages", filepath],
-      timeout: const Duration(seconds: 20),
-    );
-    if (result == null || result.exitCode != 0) {
-      return {"status": "error", "message": "execution failed"};
-    }
-    final data = _tryParseJson(result.stdout.toString());
-    return data is Map<String, dynamic> ? data : {"status": "error"};
+  Future<Map<String, dynamic>> exportPackages(String path) async {
+    final res = await _safeRun(["--export-packages", path, "--json"], timeout: const Duration(seconds: 30));
+    final data = _tryParseJson(res?.stdout?.toString() ?? "");
+    return (data is Map<String, dynamic>) ? data : {"status": "error"};
   }
 
-  /// 清理系统（孤立包和缓存）
   Stream<String> cleanSystem() => _safeStream(["--clean-system", "--json"]);
 }
