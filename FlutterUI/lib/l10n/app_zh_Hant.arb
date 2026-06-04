@@ -441,6 +441,10 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
+  "systemCleaningDesc": "刪除孤立套件並清理 pacman 快取",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
   "systemCleaningSubtitle": "刪除孤立套件並清理 pacman 快取",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
@@ -528,6 +532,18 @@
   "@add": {
     "description": "Add action label"
   },
+  "general": "一般",
+  "@general": {
+    "description": "general"
+  },
+  "advanced": "進階",
+  "@advanced": {
+    "description": "advanced"
+  },
+  "repositories": "軟體庫",
+  "@repositories": {
+    "description": "repositories"
+  },
   "aiSettings": "AI 助手設定",
   "@aiSettings": {
     "description": "Title for AI assistant settings"
@@ -535,6 +551,10 @@
   "aiEnabled": "啟用 AI 助手",
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
+  },
+  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解釋和錯誤診斷。",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI 服務商",
   "@aiProvider": {
@@ -616,7 +636,7 @@
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
-  "aiThinking": "AI 正在思考中...",
+  "aiThinking": "AI 正在思考...",
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
@@ -1090,5 +1110,25 @@
   },
   "@next": {
     "description": "Next button label"
+  },
+  "advanced": "進階",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "general": "一般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "repositories": "軟體倉庫",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aurFull": "AUR (Arch 使用者軟體倉庫)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
   }
 }
