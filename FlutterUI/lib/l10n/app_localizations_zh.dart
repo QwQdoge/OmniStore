@@ -530,10 +530,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get delete => '删除';
 
   @override
-  String get welcomeTitle => '欢迎使用 OmniStore';
+  String get welcomeTitle => '欢迎来到 OmniStore';
 
   @override
-  String get welcomeSubtitle => '为你提供简单、优雅的 Arch Linux 应用管理体验';
+  String get welcomeSubtitle => '为您提供简单、优雅的 Arch Linux 应用管理体验';
 
   @override
   String get getStarted => '开始使用';
@@ -545,16 +545,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '我们需要确保你的系统已准备就绪';
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '你的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的组件，我们可以为你自动配置。';
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！你的系统非常完美。';
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -566,7 +566,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigTitle => '应用源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择你想要启用的应用来源';
+  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
@@ -575,13 +575,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 软件包由用户上传，请确保你信任其来源。';
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
 
   @override
   String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '如果你遇到问题，请通过 GitHub 反馈给我们。';
+  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -590,7 +590,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
 
   @override
-  String get aiProviderDesc => '选择你的 AI 模型来源 (本地或云端)';
+  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
 
   @override
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
@@ -610,7 +610,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果你使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -625,7 +625,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
 
   @override
-  String get resetCacheConfirm => '这将清空你的搜索历史和推荐缓存。是否继续？';
+  String get resetCacheConfirm => '这将清空您的搜索历史和推荐缓存。是否继续？';
 
   @override
   String get resetting => '正在重置...';
