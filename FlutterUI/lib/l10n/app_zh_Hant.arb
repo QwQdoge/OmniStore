@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "動態",
+  "activity": "任務動態",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -640,7 +640,7 @@
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
-  "magicSearch": "魔法搜尋",
+  "magicSearch": "智慧搜尋",
   "@magicSearch": {
     "description": "Title for magic search feature"
   },
@@ -648,7 +648,7 @@
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 命令產生器",
+  "aiCliTitle": "AI 命令列助手",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },

@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "アクティビティ",
+  "activity": "タスク履歴",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -637,7 +637,7 @@
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "マジック検索",
+  "magicSearch": "スマート検索",
   "@magicSearch": {
     "description": "magicSearch"
   },
