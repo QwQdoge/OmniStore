@@ -96,6 +96,7 @@ class BackendService {
   static final ValueNotifier<List<String>> globalLogs = ValueNotifier([]);
   static final ValueNotifier<int> navigationIndex = ValueNotifier(0);
   static final ValueNotifier<String?> pendingSearchQuery = ValueNotifier(null);
+  static final ValueNotifier<List<Map<String, dynamic>>> availableSources = ValueNotifier([]);
 
   static Process? activeProcess;
   static Process? activeSearchProcess;
