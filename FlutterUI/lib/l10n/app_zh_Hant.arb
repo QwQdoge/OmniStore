@@ -534,15 +534,15 @@
   },
   "general": "一般",
   "@general": {
-    "description": "general"
+    "description": "Section title for general settings"
   },
   "advanced": "進階",
   "@advanced": {
-    "description": "advanced"
+    "description": "Label for advanced settings toggle"
   },
-  "repositories": "軟體庫",
+  "repositories": "軟體倉庫",
   "@repositories": {
-    "description": "repositories"
+    "description": "Section title for software repositories"
   },
   "aiSettings": "AI 助手設定",
   "@aiSettings": {
@@ -1110,18 +1110,6 @@
   },
   "@next": {
     "description": "Next button label"
-  },
-  "advanced": "進階",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "general": "一般",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "repositories": "軟體倉庫",
-  "@repositories": {
-    "description": "Section title for software repositories"
   },
   "aurFull": "AUR (Arch 使用者軟體倉庫)",
   "@aurFull": {

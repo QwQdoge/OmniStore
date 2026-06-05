@@ -532,17 +532,17 @@
   "@add": {
     "description": "Add action label"
   },
-  "general": "通用",
+  "general": "常规",
   "@general": {
-    "description": "general"
+    "description": "Section title for general settings"
   },
   "advanced": "高级",
   "@advanced": {
-    "description": "advanced"
+    "description": "Label for advanced settings toggle"
   },
   "repositories": "软件仓库",
   "@repositories": {
-    "description": "repositories"
+    "description": "Section title for software repositories"
   },
   "aiSettings": "AI 助手设置",
   "@aiSettings": {
@@ -713,11 +713,11 @@
   "@delete": {
     "description": "Description for delete"
   },
-  "welcomeTitle": "欢迎使用 OmniStore",
+  "welcomeTitle": "欢迎来到 OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
   },
-  "welcomeSubtitle": "为你提供简单、优雅的 Arch Linux 应用管理体验",
+  "welcomeSubtitle": "为您提供简单、优雅的 Arch Linux 应用管理体验",
   "@welcomeSubtitle": {
     "description": "Description for welcomeSubtitle"
   },
@@ -733,19 +733,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "我们需要确保你的系统已准备就绪",
+  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "你的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
+  "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少一些必要的组件，我们可以为你自动配置。",
+  "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！你的系统非常完美。",
+  "envOkDesc": "一切就绪！您的系统非常完美。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -761,7 +761,7 @@
   "@sourceConfigTitle": {
     "description": "Description for sourceConfigTitle"
   },
-  "sourceConfigSubtitle": "选择你想要启用的应用来源",
+  "sourceConfigSubtitle": "选择您想要启用的应用来源",
   "@sourceConfigSubtitle": {
     "description": "Description for sourceConfigSubtitle"
   },
@@ -773,7 +773,7 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 软件包由用户上传，请确保你信任其来源。",
+  "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
@@ -781,7 +781,7 @@
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
-  "feedbackDesc": "如果你遇到问题，请通过 GitHub 反馈给我们。",
+  "feedbackDesc": "如果您遇到问题，请通过 GitHub 反馈给我们。",
   "@feedbackDesc": {
     "description": "Description for feedbackDesc"
   },
@@ -793,7 +793,7 @@
   "@aiAssistantDesc": {
     "description": "Description for aiAssistantDesc"
   },
-  "aiProviderDesc": "选择你的 AI 模型来源 (本地或云端)",
+  "aiProviderDesc": "选择您的 AI 模型来源 (本地或云端)",
   "@aiProviderDesc": {
     "description": "Description for aiProviderDesc"
   },
@@ -817,7 +817,7 @@
   "@gotIt": {
     "description": "Description for gotIt"
   },
-  "aiOllamaNote": "提示：如果你使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
   "@aiOllamaNote": {
     "description": "Description for aiOllamaNote"
   },
@@ -837,7 +837,7 @@
   "@resetCacheDesc": {
     "description": "Description for resetCacheDesc"
   },
-  "resetCacheConfirm": "这将清空你的搜索历史和推荐缓存。是否继续？",
+  "resetCacheConfirm": "这将清空您的搜索历史和推荐缓存。是否继续？",
   "@resetCacheConfirm": {
     "description": "Description for resetCacheConfirm"
   },
@@ -1111,18 +1111,6 @@
   },
   "@next": {
     "description": "Next button label"
-  },
-  "advanced": "高级",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "general": "常规",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "repositories": "软件仓库",
-  "@repositories": {
-    "description": "Section title for software repositories"
   },
   "aurFull": "AUR (Arch 用户软件仓库)",
   "@aurFull": {

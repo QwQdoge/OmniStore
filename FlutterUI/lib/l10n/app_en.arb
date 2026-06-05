@@ -531,15 +531,15 @@
   },
   "general": "General",
   "@general": {
-    "description": "general"
+    "description": "Section title for general settings"
   },
   "advanced": "Advanced",
   "@advanced": {
-    "description": "advanced"
+    "description": "Label for advanced settings toggle"
   },
   "repositories": "Repositories",
   "@repositories": {
-    "description": "repositories"
+    "description": "Section title for software repositories"
   },
   "aiSettings": "AI Assistant Settings",
   "@aiSettings": {
@@ -1107,18 +1107,6 @@
   },
   "@next": {
     "description": "Next button label"
-  },
-  "advanced": "Advanced",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "general": "General",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "repositories": "Repositories",
-  "@repositories": {
-    "description": "Section title for software repositories"
   },
   "aurFull": "AUR (Arch User Repository)",
   "@aurFull": {
