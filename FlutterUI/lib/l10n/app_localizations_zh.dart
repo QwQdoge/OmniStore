@@ -83,7 +83,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching => '正在搜索...';
 
   @override
-  String get activity => '动态';
+  String get activity => '任务动态';
 
   @override
   String get category => '分类';
@@ -151,7 +151,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancel => '取消';
 
   @override
-  String get confirm => '确定';
+  String get confirm => '确认';
 
   @override
   String get terminalOutput => '终端输出';
@@ -476,13 +476,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiThinking => 'AI 正在思考...';
 
   @override
-  String get magicSearch => '魔法搜索';
+  String get magicSearch => '智能搜索';
 
   @override
   String get aiChangelogTitle => 'AI 更新总结';
 
   @override
-  String get aiCliTitle => 'AI 命令生成';
+  String get aiCliTitle => 'AI 命令行助手';
 
   @override
   String get aiConflictTitle => 'AI 冲突检测';
@@ -907,7 +907,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searching => '搜尋中...';
 
   @override
-  String get activity => '動態';
+  String get activity => '任務動態';
 
   @override
   String get category => '分類';
@@ -1300,13 +1300,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiThinking => 'AI 正在思考...';
 
   @override
-  String get magicSearch => '魔法搜尋';
+  String get magicSearch => '智慧搜尋';
 
   @override
   String get aiChangelogTitle => 'AI 更新摘要';
 
   @override
-  String get aiCliTitle => 'AI 命令產生器';
+  String get aiCliTitle => 'AI 命令列助手';
 
   @override
   String get aiConflictTitle => 'AI 衝突偵測';

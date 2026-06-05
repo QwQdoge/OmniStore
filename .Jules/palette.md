@@ -61,3 +61,17 @@
 **Learning:** Duplicating complex `TextStyle` definitions for headers across multiple files makes theme updates difficult.
 
 **Action:** Consolidate standardized typography into static methods in the theme class (e.g., `OmnistoreTheme.standardHeader(context)`) to ensure effortless consistency.
+
+## 2026-06-05 - Refined Badge System & Header Responsiveness
+
+**Learning:** Combining multiple metadata tags (Stars, Status, Source) in a `Row` is a common source of overflow on narrow viewports. Using a `Wrap` with consistent spacing ensures a graceful layout across all devices.
+
+**Action:** Prefer `Wrap` for metadata clusters in page headers.
+
+**Learning:** Unifying "Installed/Ready" status with existing source/trust tags into a single `AppSourceTag` widget reduces visual noise and ensures consistent styling (padding, radius, typography).
+
+**Action:** Use a single polymorphic widget (like `AppSourceTag`) for all similar "badge" elements.
+
+**Learning:** Accessibility isn't just about labels; it's also about providing context. Adding `Tooltip` and `Semantics` to small visual tags ensures they are useful for both mouse users and screen reader users.
+
+**Action:** Always wrap small status tags in `Tooltip` and `Semantics`.
