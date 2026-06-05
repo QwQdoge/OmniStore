@@ -15,6 +15,7 @@ import 'package:frontend/services/category_service.dart';
 import 'package:frontend/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -132,11 +133,7 @@ class _HomePageState extends State<HomePage> {
             if (settings.isAIEnabled)
               SliverToBoxAdapter(
                 child: _isAILoading
-                    ? Container(
-                        margin: const EdgeInsets.all(20),
-                        height: 100,
-                        child: const Center(child: CircularProgressIndicator()),
-                      )
+                    ? _buildAIPickSkeleton()
                     : (_aiPickBlurb != null
                           ? _buildAIPickSection()
                           : const SizedBox.shrink()),
@@ -431,6 +428,35 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(title, style: OmnistoreTheme.standardHeader(context)),
+    );
+  }
+
+  Widget _buildAIPickSkeleton() {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Skeleton(width: 24, height: 24, borderRadius: 12),
+              SizedBox(width: 8),
+              Skeleton(width: 140, height: 16),
+            ],
+          ),
+          SizedBox(height: 16),
+          Skeleton(width: double.infinity, height: 14),
+          SizedBox(height: 8),
+          Skeleton(width: 240, height: 14),
+          SizedBox(height: 16),
+          Skeleton(width: 120, height: 36, borderRadius: 18),
+        ],
+      ),
     );
   }
 

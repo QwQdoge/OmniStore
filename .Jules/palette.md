@@ -75,3 +75,9 @@
 **Learning:** Accessibility isn't just about labels; it's also about providing context. Adding `Tooltip` and `Semantics` to small visual tags ensures they are useful for both mouse users and screen reader users.
 
 **Action:** Always wrap small status tags in `Tooltip` and `Semantics`.
+
+## 2026-06-05 - Loading Experience Refinement with Skeleton Screens
+
+**Learning:** Replacing generic circular progress indicators with structured skeleton (shimmer) screens significantly improves perceived performance and visual stability. Skeletons should mimic the final content's layout (e.g., list items, paragraph lines, or card structures) to reduce layout shift when data arrives.
+
+**Action:** Prefer `Skeleton` screens over `CircularProgressIndicator` for content-heavy pages like app lists and details. Ensure skeletons match the target UI's hierarchy.
