@@ -10,6 +10,9 @@ class BackendService {
   factory BackendService() => instance;
   BackendService._internal();
 
+  // Registry for tracking all active subprocesses to prevent leaks
+  final Set<Process> _allProcesses = {};
+
   static String get _projectRoot {
     final searchRoots = <String>{Directory.current.path};
 
@@ -101,16 +104,36 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
+  // Foolproof validation helpers
+  void _validateString(String? val, String name) {
+    if (val == null || val.trim().isEmpty) {
+      throw ArgumentError("$name cannot be null or empty");
+    }
+  }
+
+  void _validatePath(String? path) {
+    if (path == null || path.trim().isEmpty) {
+      throw ArgumentError("Path cannot be null or empty");
+    }
+    // Basic protection against obvious malicious shell injections in paths if they ever reach a shell
+    if (path.contains(';') || path.contains('&') || path.contains('|')) {
+      throw ArgumentError("Invalid characters in path");
+    }
+  }
+
   /// Kill a process and its children using process groups on Linux.
   Future<void> _killProcess(Process? process) async {
     if (process == null) return;
+    _allProcesses.remove(process);
     try {
       if (Platform.isLinux) {
-        // Send SIGTERM to the entire process group
+        // Send SIGTERM to the entire process group (negative PID)
         await Process.run('kill', ['-TERM', '-${process.pid}']);
         // Wait a bit and force kill if still alive
         await Future.delayed(const Duration(milliseconds: 500));
-        await Process.run('kill', ['-KILL', '-${process.pid}']);
+        if (_isProcessAlive(process)) {
+          await Process.run('kill', ['-KILL', '-${process.pid}']);
+        }
       } else {
         process.kill(ProcessSignal.sigkill);
       }
@@ -118,6 +141,25 @@ class BackendService {
       debugPrint("Error killing process ${process.pid}: $e");
       process.kill(ProcessSignal.sigkill); // Fallback
     }
+  }
+
+  bool _isProcessAlive(Process p) {
+    try {
+      // On Linux/Unix, signal 0 checks if process exists
+      if (Platform.isLinux || Platform.isMacOS) {
+        return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
+      }
+    } catch (_) {}
+    return true; // Assume alive if check fails
+  }
+
+  /// Emergency cleanup of all tracked processes
+  Future<void> dispose() async {
+    final processes = List<Process>.from(_allProcesses);
+    for (final p in processes) {
+      await _killProcess(p);
+    }
+    _allProcesses.clear();
   }
 
   /// Safe wrapper for Process.run with mandatory timeout and exception handling.
@@ -130,11 +172,15 @@ class BackendService {
     }
 
     try {
-      return await Process.run(
+      final processFuture = Process.run(
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
-      ).timeout(timeout, onTimeout: () {
+      );
+      // Process.run doesn't give us the process object immediately,
+      // but we can't easily track it here without Process.start.
+      // However, most calls here are short-lived.
+      return await processFuture.timeout(timeout, onTimeout: () {
         debugPrint("BackendService._safeRun Timeout: $args");
         throw TimeoutException("Operation timed out after ${timeout.inSeconds}s");
       });
@@ -156,6 +202,7 @@ class BackendService {
         workingDirectory: _workingDir,
         runInShell: true, // Needed for proper signal propagation in some environments
       );
+      _allProcesses.add(process);
 
       // Bind to global lifecycle
       activeProcess = process;
@@ -174,6 +221,7 @@ class BackendService {
           }
         },
         onDone: () {
+          if (process != null) _allProcesses.remove(process);
           if (!controller.isClosed) controller.close();
           if (activeProcess == process) activeProcess = null;
         },
@@ -219,20 +267,28 @@ class BackendService {
   }
 
   Future<List<dynamic>> searchPackages(String query, {bool cancelOngoing = true}) async {
-    final trimmedQuery = query.trim();
-    if (trimmedQuery.length < 2) return [];
-
-    if (cancelOngoing && activeSearchProcess != null) {
-      await _killProcess(activeSearchProcess);
-      activeSearchProcess = null;
-    }
-
     try {
-      final process = await Process.start(_venvPython, _buildArgs(["-S", trimmedQuery, "--json"]), workingDirectory: _workingDir);
+      final trimmedQuery = query.trim();
+      if (trimmedQuery.length < 2) return [];
+
+      if (cancelOngoing && activeSearchProcess != null) {
+        await _killProcess(activeSearchProcess);
+        activeSearchProcess = null;
+      }
+
+      final process = await Process.start(
+        _venvPython,
+        _buildArgs(["-S", trimmedQuery, "--json"]),
+        workingDirectory: _workingDir,
+      );
+      _allProcesses.add(process);
       activeSearchProcess = process;
 
       final results = <dynamic>[];
-      final output = await process.stdout.transform(utf8.decoder).join().timeout(const Duration(seconds: 20));
+      final output = await process.stdout
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 20));
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
@@ -243,9 +299,10 @@ class BackendService {
 
       return results;
     } catch (e) {
-      debugPrint("searchPackages Error: $e");
+      debugPrint("searchPackages [query: $query] Error: $e");
       return [];
     } finally {
+      if (activeSearchProcess != null) _allProcesses.remove(activeSearchProcess);
       activeSearchProcess = null;
     }
   }
@@ -272,28 +329,46 @@ class BackendService {
   }
 
   Future<List<dynamic>> listInstalled() async {
-    final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
-    if (res == null || res.exitCode != 0) return [];
-    final data = _tryParseJson(res.stdout.toString());
-    return data is List ? data : [];
+    try {
+      final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
+      if (res == null || res.exitCode != 0) return [];
+      final data = _tryParseJson(res.stdout.toString());
+      return data is List ? data : [];
+    } catch (e) {
+      debugPrint("listInstalled Error: $e");
+      return [];
+    }
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
-    final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
-    if (res == null) return {};
-    final data = _tryParseJson(res.stdout.toString());
-    if (data is Map<String, dynamic>) {
-      isAIEnabled.value = data['ai']?['enabled'] ?? false;
-      return data;
+    try {
+      final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
+      if (res == null) return {};
+      final data = _tryParseJson(res.stdout.toString());
+      if (data is Map<String, dynamic>) {
+        isAIEnabled.value = data['ai']?['enabled'] ?? false;
+        return data;
+      }
+      return {};
+    } catch (e) {
+      debugPrint("loadConfig Error: $e");
+      return {};
     }
-    return {};
   }
 
   Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
-    final res = await _safeRun([...args, "--json"], timeout: timeout);
-    if (res == null) return "AI 连接超时，请稍后重试。";
-    final data = _tryParseJson(res.stdout.toString());
-    return (data is Map) ? (data['response'] ?? "AI 未能提供有效响应。") : "AI 响应解析失败。";
+    try {
+      final res = await _safeRun([...args, "--json"], timeout: timeout);
+      if (res == null) return "AI 连接超时，请稍后重试。";
+      final data = _tryParseJson(res.stdout.toString());
+      if (data is Map) {
+        return data['response']?.toString() ?? "AI 未能提供有效响应。";
+      }
+      return "AI 响应解析失败：格式不正确。";
+    } catch (e) {
+      debugPrint("_aiCall Error: $e");
+      return "AI 服务调用失败：$e";
+    }
   }
 
   Future<String> aiExplain(String name, String desc) => _aiCall(["--ai-explain", name, "--ai-desc", desc]);
@@ -308,8 +383,15 @@ class BackendService {
   Future<String> aiRecommend(String p) => _aiCall(["--ai-recommend", p], timeout: const Duration(seconds: 90));
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
+    Process? process;
     try {
-      final process = await Process.start(_venvPython, _buildArgs(["--set-config", "stdin", "--json"]), workingDirectory: _workingDir);
+      if (config.isEmpty) return false;
+      process = await Process.start(
+        _venvPython,
+        _buildArgs(["--set-config", "stdin", "--json"]),
+        workingDirectory: _workingDir,
+      );
+      _allProcesses.add(process);
       process.stdin.write(jsonEncode(config));
       await process.stdin.close();
       final code = await process.exitCode.timeout(const Duration(seconds: 10));
@@ -317,48 +399,80 @@ class BackendService {
     } catch (e) {
       debugPrint("saveConfig Error: $e");
       return false;
+    } finally {
+      if (process != null) _allProcesses.remove(process);
     }
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
-    final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return (data is Map<String, dynamic>) ? data : {};
+    try {
+      final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return (data is Map<String, dynamic>) ? data : {};
+    } catch (e) {
+      debugPrint("checkEnv Error: $e");
+      return {};
+    }
   }
 
   Stream<String> bootstrap() => _safeStream(["--bootstrap", "--json"]);
 
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
-    if (res == null) return {};
-    final data = _tryParseJson(res.stdout.toString());
-    final Map<String, List<AppPackage>> result = {};
-    if (data is Map) {
-      data.forEach((k, v) {
-        if (v is List) {
-          result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
-        }
-      });
-    } else if (data is List) {
-      result["featured"] = data.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
+    try {
+      final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
+      if (res == null) return {};
+      final data = _tryParseJson(res.stdout.toString());
+      final Map<String, List<AppPackage>> result = {};
+      if (data is Map) {
+        data.forEach((k, v) {
+          if (v is List) {
+            result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
+          }
+        });
+      } else if (data is List) {
+        result["featured"] = data.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
+      }
+      return result;
+    } catch (e) {
+      debugPrint("getRecommendations Error: $e");
+      return {};
     }
-    return result;
   }
 
   Future<bool> launchApp(String n, String s) async {
-    final res = await _safeRun(["--launch", n, "--source", s, "--json"], timeout: const Duration(seconds: 10));
-    return res?.exitCode == 0;
+    try {
+      _validateString(n, "App Name");
+      _validateString(s, "Source");
+      final res = await _safeRun(["--launch", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 10));
+      return res?.exitCode == 0;
+    } catch (e) {
+      debugPrint("launchApp [name: $n] Error: $e");
+      return false;
+    }
   }
 
   Future<bool> locateApp(String n, String s) async {
-    final res = await _safeRun(["--locate", n, "--source", s, "--json"], timeout: const Duration(seconds: 10));
-    return res?.exitCode == 0;
+    try {
+      _validateString(n, "App Name");
+      _validateString(s, "Source");
+      final res = await _safeRun(["--locate", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 10));
+      return res?.exitCode == 0;
+    } catch (e) {
+      debugPrint("locateApp [name: $n] Error: $e");
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>> getAppDetails(String id) async {
-    final res = await _safeRun(["--details", id, "--json"], timeout: const Duration(seconds: 25));
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return (data is Map<String, dynamic>) ? data : {};
+    try {
+      _validateString(id, "App ID");
+      final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return (data is Map<String, dynamic>) ? data : {};
+    } catch (e) {
+      debugPrint("getAppDetails [id: $id] Error: $e");
+      return {};
+    }
   }
 
   Stream<String> executeAction(String f, String n, String s, {String? url}) {
@@ -369,29 +483,58 @@ class BackendService {
   }
 
   Future<List<dynamic>> checkUpdates() async {
-    final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return data is List ? data : [];
+    try {
+      final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return data is List ? data : [];
+    } catch (e) {
+      debugPrint("checkUpdates Error: $e");
+      return [];
+    }
   }
 
-  Stream<String> updateAll(String s) => _safeStream(["-U", "all", "--source", s, "--json"]);
+  Stream<String> updateAll(String s) {
+    try {
+      _validateString(s, "Source");
+      return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
+    } catch (e) {
+      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] updateAll Error: $e\"}");
+    }
+  }
 
   Future<List<dynamic>> getEssentials() async {
-    final res = await _safeRun(["--essentials", "--json"]);
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return data is List ? data : [];
+    try {
+      final res = await _safeRun(["--essentials", "--json"]);
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return data is List ? data : [];
+    } catch (e) {
+      debugPrint("getEssentials Error: $e");
+      return [];
+    }
   }
 
   Future<List<dynamic>> importPackages(String path) async {
-    final res = await _safeRun(["--import-packages", path, "--json"]);
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return data is List ? data : [];
+    try {
+      _validatePath(path);
+      final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return data is List ? data : [];
+    } catch (e) {
+      debugPrint("importPackages [path: $path] Error: $e");
+      return [];
+    }
   }
 
   Future<Map<String, dynamic>> exportPackages(String path) async {
-    final res = await _safeRun(["--export-packages", path, "--json"], timeout: const Duration(seconds: 30));
-    final data = _tryParseJson(res?.stdout?.toString() ?? "");
-    return (data is Map<String, dynamic>) ? data : {"status": "error"};
+    try {
+      _validatePath(path);
+      final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return (data is Map<String, dynamic>) ? data : {"status": "error"};
+    } catch (e) {
+      debugPrint("exportPackages [path: $path] Error: $e");
+      return {"status": "error", "message": e.toString()};
+    }
   }
 
   Stream<String> cleanSystem() => _safeStream(["--clean-system", "--json"]);
