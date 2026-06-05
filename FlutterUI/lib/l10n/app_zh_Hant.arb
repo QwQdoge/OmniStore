@@ -84,7 +84,7 @@
   "@ready": {
     "description": "Description for ready"
   },
-  "resultsFound": "{count} 個結果",
+  "resultsFound": "找到 {count} 個結果",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "未找到結果",
+  "noResults": "暫無搜尋結果",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -136,7 +136,7 @@
   "@maxResults": {
     "description": "Description for maxResults"
   },
-  "appearance": "外觀",
+  "appearance": "介面外觀",
   "@appearance": {
     "description": "Description for appearance"
   },
@@ -156,7 +156,7 @@
   "@darkMode": {
     "description": "Description for darkMode"
   },
-  "loggingLevel": "日誌等級",
+  "loggingLevel": "日誌詳細程度",
   "@loggingLevel": {
     "description": "Description for loggingLevel"
   },
@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "配置已儲存",
+  "configSaved": "配置已儲存，部分更改將在重啟後生效",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -200,7 +200,7 @@
   "@terminalOutput": {
     "description": "Description for terminalOutput"
   },
-  "waitingForOutput": "等待輸出中...",
+  "waitingForOutput": "等待終端輸出...",
   "@waitingForOutput": {
     "description": "Description for waitingForOutput"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "發現 {count} 個更新",
+  "foundUpdates": "共有 {count} 項可更新",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -324,7 +324,7 @@
   "@exit": {
     "description": "Description for exit"
   },
-  "trayTooltipUpdates": "OmniStore: 發現 {count} 個更新",
+  "trayTooltipUpdates": "OmniStore: 共有 {count} 項可更新",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
     "placeholders": {
@@ -357,7 +357,7 @@
   "@resetOnboarding": {
     "description": "Description for resetOnboarding"
   },
-  "resetOnboardingConfirm": "確定要重置引導嗎？",
+  "resetOnboardingConfirm": "確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。",
   "@resetOnboardingConfirm": {
     "description": "Description for resetOnboardingConfirm"
   },
@@ -624,7 +624,7 @@
   "@aiCompareTitle": {
     "description": "Title for AI package comparison feature"
   },
-  "aiHealthTitle": "AI 系統健康報告",
+  "aiHealthTitle": "AI 系統健康診斷",
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
@@ -632,7 +632,7 @@
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiCorrection": "您是指？",
+  "aiCorrection": "您是指：",
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
@@ -648,7 +648,7 @@
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 命令列助手",
+  "aiCliTitle": "AI 命令生成器",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },
@@ -732,19 +732,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
+  "envCheckSubtitle": "正在確保系統環境已準備就緒",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
+  "envFatalDesc": "目前系統似乎並非基於 Arch Linux，大部分功能將不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
+  "envWarningDesc": "缺少必要的組件，建議立即進行自動配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就緒！您的系統非常完美。",
+  "envOkDesc": "一切就緒！系統環境完美符合要求。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -772,11 +772,11 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "aurWarning": "安全警告：AUR 軟體包由社群使用者維護，請確保您信任其來源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
+  "bootstrapNote": "注意：配置過程中可能需要多次輸入管理員 (sudo) 密碼。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -1069,7 +1069,7 @@
   "@taskSuccess": {
     "description": "Status message when a task completes successfully"
   },
-  "taskFailedWithCode": "任務失敗，結束代碼 {code}",
+  "taskFailedWithCode": "任務失敗 (錯誤碼: {code})",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {

@@ -84,7 +84,7 @@
   "@ready": {
     "description": "Description for ready"
   },
-  "resultsFound": "{count} 个结果",
+  "resultsFound": "找到 {count} 个结果",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "未找到结果",
+  "noResults": "暂无搜索结果",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -112,11 +112,11 @@
   "@packageManager": {
     "description": "Description for packageManager"
   },
-  "pacmanOfficial": "Pacman (官方)",
+  "pacmanOfficial": "Pacman (官方库)",
   "@pacmanOfficial": {
     "description": "Description for pacmanOfficial"
   },
-  "aurUser": "AUR (用户)",
+  "aurUser": "AUR (用户库)",
   "@aurUser": {
     "description": "Description for aurUser"
   },
@@ -136,7 +136,7 @@
   "@maxResults": {
     "description": "Description for maxResults"
   },
-  "appearance": "外观模式",
+  "appearance": "界面外观",
   "@appearance": {
     "description": "Description for appearance"
   },
@@ -156,7 +156,7 @@
   "@darkMode": {
     "description": "Description for darkMode"
   },
-  "loggingLevel": "日志记录等级",
+  "loggingLevel": "日志详细程度",
   "@loggingLevel": {
     "description": "Description for loggingLevel"
   },
@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "配置已保存，部分设置重启生效",
+  "configSaved": "配置已保存，部分更改将在重启后生效",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -200,7 +200,7 @@
   "@terminalOutput": {
     "description": "Description for terminalOutput"
   },
-  "waitingForOutput": "正在等待输出...",
+  "waitingForOutput": "等待终端输出...",
   "@waitingForOutput": {
     "description": "Description for waitingForOutput"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "发现 {count} 个更新",
+  "foundUpdates": "共有 {count} 项可更新",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -324,7 +324,7 @@
   "@exit": {
     "description": "Description for exit"
   },
-  "trayTooltipUpdates": "OmniStore: 发现 {count} 个更新",
+  "trayTooltipUpdates": "OmniStore: 共有 {count} 项可更新",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
     "placeholders": {
@@ -357,7 +357,7 @@
   "@resetOnboarding": {
     "description": "Description for resetOnboarding"
   },
-  "resetOnboardingConfirm": "确定要重置引导吗？下次启动将重新显示欢迎页面。",
+  "resetOnboardingConfirm": "确定要重置新手引导吗？下次启动时将重新显示欢迎页面。",
   "@resetOnboardingConfirm": {
     "description": "Description for resetOnboardingConfirm"
   },
@@ -625,7 +625,7 @@
   "@aiCompareTitle": {
     "description": "Title for AI package comparison feature"
   },
-  "aiHealthTitle": "AI 系统健康报告",
+  "aiHealthTitle": "AI 系统健康诊断",
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
@@ -633,7 +633,7 @@
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiCorrection": "你是说？",
+  "aiCorrection": "您是指：",
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
@@ -649,7 +649,7 @@
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 命令行助手",
+  "aiCliTitle": "AI 命令生成器",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },
@@ -733,19 +733,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
+  "envCheckSubtitle": "正在确保系统环境已准备就绪",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
+  "envFatalDesc": "当前系统似乎并非基于 Arch Linux，大部分功能将不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
+  "envWarningDesc": "缺少必要的组件，建议立即进行自动配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！您的系统非常完美。",
+  "envOkDesc": "一切就绪！系统环境完美符合要求。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -773,11 +773,11 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
+  "aurWarning": "安全警告：AUR 软件包由社区用户维护，请确保您信任其来源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
+  "bootstrapNote": "注意：配置过程中可能需要多次输入管理员 (sudo) 密码。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -1070,7 +1070,7 @@
   "@taskSuccess": {
     "description": "Status message when a task completes successfully"
   },
-  "taskFailedWithCode": "任务失败，退出码 {code}",
+  "taskFailedWithCode": "任务失败 (错误码: {code})",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {

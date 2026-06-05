@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "設定を保存しました",
+  "configSaved": "設定を保存しました。一部の変更は再起動後に有効になります",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "{count} 件の更新が見つかりました",
+  "foundUpdates": "合計 {count} 件の更新が利用可能です",
   "@foundUpdates": {
     "placeholders": {
       "count": {
