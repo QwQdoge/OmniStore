@@ -54,7 +54,7 @@ EOF
 
   cd "${srcdir}/omnistore"  
   # 3. 顺便检查你这里有没有给你的脚本传参！如果是想编译全部，记得加上 --all
-  python auto_build.py --all
+  python auto_build.py --all --platform linux --output-dir release_bundle
 }
 
 package() {
@@ -65,7 +65,7 @@ package() {
 
   # 2. 拷贝 Flutter bundle 里的所有东西 (由 auto_build.py 生成)
   # 注意：auto_build.py 已经把 backends 组装到了 bundle 目录里
-  cp -r FlutterUI/build/linux/x64/release/bundle/* "${pkgdir}/opt/omnistore/"
+  cp -r release_bundle/* "${pkgdir}/opt/omnistore/"
 
   # 3. 在系统的 /usr/bin 下建一个软链接
   install -d "${pkgdir}/usr/bin"
