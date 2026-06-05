@@ -766,56 +766,29 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 4),
-              Row(
+              Text(
+                widget.app.name,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.0,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Expanded(
-                    child: Text(
-                      widget.app.name,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.0,
-                      ),
-                    ),
-                  ),
-                  if (_githubRepositoryUrl != null) ...[
-                    const SizedBox(width: 8),
+                  if (_githubRepositoryUrl != null)
                     GitHubStarBadge(
                       client: context.read<GitHubClient>(),
                       repositoryUrl: _githubRepositoryUrl,
                     ),
-                  ],
-                  if (_isAppInstalled) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            size: 16,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            AppLocalizations.of(context)!.ready,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                  if (_isAppInstalled)
+                    AppSourceTag(
+                      source: _selectedSource,
+                      mode: AppSourceTagMode.ready,
                     ),
-                    const SizedBox(width: 8),
-                  ],
                   AppSourceTag(
                     source: _selectedSource,
                     mode: AppSourceTagMode.trust,

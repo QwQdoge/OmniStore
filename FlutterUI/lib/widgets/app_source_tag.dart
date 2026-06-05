@@ -7,18 +7,23 @@ enum AppSourceTagMode {
 
   /// Displays the raw source name (Pacman, AUR, Flatpak, etc.)
   source,
+
+  /// Displays the installation status (Ready/Installed)
+  ready,
 }
 
 class AppSourceTag extends StatelessWidget {
   final String source;
   final AppSourceTagMode mode;
   final bool isSmall;
+  final String? tooltip;
 
   const AppSourceTag({
     super.key,
     required this.source,
     this.mode = AppSourceTagMode.source,
     this.isSmall = false,
+    this.tooltip,
   });
 
   @override
@@ -31,7 +36,11 @@ class AppSourceTag extends StatelessWidget {
     Color color;
     IconData? icon;
 
-    if (mode == AppSourceTagMode.trust) {
+    if (mode == AppSourceTagMode.ready) {
+      label = l10n.ready;
+      color = colorScheme.primary;
+      icon = Icons.check_circle_rounded;
+    } else if (mode == AppSourceTagMode.trust) {
       if (source == "Pacman" || source == "Native") {
         label = l10n.official;
         color = Colors.blue;
@@ -60,15 +69,20 @@ class AppSourceTag extends StatelessWidget {
       }
     }
 
-    return Container(
+    final tagContent = Container(
       padding: EdgeInsets.symmetric(
         horizontal: isSmall ? 6 : 10,
         vertical: isSmall ? 2 : 4,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
+        color: (mode == AppSourceTagMode.ready)
+            ? colorScheme.primaryContainer.withValues(alpha: 0.7)
+            : colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(isSmall ? 6 : 8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -88,5 +102,21 @@ class AppSourceTag extends StatelessWidget {
         ],
       ),
     );
+
+    return Semantics(
+      label: "${mode.name}: $label",
+      child: tooltip != null || mode == AppSourceTagMode.trust
+          ? Tooltip(
+              message: tooltip ?? _getTrustTooltip(l10n),
+              child: tagContent,
+            )
+          : tagContent,
+    );
+  }
+
+  String _getTrustTooltip(AppLocalizations l10n) {
+    if (source == "Pacman" || source == "Native") return l10n.official;
+    if (source == "Flatpak") return l10n.verified;
+    return l10n.community;
   }
 }

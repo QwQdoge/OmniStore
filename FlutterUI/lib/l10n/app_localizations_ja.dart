@@ -83,7 +83,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searching => '検索中...';
 
   @override
-  String get activity => 'アクティビティ';
+  String get activity => 'タスク履歴';
 
   @override
   String get category => 'カテゴリー';
@@ -478,7 +478,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiThinking => 'AI が考え中...';
 
   @override
-  String get magicSearch => 'マジック検索';
+  String get magicSearch => 'スマート検索';
 
   @override
   String get aiChangelogTitle => 'AI 更新サマリー';

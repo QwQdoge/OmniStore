@@ -69,7 +69,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get version => 'Versión';
 
   @override
-  String get ready => 'Listo';
+  String get ready => 'Instalado';
 
   @override
   String resultsFound(int count) {
@@ -481,7 +481,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiThinking => 'La IA está pensando...';
 
   @override
-  String get magicSearch => 'Búsqueda mágica';
+  String get magicSearch => 'Búsqueda inteligente';
 
   @override
   String get aiChangelogTitle => 'Resumen de actualizaciones por IA';
