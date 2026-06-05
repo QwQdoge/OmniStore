@@ -20,6 +20,8 @@ class RecommendationManager:
         # ⚡ Optimization: flags for coalesced saving
         self._is_saving = False
         self._needs_another_save = False
+        # ⚡ Optimization: track ongoing async tasks to deduplicate concurrent requests
+        self._pending_tasks = {}
 
     def _load_metadata_cache(self) -> Dict[str, Any]:
         """Load metadata cache from disk"""
@@ -183,6 +185,7 @@ class RecommendationManager:
                     item['description'] = details.get('description') or item.get('description')
 
             # Enrich first few items to ensure quality
+            # Deduplication of network requests is handled internally by get_details coalescing
             enrich_list = popular[:5] + trending[:5] + for_you[:5]
             await asyncio.gather(*[_enrich_item(item) for item in enrich_list])
 
@@ -281,7 +284,7 @@ class RecommendationManager:
             item['description'] = details.get('description') or item.get('description')
 
     async def get_details(self, app_id: str, use_network: bool = True) -> Dict:
-        """Fetch rich details for a specific app (Flathub API) with caching"""
+        """Fetch rich details for a specific app (Flathub API) with caching and deduplication"""
         # 1. Check cache (TTL 24 hours)
         cache_entry = self._metadata_cache.get("app_details", {}).get(app_id)
         if cache_entry and time.time() - cache_entry.get("timestamp", 0) < 86400:
@@ -290,6 +293,19 @@ class RecommendationManager:
         if not use_network:
             return {}
 
+        # 2. Deduplicate concurrent requests for the same app_id
+        if app_id in self._pending_tasks:
+            return await self._pending_tasks[app_id]
+
+        task = asyncio.create_task(self._get_details_impl(app_id))
+        self._pending_tasks[app_id] = task
+        try:
+            return await task
+        finally:
+            self._pending_tasks.pop(app_id, None)
+
+    async def _get_details_impl(self, app_id: str) -> Dict:
+        """Internal implementation for network fetch of app details"""
         url = f"https://flathub.org/api/v2/appstream/{app_id}"
         try:
             headers = {
@@ -337,7 +353,7 @@ class RecommendationManager:
                         "icon": icon
                     }
 
-                    # 2. Save to cache
+                    # 3. Save to cache
                     self._metadata_cache["app_details"][app_id] = {
                         "timestamp": time.time(),
                         "data": result
@@ -350,7 +366,7 @@ class RecommendationManager:
         return {}
 
     async def find_metadata(self, name: str, use_network: bool = True) -> Dict:
-        """Try to find metadata (icon, description) for a package name with caching"""
+        """Try to find metadata (icon, description) for a package name with caching and deduplication"""
         name_lower = name.lower()
         # 1. Check name mapping cache (TTL 24 hours)
         mapping_entry = self._metadata_cache.get("name_mapping", {}).get(name_lower)
@@ -358,10 +374,28 @@ class RecommendationManager:
             app_id = mapping_entry.get("app_id")
             if app_id:
                 return await self.get_details(app_id, use_network=use_network)
+            else:
+                # Negative cache hit (known not to have metadata on Flathub)
+                return {}
 
         if not use_network:
             return {}
 
+        # 2. Deduplicate concurrent searches for the same name
+        task_key = f"search:{name_lower}"
+        if task_key in self._pending_tasks:
+            return await self._pending_tasks[task_key]
+
+        task = asyncio.create_task(self._find_metadata_impl(name))
+        self._pending_tasks[task_key] = task
+        try:
+            return await task
+        finally:
+            self._pending_tasks.pop(task_key, None)
+
+    async def _find_metadata_impl(self, name: str) -> Dict:
+        """Internal implementation for finding metadata via Flathub search"""
+        name_lower = name.lower()
         search_url = "https://flathub.org/api/v2/search"
         try:
             async with self.session.post(search_url, json={"query": name}, timeout=5) as resp:
@@ -374,7 +408,7 @@ class RecommendationManager:
                             hit_name = hit.get("name", "").lower()
                             hit_app_id = hit.get("app_id", "").lower()
                             if hit_name == name_lower or hit_app_id == name_lower or hit_app_id.endswith(f".{name_lower}"):
-                                # 2. Save mapping to cache
+                                # 3. Save mapping to cache
                                 self._metadata_cache["name_mapping"][name_lower] = {
                                     "timestamp": time.time(),
                                     "app_id": hit.get("app_id")
@@ -382,6 +416,13 @@ class RecommendationManager:
                                 # Save mapping immediately so it's available for other concurrent searches
                                 await self._save_metadata_cache()
                                 return await self.get_details(hit.get("app_id"))
+
+                    # 4. Negative caching: no hits found, store None to avoid repeated searches
+                    self._metadata_cache["name_mapping"][name_lower] = {
+                        "timestamp": time.time(),
+                        "app_id": None
+                    }
+                    await self._save_metadata_cache()
         except Exception as e:
             import sys
             sys.stderr.write(f"[RecommendationManager] Find Metadata Error: {e}\n")

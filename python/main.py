@@ -333,7 +333,8 @@ class OmnistoreBackend:
                         details["description"] = matched_app.get("description", "")
 
                 # Fetch extra info for Native/AUR variants
-                for variant in details.get("variants", []):
+                # ⚡ Optimization: Parallelize extra info fetching for variants
+                async def _fetch_variant_info(variant):
                     if variant['source'] in ("Native", "Pacman", "AUR"):
                         try:
                             flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
@@ -352,6 +353,10 @@ class OmnistoreBackend:
                                 if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
                         except: pass
 
+                variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
+                if variant_tasks:
+                    await asyncio.gather(*variant_tasks)
+
                 sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
         except Exception as e:
             await self._handle_error(f"Details fetch failed for {app_id}", e, json_mode)
@@ -367,49 +372,70 @@ class OmnistoreBackend:
 
             installed_list = []
             async with self:
-                # 1. Scan AppImage
-                apps_dir = Path.home() / "Applications"
-                if apps_dir.exists():
-                    for f in apps_dir.glob("*.AppImage"):
-                        installed_list.append({
-                            "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                            "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
-                        })
-                # 2. Scan Flatpak
-                try:
-                    proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
-                                                               stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            parts = [p.strip() for p in line.split('\t')]
-                            if len(parts) >= 2:
-                                installed_list.append({
-                                    "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
-                                    "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
-                                    "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
-                                })
-                except: pass
-                # 3. Scan Native
-                try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            if line: installed_list.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
-                                                           "installed": True, "description": "Native/AUR package", "version": "Local"})
-                except: pass
+                # ⚡ Optimization: Parallelize package scanning for different sources
+                async def scan_appimage():
+                    res = []
+                    apps_dir = Path.home() / "Applications"
+                    if apps_dir.exists():
+                        for f in apps_dir.glob("*.AppImage"):
+                            res.append({
+                                "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
+                                "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
+                            })
+                    return res
+
+                async def scan_flatpak():
+                    res = []
+                    try:
+                        proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
+                                                                   stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                parts = [p.strip() for p in line.split('\t')]
+                                if len(parts) >= 2:
+                                    res.append({
+                                        "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
+                                        "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
+                                        "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
+                                    })
+                    except: pass
+                    return res
+
+                async def scan_native():
+                    res = []
+                    try:
+                        proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
+                                                       "installed": True, "description": "Native/AUR package", "version": "Local"})
+                    except: pass
+                    return res
+
+                results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native())
+                for r in results:
+                    installed_list.extend(r)
 
                 if self.recommender:
                     enrich_targets = [app for app in installed_list if not app.get('icon')]
                     async def _enrich_app(app):
                         try:
-                            metadata = await self.recommender.find_metadata(app['name'])
+                            # ⚡ Optimization: Tiered enrichment logic (handled in loop below)
+                            metadata = await self.recommender.find_metadata(app['name'], use_network=app.get('_use_network', True))
                             if metadata:
                                 if metadata.get('icon'): app['icon'] = metadata['icon']
                                 if metadata.get('description'): app['description'] = metadata['description']
                         except: pass
-                    if enrich_targets: await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
+
+                    if enrich_targets:
+                        # ⚡ Optimization: Implement tiered enrichment for installed list
+                        # Only allow network requests for the first 10 targets to balance UX and speed
+                        for i, app in enumerate(enrich_targets):
+                            app['_use_network'] = (i < 10)
+                        await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
+                        for app in enrich_targets: app.pop('_use_network', None)
 
                 if json_mode: sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
                 else: self._output_installed_pretty(installed_list)
