@@ -17,6 +17,7 @@ import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/widgets/github_star_badge.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -445,7 +446,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 const Divider(),
                 _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
                 if (_isLoadingDetails)
-                  const Center(child: CircularProgressIndicator())
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Skeleton(width: double.infinity, height: 14),
+                      SizedBox(height: 8),
+                      Skeleton(width: double.infinity, height: 14),
+                      SizedBox(height: 8),
+                      Skeleton(width: 200, height: 14),
+                    ],
+                  )
                 else
                   MarkdownBody(
                     data:

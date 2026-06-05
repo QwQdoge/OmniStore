@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class AppsPage extends StatefulWidget {
   const AppsPage({super.key});
@@ -41,7 +42,7 @@ class _AppsPageState extends State<AppsPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildSkeletonList()
           : RefreshIndicator(
               onRefresh: _refresh,
               child: ListView.builder(
@@ -88,6 +89,24 @@ class _AppsPageState extends State<AppsPage> {
                 },
               ),
             ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return const Card(
+          margin: EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(width: double.infinity, height: 12),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+          ),
+        );
+      },
     );
   }
 }
