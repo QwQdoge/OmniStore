@@ -35,6 +35,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Map<String, dynamic>? _extraDetails;
   bool _isLoadingDetails = false;
 
+  bool _hasCapability(String capability) {
+    try {
+      final sources = BackendService.availableSources.value;
+      if (sources.isEmpty) return true;
+      final cap = sources.firstWhere((s) => s['name'] == _selectedSource, orElse: () => {});
+      if (cap.isEmpty) return true;
+      return cap['capabilities']?[capability] ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -469,7 +482,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     ),
                   ),
                 const SizedBox(height: 24),
-                if (_extraDetails != null &&
+                if (_hasCapability('has_screenshots') &&
+                    _extraDetails != null &&
                     _extraDetails!['screenshots'] != null &&
                     (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
                   _buildSectionTitle(
@@ -789,7 +803,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  if (_githubRepositoryUrl != null)
+                  if (_githubRepositoryUrl != null && _hasCapability('has_rating'))
                     GitHubStarBadge(
                       client: context.read<GitHubClient>(),
                       repositoryUrl: _githubRepositoryUrl,
@@ -806,9 +820,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SegmentedButton<String>(
+              if (_hasCapability('has_versions'))
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SegmentedButton<String>(
                   segments:
                       <String>{
                         for (var v in widget.app.variants) v.source,
@@ -928,13 +943,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       children: [
         const SizedBox(height: 24),
         _buildSectionTitle(theme, AppLocalizations.of(context)!.installInfo),
-        if (dlSize != null)
+        if (_hasCapability('has_size') && dlSize != null)
           _buildInfoRow(
             Icons.downloading_rounded,
             AppLocalizations.of(context)!.downloadSize,
             dlSize.toString(),
           ),
-        if (insSize != null)
+        if (_hasCapability('has_size') && insSize != null)
           _buildInfoRow(
             Icons.storage_rounded,
             AppLocalizations.of(context)!.installedSize,

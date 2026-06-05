@@ -121,16 +121,15 @@ flowchart TB
 ## 3. Python backend (`python/`)
 
 - **Entry:** `python/main.py` — CLI router, JSON/`[PROGRESS]` streams to Flutter
-- **`sources/`:** Pacman, AUR, Flatpak, AppImage, GitHub, plugins (`UnifiedSource`)
-- **`search/`:** Additional source implementations and search logic.
-- **`core/`:** e.g. `recommendation_manager.py` (Flathub + cache)
-- **`ai/`:** Ollama, Gemini, OpenAI-compatible providers
-- **`downloader/`:** Delegates to source implementations
+- **`source/`:** Dynamic plugins (Pacman, AUR, Flatpak, AppImage, GitHub) implementing `BaseSource`
+- **`core/`:** Controllers (`source_manager.py`), Recommendation Manager, and Base Source definitions.
+- **`core/modules/`:** Modularized utilities (`downloader/`, `env_manager.py`, `cache_manager.py`, etc.)
+- **`core/ai/`:** Ollama, Gemini, OpenAI-compatible providers
 
 Flutter invokes via `data/repositories/*` → `PythonBridge.venvPython` + `buildArgs()`.
 
 **TODOs for Python Backend:**
-- [TODO 15]: Merge `python/core/search/` and `python/core/sources/`. Currently, package managers like `pacman`, `flatpak`, and `aur` have scattered logic across both directories.
+- [x] [TODO 15]: Merge `python/core/search/` and `python/core/sources/`. Currently, package managers like `pacman`, `flatpak`, and `aur` have scattered logic across both directories.
 - [TODO 16]: Introduce a formalized Dependency Injection container for managers (`UpdateManager`, `InstallExecutor`) to ease testing.
 - [TODO 17]: Standardize the `UnifiedSource` interface to explicitly handle async operations natively rather than wrapping blocking calls.
 - [TODO 18]: Implement an SQLite database for `RecommendationManager` caching instead of raw JSON files to prevent concurrent write corruption.
