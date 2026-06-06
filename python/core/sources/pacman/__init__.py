@@ -11,7 +11,7 @@ class PacmanSource(UnifiedSource):
         super().__init__(name="Pacman", weight=weight)
         self.enabled = os.path.exists("/usr/bin/pacman")
 
-    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         return await search_pacman(query, page)
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:

@@ -29,19 +29,26 @@ class AurSource(UnifiedSource):
         except Exception:
             return set()
 
-    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
 
         try:
+            # ⚡ Optimization: Use provided pre-fetch task to avoid redundant subprocess calls while maintaining parallelism
+            installed_task = kwargs.get("installed_aur_task")
+
             tasks = [
-                self.session.get(f"{self.api}{query}", timeout=aiohttp.ClientTimeout(total=8)),
-                self._get_installed_aur_packages()
+                self.session.get(f"{self.api}{query}", timeout=aiohttp.ClientTimeout(total=8))
             ]
+            if installed_task is None:
+                tasks.append(self._get_installed_aur_packages())
+            else:
+                tasks.append(installed_task)
 
             responses = await asyncio.gather(*tasks, return_exceptions=True)
             resp = responses[0]
-            installed_set = responses[1] if not isinstance(responses[1], Exception) else set()
+
+            installed_set = responses[1] if len(responses) > 1 and not isinstance(responses[1], Exception) else set()
 
             if isinstance(resp, Exception) or not isinstance(resp, aiohttp.ClientResponse):
                 return []
