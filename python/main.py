@@ -553,10 +553,10 @@ class OmnistoreBackend:
     async def run_export_packages(self, filepath: str):
         try:
             installed = []
-            for cmd, src in [("pacman -Qqne", "Native"), ("flatpak list --app --columns=application", "Flatpak"), ("yay -Qm", "AUR")]:
+            for cmd, src in [(["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR")]:
                 proc = None
                 try:
-                    proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     if stdout:
                         for line in stdout.decode().strip().splitlines():
