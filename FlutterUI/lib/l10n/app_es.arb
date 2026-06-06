@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "Configuración guardada",
+  "configSaved": "Configuración guardada. Algunos cambios se aplicarán tras reiniciar",
   "@configSaved": {
     "description": "Description for configSaved"
   },
