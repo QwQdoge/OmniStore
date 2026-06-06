@@ -1,106 +1,63 @@
-# ==========================================
-# OmniStore Monorepo Git Ignore Configuration
-# ==========================================
-
-# --- System & OS Temporary Files ---
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-ehthumbs_vista.db
-Thumbs.db
-*.swp
-*.bak
-*.tmp
-*.log
-
-# --- IDEs and Editors ---
-.idea/
-.project
-.classpath
-.cproject
-.settings/
-*.launch
-*.sublime-workspace
-*.sublime-project
-.qtcreator/
-build-*/
-*.pro.user
-*.pro.user.*
-*.qmlc
-*.qmltypes
-*.moc
-*.rcc
-*.qrc.cpp
-*.qrc.h
-
-# VS Code settings
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# --- Python Backend & Scripts ---
+# --- Python 垃圾 ---
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyd
-.Python
-env/
-venv/
 .venv/
+venv/
 ENV/
-python/.venv/
-python/build_venv/
-python/build_cache/
-python/build/
-python/dist/
-python/*.spec
-.ipynb_checkpoints/
+env/
+build/
+bin/
+include/
+share/
+.python-version
 pip-log.txt
 pip-delete-this-directory.txt
-.python-version
 
-# --- Rust Daemon ---
-# Ignore target directory in any location (e.g., daemon/target/)
-**/target/
-daemon/target/
-*.rs.bk
-
-# --- Flutter / Dart Frontend ---
-# Flutter build and tool directories
+# --- Flutter / Dart 垃圾 ---
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
-FlutterUI/.dart_tool/
-FlutterUI/.flutter-plugins
-FlutterUI/.flutter-plugins-dependencies
-FlutterUI/.packages
-FlutterUI/build/
-
-# Ephemeral Flutter files
-**/flutter/ephemeral/
-**/Flutter/ephemeral/
-FlutterUI/linux/flutter/ephemeral/
-FlutterUI/windows/flutter/ephemeral/
-FlutterUI/macos/Flutter/ephemeral/
-flutter_export_environment.sh
-
-# Android specific (if any)
-**/android/app/src/main/res/drawable-*/
-**/android/app/src/main/res/mipmap-*/
-
-# --- Release Bundles & Packaging ---
-release_bundle/
-dist/
 build/
-bin/
+flutter_export_environment.sh
+/linux/flutter/ephemeral/
+
+# --- IDE & 系统垃圾 ---
+.vscode/
+.idea/
+*.swp
+*.bak
+.DS_Store
+Thumbs.db
+
+# --- 项目特有记录 ---
+*.log
+
+# --- Qt Creator 垃圾 ---
+.qtcreator/
+build-*/  # Qt Creator 的构建目录，通常以 build- 开头
+*.pro.user
+*.pro.user.*  # 包含用户特定设置的文件
+*.qmlc  # 编译后的 QML 文件
+*.qmltypes  # QML 类型信息文件
+*.moc  # Meta-Object Compiler 生成的文件
+*.rcc  # Qt 资源文件编译后的文件
+*.qrc  # Qt 资源文件
+*.qrc.cpp  # Qt 资源文件编译后的 C++ 文件
+*.qrc.h  # Qt 资源文件编译后的头文件
+
+
+# --- Rust 补丁 ---
+*.rs.bk
+Cargo.lock # 只有在写库时才提交，写应用建议忽略或保留，看你习惯
+/target/ # Rust 的构建输出目录，包含编译后的二进制文件和依赖库
+
+# --- 系统增强 ---
+ehthumbs.db
+ehthumbs_vista.db
 *.exe
 *.dll
 *.so

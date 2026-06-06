@@ -24,7 +24,7 @@ class EssentialsManager:
 
         packages = []
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(filepath, 'r') as f:
                 if filepath.endswith('.json'):
                     data = json.load(f)
                     if isinstance(data, list):

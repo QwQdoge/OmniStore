@@ -56,10 +56,11 @@ class HabitTracker:
                 # Use run_in_executor for disk I/O
                 def _write(data_snapshot):
                     self.data_dir.mkdir(parents=True, exist_ok=True)
-                    tmp_path = self.data_path.with_suffix(".tmp")
+                    tmp_path = self.data_dir / "user_habits.tmp"
                     with open(tmp_path, "w", encoding="utf-8") as f:
                         json.dump(data_snapshot, f, ensure_ascii=False, indent=2)
-                    tmp_path.replace(self.data_path)
+                    import os
+                    os.replace(tmp_path, self.data_path)
 
                 # ⚡ Snapshot using dict() to avoid blocking the main thread with full serialization
                 # and to avoid "dict changed size" during the background write.

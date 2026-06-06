@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:window_manager/window_manager.dart' as wm;
+import 'package:window_manager/window_manager.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 // import 'app_package.dart';
@@ -48,7 +48,7 @@ class UpdateService {
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =
         InitializationSettings(linux: initializationSettingsLinux);
-    await _notificationsPlugin.initialize(settings: initializationSettings);
+    await _notificationsPlugin.initialize(initializationSettings);
 
     // Initialize tray with error handling
     try {
@@ -69,7 +69,7 @@ class UpdateService {
           LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
       const InitializationSettings initializationSettings =
           InitializationSettings(linux: initializationSettingsLinux);
-      await _notificationsPlugin.initialize(settings: initializationSettings);
+      await _notificationsPlugin.initialize(initializationSettings);
     }
 
     if (l10n != null) {
@@ -113,9 +113,6 @@ class UpdateService {
   }
 
   Future<void> _initSystemTray() async {
-    // 1. Defensively check environment
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return;
-
     final config = await BackendService.instance.loadConfig();
     final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
     if (!trayEnabled) {
@@ -130,13 +127,12 @@ class UpdateService {
     final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
     if (Platform.isLinux) {
-      // 2. Crash guard to prevent boot loops if Native C code segfaults
+      // 检查崩溃守卫
       if (guardFile.existsSync()) {
         debugPrint("System tray previously crashed. Skipping to prevent loop.");
         return;
       }
 
-      // 3. Dependency check for libappindicator
       final hasDeps = await _checkLinuxTrayDependencies();
       if (!hasDeps) {
         debugPrint(
@@ -152,35 +148,28 @@ class UpdateService {
         guardFile.createSync();
       }
 
-      // 4. Robust absolute path resolution for Linux Native assets
+      // Use absolute path for icon on Linux to prevent loading failures
       String iconPath = 'assets/app_icon.png';
       if (Platform.isLinux) {
         final String executablePath = Platform.resolvedExecutable;
         final String executableDir = p.dirname(executablePath);
 
+        // Try several common paths for assets in a Linux build
         final List<String> candidatePaths = [
-          p.join(
-            executableDir,
-            'data',
-            'flutter_assets',
-            'assets',
-            'app_icon.png',
-          ),
+          p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
           p.join(executableDir, 'assets', 'app_icon.png'),
-          p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
           p.join(Directory.current.path, 'assets', 'app_icon.png'),
         ];
 
         for (final path in candidatePaths) {
           if (File(path).existsSync()) {
             iconPath = path;
-            debugPrint("Found tray icon at: $path");
             break;
           }
         }
       }
 
-      // 5. Timeout to prevent DBus / StatusNotifierItem blocking
+      // system_tray 2.x 初始化图标 - 增加超时以防止 DBus 阻塞
       await _systemTray
           .initSystemTray(title: "OmniStore", iconPath: iconPath)
           .timeout(const Duration(seconds: 3));
@@ -190,39 +179,33 @@ class UpdateService {
           .buildFrom([
             MenuItemLabel(
               label: _showWindowLabel,
-              onClicked: (menuItem) => wm.windowManager.show(),
+              onClicked: (menuItem) => windowManager.show(),
             ),
             MenuItemLabel(
               label: _checkUpdatesLabel,
               onClicked: (menuItem) => checkNow(),
             ),
             MenuSeparator(),
-            MenuItemLabel(
-              label: _exitLabel,
-              onClicked: (menuItem) => _handleFullExit(),
-            ),
+            MenuItemLabel(label: _exitLabel, onClicked: (menuItem) => _handleFullExit()),
           ])
           .timeout(const Duration(seconds: 2));
 
       await _systemTray
           .setContextMenu(menu)
           .timeout(const Duration(seconds: 2));
-
       _systemTray.registerSystemTrayEventHandler((eventName) {
         if (eventName == kSystemTrayEventClick) {
-          wm.windowManager.show();
+          windowManager.show();
         } else if (eventName == kSystemTrayEventRightClick) {
           _systemTray.popUpContextMenu();
         }
       });
 
-      // 6. Success: Clear crash guard
-      if (Platform.isLinux && guardFile.existsSync()) {
-        guardFile.deleteSync();
-      }
+      // 初始化成功，清除崩溃守卫
+      if (guardFile.existsSync()) guardFile.deleteSync();
     } catch (e) {
-      debugPrint("System tray initialization failed gracefully: $e");
-      // Keep guard file to skip initialization on next restart
+      debugPrint("System tray initialization failed or timed out: $e");
+      // 注意：这里不删除 guardFile，以便下次启动知道这次失败了
     }
   }
 
@@ -296,10 +279,10 @@ class UpdateService {
       linux: linuxPlatformChannelSpecifics,
     );
     await _notificationsPlugin.show(
-      id: 0,
-      title: _notificationTitle,
-      body: _notificationBody(count),
-      notificationDetails: platformChannelSpecifics,
+      0,
+      _notificationTitle,
+      _notificationBody(count),
+      platformChannelSpecifics,
     );
   }
 
@@ -325,10 +308,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      id: 1,
-      title: title,
-      body: "${(progress * 100).toInt()}%",
-      notificationDetails: NotificationDetails(linux: linuxDetails),
+      1,
+      title,
+      "${(progress * 100).toInt()}%",
+      NotificationDetails(linux: linuxDetails),
     );
   }
 
@@ -342,10 +325,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      id: 2,
-      title: _taskCompletedLabel,
-      body: "$title: ${success ? _successLabel : _failedLabel}",
-      notificationDetails: NotificationDetails(linux: linuxDetails),
+      2,
+      _taskCompletedLabel,
+      "$title: ${success ? _successLabel : _failedLabel}",
+      NotificationDetails(linux: linuxDetails),
     );
   }
 
@@ -358,10 +341,10 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      id: 3,
-      title: title,
-      body: body,
-      notificationDetails: const NotificationDetails(linux: linuxDetails),
+      3,
+      title,
+      body,
+      const NotificationDetails(linux: linuxDetails),
     );
   }
 

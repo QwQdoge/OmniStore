@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "Fuente de instalación",
+  "variant": "Variante",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "Instalado",
+  "ready": "Listo",
   "@ready": {
     "description": "Description for ready"
   },
@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "Configuración guardada. Algunos cambios se aplicarán tras reiniciar",
+  "configSaved": "Configuración guardada",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -180,7 +180,7 @@
   "@confirmInstall": {
     "description": "Description for confirmInstall"
   },
-  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
+  "confirmActionMsg": "¿Estás seguro de que quieres realizar esta acción en {name}?",
   "@confirmActionMsg": {
     "placeholders": {
       "name": {
@@ -406,9 +406,7 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "Buscar aplicaciones instaladas...",
-  "@searchInstalledHint": {
-    "description": "searchInstalledHint"
-  },
+  "@searchInstalledHint": {},
   "refresh": "Actualizar",
   "@refresh": {
     "description": "refresh"
@@ -440,10 +438,6 @@
   "systemCleaning": "Limpieza del sistema",
   "@systemCleaning": {
     "description": "systemCleaning"
-  },
-  "systemCleaningDesc": "Eliminar paquetes huérfanos y limpiar caché de pacman",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
   },
   "systemCleaningSubtitle": "Eliminar paquetes huérfanos y limpiar caché de pacman",
   "@systemCleaningSubtitle": {
@@ -529,18 +523,6 @@
   "@add": {
     "description": "add"
   },
-  "general": "General",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "advanced": "Avanzado",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "repositories": "Repositorios",
-  "@repositories": {
-    "description": "Section title for software repositories"
-  },
   "aiSettings": "Ajustes del Asistente de IA",
   "@aiSettings": {
     "description": "aiSettings"
@@ -548,10 +530,6 @@
   "aiEnabled": "Activar Asistente de IA",
   "@aiEnabled": {
     "description": "aiEnabled"
-  },
-  "aiEnabledDesc": "Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
   },
   "aiProvider": "Proveedor de IA",
   "@aiProvider": {
@@ -637,7 +615,7 @@
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "Búsqueda inteligente",
+  "magicSearch": "Búsqueda mágica",
   "@magicSearch": {
     "description": "magicSearch"
   },
@@ -682,33 +660,11 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "Cerrar",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
-  "installedApps": "Aplicaciones instaladas",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
-  },
-  "githubStore": "Tienda de GitHub",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
-  },
-  "flatpakStore": "Tienda de Flatpak",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "locateInstallation": "Localizar instalación",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
   "delete": "Eliminar",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "Bienvenido a OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
@@ -1036,84 +992,5 @@
   "retry": "Reintentar",
   "@retry": {
     "description": "Description for retry"
-  },
-  "aiResponseFailed": "La IA no pudo responder.",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiAnalysisFailed": "La IA no pudo analizar.",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "cannotConnectToBackend": "No se puede conectar al servicio backend: {error}",
-  "@cannotConnectToBackend": {
-    "description": "Error message when backend is unreachable",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "taskInitializing": "Inicializando tarea...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
-  },
-  "taskStarting": "Iniciando...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
-  },
-  "taskSuccess": "Tarea completada con éxito",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
-  },
-  "taskFailedWithCode": "La tarea falló con el código de salida {code}",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
-    "placeholders": {
-      "code": {
-        "type": "int"
-      }
-    }
-  },
-  "taskCancelledByUser": "Tarea cancelada por el usuario",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskError": "Error: {error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "githubAuthTitle": "Autenticación de GitHub",
-  "githubPatSaved": "GitHub PAT guardado con éxito",
-  "saveToken": "Guardar token",
-  "back": "Atrás",
-  "next": "Siguiente",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
-  },
-  "@saveToken": {
-    "description": "Button label to save token"
-  },
-  "@back": {
-    "description": "Back button label"
-  },
-  "@next": {
-    "description": "Next button label"
-  },
-  "aurFull": "AUR (Arch User Repository)",
-  "@aurFull": {
-    "description": "Full name for AUR"
-  },
-  "flatpakFull": "Flatpak (Flathub)",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
   }
 }

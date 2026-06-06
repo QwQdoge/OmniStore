@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "インストール源",
+  "variant": "バリアント",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "インストール済み",
+  "ready": "準備完了",
   "@ready": {
     "description": "Description for ready"
   },
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "検索結果が見つかりませんでした",
+  "noResults": "結果が見つかりませんでした",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "タスク履歴",
+  "activity": "アクティビティ",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "設定を保存しました。一部の変更は再起動後に有効になります",
+  "configSaved": "設定を保存しました",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "合計 {count} 件の更新が利用可能です",
+  "foundUpdates": "{count} 件の更新が見つかりました",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -406,17 +406,13 @@
     "description": "Description for taskCompleted"
   },
   "searchInstalledHint": "インストール済みのアプリを検索...",
-  "@searchInstalledHint": {
-    "description": "searchInstalledHint"
-  },
+  "@searchInstalledHint": {},
   "refresh": "更新",
   "@refresh": {
     "description": "refresh"
   },
   "noActiveTasks": "アクティブなタスクはありません",
-  "@noActiveTasks": {
-    "description": "noActiveTasks"
-  },
+  "@noActiveTasks": {},
   "currentTask": "現在のタスク",
   "@currentTask": {
     "description": "currentTask"
@@ -440,10 +436,6 @@
   "systemCleaning": "システムクリーニング",
   "@systemCleaning": {
     "description": "systemCleaning"
-  },
-  "systemCleaningDesc": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
   },
   "systemCleaningSubtitle": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
   "@systemCleaningSubtitle": {
@@ -529,18 +521,6 @@
   "@add": {
     "description": "add"
   },
-  "general": "全般",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "advanced": "詳細設定",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "repositories": "リポジトリ",
-  "@repositories": {
-    "description": "Section title for software repositories"
-  },
   "aiSettings": "AI アシスタント設定",
   "@aiSettings": {
     "description": "aiSettings"
@@ -548,10 +528,6 @@
   "aiEnabled": "AI アシスタントを有効にする",
   "@aiEnabled": {
     "description": "aiEnabled"
-  },
-  "aiEnabledDesc": "AI を活用した検索、アプリの説明、エラー診断を有効にします。",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI プロバイダー",
   "@aiProvider": {
@@ -637,7 +613,7 @@
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "magicSearch": "スマート検索",
+  "magicSearch": "マジック検索",
   "@magicSearch": {
     "description": "magicSearch"
   },
@@ -682,33 +658,11 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "閉じる",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
-  "installedApps": "インストール済みアプリ",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
-  },
-  "githubStore": "GitHub ストア",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
-  },
-  "flatpakStore": "Flatpak ストア",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "locateInstallation": "インストール先を表示",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
   "delete": "削除",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "OmniStore へようこそ",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
@@ -1036,84 +990,5 @@
   "retry": "再試行",
   "@retry": {
     "description": "Description for retry"
-  },
-  "aiResponseFailed": "AI の応答に失敗しました。",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiAnalysisFailed": "AI による分析に失敗しました。",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "cannotConnectToBackend": "バックエンドサービスに接続できません: {error}",
-  "@cannotConnectToBackend": {
-    "description": "Error message when backend is unreachable",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "taskInitializing": "タスクを初期化中...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
-  },
-  "taskStarting": "起動中...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
-  },
-  "taskSuccess": "タスクが正常に完了しました",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
-  },
-  "taskFailedWithCode": "タスクが終了コード {code} で失敗しました",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
-    "placeholders": {
-      "code": {
-        "type": "int"
-      }
-    }
-  },
-  "taskCancelledByUser": "タスクがユーザーによってキャンセルされました",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskError": "エラー: {error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "githubAuthTitle": "GitHub 認証",
-  "githubPatSaved": "GitHub PAT が正常に保存されました",
-  "saveToken": "トークンを保存",
-  "back": "戻る",
-  "next": "次へ",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
-  },
-  "@saveToken": {
-    "description": "Button label to save token"
-  },
-  "@back": {
-    "description": "Back button label"
-  },
-  "@next": {
-    "description": "Next button label"
-  },
-  "aurFull": "AUR (Arch User Repository)",
-  "@aurFull": {
-    "description": "Full name for AUR"
-  },
-  "flatpakFull": "Flatpak (Flathub)",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
   }
 }

@@ -1,109 +1,160 @@
-# OmniStore 🚀
+# OmniStore  🚀
 
-## Introduction
-OmniStore is a **cross-platform unified software store and management tool**. It supports multiple repositories including **Pacman, AUR, Flatpak, AppImage, and Snap**. Built with **AI assistance** (supporting local Ollama, OpenAI-compatible, and Gemini), it provides intelligent search correction, recommendations, update summaries, and error diagnostics.
-
-The backend is implemented in Python for business logic, with a **Rust resident daemon** responsible for background update detection and notifications. The frontend is built with **Flutter (Material-3/MD3)**, featuring a glassmorphism UI, fluid animations, internationalization (English, Chinese, Japanese, Spanish), and built-in mirror/repository editors.
+## 项目简介
+OmniStore 是一个 **跨平台统一软件仓库搜索与管理工具**，支持 **Pacman、AUR、Flatpak、AppImage、Snap** 等多种仓库，并内置 **AI 辅助**（本地 Ollama、OpenAI 兼容）进行搜索解释、推荐、错误诊断。后端使用 Python 实现业务逻辑，**Rust 常驻守护进程**负责后台自动更新检测与通知，前端基于 **Flutter (Material‑3/MD3)**，提供 **玻璃态 UI、动态动画、国际化**（中、日、英）以及 **镜像/自定义仓库编辑** 界面。
 
 ---
 
-## Key Features
-- **Unified Multi-Repo Search**: Simultaneous search across Pacman, AUR, Flatpak, AppImage, and Snap.
-- **Custom Repository Management**: Edit `/etc/pacman.d/mirrorlist`, Flatpak remotes, and Snap sources directly from the UI.
-- **Deep AI Integration**:
-  - **Search Assistant**: Automatic spelling correction, keyword associations, and semantic search.
-  - **Daily Picks**: AI-curated high-quality apps selected from thousands of packages daily.
-  - **Variant Comparison**: Compare different versions (e.g., Flatpak vs. AUR) for sandboxing, stability, and update frequency.
-  - **Update Interpretation**: Translates technical changelogs into easy-to-understand feature summaries.
-  - **Conflict Warning**: Scans for potential dependency conflicts or functional overlap before installation.
-  - **Magic Terminal**: Generates precise terminal commands for power users.
-  - **System Health**: AI-driven evaluation of orphaned packages, cache, and system load.
-- **Rust Daemon**: Lightweight background service for update checks and desktop notifications.
-- **Modern MD3 UI**: Material 3 design, glassmorphism cards, responsive layouts, and smooth navigation.
-- **Onboarding Wizard**: First-run experience to guide language, mirror, and AI configuration.
-- **Highly Configurable**: All settings are stored in a clear `config.yaml` and can be edited in real-time within the app.
+## 主要特性
+- **多仓库统一搜索**：Pacman、AUR、Flatpak、AppImage、Snap。
+- **自定义仓库**：在 UI 中直接编辑 `/etc/pacman.d/mirrorlist`、Flatpak remotes、Snap 源等。
+- **AI 助手**：全方位深度集成（10+ 功能）。支持 Ollama、Gemini、OpenAI 兼容端点（如 DeepSeek、云雾 API）。
+  - **搜索助手**：自动拼写纠错、关键词联想与深度语义搜索。
+  - **每日精选**：AI 每日为您从数万个包中挑选最值得尝试的精品。
+  - **版本对比**：当一个软件有多个来源时，AI 会对比它们的沙盒性能、稳定性和更新频率。
+  - **更新解读**：将晦涩难懂的软件变更日志（Changelog）转化为通俗易懂的功能总结。
+  - **冲突预警**：在您安装软件前，AI 会扫描系统并告知可能存在的依赖冲突或功能重复。
+  - **魔法终端**：为极客提供 AI 生成的精准终端安装命令，支持一键复制。
+  - **系统体检**：AI 驱动的全系统健康评估，分析孤立包、缓存与系统负载。
+- **Rust Daemon**：后台常驻检测更新、自动更新、桌面通知。
+- **现代 UI**：Flutter MD3 主题、玻璃化卡片、流畅动画、响应式布局。
+- **一次性启动向导**：首次运行弹出 Onboarding，引导语言、镜像、AI 开关等配置。
+- **多语言**：简体中文、繁体中文、日文、英文（可通过 `l10n` 扩展）。
+- **高度可配置**：`config.yaml` 完整、注释详细，支持在 UI 中实时编辑。
 
 ---
 
-## Installation Guide
+## 安装指南
 
-### 1. Python Backend
+### 1. Python 后端
 ```bash
-# Create virtual environment (recommended)
-python3 -m venv python/.venv
-source python/.venv/bin/activate
+# 创建虚拟环境（推荐）
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Install dependencies
+# 安装依赖
 pip install -r python/requirements.txt
 ```
+> 若不使用虚拟环境，请确保已全局安装所需 Python 包。
 
-### 2. Rust Daemon
+### 2. Rust 守护进程
 ```bash
-# Enter daemon directory and build
+# 进入 daemon 目录并编译（Release 推荐）
 cd daemon
 cargo build --release
-# Binary is located at daemon/target/release/omnistore-daemon
+# 编译产物在 target/release/omnistore-daemon
 ```
+> 守护进程会在第一次运行时自动读取 `~/.config/omnistore/config.yaml`。
 
-### 3. Flutter Frontend
+### 3. Flutter 前端
 ```bash
+# 安装 Flutter（已安装可省略）
+# https://flutter.dev/docs/get-started/install
+
 cd FlutterUI
 flutter pub get
-flutter run   # Debug run
-# Or build release
-# flutter build linux / windows / macos
+flutter run   # 调试运行（macOS 桌面）
+# 或者编译发布包
+flutter build macos
 ```
 
-### 4. Running the System
-1. Start the Rust daemon: `./daemon/target/release/omnistore-daemon &`
-2. Start the Flutter UI: `cd FlutterUI && flutter run`
+### 4. 启动整套系统
+```bash
+# 1) 启动 Rust 守护进程（后台运行）
+./daemon/target/release/omnistore-daemon &
+
+# 2) 启动 Flutter UI（前端）
+cd FlutterUI && flutter run
+```
 
 ---
 
-## Configuration (`config.yaml`)
-Located at `~/.config/omnistore/config.yaml`. Example structure:
+## 使用说明
+- **搜索**：在 UI 顶部搜索框输入关键字，系统会同时在所有已启用仓库中搜索并显示统一结果。
+- **自定义仓库**：打开 **设置 ➜ 镜像编辑** 或 **自定义仓库管理**，可添加/删除 Pacman 镜像、Flatpak remote、Snap 源。
+- **AI 助手**：点击 **AI 助手** 按钮或在搜索框使用 `!ask <问题>`，系统会调用配置的 AI 接口返回解释或推荐。
+- **自动更新**：守护进程每 `daemon.check_interval_hours` 小时检查一次更新，弹出系统通知并在 UI 上显示红点提示。
+- **首次启动向导**：首次打开会出现欢迎页，引导完成语言、镜像、AI 开关的快速配置。
+
+---
+
+## 配置文件 (`config.yaml`)
+位于 `~/.config/omnistore/config.yaml`，已在项目首次运行时生成。主要字段示例：
 ```yaml
+first_run: true
 search:
   sources:
     pacman: true
     aur: true
     flatpak: true
+    appimage: true
+    snap: true
   max_results: 100
+priority:
+  pacman: 100
+  aur: 80
+  flatpak: 60
+  appimage: 40
+  snap: 30
 ui:
-  appearance: system
-  color_seed: "#6750A4"
-  language: en
+  appearance: system   # light / dark / system
+  color_seed: "#4E7EEF"
+  language: zh-CN
+  use_system_title_bar: false
+  close_to_tray: true
 ai:
   enabled: true
-  provider: ollama
+  provider: ollama   # ollama / openai / gemini
   endpoint: http://localhost:11434
   model: qwen2.5:7b
+  api_key: ""
+  proxy: ""          # 可选网络代理
+custom_repos:
+  flatpak: []
+  pacman: []
+  appimage: []
+mirrors:
+  pacman: "/etc/pacman.d/mirrorlist"
+  flatpak_remotes:
+    - "https://dl.flathub.org/repo/flathub.flatpakrepo"
 daemon:
   enabled: true
   check_interval_hours: 4
+  auto_update: false
+  notifications: true
 ```
+> 编辑后保存，UI 会实时读取最新配置。
 
 ---
 
-## Development
+## 开发指南
+> 💡 详细的项目架构设计、UI 布局结构与核心模块实现原理，请参考 [project_architecture.md](project_architecture.md)。所有代码修改与升级，必须同步更新该架构设计文档。
 
-| Document | Contents |
-|----------|----------|
-| [project_architecture.md](project_architecture.md) | Whole-repo diagram, Python/Rust, protocols |
-| [FlutterUI/ARCHITECTURE.md](FlutterUI/ARCHITECTURE.md) | Flutter layers, features, navigation indices |
-| [FlutterUI/lib/README.md](FlutterUI/lib/README.md) | Quick `lib/` tree index |
+### 后端（Python）
+- 代码位于 `python/`，核心模块：`core/config_loader.py`、`core/ai/assistant.py`、`core/search/`。
+- 运行单元测试：`pytest -q`（需先安装 `pytest`）。
 
-**Flutter `lib/` layers:** `app/` → `features/` → `data/` (Python CLI) · `core/` · `services/` · `widgets/`
+### 守护进程（Rust）
+- 入口 `daemon/src/main.rs`，配置解析在 `daemon/src/config.rs`。
+- 添加新功能后执行 `cargo test`，确保兼容性。
 
-### Contribution
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a Pull Request and ensure it passes CI checks (Python + Rust + Flutter).
+### 前端（Flutter）
+- 入口 `FlutterUI/lib/main.dart`，页面位于 `lib/pages/`，自定义 UI 组件在 `lib/widgets/`。
+- 运行 `flutter analyze` 检查代码规范。
+- 若需要新增语言，编辑 `lib/l10n/app_localizations.dart` 与对应 `.arb` 文件。
+
+---
+
+## 贡献
+1. Fork 本仓库。
+2. 创建分支并实现功能或修复 bug。
+3. 提交 Pull Request 并通过 CI（Python + Rust + Flutter 单元测试）。
 
 ---
 
-## License
-OmniStore is licensed under the **MIT License**. See `LICENSE` for details.
+## 许可证
+本项目遵循 **MIT 许可证**。详情见 `LICENSE`。
 
 ---
-> **Thank you for using OmniStore!** Please report any issues or suggestions on GitHub.
+
+> **感谢使用 OmniStore**，如有任何问题或建议，请在 GitHub Issues 提交反馈。

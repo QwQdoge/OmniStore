@@ -727,12 +727,6 @@ abstract class AppLocalizations {
   /// **'System Cleaning'**
   String get systemCleaning;
 
-  /// systemCleaningDesc
-  ///
-  /// In en, this message translates to:
-  /// **'Delete orphan packages and clean pacman cache'**
-  String get systemCleaningDesc;
-
   /// systemCleaningSubtitle
   ///
   /// In en, this message translates to:
@@ -841,24 +835,6 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get add;
 
-  /// Section title for general settings
-  ///
-  /// In en, this message translates to:
-  /// **'General'**
-  String get general;
-
-  /// Label for advanced settings toggle
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get advanced;
-
-  /// Section title for software repositories
-  ///
-  /// In en, this message translates to:
-  /// **'Repositories'**
-  String get repositories;
-
   /// aiSettings
   ///
   /// In en, this message translates to:
@@ -870,12 +846,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable AI Assistant'**
   String get aiEnabled;
-
-  /// aiEnabledDesc
-  ///
-  /// In en, this message translates to:
-  /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
-  String get aiEnabledDesc;
 
   /// aiProvider
   ///
@@ -1063,7 +1033,7 @@ abstract class AppLocalizations {
   /// **'Restore'**
   String get windowRestore;
 
-  /// Tooltip for window close button
+  /// No description provided for @windowClose.
   ///
   /// In en, this message translates to:
   /// **'Close'**
@@ -1075,31 +1045,7 @@ abstract class AppLocalizations {
   /// **'OmniStore'**
   String get omnistore;
 
-  /// Title for the installed apps page
-  ///
-  /// In en, this message translates to:
-  /// **'Installed Apps'**
-  String get installedApps;
-
-  /// Title for the GitHub store page
-  ///
-  /// In en, this message translates to:
-  /// **'GitHub Store'**
-  String get githubStore;
-
-  /// Title for the Flatpak store page
-  ///
-  /// In en, this message translates to:
-  /// **'Flatpak Store'**
-  String get flatpakStore;
-
-  /// Tooltip for locating the app installation folder
-  ///
-  /// In en, this message translates to:
-  /// **'Locate Installation'**
-  String get locateInstallation;
-
-  /// Description for delete
+  /// No description provided for @delete.
   ///
   /// In en, this message translates to:
   /// **'Delete'**
@@ -1566,102 +1512,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
-
-  /// Message shown when AI fails to respond
-  ///
-  /// In en, this message translates to:
-  /// **'AI failed to respond.'**
-  String get aiResponseFailed;
-
-  /// Message shown when AI fails to analyze error logs
-  ///
-  /// In en, this message translates to:
-  /// **'AI failed to analyze.'**
-  String get aiAnalysisFailed;
-
-  /// Error message when backend is unreachable
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot connect to backend service: {error}'**
-  String cannotConnectToBackend(String error);
-
-  /// Status message when a task is initializing
-  ///
-  /// In en, this message translates to:
-  /// **'Initializing task...'**
-  String get taskInitializing;
-
-  /// Status message when a task is starting
-  ///
-  /// In en, this message translates to:
-  /// **'Starting...'**
-  String get taskStarting;
-
-  /// Status message when a task completes successfully
-  ///
-  /// In en, this message translates to:
-  /// **'Task completed successfully'**
-  String get taskSuccess;
-
-  /// Status message when a task fails with an exit code
-  ///
-  /// In en, this message translates to:
-  /// **'Task failed with exit code {code}'**
-  String taskFailedWithCode(int code);
-
-  /// Status message when a task is cancelled by the user
-  ///
-  /// In en, this message translates to:
-  /// **'Task cancelled by user'**
-  String get taskCancelledByUser;
-
-  /// Status message when a task encounters an error
-  ///
-  /// In en, this message translates to:
-  /// **'Error: {error}'**
-  String taskError(String error);
-
-  /// Title for GitHub auth page
-  ///
-  /// In en, this message translates to:
-  /// **'GitHub Authentication'**
-  String get githubAuthTitle;
-
-  /// Success message for saving GitHub PAT
-  ///
-  /// In en, this message translates to:
-  /// **'GitHub PAT saved successfully'**
-  String get githubPatSaved;
-
-  /// Button label to save token
-  ///
-  /// In en, this message translates to:
-  /// **'Save Token'**
-  String get saveToken;
-
-  /// Back button label
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get back;
-
-  /// Next button label
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get next;
-
-  /// Full name for AUR
-  ///
-  /// In en, this message translates to:
-  /// **'AUR (Arch User Repository)'**
-  String get aurFull;
-
-  /// Full name for Flatpak
-  ///
-  /// In en, this message translates to:
-  /// **'Flatpak (Flathub)'**
-  String get flatpakFull;
 }
 
 class _AppLocalizationsDelegate

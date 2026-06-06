@@ -63,13 +63,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => 'インストール源';
+  String get variant => 'バリアント';
 
   @override
   String get version => 'バージョン';
 
   @override
-  String get ready => 'インストール済み';
+  String get ready => '準備完了';
 
   @override
   String resultsFound(int count) {
@@ -77,13 +77,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get noResults => '検索結果が見つかりませんでした';
+  String get noResults => '結果が見つかりませんでした';
 
   @override
   String get searching => '検索中...';
 
   @override
-  String get activity => 'タスク履歴';
+  String get activity => 'アクティビティ';
 
   @override
   String get category => 'カテゴリー';
@@ -334,9 +334,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemCleaning => 'システムクリーニング';
 
   @override
-  String get systemCleaningDesc => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
-
-  @override
   String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
 
   @override
@@ -398,22 +395,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get add => '追加';
 
   @override
-  String get general => '全般';
-
-  @override
-  String get advanced => '詳細設定';
-
-  @override
-  String get repositories => 'リポジトリ';
-
-  @override
   String get aiSettings => 'AI アシスタント設定';
 
   @override
   String get aiEnabled => 'AI アシスタントを有効にする';
-
-  @override
-  String get aiEnabledDesc => 'AI を活用した検索、アプリの説明、エラー診断を有効にします。';
 
   @override
   String get aiProvider => 'AI プロバイダー';
@@ -478,7 +463,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiThinking => 'AI が考え中...';
 
   @override
-  String get magicSearch => 'スマート検索';
+  String get magicSearch => 'マジック検索';
 
   @override
   String get aiChangelogTitle => 'AI 更新サマリー';
@@ -515,18 +500,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get omnistore => 'OmniStore';
-
-  @override
-  String get installedApps => 'インストール済みアプリ';
-
-  @override
-  String get githubStore => 'GitHub ストア';
-
-  @override
-  String get flatpakStore => 'Flatpak ストア';
-
-  @override
-  String get locateInstallation => 'インストール先を表示';
 
   @override
   String get delete => '削除';
@@ -777,58 +750,4 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
-
-  @override
-  String get aiResponseFailed => 'AI の応答に失敗しました。';
-
-  @override
-  String get aiAnalysisFailed => 'AI による分析に失敗しました。';
-
-  @override
-  String cannotConnectToBackend(String error) {
-    return 'バックエンドサービスに接続できません: $error';
-  }
-
-  @override
-  String get taskInitializing => 'タスクを初期化中...';
-
-  @override
-  String get taskStarting => '起動中...';
-
-  @override
-  String get taskSuccess => 'タスクが正常に完了しました';
-
-  @override
-  String taskFailedWithCode(int code) {
-    return 'タスクが終了コード $code で失敗しました';
-  }
-
-  @override
-  String get taskCancelledByUser => 'タスクがユーザーによってキャンセルされました';
-
-  @override
-  String taskError(String error) {
-    return 'エラー: $error';
-  }
-
-  @override
-  String get githubAuthTitle => 'GitHub 認証';
-
-  @override
-  String get githubPatSaved => 'GitHub PAT が正常に保存されました';
-
-  @override
-  String get saveToken => 'トークンを保存';
-
-  @override
-  String get back => '戻る';
-
-  @override
-  String get next => '次へ';
-
-  @override
-  String get aurFull => 'AUR (Arch User Repository)';
-
-  @override
-  String get flatpakFull => 'Flatpak (Flathub)';
 }

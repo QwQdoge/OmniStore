@@ -106,54 +106,37 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                     ),
                   ),
 
-                  const Expanded(
-                    child: DragToMoveArea(child: SizedBox.expand()),
-                  ),
+                  const Expanded(child: DragToMoveArea(child: SizedBox.expand())),
 
                   // Search Bar (Middle)
                   if (widget.showSearch)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Container(
-                        constraints: const BoxConstraints(
-                          minWidth: 200,
-                          maxWidth: 400,
-                        ),
+                        constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
                         child: InkWell(
                           onTap: widget.onSearchPressed,
                           borderRadius: BorderRadius.circular(28.0),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
+                              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(28.0),
                               border: Border.all(
-                                color: colorScheme.outlineVariant.withValues(
-                                  alpha: 0.5,
-                                ),
+                                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.search_rounded,
-                                  size: 18,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                                Icon(Icons.search_rounded, size: 18, color: colorScheme.onSurfaceVariant),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    AppLocalizations.of(context)?.searchHint ??
-                                        "Search",
+                                    AppLocalizations.of(context)?.searchHint ?? "Search",
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: colorScheme.onSurfaceVariant
-                                          .withValues(alpha: 0.7),
+                                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ),
@@ -164,9 +147,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                       ),
                     ),
 
-                  const Expanded(
-                    child: DragToMoveArea(child: SizedBox.expand()),
-                  ),
+                  const Expanded(child: DragToMoveArea(child: SizedBox.expand())),
 
                   // Window Controls
                   Row(
@@ -230,9 +211,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
           hoverColor: isClose
               ? colorScheme.error.withValues(alpha: 0.8)
               : colorScheme.onSurface.withValues(alpha: 0.1),
-          foregroundColor: isClose
-              ? null
-              : colorScheme.onSurface.withValues(alpha: 0.7),
+          foregroundColor: isClose ? null : colorScheme.onSurface.withValues(alpha: 0.7),
         ),
         icon: Icon(icon),
       ),

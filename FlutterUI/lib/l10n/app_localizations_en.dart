@@ -334,10 +334,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get systemCleaning => 'System Cleaning';
 
   @override
-  String get systemCleaningDesc =>
-      'Delete orphan packages and clean pacman cache';
-
-  @override
   String get systemCleaningSubtitle =>
       'Delete orphan packages and clean pacman cache';
 
@@ -400,23 +396,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get add => 'Add';
 
   @override
-  String get general => 'General';
-
-  @override
-  String get advanced => 'Advanced';
-
-  @override
-  String get repositories => 'Repositories';
-
-  @override
   String get aiSettings => 'AI Assistant Settings';
 
   @override
   String get aiEnabled => 'Enable AI Assistant';
-
-  @override
-  String get aiEnabledDesc =>
-      'Enable AI-powered search, app explanation, and error diagnosis.';
 
   @override
   String get aiProvider => 'AI Provider';
@@ -518,18 +501,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get omnistore => 'OmniStore';
-
-  @override
-  String get installedApps => 'Installed Apps';
-
-  @override
-  String get githubStore => 'GitHub Store';
-
-  @override
-  String get flatpakStore => 'Flatpak Store';
-
-  @override
-  String get locateInstallation => 'Locate Installation';
 
   @override
   String get delete => 'Delete';
@@ -792,58 +763,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
-
-  @override
-  String get aiResponseFailed => 'AI failed to respond.';
-
-  @override
-  String get aiAnalysisFailed => 'AI failed to analyze.';
-
-  @override
-  String cannotConnectToBackend(String error) {
-    return 'Cannot connect to backend service: $error';
-  }
-
-  @override
-  String get taskInitializing => 'Initializing task...';
-
-  @override
-  String get taskStarting => 'Starting...';
-
-  @override
-  String get taskSuccess => 'Task completed successfully';
-
-  @override
-  String taskFailedWithCode(int code) {
-    return 'Task failed with exit code $code';
-  }
-
-  @override
-  String get taskCancelledByUser => 'Task cancelled by user';
-
-  @override
-  String taskError(String error) {
-    return 'Error: $error';
-  }
-
-  @override
-  String get githubAuthTitle => 'GitHub Authentication';
-
-  @override
-  String get githubPatSaved => 'GitHub PAT saved successfully';
-
-  @override
-  String get saveToken => 'Save Token';
-
-  @override
-  String get back => 'Back';
-
-  @override
-  String get next => 'Next';
-
-  @override
-  String get aurFull => 'AUR (Arch User Repository)';
-
-  @override
-  String get flatpakFull => 'Flatpak (Flathub)';
 }

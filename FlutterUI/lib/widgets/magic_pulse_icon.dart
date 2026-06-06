@@ -28,10 +28,9 @@ class _MagicPulseIconState extends State<MagicPulseIcon>
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    _animation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -61,7 +60,10 @@ class _MagicPulseIconState extends State<MagicPulseIcon>
           color: Colors.white, // Color is handled by ShaderMask
           size: widget.size,
           shadows: [
-            Shadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 12),
+            Shadow(
+              color: widget.color.withValues(alpha: 0.5),
+              blurRadius: 12,
+            ),
           ],
         ),
       ),

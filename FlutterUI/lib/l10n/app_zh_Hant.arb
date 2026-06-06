@@ -4,7 +4,7 @@
   "@searchHint": {
     "description": "Description for searchHint"
   },
-  "featured": "精選",
+  "featured": "精選推薦",
   "@featured": {
     "description": "Description for featured"
   },
@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "安裝源",
+  "variant": "變體",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,11 +80,11 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已安裝",
+  "ready": "就緒",
   "@ready": {
     "description": "Description for ready"
   },
-  "resultsFound": "找到 {count} 個結果",
+  "resultsFound": "{count} 個結果",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -92,7 +92,7 @@
       }
     }
   },
-  "noResults": "暫無搜尋結果",
+  "noResults": "未找到結果",
   "@noResults": {
     "description": "Description for noResults"
   },
@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "任務動態",
+  "activity": "動態",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -136,7 +136,7 @@
   "@maxResults": {
     "description": "Description for maxResults"
   },
-  "appearance": "介面外觀",
+  "appearance": "外觀",
   "@appearance": {
     "description": "Description for appearance"
   },
@@ -156,7 +156,7 @@
   "@darkMode": {
     "description": "Description for darkMode"
   },
-  "loggingLevel": "日誌詳細程度",
+  "loggingLevel": "日誌等級",
   "@loggingLevel": {
     "description": "Description for loggingLevel"
   },
@@ -164,7 +164,7 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "配置已儲存，部分更改將在重啟後生效",
+  "configSaved": "配置已儲存",
   "@configSaved": {
     "description": "Description for configSaved"
   },
@@ -200,7 +200,7 @@
   "@terminalOutput": {
     "description": "Description for terminalOutput"
   },
-  "waitingForOutput": "等待終端輸出...",
+  "waitingForOutput": "等待輸出中...",
   "@waitingForOutput": {
     "description": "Description for waitingForOutput"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "共有 {count} 項可更新",
+  "foundUpdates": "發現 {count} 個更新",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -324,7 +324,7 @@
   "@exit": {
     "description": "Description for exit"
   },
-  "trayTooltipUpdates": "OmniStore: 共有 {count} 項可更新",
+  "trayTooltipUpdates": "OmniStore: 發現 {count} 個更新",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
     "placeholders": {
@@ -357,7 +357,7 @@
   "@resetOnboarding": {
     "description": "Description for resetOnboarding"
   },
-  "resetOnboardingConfirm": "確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。",
+  "resetOnboardingConfirm": "確定要重置引導嗎？",
   "@resetOnboardingConfirm": {
     "description": "Description for resetOnboardingConfirm"
   },
@@ -425,7 +425,7 @@
   "@viewLogs": {
     "description": "Button label to open task logs"
   },
-  "allUpdated": "已是最新",
+  "allUpdated": "所有應用程式已是最新",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -440,10 +440,6 @@
   "systemCleaning": "系統清理",
   "@systemCleaning": {
     "description": "Section title for system cleanup"
-  },
-  "systemCleaningDesc": "刪除孤立套件並清理 pacman 快取",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
   },
   "systemCleaningSubtitle": "刪除孤立套件並清理 pacman 快取",
   "@systemCleaningSubtitle": {
@@ -473,7 +469,7 @@
   "@selectExportLocation": {
     "description": "Prompt to choose an export location"
   },
-  "exportSuccess": "匯出成功: {count} 個套件",
+  "exportSuccess": "匯出成功: {count}個套件",
   "@exportSuccess": {
     "description": "Success message after exporting packages",
     "placeholders": {
@@ -532,18 +528,6 @@
   "@add": {
     "description": "Add action label"
   },
-  "general": "一般",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "advanced": "進階",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "repositories": "軟體倉庫",
-  "@repositories": {
-    "description": "Section title for software repositories"
-  },
   "aiSettings": "AI 助手設定",
   "@aiSettings": {
     "description": "Title for AI assistant settings"
@@ -551,10 +535,6 @@
   "aiEnabled": "啟用 AI 助手",
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
-  },
-  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解釋和錯誤診斷。",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
   },
   "aiProvider": "AI 服務商",
   "@aiProvider": {
@@ -624,7 +604,7 @@
   "@aiCompareTitle": {
     "description": "Title for AI package comparison feature"
   },
-  "aiHealthTitle": "AI 系統健康診斷",
+  "aiHealthTitle": "AI 系統健康報告",
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
@@ -632,15 +612,15 @@
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiCorrection": "您是指：",
+  "aiCorrection": "您是指？",
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
-  "aiThinking": "AI 正在思考...",
+  "aiThinking": "AI 正在思考中...",
   "@aiThinking": {
     "description": "Status text while AI is thinking"
   },
-  "magicSearch": "智慧搜尋",
+  "magicSearch": "魔法搜尋",
   "@magicSearch": {
     "description": "Title for magic search feature"
   },
@@ -648,7 +628,7 @@
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
-  "aiCliTitle": "AI 命令生成器",
+  "aiCliTitle": "AI 命令產生器",
   "@aiCliTitle": {
     "description": "Title for AI command generation feature"
   },
@@ -685,33 +665,11 @@
     "description": "Tooltip for window restore button"
   },
   "windowClose": "關閉",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
   },
-  "installedApps": "已安裝應用程式",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
-  },
-  "githubStore": "GitHub 商店",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
-  },
-  "flatpakStore": "Flatpak 商店",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "locateInstallation": "定位安裝位置",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
   "delete": "刪除",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "歡迎來到 OmniStore",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
@@ -732,19 +690,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "正在確保系統環境已準備就緒",
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "目前系統似乎並非基於 Arch Linux，大部分功能將不可用。",
+  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少必要的組件，建議立即進行自動配置。",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就緒！系統環境完美符合要求。",
+  "envOkDesc": "一切就緒！您的系統非常完美。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -772,11 +730,11 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 軟體包由社群使用者維護，請確保您信任其來源。",
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置過程中可能需要多次輸入管理員 (sudo) 密碼。",
+  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -900,7 +858,7 @@
   "@official": {
     "description": "Description for official"
   },
-  "verified": "官方認證",
+  "verified": "經校驗",
   "@verified": {
     "description": "Description for verified"
   },
@@ -948,11 +906,11 @@
   "@installInfo": {
     "description": "Description for installInfo"
   },
-  "downloadSize": "下載大小",
+  "downloadSize": "下載體積",
   "@downloadSize": {
     "description": "Description for downloadSize"
   },
-  "installedSize": "安裝後大小",
+  "installedSize": "解壓後占用",
   "@installedSize": {
     "description": "Description for installedSize"
   },
@@ -1039,84 +997,5 @@
   "retry": "重試",
   "@retry": {
     "description": "Description for retry"
-  },
-  "aiResponseFailed": "AI 回應失敗。",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiAnalysisFailed": "AI 分析失敗。",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "cannotConnectToBackend": "無法連線至後端服務：{error}",
-  "@cannotConnectToBackend": {
-    "description": "Error message when backend is unreachable",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "taskInitializing": "正在初始化任務...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
-  },
-  "taskStarting": "正在啟動...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
-  },
-  "taskSuccess": "任務成功完成",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
-  },
-  "taskFailedWithCode": "任務失敗 (錯誤碼: {code})",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
-    "placeholders": {
-      "code": {
-        "type": "int"
-      }
-    }
-  },
-  "taskCancelledByUser": "任務已由使用者取消",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskError": "錯誤：{error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "githubAuthTitle": "GitHub 身份驗證",
-  "githubPatSaved": "GitHub 存取權杖已成功儲存",
-  "saveToken": "儲存權杖",
-  "back": "返回",
-  "next": "下一步",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
-  },
-  "@saveToken": {
-    "description": "Button label to save token"
-  },
-  "@back": {
-    "description": "Back button label"
-  },
-  "@next": {
-    "description": "Next button label"
-  },
-  "aurFull": "AUR (Arch 使用者軟體倉庫)",
-  "@aurFull": {
-    "description": "Full name for AUR"
-  },
-  "flatpakFull": "Flatpak (Flathub)",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
   }
 }

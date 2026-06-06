@@ -63,13 +63,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Fuente de instalación';
+  String get variant => 'Variante';
 
   @override
   String get version => 'Versión';
 
   @override
-  String get ready => 'Instalado';
+  String get ready => 'Listo';
 
   @override
   String resultsFound(int count) {
@@ -144,7 +144,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String confirmActionMsg(String name) {
-    return '¿Confirmas que deseas realizar esta acción en $name?';
+    return '¿Estás seguro de que quieres realizar esta acción en $name?';
   }
 
   @override
@@ -334,10 +334,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get systemCleaning => 'Limpieza del sistema';
 
   @override
-  String get systemCleaningDesc =>
-      'Eliminar paquetes huérfanos y limpiar caché de pacman';
-
-  @override
   String get systemCleaningSubtitle =>
       'Eliminar paquetes huérfanos y limpiar caché de pacman';
 
@@ -400,23 +396,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get add => 'Añadir';
 
   @override
-  String get general => 'General';
-
-  @override
-  String get advanced => 'Avanzado';
-
-  @override
-  String get repositories => 'Repositorios';
-
-  @override
   String get aiSettings => 'Ajustes del Asistente de IA';
 
   @override
   String get aiEnabled => 'Activar Asistente de IA';
-
-  @override
-  String get aiEnabledDesc =>
-      'Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.';
 
   @override
   String get aiProvider => 'Proveedor de IA';
@@ -481,7 +464,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiThinking => 'La IA está pensando...';
 
   @override
-  String get magicSearch => 'Búsqueda inteligente';
+  String get magicSearch => 'Búsqueda mágica';
 
   @override
   String get aiChangelogTitle => 'Resumen de actualizaciones por IA';
@@ -518,18 +501,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get omnistore => 'OmniStore';
-
-  @override
-  String get installedApps => 'Aplicaciones instaladas';
-
-  @override
-  String get githubStore => 'Tienda de GitHub';
-
-  @override
-  String get flatpakStore => 'Tienda de Flatpak';
-
-  @override
-  String get locateInstallation => 'Localizar instalación';
 
   @override
   String get delete => 'Eliminar';
@@ -793,58 +764,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get retry => 'Reintentar';
-
-  @override
-  String get aiResponseFailed => 'La IA no pudo responder.';
-
-  @override
-  String get aiAnalysisFailed => 'La IA no pudo analizar.';
-
-  @override
-  String cannotConnectToBackend(String error) {
-    return 'No se puede conectar al servicio backend: $error';
-  }
-
-  @override
-  String get taskInitializing => 'Inicializando tarea...';
-
-  @override
-  String get taskStarting => 'Iniciando...';
-
-  @override
-  String get taskSuccess => 'Tarea completada con éxito';
-
-  @override
-  String taskFailedWithCode(int code) {
-    return 'La tarea falló con el código de salida $code';
-  }
-
-  @override
-  String get taskCancelledByUser => 'Tarea cancelada por el usuario';
-
-  @override
-  String taskError(String error) {
-    return 'Error: $error';
-  }
-
-  @override
-  String get githubAuthTitle => 'Autenticación de GitHub';
-
-  @override
-  String get githubPatSaved => 'GitHub PAT guardado con éxito';
-
-  @override
-  String get saveToken => 'Guardar token';
-
-  @override
-  String get back => 'Atrás';
-
-  @override
-  String get next => 'Siguiente';
-
-  @override
-  String get aurFull => 'AUR (Arch User Repository)';
-
-  @override
-  String get flatpakFull => 'Flatpak (Flathub)';
 }
