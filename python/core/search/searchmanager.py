@@ -5,7 +5,6 @@ from core.sources.base import UnifiedSource
 from .smart_scoring import SmartScoring
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
-import shutil
 import re
 import sys
 
