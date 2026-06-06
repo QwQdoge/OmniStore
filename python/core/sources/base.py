@@ -11,7 +11,7 @@ class UnifiedSource(ABC):
         self.weight = weight
 
     @abstractmethod
-    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         """Search for packages in this source with pagination and filters."""
         pass
 

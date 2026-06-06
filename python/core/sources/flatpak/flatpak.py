@@ -22,22 +22,30 @@ class FlatpakSource(UnifiedSource):
         except Exception:
             return set()
 
-    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
 
         try:
+            # ⚡ Optimization: Use provided pre-fetch task to avoid redundant subprocess calls while maintaining parallelism
+            installed_task = kwargs.get("installed_flatpak_task")
+
             tasks = [
                 asyncio.create_subprocess_exec(
                     "flatpak", "search", "--columns=name,application,version,description", query,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.DEVNULL
-                ),
-                self._get_installed_flatpaks()
+                )
             ]
+            if installed_task is None:
+                tasks.append(self._get_installed_flatpaks())
+            else:
+                tasks.append(installed_task)
 
             results = await asyncio.gather(*tasks)
-            proc, installed_set = results
+            proc = results[0]
+            installed_set = results[1]
+
             stdout, _ = await proc.communicate()
 
             if not stdout:

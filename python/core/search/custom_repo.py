@@ -164,21 +164,24 @@ class CustomRepoManager:
             # 3. Create modified version in temp file
             repo_entry = f"\n[{name}]\nSigLevel = Optional TrustAll\nServer = {url}\n"
             temp_fd, temp_path = tempfile.mkstemp()
-            with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
-                tmpf.write(conf + repo_entry)
+            try:
+                with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
+                    tmpf.write(conf + repo_entry)
 
-            # 4. Copy via sudo
-            if callback:
-                await callback("[INFO] Applying changes to /etc/pacman.conf...")
-            
-            # Since we are already authenticated in sudo cache, we can execute sudo cp
-            proc = await asyncio.create_subprocess_exec(
-                "sudo", "cp", temp_path, "/etc/pacman.conf",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
-            )
-            await proc.wait()
-            os.remove(temp_path)
+                # 4. Copy via sudo
+                if callback:
+                    await callback("[INFO] Applying changes to /etc/pacman.conf...")
+
+                # Since we are already authenticated in sudo cache, we can execute sudo cp
+                proc = await asyncio.create_subprocess_exec(
+                    "sudo", "cp", temp_path, "/etc/pacman.conf",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT
+                )
+                await proc.wait()
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
 
             if proc.returncode == 0:
                 # Sync config.yaml
@@ -239,16 +242,19 @@ class CustomRepoManager:
             modified_conf = re.sub(r'\n{3,}', '\n\n', modified_conf)
 
             temp_fd, temp_path = tempfile.mkstemp()
-            with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
-                tmpf.write(modified_conf)
+            try:
+                with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
+                    tmpf.write(modified_conf)
 
-            proc = await asyncio.create_subprocess_exec(
-                "sudo", "cp", temp_path, "/etc/pacman.conf",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
-            )
-            await proc.wait()
-            os.remove(temp_path)
+                proc = await asyncio.create_subprocess_exec(
+                    "sudo", "cp", temp_path, "/etc/pacman.conf",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT
+                )
+                await proc.wait()
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
 
             if proc.returncode == 0:
                 # Sync config.yaml
