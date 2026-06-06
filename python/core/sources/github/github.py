@@ -22,7 +22,7 @@ class GitHubSource(UnifiedSource):
         if pat:
             self.forge.headers["Authorization"] = f"token {pat}"
 
-    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if "/" in query and len(query.split("/")) == 2:
             repos = await self._get_repo_as_package(query)
         else:

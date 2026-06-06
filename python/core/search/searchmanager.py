@@ -94,10 +94,38 @@ class SearchManager:
         self.habit_tracker.record_search(query)
         active_sources = self._get_active_sources()
 
-        # Defensive source execution: failures in one source shouldn't crash everything
-        async def safe_search(source: UnifiedSource, q: str):
+        # ⚡ Optimization: Pre-fetch installed packages as tasks to be awaited in parallel by individual sources
+        installed_flatpak_task = None
+        installed_aur_task = None
+
+        # Simplified approach: always pre-fetch if these sources are potentially active
+        async def _get_flatpak():
             try:
-                return await asyncio.wait_for(source.search(q), timeout=10)
+                p = await asyncio.create_subprocess_exec("flatpak", "list", "--installed", "--columns=application",
+                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                stdout, _ = await p.communicate()
+                return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
+            except: return set()
+
+        async def _get_aur():
+            try:
+                p = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                stdout, _ = await p.communicate()
+                return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
+            except: return set()
+
+        # Only create tasks if the respective sources are active
+        active_names = {s.name.lower() for s in active_sources}
+        if "flatpak" in active_names:
+            installed_flatpak_task = asyncio.create_task(_get_flatpak())
+
+        if "aur" in active_names:
+            installed_aur_task = asyncio.create_task(_get_aur())
+
+        # Defensive source execution: failures in one source shouldn't crash everything
+        async def safe_search(source: UnifiedSource, q: str, **kwargs):
+            try:
+                return await asyncio.wait_for(source.search(q, **kwargs), timeout=10)
             except asyncio.TimeoutError:
                 logging.warning(f"Search timeout (10s) for source: {source.name}")
                 return []
@@ -105,7 +133,7 @@ class SearchManager:
                 logging.error(f"Search failed for source {source.name}: {e}")
                 return []
 
-        tasks = [safe_search(src, query) for src in active_sources]
+        tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task) for src in active_sources]
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
         except Exception as e:
@@ -157,6 +185,7 @@ class SearchManager:
             if item['name'] in ai_ranked_names:
                 item['_smart_score'] *= 1.5
 
+            # Restoration: Ensure _norm_name is set for merge_duplicates
             item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
 
         combined.sort(key=lambda x: x['_smart_score'], reverse=True)
@@ -213,10 +242,21 @@ class SearchManager:
     def _normalize_app_name(self, name: str) -> str:
         if name in self._norm_cache: return self._norm_cache[name]
         n = name.lower().strip()
-        if "." in n and len(n.split(".")) > 2: n = n.split(".")[-1]
-        n = n.split()[0]
+
+        # ⚡ Optimization: Faster domain/namespace removal
+        if "." in n:
+            parts = n.split(".")
+            if len(parts) > 2:
+                n = parts[-1]
+
+        # Avoid split()[0] if there are no spaces to improve speed
+        if " " in n:
+            n = n.partition(" ")[0]
+
+        # Regex suffix removal and character stripping
         n = _NORM_RE.sub('', n)
         n = n.replace("-", "").replace("_", "")
+
         self._norm_cache[name] = n
         return n
 
