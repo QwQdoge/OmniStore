@@ -7,6 +7,7 @@ from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 import re
 import sys
+import logging
 
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
@@ -212,6 +213,18 @@ class SearchManager:
             item.pop('_norm_name', None)
 
         return top_results
+
+
+    async def _search_single_source(self, source: UnifiedSource, query: str) -> List[Dict]:
+        """Defensive source execution: failures in one source shouldn't crash everything."""
+        try:
+            return await asyncio.wait_for(source.search(query), timeout=10)
+        except asyncio.TimeoutError:
+            logging.warning(f"Search timeout (10s) for source: {source.name}")
+            return []
+        except Exception as e:
+            logging.error(f"Search failed for source {source.name}: {e}")
+            return []
 
     async def _enrich_metadata(self, items: List[Dict]):
         # Tiered enrichment: top 5 with network, rest without network (cache only)
