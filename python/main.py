@@ -9,7 +9,7 @@ import os
 import re
 import signal
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Callable, Awaitable
+from typing import Optional
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.panel import Panel
