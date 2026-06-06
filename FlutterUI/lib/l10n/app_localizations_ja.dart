@@ -131,7 +131,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveAndApply => '保存して適用';
 
   @override
-  String get configSaved => '設定を保存しました';
+  String get configSaved => '設定を保存しました。一部の変更は再起動後に有効になります';
 
   @override
   String get configSaveFailed => '設定の保存に失敗しました';
@@ -218,7 +218,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return '$count 件の更新が見つかりました';
+    return '合計 $count 件の更新が利用可能です';
   }
 
   @override
