@@ -95,13 +95,17 @@ class InstallExecutor:
         return await self.install(package, callback)
 
     def _check_environment(self, source_name: str) -> bool:
-        """Verify that the required system tools exist for the given source."""
+        """Verify that the required system tools exist and are executable for the given source."""
+        def is_exe(name):
+            path = shutil.which(name)
+            return path is not None and os.access(path, os.X_OK)
+
         if source_name in ("native", "pacman"):
-            return shutil.which("pacman") is not None
+            return is_exe("pacman")
         elif source_name == "flatpak":
-            return shutil.which("flatpak") is not None
+            return is_exe("flatpak")
         elif source_name == "aur":
-            return shutil.which("yay") is not None or shutil.which("paru") is not None
+            return is_exe("yay") or is_exe("paru")
         return True
 
     def stop(self):

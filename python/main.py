@@ -336,6 +336,7 @@ class OmnistoreBackend:
                 # ⚡ Optimization: Parallelize extra info fetching for variants
                 async def _fetch_variant_info(variant):
                     if variant['source'] in ("Native", "Pacman", "AUR"):
+                        proc = None
                         try:
                             flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
                             proc = await asyncio.create_subprocess_exec(
@@ -351,7 +352,14 @@ class OmnistoreBackend:
                                 if (m := re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)): variant["depends"] = m.group(1).split()
                                 if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
                                 if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
-                        except: pass
+                        except Exception:
+                            if proc:
+                                try: proc.kill()
+                                except: pass
+                        finally:
+                            if proc:
+                                try: await proc.wait()
+                                except: pass
 
                 variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
                 if variant_tasks:
@@ -386,6 +394,7 @@ class OmnistoreBackend:
 
                 async def scan_flatpak():
                     res = []
+                    proc = None
                     try:
                         proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
                                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
@@ -399,11 +408,19 @@ class OmnistoreBackend:
                                         "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
                                         "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
                                     })
-                    except: pass
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
                     return res
 
                 async def scan_native():
                     res = []
+                    proc = None
                     try:
                         proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                         stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
@@ -411,7 +428,14 @@ class OmnistoreBackend:
                             for line in stdout.decode().strip().splitlines():
                                 if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
                                                        "installed": True, "description": "Native/AUR package", "version": "Local"})
-                    except: pass
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
                     return res
 
                 results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native())
@@ -530,13 +554,21 @@ class OmnistoreBackend:
         try:
             installed = []
             for cmd, src in [("pacman -Qqne", "Native"), ("flatpak list --app --columns=application", "Flatpak"), ("yay -Qm", "AUR")]:
+                proc = None
                 try:
                     proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     if stdout:
                         for line in stdout.decode().strip().splitlines():
                             if line: installed.append({"name": line.split()[0], "source": src})
-                except: pass
+                except Exception:
+                    if proc:
+                        try: proc.kill()
+                        except: pass
+                finally:
+                    if proc:
+                        try: await proc.wait()
+                        except: pass
 
             export_dir = os.path.dirname(os.path.abspath(filepath))
             if export_dir: os.makedirs(export_dir, exist_ok=True)
@@ -556,20 +588,41 @@ class OmnistoreBackend:
                 await cb("[INFO] pacman not found, skipping."); return True
 
             await cb("[INFO] Detecting orphan packages...")
-            proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-            orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
+            proc = None
+            try:
+                proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
+            except Exception:
+                if proc:
+                    try: proc.kill()
+                    except: pass
+                orphans = []
+            finally:
+                if proc:
+                    try: await proc.wait()
+                    except: pass
 
             if orphans:
                 await cb(f"[INFO] Cleaning {len(orphans)} orphans...");
                 if not await self.executor._ensure_privileged(cb): return False
                 p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Rs", "--noconfirm", *orphans)
-                await p.wait()
+                try:
+                    await asyncio.wait_for(p.wait(), timeout=60)
+                except asyncio.TimeoutError:
+                    try: p.kill()
+                    except: pass
+                    await p.wait()
 
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
                 p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Scc", "--noconfirm")
-                await p.wait()
+                try:
+                    await asyncio.wait_for(p.wait(), timeout=60)
+                except asyncio.TimeoutError:
+                    try: p.kill()
+                    except: pass
+                    await p.wait()
 
             await cb("[INFO] System cleanup finished!")
             if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
@@ -721,130 +774,193 @@ async def main():
         try:
             if args.get_config:
                 sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n")
+
             elif args.set_config:
-                data = sys.stdin.read().strip() or args.set_config
-                if not data or data == "true": raise ValueError("No configuration data provided")
-                success = backend.config.save(json.loads(data))
-                sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                try:
+                    data = sys.stdin.read().strip() or args.set_config
+                    if not data or data == "true": raise ValueError("No configuration data provided")
+                    success = backend.config.save(json.loads(data))
+                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                except Exception as e: await backend._handle_error("Config save failed", e, args.json)
+
             elif args.search:
                 q = args.search.strip()
                 if not q:
                     if args.json: sys.stdout.write("[]\n")
                     else: raise ValueError("Search query cannot be empty")
                 else: await backend.run_search(q, args.json)
+
             elif args.install:
                 p = args.install.strip()
                 if not p: raise ValueError("Package name required")
                 async with backend: await backend.run_install(p, args.source, args.url, args.json)
+
             elif args.remove:
                 p = args.remove.strip()
                 if not p: raise ValueError("Package name required")
                 async with backend: await backend.run_uninstall(p, args.source, args.json, args.remove)
+
             elif args.update:
                 p = args.update.strip()
                 if not p: raise ValueError("Package name required")
                 async with backend: await backend.run_update(p, args.source, args.json)
+
             elif args.check_updates:
                 async with backend: await backend.run_check_updates(args.json)
+
             elif args.list_installed:
                 await backend.run_list_installed(args.json, args.force_refresh)
+
             elif args.details:
                 p = args.details.strip()
                 if not p: raise ValueError("App ID required")
                 await backend.run_app_details(p, args.json)
+
             elif args.recommend:
                 await backend.run_recommendations(args.json)
+
             elif args.clean_system:
                 async with backend: await backend.run_clean_system(args.json)
+
             elif args.ai_summary:
                 async with backend: await backend.run_ai_summary(args.json)
+
             elif args.check_env:
-                sys.stdout.write(json.dumps(await backend.env.check_env()) + "\n")
+                try:
+                    env_res = await backend.env.check_env()
+                    sys.stdout.write(json.dumps(env_res) + "\n")
+                except Exception as e: await backend._handle_error("Env check failed", e, args.json)
+
             elif args.bootstrap:
-                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
-                if args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+                try:
+                    await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
+                    if args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+                except Exception as e: await backend._handle_error("Bootstrap failed", e, args.json)
+
             elif args.list_custom_repos:
                 async with backend: await backend.run_list_custom_repos()
+
             elif args.add_custom_repo:
-                parts = [p.strip() for p in args.add_custom_repo.split(',', 2)]
-                if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
-                if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
-                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
+                try:
+                    parts = [p.strip() for p in args.add_custom_repo.split(',', 2)]
+                    if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
+                    if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
+                    async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
+                except Exception as e: await backend._handle_error("Add custom repo failed", e, args.json)
+
             elif args.remove_custom_repo:
-                parts = [p.strip() for p in args.remove_custom_repo.split(',', 1)]
-                if len(parts) < 2: raise ValueError("Invalid format: type,name")
-                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
+                try:
+                    parts = [p.strip() for p in args.remove_custom_repo.split(',', 1)]
+                    if len(parts) < 2: raise ValueError("Invalid format: type,name")
+                    async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
+                except Exception as e: await backend._handle_error("Remove custom repo failed", e, args.json)
+
             elif args.ai_explain:
                 await backend.run_ai_explain(args.ai_explain.strip(), args.ai_desc or "")
+
             elif args.ai_recommend:
                 await backend.run_ai_recommend(args.ai_recommend.strip())
+
             elif args.ai_analyze_error:
                 await backend.run_ai_analyze_error(args.ai_analyze_error.strip())
+
             elif args.ai_compare:
                 async with backend:
-                    if backend.manager:
-                        candidates = await backend.manager.search_all(args.ai_compare)
-                        target = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
-                        if target:
-                            res = await backend.ai.compare_variants(args.ai_compare, target.get('variants', []))
-                            sys.stdout.write(json.dumps({"response": res}) + "\n")
-                        else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
+                    try:
+                        if backend.manager:
+                            candidates = await backend.manager.search_all(args.ai_compare)
+                            target = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
+                            if target:
+                                res = await backend.ai.compare_variants(args.ai_compare, target.get('variants', []))
+                                sys.stdout.write(json.dumps({"response": res}) + "\n")
+                            else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
+                    except Exception as e: await backend._handle_error("AI compare failed", e, args.json)
+
             elif args.ai_health:
-                status = await backend.env.check_env()
                 try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    status["orphaned_count"] = len(stdout.decode().splitlines())
-                except: status["orphaned_count"] = 0
-                res = await backend.ai.generate_health_report(status)
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
+                    status = await backend.env.check_env()
+                    try:
+                        proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        status["orphaned_count"] = len(stdout.decode().splitlines())
+                    except: status["orphaned_count"] = 0
+                    res = await backend.ai.generate_health_report(status)
+                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                except Exception as e: await backend._handle_error("AI health failed", e, args.json)
+
             elif args.ai_pick:
                 await backend.run_ai_pick(args.json)
+
             elif args.ai_correct:
-                res = await backend.ai.suggest_correction(args.ai_correct.strip())
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
+                try:
+                    res = await backend.ai.suggest_correction(args.ai_correct.strip())
+                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                except Exception as e: await backend._handle_error("AI correct failed", e, args.json)
+
             elif args.ai_changelog:
-                parts = args.ai_changelog.split(',')
-                if len(parts) >= 3:
-                    res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-            elif args.ai_cli:
-                parts = args.ai_cli.split(',')
-                if len(parts) >= 2:
-                    res = await backend.ai.generate_cli_command(parts[0], parts[1])
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-            elif args.ai_conflicts:
-                p = args.ai_conflicts.strip()
-                if p:
-                    try:
-                        proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                        res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                try:
+                    parts = args.ai_changelog.split(',')
+                    if len(parts) >= 3:
+                        res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
                         sys.stdout.write(json.dumps({"response": res}) + "\n")
-                    except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+                    else: raise ValueError("Changelog format: name,current,next")
+                except Exception as e: await backend._handle_error("AI changelog failed", e, args.json)
+
+            elif args.ai_cli:
+                try:
+                    parts = args.ai_cli.split(',')
+                    if len(parts) >= 2:
+                        res = await backend.ai.generate_cli_command(parts[0], parts[1])
+                        sys.stdout.write(json.dumps({"response": res}) + "\n")
+                    else: raise ValueError("AI CLI format: name,summary")
+                except Exception as e: await backend._handle_error("AI CLI failed", e, args.json)
+
+            elif args.ai_conflicts:
+                try:
+                    p = args.ai_conflicts.strip()
+                    if p:
+                        try:
+                            proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
+                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                            res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                            sys.stdout.write(json.dumps({"response": res}) + "\n")
+                        except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+                except Exception as e: await backend._handle_error("AI conflicts failed", e, args.json)
+
             elif args.essentials:
                 async with backend: await backend.run_get_essentials()
+
             elif args.import_packages:
                 async with backend: await backend.run_import_packages(args.import_packages.strip())
+
             elif args.export_packages:
                 async with backend: await backend.run_export_packages(args.export_packages.strip())
+
             elif args.launch:
-                p = args.launch.strip()
                 async with backend:
-                    src = args.source.lower()
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].launch({"name": p, "id": p})
-                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    try:
+                        p = args.launch.strip()
+                        if not p: raise ValueError("App ID required for launch")
+                        src = args.source.lower()
+                        if backend.manager and src in backend.manager.sources:
+                            success = await backend.manager.sources[src].launch({"name": p, "id": p})
+                            if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    except Exception as e: await backend._handle_error("Launch failed", e, args.json)
+
             elif args.locate:
-                p = args.locate.strip()
                 async with backend:
-                    src = args.source.lower()
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].locate({"name": p, "id": p})
-                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    try:
+                        p = args.locate.strip()
+                        if not p: raise ValueError("App ID required for locate")
+                        src = args.source.lower()
+                        if backend.manager and src in backend.manager.sources:
+                            success = await backend.manager.sources[src].locate({"name": p, "id": p})
+                            if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    except Exception as e: await backend._handle_error("Locate failed", e, args.json)
+
             sys.stdout.flush()
         except Exception as e:
-            await backend._handle_error("Dispatch Error", e, args.json)
+            await backend._handle_error("Dispatch Fatal Error", e, args.json)
             sys.exit(1)
 
     await dispatch()
