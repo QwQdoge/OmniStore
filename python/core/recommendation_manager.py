@@ -74,13 +74,15 @@ class RecommendationManager:
         import sys
         sys.stderr.write(f"{msg}\n")
 
-    def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
+    async def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
         """Load recommendations from cache if not expired"""
         if not self.cache_path.exists():
             return None
         try:
-            with open(self.cache_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            import aiofiles
+            async with aiofiles.open(self.cache_path, "r", encoding="utf-8") as f:
+                content = await f.read()
+                data = json.loads(content)
                 # Cache valid for 1 hour (3600 seconds)
                 if time.time() - data.get("timestamp", 0) < 3600:
                     return data.get("recommendations")
@@ -88,15 +90,17 @@ class RecommendationManager:
             pass
         return None
 
-    def _save_cache(self, recommendations: Dict[str, List[Dict]]):
+    async def _save_cache(self, recommendations: Dict[str, List[Dict]]):
         """Save recommendations to cache"""
         try:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-            with open(self.cache_path, "w", encoding="utf-8") as f:
-                json.dump({
+            import aiofiles
+            async with aiofiles.open(self.cache_path, "w", encoding="utf-8") as f:
+                content = json.dumps({
                     "timestamp": time.time(),
                     "recommendations": recommendations
-                }, f, ensure_ascii=False)
+                }, ensure_ascii=False)
+                await f.write(content)
         except Exception as e:
             import sys
             sys.stderr.write(f"[RecommendationManager] Cache Save Error: {e}\n")
@@ -136,7 +140,7 @@ class RecommendationManager:
     async def get_recommendations(self, force_refresh: bool = False, sources: List = None) -> Dict[str, List[Dict]]:
         """Fetch categorized recommendations"""
         if not force_refresh:
-            cached = self._load_cache()
+            cached = await self._load_cache()
             if cached:
                 return cached
 
@@ -209,7 +213,7 @@ class RecommendationManager:
                         result["trending"].extend(rec.get("trending", []))
                         result["for_you"].extend(rec.get("for_you", []))
 
-            self._save_cache(result)
+            await self._save_cache(result)
             return result
 
         except Exception as e:
