@@ -78,6 +78,21 @@ from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 
 
+def safe_command(func):
+    """Decorator to isolate command failures and prevent backend crashes."""
+    @functools.wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        try:
+            return await func(self, *args, **kwargs)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            json_mode = getattr(self, "json_mode", False)
+            await self._handle_error(f"Internal error in {func.__name__}", e, json_mode)
+            return False
+    return wrapper
+
+
 class OmnistoreBackend:
     """
     Main backend controller for OmniStore.
@@ -154,10 +169,17 @@ class OmnistoreBackend:
         return await self.initialize()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Guaranteed cleanup of network sessions to prevent leaks."""
-        if self.session:
-            await self.session.close()
-            self.session = None
+        """Guaranteed cleanup of all persistent resources."""
+        try:
+            if self.session:
+                await self.session.close()
+                self.session = None
+
+            # Ensure executor is stopped if active
+            if self._executor:
+                self._executor.stop()
+        except Exception as e:
+            logging.error(f"Error during OmnistoreBackend cleanup: {e}")
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
@@ -197,370 +219,200 @@ class OmnistoreBackend:
             else:
                 logging.info(clean_msg)
 
+    @safe_command
     async def run_search(self, query: str, json_mode: bool = False):
-        try:
-            async with self:
-                if not self.manager:
-                    raise RuntimeError("SearchManager is not initialized.")
+        async with self:
+            if not self.manager:
+                raise RuntimeError("SearchManager is not initialized.")
 
-                results = await self.manager.search_all(query)
-                if results is None: results = []
+            results = await self.manager.search_all(query)
+            if results is None: results = []
 
-                if json_mode:
-                    self._output_json(results)
-                else:
-                    self._output_pretty(query, results)
-        except Exception as e:
-            await self._handle_error("Search failed", e, json_mode)
-
-    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
-        try:
-            self.is_action = True
-            package_data = {"name": name, "source": source, "url": url}
-
-            if self.manager and self.manager.habit_tracker:
-                self.manager.habit_tracker.record_install(name, source)
-
-            async def cb(m): await self._flutter_callback(m, json_mode)
-
-            if not json_mode:
-                console.print(Panel(f"Installing [bold green]{name}[/bold green] from [cyan]{source}[/cyan]", border_style="green"))
-
-            success = await self.executor.install(package_data, callback=cb)
-            if success:
-                self.cache.invalidate_installed_cache()
-                if not json_mode:
-                    console.print(Panel(f"Successfully installed [bold green]{name}[/bold green]! 🎉", border_style="green"))
-                    console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-            return success
-        except Exception as e:
-            await self._handle_error(f"Install failed: {name}", e, json_mode)
-            return False
-
-    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
-        try:
-            self.is_action = True
-            package_data = {"name": package_name, "source": source, "flag": flag}
-
-            async def cb(m): await self._flutter_callback(m, json_mode)
-
-            if not json_mode:
-                console.print(Panel(f"Uninstalling [bold red]{package_name}[/bold red] from [cyan]{source}[/cyan]", border_style="red"))
-
-            success = await self.executor.uninstall(package_data, callback=cb)
-            if success:
-                self.cache.invalidate_installed_cache()
-                if not json_mode:
-                    console.print(Panel(f"Successfully uninstalled [bold red]{package_name}[/bold red]! ✨", border_style="green"))
-                    console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-            return success
-        except Exception as e:
-            await self._handle_error(f"Uninstall failed: {package_name}", e, json_mode)
-            return False
-
-    async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
-        try:
-            self.is_action = True
-            package_data = {"name": package_name, "source": source}
-            async def cb(m): await self._flutter_callback(m, json_mode)
-
-            if not json_mode:
-                target = "all packages" if package_name == "all" else f"[bold green]{package_name}[/bold green]"
-                console.print(Panel(f"Updating {target} via [cyan]{source}[/cyan]", border_style="blue"))
-
-            success = await self.executor.update(package_data, callback=cb)
-            if success and not json_mode:
-                console.print(Panel(f"Update completed! 🎉", border_style="green"))
-                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-            return success
-        except Exception as e:
-            await self._handle_error(f"Update failed: {package_name}", e, json_mode)
-            return False
-
-    async def run_check_updates(self, json_mode: bool = False):
-        try:
-            updates = await self.updater.check_all_updates()
             if json_mode:
-                sys.stdout.write(json.dumps(updates, ensure_ascii=False) + "\n"); sys.stdout.flush()
+                self._output_json(results)
             else:
-                if not updates:
-                    console.print(Panel("All apps are up to date! ✨", border_style="green"))
-                    return
+                self._output_pretty(query, results)
 
-                table = Table(title="Available Updates", show_header=True, header_style="bold yellow")
-                table.add_column("Source", style="cyan")
-                table.add_column("Package Name", style="bold green")
-                table.add_column("Current", style="red")
-                table.add_column("New", style="green")
+    @safe_command
+    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
+        self.is_action = True
+        package_data = {"name": name, "source": source, "url": url}
 
-                for u in updates:
-                    table.add_row(u['source'], u['name'], u['current_version'], u['new_version'])
+        if self.manager and self.manager.habit_tracker:
+            self.manager.habit_tracker.record_install(name, source)
 
-                console.print(table)
+        async def cb(m): await self._flutter_callback(m, json_mode)
+
+        if not json_mode:
+            console.print(Panel(f"Installing [bold green]{name}[/bold green] from [cyan]{source}[/cyan]", border_style="green"))
+
+        success = await self.executor.install(package_data, callback=cb)
+        if success:
+            self.cache.invalidate_installed_cache()
+            if not json_mode:
+                console.print(Panel(f"Successfully installed [bold green]{name}[/bold green]! 🎉", border_style="green"))
                 console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-        except Exception as e:
-            await self._handle_error("Update check failed", e, json_mode)
+        return success
 
+    @safe_command
+    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
+        self.is_action = True
+        package_data = {"name": package_name, "source": source, "flag": flag}
+
+        async def cb(m): await self._flutter_callback(m, json_mode)
+
+        if not json_mode:
+            console.print(Panel(f"Uninstalling [bold red]{package_name}[/bold red] from [cyan]{source}[/cyan]", border_style="red"))
+
+        success = await self.executor.uninstall(package_data, callback=cb)
+        if success:
+            self.cache.invalidate_installed_cache()
+            if not json_mode:
+                console.print(Panel(f"Successfully uninstalled [bold red]{package_name}[/bold red]! ✨", border_style="green"))
+                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+        return success
+
+    @safe_command
+    async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
+        self.is_action = True
+        package_data = {"name": package_name, "source": source}
+        async def cb(m): await self._flutter_callback(m, json_mode)
+
+        if not json_mode:
+            target = "all packages" if package_name == "all" else f"[bold green]{package_name}[/bold green]"
+            console.print(Panel(f"Updating {target} via [cyan]{source}[/cyan]", border_style="blue"))
+
+        success = await self.executor.update(package_data, callback=cb)
+        if success and not json_mode:
+            console.print(Panel(f"Update completed! 🎉", border_style="green"))
+            console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+        return success
+
+    @safe_command
+    async def run_check_updates(self, json_mode: bool = False):
+        updates = await self.updater.check_all_updates()
+        if json_mode:
+            sys.stdout.write(json.dumps(updates, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        else:
+            if not updates:
+                console.print(Panel("All apps are up to date! ✨", border_style="green"))
+                return
+
+            table = Table(title="Available Updates", show_header=True, header_style="bold yellow")
+            table.add_column("Source", style="cyan")
+            table.add_column("Package Name", style="bold green")
+            table.add_column("Current", style="red")
+            table.add_column("New", style="green")
+
+            for u in updates:
+                table.add_row(u['source'], u['name'], u['current_version'], u['new_version'])
+
+            console.print(table)
+            console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+
+    @safe_command
     async def run_recommendations(self, json_mode: bool = False):
-        try:
-            async with self:
-                if not self.recommender: raise RuntimeError("RecommendationManager not initialized.")
-                sources = list(self.manager.sources.values()) if self.manager else []
-                results = await self.recommender.get_recommendations(sources=sources)
-                if json_mode:
-                    sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
-                else:
-                    for app in results: print(f"推荐: {app['name']} ({app['id']})")
-        except Exception as e:
-            await self._handle_error("Failed to fetch recommendations", e, json_mode)
+        async with self:
+            if not self.recommender: raise RuntimeError("RecommendationManager not initialized.")
+            sources = list(self.manager.sources.values()) if self.manager else []
+            results = await self.recommender.get_recommendations(sources=sources)
+            if json_mode:
+                sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            else:
+                for app in results: print(f"推荐: {app['name']} ({app['id']})")
 
+    @safe_command
     async def run_app_details(self, app_id: str, json_mode: bool = False):
-        try:
-            async with self:
-                if not self.recommender or not self.manager:
-                    raise RuntimeError("Managers are not initialized.")
+        async with self:
+            if not self.recommender or not self.manager:
+                raise RuntimeError("Managers are not initialized.")
 
-                details = await self.recommender.get_details(app_id) if "." in app_id else await self.recommender.find_metadata(app_id)
-                search_name = details.get("name") or app_id.split(".")[-1]
-                variants_results = await self.manager.search_all(search_name)
+            details = await self.recommender.get_details(app_id) if "." in app_id else await self.recommender.find_metadata(app_id)
+            search_name = details.get("name") or app_id.split(".")[-1]
+            variants_results = await self.manager.search_all(search_name)
 
-                norm_target = self.manager._normalize_app_name(search_name)
-                matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
+            norm_target = self.manager._normalize_app_name(search_name)
+            matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
 
-                if matched_app:
-                    details["variants"] = matched_app.get("variants", [])
-                    if not details.get("description") or len(details.get("description")) < 10:
-                        details["description"] = matched_app.get("description", "")
+            if matched_app:
+                details["variants"] = matched_app.get("variants", [])
+                if not details.get("description") or len(details.get("description")) < 10:
+                    details["description"] = matched_app.get("description", "")
 
-                # Fetch extra info for Native/AUR variants
-                # ⚡ Optimization: Parallelize extra info fetching for variants
-                async def _fetch_variant_info(variant):
-                    if variant['source'] in ("Native", "Pacman", "AUR"):
-                        proc = None
-                        try:
-                            flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
-                            proc = await asyncio.create_subprocess_exec(
-                                "pacman" if variant['source'] in ("Native", "Pacman") else "yay",
-                                flag, variant.get('name', search_name),
-                                stdout=asyncio.subprocess.PIPE,
-                                stderr=asyncio.subprocess.DEVNULL,
-                                env={**os.environ, "LC_ALL": "C"}
-                            )
-                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                            if stdout:
-                                info = stdout.decode()
-                                if (m := re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)): variant["depends"] = m.group(1).split()
-                                if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
-                                if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
-                        except Exception:
-                            if proc:
-                                try: proc.kill()
-                                except: pass
-                        finally:
-                            if proc:
-                                try: await proc.wait()
-                                except: pass
+            # Fetch extra info for Native/AUR variants
+            # ⚡ Optimization: Parallelize extra info fetching for variants
+            async def _fetch_variant_info(variant):
+                if variant['source'] in ("Native", "Pacman", "AUR"):
+                    proc = None
+                    try:
+                        flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
+                        proc = await asyncio.create_subprocess_exec(
+                            "pacman" if variant['source'] in ("Native", "Pacman") else "yay",
+                            flag, variant.get('name', search_name),
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.DEVNULL,
+                            env={**os.environ, "LC_ALL": "C"}
+                        )
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        if stdout:
+                            info = stdout.decode()
+                            if (m := re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)): variant["depends"] = m.group(1).split()
+                            if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
+                            if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
 
-                variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
-                if variant_tasks:
-                    await asyncio.gather(*variant_tasks)
+            variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
+            if variant_tasks:
+                await asyncio.gather(*variant_tasks)
 
-                sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e:
-            await self._handle_error(f"Details fetch failed for {app_id}", e, json_mode)
+            sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
+    @safe_command
     async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False):
-        try:
-            if not force_refresh:
-                cached = self.cache.get_installed_packages()
-                if cached:
-                    if json_mode: sys.stdout.write(json.dumps(cached) + "\n"); sys.stdout.flush()
-                    else: self._output_installed_pretty(cached)
-                    return
+        if not force_refresh:
+            cached = self.cache.get_installed_packages()
+            if cached:
+                if json_mode: sys.stdout.write(json.dumps(cached) + "\n"); sys.stdout.flush()
+                else: self._output_installed_pretty(cached)
+                return
 
-            installed_list = []
-            async with self:
-                # ⚡ Optimization: Parallelize package scanning for different sources
-                async def scan_appimage():
-                    res = []
-                    apps_dir = Path.home() / "Applications"
-                    if apps_dir.exists():
-                        for f in apps_dir.glob("*.AppImage"):
-                            res.append({
-                                "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                                "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
-                            })
-                    return res
+        installed_list = []
+        async with self:
+            # ⚡ Optimization: Parallelize package scanning for different sources
+            async def scan_appimage():
+                res = []
+                apps_dir = Path.home() / "Applications"
+                if apps_dir.exists():
+                    for f in apps_dir.glob("*.AppImage"):
+                        res.append({
+                            "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
+                            "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
+                        })
+                return res
 
-                async def scan_flatpak():
-                    res = []
-                    proc = None
-                    try:
-                        proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
-                                                                   stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        if stdout:
-                            for line in stdout.decode().strip().splitlines():
-                                parts = [p.strip() for p in line.split('\t')]
-                                if len(parts) >= 2:
-                                    res.append({
-                                        "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
-                                        "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
-                                        "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
-                                    })
-                    except Exception:
-                        if proc:
-                            try: proc.kill()
-                            except: pass
-                    finally:
-                        if proc:
-                            try: await proc.wait()
-                            except: pass
-                    return res
-
-                async def scan_native():
-                    res = []
-                    proc = None
-                    try:
-                        proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        if stdout:
-                            for line in stdout.decode().strip().splitlines():
-                                if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
-                                                       "installed": True, "description": "Native/AUR package", "version": "Local"})
-                    except Exception:
-                        if proc:
-                            try: proc.kill()
-                            except: pass
-                    finally:
-                        if proc:
-                            try: await proc.wait()
-                            except: pass
-                    return res
-
-                results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native())
-                for r in results:
-                    installed_list.extend(r)
-
-                if self.recommender:
-                    enrich_targets = [app for app in installed_list if not app.get('icon')]
-                    async def _enrich_app(app):
-                        try:
-                            # ⚡ Optimization: Tiered enrichment logic (handled in loop below)
-                            metadata = await self.recommender.find_metadata(app['name'], use_network=app.get('_use_network', True))
-                            if metadata:
-                                if metadata.get('icon'): app['icon'] = metadata['icon']
-                                if metadata.get('description'): app['description'] = metadata['description']
-                        except: pass
-
-                    if enrich_targets:
-                        # ⚡ Optimization: Implement tiered enrichment for installed list
-                        # Only allow network requests for the first 10 targets to balance UX and speed
-                        for i, app in enumerate(enrich_targets):
-                            app['_use_network'] = (i < 10)
-                        await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
-                        for app in enrich_targets: app.pop('_use_network', None)
-
-                if json_mode: sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
-                else: self._output_installed_pretty(installed_list)
-                self.cache.save_installed_packages(installed_list)
-        except Exception as e:
-            await self._handle_error("Installed list scan failed", e, json_mode)
-
-    async def run_list_custom_repos(self):
-        try:
-            flatpaks = await self.repo_manager.list_flatpak_remotes()
-            pacmans = await self.repo_manager.list_pacman_repos()
-            appimages = self.repo_manager.list_appimage_feeds()
-            result = {
-                "flatpak": flatpaks, "pacman": pacmans,
-                "appimage": [{"name": Path(url).stem, "url": url} for url in appimages],
-                "config_flatpak": self.config.get("custom_repos.flatpak", []),
-                "config_pacman": self.config.get("custom_repos.pacman", [])
-            }
-            sys.stdout.write(json.dumps(result, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e:
-            await self._handle_error("Custom repos list failed", e, self.json_mode)
-
-    async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
-        self.is_action = True
-        async def cb(m): await self._flutter_callback(m, json_mode)
-        try:
-            success = False
-            if repo_type == "flatpak": success = await self.repo_manager.add_flatpak_remote(name, url, callback=cb)
-            elif repo_type == "pacman": success = await self.repo_manager.add_pacman_repo(name, url, callback=cb)
-            elif repo_type == "appimage":
-                success = self.repo_manager.add_appimage_feed(url)
-                await cb(f"[{'INFO' if success else 'ERROR'}] Added AppImage feed: {url}")
-            else: await cb(f"[ERROR] Invalid repo type: {repo_type}")
-            if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
-            return success
-        except Exception as e:
-            await self._handle_error(f"Add custom repo failed: {name}", e, json_mode)
-            return False
-
-    async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False) -> bool:
-        self.is_action = True
-        async def cb(m): await self._flutter_callback(m, json_mode)
-        try:
-            success = False
-            if repo_type == "flatpak": success = await self.repo_manager.remove_flatpak_remote(name, callback=cb)
-            elif repo_type == "pacman": success = await self.repo_manager.remove_pacman_repo(name, callback=cb)
-            elif repo_type == "appimage":
-                success = self.repo_manager.remove_appimage_feed(name)
-                await cb(f"[{'INFO' if success else 'ERROR'}] Removed AppImage feed: {name}")
-            else: await cb(f"[ERROR] Invalid repo type: {repo_type}")
-            if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
-            return success
-        except Exception as e:
-            await self._handle_error(f"Remove custom repo failed: {name}", e, json_mode)
-            return False
-
-    async def run_ai_explain(self, app_name: str, app_description: str = ""):
-        try:
-            res = await self.ai.explain_app(app_name, app_description)
-            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("AI explain failed", e, True)
-
-    async def run_ai_recommend(self, prompt: str):
-        try:
-            async with self:
-                if not self.manager: raise RuntimeError("SearchManager not initialized.")
-                keywords = prompt.split()
-                candidates = await self.manager.search_all(keywords[0] if keywords else prompt)
-                res = await self.ai.recommend_apps(prompt, candidates)
-                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("AI recommendation failed", e, True)
-
-    async def run_ai_analyze_error(self, error_log: str):
-        try:
-            res = await self.ai.analyze_error(error_log)
-            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("AI error analysis failed", e, True)
-
-    async def run_get_essentials(self):
-        try:
-            res = self.essentials.get_essentials()
-            sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("Essentials fetch failed", e, True)
-
-    async def run_import_packages(self, filepath: str):
-        try:
-            res = self.essentials.import_from_file(filepath)
-            sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("Import failed", e, True)
-
-    async def run_export_packages(self, filepath: str):
-        try:
-            installed = []
-            for cmd, src in [(["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR")]:
+            async def scan_flatpak():
+                res = []
                 proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                    proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
+                                                               stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     if stdout:
                         for line in stdout.decode().strip().splitlines():
-                            if line: installed.append({"name": line.split()[0], "source": src})
+                            parts = [p.strip() for p in line.split('\t')]
+                            if len(parts) >= 2:
+                                res.append({
+                                    "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
+                                    "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
+                                    "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
+                                })
                 except Exception:
                     if proc:
                         try: proc.kill()
@@ -569,16 +421,154 @@ class OmnistoreBackend:
                     if proc:
                         try: await proc.wait()
                         except: pass
+                return res
 
-            export_dir = os.path.dirname(os.path.abspath(filepath))
-            if export_dir: os.makedirs(export_dir, exist_ok=True)
-            with open(filepath, 'w', encoding='utf-8') as f: json.dump(installed, f, ensure_ascii=False, indent=2)
+            async def scan_native():
+                res = []
+                proc = None
+                try:
+                    proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                    if stdout:
+                        for line in stdout.decode().strip().splitlines():
+                            if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
+                                                   "installed": True, "description": "Native/AUR package", "version": "Local"})
+                except Exception:
+                    if proc:
+                        try: proc.kill()
+                        except: pass
+                finally:
+                    if proc:
+                        try: await proc.wait()
+                        except: pass
+                return res
 
-            if self.json_mode: sys.stdout.write(json.dumps({"status": "success", "count": len(installed)}) + "\n")
-            else: console.print(Panel(f"Successfully exported {len(installed)} packages to {filepath}", border_style="green"))
-            sys.stdout.flush()
-        except Exception as e: await self._handle_error("Export failed", e, self.json_mode)
+            results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native())
+            for r in results:
+                installed_list.extend(r)
 
+            if self.recommender:
+                enrich_targets = [app for app in installed_list if not app.get('icon')]
+                async def _enrich_app(app):
+                    try:
+                        # ⚡ Optimization: Tiered enrichment logic (handled in loop below)
+                        metadata = await self.recommender.find_metadata(app['name'], use_network=app.get('_use_network', True))
+                        if metadata:
+                            if metadata.get('icon'): app['icon'] = metadata['icon']
+                            if metadata.get('description'): app['description'] = metadata['description']
+                    except: pass
+
+                if enrich_targets:
+                    # ⚡ Optimization: Implement tiered enrichment for installed list
+                    # Only allow network requests for the first 10 targets to balance UX and speed
+                    for i, app in enumerate(enrich_targets):
+                        app['_use_network'] = (i < 10)
+                    await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
+                    for app in enrich_targets: app.pop('_use_network', None)
+
+            if json_mode: sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
+            else: self._output_installed_pretty(installed_list)
+            self.cache.save_installed_packages(installed_list)
+
+    @safe_command
+    async def run_list_custom_repos(self):
+        flatpaks = await self.repo_manager.list_flatpak_remotes()
+        pacmans = await self.repo_manager.list_pacman_repos()
+        appimages = self.repo_manager.list_appimage_feeds()
+        result = {
+            "flatpak": flatpaks, "pacman": pacmans,
+            "appimage": [{"name": Path(url).stem, "url": url} for url in appimages],
+            "config_flatpak": self.config.get("custom_repos.flatpak", []),
+            "config_pacman": self.config.get("custom_repos.pacman", [])
+        }
+        sys.stdout.write(json.dumps(result, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
+        self.is_action = True
+        async def cb(m): await self._flutter_callback(m, json_mode)
+        success = False
+        if repo_type == "flatpak": success = await self.repo_manager.add_flatpak_remote(name, url, callback=cb)
+        elif repo_type == "pacman": success = await self.repo_manager.add_pacman_repo(name, url, callback=cb)
+        elif repo_type == "appimage":
+            success = self.repo_manager.add_appimage_feed(url)
+            await cb(f"[{'INFO' if success else 'ERROR'}] Added AppImage feed: {url}")
+        else: await cb(f"[ERROR] Invalid repo type: {repo_type}")
+        if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
+        return success
+
+    @safe_command
+    async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False) -> bool:
+        self.is_action = True
+        async def cb(m): await self._flutter_callback(m, json_mode)
+        success = False
+        if repo_type == "flatpak": success = await self.repo_manager.remove_flatpak_remote(name, callback=cb)
+        elif repo_type == "pacman": success = await self.repo_manager.remove_pacman_repo(name, callback=cb)
+        elif repo_type == "appimage":
+            success = self.repo_manager.remove_appimage_feed(name)
+            await cb(f"[{'INFO' if success else 'ERROR'}] Removed AppImage feed: {name}")
+        else: await cb(f"[ERROR] Invalid repo type: {repo_type}")
+        if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
+        return success
+
+    @safe_command
+    async def run_ai_explain(self, app_name: str, app_description: str = ""):
+        res = await self.ai.explain_app(app_name, app_description)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_recommend(self, prompt: str):
+        async with self:
+            if not self.manager: raise RuntimeError("SearchManager not initialized.")
+            keywords = prompt.split()
+            candidates = await self.manager.search_all(keywords[0] if keywords else prompt)
+            res = await self.ai.recommend_apps(prompt, candidates)
+            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_analyze_error(self, error_log: str):
+        res = await self.ai.analyze_error(error_log)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_get_essentials(self):
+        res = self.essentials.get_essentials()
+        sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_import_packages(self, filepath: str):
+        res = self.essentials.import_from_file(filepath)
+        sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_export_packages(self, filepath: str):
+        installed = []
+        for cmd, src in [(["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR")]:
+            proc = None
+            try:
+                proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                if stdout:
+                    for line in stdout.decode().strip().splitlines():
+                        if line: installed.append({"name": line.split()[0], "source": src})
+            except Exception:
+                if proc:
+                    try: proc.kill()
+                    except: pass
+            finally:
+                if proc:
+                    try: await proc.wait()
+                    except: pass
+
+        export_dir = os.path.dirname(os.path.abspath(filepath))
+        if export_dir: os.makedirs(export_dir, exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as f: json.dump(installed, f, ensure_ascii=False, indent=2)
+
+        if self.json_mode: sys.stdout.write(json.dumps({"status": "success", "count": len(installed)}) + "\n")
+        else: console.print(Panel(f"Successfully exported {len(installed)} packages to {filepath}", border_style="green"))
+        sys.stdout.flush()
+
+    @safe_command
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         import shutil
         async def cb(m): await self._flutter_callback(m, json_mode)
@@ -631,32 +621,30 @@ class OmnistoreBackend:
             await self._handle_error("Cleanup failed", e, json_mode)
             return False
 
+    @safe_command
     async def run_ai_summary(self, json_mode: bool = False):
-        try:
-            res = await self.ai.summarize_project()
-            if json_mode: sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-            else: print(f"AI Summary:\n{res}")
-        except Exception as e: await self._handle_error("AI Summary failed", e, json_mode)
+        res = await self.ai.summarize_project()
+        if json_mode: sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        else: print(f"AI Summary:\n{res}")
 
+    @safe_command
     async def run_ai_pick(self, json_mode: bool = False):
-        try:
-            async with self:
-                if not self.recommender: raise RuntimeError("RecommendationManager not initialized.")
-                recs = await self.recommender.get_recommendations()
-                candidates = []
-                for key in ['trending', 'featured', 'for_you']: candidates.extend(recs.get(key, []))
-                seen = set()
-                unique_candidates = []
-                for c in candidates:
-                    if c['name'] not in seen:
-                        seen.add(c['name']); unique_candidates.append(c)
-                if unique_candidates:
-                    filtered = [c for c in unique_candidates if c.get('name') and c.get('description')] or unique_candidates
-                    res = await self.ai.pick_of_the_day(filtered[:15])
-                    if "PICK_JSON:" not in res and filtered: res += f"\nPICK_JSON: [\"{filtered[0]['name']}\"]"
-                else: res = "Today's recommendation: OmniStore itself!"
-                sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-        except Exception as e: await self._handle_error("AI pick failed", e, True)
+        async with self:
+            if not self.recommender: raise RuntimeError("RecommendationManager not initialized.")
+            recs = await self.recommender.get_recommendations()
+            candidates = []
+            for key in ['trending', 'featured', 'for_you']: candidates.extend(recs.get(key, []))
+            seen = set()
+            unique_candidates = []
+            for c in candidates:
+                if c['name'] not in seen:
+                    seen.add(c['name']); unique_candidates.append(c)
+            if unique_candidates:
+                filtered = [c for c in unique_candidates if c.get('name') and c.get('description')] or unique_candidates
+                res = await self.ai.pick_of_the_day(filtered[:15])
+                if "PICK_JSON:" not in res and filtered: res += f"\nPICK_JSON: [\"{filtered[0]['name']}\"]"
+            else: res = "Today's recommendation: OmniStore itself!"
+            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     async def _handle_error(self, context: str, exception: Exception, json_mode: bool):
         """Standardized error handling to prevent backend crash."""
@@ -771,38 +759,36 @@ async def main():
         console.print("[bold yellow]Warning: OmniStore is optimized for Linux (Arch).[/bold yellow]")
 
     async def dispatch():
+        """Strictly validated CLI command dispatcher."""
+        def validate_str(val, name):
+            if val is None or not str(val).strip():
+                raise ValueError(f"Argument '{name}' cannot be empty.")
+            return str(val).strip()
+
         try:
             if args.get_config:
                 sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n")
 
             elif args.set_config:
-                try:
-                    data = sys.stdin.read().strip() or args.set_config
-                    if not data or data == "true": raise ValueError("No configuration data provided")
-                    success = backend.config.save(json.loads(data))
-                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-                except Exception as e: await backend._handle_error("Config save failed", e, args.json)
+                data = sys.stdin.read().strip() or args.set_config
+                if not data or data == "true": raise ValueError("No configuration data provided")
+                success = backend.config.save(json.loads(data))
+                sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
             elif args.search:
-                q = args.search.strip()
-                if not q:
-                    if args.json: sys.stdout.write("[]\n")
-                    else: raise ValueError("Search query cannot be empty")
-                else: await backend.run_search(q, args.json)
+                q = validate_str(args.search, "search")
+                await backend.run_search(q, args.json)
 
             elif args.install:
-                p = args.install.strip()
-                if not p: raise ValueError("Package name required")
+                p = validate_str(args.install, "install")
                 async with backend: await backend.run_install(p, args.source, args.url, args.json)
 
             elif args.remove:
-                p = args.remove.strip()
-                if not p: raise ValueError("Package name required")
+                p = validate_str(args.remove, "remove")
                 async with backend: await backend.run_uninstall(p, args.source, args.json, args.remove)
 
             elif args.update:
-                p = args.update.strip()
-                if not p: raise ValueError("Package name required")
+                p = validate_str(args.update, "update")
                 async with backend: await backend.run_update(p, args.source, args.json)
 
             elif args.check_updates:
@@ -812,8 +798,7 @@ async def main():
                 await backend.run_list_installed(args.json, args.force_refresh)
 
             elif args.details:
-                p = args.details.strip()
-                if not p: raise ValueError("App ID required")
+                p = validate_str(args.details, "details")
                 await backend.run_app_details(p, args.json)
 
             elif args.recommend:
@@ -826,137 +811,121 @@ async def main():
                 async with backend: await backend.run_ai_summary(args.json)
 
             elif args.check_env:
-                try:
-                    env_res = await backend.env.check_env()
-                    sys.stdout.write(json.dumps(env_res) + "\n")
-                except Exception as e: await backend._handle_error("Env check failed", e, args.json)
+                env_res = await backend.env.check_env()
+                sys.stdout.write(json.dumps(env_res) + "\n")
 
             elif args.bootstrap:
-                try:
-                    await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
-                    if args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
-                except Exception as e: await backend._handle_error("Bootstrap failed", e, args.json)
+                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
+                if args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
 
             elif args.list_custom_repos:
                 async with backend: await backend.run_list_custom_repos()
 
             elif args.add_custom_repo:
-                try:
-                    parts = [p.strip() for p in args.add_custom_repo.split(',', 2)]
-                    if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
-                    if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
-                    async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
-                except Exception as e: await backend._handle_error("Add custom repo failed", e, args.json)
+                raw_repo = validate_str(args.add_custom_repo, "add-custom-repo")
+                parts = [p.strip() for p in raw_repo.split(',', 2)]
+                if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
+                if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
+                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
 
             elif args.remove_custom_repo:
-                try:
-                    parts = [p.strip() for p in args.remove_custom_repo.split(',', 1)]
-                    if len(parts) < 2: raise ValueError("Invalid format: type,name")
-                    async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
-                except Exception as e: await backend._handle_error("Remove custom repo failed", e, args.json)
+                raw_repo = validate_str(args.remove_custom_repo, "remove-custom-repo")
+                parts = [p.strip() for p in raw_repo.split(',', 1)]
+                if len(parts) < 2: raise ValueError("Invalid format: type,name")
+                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
 
             elif args.ai_explain:
-                await backend.run_ai_explain(args.ai_explain.strip(), args.ai_desc or "")
+                p = validate_str(args.ai_explain, "ai-explain")
+                await backend.run_ai_explain(p, args.ai_desc or "")
 
             elif args.ai_recommend:
-                await backend.run_ai_recommend(args.ai_recommend.strip())
+                p = validate_str(args.ai_recommend, "ai-recommend")
+                await backend.run_ai_recommend(p)
 
             elif args.ai_analyze_error:
-                await backend.run_ai_analyze_error(args.ai_analyze_error.strip())
+                p = validate_str(args.ai_analyze_error, "ai-analyze-error")
+                await backend.run_ai_analyze_error(p)
 
             elif args.ai_compare:
+                p = validate_str(args.ai_compare, "ai-compare")
                 async with backend:
-                    try:
-                        if backend.manager:
-                            candidates = await backend.manager.search_all(args.ai_compare)
-                            target = next((c for c in candidates if c['name'].lower() == args.ai_compare.lower()), candidates[0] if candidates else None)
-                            if target:
-                                res = await backend.ai.compare_variants(args.ai_compare, target.get('variants', []))
-                                sys.stdout.write(json.dumps({"response": res}) + "\n")
-                            else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
-                    except Exception as e: await backend._handle_error("AI compare failed", e, args.json)
+                    if backend.manager:
+                        candidates = await backend.manager.search_all(p)
+                        target = next((c for c in candidates if c['name'].lower() == p.lower()), candidates[0] if candidates else None)
+                        if target:
+                            res = await backend.ai.compare_variants(p, target.get('variants', []))
+                            sys.stdout.write(json.dumps({"response": res}) + "\n")
+                        else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
 
             elif args.ai_health:
+                status = await backend.env.check_env()
                 try:
-                    status = await backend.env.check_env()
-                    try:
-                        proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                        status["orphaned_count"] = len(stdout.decode().splitlines())
-                    except: status["orphaned_count"] = 0
-                    res = await backend.ai.generate_health_report(status)
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-                except Exception as e: await backend._handle_error("AI health failed", e, args.json)
+                    proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    status["orphaned_count"] = len(stdout.decode().splitlines())
+                except: status["orphaned_count"] = 0
+                res = await backend.ai.generate_health_report(status)
+                sys.stdout.write(json.dumps({"response": res}) + "\n")
 
             elif args.ai_pick:
                 await backend.run_ai_pick(args.json)
 
             elif args.ai_correct:
-                try:
-                    res = await backend.ai.suggest_correction(args.ai_correct.strip())
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-                except Exception as e: await backend._handle_error("AI correct failed", e, args.json)
+                p = validate_str(args.ai_correct, "ai-correct")
+                res = await backend.ai.suggest_correction(p)
+                sys.stdout.write(json.dumps({"response": res}) + "\n")
 
             elif args.ai_changelog:
-                try:
-                    parts = args.ai_changelog.split(',')
-                    if len(parts) >= 3:
-                        res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
-                        sys.stdout.write(json.dumps({"response": res}) + "\n")
-                    else: raise ValueError("Changelog format: name,current,next")
-                except Exception as e: await backend._handle_error("AI changelog failed", e, args.json)
+                p = validate_str(args.ai_changelog, "ai-changelog")
+                parts = p.split(',')
+                if len(parts) >= 3:
+                    res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
+                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                else: raise ValueError("Changelog format: name,current,next")
 
             elif args.ai_cli:
-                try:
-                    parts = args.ai_cli.split(',')
-                    if len(parts) >= 2:
-                        res = await backend.ai.generate_cli_command(parts[0], parts[1])
-                        sys.stdout.write(json.dumps({"response": res}) + "\n")
-                    else: raise ValueError("AI CLI format: name,summary")
-                except Exception as e: await backend._handle_error("AI CLI failed", e, args.json)
+                p = validate_str(args.ai_cli, "ai-cli")
+                parts = p.split(',')
+                if len(parts) >= 2:
+                    res = await backend.ai.generate_cli_command(parts[0], parts[1])
+                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                else: raise ValueError("AI CLI format: name,summary")
 
             elif args.ai_conflicts:
+                p = validate_str(args.ai_conflicts, "ai-conflicts")
                 try:
-                    p = args.ai_conflicts.strip()
-                    if p:
-                        try:
-                            proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
-                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                            res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
-                            sys.stdout.write(json.dumps({"response": res}) + "\n")
-                        except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
-                except Exception as e: await backend._handle_error("AI conflicts failed", e, args.json)
+                    proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
 
             elif args.essentials:
                 async with backend: await backend.run_get_essentials()
 
             elif args.import_packages:
-                async with backend: await backend.run_import_packages(args.import_packages.strip())
+                p = validate_str(args.import_packages, "import-packages")
+                async with backend: await backend.run_import_packages(p)
 
             elif args.export_packages:
-                async with backend: await backend.run_export_packages(args.export_packages.strip())
+                p = validate_str(args.export_packages, "export-packages")
+                async with backend: await backend.run_export_packages(p)
 
             elif args.launch:
+                p = validate_str(args.launch, "launch")
                 async with backend:
-                    try:
-                        p = args.launch.strip()
-                        if not p: raise ValueError("App ID required for launch")
-                        src = args.source.lower()
-                        if backend.manager and src in backend.manager.sources:
-                            success = await backend.manager.sources[src].launch({"name": p, "id": p})
-                            if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-                    except Exception as e: await backend._handle_error("Launch failed", e, args.json)
+                    src = args.source.lower()
+                    if backend.manager and src in backend.manager.sources:
+                        success = await backend.manager.sources[src].launch({"name": p, "id": p})
+                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
             elif args.locate:
+                p = validate_str(args.locate, "locate")
                 async with backend:
-                    try:
-                        p = args.locate.strip()
-                        if not p: raise ValueError("App ID required for locate")
-                        src = args.source.lower()
-                        if backend.manager and src in backend.manager.sources:
-                            success = await backend.manager.sources[src].locate({"name": p, "id": p})
-                            if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-                    except Exception as e: await backend._handle_error("Locate failed", e, args.json)
+                    src = args.source.lower()
+                    if backend.manager and src in backend.manager.sources:
+                        success = await backend.manager.sources[src].locate({"name": p, "id": p})
+                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
             sys.stdout.flush()
         except Exception as e:

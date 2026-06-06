@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import shutil
+import contextlib
 from typing import Dict, Any, Optional, Callable, Awaitable
 from core.sources.utils import PrivilegeManager
 
@@ -11,6 +12,28 @@ class InstallExecutor:
     Ensures mutual exclusion (state lock), robust error isolation, and
     proper subprocess lifecycle management to prevent zombie processes.
     """
+    @staticmethod
+    @contextlib.asynccontextmanager
+    async def safe_subprocess(*args, **kwargs):
+        """Murphy-proof subprocess wrapper that guarantees cleanup."""
+        proc = None
+        try:
+            proc = await asyncio.create_subprocess_exec(*args, **kwargs)
+            yield proc
+        finally:
+            if proc:
+                try:
+                    if proc.returncode is None:
+                        # Attempt graceful termination first
+                        proc.terminate()
+                        try:
+                            await asyncio.wait_for(proc.wait(), timeout=3)
+                        except asyncio.TimeoutError:
+                            proc.kill()
+                            await proc.wait()
+                except Exception as e:
+                    logging.error(f"Error reaping subprocess: {e}")
+
     def __init__(self, backend):
         self.backend = backend
         self._lock = asyncio.Lock()
@@ -98,14 +121,25 @@ class InstallExecutor:
         """Verify that the required system tools exist and are executable for the given source."""
         def is_exe(name):
             path = shutil.which(name)
-            return path is not None and os.access(path, os.X_OK)
+            if path is None:
+                logging.warning(f"Murphy-proof Check: Binary '{name}' not found in PATH.")
+                return False
+            if not os.access(path, os.X_OK):
+                logging.warning(f"Murphy-proof Check: Binary '{path}' found but not executable.")
+                return False
+            return True
 
         if source_name in ("native", "pacman"):
             return is_exe("pacman")
         elif source_name == "flatpak":
             return is_exe("flatpak")
         elif source_name == "aur":
+            # AUR is special: try yay first, then paru
             return is_exe("yay") or is_exe("paru")
+        elif source_name == "appimage":
+            # For AppImage, we need at least basic fuse/mount tools or just check if we can run things
+            return True
+
         return True
 
     def stop(self):
