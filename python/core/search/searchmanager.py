@@ -8,6 +8,7 @@ from core.recommendation_manager import RecommendationManager
 import shutil
 import re
 import sys
+import logging
 
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
@@ -95,18 +96,7 @@ class SearchManager:
         self.habit_tracker.record_search(query)
         active_sources = self._get_active_sources()
 
-        # Defensive source execution: failures in one source shouldn't crash everything
-        async def safe_search(source: UnifiedSource, q: str):
-            try:
-                return await asyncio.wait_for(source.search(q), timeout=10)
-            except asyncio.TimeoutError:
-                logging.warning(f"Search timeout (10s) for source: {source.name}")
-                return []
-            except Exception as e:
-                logging.error(f"Search failed for source {source.name}: {e}")
-                return []
-
-        tasks = [safe_search(src, query) for src in active_sources]
+        tasks = [self._search_single_source(src, query) for src in active_sources]
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
         except Exception as e:
@@ -184,6 +174,18 @@ class SearchManager:
             item.pop('_norm_name', None)
 
         return top_results
+
+
+    async def _search_single_source(self, source: UnifiedSource, query: str) -> List[Dict]:
+        """Defensive source execution: failures in one source shouldn't crash everything."""
+        try:
+            return await asyncio.wait_for(source.search(query), timeout=10)
+        except asyncio.TimeoutError:
+            logging.warning(f"Search timeout (10s) for source: {source.name}")
+            return []
+        except Exception as e:
+            logging.error(f"Search failed for source {source.name}: {e}")
+            return []
 
     async def _enrich_metadata(self, items: List[Dict]):
         # Tiered enrichment: top 5 with network, rest without network (cache only)
