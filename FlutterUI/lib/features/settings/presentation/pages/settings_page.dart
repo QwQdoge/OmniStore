@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -95,11 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Text(
                 l10n.settings,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.0,
-                ),
+                style: OmnistoreTheme.standardHeader(context),
               ),
               FilterChip(
                 label: Text(l10n.advanced),

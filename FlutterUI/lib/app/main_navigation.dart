@@ -11,7 +11,7 @@ import 'package:frontend/features/explore/presentation/pages/github_store_page.d
 import 'package:frontend/features/explore/presentation/pages/search_page.dart';
 import 'package:frontend/features/home/home_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:frontend/features/settings/presentation/pages/tweaks_page.dart';
+import 'package:frontend/features/settings/presentation/pages/settings_page.dart';
 import 'package:frontend/features/task_manager/presentation/pages/download_page.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
@@ -32,7 +32,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     HomePage(),
     CategoryPage(),
     SearchPage(autoFocus: false),
-    TweaksPage(),
+    SettingsPage(),
     DownloadPage(),
     AppsPage(),
     GitHubStorePage(),

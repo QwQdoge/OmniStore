@@ -73,11 +73,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count 个结果';
+    return '找到 $count 个结果';
   }
 
   @override
-  String get noResults => '未找到结果';
+  String get noResults => '暂无搜索结果';
 
   @override
   String get searching => '正在搜索...';
@@ -92,10 +92,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get packageManager => '包管理器';
 
   @override
-  String get pacmanOfficial => 'Pacman (官方)';
+  String get pacmanOfficial => 'Pacman (官方库)';
 
   @override
-  String get aurUser => 'AUR (用户)';
+  String get aurUser => 'AUR (用户库)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -110,7 +110,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get maxResults => '最大显示结果数';
 
   @override
-  String get appearance => '外观模式';
+  String get appearance => '界面外观';
 
   @override
   String get themeColor => '主题色';
@@ -125,13 +125,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get darkMode => '深色模式';
 
   @override
-  String get loggingLevel => '日志记录等级';
+  String get loggingLevel => '日志详细程度';
 
   @override
   String get saveAndApply => '保存并应用';
 
   @override
-  String get configSaved => '配置已保存，部分设置重启生效';
+  String get configSaved => '配置已保存，部分更改将在重启后生效';
 
   @override
   String get configSaveFailed => '保存配置失败';
@@ -157,7 +157,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get terminalOutput => '终端输出';
 
   @override
-  String get waitingForOutput => '正在等待输出...';
+  String get waitingForOutput => '等待终端输出...';
 
   @override
   String get screenshots => '应用截图';
@@ -218,7 +218,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return '发现 $count 个更新';
+    return '共有 $count 项可更新';
   }
 
   @override
@@ -250,7 +250,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: 发现 $count 个更新';
+    return 'OmniStore: 共有 $count 项可更新';
   }
 
   @override
@@ -272,7 +272,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetOnboarding => '重置新手引导';
 
   @override
-  String get resetOnboardingConfirm => '确定要重置引导吗？下次启动将重新显示欢迎页面。';
+  String get resetOnboardingConfirm => '确定要重置新手引导吗？下次启动时将重新显示欢迎页面。';
 
   @override
   String get checkInterval => '自动检查更新间隔 (小时)';
@@ -464,13 +464,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiCompareTitle => 'AI 版本对比';
 
   @override
-  String get aiHealthTitle => 'AI 系统健康报告';
+  String get aiHealthTitle => 'AI 系统健康诊断';
 
   @override
   String get aiHealthSubtitle => '为你的 Arch Linux 进行智能诊断';
 
   @override
-  String get aiCorrection => '你是说？';
+  String get aiCorrection => '您是指：';
 
   @override
   String get aiThinking => 'AI 正在思考...';
@@ -482,7 +482,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiChangelogTitle => 'AI 更新总结';
 
   @override
-  String get aiCliTitle => 'AI 命令行助手';
+  String get aiCliTitle => 'AI 命令生成器';
 
   @override
   String get aiConflictTitle => 'AI 冲突检测';
@@ -545,16 +545,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+  String get envCheckSubtitle => '正在确保系统环境已准备就绪';
 
   @override
-  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+  String get envFatalDesc => '当前系统似乎并非基于 Arch Linux，大部分功能将不可用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+  String get envWarningDesc => '缺少必要的组件，建议立即进行自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！您的系统非常完美。';
+  String get envOkDesc => '一切就绪！系统环境完美符合要求。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -575,10 +575,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+  String get aurWarning => '安全警告：AUR 软件包由社区用户维护，请确保您信任其来源。';
 
   @override
-  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
+  String get bootstrapNote => '注意：配置过程中可能需要多次输入管理员 (sudo) 密码。';
 
   @override
   String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
@@ -795,7 +795,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String taskFailedWithCode(int code) {
-    return '任务失败，退出码 $code';
+    return '任务失败 (错误码: $code)';
   }
 
   @override
@@ -897,11 +897,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resultsFound(int count) {
-    return '$count 個結果';
+    return '找到 $count 個結果';
   }
 
   @override
-  String get noResults => '未找到結果';
+  String get noResults => '暫無搜尋結果';
 
   @override
   String get searching => '搜尋中...';
@@ -934,7 +934,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get maxResults => '最大結果數';
 
   @override
-  String get appearance => '外觀';
+  String get appearance => '介面外觀';
 
   @override
   String get themeColor => '主題色';
@@ -949,13 +949,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get darkMode => '深色模式';
 
   @override
-  String get loggingLevel => '日誌等級';
+  String get loggingLevel => '日誌詳細程度';
 
   @override
   String get saveAndApply => '儲存並套用';
 
   @override
-  String get configSaved => '配置已儲存';
+  String get configSaved => '配置已儲存，部分更改將在重啟後生效';
 
   @override
   String get configSaveFailed => '儲存配置失敗';
@@ -981,7 +981,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get terminalOutput => '終端輸出';
 
   @override
-  String get waitingForOutput => '等待輸出中...';
+  String get waitingForOutput => '等待終端輸出...';
 
   @override
   String get screenshots => '應用程式截圖';
@@ -1042,7 +1042,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String foundUpdates(int count) {
-    return '發現 $count 個更新';
+    return '共有 $count 項可更新';
   }
 
   @override
@@ -1074,7 +1074,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: 發現 $count 個更新';
+    return 'OmniStore: 共有 $count 項可更新';
   }
 
   @override
@@ -1096,7 +1096,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get resetOnboarding => '重置引導';
 
   @override
-  String get resetOnboardingConfirm => '確定要重置引導嗎？';
+  String get resetOnboardingConfirm => '確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。';
 
   @override
   String get checkInterval => '更新檢查間隔（小時）';
@@ -1288,13 +1288,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCompareTitle => 'AI 版本比較';
 
   @override
-  String get aiHealthTitle => 'AI 系統健康報告';
+  String get aiHealthTitle => 'AI 系統健康診斷';
 
   @override
   String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
 
   @override
-  String get aiCorrection => '您是指？';
+  String get aiCorrection => '您是指：';
 
   @override
   String get aiThinking => 'AI 正在思考...';
@@ -1306,7 +1306,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiChangelogTitle => 'AI 更新摘要';
 
   @override
-  String get aiCliTitle => 'AI 命令列助手';
+  String get aiCliTitle => 'AI 命令生成器';
 
   @override
   String get aiConflictTitle => 'AI 衝突偵測';
@@ -1369,16 +1369,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
+  String get envCheckSubtitle => '正在確保系統環境已準備就緒';
 
   @override
-  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
+  String get envFatalDesc => '目前系統似乎並非基於 Arch Linux，大部分功能將不可用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
+  String get envWarningDesc => '缺少必要的組件，建議立即進行自動配置。';
 
   @override
-  String get envOkDesc => '一切就緒！您的系統非常完美。';
+  String get envOkDesc => '一切就緒！系統環境完美符合要求。';
 
   @override
   String get fixProblems => '一鍵修復/配置';
@@ -1399,10 +1399,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
+  String get aurWarning => '安全警告：AUR 軟體包由社群使用者維護，請確保您信任其來源。';
 
   @override
-  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '注意：配置過程中可能需要多次輸入管理員 (sudo) 密碼。';
 
   @override
   String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
@@ -1619,7 +1619,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String taskFailedWithCode(int code) {
-    return '任務失敗，結束代碼 $code';
+    return '任務失敗 (錯誤碼: $code)';
   }
 
   @override
