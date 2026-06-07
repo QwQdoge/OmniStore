@@ -1196,5 +1196,28 @@
   "relatedApps": "相關應用",
   "@relatedApps": {
     "description": "Description for relatedApps"
-  }
+  },
+  "activeSources": "已啟用軟體源",
+  "autoDetect": "自動檢測",
+  "addCustomSource": "添加自定義源",
+  "addCustomSourceDesc": "配置自定義 Flatpak 遠程庫、AppImage 訂閱或 GitHub/Bitu 倉庫",
+  "sourceType": "來源類型",
+  "githubRepoType": "GitHub 倉庫 (owner/repo)",
+  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "flatpakRemoteType": "Flatpak 遠程庫",
+  "appImageFeedType": "AppImage 訂閱連結",
+  "sourceName": "來源名稱",
+  "hintCustomAppName": "例如: my-custom-app",
+  "repoOwnerRepo": "倉庫地址 (owner/repo)",
+  "sourceUrl": "連結",
+  "hintRepoFormat": "例如: flutter/flutter",
+  "hintFeedUrl": "例如: https://example.com/feed.json",
+  "errorNameUrlRequired": "名稱和連結/倉庫地址不能為空",
+  "addingCustomSource": "正在添加自定義源...",
+  "sourceAddSuccess": "來源添加成功！",
+  "sourceAddFailed": "添加來源失敗。",
+  "autoDetectingSources": "正在自動檢測系統中可用的軟體源...",
+  "autoDetectSuccess": "自動檢測完成，配置已儲存！",
+  "autoDetectFailed": "儲存自動檢測結果失敗。",
+  "personalAccessToken": "個人存取權杖"
 }

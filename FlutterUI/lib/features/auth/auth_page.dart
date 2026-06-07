@@ -55,9 +55,9 @@ class _AuthPageState extends State<AuthPage> {
           children: [
             TextField(
               controller: _patController,
-              decoration: const InputDecoration(
-                labelText: "Personal Access Token",
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.personalAccessToken,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
