@@ -7,7 +7,6 @@ import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-// import 'app_package.dart';
 import 'backend_service.dart';
 import 'task_manager.dart';
 
@@ -32,7 +31,6 @@ class UpdateService {
   String _exitLabel = "Exit";
   String _trayTooltipUpToDate = "OmniStore: Up to date";
   String _notificationTitle = "Updates Available";
-  // String _preparingUpdateLabel = "Preparing update...";
   String _taskCompletedLabel = "Task Completed";
   String _successLabel = "Success";
   String _failedLabel = "Failed";
@@ -43,18 +41,17 @@ class UpdateService {
       "$count applications are available";
 
   Future<void> init() async {
-    // 初始化通知
+    if (kIsWeb) return;
+    
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =
         InitializationSettings(linux: initializationSettingsLinux);
     await _notificationsPlugin.initialize(settings: initializationSettings);
 
-    // Initialize tray with error handling
     try {
       await _initSystemTray();
     } catch (e) {
-      // Log error but continue execution to avoid app crash
       debugPrint('System tray init failed: $e');
     }
   }
@@ -62,23 +59,12 @@ class UpdateService {
   Future<void> updateConfig([AppLocalizations? l10n]) async {
     _config = await BackendService.instance.loadConfig();
 
-    // Ensure notifications match initial config
-    final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
-    if (notificationsEnabled) {
-      const LinuxInitializationSettings initializationSettingsLinux =
-          LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
-      const InitializationSettings initializationSettings =
-          InitializationSettings(linux: initializationSettingsLinux);
-      await _notificationsPlugin.initialize(settings: initializationSettings);
-    }
-
     if (l10n != null) {
       _showWindowLabel = l10n.showWindow;
       _checkUpdatesLabel = l10n.checkUpdates;
       _exitLabel = l10n.exit;
       _trayTooltipUpToDate = l10n.trayTooltipUpToDate;
       _notificationTitle = l10n.notificationTitle;
-      // _preparingUpdateLabel = l10n.preparingUpdate;
       _taskCompletedLabel = l10n.taskCompleted;
       _successLabel = l10n.success;
       _failedLabel = l10n.failed;
@@ -86,17 +72,28 @@ class UpdateService {
       _notificationBody = (count) => l10n.notificationBody(count);
     }
 
-    _startUpdateTimer();
-    // 重新初始化托盘，确保语言和菜单最新
-    await _initSystemTray();
+    if (!kIsWeb) {
+      final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
+      if (notificationsEnabled) {
+        const LinuxInitializationSettings initializationSettingsLinux =
+            LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
+        const InitializationSettings initializationSettings =
+            InitializationSettings(linux: initializationSettingsLinux);
+        await _notificationsPlugin.initialize(settings: initializationSettings);
+      }
+      _startUpdateTimer();
+      await _initSystemTray();
+    } else {
+      _startUpdateTimer();
+    }
   }
 
   Future<bool> _checkLinuxTrayDependencies() async {
+    if (kIsWeb) return false;
     if (!Platform.isLinux) return true;
     try {
-      // 检查常见的托盘依赖库是否存在
       final result = await Process.run('ldconfig', ['-p']);
-      if (result.exitCode != 0) return true; // 如果 ldconfig 失败，保守假设存在
+      if (result.exitCode != 0) return true;
 
       final output = result.stdout.toString();
       bool hasDbusMenu = output.contains('libdbusmenu-gtk3.so');
@@ -108,12 +105,12 @@ class UpdateService {
       return hasDbusMenu && hasAppIndicator;
     } catch (e) {
       debugPrint("Dependency check failed: $e");
-      return true; // 报错则跳过检查
+      return true;
     }
   }
 
   Future<void> _initSystemTray() async {
-    // 1. Defensively check environment
+    if (kIsWeb) return;
     if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return;
 
     final config = await BackendService.instance.loadConfig();
@@ -130,13 +127,11 @@ class UpdateService {
     final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
     if (Platform.isLinux) {
-      // 2. Crash guard to prevent boot loops if Native C code segfaults
       if (guardFile.existsSync()) {
         debugPrint("System tray previously crashed. Skipping to prevent loop.");
         return;
       }
 
-      // 3. Dependency check for libappindicator
       final hasDeps = await _checkLinuxTrayDependencies();
       if (!hasDeps) {
         debugPrint(
@@ -152,7 +147,6 @@ class UpdateService {
         guardFile.createSync();
       }
 
-      // 4. Robust absolute path resolution for Linux Native assets
       String iconPath = 'assets/app_icon.png';
       if (Platform.isLinux) {
         final String executablePath = Platform.resolvedExecutable;
@@ -180,7 +174,6 @@ class UpdateService {
         }
       }
 
-      // 5. Timeout to prevent DBus / StatusNotifierItem blocking
       await _systemTray
           .initSystemTray(title: "OmniStore", iconPath: iconPath)
           .timeout(const Duration(seconds: 3));
@@ -216,13 +209,11 @@ class UpdateService {
         }
       });
 
-      // 6. Success: Clear crash guard
       if (Platform.isLinux && guardFile.existsSync()) {
         guardFile.deleteSync();
       }
     } catch (e) {
       debugPrint("System tray initialization failed gracefully: $e");
-      // Keep guard file to skip initialization on next restart
     }
   }
 
@@ -232,7 +223,6 @@ class UpdateService {
     _updateTimer = Timer.periodic(Duration(hours: interval), (timer) {
       checkNow();
     });
-    // 启动后立即检查一次
     checkNow();
   }
 
@@ -257,12 +247,16 @@ class UpdateService {
           _showUpdateNotification(updates.length);
           _lastNotifiedUpdateHash = currentHash;
         }
-        await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
+        if (!kIsWeb) {
+          await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
+        }
       } else {
         _lastNotifiedUpdateHash = null;
-        try {
-          await _systemTray.setToolTip(_trayTooltipUpToDate);
-        } catch (_) {}
+        if (!kIsWeb) {
+          try {
+            await _systemTray.setToolTip(_trayTooltipUpToDate);
+          } catch (_) {}
+        }
       }
     } catch (e) {
       debugPrint("Update check failed: $e");
@@ -274,7 +268,6 @@ class UpdateService {
   Future<void> startUpdate(String name, String source) async {
     if (TaskManager().isBusy) return;
 
-    // Use TaskManager to ensure the update appears in the "Activity" tab
     final success = await TaskManager().startTask(
       id: "update-$name",
       packageName: name,
@@ -285,11 +278,12 @@ class UpdateService {
     showCompletionNotification(name, success);
 
     if (success) {
-      checkNow(); // Refresh update list
+      checkNow();
     }
   }
 
   Future<void> _showUpdateNotification(int count) async {
+    if (kIsWeb) return;
     const LinuxNotificationDetails linuxPlatformChannelSpecifics =
         LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -304,11 +298,11 @@ class UpdateService {
   }
 
   Future<void> showProgressNotification(String title, double progress) async {
+    if (kIsWeb) return;
     final enabled = _config['notifications']?['enabled'] ?? true;
     final progressEnabled = _config['notifications']?['progress'] ?? true;
     if (!enabled || !progressEnabled) return;
 
-    // Throttle: once every 2 seconds
     final now = DateTime.now();
     if (_lastNotificationTime != null &&
         now.difference(_lastNotificationTime!) < const Duration(seconds: 2)) {
@@ -316,12 +310,8 @@ class UpdateService {
     }
     _lastNotificationTime = now;
 
-    final linuxDetails = LinuxNotificationDetails(
+    final linuxDetails = const LinuxNotificationDetails(
       urgency: LinuxNotificationUrgency.low,
-      customHints: [
-        // For standard Linux notification daemons to show progress if supported
-        // though not all support it via standard API
-      ],
     );
 
     await _notificationsPlugin.show(
@@ -333,6 +323,7 @@ class UpdateService {
   }
 
   Future<void> showCompletionNotification(String title, bool success) async {
+    if (kIsWeb) return;
     final enabled = _config['notifications']?['enabled'] ?? true;
     final completionEnabled = _config['notifications']?['completion'] ?? true;
     if (!enabled || !completionEnabled) return;
@@ -350,6 +341,7 @@ class UpdateService {
   }
 
   Future<void> showSimpleNotification(String title, String body) async {
+    if (kIsWeb) return;
     final enabled = _config['notifications']?['enabled'] ?? true;
     if (!enabled) return;
 
@@ -366,6 +358,7 @@ class UpdateService {
   }
 
   Future<void> _handleFullExit() async {
+    if (kIsWeb) return;
     try {
       await Process.run('pkill', ['omnistore-daemon']);
       await Process.run('pkill', ['-f', 'python/main.py']);

@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../data/repositories/config_repository.dart';
+import '../data/repositories/package_repository.dart';
+import '../data/repositories/task_repository.dart';
 import '../../models/app_package.dart';
 
 class BackendService {
@@ -17,6 +22,7 @@ class BackendService {
   Completer<void>? _globalLock;
 
   static String get _projectRoot {
+    if (kIsWeb) return '';
     final searchRoots = <String>{Directory.current.path};
 
     try {
@@ -49,6 +55,7 @@ class BackendService {
   }
 
   static bool get _isPackaged {
+    if (kIsWeb) return false;
     final exeDir = p.dirname(Platform.resolvedExecutable);
     final pythonServer = p.join(
       exeDir,
@@ -59,6 +66,7 @@ class BackendService {
   }
 
   static String get venvPython {
+    if (kIsWeb) return '';
     if (_isPackaged) {
       return p.join(
         p.dirname(Platform.resolvedExecutable),
@@ -71,11 +79,13 @@ class BackendService {
   }
 
   static String get scriptPath {
+    if (kIsWeb) return '';
     if (_isPackaged) return "";
     return p.join(_projectRoot, 'python', 'main.py');
   }
 
   static String get workingDir {
+    if (kIsWeb) return '';
     if (_isPackaged) return p.dirname(Platform.resolvedExecutable);
     return p.join(_projectRoot, 'python');
   }
@@ -85,6 +95,7 @@ class BackendService {
   String get _workingDir => workingDir;
 
   List<String> _buildArgs(List<String> baseArgs) {
+    if (kIsWeb) return [];
     if (_isPackaged) {
       return baseArgs;
     } else {
@@ -141,7 +152,7 @@ class BackendService {
 
   /// Kill a process and its children using process groups on Linux.
   Future<void> _killProcess(Process? process) async {
-    if (process == null) return;
+    if (kIsWeb || process == null) return;
     _allProcesses.remove(process);
     try {
       if (Platform.isLinux) {
@@ -164,6 +175,7 @@ class BackendService {
   }
 
   bool _isProcessAlive(Process p) {
+    if (kIsWeb) return false;
     try {
       // On Linux/Unix, signal 0 checks if process exists
       if (Platform.isLinux || Platform.isMacOS) {
@@ -175,6 +187,7 @@ class BackendService {
 
   /// Emergency cleanup of all tracked processes
   Future<void> dispose() async {
+    if (kIsWeb) return;
     final processes = List<Process>.from(_allProcesses);
     for (final p in processes) {
       await _killProcess(p);
@@ -186,6 +199,7 @@ class BackendService {
   /// Refactored to use Process.start for absolute lifecycle tracking.
   Future<ProcessResult?> _safeRun(List<String> args,
       {Duration timeout = const Duration(seconds: 30), bool useLock = false}) async {
+    if (kIsWeb) return null;
     // 防呆：检查执行环境
     if (!File(_venvPython).existsSync() && _venvPython != 'python') {
       debugPrint("Backend Error: Python executable not found at $_venvPython");
@@ -223,6 +237,10 @@ class BackendService {
 
   /// Safe wrapper for Process.start returns a stream and handles process lifecycle.
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
+    if (kIsWeb) {
+      yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
+      return;
+    }
     if (useLock) await _acquireLock();
 
     Process? process;
@@ -233,11 +251,10 @@ class BackendService {
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
-        runInShell: true, // Needed for proper signal propagation in some environments
+        runInShell: true,
       );
       _allProcesses.add(process);
 
-      // Bind to global lifecycle
       activeProcess = process;
 
       process.stdout
@@ -290,6 +307,14 @@ class BackendService {
   static void clearLogs() => globalLogs.value = [];
 
   static Future<void> cancelCurrentTask() async {
+    if (kIsWeb) {
+      isDownloading.value = false;
+      globalStatus.value = "任务已取消";
+      globalProgress.value = null;
+      activeApp.value = null;
+      activeFlag.value = null;
+      return;
+    }
     if (activeProcess != null) {
       await BackendService.instance._killProcess(activeProcess);
       activeProcess = null;
@@ -302,6 +327,9 @@ class BackendService {
   }
 
   Future<List<dynamic>> searchPackages(String query, {bool cancelOngoing = true}) async {
+    if (kIsWeb) {
+      return PackageRepository().searchPackages(query, cancelOngoing: cancelOngoing);
+    }
     try {
       final trimmedQuery = query.trim();
       if (trimmedQuery.length < 2) return [];
@@ -346,14 +374,11 @@ class BackendService {
     final cleanInput = input.trim();
     if (cleanInput.isEmpty) return null;
 
-    // Stage 1: Direct parse
     try {
       return jsonDecode(cleanInput);
     } catch (_) {}
 
-    // Stage 2: Defensive recovery - find the largest balanced JSON block
     try {
-      // Look for candidate JSON structures
       final jsonPattern = RegExp(r'(\[.*\]|\{.*\})', dotAll: true);
       final matches = jsonPattern.allMatches(cleanInput);
 
@@ -362,7 +387,6 @@ class BackendService {
         try {
           return jsonDecode(candidate);
         } catch (_) {
-          // If the regex was too greedy, try a more surgical line-by-line check
           final lines = candidate.split('\n');
           for (var i = 0; i < lines.length; i++) {
              try {
@@ -380,6 +404,9 @@ class BackendService {
   }
 
   Future<List<dynamic>> listInstalled() async {
+    if (kIsWeb) {
+      return PackageRepository().listInstalled();
+    }
     try {
       final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
@@ -392,6 +419,11 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
+    if (kIsWeb) {
+      final data = await ConfigRepository().loadConfig();
+      isAIEnabled.value = data['ai']?['enabled'] ?? false;
+      return data;
+    }
     try {
       final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
       if (res == null) return {};
@@ -408,6 +440,9 @@ class BackendService {
   }
 
   Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
+    if (kIsWeb) {
+      return "This is a simulated AI response on web.";
+    }
     try {
       final res = await _safeRun([...args, "--json"], timeout: timeout);
       if (res == null) return "AI 连接超时，请稍后重试。";
@@ -434,6 +469,10 @@ class BackendService {
   Future<String> aiRecommend(String p) => _aiCall(["--ai-recommend", p], timeout: const Duration(seconds: 90));
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
+    if (kIsWeb) {
+      isAIEnabled.value = config['ai']?['enabled'] ?? false;
+      return ConfigRepository().saveConfig(config);
+    }
     Process? process;
     await _acquireLock();
     try {
@@ -458,6 +497,9 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
+    if (kIsWeb) {
+      return ConfigRepository().checkEnv();
+    }
     try {
       final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
@@ -468,9 +510,17 @@ class BackendService {
     }
   }
 
-  Stream<String> bootstrap() => _safeStream(["--bootstrap", "--json"]);
+  Stream<String> bootstrap() {
+    if (kIsWeb) {
+      return Stream.value("[CALLBACK] {\"log\": \"[INFO] Web environment is already ready!\"}");
+    }
+    return _safeStream(["--bootstrap", "--json"]);
+  }
 
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
+    if (kIsWeb) {
+      return PackageRepository().getRecommendations();
+    }
     try {
       final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
       if (res == null) return {};
@@ -493,6 +543,9 @@ class BackendService {
   }
 
   Future<bool> launchApp(String n, String s) async {
+    if (kIsWeb) {
+      return PackageRepository().launchApp(n, s);
+    }
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
@@ -505,6 +558,9 @@ class BackendService {
   }
 
   Future<bool> locateApp(String n, String s) async {
+    if (kIsWeb) {
+      return PackageRepository().locateApp(n, s);
+    }
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
@@ -517,6 +573,9 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> getAppDetails(String id) async {
+    if (kIsWeb) {
+      return PackageRepository().getAppDetails(id);
+    }
     try {
       _validateString(id, "App ID");
       final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
@@ -529,6 +588,9 @@ class BackendService {
   }
 
   Stream<String> executeAction(String f, String n, String s, {String? url}) {
+    if (kIsWeb) {
+      return TaskRepository().executeAction(f, n, s, url: url);
+    }
     if (n.trim().isEmpty) return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
     List<String> args = [f, n, "--source", s, "--json"];
     if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
@@ -536,6 +598,9 @@ class BackendService {
   }
 
   Future<List<dynamic>> checkUpdates() async {
+    if (kIsWeb) {
+      return TaskRepository().checkUpdates();
+    }
     try {
       final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
@@ -547,6 +612,9 @@ class BackendService {
   }
 
   Stream<String> updateAll(String s) {
+    if (kIsWeb) {
+      return TaskRepository().updateAll(s);
+    }
     try {
       _validateString(s, "Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
@@ -556,6 +624,9 @@ class BackendService {
   }
 
   Future<List<dynamic>> getEssentials() async {
+    if (kIsWeb) {
+      return PackageRepository().getEssentials();
+    }
     try {
       final res = await _safeRun(["--essentials", "--json"]);
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
@@ -567,6 +638,9 @@ class BackendService {
   }
 
   Future<List<dynamic>> importPackages(String path) async {
+    if (kIsWeb) {
+      return PackageRepository().importPackages(path);
+    }
     try {
       _validatePath(path);
       final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
@@ -579,6 +653,9 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> exportPackages(String path) async {
+    if (kIsWeb) {
+      return TaskRepository().exportPackages(path);
+    }
     try {
       _validatePath(path);
       final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
@@ -590,5 +667,30 @@ class BackendService {
     }
   }
 
-  Stream<String> cleanSystem() => _safeStream(["--clean-system", "--json"]);
+  Stream<String> cleanSystem() {
+    if (kIsWeb) {
+      return TaskRepository().cleanSystem();
+    }
+    return _safeStream(["--clean-system", "--json"]);
+  }
+
+  Future<bool> addCustomRepo(String type, String name, String url) async {
+    if (kIsWeb) return true;
+    try {
+      final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
+      return res?.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> removeCustomRepo(String type, String name) async {
+    if (kIsWeb) return true;
+    try {
+      final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
+      return res?.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
 }

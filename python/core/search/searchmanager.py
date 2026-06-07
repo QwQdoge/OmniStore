@@ -26,33 +26,45 @@ class SearchManager:
 
     def _setup_sources(self):
         self.sources = {}
-        from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource
+        import sys
+        from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource, BituSource
         from core.sources.external import WingetSource, ScoopSource, BrewSource
 
-        # Default internal sources - only instantiate if enabled in config
-        if self.cm.get("search.sources.pacman", True):
-            self.sources["pacman"] = PacmanSource()
-        if self.cm.get("search.sources.aur", True):
-            self.sources["aur"] = AurSource(self.session)
-        if self.cm.get("search.sources.flatpak", True):
-            self.sources["flatpak"] = FlatpakSource()
-        if self.cm.get("search.sources.appimage", True):
-            self.sources["appimage"] = AppImageSource(self.session, self.cm)
+        is_linux = sys.platform.startswith("linux")
+        is_windows = (sys.platform == "win32")
+        is_macos = (sys.platform == "darwin")
+
+        # 1. Cloud sources (available on all platforms)
         if self.cm.get("search.sources.github", True):
             self.sources["github"] = GitHubSource(self.session, self.cm)
+        if self.cm.get("search.sources.bitu", True):
+            self.sources["bitu"] = BituSource(self.session, self.cm)
 
-        # Auto-discover external sources - only if not explicitly disabled
-        if self.cm.get("search.sources.winget", True):
-            winget = WingetSource()
-            if winget.enabled: self.sources["winget"] = winget
+        # 2. Linux specific sources
+        if is_linux:
+            if self.cm.get("search.sources.pacman", True):
+                self.sources["pacman"] = PacmanSource()
+            if self.cm.get("search.sources.aur", True):
+                self.sources["aur"] = AurSource(self.session)
+            if self.cm.get("search.sources.flatpak", True):
+                self.sources["flatpak"] = FlatpakSource()
+            if self.cm.get("search.sources.appimage", True):
+                self.sources["appimage"] = AppImageSource(self.session, self.cm)
 
-        if self.cm.get("search.sources.scoop", True):
-            scoop = ScoopSource()
-            if scoop.enabled: self.sources["scoop"] = scoop
+        # 3. Windows specific sources
+        if is_windows:
+            if self.cm.get("search.sources.winget", True):
+                winget = WingetSource()
+                if winget.enabled: self.sources["winget"] = winget
+            if self.cm.get("search.sources.scoop", True):
+                scoop = ScoopSource()
+                if scoop.enabled: self.sources["scoop"] = scoop
 
-        if self.cm.get("search.sources.brew", True):
-            brew = BrewSource()
-            if brew.enabled: self.sources["brew"] = brew
+        # 4. macOS / Linux Brew
+        if is_macos or is_linux:
+            if self.cm.get("search.sources.brew", True):
+                brew = BrewSource()
+                if brew.enabled: self.sources["brew"] = brew
 
         # Load external plugins - only if enabled
         if self.cm.get("search.sources.plugins", True):

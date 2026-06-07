@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../python_bridge.dart';
 
 class AIRepository {
@@ -26,6 +27,9 @@ class AIRepository {
       _aiCall(["--ai-recommend", prompt], timeout: 60);
 
   Future<String> _aiCall(List<String> args, {int timeout = 45}) async {
+    if (kIsWeb) {
+      return "This is a simulated AI analysis for Web/Chrome. Direct python backend execution is skipped in browser sandbox mode.";
+    }
     try {
       final result = await Process.run(
         PythonBridge.venvPython,

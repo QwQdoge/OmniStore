@@ -25,6 +25,11 @@ class ConfigManager:
                     "flatpak": True,
                     "appimage": True,
                     "snap": True,
+                    "github": True,
+                    "bitu": True,
+                    "winget": True,
+                    "scoop": True,
+                    "brew": True,
                     "ai": True
                 },
                 "max_results": 100

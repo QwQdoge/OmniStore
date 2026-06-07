@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../models/task_state.dart';
 import 'backend_service.dart';
 import 'update_service.dart';
+import '../data/repositories/task_repository.dart';
 
 class TaskManager {
   static final TaskManager _instance = TaskManager._internal();
@@ -25,14 +26,10 @@ class TaskManager {
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
   static const _throttleDuration = Duration(milliseconds: 16); // ~60Hz
 
-  /// Updates the internal state and notifies listeners via the stream.
-  /// Implements throttling (max 60Hz) to prevent UI jank from high-frequency backend logs.
   void _updateState(TaskState? state) {
     _currentTask = state;
 
     final now = DateTime.now();
-    // Always emit terminal states or null immediately.
-    // Otherwise, throttle based on _throttleDuration.
     if (state == null ||
         state.status == TaskStatus.success ||
         state.status == TaskStatus.failed ||
@@ -64,8 +61,47 @@ class TaskManager {
 
     BackendService.clearLogs();
     BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value =
-        ""; // Clear status, let stage/message handle it
+    BackendService.globalStatus.value = ""; 
+
+    if (kIsWeb) {
+      try {
+        final stream = TaskRepository().executeAction(actionFlag, packageName, source, url: url);
+        await for (final line in stream) {
+          _handleOutput(line);
+        }
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.success,
+            progress: 1.0,
+            messageKey: "taskSuccess",
+            speed: "",
+          ),
+        );
+        BackendService.isDownloading.value = false;
+        
+        UpdateService().showCompletionNotification(packageName, true);
+        
+        Future.delayed(const Duration(seconds: 5), () {
+          if (_currentTask?.status == TaskStatus.success ||
+              _currentTask?.status == TaskStatus.failed) {
+            _updateState(null);
+          }
+        });
+        return true;
+      } catch (e) {
+        debugPrint("Web TaskManager execution exception: $e");
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskError",
+            messageArgs: {"error": e.toString()},
+            speed: "",
+          ),
+        );
+        BackendService.isDownloading.value = false;
+        return false;
+      }
+    }
 
     try {
       final List<String> args = [
@@ -82,7 +118,6 @@ class TaskManager {
         BackendService.venvPython,
         args,
         workingDirectory: BackendService.workingDir,
-        // Using runInShell: false on Linux to get direct access to the process PID for group killing.
         runInShell: Platform.isWindows,
       );
 
@@ -103,7 +138,6 @@ class TaskManager {
         debugPrint("TaskManager Stderr Error: $e");
       });
 
-      // We wait for exit code with a very long timeout (installation can take time)
       final exitCode = await _activeProcess!.exitCode.timeout(
         const Duration(hours: 2),
         onTimeout: () {
@@ -124,7 +158,6 @@ class TaskManager {
           ),
         );
       } else {
-        // If it was cancelled, it might have been set to failed already or still in progress
         if (_currentTask?.status != TaskStatus.failed) {
           _updateState(
             _currentTask?.copyWith(
@@ -137,7 +170,6 @@ class TaskManager {
         }
       }
 
-      // Show completion notification
       if (_currentTask != null) {
         UpdateService().showCompletionNotification(
           _currentTask!.packageName ?? "OmniStore",
@@ -164,14 +196,12 @@ class TaskManager {
       _activeProcess = null;
       BackendService.isDownloading.value = false;
 
-      // Ensure state is finalized
       if (_currentTask != null &&
           _currentTask!.status != TaskStatus.success &&
           _currentTask!.status != TaskStatus.failed) {
         _updateState(_currentTask!.copyWith(status: TaskStatus.failed));
       }
 
-      // Automatically clear the task after a delay
       Future.delayed(const Duration(seconds: 5), () {
         if (_currentTask?.status == TaskStatus.success ||
             _currentTask?.status == TaskStatus.failed) {
@@ -217,7 +247,6 @@ class TaskManager {
               ),
             );
 
-            // Also show in system notification
             UpdateService().showProgressNotification(
               _currentTask?.packageName ?? "OmniStore",
               progress,
@@ -242,7 +271,7 @@ class TaskManager {
             msg.toLowerCase().contains("building") ||
             msg.toLowerCase().contains("cleaning")) {
           status = TaskStatus.installing;
-          progress = -1.0; // Indeterminate for these phases
+          progress = -1.0;
         } else if (msg.toLowerCase().contains("downloading")) {
           status = TaskStatus.downloading;
         }
@@ -270,14 +299,26 @@ class TaskManager {
   }
 
   Future<void> cancelTask() async {
+    if (kIsWeb) {
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.failed,
+          messageKey: "taskCancelledByUser",
+          speed: "",
+        ),
+      );
+      Future.delayed(const Duration(seconds: 3), () {
+        _updateState(null);
+      });
+      return;
+    }
+
     if (_activeProcess != null) {
       final pid = _activeProcess!.pid;
       debugPrint("TaskManager: User requested cancellation for PID $pid");
 
       try {
         if (Platform.isLinux || Platform.isMacOS) {
-          // Use PGID (negative PID) to kill the entire process group
-          // This is critical to kill pacman/yay started by the Python backend.
           await Process.run('kill', ['-TERM', '-$pid']);
           await Process.run('pkill', ['-P', pid.toString()]);
         }
@@ -295,7 +336,6 @@ class TaskManager {
         ),
       );
 
-      // Robust cleanup: Force kill if process remains after timeout
       Timer(const Duration(seconds: 3), () {
         if (_activeProcess != null) {
           debugPrint("TaskManager: Force killing stalled process $pid");
@@ -317,7 +357,6 @@ class TaskManager {
     _updateState(null);
   }
 
-  // Mock task for testing high-frequency updates
   void startMockTask() async {
     if (isBusy) return;
 
@@ -332,7 +371,7 @@ class TaskManager {
 
     for (int i = 0; i <= 100; i++) {
       if (!isBusy) break;
-      await Future.delayed(const Duration(milliseconds: 5)); // > 60Hz
+      await Future.delayed(const Duration(milliseconds: 5));
       _updateState(
         _currentTask?.copyWith(
           progress: i / 100.0,

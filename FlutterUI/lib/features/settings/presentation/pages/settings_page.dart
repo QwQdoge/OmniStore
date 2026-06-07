@@ -1,6 +1,8 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
+import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
 import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
@@ -167,16 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 24),
             _buildSection(l10n.repositories),
-            CheckboxListTile(
-              title: Text(l10n.aurFull),
-              value: settings.config['search']?['sources']?['aur'] ?? true,
-              onChanged: (val) => _updateSourceConfig('aur', val, settings),
-            ),
-            CheckboxListTile(
-              title: Text(l10n.flatpakFull),
-              value: settings.config['search']?['sources']?['flatpak'] ?? true,
-              onChanged: (val) => _updateSourceConfig('flatpak', val, settings),
-            ),
+            _buildSourcesConfig(settings, l10n),
           ],
         ],
       ),
@@ -234,5 +227,251 @@ class _SettingsPageState extends State<SettingsPage> {
     config['search']['sources'] = Map<String, dynamic>.from(config['search']['sources'] ?? {});
     config['search']['sources'][key] = value;
     settings.updateConfig(config);
+  }
+
+  Widget _buildSourcesConfig(SettingsController settings, AppLocalizations l10n) {
+    final sources = ['github', 'bitu', 'pacman', 'aur', 'flatpak', 'appimage', 'snap', 'winget', 'scoop', 'brew'];
+    final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Active Sources",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => _autoDetectSources(settings),
+                  icon: const Icon(Icons.radar_rounded, size: 18),
+                  label: const Text("Auto Detect"),
+                ),
+              ],
+            ),
+            const Divider(),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: sources.map((src) {
+                final bool isEnabled = sourcesMap[src] ?? (src == 'github' || src == 'bitu');
+                return FilterChip(
+                  label: Text(_displayName(src)),
+                  selected: isEnabled,
+                  onSelected: (val) {
+                    _updateSourceConfig(src, val, settings);
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text("Add Custom Source"),
+              subtitle: const Text("Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos"),
+              trailing: IconButton(
+                icon: Icon(Icons.add_circle_outline_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
+                onPressed: () => _showAddSourceDialog(settings),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _displayName(String key) {
+    final mapping = {
+      'pacman': 'Pacman',
+      'aur': 'AUR',
+      'flatpak': 'Flatpak',
+      'appimage': 'AppImage',
+      'snap': 'Snap',
+      'github': 'GitHub',
+      'bitu': 'Bitu',
+      'winget': 'Winget',
+      'scoop': 'Scoop',
+      'brew': 'Homebrew',
+    };
+    return mapping[key.toLowerCase()] ?? key;
+  }
+
+  Future<void> _autoDetectSources(SettingsController settings) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Auto-detecting available sources for your system...")),
+    );
+
+    final Map<String, bool> detectedSources = {
+      "pacman": false,
+      "aur": false,
+      "flatpak": false,
+      "appimage": false,
+      "snap": false,
+      "github": true,
+      "bitu": true,
+      "winget": false,
+      "scoop": false,
+      "brew": false,
+    };
+
+    if (kIsWeb) {
+      // Browser: keep defaults (github, bitu)
+    } else {
+      if (Platform.isLinux) {
+        detectedSources["pacman"] = File("/usr/bin/pacman").existsSync();
+        detectedSources["aur"] = detectedSources["pacman"]! && (File("/usr/bin/yay").existsSync() || File("/usr/bin/paru").existsSync());
+        detectedSources["flatpak"] = _isCommandAvailable("flatpak");
+        detectedSources["appimage"] = true;
+        detectedSources["snap"] = _isCommandAvailable("snap");
+        detectedSources["brew"] = _isCommandAvailable("brew");
+      } else if (Platform.isWindows) {
+        detectedSources["winget"] = _isCommandAvailable("winget");
+        detectedSources["scoop"] = _isCommandAvailable("scoop");
+      } else if (Platform.isMacOS) {
+        detectedSources["brew"] = _isCommandAvailable("brew");
+      }
+    }
+
+    final config = Map<String, dynamic>.from(settings.config);
+    config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
+    config['search']['sources'] = Map<String, dynamic>.from(config['search']['sources'] ?? {});
+    
+    detectedSources.forEach((key, value) {
+      config['search']['sources'][key] = value;
+    });
+
+    final success = await settings.updateConfig(config);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success 
+              ? "Auto-detection complete and settings saved!" 
+              : "Failed to save auto-detected settings."
+          ),
+        ),
+      );
+    }
+  }
+
+  bool _isCommandAvailable(String cmd) {
+    try {
+      final check = Platform.isWindows ? 'where' : 'which';
+      final res = Process.runSync(check, [cmd]);
+      return res.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _showAddSourceDialog(SettingsController settings) {
+    final l10n = AppLocalizations.of(context)!;
+    String type = "github";
+    final nameController = TextEditingController();
+    final urlController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Add Custom Source"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: type,
+                      decoration: const InputDecoration(labelText: "Source Type"),
+                      items: const [
+                        DropdownMenuItem(value: "github", child: Text("GitHub Repository (owner/repo)")),
+                        DropdownMenuItem(value: "bitu", child: Text("Bitu / Bitbucket (workspace/repo)")),
+                        DropdownMenuItem(value: "flatpak", child: Text("Flatpak Remote")),
+                        DropdownMenuItem(value: "appimage", child: Text("AppImage Feed URL")),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => type = val);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: "Source Name",
+                        hintText: "e.g. my-custom-app",
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: urlController,
+                      decoration: InputDecoration(
+                        labelText: type == "github" || type == "bitu" ? "Repository (owner/repo)" : "URL",
+                        hintText: type == "github" || type == "bitu" 
+                            ? "e.g. flutter/flutter" 
+                            : "e.g. https://example.com/feed.json",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    final url = urlController.text.trim();
+                    if (name.isEmpty || url.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Name and URL/Repo cannot be empty")),
+                      );
+                      return;
+                    }
+                    Navigator.pop(context);
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Adding custom source...")),
+                    );
+
+                    bool success = false;
+                    if (kIsWeb) {
+                      final config = Map<String, dynamic>.from(settings.config);
+                      config['custom_repos'] = Map<String, dynamic>.from(config['custom_repos'] ?? {});
+                      config['custom_repos'][type] = List<dynamic>.from(config['custom_repos'][type] ?? []);
+                      config['custom_repos'][type].add({"name": name, "url": url});
+                      success = await settings.updateConfig(config);
+                    } else {
+                      final result = await BackendService.instance.addCustomRepo(type, name, url);
+                      success = result;
+                    }
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(success ? "Source added successfully!" : "Failed to add source.")),
+                      );
+                    }
+                  },
+                  child: const Text("Add"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

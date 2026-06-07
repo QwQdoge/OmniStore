@@ -22,6 +22,23 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _showDiscovery = true;
+  final List<String> _selectedSources = [];
+
+  String _displayName(String key) {
+    final mapping = {
+      'pacman': 'Pacman',
+      'aur': 'AUR',
+      'flatpak': 'Flatpak',
+      'appimage': 'AppImage',
+      'snap': 'Snap',
+      'github': 'GitHub',
+      'bitu': 'Bitu',
+      'winget': 'Winget',
+      'scoop': 'Scoop',
+      'brew': 'Homebrew',
+    };
+    return mapping[key.toLowerCase()] ?? key;
+  }
 
   @override
   void initState() {
@@ -77,12 +94,16 @@ class _SearchPageState extends State<SearchPage> {
                     tooltip: l10n.clearSearch,
                     onPressed: () {
                       _searchController.clear();
-                      setState(() => _showDiscovery = true);
+                      setState(() {
+                        _showDiscovery = true;
+                        _selectedSources.clear();
+                      });
                     },
                   ),
               ],
             ),
           ),
+          if (!_showDiscovery) _buildSourceFilters(settings),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
@@ -93,6 +114,60 @@ class _SearchPageState extends State<SearchPage> {
                   : _buildResults(browse, l10n, settings),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSourceFilters(SettingsController settings) {
+    final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+    final enabledSources = sourcesMap.entries
+        .where((e) => e.value == true)
+        .map((e) => e.key.toString())
+        .toList();
+
+    if (enabledSources.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FilterChip(
+              label: const Text('All'),
+              selected: _selectedSources.isEmpty,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedSources.clear();
+                  });
+                }
+              },
+            ),
+          ),
+          ...enabledSources.map((src) {
+            final name = _displayName(src);
+            final isSelected = _selectedSources.contains(name.toLowerCase());
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: FilterChip(
+                label: Text(name),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedSources.add(name.toLowerCase());
+                    } else {
+                      _selectedSources.remove(name.toLowerCase());
+                    }
+                  });
+                },
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -131,7 +206,14 @@ class _SearchPageState extends State<SearchPage> {
     AppLocalizations l10n,
     SettingsController settings,
   ) {
-    if (browse.searchResults.isEmpty) {
+    var filteredResults = browse.searchResults;
+    if (_selectedSources.isNotEmpty) {
+      filteredResults = browse.searchResults.where((app) {
+        return _selectedSources.contains(app.primarySource.toLowerCase());
+      }).toList();
+    }
+
+    if (filteredResults.isEmpty) {
       return _EmptyResults(
         key: const ValueKey('empty'),
         l10n: l10n,
@@ -143,9 +225,9 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('results'),
       padding: const EdgeInsets.all(16),
-      itemCount: browse.searchResults.length,
+      itemCount: filteredResults.length,
       itemBuilder: (context, index) {
-        final app = browse.searchResults[index];
+        final app = filteredResults[index];
         final heroTag = 'search-result-${app.name}-${app.primarySource}';
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
