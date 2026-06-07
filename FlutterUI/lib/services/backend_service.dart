@@ -13,6 +13,9 @@ class BackendService {
   // Registry for tracking all active subprocesses to prevent leaks
   final Set<Process> _allProcesses = {};
 
+  // Murphy-proof: Global lock to prevent race conditions in I/O operations
+  Completer<void>? _globalLock;
+
   static String get _projectRoot {
     final searchRoots = <String>{Directory.current.path};
 
@@ -121,6 +124,21 @@ class BackendService {
     }
   }
 
+  /// Murphy-proof: Acquire global lock with timeout to prevent deadlocks
+  Future<bool> _acquireLock({Duration timeout = const Duration(seconds: 10)}) async {
+    while (_globalLock != null) {
+      await _globalLock!.future.timeout(timeout, onTimeout: () => throw TimeoutException("Could not acquire operation lock"));
+    }
+    _globalLock = Completer<void>();
+    return true;
+  }
+
+  void _releaseLock() {
+    final lock = _globalLock;
+    _globalLock = null;
+    if (lock != null && !lock.isCompleted) lock.complete();
+  }
+
   /// Kill a process and its children using process groups on Linux.
   Future<void> _killProcess(Process? process) async {
     if (process == null) return;
@@ -128,6 +146,8 @@ class BackendService {
     try {
       if (Platform.isLinux) {
         // Send SIGTERM to the entire process group (negative PID)
+        // Note: Using negative PID kills the process group if it was started in a new group.
+        // Process.start with runInShell: true usually handles this well on Linux.
         await Process.run('kill', ['-TERM', '-${process.pid}']);
         // Wait a bit and force kill if still alive
         await Future.delayed(const Duration(milliseconds: 500));
@@ -163,35 +183,48 @@ class BackendService {
   }
 
   /// Safe wrapper for Process.run with mandatory timeout and exception handling.
+  /// Refactored to use Process.start for absolute lifecycle tracking.
   Future<ProcessResult?> _safeRun(List<String> args,
-      {Duration timeout = const Duration(seconds: 30)}) async {
+      {Duration timeout = const Duration(seconds: 30), bool useLock = false}) async {
     // 防呆：检查执行环境
     if (!File(_venvPython).existsSync() && _venvPython != 'python') {
       debugPrint("Backend Error: Python executable not found at $_venvPython");
       return null;
     }
 
+    if (useLock) await _acquireLock();
+
+    Process? process;
     try {
-      final processFuture = Process.run(
+      process = await Process.start(
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
       );
-      // Process.run doesn't give us the process object immediately,
-      // but we can't easily track it here without Process.start.
-      // However, most calls here are short-lived.
-      return await processFuture.timeout(timeout, onTimeout: () {
-        debugPrint("BackendService._safeRun Timeout: $args");
-        throw TimeoutException("Operation timed out after ${timeout.inSeconds}s");
-      });
+      _allProcesses.add(process);
+
+      final stdoutFuture = process.stdout.transform(utf8.decoder).join();
+      final stderrFuture = process.stderr.transform(utf8.decoder).join();
+
+      final exitCode = await process.exitCode.timeout(timeout);
+      final stdout = await stdoutFuture;
+      final stderr = await stderrFuture;
+
+      return ProcessResult(process.pid, exitCode, stdout, stderr);
     } catch (e) {
       debugPrint("BackendService._safeRun Exception [args: $args]: $e");
+      if (process != null) await _killProcess(process);
       return null;
+    } finally {
+      if (process != null) _allProcesses.remove(process);
+      if (useLock) _releaseLock();
     }
   }
 
   /// Safe wrapper for Process.start returns a stream and handles process lifecycle.
-  Stream<String> _safeStream(List<String> args) async* {
+  Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
+    if (useLock) await _acquireLock();
+
     Process? process;
     final controller = StreamController<String>();
 
@@ -240,6 +273,8 @@ class BackendService {
       debugPrint("BackendService._safeStream Exception: $e");
       yield "[CALLBACK] {\"log\": \"[ERROR] 进程启动失败，请检查环境配置: $e\"}";
       if (!controller.isClosed) controller.close();
+    } finally {
+      if (useLock) _releaseLock();
     }
   }
 
@@ -310,22 +345,38 @@ class BackendService {
   dynamic _tryParseJson(String input) {
     final cleanInput = input.trim();
     if (cleanInput.isEmpty) return null;
+
+    // Stage 1: Direct parse
     try {
       return jsonDecode(cleanInput);
-    } catch (_) {
-      // Defensive: search for valid JSON blocks if output is noisy
+    } catch (_) {}
+
+    // Stage 2: Defensive recovery - find the largest balanced JSON block
+    try {
+      // Look for candidate JSON structures
       final jsonPattern = RegExp(r'(\[.*\]|\{.*\})', dotAll: true);
       final matches = jsonPattern.allMatches(cleanInput);
-      if (matches.isNotEmpty) {
-        final match = matches.last;
+
+      for (final match in matches.toList().reversed) {
+        final candidate = match.group(0)!;
         try {
-          return jsonDecode(match.group(0)!);
-        } catch (e) {
-          debugPrint("Defensive JSON parse failed: $e");
+          return jsonDecode(candidate);
+        } catch (_) {
+          // If the regex was too greedy, try a more surgical line-by-line check
+          final lines = candidate.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+             try {
+               final lineCandidate = lines.sublist(i).join('\n');
+               return jsonDecode(lineCandidate);
+             } catch (_) {}
+          }
         }
       }
-      return null;
+    } catch (e) {
+      debugPrint("Murphy-proof JSON recovery failed: $e");
     }
+
+    return null;
   }
 
   Future<List<dynamic>> listInstalled() async {
@@ -384,6 +435,7 @@ class BackendService {
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     Process? process;
+    await _acquireLock();
     try {
       if (config.isEmpty) return false;
       process = await Process.start(
@@ -401,6 +453,7 @@ class BackendService {
       return false;
     } finally {
       if (process != null) _allProcesses.remove(process);
+      _releaseLock();
     }
   }
 

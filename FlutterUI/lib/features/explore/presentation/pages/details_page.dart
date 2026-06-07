@@ -19,7 +19,6 @@ import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/widgets/github_star_badge.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
-import 'package:frontend/services/backend_service.dart';
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;

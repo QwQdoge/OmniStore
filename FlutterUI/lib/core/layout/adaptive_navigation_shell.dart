@@ -71,7 +71,14 @@ class AdaptiveNavigationShell extends StatelessWidget {
           child: content,
         );
 
-        final taskBar = task.isBusy ? _TaskProgressBar(task: task) : null;
+        final taskBar = AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
+          ),
+        );
 
         if (compact) {
           return PopScope(
@@ -101,7 +108,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
               bottomNavigationBar: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ?taskBar,
+                  taskBar,
                   NavigationBar(
                     selectedIndex: _navBarIndex(destinations, nav.selectedIndex),
                     onDestinationSelected: (i) =>
@@ -139,7 +146,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   showSearch: showSearch && nav.selectedIndex != 2,
                   onSearch: onSearch,
                 ),
-              ?taskBar,
+              taskBar,
               Expanded(
                 child: Row(
                   children: [
@@ -155,7 +162,10 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       destinations: [
                         for (final d in railDestinations)
                           NavigationRailDestination(
-                            icon: Icon(d.icon),
+                            icon: Semantics(
+                              label: d.label,
+                              child: Icon(d.icon),
+                            ),
                             selectedIcon: Icon(d.selectedIcon),
                             label: Text(d.label),
                           ),
@@ -246,38 +256,59 @@ class _TaskProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      height: 32,
       width: double.infinity,
-      color: scheme.primaryContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 12,
-            height: 12,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              '${l10n.processing} ${task.status} ${task.speed}',
-              style: TextStyle(
-                fontSize: 12,
-                color: scheme.onPrimaryContainer,
-              ),
-              overflow: TextOverflow.ellipsis,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.downloading_rounded,
+                  size: 14,
+                  color: scheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${l10n.processing} ${task.status} ${task.speed}',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (task.progress != null)
+                  Text(
+                    '${(task.progress! * 100).toInt()}%',
+                    style: textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: scheme.primary,
+                    ),
+                  ),
+              ],
             ),
           ),
-          if (task.progress != null)
-            Text(
-              '${(task.progress! * 100).toInt()}%',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: scheme.onPrimaryContainer,
-              ),
-            ),
+          LinearProgressIndicator(
+            value: task.progress,
+            minHeight: 3,
+            backgroundColor: scheme.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+          ),
         ],
       ),
     );
