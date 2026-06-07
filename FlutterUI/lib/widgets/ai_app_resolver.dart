@@ -1,6 +1,7 @@
 import "package:frontend/data/repositories/package_repository.dart";
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
@@ -66,9 +67,9 @@ class _AIAppResolverState extends State<AIAppResolver> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Related Apps:",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          AppLocalizations.of(context)!.relatedApps,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         SizedBox(

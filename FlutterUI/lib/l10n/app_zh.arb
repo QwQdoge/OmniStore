@@ -733,19 +733,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "正在确保系统环境已准备就绪",
+  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "当前系统似乎并非基于 Arch Linux，大部分功能将不可用。",
+  "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少必要的组件，建议立即进行自动配置。",
+  "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！系统环境完美符合要求。",
+  "envOkDesc": "一切就绪！您的系统非常完美。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -773,11 +773,11 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 软件包由社区用户维护，请确保您信任其来源。",
+  "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置过程中可能需要多次输入管理员 (sudo) 密码。",
+  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -1181,5 +1181,21 @@
       }
     }
   },
-  "taskProcessing": "正在处理"
+  "taskProcessing": "正在处理",
+  "collapse": "收起",
+  "@collapse": {
+    "description": "Description for collapse"
+  },
+  "expand": "展开",
+  "@expand": {
+    "description": "Description for expand"
+  },
+  "all": "全部",
+  "@all": {
+    "description": "Description for all"
+  },
+  "relatedApps": "相关应用",
+  "@relatedApps": {
+    "description": "Description for relatedApps"
+  }
 }

@@ -1177,5 +1177,21 @@
       }
     }
   },
-  "taskProcessing": "Procesando"
+  "taskProcessing": "Procesando",
+  "collapse": "Contraer",
+  "@collapse": {
+    "description": "Description for collapse"
+  },
+  "expand": "Expandir",
+  "@expand": {
+    "description": "Description for expand"
+  },
+  "all": "Todo",
+  "@all": {
+    "description": "Description for all"
+  },
+  "relatedApps": "Aplicaciones relacionadas",
+  "@relatedApps": {
+    "description": "Description for relatedApps"
+  }
 }

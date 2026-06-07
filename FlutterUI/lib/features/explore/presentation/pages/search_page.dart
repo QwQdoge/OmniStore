@@ -137,7 +137,7 @@ class _SearchPageState extends State<SearchPage> {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: FilterChip(
-              label: const Text('All'),
+              label: Text(AppLocalizations.of(context)!.all),
               selected: _selectedSources.isEmpty,
               onSelected: (selected) {
                 if (selected) {
