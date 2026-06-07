@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "インストール源",
+  "variant": "提供元",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "インストール済み",
+  "ready": "準備完了",
   "@ready": {
     "description": "Description for ready"
   },
@@ -112,11 +112,11 @@
   "@packageManager": {
     "description": "Description for packageManager"
   },
-  "pacmanOfficial": "Pacman (公式)",
+  "pacmanOfficial": "Pacman (公式リポジトリ)",
   "@pacmanOfficial": {
     "description": "Description for pacmanOfficial"
   },
-  "aurUser": "AUR (ユーザー)",
+  "aurUser": "AUR (ユーザーリポジトリ)",
   "@aurUser": {
     "description": "Description for aurUser"
   },
@@ -601,7 +601,7 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "AI におすすめを聞く",
+  "aiPromptRecommend": "AI にアドバイスを求める",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
@@ -1115,5 +1115,67 @@
   "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
-  }
+  },
+  "errorPackageNameRequired": "エラー：パッケージ名は空にできません",
+  "errorStartFailed": "起動に失敗しました：{error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "更新に失敗しました：{error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCleanFailed": "クリーンアップに失敗しました：{error}",
+  "@errorCleanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFatalStream": "致命的なデータストリームエラー：{error}",
+  "@errorFatalStream": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorProcessStart": "プロセスの起動に失敗しました。環境設定を確認してください：{error}",
+  "@errorProcessStart": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForcedTerminated": "タスクが強制終了されました",
+  "aiTimeout": "AI 接続がタイムアウトしました。後で再試行してください。",
+  "aiNoResponse": "AI が有効な応答を返せませんでした。",
+  "aiParseFailed": "AI 応答の解析に失敗しました：形式が正しくありません。",
+  "aiCallFailed": "AI サービスの呼び出しに失敗しました：{error}",
+  "@aiCallFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateAll": "一括更新エラー：{error}",
+  "@errorUpdateAll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskProcessing": "処理中"
 }

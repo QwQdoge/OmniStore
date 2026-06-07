@@ -63,13 +63,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Fuente de instalación';
+  String get variant => 'Variante';
 
   @override
   String get version => 'Versión';
 
   @override
-  String get ready => 'Instalado';
+  String get ready => 'Listo';
 
   @override
   String resultsFound(int count) {
@@ -83,7 +83,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searching => 'Buscando...';
 
   @override
-  String get activity => 'Actividad';
+  String get activity => 'Historial de tareas';
 
   @override
   String get category => 'Categoría';
@@ -95,7 +95,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pacmanOfficial => 'Pacman (Oficial)';
 
   @override
-  String get aurUser => 'AUR (Usuario)';
+  String get aurUser => 'AUR (Repositorio de usuario)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -455,7 +455,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiPromptExplain => 'Explicar con IA';
 
   @override
-  String get aiPromptRecommend => 'Pedir recomendación a la IA';
+  String get aiPromptRecommend => 'Pedir sugerencias a la IA';
 
   @override
   String get aiPromptError => 'Analizar error con IA';
@@ -848,4 +848,60 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
+
+  @override
+  String get errorPackageNameRequired =>
+      'Error: El nombre del paquete no puede estar vacío';
+
+  @override
+  String errorStartFailed(String error) {
+    return 'Error al iniciar: $error';
+  }
+
+  @override
+  String errorUpdateFailed(String error) {
+    return 'Error al actualizar: $error';
+  }
+
+  @override
+  String errorCleanFailed(String error) {
+    return 'Error al limpiar: $error';
+  }
+
+  @override
+  String errorFatalStream(String error) {
+    return 'Error fatal de flujo de datos: $error';
+  }
+
+  @override
+  String errorProcessStart(String error) {
+    return 'Error al iniciar el proceso, por favor compruebe el entorno: $error';
+  }
+
+  @override
+  String get taskForcedTerminated => 'Tarea terminada forzosamente';
+
+  @override
+  String get aiTimeout =>
+      'La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.';
+
+  @override
+  String get aiNoResponse => 'La IA no pudo proporcionar una respuesta válida.';
+
+  @override
+  String get aiParseFailed =>
+      'Error al analizar la respuesta de la IA: formato incorrecto.';
+
+  @override
+  String aiCallFailed(String error) {
+    return 'La llamada al servicio de IA falló: $error';
+  }
+
+  @override
+  String errorUpdateAll(String error) {
+    return 'Error al actualizar todo: $error';
+  }
+
+  @override
+  String get taskProcessing => 'Procesando';
 }

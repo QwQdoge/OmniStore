@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "安装源",
+  "variant": "可用版本",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已安装",
+  "ready": "已就绪",
   "@ready": {
     "description": "Description for ready"
   },
@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "任务动态",
+  "activity": "任务记录",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -605,7 +605,7 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "咨询 AI 推荐",
+  "aiPromptRecommend": "向 AI 寻求建议",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
@@ -1119,5 +1119,67 @@
   "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
-  }
+  },
+  "errorPackageNameRequired": "错误：包名不能为空",
+  "errorStartFailed": "启动失败：{error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "更新失败：{error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCleanFailed": "清理失败：{error}",
+  "@errorCleanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFatalStream": "致命数据流异常：{error}",
+  "@errorFatalStream": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorProcessStart": "进程启动失败，请检查环境配置：{error}",
+  "@errorProcessStart": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForcedTerminated": "任务已强制终止",
+  "aiTimeout": "AI 连接超时，请稍后重试。",
+  "aiNoResponse": "AI 未能提供有效响应。",
+  "aiParseFailed": "AI 响应解析失败：格式不正确。",
+  "aiCallFailed": "AI 服务调用失败：{error}",
+  "@aiCallFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateAll": "批量更新失败：{error}",
+  "@errorUpdateAll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskProcessing": "正在处理"
 }

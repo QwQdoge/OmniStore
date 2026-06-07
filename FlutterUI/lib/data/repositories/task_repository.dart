@@ -13,7 +13,7 @@ class TaskRepository {
     String? url,
   }) async* {
     if (packageName.isEmpty) {
-      yield "[CALLBACK] {\"log\": \"错误：包名不能为空\"}";
+      yield "[CALLBACK] {\"key\": \"errorPackageNameRequired\"}";
       return;
     }
 
@@ -43,7 +43,7 @@ class TaskRepository {
       _activeProcess = null;
     } catch (e) {
       _activeProcess = null;
-      yield "[CALLBACK] {\"log\": \"启动失败: $e\"}";
+      yield "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$e\"}";
     }
   }
 
@@ -81,7 +81,7 @@ class TaskRepository {
       _activeProcess = null;
     } catch (e) {
       _activeProcess = null;
-      yield "[CALLBACK] {\"log\": \"更新失败: $e\"}";
+      yield "[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$e\"}";
     }
   }
 
@@ -135,7 +135,7 @@ class TaskRepository {
 
       await process.exitCode;
     } catch (e) {
-      yield "[CALLBACK] {\"log\": \"清理失败: $e\"}";
+      yield "[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$e\"}";
     }
   }
 }

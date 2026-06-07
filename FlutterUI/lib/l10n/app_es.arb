@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "Fuente de instalación",
+  "variant": "Variante",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "Instalado",
+  "ready": "Listo",
   "@ready": {
     "description": "Description for ready"
   },
@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "Actividad",
+  "activity": "Historial de tareas",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -116,7 +116,7 @@
   "@pacmanOfficial": {
     "description": "Description for pacmanOfficial"
   },
-  "aurUser": "AUR (Usuario)",
+  "aurUser": "AUR (Repositorio de usuario)",
   "@aurUser": {
     "description": "Description for aurUser"
   },
@@ -601,7 +601,7 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "Pedir recomendación a la IA",
+  "aiPromptRecommend": "Pedir sugerencias a la IA",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
@@ -1115,5 +1115,67 @@
   "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
-  }
+  },
+  "errorPackageNameRequired": "Error: El nombre del paquete no puede estar vacío",
+  "errorStartFailed": "Error al iniciar: {error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "Error al actualizar: {error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCleanFailed": "Error al limpiar: {error}",
+  "@errorCleanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFatalStream": "Error fatal de flujo de datos: {error}",
+  "@errorFatalStream": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorProcessStart": "Error al iniciar el proceso, por favor compruebe el entorno: {error}",
+  "@errorProcessStart": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForcedTerminated": "Tarea terminada forzosamente",
+  "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
+  "aiNoResponse": "La IA no pudo proporcionar una respuesta válida.",
+  "aiParseFailed": "Error al analizar la respuesta de la IA: formato incorrecto.",
+  "aiCallFailed": "La llamada al servicio de IA falló: {error}",
+  "@aiCallFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateAll": "Error al actualizar todo: {error}",
+  "@errorUpdateAll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskProcessing": "Procesando"
 }

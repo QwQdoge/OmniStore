@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "安裝源",
+  "variant": "可用版本",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已安裝",
+  "ready": "已就緒",
   "@ready": {
     "description": "Description for ready"
   },
@@ -100,7 +100,7 @@
   "@searching": {
     "description": "Description for searching"
   },
-  "activity": "任務動態",
+  "activity": "任務記錄",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -112,11 +112,11 @@
   "@packageManager": {
     "description": "Description for packageManager"
   },
-  "pacmanOfficial": "Pacman（官方庫）",
+  "pacmanOfficial": "Pacman (官方庫)",
   "@pacmanOfficial": {
     "description": "Description for pacmanOfficial"
   },
-  "aurUser": "AUR（使用者庫）",
+  "aurUser": "AUR (使用者庫)",
   "@aurUser": {
     "description": "Description for aurUser"
   },
@@ -604,7 +604,7 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "詢問 AI 推薦",
+  "aiPromptRecommend": "向 AI 尋求建議",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
@@ -1118,5 +1118,67 @@
   "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
-  }
+  },
+  "errorPackageNameRequired": "錯誤：套件名稱不能為空",
+  "errorStartFailed": "啟動失敗：{error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "更新失敗：{error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCleanFailed": "清理失敗：{error}",
+  "@errorCleanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFatalStream": "致命資料串流異常：{error}",
+  "@errorFatalStream": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorProcessStart": "程序啟動失敗，請檢查環境配置：{error}",
+  "@errorProcessStart": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForcedTerminated": "任務已強制終止",
+  "aiTimeout": "AI 連線逾時，請稍後重試。",
+  "aiNoResponse": "AI 未能提供有效回應。",
+  "aiParseFailed": "AI 回應解析失敗：格式不正確。",
+  "aiCallFailed": "AI 服務呼叫失敗：{error}",
+  "@aiCallFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateAll": "批量更新失敗：{error}",
+  "@errorUpdateAll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskProcessing": "正在處理"
 }

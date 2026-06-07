@@ -217,7 +217,7 @@ class BackendService {
         onError: (e) {
           debugPrint("Process Stdout Error: $e");
           if (!controller.isClosed) {
-            controller.add("[CALLBACK] {\"log\": \"[ERROR] 致命数据流异常: $e\"}");
+            controller.add("[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}");
           }
         },
         onDone: () {
@@ -238,7 +238,7 @@ class BackendService {
       yield* controller.stream;
     } catch (e) {
       debugPrint("BackendService._safeStream Exception: $e");
-      yield "[CALLBACK] {\"log\": \"[ERROR] 进程启动失败，请检查环境配置: $e\"}";
+      yield "[CALLBACK] {\"key\": \"errorProcessStart\", \"error\": \"$e\"}";
       if (!controller.isClosed) controller.close();
     }
   }
@@ -259,7 +259,7 @@ class BackendService {
       await BackendService.instance._killProcess(activeProcess);
       activeProcess = null;
       isDownloading.value = false;
-      globalStatus.value = "任务已强制终止";
+      globalStatus.value = ""; // Localized via TaskController/TaskManager // Key-like marker
       globalProgress.value = null;
       activeApp.value = null;
       activeFlag.value = null;
@@ -359,15 +359,15 @@ class BackendService {
   Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
     try {
       final res = await _safeRun([...args, "--json"], timeout: timeout);
-      if (res == null) return "AI 连接超时，请稍后重试。";
+      if (res == null) return "AI_TIMEOUT";
       final data = _tryParseJson(res.stdout.toString());
       if (data is Map) {
-        return data['response']?.toString() ?? "AI 未能提供有效响应。";
+        return data['response']?.toString() ?? "AI_NO_RESPONSE";
       }
-      return "AI 响应解析失败：格式不正确。";
+      return "AI_PARSE_FAILED";
     } catch (e) {
       debugPrint("_aiCall Error: $e");
-      return "AI 服务调用失败：$e";
+      return "AI_CALL_FAILED:$e";
     }
   }
 
@@ -476,7 +476,7 @@ class BackendService {
   }
 
   Stream<String> executeAction(String f, String n, String s, {String? url}) {
-    if (n.trim().isEmpty) return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
+    if (n.trim().isEmpty) return Stream.value("[CALLBACK] {\"key\": \"errorPackageNameRequired\"}");
     List<String> args = [f, n, "--source", s, "--json"];
     if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
     return _safeStream(args);
@@ -498,7 +498,7 @@ class BackendService {
       _validateString(s, "Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
     } catch (e) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] updateAll Error: $e\"}");
+      return Stream.value("[CALLBACK] {\"key\": \"errorUpdateAll\", \"error\": \"$e\"}");
     }
   }
 
