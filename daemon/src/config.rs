@@ -74,3 +74,98 @@ mod dirs {
         std::env::var_os("HOME").map(PathBuf::from)
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+    use std::fs;
+    use std::sync::Mutex;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    struct EnvGuard {
+        original_home: Option<std::ffi::OsString>,
+    }
+
+    impl EnvGuard {
+        fn new() -> Self {
+            Self {
+                original_home: env::var_os("HOME"),
+            }
+        }
+    }
+
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            match &self.original_home {
+                Some(val) => env::set_var("HOME", val),
+                None => env::remove_var("HOME"),
+            }
+        }
+    }
+
+    fn setup_test_home(test_name: &str) -> PathBuf {
+        let mut path = env::temp_dir();
+        path.push(format!("omnistore_test_{}", test_name));
+        let _ = fs::remove_dir_all(&path);
+        fs::create_dir_all(&path).unwrap();
+        path
+    }
+
+    #[test]
+    fn test_load_config_missing_file() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let _env_guard = EnvGuard::new();
+        let home = setup_test_home("missing");
+        env::set_var("HOME", &home);
+
+        let config = load_config();
+        assert_eq!(config.daemon.enabled, true); // default
+        assert_eq!(config.daemon.check_interval_hours, 4); // default
+    }
+
+    #[test]
+    fn test_load_config_valid_yaml() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let _env_guard = EnvGuard::new();
+        let home = setup_test_home("valid");
+        env::set_var("HOME", &home);
+
+        let config_dir = home.join(".config").join("omnistore");
+        fs::create_dir_all(&config_dir).unwrap();
+        let config_path = config_dir.join("config.yaml");
+
+        fs::write(&config_path, "
+daemon:
+  enabled: false
+  check_interval_hours: 12
+  auto_update: true
+  notifications: false
+").unwrap();
+
+        let config = load_config();
+        assert_eq!(config.daemon.enabled, false);
+        assert_eq!(config.daemon.check_interval_hours, 12);
+        assert_eq!(config.daemon.auto_update, true);
+        assert_eq!(config.daemon.notifications, false);
+    }
+
+    #[test]
+    fn test_load_config_invalid_yaml() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let _env_guard = EnvGuard::new();
+        let home = setup_test_home("invalid");
+        env::set_var("HOME", &home);
+
+        let config_dir = home.join(".config").join("omnistore");
+        fs::create_dir_all(&config_dir).unwrap();
+        let config_path = config_dir.join("config.yaml");
+
+        fs::write(&config_path, "invalid_yaml: { [").unwrap();
+
+        let config = load_config();
+        // Should fall back to default
+        assert_eq!(config.daemon.enabled, true);
+        assert_eq!(config.daemon.check_interval_hours, 4);
+    }
+}
