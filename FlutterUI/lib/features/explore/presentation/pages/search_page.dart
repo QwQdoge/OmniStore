@@ -241,6 +241,8 @@ class _SearchPageState extends State<SearchPage> {
                         imageUrl: app.icon!,
                         width: 40,
                         height: 40,
+                        memCacheWidth: 80,
+                        memCacheHeight: 80,
                         errorWidget: (c, e, s) => const Icon(Icons.apps),
                       ),
                     )

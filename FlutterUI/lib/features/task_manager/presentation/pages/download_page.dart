@@ -625,6 +625,8 @@ class _DownloadPageState extends State<DownloadPage>
                       imageUrl: app.icon!,
                       width: 40,
                       height: 40,
+                      memCacheWidth: 80,
+                      memCacheHeight: 80,
                       placeholder: (context, url) =>
                           const CircularProgressIndicator(strokeWidth: 2),
                       errorWidget: (context, url, error) =>
