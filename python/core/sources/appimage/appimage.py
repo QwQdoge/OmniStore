@@ -25,26 +25,30 @@ class AppImageSource(UnifiedSource):
             if self.cache and (current_time - self.cache_timestamp < self.cache_duration):
                 return self.cache
 
-            feeds = [self.FEED_URL] + self.cm.get("custom_repos.appimage", [])
-            tasks = []
-            for url in feeds:
-                tasks.append(self.session.get(url, headers=self.headers, timeout=aiohttp.ClientTimeout(total=8)))
+            feeds = [self.FEED_URL] + (self.cm.get("custom_repos.appimage", []) or [])
 
-            responses = await asyncio.gather(*tasks, return_exceptions=True)
+            async def _fetch_one(url):
+                try:
+                    async with self.session.get(url, headers=self.headers, timeout=aiohttp.ClientTimeout(total=8)) as resp:
+                        if resp.status == 200:
+                            return await resp.json()
+                except Exception:
+                    pass
+                return None
+
+            results = await asyncio.gather(*[_fetch_one(url) for url in feeds], return_exceptions=True)
             merged_items = []
             seen_names = set()
 
-            for resp in responses:
-                if isinstance(resp, aiohttp.ClientResponse) and resp.status == 200:
-                    try:
-                        data = await resp.json()
-                        items = data.get("items", [])
+            for data in results:
+                if isinstance(data, dict):
+                    items = data.get("items")
+                    if isinstance(items, list):
                         for item in items:
                             name = item.get("name")
                             if name and name not in seen_names:
                                 seen_names.add(name)
                                 merged_items.append(item)
-                    except Exception: pass
 
             self.cache = merged_items
             self.cache_timestamp = current_time

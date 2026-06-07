@@ -162,7 +162,10 @@ class OmnistoreBackend:
 
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
-        self.manager = SearchManager(self.config, self.session, self.habit_tracker, recommender=self.recommender)
+        self.manager = SearchManager(
+            self.config, self.session, self.habit_tracker,
+            recommender=self.recommender, cache_manager=self.cache
+        )
         return self
 
     async def __aenter__(self):
@@ -368,54 +371,59 @@ class OmnistoreBackend:
                             try: await proc.wait()
                             except: pass
 
-            variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
-            if variant_tasks:
-                await asyncio.gather(*variant_tasks)
+                async def scan_native():
+                    res = []
+                    proc = None
+                    try:
+                        proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
+                                                       "installed": True, "description": "Native package", "version": "Local"})
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
+                    return res
 
-            sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
+                async def scan_aur():
+                    res = []
+                    proc = None
+                    try:
+                        proc = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
+                                                       "installed": True, "description": "AUR package", "version": "Local"})
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
+                    return res
 
-    @safe_command
-    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False):
-        if not force_refresh:
-            cached = self.cache.get_installed_packages()
-            if cached:
-                if json_mode: sys.stdout.write(json.dumps(cached) + "\n"); sys.stdout.flush()
-                else: self._output_installed_pretty(cached)
-                return
+                results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native(), scan_aur())
+                for r in results:
+                    installed_list.extend(r)
 
-        installed_list = []
-        async with self:
-            # ⚡ Optimization: Parallelize package scanning for different sources
-            async def scan_appimage():
-                res = []
-                apps_dir = Path.home() / "Applications"
-                if apps_dir.exists():
-                    for f in apps_dir.glob("*.AppImage"):
-                        res.append({
-                            "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                            "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
-                        })
-                return res
-
-            async def scan_flatpak():
-                res = []
-                proc = None
-                try:
-                    proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
-                                                               stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            parts = [p.strip() for p in line.split('\t')]
-                            if len(parts) >= 2:
-                                res.append({
-                                    "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
-                                    "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
-                                    "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
-                                })
-                except Exception:
-                    if proc:
-                        try: proc.kill()
+                if self.recommender:
+                    enrich_targets = [app for app in installed_list if not app.get('icon')]
+                    async def _enrich_app(app):
+                        try:
+                            # ⚡ Optimization: Tiered enrichment logic (handled in loop below)
+                            metadata = await self.recommender.find_metadata(app['name'], use_network=app.get('_use_network', True))
+                            if metadata:
+                                if metadata.get('icon'): app['icon'] = metadata['icon']
+                                if metadata.get('description'): app['description'] = metadata['description']
                         except: pass
                 finally:
                     if proc:
