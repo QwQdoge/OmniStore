@@ -1,0 +1,3 @@
+🎯 **What:** Added comprehensive test coverage for `python/core/essentials_manager.py`'s `import_from_file` method. Previously, error paths like invalid JSON formatting and missing files were completely untested.
+📊 **Coverage:** Successfully tested reading valid JSON formatting, dealing with edge cases like list constraints not being met (e.g. dictionary vs list in JSON files), parsing comments out of simple text files, file does not exist, and multiple error exceptions like `JSONDecodeError` and `IOError`.
+✨ **Result:** Improved test coverage allows refactoring that touches essential manager paths confidently while ensuring the code gracefully manages issues like permission errors or incorrectly formatted configuration arrays.
