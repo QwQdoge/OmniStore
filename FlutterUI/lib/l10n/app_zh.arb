@@ -1197,5 +1197,28 @@
   "relatedApps": "相关应用",
   "@relatedApps": {
     "description": "Description for relatedApps"
-  }
+  },
+  "activeSources": "已启用软件源",
+  "autoDetect": "自动检测",
+  "addCustomSource": "添加自定义源",
+  "addCustomSourceDesc": "配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库",
+  "sourceType": "来源类型",
+  "githubRepoType": "GitHub 仓库 (owner/repo)",
+  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "flatpakRemoteType": "Flatpak 远程库",
+  "appImageFeedType": "AppImage 订阅链接",
+  "sourceName": "来源名称",
+  "hintCustomAppName": "例如: my-custom-app",
+  "repoOwnerRepo": "仓库地址 (owner/repo)",
+  "sourceUrl": "链接",
+  "hintRepoFormat": "例如: flutter/flutter",
+  "hintFeedUrl": "例如: https://example.com/feed.json",
+  "errorNameUrlRequired": "名称和链接/仓库地址不能为空",
+  "addingCustomSource": "正在添加自定义源...",
+  "sourceAddSuccess": "来源添加成功！",
+  "sourceAddFailed": "添加来源失败。",
+  "autoDetectingSources": "正在自动检测系统中可用的软件源...",
+  "autoDetectSuccess": "自动检测完成，配置已保存！",
+  "autoDetectFailed": "保存自动检测结果失败。",
+  "personalAccessToken": "个人访问令牌"
 }

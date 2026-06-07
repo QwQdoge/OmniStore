@@ -246,16 +246,16 @@ class _SettingsPageState extends State<SettingsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Active Sources",
+                  l10n.activeSources,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () => _autoDetectSources(settings),
+                  onPressed: () => _autoDetectSources(settings, l10n),
                   icon: const Icon(Icons.radar_rounded, size: 18),
-                  label: const Text("Auto Detect"),
+                  label: Text(l10n.autoDetect),
                 ),
               ],
             ),
@@ -277,11 +277,11 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text("Add Custom Source"),
-              subtitle: const Text("Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos"),
+              title: Text(l10n.addCustomSource),
+              subtitle: Text(l10n.addCustomSourceDesc),
               trailing: IconButton(
                 icon: Icon(Icons.add_circle_outline_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
-                onPressed: () => _showAddSourceDialog(settings),
+                onPressed: () => _showAddSourceDialog(settings, l10n),
               ),
             ),
           ],
@@ -306,9 +306,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return mapping[key.toLowerCase()] ?? key;
   }
 
-  Future<void> _autoDetectSources(SettingsController settings) async {
+  Future<void> _autoDetectSources(SettingsController settings, AppLocalizations l10n) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Auto-detecting available sources for your system...")),
+      SnackBar(content: Text(l10n.autoDetectingSources)),
     );
 
     final Map<String, bool> detectedSources = {
@@ -355,8 +355,8 @@ class _SettingsPageState extends State<SettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success 
-              ? "Auto-detection complete and settings saved!" 
-              : "Failed to save auto-detected settings."
+              ? l10n.autoDetectSuccess
+              : l10n.autoDetectFailed
           ),
         ),
       );
@@ -373,8 +373,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  void _showAddSourceDialog(SettingsController settings) {
-    final l10n = AppLocalizations.of(context)!;
+  void _showAddSourceDialog(SettingsController settings, AppLocalizations l10n) {
     String type = "github";
     final nameController = TextEditingController();
     final urlController = TextEditingController();
@@ -385,19 +384,19 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Add Custom Source"),
+              title: Text(l10n.addCustomSource),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<String>(
                       value: type,
-                      decoration: const InputDecoration(labelText: "Source Type"),
-                      items: const [
-                        DropdownMenuItem(value: "github", child: Text("GitHub Repository (owner/repo)")),
-                        DropdownMenuItem(value: "bitu", child: Text("Bitu / Bitbucket (workspace/repo)")),
-                        DropdownMenuItem(value: "flatpak", child: Text("Flatpak Remote")),
-                        DropdownMenuItem(value: "appimage", child: Text("AppImage Feed URL")),
+                      decoration: InputDecoration(labelText: l10n.sourceType),
+                      items: [
+                        DropdownMenuItem(value: "github", child: Text(l10n.githubRepoType)),
+                        DropdownMenuItem(value: "bitu", child: Text(l10n.bituRepoType)),
+                        DropdownMenuItem(value: "flatpak", child: Text(l10n.flatpakRemoteType)),
+                        DropdownMenuItem(value: "appimage", child: Text(l10n.appImageFeedType)),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -408,19 +407,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: "Source Name",
-                        hintText: "e.g. my-custom-app",
+                      decoration: InputDecoration(
+                        labelText: l10n.sourceName,
+                        hintText: l10n.hintCustomAppName,
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: urlController,
                       decoration: InputDecoration(
-                        labelText: type == "github" || type == "bitu" ? "Repository (owner/repo)" : "URL",
+                        labelText: type == "github" || type == "bitu" ? l10n.repoOwnerRepo : l10n.sourceUrl,
                         hintText: type == "github" || type == "bitu" 
-                            ? "e.g. flutter/flutter" 
-                            : "e.g. https://example.com/feed.json",
+                            ? l10n.hintRepoFormat
+                            : l10n.hintFeedUrl,
                       ),
                     ),
                   ],
@@ -429,7 +428,7 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  child: Text(l10n.cancel),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -437,14 +436,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     final url = urlController.text.trim();
                     if (name.isEmpty || url.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Name and URL/Repo cannot be empty")),
+                        SnackBar(content: Text(l10n.errorNameUrlRequired)),
                       );
                       return;
                     }
                     Navigator.pop(context);
                     
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Adding custom source...")),
+                      SnackBar(content: Text(l10n.addingCustomSource)),
                     );
 
                     bool success = false;
@@ -461,11 +460,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(success ? "Source added successfully!" : "Failed to add source.")),
+                        SnackBar(content: Text(success ? l10n.sourceAddSuccess : l10n.sourceAddFailed)),
                       );
                     }
                   },
-                  child: const Text("Add"),
+                  child: Text(l10n.add),
                 ),
               ],
             );

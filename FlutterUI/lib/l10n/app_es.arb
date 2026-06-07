@@ -1193,5 +1193,28 @@
   "relatedApps": "Aplicaciones relacionadas",
   "@relatedApps": {
     "description": "Description for relatedApps"
-  }
+  },
+  "activeSources": "Fuentes activas",
+  "autoDetect": "Autodetectar",
+  "addCustomSource": "Añadir fuente personalizada",
+  "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
+  "sourceType": "Tipo de fuente",
+  "githubRepoType": "Repositorio de GitHub (owner/repo)",
+  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "flatpakRemoteType": "Remoto de Flatpak",
+  "appImageFeedType": "URL de feed de AppImage",
+  "sourceName": "Nombre de la fuente",
+  "hintCustomAppName": "ej. mi-app-personalizada",
+  "repoOwnerRepo": "Repositorio (owner/repo)",
+  "sourceUrl": "URL",
+  "hintRepoFormat": "ej. flutter/flutter",
+  "hintFeedUrl": "ej. https://ejemplo.com/feed.json",
+  "errorNameUrlRequired": "El nombre y la URL/Repo no pueden estar vacíos",
+  "addingCustomSource": "Añadiendo fuente personalizada...",
+  "sourceAddSuccess": "¡Fuente añadida con éxito!",
+  "sourceAddFailed": "Error al añadir la fuente.",
+  "autoDetectingSources": "Autodetectando fuentes disponibles para su sistema...",
+  "autoDetectSuccess": "¡Autodetección completada y ajustes guardados!",
+  "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
+  "personalAccessToken": "Token de acceso personal"
 }

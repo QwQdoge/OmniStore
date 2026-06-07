@@ -1193,5 +1193,97 @@
   "relatedApps": "Related Apps",
   "@relatedApps": {
     "description": "Description for relatedApps"
+  },
+  "activeSources": "Active Sources",
+  "@activeSources": {
+    "description": "Label for active software sources"
+  },
+  "autoDetect": "Auto Detect",
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
+  },
+  "addCustomSource": "Add Custom Source",
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
+  },
+  "addCustomSourceDesc": "Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos",
+  "@addCustomSourceDesc": {
+    "description": "Description for adding custom sources"
+  },
+  "sourceType": "Source Type",
+  "@sourceType": {
+    "description": "Label for source type"
+  },
+  "githubRepoType": "GitHub Repository (owner/repo)",
+  "@githubRepoType": {
+    "description": "GitHub source type option"
+  },
+  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "@bituRepoType": {
+    "description": "Bitu source type option"
+  },
+  "flatpakRemoteType": "Flatpak Remote",
+  "@flatpakRemoteType": {
+    "description": "Flatpak source type option"
+  },
+  "appImageFeedType": "AppImage Feed URL",
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
+  },
+  "sourceName": "Source Name",
+  "@sourceName": {
+    "description": "Label for source name"
+  },
+  "hintCustomAppName": "e.g. my-custom-app",
+  "@hintCustomAppName": {
+    "description": "Hint for custom app name"
+  },
+  "repoOwnerRepo": "Repository (owner/repo)",
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "sourceUrl": "URL",
+  "@sourceUrl": {
+    "description": "Label for source URL"
+  },
+  "hintRepoFormat": "e.g. flutter/flutter",
+  "@hintRepoFormat": {
+    "description": "Hint for repository format"
+  },
+  "hintFeedUrl": "e.g. https://example.com/feed.json",
+  "@hintFeedUrl": {
+    "description": "Hint for feed URL"
+  },
+  "errorNameUrlRequired": "Name and URL/Repo cannot be empty",
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
+  },
+  "addingCustomSource": "Adding custom source...",
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
+  },
+  "sourceAddSuccess": "Source added successfully!",
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
+  },
+  "sourceAddFailed": "Failed to add source.",
+  "@sourceAddFailed": {
+    "description": "Failure message after adding source"
+  },
+  "autoDetectingSources": "Auto-detecting available sources for your system...",
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
+  },
+  "autoDetectSuccess": "Auto-detection complete and settings saved!",
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
+  },
+  "autoDetectFailed": "Failed to save auto-detected settings.",
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
+  },
+  "personalAccessToken": "Personal Access Token",
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
   }
 }

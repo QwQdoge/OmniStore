@@ -72,7 +72,7 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "提供元",
+  "variant": "バリアント",
   "@variant": {
     "description": "Description for variant"
   },
@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "準備完了",
+  "ready": "インストール済み",
   "@ready": {
     "description": "Description for ready"
   },
@@ -1193,5 +1193,28 @@
   "relatedApps": "関連アプリ",
   "@relatedApps": {
     "description": "Description for relatedApps"
-  }
+  },
+  "activeSources": "有効なソース",
+  "autoDetect": "自動検出",
+  "addCustomSource": "カスタムソースを追加",
+  "addCustomSourceDesc": "カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します",
+  "sourceType": "ソースの種類",
+  "githubRepoType": "GitHub リポジトリ (owner/repo)",
+  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "flatpakRemoteType": "Flatpak リモート",
+  "appImageFeedType": "AppImage フィード URL",
+  "sourceName": "ソース名",
+  "hintCustomAppName": "例: my-custom-app",
+  "repoOwnerRepo": "リポジトリ (owner/repo)",
+  "sourceUrl": "URL",
+  "hintRepoFormat": "例: flutter/flutter",
+  "hintFeedUrl": "例: https://example.com/feed.json",
+  "errorNameUrlRequired": "名前と URL/リポジトリは空にできません",
+  "addingCustomSource": "カスタムソースを追加中...",
+  "sourceAddSuccess": "ソースが正常に追加されました！",
+  "sourceAddFailed": "ソースの追加に失敗しました。",
+  "autoDetectingSources": "システムで利用可能なソースを自動検出中...",
+  "autoDetectSuccess": "自動検出が完了し、設定が保存されました！",
+  "autoDetectFailed": "自動検出設定の保存に失敗しました。",
+  "personalAccessToken": "個人用アクセストークン"
 }
