@@ -63,13 +63,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => 'インストール源';
+  String get variant => '提供元';
 
   @override
   String get version => 'バージョン';
 
   @override
-  String get ready => 'インストール済み';
+  String get ready => '準備完了';
 
   @override
   String resultsFound(int count) {
@@ -92,10 +92,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get packageManager => 'パッケージマネージャー';
 
   @override
-  String get pacmanOfficial => 'Pacman (公式)';
+  String get pacmanOfficial => 'Pacman (公式リポジトリ)';
 
   @override
-  String get aurUser => 'AUR (ユーザー)';
+  String get aurUser => 'AUR (ユーザーリポジトリ)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -451,7 +451,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptExplain => 'AI で説明';
 
   @override
-  String get aiPromptRecommend => 'AI におすすめを聞く';
+  String get aiPromptRecommend => 'AI にアドバイスを求める';
 
   @override
   String get aiPromptError => 'AI でエラーを分析';
@@ -831,4 +831,57 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
+
+  @override
+  String get errorPackageNameRequired => 'エラー：パッケージ名は空にできません';
+
+  @override
+  String errorStartFailed(String error) {
+    return '起動に失敗しました：$error';
+  }
+
+  @override
+  String errorUpdateFailed(String error) {
+    return '更新に失敗しました：$error';
+  }
+
+  @override
+  String errorCleanFailed(String error) {
+    return 'クリーンアップに失敗しました：$error';
+  }
+
+  @override
+  String errorFatalStream(String error) {
+    return '致命的なデータストリームエラー：$error';
+  }
+
+  @override
+  String errorProcessStart(String error) {
+    return 'プロセスの起動に失敗しました。環境設定を確認してください：$error';
+  }
+
+  @override
+  String get taskForcedTerminated => 'タスクが強制終了されました';
+
+  @override
+  String get aiTimeout => 'AI 接続がタイムアウトしました。後で再試行してください。';
+
+  @override
+  String get aiNoResponse => 'AI が有効な応答を返せませんでした。';
+
+  @override
+  String get aiParseFailed => 'AI 応答の解析に失敗しました：形式が正しくありません。';
+
+  @override
+  String aiCallFailed(String error) {
+    return 'AI サービスの呼び出しに失敗しました：$error';
+  }
+
+  @override
+  String errorUpdateAll(String error) {
+    return '一括更新エラー：$error';
+  }
+
+  @override
+  String get taskProcessing => '処理中';
 }

@@ -103,7 +103,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   void _cancelAction() {
-    context.read<TaskController>().cancelTask();
+    context.read<TaskController>().cancelTask(AppLocalizations.of(context)!);
   }
 
   void _showTerminalDialog() {
@@ -361,6 +361,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       taskFlag,
       widget.app.name,
       _selectedSource,
+      AppLocalizations.of(context)!,
       url: widget.app.url,
     );
 
@@ -1000,28 +1001,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         content: SizedBox(
           width: 500,
           height: 400,
-          child: FutureBuilder<String>(
-            future: context.read<AIRepository>().aiExplain(
-              widget.app.name,
-              widget.app.description,
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                child: MarkdownBody(
-                  data:
-                      snapshot.data ??
-                      AppLocalizations.of(context)!.aiResponseFailed,
-                  selectable: true,
-                ),
-              );
-            },
-          ),
+          child: FutureBuilder<String>(future: context.read<AIRepository>().aiExplain(widget.app.name, widget.app.description), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!)),
         ),
         actions: [
           TextButton(
@@ -1033,40 +1013,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Future<void> _showAIErrorAnalysis(String logs) async {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiPromptError),
-          ],
-        ),
-        content: SizedBox(
-          width: 600,
-          height: 450,
-          child: FutureBuilder<String>(
-            future: context.read<AIRepository>().aiAnalyzeError(logs),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 300,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                child: MarkdownBody(
-                  data:
-                      snapshot.data ??
-                      AppLocalizations.of(context)!.aiResponseFailed,
-                  selectable: true,
-                ),
-              );
-            },
-          ),
-        ),
+  Future<void> _showAIErrorAnalysis(String logs) async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiPromptError),]), content: SizedBox(width: 600, height: 450, child: FutureBuilder<String>(future: context.read<AIRepository>().aiAnalyzeError(logs), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1077,42 +1024,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Future<void> _showAICompareDialog() async {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiCompareTitle),
-          ],
-        ),
-        content: SizedBox(
-          width: 600,
-          height: 450,
-          child: FutureBuilder<String>(
-            future: context.read<AIRepository>().aiCompareVariants(
-              widget.app.name,
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 300,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                child: MarkdownBody(
-                  data:
-                      snapshot.data ??
-                      AppLocalizations.of(context)!.aiResponseFailed,
-                  selectable: true,
-                ),
-              );
-            },
-          ),
-        ),
+  Future<void> _showAICompareDialog() async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiCompareTitle),]), content: SizedBox(width: 600, height: 450, child: FutureBuilder<String>(future: context.read<AIRepository>().aiCompareVariants(widget.app.name), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1190,42 +1102,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Future<void> _showAIConflictDialog() async {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiConflictTitle),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          height: 400,
-          child: FutureBuilder<String>(
-            future: context.read<AIRepository>().aiDetectConflicts(
-              widget.app.name,
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                child: MarkdownBody(
-                  data:
-                      snapshot.data ??
-                      AppLocalizations.of(context)!.aiAnalysisFailed,
-                  selectable: true,
-                ),
-              );
-            },
-          ),
-        ),
+  Future<void> _showAIConflictDialog() async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiConflictTitle),]), content: SizedBox(width: 500, height: 400, child: FutureBuilder<String>(future: context.read<AIRepository>().aiDetectConflicts(widget.app.name), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1306,4 +1183,28 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ),
     );
   }
+
+  Widget _buildAIMarkdown(AsyncSnapshot<String> snapshot, AppLocalizations l10n) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    String data = snapshot.data ?? l10n.aiResponseFailed;
+    if (data == "AI_TIMEOUT") data = l10n.aiTimeout;
+    if (data == "AI_NO_RESPONSE") data = l10n.aiNoResponse;
+    if (data == "AI_PARSE_FAILED") data = l10n.aiParseFailed;
+    if (data.startsWith("AI_CALL_FAILED:")) {
+      data = l10n.aiCallFailed(data.replaceFirst("AI_CALL_FAILED:", ""));
+    }
+
+    return SingleChildScrollView(
+      child: MarkdownBody(
+        data: data,
+        selectable: true,
+      ),
+    );
+  }
+
 }

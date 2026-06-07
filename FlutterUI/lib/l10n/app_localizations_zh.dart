@@ -63,13 +63,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source => '来源';
 
   @override
-  String get variant => '安装源';
+  String get variant => '可用版本';
 
   @override
   String get version => '版本';
 
   @override
-  String get ready => '已安装';
+  String get ready => '已就绪';
 
   @override
   String resultsFound(int count) {
@@ -83,7 +83,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching => '正在搜索...';
 
   @override
-  String get activity => '任务动态';
+  String get activity => '任务记录';
 
   @override
   String get category => '分类';
@@ -449,7 +449,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptExplain => '使用 AI 解释';
 
   @override
-  String get aiPromptRecommend => '咨询 AI 推荐';
+  String get aiPromptRecommend => '向 AI 寻求建议';
 
   @override
   String get aiPromptError => 'AI 分析错误';
@@ -826,6 +826,59 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
+
+  @override
+  String get errorPackageNameRequired => '错误：包名不能为空';
+
+  @override
+  String errorStartFailed(String error) {
+    return '启动失败：$error';
+  }
+
+  @override
+  String errorUpdateFailed(String error) {
+    return '更新失败：$error';
+  }
+
+  @override
+  String errorCleanFailed(String error) {
+    return '清理失败：$error';
+  }
+
+  @override
+  String errorFatalStream(String error) {
+    return '致命数据流异常：$error';
+  }
+
+  @override
+  String errorProcessStart(String error) {
+    return '进程启动失败，请检查环境配置：$error';
+  }
+
+  @override
+  String get taskForcedTerminated => '任务已强制终止';
+
+  @override
+  String get aiTimeout => 'AI 连接超时，请稍后重试。';
+
+  @override
+  String get aiNoResponse => 'AI 未能提供有效响应。';
+
+  @override
+  String get aiParseFailed => 'AI 响应解析失败：格式不正确。';
+
+  @override
+  String aiCallFailed(String error) {
+    return 'AI 服务调用失败：$error';
+  }
+
+  @override
+  String errorUpdateAll(String error) {
+    return '批量更新失败：$error';
+  }
+
+  @override
+  String get taskProcessing => '正在处理';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -887,13 +940,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source => '來源';
 
   @override
-  String get variant => '安裝源';
+  String get variant => '可用版本';
 
   @override
   String get version => '版本';
 
   @override
-  String get ready => '已安裝';
+  String get ready => '已就緒';
 
   @override
   String resultsFound(int count) {
@@ -907,7 +960,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searching => '搜尋中...';
 
   @override
-  String get activity => '任務動態';
+  String get activity => '任務記錄';
 
   @override
   String get category => '分類';
@@ -916,10 +969,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方庫）';
+  String get pacmanOfficial => 'Pacman (官方庫)';
 
   @override
-  String get aurUser => 'AUR（使用者庫）';
+  String get aurUser => 'AUR (使用者庫)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -1273,7 +1326,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiPromptExplain => '使用 AI 說明';
 
   @override
-  String get aiPromptRecommend => '詢問 AI 推薦';
+  String get aiPromptRecommend => '向 AI 尋求建議';
 
   @override
   String get aiPromptError => '使用 AI 分析錯誤';
@@ -1650,4 +1703,57 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
+
+  @override
+  String get errorPackageNameRequired => '錯誤：套件名稱不能為空';
+
+  @override
+  String errorStartFailed(String error) {
+    return '啟動失敗：$error';
+  }
+
+  @override
+  String errorUpdateFailed(String error) {
+    return '更新失敗：$error';
+  }
+
+  @override
+  String errorCleanFailed(String error) {
+    return '清理失敗：$error';
+  }
+
+  @override
+  String errorFatalStream(String error) {
+    return '致命資料串流異常：$error';
+  }
+
+  @override
+  String errorProcessStart(String error) {
+    return '程序啟動失敗，請檢查環境配置：$error';
+  }
+
+  @override
+  String get taskForcedTerminated => '任務已強制終止';
+
+  @override
+  String get aiTimeout => 'AI 連線逾時，請稍後重試。';
+
+  @override
+  String get aiNoResponse => 'AI 未能提供有效回應。';
+
+  @override
+  String get aiParseFailed => 'AI 回應解析失敗：格式不正確。';
+
+  @override
+  String aiCallFailed(String error) {
+    return 'AI 服務呼叫失敗：$error';
+  }
+
+  @override
+  String errorUpdateAll(String error) {
+    return '批量更新失敗：$error';
+  }
+
+  @override
+  String get taskProcessing => '正在處理';
 }

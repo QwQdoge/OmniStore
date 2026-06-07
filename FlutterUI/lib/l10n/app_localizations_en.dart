@@ -846,4 +846,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
+
+  @override
+  String get errorPackageNameRequired => 'Error: Package name cannot be empty';
+
+  @override
+  String errorStartFailed(String error) {
+    return 'Failed to start: $error';
+  }
+
+  @override
+  String errorUpdateFailed(String error) {
+    return 'Update failed: $error';
+  }
+
+  @override
+  String errorCleanFailed(String error) {
+    return 'Cleanup failed: $error';
+  }
+
+  @override
+  String errorFatalStream(String error) {
+    return 'Fatal data stream error: $error';
+  }
+
+  @override
+  String errorProcessStart(String error) {
+    return 'Process start failed, please check environment: $error';
+  }
+
+  @override
+  String get taskForcedTerminated => 'Task forcibly terminated';
+
+  @override
+  String get aiTimeout => 'AI connection timed out, please try again later.';
+
+  @override
+  String get aiNoResponse => 'AI failed to provide a valid response.';
+
+  @override
+  String get aiParseFailed => 'AI response parsing failed: incorrect format.';
+
+  @override
+  String aiCallFailed(String error) {
+    return 'AI service call failed: $error';
+  }
+
+  @override
+  String errorUpdateAll(String error) {
+    return 'Update all error: $error';
+  }
+
+  @override
+  String get taskProcessing => 'Processing';
 }

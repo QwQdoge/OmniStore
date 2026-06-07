@@ -1115,5 +1115,67 @@
   "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
-  }
+  },
+  "errorPackageNameRequired": "Error: Package name cannot be empty",
+  "errorStartFailed": "Failed to start: {error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "Update failed: {error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCleanFailed": "Cleanup failed: {error}",
+  "@errorCleanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFatalStream": "Fatal data stream error: {error}",
+  "@errorFatalStream": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorProcessStart": "Process start failed, please check environment: {error}",
+  "@errorProcessStart": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskForcedTerminated": "Task forcibly terminated",
+  "aiTimeout": "AI connection timed out, please try again later.",
+  "aiNoResponse": "AI failed to provide a valid response.",
+  "aiParseFailed": "AI response parsing failed: incorrect format.",
+  "aiCallFailed": "AI service call failed: {error}",
+  "@aiCallFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateAll": "Update all error: {error}",
+  "@errorUpdateAll": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskProcessing": "Processing"
 }
