@@ -350,13 +350,13 @@ class _DownloadPageState extends State<DownloadPage>
                   SmoothProgressBar(
                     taskState: TaskState(
                       id: "active",
-                      packageName: "Processing",
+                      packageName: AppLocalizations.of(context)!.taskProcessing,
                       status: TaskStatus.downloading,
                       progress: taskController.progress ?? 0.0,
                       stage: taskController.status,
                       speed: taskController.speed,
                     ),
-                    onCancel: () => taskController.cancelTask(),
+                    onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                   ),
                   const SizedBox(height: 24),
                   Row(

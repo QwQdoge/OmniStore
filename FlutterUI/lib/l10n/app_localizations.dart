@@ -1662,6 +1662,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flatpak (Flathub)'**
   String get flatpakFull;
+
+  /// No description provided for @errorPackageNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: Package name cannot be empty'**
+  String get errorPackageNameRequired;
+
+  /// No description provided for @errorStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start: {error}'**
+  String errorStartFailed(String error);
+
+  /// No description provided for @errorUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed: {error}'**
+  String errorUpdateFailed(String error);
+
+  /// No description provided for @errorCleanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleanup failed: {error}'**
+  String errorCleanFailed(String error);
+
+  /// No description provided for @errorFatalStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Fatal data stream error: {error}'**
+  String errorFatalStream(String error);
+
+  /// No description provided for @errorProcessStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Process start failed, please check environment: {error}'**
+  String errorProcessStart(String error);
+
+  /// No description provided for @taskForcedTerminated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task forcibly terminated'**
+  String get taskForcedTerminated;
+
+  /// No description provided for @aiTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection timed out, please try again later.'**
+  String get aiTimeout;
+
+  /// No description provided for @aiNoResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'AI failed to provide a valid response.'**
+  String get aiNoResponse;
+
+  /// No description provided for @aiParseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'AI response parsing failed: incorrect format.'**
+  String get aiParseFailed;
+
+  /// No description provided for @aiCallFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'AI service call failed: {error}'**
+  String aiCallFailed(String error);
+
+  /// No description provided for @errorUpdateAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Update all error: {error}'**
+  String errorUpdateAll(String error);
+
+  /// No description provided for @taskProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get taskProcessing;
 }
 
 class _AppLocalizationsDelegate

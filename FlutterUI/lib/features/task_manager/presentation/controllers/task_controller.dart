@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;
@@ -24,10 +25,10 @@ class TaskController with ChangeNotifier {
     notifyListeners();
   }
 
-  void cancelTask() {
+  void cancelTask(AppLocalizations l10n) {
     _taskRepository.cancelCurrentTask();
     _isBusy = false;
-    _status = "Task Cancelled";
+    _status = l10n.taskCancelled;
     _progress = null;
     notifyListeners();
   }
@@ -35,12 +36,13 @@ class TaskController with ChangeNotifier {
   Future<void> runTask(
     String flag,
     String packageName,
-    String source, {
+    String source,
+    AppLocalizations l10n, {
     String? url,
   }) async {
     _isBusy = true;
     _progress = null;
-    _status = "Starting...";
+    _status = l10n.taskStarting;
     notifyListeners();
 
     final stream = _taskRepository.executeAction(
@@ -51,7 +53,7 @@ class TaskController with ChangeNotifier {
     );
 
     await for (final line in stream) {
-      _parseLine(line);
+      _parseLine(line, l10n);
       notifyListeners();
     }
 
@@ -60,7 +62,7 @@ class TaskController with ChangeNotifier {
     notifyListeners();
   }
 
-  void _parseLine(String line) {
+  void _parseLine(String line, AppLocalizations l10n) {
     if (line.startsWith("[PROGRESS]")) {
       final val = double.tryParse(line.replaceFirst("[PROGRESS]", "").trim());
       if (val != null) _progress = val / 100.0;
@@ -70,9 +72,34 @@ class TaskController with ChangeNotifier {
       final jsonStr = line.replaceFirst("[CALLBACK]", "").trim();
       try {
         final data = jsonDecode(jsonStr);
-        if (data['message'] != null) {
-          _logs.add(data['message']);
-          _status = data['message'];
+        String? message;
+        if (data['key'] != null) {
+          final key = data['key'] as String;
+          final error = data['error'] as String?;
+          if (key == "errorPackageNameRequired") {
+            message = l10n.errorPackageNameRequired;
+          } else if (key == "errorStartFailed") {
+            message = l10n.errorStartFailed(error ?? "Unknown");
+          } else if (key == "errorUpdateFailed") {
+            message = l10n.errorUpdateFailed(error ?? "Unknown");
+          } else if (key == "errorCleanFailed") {
+            message = l10n.errorCleanFailed(error ?? "Unknown");
+          } else if (key == "errorFatalStream") {
+            message = l10n.errorFatalStream(error ?? "Unknown");
+          } else if (key == "errorProcessStart") {
+            message = l10n.errorProcessStart(error ?? "Unknown");
+          } else if (key == "errorUpdateAll") {
+            message = l10n.errorUpdateAll(error ?? "Unknown");
+          }
+        } else if (data['log'] != null) {
+          message = data['log'];
+        } else if (data['message'] != null) {
+          message = data['message'];
+        }
+
+        if (message != null) {
+          _logs.add(message);
+          _status = message;
         }
       } catch (_) {}
     } else {
