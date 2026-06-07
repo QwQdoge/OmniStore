@@ -6,7 +6,7 @@ class DemoPlugin(UnifiedSource):
         super().__init__(name="DemoPlugin", weight=1.0)
         self.enabled = True
 
-    async def search(self, query: str) -> List[Dict[str, Any]]:
+    async def search(self, query: str, **kwargs) -> List[Dict[str, Any]]:
         if query == "test":
             return [{
                 "name": "Demo Package",

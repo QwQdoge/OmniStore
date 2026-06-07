@@ -147,7 +147,10 @@ class OmnistoreBackend:
 
         # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
-        self.manager = SearchManager(self.config, self.session, self.habit_tracker, recommender=self.recommender)
+        self.manager = SearchManager(
+            self.config, self.session, self.habit_tracker,
+            recommender=self.recommender, cache_manager=self.cache
+        )
         return self
 
     async def __aenter__(self):
@@ -427,7 +430,7 @@ class OmnistoreBackend:
                         if stdout:
                             for line in stdout.decode().strip().splitlines():
                                 if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
-                                                       "installed": True, "description": "Native/AUR package", "version": "Local"})
+                                                       "installed": True, "description": "Native package", "version": "Local"})
                     except Exception:
                         if proc:
                             try: proc.kill()
@@ -438,7 +441,27 @@ class OmnistoreBackend:
                             except: pass
                     return res
 
-                results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native())
+                async def scan_aur():
+                    res = []
+                    proc = None
+                    try:
+                        proc = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
+                                                       "installed": True, "description": "AUR package", "version": "Local"})
+                    except Exception:
+                        if proc:
+                            try: proc.kill()
+                            except: pass
+                    finally:
+                        if proc:
+                            try: await proc.wait()
+                            except: pass
+                    return res
+
+                results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native(), scan_aur())
                 for r in results:
                     installed_list.extend(r)
 
