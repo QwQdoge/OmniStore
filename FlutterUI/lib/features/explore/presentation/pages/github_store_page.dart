@@ -76,6 +76,8 @@ class _GitHubStorePageState extends State<GitHubStorePage> {
                         imageUrl: app.icon!,
                         width: 44,
                         height: 44,
+                        memCacheWidth: 88,
+                        memCacheHeight: 88,
                         errorWidget: (c, e, s) =>
                             const Icon(Icons.code_rounded),
                       ),

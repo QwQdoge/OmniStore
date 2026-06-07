@@ -227,6 +227,7 @@ class _HomePageState extends State<HomePage> {
                   child: CachedNetworkImage(
                     imageUrl: screenshot,
                     fit: BoxFit.cover,
+                    memCacheWidth: 880,
                     errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
                   ),
                 )

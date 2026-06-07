@@ -523,6 +523,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                 imageUrl: imageUrl,
                                 width: 360,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 720,
                                 placeholder: (context, url) => Container(
                                   width: 360,
                                   color: colorScheme.surfaceContainerHighest,
@@ -772,6 +773,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     child: CachedNetworkImage(
                       imageUrl: iconUrl,
                       fit: BoxFit.cover,
+                      memCacheWidth: 200,
+                      memCacheHeight: 200,
                       placeholder: (context, url) =>
                           const CircularProgressIndicator(strokeWidth: 2),
                     ),
