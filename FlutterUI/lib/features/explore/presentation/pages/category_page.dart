@@ -84,8 +84,11 @@ class _CategoryCard extends StatelessWidget {
           color: colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
-      child: InkWell(
-        onTap: () {
+      child: Semantics(
+        label: 'Category: ${category.name}',
+        button: true,
+        child: InkWell(
+          onTap: () {
           final browse = context.read<BrowseController>();
           final nav = context.read<NavigationController>();
           browse.pendingSearchQuery = '/${category.id.toLowerCase()}';
@@ -108,12 +111,13 @@ class _CategoryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              category.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              Text(
+                category.name,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

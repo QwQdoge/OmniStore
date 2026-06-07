@@ -409,14 +409,17 @@ class _HomePageState extends State<HomePage> {
           itemCount: categories.length,
           itemBuilder: (context, index) => Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ActionChip(
-              label: Text(categories[index].name),
+            child: Semantics(
+              label: 'Category: ${categories[index].name}',
+              child: ActionChip(
+                label: Text(categories[index].name),
               onPressed: () {
                 final browse = context.read<BrowseController>();
                 browse.pendingSearchQuery =
                     '/${categories[index].id.toLowerCase()}';
-                context.read<NavigationController>().setIndex(2);
-              },
+                  context.read<NavigationController>().setIndex(2);
+                },
+              ),
             ),
           ),
         ),
