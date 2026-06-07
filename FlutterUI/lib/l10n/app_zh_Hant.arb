@@ -732,19 +732,19 @@
   "@envCheckTitle": {
     "description": "Description for envCheckTitle"
   },
-  "envCheckSubtitle": "正在確保系統環境已準備就緒",
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
   "@envCheckSubtitle": {
     "description": "Description for envCheckSubtitle"
   },
-  "envFatalDesc": "目前系統似乎並非基於 Arch Linux，大部分功能將不可用。",
+  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少必要的組件，建議立即進行自動配置。",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就緒！系統環境完美符合要求。",
+  "envOkDesc": "一切就緒！您的系統非常完美。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -772,11 +772,11 @@
   "@yayDesc": {
     "description": "Description for yayDesc"
   },
-  "aurWarning": "安全警告：AUR 軟體包由社群使用者維護，請確保您信任其來源。",
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置過程中可能需要多次輸入管理員 (sudo) 密碼。",
+  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -1180,5 +1180,21 @@
       }
     }
   },
-  "taskProcessing": "正在處理"
+  "taskProcessing": "正在處理",
+  "collapse": "收起",
+  "@collapse": {
+    "description": "Description for collapse"
+  },
+  "expand": "展開",
+  "@expand": {
+    "description": "Description for expand"
+  },
+  "all": "全部",
+  "@all": {
+    "description": "Description for all"
+  },
+  "relatedApps": "相關應用",
+  "@relatedApps": {
+    "description": "Description for relatedApps"
+  }
 }

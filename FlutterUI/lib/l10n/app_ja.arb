@@ -1177,5 +1177,21 @@
       }
     }
   },
-  "taskProcessing": "処理中"
+  "taskProcessing": "処理中",
+  "collapse": "折りたたむ",
+  "@collapse": {
+    "description": "Description for collapse"
+  },
+  "expand": "展開",
+  "@expand": {
+    "description": "Description for expand"
+  },
+  "all": "すべて",
+  "@all": {
+    "description": "Description for all"
+  },
+  "relatedApps": "関連アプリ",
+  "@relatedApps": {
+    "description": "Description for relatedApps"
+  }
 }

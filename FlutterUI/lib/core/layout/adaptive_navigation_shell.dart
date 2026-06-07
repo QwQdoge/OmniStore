@@ -113,6 +113,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   if (showSearch && nav.selectedIndex != 2)
                     IconButton(
                       onPressed: onSearch,
+                      tooltip: AppLocalizations.of(context)!.search,
                       icon: const Icon(Icons.search_rounded),
                     ),
                   _DownloadAction(compact: true),
@@ -245,11 +246,12 @@ class _HamburgerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: IconButton(
         onPressed: onToggle,
-        tooltip: isExpanded ? 'Collapse' : 'Expand',
+        tooltip: isExpanded ? l10n.collapse : l10n.expand,
         icon: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           transitionBuilder: (child, anim) =>

@@ -65,7 +65,7 @@ class SourceRegistry {
     'aur': _SourceMeta('AUR', Icons.build_circle_rounded),
     'flatpak': _SourceMeta('Flatpak', Icons.inventory_2_rounded),
     'appimage': _SourceMeta('AppImage', Icons.apps_rounded),
-    'snap': _SourceMeta('Snap', Icons.snap_rounded),
+    'snap': _SourceMeta('Snap', Icons.auto_awesome_motion_rounded),
     'winget': _SourceMeta('Winget', Icons.window_rounded),
     'scoop': _SourceMeta('Scoop', Icons.icecream_rounded),
     'brew': _SourceMeta('Homebrew', Icons.local_cafe_rounded),

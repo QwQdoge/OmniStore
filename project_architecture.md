@@ -61,11 +61,10 @@ flowchart TB
 | Services | `lib/services/` | `BackendService`, `TaskManager`, `UpdateService` |
 
 **Renamed (clarity):** `lib/backend/` → `lib/data/`, `BackendConstants` → `PythonBridge`.
-*(Note: A legacy `lib/backend/` folder still exists with duplicate files. See TODOs below).*
 
 **TODOs for FlutterUI Layout:**
-- [TODO 5]: Completely delete the legacy `FlutterUI/lib/backend/` directory which causes duplication (e.g., `ai_repository.dart` exists in both places).
-- [TODO 6]: Audit all imports in `features/` to ensure no files are still importing from `lib/backend/`.
+- [x] [TODO 5]: Completely delete the legacy `FlutterUI/lib/backend/` directory which causes duplication (e.g., `ai_repository.dart` exists in both places).
+- [x] [TODO 6]: Audit all imports in `features/` to ensure no files are still importing from `lib/backend/`.
 - [TODO 7]: Extract navigation logic from UI components into a dedicated declarative router (e.g., GoRouter) for deep linking support.
 - [TODO 8]: Enforce strict boundaries between `features` so they communicate via `services` or `core` rather than importing each other's pages directly.
 
@@ -83,7 +82,7 @@ flowchart TB
 **TODOs for Feature Modules:**
 - [TODO 9]: Decouple `TaskController` from `TaskManager` service to follow pure MVVM/Riverpod state isolation.
 - [TODO 10]: Refactor `SettingsController` to batch configuration updates instead of writing to disk on every keystroke.
-- [TODO 11]: Move hardcoded strings in `WelcomePage` and other feature pages to `AppLocalizations` (ARB files).
+- [x] [TODO 11]: Move hardcoded strings in `WelcomePage` and other feature pages to `AppLocalizations` (ARB files).
 
 ### 2.3 UI shell (responsive)
 
@@ -229,7 +228,7 @@ Drop `.py` plugins under `plugins/` subclassing `UnifiedSource` — auto-registe
 
 **TODOs for UX Pillars:**
 - [TODO 36]: Conduct accessibility audits to ensure `Semantics` widgets cover all custom buttons and icons.
-- [TODO 37]: Add localized tooltips to all icon-only buttons (especially in the `AdaptiveNavigationShell`).
+- [x] [TODO 37]: Add localized tooltips to all icon-only buttons (especially in the `AdaptiveNavigationShell`).
 
 ---
 
