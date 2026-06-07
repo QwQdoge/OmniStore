@@ -50,7 +50,12 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          _aiPickBlurb = pick;
+          // Hide AI section if the response is an error message
+          final isError = pick.startsWith('⚠') ||
+              pick.startsWith('⏱') ||
+              pick.contains('AI service') ||
+              pick.contains('timed out');
+          _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });
       }

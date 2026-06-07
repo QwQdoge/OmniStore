@@ -142,12 +142,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
         selectedIcon: Icons.inventory_2_rounded,
         label: l10n.installedApps,
       ),
-      NavDestination(
-        index: 3,
-        icon: Icons.settings_outlined,
-        selectedIcon: Icons.settings_rounded,
-        label: l10n.settings,
-      ),
     ];
 
     final secondary = [

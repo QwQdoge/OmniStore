@@ -38,9 +38,9 @@ class AIRepository {
       ).timeout(Duration(seconds: timeout));
 
       final data = jsonDecode(result.stdout);
-      return data['response'] ?? "AI Error: No response";
+      return data['response'] ?? "⚠ No response received from AI provider.";
     } catch (e) {
-      return "AI Exception: $e";
+      return "⚠ AI service unavailable: ${e.toString().replaceAll(RegExp(r'Exception: '), '')}";
     }
   }
 }

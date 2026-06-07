@@ -481,15 +481,18 @@ class BackendService {
     }
     try {
       final res = await _safeRun([...args, "--json"], timeout: timeout);
-      if (res == null) return "AI_TIMEOUT";
+      if (res == null) {
+        return "⏱ AI request timed out. Please check your AI provider configuration in Settings → Advanced.";
+      }
       final data = _tryParseJson(res.stdout.toString());
       if (data is Map) {
-        return data['response']?.toString() ?? "AI_NO_RESPONSE";
+        return data['response']?.toString() ??
+            "⚠ No response received from AI provider. Verify your endpoint and API key.";
       }
-      return "AI_PARSE_FAILED";
+      return "⚠ Failed to parse AI response. The provider may have returned an unexpected format.";
     } catch (e) {
       debugPrint("_aiCall Error: $e");
-      return "AI_CALL_FAILED:$e";
+      return "⚠ AI service error: ${e.toString().replaceAll(RegExp(r'Exception: '), '')}";
     }
   }
 

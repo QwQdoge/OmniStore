@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/layout/breakpoints.dart';
 import 'package:frontend/core/navigation_controller.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
@@ -22,6 +23,7 @@ class NavDestination {
 }
 
 /// Responsive shell: [NavigationBar] on compact widths, [NavigationRail] on wide.
+/// Features a collapsible hamburger menu and bottom action icons (Settings + Downloads).
 class AdaptiveNavigationShell extends StatelessWidget {
   const AdaptiveNavigationShell({
     super.key,
@@ -32,6 +34,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
     required this.onSearch,
     this.showSearch = true,
     this.useWindowTitleBar = false,
+    this.settingsIndex = 3,
   });
 
   final List<NavDestination> destinations;
@@ -41,11 +44,13 @@ class AdaptiveNavigationShell extends StatelessWidget {
   final VoidCallback onSearch;
   final bool showSearch;
   final bool useWindowTitleBar;
+  final int settingsIndex;
 
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationController>();
     final task = context.watch<TaskController>();
+    final settings = context.watch<SettingsController>();
     final scheme = Theme.of(context).colorScheme;
 
     return LayoutBuilder(
@@ -81,6 +86,18 @@ class AdaptiveNavigationShell extends StatelessWidget {
         );
 
         if (compact) {
+          // ─── Compact Layout (Bottom Navigation Bar) ───
+          // Include Settings as the last item in bottom nav
+          final compactDests = [
+            ...destinations,
+            NavDestination(
+              index: settingsIndex,
+              icon: Icons.settings_outlined,
+              selectedIcon: Icons.settings_rounded,
+              label: AppLocalizations.of(context)!.settings,
+            ),
+          ];
+
           return PopScope(
             canPop: nav.selectedIndex == destinations.first.index,
             onPopInvokedWithResult: (didPop, result) {
@@ -110,11 +127,11 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 children: [
                   taskBar,
                   NavigationBar(
-                    selectedIndex: _navBarIndex(destinations, nav.selectedIndex),
+                    selectedIndex: _navBarIndex(compactDests, nav.selectedIndex),
                     onDestinationSelected: (i) =>
-                        nav.setIndex(destinations[i].index),
+                        nav.setIndex(compactDests[i].index),
                     destinations: [
-                      for (final d in destinations)
+                      for (final d in compactDests)
                         NavigationDestination(
                           icon: Icon(d.icon),
                           selectedIcon: Icon(d.selectedIcon),
@@ -128,7 +145,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
           );
         }
 
+        // ─── Desktop Layout (Navigation Rail) ───
         final railDestinations = [...destinations, ...secondaryDestinations];
+        final isExpanded = settings.isRailExpanded;
 
         return Scaffold(
           backgroundColor: scheme.surface,
@@ -150,32 +169,38 @@ class AdaptiveNavigationShell extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    NavigationRail(
-                      extended: constraints.maxWidth >= Breakpoints.expanded,
-                      minExtendedWidth: 180,
-                      selectedIndex: _railIndex(railDestinations, nav.selectedIndex),
-                      onDestinationSelected: (i) =>
-                          nav.setIndex(railDestinations[i].index),
-                      labelType: constraints.maxWidth >= Breakpoints.expanded
-                          ? NavigationRailLabelType.none
-                          : NavigationRailLabelType.all,
-                      destinations: [
-                        for (final d in railDestinations)
-                          NavigationRailDestination(
-                            icon: Semantics(
-                              label: d.label,
-                              child: Icon(d.icon),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      width: isExpanded ? 180 : 72,
+                      child: NavigationRail(
+                        extended: isExpanded,
+                        minExtendedWidth: 180,
+                        selectedIndex: _railIndex(railDestinations, nav.selectedIndex),
+                        onDestinationSelected: (i) =>
+                            nav.setIndex(railDestinations[i].index),
+                        labelType: isExpanded
+                            ? NavigationRailLabelType.none
+                            : NavigationRailLabelType.all,
+                        leading: _HamburgerButton(
+                          isExpanded: isExpanded,
+                          onToggle: () => settings.setRailExpanded(!isExpanded),
+                        ),
+                        destinations: [
+                          for (final d in railDestinations)
+                            NavigationRailDestination(
+                              icon: Semantics(
+                                label: d.label,
+                                child: Icon(d.icon),
+                              ),
+                              selectedIcon: Icon(d.selectedIcon),
+                              label: Text(d.label),
                             ),
-                            selectedIcon: Icon(d.selectedIcon),
-                            label: Text(d.label),
-                          ),
-                      ],
-                      trailing: Expanded(
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _DownloadAction(compact: false),
+                        ],
+                        trailing: Expanded(
+                          child: _RailBottomActions(
+                            isExpanded: isExpanded,
+                            settingsIndex: settingsIndex,
                           ),
                         ),
                       ),
@@ -207,6 +232,246 @@ class AdaptiveNavigationShell extends StatelessWidget {
   }
 }
 
+// ─── Hamburger Toggle Button ────────────────────────────
+class _HamburgerButton extends StatelessWidget {
+  const _HamburgerButton({
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: IconButton(
+        onPressed: onToggle,
+        tooltip: isExpanded ? 'Collapse' : 'Expand',
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, anim) =>
+              RotationTransition(turns: Tween(begin: 0.5, end: 1.0).animate(anim), child: child),
+          child: Icon(
+            isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
+            key: ValueKey(isExpanded),
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Bottom Actions: Settings + Download ────────────────
+class _RailBottomActions extends StatelessWidget {
+  const _RailBottomActions({
+    required this.isExpanded,
+    required this.settingsIndex,
+  });
+
+  final bool isExpanded;
+  final int settingsIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final nav = context.watch<NavigationController>();
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final isSettingsSelected = nav.selectedIndex == settingsIndex;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // Settings button
+        isExpanded
+            ? _ExpandedActionTile(
+                icon: isSettingsSelected
+                    ? Icons.settings_rounded
+                    : Icons.settings_outlined,
+                label: l10n.settings,
+                isSelected: isSettingsSelected,
+                onTap: () => nav.setIndex(settingsIndex),
+              )
+            : _CompactActionButton(
+                icon: isSettingsSelected
+                    ? Icons.settings_rounded
+                    : Icons.settings_outlined,
+                tooltip: l10n.settings,
+                isSelected: isSettingsSelected,
+                onTap: () => nav.setIndex(settingsIndex),
+              ),
+        const SizedBox(height: 4),
+        // Download button
+        isExpanded
+            ? _ExpandedDownloadTile()
+            : Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _DownloadAction(compact: false),
+              ),
+        if (!isExpanded) const SizedBox(height: 0),
+      ],
+    );
+  }
+}
+
+class _CompactActionButton extends StatelessWidget {
+  const _CompactActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      icon: Icon(
+        icon,
+        color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+class _ExpandedActionTile extends StatelessWidget {
+  const _ExpandedActionTile({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Material(
+        color: isSelected
+            ? scheme.secondaryContainer
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(28),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(28),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 24,
+                  color: isSelected
+                      ? scheme.onSecondaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected
+                          ? scheme.onSecondaryContainer
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandedDownloadTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final nav = context.watch<NavigationController>();
+    final task = context.watch<TaskController>();
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final isSelected = nav.selectedIndex == 4;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
+      child: ListenableBuilder(
+        listenable: UpdateService().availableUpdates,
+        builder: (context, _) {
+          final updates = UpdateService().availableUpdates.value;
+          return Material(
+            color: isSelected
+                ? scheme.secondaryContainer
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(28),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => nav.setIndex(4),
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      task.isBusy
+                          ? Icons.downloading_rounded
+                          : Icons.download_for_offline_rounded,
+                      size: 24,
+                      color: isSelected
+                          ? scheme.onSecondaryContainer
+                          : scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n.downloads,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? scheme.onSecondaryContainer
+                              : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    if (updates.isNotEmpty)
+                      Badge(label: Text('${updates.length}')),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─── Existing widgets, kept intact ──────────────────────
 class _DesktopTopBar extends StatelessWidget {
   const _DesktopTopBar({
     required this.title,
