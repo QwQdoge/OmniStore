@@ -6,6 +6,7 @@ import "package:frontend/features/settings/presentation/controllers/settings_con
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -116,6 +117,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _handleAction(String flag) async {
+    final localizations = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
       return;
@@ -133,17 +135,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             return AlertDialog(
               title: Text(
                 isUninstall
-                    ? AppLocalizations.of(context)!.confirmUninstall
-                    : AppLocalizations.of(context)!.confirmInstall,
+                    ? localizations.confirmUninstall
+                    : localizations.confirmInstall,
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(
-                      context,
-                    )!.confirmActionMsg(widget.app.name),
+                    localizations.confirmActionMsg(widget.app.name),
                   ),
                   if (isUninstall && _selectedSource == "Native") ...[
                     const SizedBox(height: 16),
@@ -153,7 +153,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         setDialogState(() => cleanOrphans = val ?? false);
                       },
                       title: Text(
-                        AppLocalizations.of(context)!.cleanOrphans,
+                        localizations.cleanOrphans,
                         style: const TextStyle(fontSize: 14),
                       ),
                       contentPadding: EdgeInsets.zero,
@@ -166,7 +166,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: Text(AppLocalizations.of(context)!.cancel),
+                  child: Text(localizations.cancel),
                 ),
                 FilledButton(
                   style: isUninstall
@@ -176,7 +176,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         )
                       : null,
                   onPressed: () => Navigator.pop(context, true),
-                  child: Text(AppLocalizations.of(context)!.confirm),
+                  child: Text(localizations.confirm),
                 ),
               ],
               shape: RoundedRectangleBorder(
@@ -201,16 +201,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             color: Colors.orange,
             size: 48,
           ),
-          title: Text(AppLocalizations.of(context)!.securityWarning),
-          content: Text(AppLocalizations.of(context)!.aurSecurityDesc),
+          title: Text(localizations.securityWarning),
+          content: Text(localizations.aurSecurityDesc),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(AppLocalizations.of(context)!.continueInstall),
+              child: Text(localizations.continueInstall),
             ),
           ],
           shape: RoundedRectangleBorder(
@@ -228,7 +228,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       taskFlag,
       widget.app.name,
       _selectedSource,
-      AppLocalizations.of(context)!,
+      localizations,
       url: widget.app.url,
     );
 

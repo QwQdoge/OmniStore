@@ -1,4 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/shekong/Projects/Omnistore/FlutterUI/linux/runner",
+    "cmake.sourceDirectory": "/home/shekong/Projects/Omnistore/FlutterUI/linux",
     "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/bin/python"
 }
