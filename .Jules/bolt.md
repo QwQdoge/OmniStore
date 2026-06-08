@@ -9,3 +9,10 @@ It resizes:
 - hero banner image to 880 width.
 - detail page hero to 720 width.
 - detail page icon to 200 width.
+
+# Rebuild Scope Reduction in Navigation Shell
+
+Removed `context.watch<TaskController>()` from the root of `AdaptiveNavigationShell` in `adaptive_navigation_shell.dart`.
+Because `TaskController` frequently calls `notifyListeners()` during file downloads to update progress numbers and speeds, observing it at the root caused the entire application shell and current page view to rebuild multiple times per second.
+
+Instead, wrapped the specific sub-components (`_TaskProgressBar`, `_DownloadAction`, and `_ExpandedDownloadTile` icons) in isolated `Consumer<TaskController>` widgets. This measurably reduces the widget rebuild scope during active background tasks without altering any product behavior.
