@@ -84,7 +84,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.runningInBackground),
-            behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
         );
