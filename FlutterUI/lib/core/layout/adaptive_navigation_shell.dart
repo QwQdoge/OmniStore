@@ -49,7 +49,6 @@ class AdaptiveNavigationShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationController>();
-    final task = context.watch<TaskController>();
     final settings = context.watch<SettingsController>();
     final scheme = Theme.of(context).colorScheme;
 
@@ -76,13 +75,17 @@ class AdaptiveNavigationShell extends StatelessWidget {
           child: content,
         );
 
-        final taskBar = AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
-          ),
+        final taskBar = Consumer<TaskController>(
+          builder: (context, task, child) {
+            return AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
+              ),
+            );
+          },
         );
 
         if (compact) {
@@ -280,7 +283,6 @@ class _RailBottomActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationController>();
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isSettingsSelected = nav.selectedIndex == settingsIndex;
 
@@ -411,7 +413,6 @@ class _ExpandedDownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationController>();
-    final task = context.watch<TaskController>();
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isSelected = nav.selectedIndex == 4;
@@ -436,14 +437,16 @@ class _ExpandedDownloadTile extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   children: [
-                    Icon(
-                      task.isBusy
-                          ? Icons.downloading_rounded
-                          : Icons.download_for_offline_rounded,
-                      size: 24,
-                      color: isSelected
-                          ? scheme.onSecondaryContainer
-                          : scheme.onSurfaceVariant,
+                    Consumer<TaskController>(
+                      builder: (context, task, child) => Icon(
+                        task.isBusy
+                            ? Icons.downloading_rounded
+                            : Icons.download_for_offline_rounded,
+                        size: 24,
+                        color: isSelected
+                            ? scheme.onSecondaryContainer
+                            : scheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -590,7 +593,6 @@ class _DownloadAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationController>();
-    final task = context.watch<TaskController>();
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -604,13 +606,15 @@ class _DownloadAction extends StatelessWidget {
             IconButton(
               tooltip: l10n.downloads,
               onPressed: () => nav.setIndex(4),
-              icon: Icon(
-                task.isBusy
-                    ? Icons.downloading_rounded
-                    : Icons.download_for_offline_rounded,
-                color: nav.selectedIndex == 4
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
+              icon: Consumer<TaskController>(
+                builder: (context, task, child) => Icon(
+                  task.isBusy
+                      ? Icons.downloading_rounded
+                      : Icons.download_for_offline_rounded,
+                  color: nav.selectedIndex == 4
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
+                ),
               ),
             ),
             if (updates.isNotEmpty)
