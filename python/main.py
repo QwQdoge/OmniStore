@@ -363,12 +363,12 @@ class OmnistoreBackend:
                             if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
                             if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
                     except Exception:
-                        if proc:
-                            try: proc.kill()
-                            except: pass
+                        pass
                     finally:
-                        if proc:
-                            try: await proc.wait()
+                        if proc and proc.returncode is None:
+                            try:
+                                proc.kill()
+                                await proc.wait()
                             except: pass
 
             variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
@@ -417,12 +417,12 @@ class OmnistoreBackend:
                                     "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
                                 })
                 except Exception:
-                    if proc:
-                        try: proc.kill()
-                        except: pass
+                    pass
                 finally:
-                    if proc:
-                        try: await proc.wait()
+                    if proc and proc.returncode is None:
+                        try:
+                            proc.kill()
+                            await proc.wait()
                         except: pass
                 return res
 
@@ -437,12 +437,12 @@ class OmnistoreBackend:
                             if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
                                                    "installed": True, "description": "Native package", "version": "Local"})
                 except Exception:
-                    if proc:
-                        try: proc.kill()
-                        except: pass
+                    pass
                 finally:
-                    if proc:
-                        try: await proc.wait()
+                    if proc and proc.returncode is None:
+                        try:
+                            proc.kill()
+                            await proc.wait()
                         except: pass
                 return res
 
@@ -457,12 +457,12 @@ class OmnistoreBackend:
                             if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
                                                    "installed": True, "description": "AUR package", "version": "Local"})
                 except Exception:
-                    if proc:
-                        try: proc.kill()
-                        except: pass
+                    pass
                 finally:
-                    if proc:
-                        try: await proc.wait()
+                    if proc and proc.returncode is None:
+                        try:
+                            proc.kill()
+                            await proc.wait()
                         except: pass
                 return res
 
@@ -576,12 +576,12 @@ class OmnistoreBackend:
                     for line in stdout.decode().strip().splitlines():
                         if line: installed.append({"name": line.split()[0], "source": src})
             except Exception:
-                if proc:
-                    try: proc.kill()
-                    except: pass
+                pass
             finally:
-                if proc:
-                    try: await proc.wait()
+                if proc and proc.returncode is None:
+                    try:
+                        proc.kill()
+                        await proc.wait()
                     except: pass
 
         export_dir = os.path.dirname(os.path.abspath(filepath))
@@ -608,13 +608,12 @@ class OmnistoreBackend:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                 orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
             except Exception:
-                if proc:
-                    try: proc.kill()
-                    except: pass
                 orphans = []
             finally:
-                if proc:
-                    try: await proc.wait()
+                if proc and proc.returncode is None:
+                    try:
+                        proc.kill()
+                        await proc.wait()
                     except: pass
 
             if orphans:
@@ -624,9 +623,13 @@ class OmnistoreBackend:
                 try:
                     await asyncio.wait_for(p.wait(), timeout=60)
                 except asyncio.TimeoutError:
-                    try: p.kill()
-                    except: pass
-                    await p.wait()
+                    pass
+                finally:
+                    if p and p.returncode is None:
+                        try:
+                            p.kill()
+                            await p.wait()
+                        except: pass
 
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
@@ -634,9 +637,13 @@ class OmnistoreBackend:
                 try:
                     await asyncio.wait_for(p.wait(), timeout=60)
                 except asyncio.TimeoutError:
-                    try: p.kill()
-                    except: pass
-                    await p.wait()
+                    pass
+                finally:
+                    if p and p.returncode is None:
+                        try:
+                            p.kill()
+                            await p.wait()
+                        except: pass
 
             await cb("[INFO] System cleanup finished!")
             if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
@@ -883,11 +890,18 @@ async def main():
 
             elif args.ai_health:
                 status = await backend.env.check_env()
+                proc = None
                 try:
                     proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
                     status["orphaned_count"] = len(stdout.decode().splitlines())
                 except: status["orphaned_count"] = 0
+                finally:
+                    if proc and proc.returncode is None:
+                        try:
+                            proc.kill()
+                            await proc.wait()
+                        except: pass
                 res = await backend.ai.generate_health_report(status)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
@@ -917,12 +931,19 @@ async def main():
 
             elif args.ai_conflicts:
                 p = validate_str(args.ai_conflicts, "ai-conflicts")
+                proc = None
                 try:
                     proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
                     res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
                     sys.stdout.write(json.dumps({"response": res}) + "\n")
                 except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+                finally:
+                    if proc and proc.returncode is None:
+                        try:
+                            proc.kill()
+                            await proc.wait()
+                        except: pass
 
             elif args.essentials:
                 async with backend: await backend.run_get_essentials()
