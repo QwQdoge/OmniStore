@@ -37,8 +37,19 @@ abstract final class OmnistoreTheme {
       useMaterial3: true,
       colorScheme: scheme,
       brightness: brightness,
+      hoverColor: scheme.onSurface.withValues(alpha: 0.08),
+      focusColor: scheme.onSurface.withValues(alpha: 0.12),
+      splashColor: scheme.onSurface.withValues(alpha: 0.1),
       iconTheme: const IconThemeData(size: 24),
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(

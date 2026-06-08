@@ -320,31 +320,35 @@ class _DiscoveryContent extends StatelessWidget {
                     color: Theme.of(context).colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(20),
                     clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () {
-                        searchController.text = '/${cat.id.toLowerCase()}';
-                        performSearch(searchController.text);
-                      },
-                      child: SizedBox(
-                        width: 100,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              cat.icon,
-                              size: 32,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              cat.name,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                    child: Semantics(
+                      label: 'Category: ${cat.name}',
+                      button: true,
+                      child: InkWell(
+                        onTap: () {
+                          searchController.text = '/${cat.id.toLowerCase()}';
+                          performSearch(searchController.text);
+                        },
+                        child: SizedBox(
+                          width: 100,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                cat.icon,
+                                size: 32,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                cat.name,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
