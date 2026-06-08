@@ -63,13 +63,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => '提供元';
+  String get variant => 'バリアント';
 
   @override
   String get version => 'バージョン';
 
   @override
-  String get ready => '準備完了';
+  String get ready => 'インストール済み';
 
   @override
   String resultsFound(int count) {
@@ -896,4 +896,74 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get relatedApps => '関連アプリ';
+
+  @override
+  String get activeSources => '有効なソース';
+
+  @override
+  String get autoDetect => '自動検出';
+
+  @override
+  String get addCustomSource => 'カスタムソースを追加';
+
+  @override
+  String get addCustomSourceDesc =>
+      'カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します';
+
+  @override
+  String get sourceType => 'ソースの種類';
+
+  @override
+  String get githubRepoType => 'GitHub リポジトリ (owner/repo)';
+
+  @override
+  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+
+  @override
+  String get flatpakRemoteType => 'Flatpak リモート';
+
+  @override
+  String get appImageFeedType => 'AppImage フィード URL';
+
+  @override
+  String get sourceName => 'ソース名';
+
+  @override
+  String get hintCustomAppName => '例: my-custom-app';
+
+  @override
+  String get repoOwnerRepo => 'リポジトリ (owner/repo)';
+
+  @override
+  String get sourceUrl => 'URL';
+
+  @override
+  String get hintRepoFormat => '例: flutter/flutter';
+
+  @override
+  String get hintFeedUrl => '例: https://example.com/feed.json';
+
+  @override
+  String get errorNameUrlRequired => '名前と URL/リポジトリは空にできません';
+
+  @override
+  String get addingCustomSource => 'カスタムソースを追加中...';
+
+  @override
+  String get sourceAddSuccess => 'ソースが正常に追加されました！';
+
+  @override
+  String get sourceAddFailed => 'ソースの追加に失敗しました。';
+
+  @override
+  String get autoDetectingSources => 'システムで利用可能なソースを自動検出中...';
+
+  @override
+  String get autoDetectSuccess => '自動検出が完了し、設定が保存されました！';
+
+  @override
+  String get autoDetectFailed => '自動検出設定の保存に失敗しました。';
+
+  @override
+  String get personalAccessToken => '個人用アクセストークン';
 }
