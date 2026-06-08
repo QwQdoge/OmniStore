@@ -1096,10 +1096,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveAndApply => '儲存並套用';
 
   @override
-  String get configSaved => '配置已儲存，部分更改將在重啟後生效';
+  String get configSaved => '設定已儲存，部分更改將在重啟後生效';
 
   @override
-  String get configSaveFailed => '儲存配置失敗';
+  String get configSaveFailed => '儲存設定失敗';
 
   @override
   String get confirmUninstall => '確認解除安裝';
@@ -1202,7 +1202,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get completionNotifications => '完成通知';
 
   @override
-  String get closeToTray => '關閉時隱藏至系統托盤';
+  String get closeToTray => '關閉時隱藏至系統匣';
 
   @override
   String get useSystemTitleBar => '使用系統標題列';
@@ -1292,7 +1292,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get update => '更新';
 
   @override
-  String get enableSystemTray => '啟用系統托盤';
+  String get enableSystemTray => '啟用系統匣';
 
   @override
   String get systemCleaning => '系統清理';
@@ -1346,7 +1346,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get mirrorListSaved => '鏡像列表已儲存';
 
   @override
-  String get addMirror => '添加鏡像';
+  String get addMirror => '新增鏡像';
 
   @override
   String get serverUrl => '伺服器 URL';
@@ -1358,7 +1358,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get save => '儲存';
 
   @override
-  String get add => '添加';
+  String get add => '新增';
 
   @override
   String get general => '一般';
@@ -1367,7 +1367,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get advanced => '進階';
 
   @override
-  String get repositories => '軟體倉庫';
+  String get repositories => '軟體存放庫';
 
   @override
   String get aiSettings => 'AI 助手設定';
@@ -1516,19 +1516,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動設定。';
 
   @override
   String get envOkDesc => '一切就緒！您的系統非常完美。';
 
   @override
-  String get fixProblems => '一鍵修復/配置';
+  String get fixProblems => '一鍵修復/設定';
 
   @override
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '應用程式來源配置';
+  String get sourceConfigTitle => '應用程式來源設定';
 
   @override
   String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
@@ -1543,7 +1543,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
 
   @override
-  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '注意：設定過程可能需要多次輸入管理員密碼。';
 
   @override
   String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
@@ -1663,7 +1663,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) 是由社群維護的倉庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。';
+      'AUR (Arch User Repository) 是由社群維護的存放庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -1683,7 +1683,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get runningInBackground => 'OmniStore 正在背景執行，可透過托盤圖示開啟';
+  String get runningInBackground => 'OmniStore 正在背景執行，可透過系統匣圖示開啟';
 
   @override
   String get clearSearch => '清除搜尋';
@@ -1787,7 +1787,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get next => '下一步';
 
   @override
-  String get aurFull => 'AUR (Arch 使用者軟體倉庫)';
+  String get aurFull => 'AUR (Arch 使用者軟體存放庫)';
 
   @override
   String get flatpakFull => 'Flatpak (Flathub)';
@@ -1817,7 +1817,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String errorProcessStart(String error) {
-    return '程序啟動失敗，請檢查環境配置：$error';
+    return '程序啟動失敗，請檢查環境設定：$error';
   }
 
   @override
@@ -1861,26 +1861,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get activeSources => '已啟用軟體源';
 
   @override
-  String get autoDetect => '自動檢測';
+  String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '添加自定義源';
+  String get addCustomSource => '新增自訂源';
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定義 Flatpak 遠程庫、AppImage 訂閱或 GitHub/Bitu 倉庫';
+      '設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
 
   @override
   String get sourceType => '來源類型';
 
   @override
-  String get githubRepoType => 'GitHub 倉庫 (owner/repo)';
+  String get githubRepoType => 'GitHub 存放庫 (owner/repo)';
 
   @override
   String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠程庫';
+  String get flatpakRemoteType => 'Flatpak 遠端庫';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -1892,7 +1892,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintCustomAppName => '例如: my-custom-app';
 
   @override
-  String get repoOwnerRepo => '倉庫地址 (owner/repo)';
+  String get repoOwnerRepo => '存放庫地址 (owner/repo)';
 
   @override
   String get sourceUrl => '連結';
@@ -1904,25 +1904,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintFeedUrl => '例如: https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名稱和連結/倉庫地址不能為空';
+  String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
 
   @override
-  String get addingCustomSource => '正在添加自定義源...';
+  String get addingCustomSource => '正在新增自訂源...';
 
   @override
-  String get sourceAddSuccess => '來源添加成功！';
+  String get sourceAddSuccess => '來源新增成功！';
 
   @override
-  String get sourceAddFailed => '添加來源失敗。';
+  String get sourceAddFailed => '新增來源失敗。';
 
   @override
-  String get autoDetectingSources => '正在自動檢測系統中可用的軟體源...';
+  String get autoDetectingSources => '正在自動偵測系統中可用的軟體源...';
 
   @override
-  String get autoDetectSuccess => '自動檢測完成，配置已儲存！';
+  String get autoDetectSuccess => '自動偵測完成，設定已儲存！';
 
   @override
-  String get autoDetectFailed => '儲存自動檢測結果失敗。';
+  String get autoDetectFailed => '儲存自動偵測結果失敗。';
 
   @override
   String get personalAccessToken => '個人存取權杖';

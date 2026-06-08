@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "Listo",
+  "ready": "Instalado",
   "@ready": {
     "description": "Description for ready"
   },
@@ -1218,5 +1218,74 @@
   "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
   "personalAccessToken": "Token de acceso personal",
   "copyName": "Copiar nombre",
-  "nameCopied": "Nombre copiado al portapapeles"
+  "nameCopied": "Nombre copiado al portapapeles",
+  "@activeSources": {
+    "description": "Label for active software sources"
+  },
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
+  },
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
+  },
+  "@addCustomSourceDesc": {
+    "description": "Description for adding custom sources"
+  },
+  "@sourceType": {
+    "description": "Label for source type"
+  },
+  "@githubRepoType": {
+    "description": "GitHub source type option"
+  },
+  "@bituRepoType": {
+    "description": "Bitu source type option"
+  },
+  "@flatpakRemoteType": {
+    "description": "Flatpak source type option"
+  },
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
+  },
+  "@sourceName": {
+    "description": "Label for source name"
+  },
+  "@hintCustomAppName": {
+    "description": "Hint for custom app name"
+  },
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "@sourceUrl": {
+    "description": "Label for source URL"
+  },
+  "@hintRepoFormat": {
+    "description": "Hint for repository format"
+  },
+  "@hintFeedUrl": {
+    "description": "Hint for feed URL"
+  },
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
+  },
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
+  },
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
+  },
+  "@sourceAddFailed": {
+    "description": "Failure message after adding source"
+  },
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
+  },
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
+  },
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
+  },
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
+  }
 }

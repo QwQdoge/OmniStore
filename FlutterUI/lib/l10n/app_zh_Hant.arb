@@ -164,11 +164,11 @@
   "@saveAndApply": {
     "description": "Description for saveAndApply"
   },
-  "configSaved": "配置已儲存，部分更改將在重啟後生效",
+  "configSaved": "設定已儲存，部分更改將在重啟後生效",
   "@configSaved": {
     "description": "Description for configSaved"
   },
-  "configSaveFailed": "儲存配置失敗",
+  "configSaveFailed": "儲存設定失敗",
   "@configSaveFailed": {
     "description": "Description for configSaveFailed"
   },
@@ -308,7 +308,7 @@
   "@completionNotifications": {
     "description": "Description for completionNotifications"
   },
-  "closeToTray": "關閉時隱藏至系統托盤",
+  "closeToTray": "關閉時隱藏至系統匣",
   "@closeToTray": {
     "description": "Description for closeToTray"
   },
@@ -433,7 +433,7 @@
   "@update": {
     "description": "Update action label"
   },
-  "enableSystemTray": "啟用系統托盤",
+  "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
     "description": "Toggle label for system tray support"
   },
@@ -512,7 +512,7 @@
   "@mirrorListSaved": {
     "description": "Message shown after saving mirror list"
   },
-  "addMirror": "添加鏡像",
+  "addMirror": "新增鏡像",
   "@addMirror": {
     "description": "Action label to add a mirror"
   },
@@ -528,7 +528,7 @@
   "@save": {
     "description": "Save action label"
   },
-  "add": "添加",
+  "add": "新增",
   "@add": {
     "description": "Add action label"
   },
@@ -540,7 +540,7 @@
   "@advanced": {
     "description": "Label for advanced settings toggle"
   },
-  "repositories": "軟體倉庫",
+  "repositories": "軟體存放庫",
   "@repositories": {
     "description": "Section title for software repositories"
   },
@@ -740,7 +740,7 @@
   "@envFatalDesc": {
     "description": "Description for envFatalDesc"
   },
-  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動設定。",
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
@@ -748,7 +748,7 @@
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
-  "fixProblems": "一鍵修復/配置",
+  "fixProblems": "一鍵修復/設定",
   "@fixProblems": {
     "description": "Description for fixProblems"
   },
@@ -756,7 +756,7 @@
   "@continueAnyway": {
     "description": "Description for continueAnyway"
   },
-  "sourceConfigTitle": "應用程式來源配置",
+  "sourceConfigTitle": "應用程式來源設定",
   "@sourceConfigTitle": {
     "description": "Description for sourceConfigTitle"
   },
@@ -776,7 +776,7 @@
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
+  "bootstrapNote": "注意：設定過程可能需要多次輸入管理員密碼。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -936,7 +936,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的倉庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。",
+  "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的存放庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -964,7 +964,7 @@
       }
     }
   },
-  "runningInBackground": "OmniStore 正在背景執行，可透過托盤圖示開啟",
+  "runningInBackground": "OmniStore 正在背景執行，可透過系統匣圖示開啟",
   "@runningInBackground": {
     "description": "Description for runningInBackground"
   },
@@ -1111,7 +1111,7 @@
   "@next": {
     "description": "Next button label"
   },
-  "aurFull": "AUR (Arch 使用者軟體倉庫)",
+  "aurFull": "AUR (Arch 使用者軟體存放庫)",
   "@aurFull": {
     "description": "Full name for AUR"
   },
@@ -1152,7 +1152,7 @@
       }
     }
   },
-  "errorProcessStart": "程序啟動失敗，請檢查環境配置：{error}",
+  "errorProcessStart": "程序啟動失敗，請檢查環境設定：{error}",
   "@errorProcessStart": {
     "placeholders": {
       "error": {
@@ -1198,28 +1198,97 @@
     "description": "Description for relatedApps"
   },
   "activeSources": "已啟用軟體源",
-  "autoDetect": "自動檢測",
-  "addCustomSource": "添加自定義源",
-  "addCustomSourceDesc": "配置自定義 Flatpak 遠程庫、AppImage 訂閱或 GitHub/Bitu 倉庫",
+  "autoDetect": "自動偵測",
+  "addCustomSource": "新增自訂源",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
   "sourceType": "來源類型",
-  "githubRepoType": "GitHub 倉庫 (owner/repo)",
+  "githubRepoType": "GitHub 存放庫 (owner/repo)",
   "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
-  "flatpakRemoteType": "Flatpak 遠程庫",
+  "flatpakRemoteType": "Flatpak 遠端庫",
   "appImageFeedType": "AppImage 訂閱連結",
   "sourceName": "來源名稱",
   "hintCustomAppName": "例如: my-custom-app",
-  "repoOwnerRepo": "倉庫地址 (owner/repo)",
+  "repoOwnerRepo": "存放庫地址 (owner/repo)",
   "sourceUrl": "連結",
   "hintRepoFormat": "例如: flutter/flutter",
   "hintFeedUrl": "例如: https://example.com/feed.json",
-  "errorNameUrlRequired": "名稱和連結/倉庫地址不能為空",
-  "addingCustomSource": "正在添加自定義源...",
-  "sourceAddSuccess": "來源添加成功！",
-  "sourceAddFailed": "添加來源失敗。",
-  "autoDetectingSources": "正在自動檢測系統中可用的軟體源...",
-  "autoDetectSuccess": "自動檢測完成，配置已儲存！",
-  "autoDetectFailed": "儲存自動檢測結果失敗。",
+  "errorNameUrlRequired": "名稱和連結/存放庫地址不能為空",
+  "addingCustomSource": "正在新增自訂源...",
+  "sourceAddSuccess": "來源新增成功！",
+  "sourceAddFailed": "新增來源失敗。",
+  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+  "autoDetectSuccess": "自動偵測完成，設定已儲存！",
+  "autoDetectFailed": "儲存自動偵測結果失敗。",
   "personalAccessToken": "個人存取權杖",
   "copyName": "複製名稱",
-  "nameCopied": "名稱已複製到剪貼簿"
+  "nameCopied": "名稱已複製到剪貼簿",
+  "@activeSources": {
+    "description": "Label for active software sources"
+  },
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
+  },
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
+  },
+  "@addCustomSourceDesc": {
+    "description": "Description for adding custom sources"
+  },
+  "@sourceType": {
+    "description": "Label for source type"
+  },
+  "@githubRepoType": {
+    "description": "GitHub source type option"
+  },
+  "@bituRepoType": {
+    "description": "Bitu source type option"
+  },
+  "@flatpakRemoteType": {
+    "description": "Flatpak source type option"
+  },
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
+  },
+  "@sourceName": {
+    "description": "Label for source name"
+  },
+  "@hintCustomAppName": {
+    "description": "Hint for custom app name"
+  },
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "@sourceUrl": {
+    "description": "Label for source URL"
+  },
+  "@hintRepoFormat": {
+    "description": "Hint for repository format"
+  },
+  "@hintFeedUrl": {
+    "description": "Hint for feed URL"
+  },
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
+  },
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
+  },
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
+  },
+  "@sourceAddFailed": {
+    "description": "Failure message after adding source"
+  },
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
+  },
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
+  },
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
+  },
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
+  }
 }
