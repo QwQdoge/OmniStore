@@ -43,7 +43,7 @@ class PrivilegeManager:
             await callback("[INFO] Requesting administrator password (a dialog will appear)...")
 
         try:
-            askpass_tool = await self._find_askpass()
+            askpass_tool = await asyncio.wait_for(self._find_askpass(), timeout=5)
             if not askpass_tool:
                 if callback:
                     await callback("[ERROR] No graphical askpass tool found (zenity/ksshaskpass). Please install zenity or run with sudo.")
@@ -116,11 +116,15 @@ class PrivilegeManager:
         else:
             preferred_order = ("zenity", "ksshaskpass")
 
+        # Boundary Defense: Don't spend too much time looking for tools
         for prog in preferred_order:
-            which = await asyncio.create_subprocess_exec("which", prog, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-            stdout, _ = await which.communicate()
-            if which.returncode == 0:
-                return stdout.decode().strip()
+            try:
+                which = await asyncio.create_subprocess_exec("which", prog, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+                stdout, _ = await asyncio.wait_for(which.communicate(), timeout=2)
+                if which.returncode == 0:
+                    return stdout.decode().strip()
+            except Exception:
+                continue
         return None
 
     async def _run_askpass(self, tool: str) -> Optional[str]:
