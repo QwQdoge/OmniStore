@@ -1,3 +1,4 @@
+import "package:flutter/services.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:frontend/services/backend_service.dart";
