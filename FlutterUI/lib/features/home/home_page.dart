@@ -114,7 +114,6 @@ class _HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.installingPkg(name)),
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
