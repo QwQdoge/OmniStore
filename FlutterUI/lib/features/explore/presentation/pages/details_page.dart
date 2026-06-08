@@ -460,29 +460,33 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 const SizedBox(height: 32),
                 const Divider(),
                 _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
-                if (_isLoadingDetails)
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Skeleton(width: double.infinity, height: 14),
-                      SizedBox(height: 8),
-                      Skeleton(width: double.infinity, height: 14),
-                      SizedBox(height: 8),
-                      Skeleton(width: 200, height: 14),
-                    ],
-                  )
-                else
-                  MarkdownBody(
-                    data:
-                        _extraDetails?['description'] ??
-                        (widget.app.description.isEmpty
-                            ? AppLocalizations.of(context)!.noResults
-                            : widget.app.description),
-                    selectable: true,
-                    styleSheet: MarkdownStyleSheet(
-                      p: theme.textTheme.bodyLarge,
-                    ),
-                  ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _isLoadingDetails
+                      ? const Column(
+                          key: ValueKey('loading'),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: 200, height: 14),
+                          ],
+                        )
+                      : MarkdownBody(
+                          key: const ValueKey('loaded'),
+                          data:
+                              _extraDetails?['description'] ??
+                              (widget.app.description.isEmpty
+                                  ? AppLocalizations.of(context)!.noResults
+                                  : widget.app.description),
+                          selectable: true,
+                          styleSheet: MarkdownStyleSheet(
+                            p: theme.textTheme.bodyLarge,
+                          ),
+                        ),
+                ),
                 const SizedBox(height: 24),
                 if (_hasCapability('has_screenshots') &&
                     _extraDetails != null &&
@@ -616,8 +620,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Widget _buildActionArea(ColorScheme colorScheme, TaskController task) {
+    Widget content;
     if (task.isBusy) {
-      return Container(
+      content = Container(
+        key: const ValueKey('busy'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHigh,
@@ -638,10 +644,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           onCancel: _cancelAction,
         ),
       );
-    }
-
-    if (_isAppInstalled) {
-      return Row(
+    } else if (_isAppInstalled) {
+      content = Row(
+        key: const ValueKey('installed'),
         children: [
           IconButton.filledTonal(
             onPressed: _locateApp,
@@ -702,24 +707,30 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ],
       );
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28.0),
+    } else {
+      content = SizedBox(
+        key: const ValueKey('install'),
+        width: double.infinity,
+        height: 56,
+        child: FilledButton.icon(
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28.0),
+            ),
+          ),
+          onPressed: () => _handleAction("-I"),
+          icon: const Icon(Icons.download_rounded),
+          label: Text(
+            AppLocalizations.of(context)!.install,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
         ),
-        onPressed: () => _handleAction("-I"),
-        icon: const Icon(Icons.download_rounded),
-        label: Text(
-          AppLocalizations.of(context)!.install,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-        ),
-      ),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: content,
     );
   }
 
