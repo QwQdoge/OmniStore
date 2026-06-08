@@ -1,4 +1,4 @@
-import functools
+from functools import wraps
 import json
 import sys
 import argparse
@@ -80,7 +80,7 @@ from core.env_manager import EnvManager
 
 def safe_command(func):
     """Decorator to isolate command failures and prevent backend crashes."""
-    @functools.wraps(func)
+    @wraps(func)
     async def wrapper(self, *args, **kwargs):
         try:
             return await func(self, *args, **kwargs)
