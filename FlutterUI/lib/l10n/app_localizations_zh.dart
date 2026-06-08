@@ -961,6 +961,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get personalAccessToken => '个人访问令牌';
+
+  @override
+  String get copyName => '复制名称';
+
+  @override
+  String get nameCopied => '名称已复制到剪贴板';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1920,4 +1926,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get personalAccessToken => '個人存取權杖';
+
+  @override
+  String get copyName => '複製名稱';
+
+  @override
+  String get nameCopied => '名稱已複製到剪貼簿';
 }

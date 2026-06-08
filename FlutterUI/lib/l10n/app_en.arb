@@ -1285,5 +1285,7 @@
   "personalAccessToken": "Personal Access Token",
   "@personalAccessToken": {
     "description": "Label for personal access token"
-  }
+  },
+  "copyName": "Copy Name",
+  "nameCopied": "Name copied to clipboard"
 }

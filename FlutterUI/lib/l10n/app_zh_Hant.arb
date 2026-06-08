@@ -1219,5 +1219,7 @@
   "autoDetectingSources": "正在自動檢測系統中可用的軟體源...",
   "autoDetectSuccess": "自動檢測完成，配置已儲存！",
   "autoDetectFailed": "儲存自動檢測結果失敗。",
-  "personalAccessToken": "個人存取權杖"
+  "personalAccessToken": "個人存取權杖",
+  "copyName": "複製名稱",
+  "nameCopied": "名稱已複製到剪貼簿"
 }

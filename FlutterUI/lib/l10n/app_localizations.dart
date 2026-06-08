@@ -1902,6 +1902,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal Access Token'**
   String get personalAccessToken;
+
+  /// No description provided for @copyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Name'**
+  String get copyName;
+
+  /// No description provided for @nameCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Name copied to clipboard'**
+  String get nameCopied;
 }
 
 class _AppLocalizationsDelegate

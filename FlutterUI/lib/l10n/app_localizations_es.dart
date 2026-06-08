@@ -989,4 +989,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get personalAccessToken => 'Token de acceso personal';
+
+  @override
+  String get copyName => 'Copiar nombre';
+
+  @override
+  String get nameCopied => 'Nombre copiado al portapapeles';
 }
