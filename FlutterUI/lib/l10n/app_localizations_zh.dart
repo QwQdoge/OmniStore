@@ -545,16 +545,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '正在确保系统环境已准备就绪';
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '当前系统似乎并非基于 Arch Linux，大部分功能将不可用。';
+  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '缺少必要的组件，建议立即进行自动配置。';
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！系统环境完美符合要求。';
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -575,10 +575,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 软件包由社区用户维护，请确保您信任其来源。';
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
 
   @override
-  String get bootstrapNote => '注意：配置过程中可能需要多次输入管理员 (sudo) 密码。';
+  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
   String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
@@ -879,6 +879,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get taskProcessing => '正在处理';
+
+  @override
+  String get collapse => '收起';
+
+  @override
+  String get expand => '展开';
+
+  @override
+  String get all => '全部';
+
+  @override
+  String get relatedApps => '相关应用';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1422,16 +1434,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '正在確保系統環境已準備就緒';
+  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
-  String get envFatalDesc => '目前系統似乎並非基於 Arch Linux，大部分功能將不可用。';
+  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '缺少必要的組件，建議立即進行自動配置。';
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
 
   @override
-  String get envOkDesc => '一切就緒！系統環境完美符合要求。';
+  String get envOkDesc => '一切就緒！您的系統非常完美。';
 
   @override
   String get fixProblems => '一鍵修復/配置';
@@ -1452,10 +1464,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 軟體包由社群使用者維護，請確保您信任其來源。';
+  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
 
   @override
-  String get bootstrapNote => '注意：配置過程中可能需要多次輸入管理員 (sudo) 密碼。';
+  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
 
   @override
   String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
@@ -1756,4 +1768,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get taskProcessing => '正在處理';
+
+  @override
+  String get collapse => '收起';
+
+  @override
+  String get expand => '展開';
+
+  @override
+  String get all => '全部';
+
+  @override
+  String get relatedApps => '相關應用';
 }

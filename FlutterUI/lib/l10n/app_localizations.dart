@@ -1740,6 +1740,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Processing'**
   String get taskProcessing;
+
+  /// Description for collapse
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get collapse;
+
+  /// Description for expand
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get expand;
+
+  /// Description for all
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// Description for relatedApps
+  ///
+  /// In en, this message translates to:
+  /// **'Related Apps'**
+  String get relatedApps;
 }
 
 class _AppLocalizationsDelegate

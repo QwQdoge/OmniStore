@@ -884,4 +884,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get taskProcessing => '処理中';
+
+  @override
+  String get collapse => '折りたたむ';
+
+  @override
+  String get expand => '展開';
+
+  @override
+  String get all => 'すべて';
+
+  @override
+  String get relatedApps => '関連アプリ';
 }

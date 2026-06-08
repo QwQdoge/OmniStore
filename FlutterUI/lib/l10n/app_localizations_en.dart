@@ -899,4 +899,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskProcessing => 'Processing';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
+  String get expand => 'Expand';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get relatedApps => 'Related Apps';
 }
