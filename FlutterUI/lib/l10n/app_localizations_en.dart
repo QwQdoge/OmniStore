@@ -911,4 +911,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get relatedApps => 'Related Apps';
+
+  @override
+  String get activeSources => 'Active Sources';
+
+  @override
+  String get autoDetect => 'Auto Detect';
+
+  @override
+  String get addCustomSource => 'Add Custom Source';
+
+  @override
+  String get addCustomSourceDesc =>
+      'Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos';
+
+  @override
+  String get sourceType => 'Source Type';
+
+  @override
+  String get githubRepoType => 'GitHub Repository (owner/repo)';
+
+  @override
+  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+
+  @override
+  String get flatpakRemoteType => 'Flatpak Remote';
+
+  @override
+  String get appImageFeedType => 'AppImage Feed URL';
+
+  @override
+  String get sourceName => 'Source Name';
+
+  @override
+  String get hintCustomAppName => 'e.g. my-custom-app';
+
+  @override
+  String get repoOwnerRepo => 'Repository (owner/repo)';
+
+  @override
+  String get sourceUrl => 'URL';
+
+  @override
+  String get hintRepoFormat => 'e.g. flutter/flutter';
+
+  @override
+  String get hintFeedUrl => 'e.g. https://example.com/feed.json';
+
+  @override
+  String get errorNameUrlRequired => 'Name and URL/Repo cannot be empty';
+
+  @override
+  String get addingCustomSource => 'Adding custom source...';
+
+  @override
+  String get sourceAddSuccess => 'Source added successfully!';
+
+  @override
+  String get sourceAddFailed => 'Failed to add source.';
+
+  @override
+  String get autoDetectingSources =>
+      'Auto-detecting available sources for your system...';
+
+  @override
+  String get autoDetectSuccess => 'Auto-detection complete and settings saved!';
+
+  @override
+  String get autoDetectFailed => 'Failed to save auto-detected settings.';
+
+  @override
+  String get personalAccessToken => 'Personal Access Token';
 }
