@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -15,16 +16,16 @@ class TaskRepository {
     String packageName,
     String source, {
     String? url,
-  }) async* {
+  }) {
     if (packageName.isEmpty) {
-      yield "[CALLBACK] {\"key\": \"errorPackageNameRequired\"}";
-      return;
+      return Stream.value("[CALLBACK] {\"key\": \"errorPackageNameRequired\"}");
     }
 
     if (kIsWeb) {
-      yield* _webExecuteAction(flag, packageName, source, url: url);
-      return;
+      return _webExecuteAction(flag, packageName, source, url: url);
     }
+
+    final controller = StreamController<String>();
 
     try {
       List<String> baseArgs = [flag, packageName, "--source", source, "--json"];
@@ -32,40 +33,83 @@ class TaskRepository {
         baseArgs.addAll(["--url", url]);
       }
 
-      final process = await Process.start(
+      Process.start(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(baseArgs),
         workingDirectory: PythonBridge.workingDir,
-      );
+      ).then((process) {
+        _activeProcess = process;
 
-      _activeProcess = process;
+        // Listen to stdout
+        process.stdout
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                if (!controller.isClosed) controller.add(line);
+              },
+              onError: (err) {
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}");
+                }
+              },
+            );
 
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
+        // Listen to stderr
+        process.stderr
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                debugPrint("Python Stderr: $line");
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
+                }
+              },
+            );
 
-      process.stderr.transform(utf8.decoder).listen((data) {
-        debugPrint("Python Stderr: $data");
-      });
-
-      final exitCode = await process.exitCode;
-      _activeProcess = null;
-
-      // Local tracking for OmniStore apps
-      if (exitCode == 0) {
-        if (flag == "-I") {
-          await LocalAppsTracker.trackApp(packageName);
-          SyncService().syncInstalledApps();
-        } else if (flag == "-R") {
-          await LocalAppsTracker.untrackApp(packageName);
-          SyncService().syncInstalledApps();
+        // Wait for exit code
+        process.exitCode.then((exitCode) async {
+          _activeProcess = null;
+          if (exitCode != 0) {
+            if (!controller.isClosed) {
+              controller.add("[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Process exited with code $exitCode\"}");
+            }
+          } else {
+            // Local tracking for OmniStore apps
+            if (flag == "-I") {
+              await LocalAppsTracker.trackApp(packageName);
+              SyncService().syncInstalledApps();
+            } else if (flag == "-R") {
+              await LocalAppsTracker.untrackApp(packageName);
+              SyncService().syncInstalledApps();
+            }
+          }
+          if (!controller.isClosed) controller.close();
+        });
+      }).catchError((err) {
+        _activeProcess = null;
+        if (!controller.isClosed) {
+          controller.add("[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$err\"}");
+          controller.close();
         }
-      }
-
+      });
     } catch (e) {
       _activeProcess = null;
-      yield "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$e\"}";
+      if (!controller.isClosed) {
+        controller.add("[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$e\"}");
+        controller.close();
+      }
     }
+
+    controller.onCancel = () {
+      if (_activeProcess != null) {
+        _activeProcess!.kill(ProcessSignal.sigterm);
+        _activeProcess = null;
+      }
+    };
+
+    return controller.stream;
   }
 
   Stream<String> _webExecuteAction(
@@ -151,36 +195,89 @@ class TaskRepository {
     }
   }
 
-  Stream<String> updateAll(String source) async* {
+  Stream<String> updateAll(String source) {
     if (kIsWeb) {
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Starting system update on web...", "level": "INFO"}';
-      await Future.delayed(const Duration(milliseconds: 500));
-      yield '[PROGRESS] 50';
-      await Future.delayed(const Duration(milliseconds: 500));
-      yield '[PROGRESS] 100';
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Web updates completed!", "level": "SUCCESS"}';
-      return;
+      final controller = StreamController<String>();
+      controller.add('[CALLBACK] {"type": "log", "message": "[INFO] Starting system update on web...", "level": "INFO"}');
+      Future.delayed(const Duration(milliseconds: 500), () {
+        controller.add('[PROGRESS] 50');
+      });
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        controller.add('[PROGRESS] 100');
+        controller.add('[CALLBACK] {"type": "log", "message": "[INFO] Web updates completed!", "level": "SUCCESS"}');
+        controller.close();
+      });
+      return controller.stream;
     }
 
+    final controller = StreamController<String>();
+
     try {
-      final process = await Process.start(
+      Process.start(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(["-U", "all", "--source", source, "--json"]),
         workingDirectory: PythonBridge.workingDir,
-      );
+      ).then((process) {
+        _activeProcess = process;
 
-      _activeProcess = process;
+        process.stdout
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                if (!controller.isClosed) controller.add(line);
+              },
+              onError: (err) {
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}");
+                }
+              },
+            );
 
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
+        process.stderr
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                debugPrint("Python Stderr: $line");
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
+                }
+              },
+            );
 
-      await process.exitCode;
-      _activeProcess = null;
+        process.exitCode.then((exitCode) {
+          _activeProcess = null;
+          if (exitCode != 0) {
+            if (!controller.isClosed) {
+              controller.add("[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"Process exited with code $exitCode\"}");
+            }
+          }
+          if (!controller.isClosed) controller.close();
+        });
+      }).catchError((err) {
+        _activeProcess = null;
+        if (!controller.isClosed) {
+          controller.add("[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$err\"}");
+          controller.close();
+        }
+      });
     } catch (e) {
       _activeProcess = null;
-      yield "[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$e\"}";
+      if (!controller.isClosed) {
+        controller.add("[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$e\"}");
+        controller.close();
+      }
     }
+
+    controller.onCancel = () {
+      if (_activeProcess != null) {
+        _activeProcess!.kill(ProcessSignal.sigterm);
+        _activeProcess = null;
+      }
+    };
+
+    return controller.stream;
   }
 
   void cancelCurrentTask() {
@@ -224,31 +321,88 @@ class TaskRepository {
     }
   }
 
-  Stream<String> cleanSystem() async* {
+  Stream<String> cleanSystem() {
     if (kIsWeb) {
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Running system cleanup in browser...", "level": "INFO"}';
-      await Future.delayed(const Duration(milliseconds: 500));
-      yield '[PROGRESS] 50';
-      await Future.delayed(const Duration(milliseconds: 500));
-      yield '[PROGRESS] 100';
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Browser storage cleanup finished!", "level": "SUCCESS"}';
-      return;
+      final controller = StreamController<String>();
+      controller.add('[CALLBACK] {"type": "log", "message": "[INFO] Running system cleanup in browser...", "level": "INFO"}');
+      Future.delayed(const Duration(milliseconds: 500), () {
+        controller.add('[PROGRESS] 50');
+      });
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        controller.add('[PROGRESS] 100');
+        controller.add('[CALLBACK] {"type": "log", "message": "[INFO] Browser storage cleanup finished!", "level": "SUCCESS"}');
+        controller.close();
+      });
+      return controller.stream;
     }
 
+    final controller = StreamController<String>();
+
     try {
-      final process = await Process.start(
+      Process.start(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(["--clean-system", "--json"]),
         workingDirectory: PythonBridge.workingDir,
-      );
+      ).then((process) {
+        _activeProcess = process;
 
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
+        process.stdout
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                if (!controller.isClosed) controller.add(line);
+              },
+              onError: (err) {
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}");
+                }
+              },
+            );
 
-      await process.exitCode;
+        process.stderr
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                debugPrint("Python Stderr: $line");
+                if (!controller.isClosed) {
+                  controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
+                }
+              },
+            );
+
+        process.exitCode.then((exitCode) {
+          _activeProcess = null;
+          if (exitCode != 0) {
+            if (!controller.isClosed) {
+              controller.add("[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"Process exited with code $exitCode\"}");
+            }
+          }
+          if (!controller.isClosed) controller.close();
+        });
+      }).catchError((err) {
+        _activeProcess = null;
+        if (!controller.isClosed) {
+          controller.add("[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$err\"}");
+          controller.close();
+        }
+      });
     } catch (e) {
-      yield "[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$e\"}";
+      _activeProcess = null;
+      if (!controller.isClosed) {
+        controller.add("[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$e\"}");
+        controller.close();
+      }
     }
+
+    controller.onCancel = () {
+      if (_activeProcess != null) {
+        _activeProcess!.kill(ProcessSignal.sigterm);
+        _activeProcess = null;
+      }
+    };
+
+    return controller.stream;
   }
 }

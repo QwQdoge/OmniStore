@@ -7,6 +7,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/widgets/window_title_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend/features/auth/auth_page.dart';
 
 class NavDestination {
   const NavDestination({
@@ -119,6 +120,18 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       tooltip: AppLocalizations.of(context)!.search,
                       icon: const Icon(Icons.search_rounded),
                     ),
+                  IconButton(
+                    icon: const Icon(Icons.account_circle_outlined),
+                    tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AuthPage(),
+                        ),
+                      );
+                    },
+                  ),
                   _DownloadAction(compact: true),
                 ],
               ),
@@ -511,6 +524,19 @@ class _DesktopTopBar extends StatelessWidget {
               icon: const Icon(Icons.search_rounded, size: 20),
               label: Text(AppLocalizations.of(context)!.search),
             ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AuthPage(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

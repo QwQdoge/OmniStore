@@ -239,7 +239,7 @@ class OmnistoreBackend:
     @safe_command
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
         self.is_action = True
-        package_data = {"name": name, "source": source, "url": url}
+        package_data = {"name": name, "id": name, "source": source, "url": url}
 
         if self.manager and self.manager.habit_tracker:
             self.manager.habit_tracker.record_install(name, source)
@@ -260,7 +260,7 @@ class OmnistoreBackend:
     @safe_command
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
         self.is_action = True
-        package_data = {"name": package_name, "source": source, "flag": flag}
+        package_data = {"name": package_name, "id": package_name, "source": source, "flag": flag}
 
         async def cb(m): await self._flutter_callback(m, json_mode)
 
@@ -278,7 +278,7 @@ class OmnistoreBackend:
     @safe_command
     async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
         self.is_action = True
-        package_data = {"name": package_name, "source": source}
+        package_data = {"name": package_name, "id": package_name, "source": source}
         async def cb(m): await self._flutter_callback(m, json_mode)
 
         if not json_mode:
@@ -812,15 +812,21 @@ async def main():
 
             elif args.install:
                 p = validate_str(args.install, "install")
-                async with backend: await backend.run_install(p, args.source, args.url, args.json)
+                async with backend:
+                    if not await backend.run_install(p, args.source, args.url, args.json):
+                        sys.exit(1)
 
             elif args.remove:
                 p = validate_str(args.remove, "remove")
-                async with backend: await backend.run_uninstall(p, args.source, args.json, args.remove)
+                async with backend:
+                    if not await backend.run_uninstall(p, args.source, args.json, args.remove):
+                        sys.exit(1)
 
             elif args.update:
                 p = validate_str(args.update, "update")
-                async with backend: await backend.run_update(p, args.source, args.json)
+                async with backend:
+                    if not await backend.run_update(p, args.source, args.json):
+                        sys.exit(1)
 
             elif args.check_updates:
                 async with backend: await backend.run_check_updates(args.json)
@@ -960,6 +966,8 @@ async def main():
                 p = validate_str(args.launch, "launch")
                 async with backend:
                     src = args.source.lower()
+                    if src == "native":
+                        src = "pacman"
                     if backend.manager and src in backend.manager.sources:
                         success = await backend.manager.sources[src].launch({"name": p, "id": p})
                         if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
@@ -968,6 +976,8 @@ async def main():
                 p = validate_str(args.locate, "locate")
                 async with backend:
                     src = args.source.lower()
+                    if src == "native":
+                        src = "pacman"
                     if backend.manager and src in backend.manager.sources:
                         success = await backend.manager.sources[src].locate({"name": p, "id": p})
                         if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")

@@ -421,7 +421,7 @@ class _DownloadPageState extends State<DownloadPage>
                     onPressed: () {
                       for (final update in updates) {
                         UpdateService().startUpdate(
-                          update['name'],
+                          update['id'] ?? update['name'],
                           update['source'] == 'Pacman'
                               ? 'Native'
                               : update['source'],
@@ -493,7 +493,7 @@ class _DownloadPageState extends State<DownloadPage>
                           ElevatedButton(
                             onPressed: () {
                               UpdateService().startUpdate(
-                                update['name'],
+                                update['id'] ?? update['name'],
                                 update['source'] == 'Pacman'
                                     ? 'Native'
                                     : update['source'],

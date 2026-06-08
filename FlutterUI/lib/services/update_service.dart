@@ -282,6 +282,25 @@ class UpdateService {
     }
   }
 
+  Future<void> _showNotification({
+    required int id,
+    required String title,
+    required String body,
+    required NotificationDetails notificationDetails,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      await _notificationsPlugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
+      );
+    } catch (e) {
+      debugPrint("Failed to show notification: $e");
+    }
+  }
+
   Future<void> _showUpdateNotification(int count) async {
     if (kIsWeb) return;
     const LinuxNotificationDetails linuxPlatformChannelSpecifics =
@@ -289,7 +308,7 @@ class UpdateService {
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       linux: linuxPlatformChannelSpecifics,
     );
-    await _notificationsPlugin.show(
+    await _showNotification(
       id: 0,
       title: _notificationTitle,
       body: _notificationBody(count),
@@ -314,7 +333,7 @@ class UpdateService {
       urgency: LinuxNotificationUrgency.low,
     );
 
-    await _notificationsPlugin.show(
+    await _showNotification(
       id: 1,
       title: title,
       body: "${(progress * 100).toInt()}%",
@@ -332,7 +351,7 @@ class UpdateService {
       urgency: LinuxNotificationUrgency.normal,
     );
 
-    await _notificationsPlugin.show(
+    await _showNotification(
       id: 2,
       title: _taskCompletedLabel,
       body: "$title: ${success ? _successLabel : _failedLabel}",
@@ -349,7 +368,7 @@ class UpdateService {
       urgency: LinuxNotificationUrgency.normal,
     );
 
-    await _notificationsPlugin.show(
+    await _showNotification(
       id: 3,
       title: title,
       body: body,

@@ -58,6 +58,8 @@ class InstallExecutor:
 
             # 2. Environment & Dependency Check
             source_name = str(package.get("source", "Native")).lower()
+            if source_name == "native":
+                source_name = "pacman"
             if not self._check_environment(source_name):
                 if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools (pacman/flatpak/yay) are installed.")
                 return False
@@ -97,6 +99,8 @@ class InstallExecutor:
                 return False
 
             source_name = str(package.get("source", "Native")).lower()
+            if source_name == "native":
+                source_name = "pacman"
             if not self.backend.manager or source_name not in self.backend.manager.sources:
                 if callback: await callback(f"[ERROR] Uninstallation source '{source_name}' not found.")
                 return False

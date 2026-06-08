@@ -40,6 +40,25 @@ class _SettingsPageState extends State<SettingsPage> {
     _tempController = TextEditingController(text: (settings.config['ai']?['temperature'] ?? 0.7).toString());
   }
 
+  SettingsController? _settingsController;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final newController = Provider.of<SettingsController>(context);
+    if (_settingsController != newController) {
+      _settingsController?.removeListener(_onSettingsChanged);
+      _settingsController = newController;
+      _settingsController?.addListener(_onSettingsChanged);
+    }
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) {
+      _syncControllers();
+    }
+  }
+
   @override
   void didUpdateWidget(SettingsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -67,6 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void dispose() {
+    _settingsController?.removeListener(_onSettingsChanged);
     for (final timer in _debounces.values) {
       timer?.cancel();
     }
@@ -84,8 +104,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
-    // We still call sync here in case of external config changes (like from another page)
-    _syncControllers();
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -111,6 +129,55 @@ class _SettingsPageState extends State<SettingsPage> {
           
           // Primary Settings
           _buildSection(l10n.general),
+          ListTile(
+            title: const Text("界面语言 / Language"),
+            subtitle: Text(settings.language == 'zh-CN'
+                ? '简体中文'
+                : settings.language == 'zh-TW'
+                    ? '繁體中文'
+                    : settings.language == 'ja-JP'
+                        ? '日本語'
+                        : settings.language == 'es-ES' || settings.language == 'es'
+                            ? 'Español'
+                            : 'English'),
+            trailing: DropdownButton<String>(
+              value: settings.language,
+              underline: const SizedBox(),
+              borderRadius: BorderRadius.circular(12),
+              items: const [
+                DropdownMenuItem(value: 'zh-CN', child: Text('简体中文')),
+                DropdownMenuItem(value: 'zh-TW', child: Text('繁體中文')),
+                DropdownMenuItem(value: 'en-US', child: Text('English')),
+                DropdownMenuItem(value: 'ja-JP', child: Text('日本語')),
+                DropdownMenuItem(value: 'es-ES', child: Text('Español')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  settings.setLanguage(val);
+                }
+              },
+            ),
+          ),
+          SwitchListTile(
+            title: Text(l10n.closeToTray),
+            value: settings.closeToTray,
+            onChanged: (val) {
+              settings.setCloseToTray(val);
+            },
+          ),
+          SwitchListTile(
+            title: Text(l10n.useSystemTitleBar),
+            subtitle: const Text("需要重新启动应用才能生效 / Requires restart"),
+            value: settings.useSystemTitleBar,
+            onChanged: (val) {
+              settings.setUseSystemTitleBar(val);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("请重启应用以应用标题栏设置 / Please restart to apply title bar changes"),
+                ),
+              );
+            },
+          ),
           SwitchListTile(
             title: Text(l10n.aiEnabled),
             subtitle: Text(l10n.aiAssistantDesc),
@@ -132,6 +199,51 @@ class _SettingsPageState extends State<SettingsPage> {
                 SnackBar(content: Text(l10n.processing)),
               );
             },
+          ),
+
+          const SizedBox(height: 24),
+          _buildSection(l10n.repositories),
+          _buildSourcesConfig(settings, l10n),
+
+          const SizedBox(height: 24),
+          _buildSection(l10n.updates),
+          SwitchListTile(
+            title: const Text("启用后台更新守护进程"),
+            subtitle: const Text("在系统后台定期静默检查应用更新"),
+            value: settings.daemonEnabled,
+            onChanged: (val) {
+              settings.setDaemonEnabled(val);
+            },
+          ),
+          SwitchListTile(
+            title: const Text("静默自动更新"),
+            subtitle: const Text("在后台自动下载并更新所有可升级的软件包"),
+            value: settings.autoUpdate,
+            onChanged: (val) {
+              settings.setAutoUpdate(val);
+            },
+          ),
+          ListTile(
+            title: const Text("检查更新频率"),
+            subtitle: Text("每隔 ${settings.checkIntervalHours} 小时自动检查一次"),
+            trailing: DropdownButton<int>(
+              value: settings.checkIntervalHours,
+              underline: const SizedBox(),
+              borderRadius: BorderRadius.circular(12),
+              items: const [
+                DropdownMenuItem(value: 1, child: Text('1 小时')),
+                DropdownMenuItem(value: 2, child: Text('2 小时')),
+                DropdownMenuItem(value: 4, child: Text('4 小时')),
+                DropdownMenuItem(value: 8, child: Text('8 小时')),
+                DropdownMenuItem(value: 12, child: Text('12 小时')),
+                DropdownMenuItem(value: 24, child: Text('24 小时')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  settings.setCheckIntervalHours(val);
+                }
+              },
+            ),
           ),
 
           if (_showAdvanced) ...[
@@ -167,9 +279,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
             ),
-            const SizedBox(height: 24),
-            _buildSection(l10n.repositories),
-            _buildSourcesConfig(settings, l10n),
           ],
         ],
       ),

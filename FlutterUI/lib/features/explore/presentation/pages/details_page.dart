@@ -223,10 +223,22 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       }
     }
 
+    final variantMap = _getVariantForSource(_selectedSource);
+    String? variantId = variantMap?['id']?.toString();
+    if (variantId == null || variantId.isEmpty) {
+      try {
+        final v = widget.app.variants.firstWhere((v) => v.source == _selectedSource);
+        variantId = v.id;
+      } catch (_) {}
+    }
+    final String targetIdentifier = (variantId != null && variantId.isNotEmpty)
+        ? variantId
+        : widget.app.name;
+
     final taskFlag = isUninstall && cleanOrphans ? "-Rsn" : flag;
     await taskController.runTask(
       taskFlag,
-      widget.app.name,
+      targetIdentifier,
       _selectedSource,
       localizations,
       url: widget.app.url,

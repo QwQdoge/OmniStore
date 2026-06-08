@@ -47,6 +47,7 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
         Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
       ],
       themeMode: settings.themeMode,
+      locale: settings.locale,
       theme: OmnistoreTheme.light(),
       darkTheme: OmnistoreTheme.dark(),
       home: _isFirstRun

@@ -10,18 +10,25 @@ class L10nService {
     final langStr = ui['language'] as String?;
     switch (langStr) {
       case 'en':
+      case 'en-US':
         language.value = Language.en;
         break;
       case 'ja':
+      case 'ja-JP':
         language.value = Language.ja;
         break;
       case 'es':
+      case 'es-ES':
         language.value = Language.es;
         break;
       case 'zh_Hant':
+      case 'zh-TW':
         language.value = Language.zhHant;
         break;
       case 'zh':
+      case 'zh-CN':
+        language.value = Language.zh;
+        break;
       default:
         language.value = Language.zh;
         break;
