@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
+import "../../services/local_apps_tracker.dart";
+import "../../services/sync_service.dart";
 
 class TaskRepository {
   Process? _activeProcess;
@@ -46,8 +48,20 @@ class TaskRepository {
         debugPrint("Python Stderr: $data");
       });
 
-      await process.exitCode;
+      final exitCode = await process.exitCode;
       _activeProcess = null;
+
+      // Local tracking for OmniStore apps
+      if (exitCode == 0) {
+        if (flag == "-I") {
+          await LocalAppsTracker.trackApp(packageName);
+          SyncService().syncInstalledApps();
+        } else if (flag == "-R") {
+          await LocalAppsTracker.untrackApp(packageName);
+          SyncService().syncInstalledApps();
+        }
+      }
+
     } catch (e) {
       _activeProcess = null;
       yield "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$e\"}";
@@ -91,7 +105,6 @@ class TaskRepository {
       if (!installedIds.contains(packageName)) {
         installedIds.add(packageName);
       }
-      // Remove any existing entry from cache first
       installedCache.removeWhere((item) => item['id'] == packageName);
       installedCache.add({
         "name": packageName.split('/').last,
@@ -103,10 +116,14 @@ class TaskRepository {
         "url": url ?? "",
         "variants": [{"source": source, "id": packageName, "installed": true}]
       });
+      await LocalAppsTracker.trackApp(packageName);
+          SyncService().syncInstalledApps();
       yield '[CALLBACK] {"type": "log", "message": "[INFO] Installed successfully!", "level": "SUCCESS"}';
     } else {
       installedIds.remove(packageName);
       installedCache.removeWhere((item) => item['id'] == packageName);
+      await LocalAppsTracker.untrackApp(packageName);
+          SyncService().syncInstalledApps();
       yield '[CALLBACK] {"type": "log", "message": "[INFO] Uninstalled successfully!", "level": "SUCCESS"}';
     }
 

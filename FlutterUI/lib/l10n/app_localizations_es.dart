@@ -904,4 +904,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get taskProcessing => 'Procesando';
+
+  @override
+  String get collapse => 'Contraer';
+
+  @override
+  String get expand => 'Expandir';
+
+  @override
+  String get all => 'Todo';
+
+  @override
+  String get relatedApps => 'Aplicaciones relacionadas';
 }
