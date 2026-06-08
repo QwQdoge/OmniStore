@@ -421,11 +421,13 @@ class _HomePageState extends State<HomePage> {
             child: Semantics(
               label: 'Category: ${categories[index].name}',
               child: ActionChip(
+                avatar: Icon(categories[index].icon, size: 18),
                 label: Text(categories[index].name),
-              onPressed: () {
-                final browse = context.read<BrowseController>();
-                browse.pendingSearchQuery =
-                    '/${categories[index].id.toLowerCase()}';
+                tooltip: categories[index].name,
+                onPressed: () {
+                  final browse = context.read<BrowseController>();
+                  browse.pendingSearchQuery =
+                      '/${categories[index].id.toLowerCase()}';
                   context.read<NavigationController>().setIndex(2);
                 },
               ),

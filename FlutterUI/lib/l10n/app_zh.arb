@@ -1220,5 +1220,7 @@
   "autoDetectingSources": "正在自动检测系统中可用的软件源...",
   "autoDetectSuccess": "自动检测完成，配置已保存！",
   "autoDetectFailed": "保存自动检测结果失败。",
-  "personalAccessToken": "个人访问令牌"
+  "personalAccessToken": "个人访问令牌",
+  "copyName": "复制名称",
+  "nameCopied": "名称已复制到剪贴板"
 }

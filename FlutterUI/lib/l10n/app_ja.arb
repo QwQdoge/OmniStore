@@ -1216,5 +1216,7 @@
   "autoDetectingSources": "システムで利用可能なソースを自動検出中...",
   "autoDetectSuccess": "自動検出が完了し、設定が保存されました！",
   "autoDetectFailed": "自動検出設定の保存に失敗しました。",
-  "personalAccessToken": "個人用アクセストークン"
+  "personalAccessToken": "個人用アクセストークン",
+  "copyName": "名前をコピー",
+  "nameCopied": "名前をクリップボードにコピーしました"
 }

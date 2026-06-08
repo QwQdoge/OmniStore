@@ -966,4 +966,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get personalAccessToken => '個人用アクセストークン';
+
+  @override
+  String get copyName => '名前をコピー';
+
+  @override
+  String get nameCopied => '名前をクリップボードにコピーしました';
 }
