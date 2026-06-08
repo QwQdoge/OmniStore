@@ -390,7 +390,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<String>(
-                      value: type,
+                      initialValue: type,
                       decoration: InputDecoration(labelText: l10n.sourceType),
                       items: [
                         DropdownMenuItem(value: "github", child: Text(l10n.githubRepoType)),

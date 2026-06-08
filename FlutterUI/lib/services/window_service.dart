@@ -30,9 +30,9 @@ class WindowService {
 
     _systemTray?.registerSystemTrayEventHandler((eventName) {
       if (eventName == kSystemTrayEventClick) {
-        Platform.isWindows ? windowManager.show() : _systemTray?.popUpContextMenu();
+        Platform.isWindows ? windowManager.show() : _systemTray.popUpContextMenu();
       } else if (eventName == kSystemTrayEventRightClick) {
-        Platform.isWindows ? _systemTray?.popUpContextMenu() : windowManager.show();
+        Platform.isWindows ? _systemTray.popUpContextMenu() : windowManager.show();
       }
     });
   }
