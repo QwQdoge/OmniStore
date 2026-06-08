@@ -312,69 +312,72 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    final taskController = context.watch<TaskController>();
-    if (!taskController.isBusy) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.task_alt,
-              size: 64,
-              color: Colors.grey.withValues(alpha: 0.5),
+    return Consumer<TaskController>(
+      builder: (context, taskController, _) {
+        if (!taskController.isBusy) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.task_alt,
+                  size: 64,
+                  color: Colors.grey.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context)!.noActiveTasks,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.noActiveTasks,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.currentTask,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  SmoothProgressBar(
-                    taskState: TaskState(
-                      id: "active",
-                      packageName: AppLocalizations.of(context)!.taskProcessing,
-                      status: TaskStatus.downloading,
-                      progress: taskController.progress ?? 0.0,
-                      stage: taskController.status,
-                      speed: taskController.speed,
-                    ),
-                    onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.currentTask,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: () => _showTerminalDialog(context),
-                        icon: const Icon(Icons.terminal, size: 18),
-                        label: Text(AppLocalizations.of(context)!.viewLogs),
+                      SmoothProgressBar(
+                        taskState: TaskState(
+                          id: "active",
+                          packageName: AppLocalizations.of(context)!.taskProcessing,
+                          status: TaskStatus.downloading,
+                          progress: taskController.progress ?? 0.0,
+                          stage: taskController.status,
+                          speed: taskController.speed,
+                        ),
+                        onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => _showTerminalDialog(context),
+                            icon: const Icon(Icons.terminal, size: 18),
+                            label: Text(AppLocalizations.of(context)!.viewLogs),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

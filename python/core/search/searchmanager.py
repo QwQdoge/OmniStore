@@ -119,21 +119,37 @@ class SearchManager:
         async def _get_flatpak():
             if cached_apps:
                 return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
+            p = None
             try:
                 p = await asyncio.create_subprocess_exec("flatpak", "list", "--installed", "--columns=application",
                                                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                 stdout, _ = await p.communicate()
                 return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
-            except: return set()
+            except:
+                return set()
+            finally:
+                if p and p.returncode is None:
+                    try:
+                        p.kill()
+                        await p.wait()
+                    except: pass
 
         async def _get_aur():
             if cached_apps:
                 return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
+            p = None
             try:
                 p = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
                 stdout, _ = await p.communicate()
                 return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
-            except: return set()
+            except:
+                return set()
+            finally:
+                if p and p.returncode is None:
+                    try:
+                        p.kill()
+                        await p.wait()
+                    except: pass
 
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}

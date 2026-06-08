@@ -1216,5 +1216,7 @@
   "autoDetectingSources": "Autodetectando fuentes disponibles para su sistema...",
   "autoDetectSuccess": "¡Autodetección completada y ajustes guardados!",
   "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
-  "personalAccessToken": "Token de acceso personal"
+  "personalAccessToken": "Token de acceso personal",
+  "copyName": "Copiar nombre",
+  "nameCopied": "Nombre copiado al portapapeles"
 }

@@ -982,4 +982,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalAccessToken => 'Personal Access Token';
+
+  @override
+  String get copyName => 'Copy Name';
+
+  @override
+  String get nameCopied => 'Name copied to clipboard';
 }
