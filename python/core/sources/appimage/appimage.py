@@ -69,7 +69,9 @@ class AppImageSource(UnifiedSource):
             if query_lower in name.lower() or query_lower in desc.lower():
                 is_inst = self._is_installed(name)
                 download_url = ""
-                for link in item.get("links", []):
+                links = item.get("links") or []
+                for link in links:
+                    if not isinstance(link, dict): continue
                     if link.get("type") == "Download":
                         download_url = link.get("url", "")
                         break

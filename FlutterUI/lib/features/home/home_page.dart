@@ -281,6 +281,8 @@ class _HomePageState extends State<HomePage> {
                             ? CachedNetworkImage(
                                 imageUrl: app.icon!,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 108,
+                                memCacheHeight: 108,
                                 errorWidget: (c, e, s) =>
                                     const Icon(Icons.apps, color: Colors.black),
                               )
@@ -373,6 +375,8 @@ class _HomePageState extends State<HomePage> {
                               ? CachedNetworkImage(
                                   imageUrl: app.icon!,
                                   fit: BoxFit.cover,
+                                  memCacheWidth: 200,
+                                  memCacheHeight: 200,
                                   errorWidget: (c, e, s) =>
                                       const Icon(Icons.apps),
                                 )

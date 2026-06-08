@@ -257,7 +257,12 @@ class SearchManager:
             tasks.append(self._enrich_single(item, use_network=use_network))
 
         if tasks:
-            await asyncio.gather(*tasks)
+            try:
+                await asyncio.wait_for(asyncio.gather(*tasks), timeout=3.5)
+            except asyncio.TimeoutError:
+                logging.warning("Metadata enrichment timed out (3.5s)")
+            except Exception as e:
+                logging.error(f"Metadata enrichment failed: {e}")
 
     async def _enrich_single(self, item: Dict, use_network: bool = True):
         source = item.get("source", "").lower()

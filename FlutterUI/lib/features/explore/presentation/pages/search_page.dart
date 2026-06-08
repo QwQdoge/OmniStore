@@ -396,6 +396,7 @@ class _DiscoveryContent extends StatelessWidget {
                                     ? CachedNetworkImage(
                                         imageUrl: app.icon!,
                                         fit: BoxFit.cover,
+                                        memCacheWidth: 300,
                                       )
                                     : const Icon(Icons.apps, size: 48),
                               ),
