@@ -35,10 +35,8 @@ class SearchManager:
         is_macos = (sys.platform == "darwin")
 
         # 1. Cloud sources (available on all platforms)
-        if self.cm.get("search.sources.github", True):
-            self.sources["github"] = GitHubSource(self.session, self.cm)
-        if self.cm.get("search.sources.bitu", True):
-            self.sources["bitu"] = BituSource(self.session, self.cm)
+        self.sources["github"] = GitHubSource(self.session, self.cm)
+        self.sources["bitu"] = BituSource(self.session, self.cm)
 
         # 2. Linux specific sources
         if is_linux:
@@ -105,9 +103,45 @@ class SearchManager:
             except Exception: pass
             query = f"category:{standard_id}"
 
+        # Record the search query
         self.habit_tracker.record_search(query)
-        active_sources = self._get_active_sources()
-
+        # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
+        source_filter_obj = None
+        if query.lower().startswith("source:"):
+            parts = query.split(":", 2)
+            source_filter = parts[1].strip().lower()
+            remaining = parts[2].strip() if len(parts) > 2 else ""
+            if source_filter == "native":
+                source_filter = "pacman"
+            source_obj = self.sources.get(source_filter)
+            if not source_obj:
+                # Unknown source, return empty results
+                active_sources = []
+            else:
+                if remaining == "":
+                    # No search term, return recommendations for the source
+                    if source_filter == "flatpak":
+                        try:
+                            recs = await self.recommender.get_recommendations()
+                            return recs
+                        except Exception:
+                            return []
+                    else:
+                        if hasattr(source_obj, "get_recommendations"):
+                            try:
+                                recs = await source_obj.get_recommendations()
+                                return recs
+                            except Exception:
+                                return []
+                        return []
+                # Non‑empty term: limit search to this source only
+                query = remaining
+                source_filter_obj = source_obj
+        # Determine active sources based on optional filter
+        if source_filter_obj:
+            active_sources = [source_filter_obj] if source_filter_obj.enabled else []
+        else:
+            active_sources = self._get_active_sources()
         # ⚡ Optimization: Pre-fetch installed packages as tasks to be awaited in parallel by individual sources
         installed_flatpak_task = None
         installed_aur_task = None
