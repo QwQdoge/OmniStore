@@ -916,4 +916,83 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get relatedApps => 'Aplicaciones relacionadas';
+
+  @override
+  String get activeSources => 'Fuentes activas';
+
+  @override
+  String get autoDetect => 'Autodetectar';
+
+  @override
+  String get addCustomSource => 'Añadir fuente personalizada';
+
+  @override
+  String get addCustomSourceDesc =>
+      'Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu';
+
+  @override
+  String get sourceType => 'Tipo de fuente';
+
+  @override
+  String get githubRepoType => 'Repositorio de GitHub (owner/repo)';
+
+  @override
+  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+
+  @override
+  String get flatpakRemoteType => 'Remoto de Flatpak';
+
+  @override
+  String get appImageFeedType => 'URL de feed de AppImage';
+
+  @override
+  String get sourceName => 'Nombre de la fuente';
+
+  @override
+  String get hintCustomAppName => 'ej. mi-app-personalizada';
+
+  @override
+  String get repoOwnerRepo => 'Repositorio (owner/repo)';
+
+  @override
+  String get sourceUrl => 'URL';
+
+  @override
+  String get hintRepoFormat => 'ej. flutter/flutter';
+
+  @override
+  String get hintFeedUrl => 'ej. https://ejemplo.com/feed.json';
+
+  @override
+  String get errorNameUrlRequired =>
+      'El nombre y la URL/Repo no pueden estar vacíos';
+
+  @override
+  String get addingCustomSource => 'Añadiendo fuente personalizada...';
+
+  @override
+  String get sourceAddSuccess => '¡Fuente añadida con éxito!';
+
+  @override
+  String get sourceAddFailed => 'Error al añadir la fuente.';
+
+  @override
+  String get autoDetectingSources =>
+      'Autodetectando fuentes disponibles para su sistema...';
+
+  @override
+  String get autoDetectSuccess =>
+      '¡Autodetección completada y ajustes guardados!';
+
+  @override
+  String get autoDetectFailed => 'Error al guardar los ajustes autodetectados.';
+
+  @override
+  String get personalAccessToken => 'Token de acceso personal';
+
+  @override
+  String get copyName => 'Copiar nombre';
+
+  @override
+  String get nameCopied => 'Nombre copiado al portapapeles';
 }

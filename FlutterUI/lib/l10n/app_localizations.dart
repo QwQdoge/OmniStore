@@ -1764,6 +1764,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Related Apps'**
   String get relatedApps;
+
+  /// Label for active software sources
+  ///
+  /// In en, this message translates to:
+  /// **'Active Sources'**
+  String get activeSources;
+
+  /// Button to auto detect available sources
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Detect'**
+  String get autoDetect;
+
+  /// Button to add a custom source
+  ///
+  /// In en, this message translates to:
+  /// **'Add Custom Source'**
+  String get addCustomSource;
+
+  /// Description for adding custom sources
+  ///
+  /// In en, this message translates to:
+  /// **'Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos'**
+  String get addCustomSourceDesc;
+
+  /// Label for source type
+  ///
+  /// In en, this message translates to:
+  /// **'Source Type'**
+  String get sourceType;
+
+  /// GitHub source type option
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository (owner/repo)'**
+  String get githubRepoType;
+
+  /// Bitu source type option
+  ///
+  /// In en, this message translates to:
+  /// **'Bitu / Bitbucket (workspace/repo)'**
+  String get bituRepoType;
+
+  /// Flatpak source type option
+  ///
+  /// In en, this message translates to:
+  /// **'Flatpak Remote'**
+  String get flatpakRemoteType;
+
+  /// AppImage source type option
+  ///
+  /// In en, this message translates to:
+  /// **'AppImage Feed URL'**
+  String get appImageFeedType;
+
+  /// Label for source name
+  ///
+  /// In en, this message translates to:
+  /// **'Source Name'**
+  String get sourceName;
+
+  /// Hint for custom app name
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. my-custom-app'**
+  String get hintCustomAppName;
+
+  /// Label for repository owner and name
+  ///
+  /// In en, this message translates to:
+  /// **'Repository (owner/repo)'**
+  String get repoOwnerRepo;
+
+  /// Label for source URL
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get sourceUrl;
+
+  /// Hint for repository format
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. flutter/flutter'**
+  String get hintRepoFormat;
+
+  /// Hint for feed URL
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://example.com/feed.json'**
+  String get hintFeedUrl;
+
+  /// Error message when name or URL is missing
+  ///
+  /// In en, this message translates to:
+  /// **'Name and URL/Repo cannot be empty'**
+  String get errorNameUrlRequired;
+
+  /// Message while adding custom source
+  ///
+  /// In en, this message translates to:
+  /// **'Adding custom source...'**
+  String get addingCustomSource;
+
+  /// Success message after adding source
+  ///
+  /// In en, this message translates to:
+  /// **'Source added successfully!'**
+  String get sourceAddSuccess;
+
+  /// Failure message after adding source
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add source.'**
+  String get sourceAddFailed;
+
+  /// Message while auto detecting sources
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-detecting available sources for your system...'**
+  String get autoDetectingSources;
+
+  /// Success message after auto detection
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-detection complete and settings saved!'**
+  String get autoDetectSuccess;
+
+  /// Failure message after auto detection
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save auto-detected settings.'**
+  String get autoDetectFailed;
+
+  /// Label for personal access token
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Access Token'**
+  String get personalAccessToken;
+
+  /// No description provided for @copyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Name'**
+  String get copyName;
+
+  /// No description provided for @nameCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Name copied to clipboard'**
+  String get nameCopied;
 }
 
 class _AppLocalizationsDelegate

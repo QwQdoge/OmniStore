@@ -891,6 +891,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get relatedApps => '相关应用';
+
+  @override
+  String get activeSources => '已启用软件源';
+
+  @override
+  String get autoDetect => '自动检测';
+
+  @override
+  String get addCustomSource => '添加自定义源';
+
+  @override
+  String get addCustomSourceDesc =>
+      '配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库';
+
+  @override
+  String get sourceType => '来源类型';
+
+  @override
+  String get githubRepoType => 'GitHub 仓库 (owner/repo)';
+
+  @override
+  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+
+  @override
+  String get flatpakRemoteType => 'Flatpak 远程库';
+
+  @override
+  String get appImageFeedType => 'AppImage 订阅链接';
+
+  @override
+  String get sourceName => '来源名称';
+
+  @override
+  String get hintCustomAppName => '例如: my-custom-app';
+
+  @override
+  String get repoOwnerRepo => '仓库地址 (owner/repo)';
+
+  @override
+  String get sourceUrl => '链接';
+
+  @override
+  String get hintRepoFormat => '例如: flutter/flutter';
+
+  @override
+  String get hintFeedUrl => '例如: https://example.com/feed.json';
+
+  @override
+  String get errorNameUrlRequired => '名称和链接/仓库地址不能为空';
+
+  @override
+  String get addingCustomSource => '正在添加自定义源...';
+
+  @override
+  String get sourceAddSuccess => '来源添加成功！';
+
+  @override
+  String get sourceAddFailed => '添加来源失败。';
+
+  @override
+  String get autoDetectingSources => '正在自动检测系统中可用的软件源...';
+
+  @override
+  String get autoDetectSuccess => '自动检测完成，配置已保存！';
+
+  @override
+  String get autoDetectFailed => '保存自动检测结果失败。';
+
+  @override
+  String get personalAccessToken => '个人访问令牌';
+
+  @override
+  String get copyName => '复制名称';
+
+  @override
+  String get nameCopied => '名称已复制到剪贴板';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1780,4 +1856,80 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get relatedApps => '相關應用';
+
+  @override
+  String get activeSources => '已啟用軟體源';
+
+  @override
+  String get autoDetect => '自動檢測';
+
+  @override
+  String get addCustomSource => '添加自定義源';
+
+  @override
+  String get addCustomSourceDesc =>
+      '配置自定義 Flatpak 遠程庫、AppImage 訂閱或 GitHub/Bitu 倉庫';
+
+  @override
+  String get sourceType => '來源類型';
+
+  @override
+  String get githubRepoType => 'GitHub 倉庫 (owner/repo)';
+
+  @override
+  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+
+  @override
+  String get flatpakRemoteType => 'Flatpak 遠程庫';
+
+  @override
+  String get appImageFeedType => 'AppImage 訂閱連結';
+
+  @override
+  String get sourceName => '來源名稱';
+
+  @override
+  String get hintCustomAppName => '例如: my-custom-app';
+
+  @override
+  String get repoOwnerRepo => '倉庫地址 (owner/repo)';
+
+  @override
+  String get sourceUrl => '連結';
+
+  @override
+  String get hintRepoFormat => '例如: flutter/flutter';
+
+  @override
+  String get hintFeedUrl => '例如: https://example.com/feed.json';
+
+  @override
+  String get errorNameUrlRequired => '名稱和連結/倉庫地址不能為空';
+
+  @override
+  String get addingCustomSource => '正在添加自定義源...';
+
+  @override
+  String get sourceAddSuccess => '來源添加成功！';
+
+  @override
+  String get sourceAddFailed => '添加來源失敗。';
+
+  @override
+  String get autoDetectingSources => '正在自動檢測系統中可用的軟體源...';
+
+  @override
+  String get autoDetectSuccess => '自動檢測完成，配置已儲存！';
+
+  @override
+  String get autoDetectFailed => '儲存自動檢測結果失敗。';
+
+  @override
+  String get personalAccessToken => '個人存取權杖';
+
+  @override
+  String get copyName => '複製名稱';
+
+  @override
+  String get nameCopied => '名稱已複製到剪貼簿';
 }
