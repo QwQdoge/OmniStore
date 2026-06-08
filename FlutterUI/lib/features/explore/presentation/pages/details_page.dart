@@ -4,21 +4,23 @@ import "package:frontend/services/backend_service.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/network/github_client.dart';
-import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/widgets/github_star_badge.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
+import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
+import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
+
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -107,144 +109,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   void _showTerminalDialog() {
-    final theme = Theme.of(context);
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28.0),
-        ),
-        child: SizedBox(
-          width: 600,
-          height: 400,
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(28.0),
-                    topRight: Radius.circular(28.0),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.terminalOutput,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 13,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close, size: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Consumer2<SettingsController, TaskController>(
-                builder: (context, settings, task, _) {
-                  if (!task.logs.any((l) => l.contains("[ERROR]"))) {
-                    return const SizedBox.shrink();
-                  }
-                  if (!settings.isAIEnabled) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return Container(
-                    width: double.infinity,
-                    color: theme.colorScheme.errorContainer.withValues(
-                      alpha: 0.3,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.auto_awesome_rounded,
-                          color: theme.colorScheme.primary,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          AppLocalizations.of(context)!.aiAnalysisPrompt,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () =>
-                              _showAIErrorAnalysis(task.logs.join("\n")),
-                          child: Text(
-                            AppLocalizations.of(context)!.analyzeNow,
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Expanded(
-                child: Consumer<TaskController>(
-                  builder: (context, task, _) {
-                    final logs = task.logs;
-                    return logs.isEmpty
-                        ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.waitingForOutput,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontFamily: 'monospace',
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            reverse: true,
-                            padding: const EdgeInsets.all(12),
-                            itemCount: logs.length,
-                            itemBuilder: (context, i) {
-                              final log = logs[logs.length - 1 - i];
-                              Color textColor = theme.colorScheme.onSurface;
-                              if (log.contains("[ERROR]")) {
-                                textColor = theme.colorScheme.error;
-                              }
-                              if (log.contains("[INFO]")) {
-                                textColor = Colors.greenAccent.shade400;
-                              }
-                              return Text(
-                                log,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              );
-                            },
-                          );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (ctx) => const TerminalDialog(),
     );
   }
 
@@ -993,47 +860,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Future<void> _showAIExplainDialog() async {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiPromptExplain),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          height: 400,
-          child: FutureBuilder<String>(future: context.read<AIRepository>().aiExplain(widget.app.name, widget.app.description), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
+      builder: (ctx) => AIMarkdownDialog(
+        title: AppLocalizations.of(context)!.aiPromptExplain,
+        future: context.read<AIRepository>().aiExplain(widget.app.name, widget.app.description),
       ),
     );
   }
 
-  Future<void> _showAIErrorAnalysis(String logs) async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiPromptError),]), content: SizedBox(width: 600, height: 450, child: FutureBuilder<String>(future: context.read<AIRepository>().aiAnalyzeError(logs), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showAICompareDialog() async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiCompareTitle),]), content: SizedBox(width: 600, height: 450, child: FutureBuilder<String>(future: context.read<AIRepository>().aiCompareVariants(widget.app.name), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
+  Future<void> _showAICompareDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AIMarkdownDialog(
+        title: AppLocalizations.of(context)!.aiCompareTitle,
+        future: context.read<AIRepository>().aiCompareVariants(widget.app.name),
+        width: 600,
+        height: 450,
       ),
     );
   }
@@ -1041,77 +882,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Future<void> _showAICliDialog() async {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiCliTitle),
-          ],
+      builder: (ctx) => AICliDialog(
+        future: context.read<AIRepository>().aiGenerateCLI(
+          widget.app.name,
+          _selectedSource,
         ),
-        content: FutureBuilder<String>(
-          future: context.read<AIRepository>().aiGenerateCLI(
-            widget.app.name,
-            _selectedSource,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 100,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            final cmd = snapshot.data ?? "";
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    cmd,
-                    style: const TextStyle(fontFamily: 'monospace'),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: cmd));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          AppLocalizations.of(context)!.aiCommandCopied,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.copy_rounded),
-                  label: Text(AppLocalizations.of(context)!.aiCopyCommand),
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
       ),
     );
   }
 
-  Future<void> _showAIConflictDialog() async { showDialog(context: context, builder: (ctx) => AlertDialog(title: Row(children: [const MagicPulseIcon(icon: Icons.auto_awesome_rounded), const SizedBox(width: 12), Text(AppLocalizations.of(context)!.aiConflictTitle),]), content: SizedBox(width: 500, height: 400, child: FutureBuilder<String>(future: context.read<AIRepository>().aiDetectConflicts(widget.app.name), builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
+  Future<void> _showAIConflictDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AIMarkdownDialog(
+        title: AppLocalizations.of(context)!.aiConflictTitle,
+        future: context.read<AIRepository>().aiDetectConflicts(widget.app.name),
       ),
     );
   }
@@ -1137,34 +922,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     showDialog(
       context: context,
       useSafeArea: false,
-      builder: (context) => Scaffold(
-        backgroundColor: Colors.black.withValues(alpha: 0.9),
-        body: Stack(
-          children: [
-            Center(
-              child: Hero(
-                tag: 'screenshot-$url',
-                child: InteractiveViewer(
-                  maxScale: 4.0,
-                  child: CachedNetworkImage(imageUrl: url, fit: BoxFit.contain),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 40,
-              right: 20,
-              child: IconButton.filled(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close_rounded),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.3),
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      builder: (context) => ScreenshotViewer(url: url),
     );
   }
 
@@ -1183,29 +941,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           const Spacer(),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAIMarkdown(AsyncSnapshot<String> snapshot, AppLocalizations l10n) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    String data = snapshot.data ?? l10n.aiResponseFailed;
-    if (data == "AI_TIMEOUT") data = l10n.aiTimeout;
-    if (data == "AI_NO_RESPONSE") data = l10n.aiNoResponse;
-    if (data == "AI_PARSE_FAILED") data = l10n.aiParseFailed;
-    if (data.startsWith("AI_CALL_FAILED:")) {
-      data = l10n.aiCallFailed(data.replaceFirst("AI_CALL_FAILED:", ""));
-    }
-
-    return SingleChildScrollView(
-      child: MarkdownBody(
-        data: data,
-        selectable: true,
       ),
     );
   }
