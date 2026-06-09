@@ -225,7 +225,7 @@ class SearchManager:
 
         # AI Ranking (Optional)
         ai_ranked_names = []
-        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True):
+        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True) and len(query) >= 3:
             try:
                 # Ask AI to rank the top results
                 candidates = [f"{i['name']} ({i['source']})" for i in combined[:10]]
@@ -236,10 +236,13 @@ class SearchManager:
                     from core.ai.assistant import AIAssistant
                     ai = AIAssistant(self.cm.data if hasattr(self.cm, "data") else self.cm)
                     prompt = f"Rank these apps for query '{query}': {', '.join(candidates)}"
-                    # Simplified AI ranking logic
-                    res = await ai.recommend_apps(prompt, combined[:10])
-                    # Parse AI response for preferred names
-                    ai_ranked_names = [n.strip() for n in res.split("\n") if n.strip()]
+                    # ⚡ Bolt: Wrapped with strict timeout to prevent slow LLM from blocking results
+                    try:
+                        res = await asyncio.wait_for(ai.recommend_apps(prompt, combined[:10]), timeout=1.5)
+                        # Parse AI response for preferred names
+                        ai_ranked_names = [n.strip() for n in res.split("\n") if n.strip()]
+                    except asyncio.TimeoutError:
+                        logging.warning("AI Ranking timed out (1.5s)")
             except Exception: pass
 
         for item in combined:
@@ -308,9 +311,10 @@ class SearchManager:
 
         if tasks:
             try:
-                await asyncio.wait_for(asyncio.gather(*tasks), timeout=3.5)
+                # ⚡ Bolt: Reduced timeout to 2.5s to improve perceived responsiveness
+                await asyncio.wait_for(asyncio.gather(*tasks), timeout=2.5)
             except asyncio.TimeoutError:
-                logging.warning("Metadata enrichment timed out (3.5s)")
+                logging.warning("Metadata enrichment timed out (2.5s)")
             except Exception as e:
                 logging.error(f"Metadata enrichment failed: {e}")
 
