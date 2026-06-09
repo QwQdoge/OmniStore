@@ -13,6 +13,7 @@ import 'package:frontend/widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -536,15 +537,28 @@ class _DownloadPageState extends State<DownloadPage>
           child: FutureBuilder<String>(
             future: aiRepo.aiSummarizeUpdate(name, current, next),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return MarkdownBody(
-                data: snapshot.data ?? "AI failed to summarize.",
-                selectable: true,
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: snapshot.connectionState == ConnectionState.waiting
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        height: 200,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: 200, height: 14),
+                          ],
+                        ),
+                      )
+                    : MarkdownBody(
+                        key: const ValueKey('loaded'),
+                        data: snapshot.data ?? "AI failed to summarize.",
+                        selectable: true,
+                      ),
               );
             },
           ),
@@ -560,40 +574,62 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildInstalledTab() {
-    if (_isLoadingInstalled) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return Column(
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                .map(
-                  (s) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(
-                        s == "all" ? AppLocalizations.of(context)!.explore : s,
-                      ),
-                      selected: _selectedSourceFilter == s,
-                      onSelected: (v) {
-                        if (v) {
-                          setState(() {
-                            _selectedSourceFilter = s;
-                            _applyFilters();
-                          });
-                        }
-                      },
-                    ),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: _isLoadingInstalled
+          ? _buildSkeletonList(key: const ValueKey('loading'))
+          : Column(
+              key: const ValueKey('loaded'),
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                        .map(
+                          (s) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(
+                                s == "all" ? AppLocalizations.of(context)!.explore : s,
+                              ),
+                              selected: _selectedSourceFilter == s,
+                              onSelected: (v) {
+                                if (v) {
+                                  setState(() {
+                                    _selectedSourceFilter = s;
+                                    _applyFilters();
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
-                )
-                .toList(),
+                ),
+                Expanded(child: _buildInstalledList()),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSkeletonList({Key? key}) {
+    return ListView.builder(
+      key: key,
+      padding: const EdgeInsets.all(16),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return const Card(
+          margin: EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(width: double.infinity, height: 12),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
-        ),
-        Expanded(child: _buildInstalledList()),
-      ],
+        );
+      },
     );
   }
 
@@ -631,7 +667,7 @@ class _DownloadPageState extends State<DownloadPage>
                       memCacheWidth: 80,
                       memCacheHeight: 80,
                       placeholder: (context, url) =>
-                          const CircularProgressIndicator(strokeWidth: 2),
+                          const Skeleton(width: 40, height: 40, borderRadius: 0),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.apps),
                     ),
