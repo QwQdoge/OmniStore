@@ -1,6 +1,7 @@
 import os
 import re
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import tempfile
 import shutil
 from typing import Dict, List, Any
@@ -16,23 +17,23 @@ class CustomRepoManager:
     async def list_flatpak_remotes(self) -> List[Dict[str, str]]:
         """List flatpak remotes by running flatpak remotes command."""
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "remotes", "--columns=name,url",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            if not stdout:
-                return []
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                if not stdout:
+                    return []
             
-            remotes = []
-            for line in stdout.decode().strip().splitlines():
-                if not line.strip():
-                    continue
-                parts = line.split('\t')
-                if len(parts) >= 2:
-                    remotes.append({"name": parts[0].strip(), "url": parts[1].strip()})
-            return remotes
+                remotes = []
+                for line in stdout.decode().strip().splitlines():
+                    if not line.strip():
+                        continue
+                    parts = line.split('\t')
+                    if len(parts) >= 2:
+                        remotes.append({"name": parts[0].strip(), "url": parts[1].strip()})
+                return remotes
         except Exception:
             return []
 
@@ -42,26 +43,26 @@ class CustomRepoManager:
             if callback:
                 await callback(f"[INFO] Adding Flatpak remote '{name}' ({url})...")
             
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "remote-add", "--user", "--if-not-exists", name, url,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
-            )
-            stdout, _ = await proc.communicate()
-            success = proc.returncode == 0
-            if success:
-                # Sync into config.yaml
-                custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
-                if not any(r.get("name") == name for r in custom_flatpaks):
-                    custom_flatpaks.append({"name": name, "url": url})
-                    self.cm.set("custom_repos.flatpak", custom_flatpaks)
-                if callback:
-                    await callback(f"[INFO] Successfully added Flatpak remote '{name}'.")
-            else:
-                err_msg = stdout.decode().strip() if stdout else "Unknown error"
-                if callback:
-                    await callback(f"[ERROR] Failed to add remote: {err_msg}")
-            return success
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                success = proc.returncode == 0
+                if success:
+                    # Sync into config.yaml
+                    custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
+                    if not any(r.get("name") == name for r in custom_flatpaks):
+                        custom_flatpaks.append({"name": name, "url": url})
+                        self.cm.set("custom_repos.flatpak", custom_flatpaks)
+                    if callback:
+                        await callback(f"[INFO] Successfully added Flatpak remote '{name}'.")
+                else:
+                    err_msg = stdout.decode().strip() if stdout else "Unknown error"
+                    if callback:
+                        await callback(f"[ERROR] Failed to add remote: {err_msg}")
+                return success
         except Exception as e:
             if callback:
                 await callback(f"[ERROR] Failed to add flatpak remote: {e}")
@@ -73,25 +74,25 @@ class CustomRepoManager:
             if callback:
                 await callback(f"[INFO] Removing Flatpak remote '{name}'...")
             
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "remote-delete", "--user", "--force", name,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
-            )
-            stdout, _ = await proc.communicate()
-            success = proc.returncode == 0
-            if success:
-                # Sync from config.yaml
-                custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
-                custom_flatpaks = [r for r in custom_flatpaks if r.get("name") != name]
-                self.cm.set("custom_repos.flatpak", custom_flatpaks)
-                if callback:
-                    await callback(f"[INFO] Successfully removed Flatpak remote '{name}'.")
-            else:
-                err_msg = stdout.decode().strip() if stdout else "Unknown error"
-                if callback:
-                    await callback(f"[ERROR] Failed to remove remote: {err_msg}")
-            return success
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                success = proc.returncode == 0
+                if success:
+                    # Sync from config.yaml
+                    custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
+                    custom_flatpaks = [r for r in custom_flatpaks if r.get("name") != name]
+                    self.cm.set("custom_repos.flatpak", custom_flatpaks)
+                    if callback:
+                        await callback(f"[INFO] Successfully removed Flatpak remote '{name}'.")
+                else:
+                    err_msg = stdout.decode().strip() if stdout else "Unknown error"
+                    if callback:
+                        await callback(f"[ERROR] Failed to remove remote: {err_msg}")
+                return success
         except Exception as e:
             if callback:
                 await callback(f"[ERROR] Failed to remove flatpak remote: {e}")
@@ -173,12 +174,12 @@ class CustomRepoManager:
                     await callback("[INFO] Applying changes to /etc/pacman.conf...")
 
                 # Since we are already authenticated in sudo cache, we can execute sudo cp
-                proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "sudo", "cp", temp_path, "/etc/pacman.conf",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT
-                )
-                await proc.wait()
+                ) as proc:
+                    await proc.wait()
             finally:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
@@ -194,19 +195,19 @@ class CustomRepoManager:
                     await callback(f"[INFO] Successfully added Pacman repository [{name}]. Updating databases...")
                 
                 # Sync databases
-                sync_proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "sudo", "pacman", "-Sy",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT
-                )
-                if sync_proc.stdout and callback:
-                    while True:
-                        line = await sync_proc.stdout.readline()
-                        if not line:
-                            break
-                        await callback(f"[INFO] {line.decode().strip()}")
-                await sync_proc.wait()
-                return True
+                ) as sync_proc:
+                    if sync_proc.stdout and callback:
+                        while True:
+                            line = await sync_proc.stdout.readline()
+                            if not line:
+                                break
+                            await callback(f"[INFO] {line.decode().strip()}")
+                    await sync_proc.wait()
+                    return True
             else:
                 if callback:
                     await callback("[ERROR] Failed to write /etc/pacman.conf.")
@@ -246,12 +247,12 @@ class CustomRepoManager:
                 with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
                     tmpf.write(modified_conf)
 
-                proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "sudo", "cp", temp_path, "/etc/pacman.conf",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT
-                )
-                await proc.wait()
+                ) as proc:
+                    await proc.wait()
             finally:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
@@ -265,13 +266,13 @@ class CustomRepoManager:
                 if callback:
                     await callback(f"[INFO] Successfully removed Pacman repository [{name}]. Syncing databases...")
                 
-                sync_proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "sudo", "pacman", "-Sy",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT
-                )
-                await sync_proc.wait()
-                return True
+                ) as sync_proc:
+                    await sync_proc.wait()
+                    return True
             else:
                 if callback:
                     await callback("[ERROR] Failed to write /etc/pacman.conf.")

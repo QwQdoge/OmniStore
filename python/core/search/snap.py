@@ -20,26 +20,27 @@ class SnapSearch:
             return []
         # Use subprocess to call `snap find <query>` and parse output.
         import asyncio, shlex
-        proc = await asyncio.create_subprocess_exec(
+        from core.subprocess_utils import safe_subprocess
+        async with safe_subprocess(
             'snap', 'find', query,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, _ = await proc.communicate()
-        lines = stdout.decode().splitlines()
-        results = []
-        # Skip header lines (first line is column names)
-        for line in lines[1:]:
-            parts = line.split()
-            if len(parts) < 3:
-                continue
-            name = parts[0]
-            version = parts[1]
-            description = ' '.join(parts[2:])
-            results.append({
-                'name': name,
-                'version': version,
-                'description': description,
-                'source': 'snap',
-            })
-        return results
+        ) as proc:
+            stdout, _ = await proc.communicate()
+            lines = stdout.decode().splitlines()
+            results = []
+            # Skip header lines (first line is column names)
+            for line in lines[1:]:
+                parts = line.split()
+                if len(parts) < 3:
+                    continue
+                name = parts[0]
+                version = parts[1]
+                description = ' '.join(parts[2:])
+                results.append({
+                    'name': name,
+                    'version': version,
+                    'description': description,
+                    'source': 'snap',
+                })
+            return results

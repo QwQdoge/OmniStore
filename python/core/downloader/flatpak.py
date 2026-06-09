@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import os
 import re
 from typing import List
@@ -39,76 +40,76 @@ class FlatpakDownloader:
                 "PYTHONUNBUFFERED": "1"
             }
 
-            self.current_process = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 env=env
-            )
-            process = self.current_process
+            ) as self.current_process:
+                process = self.current_process
 
-            last_sent_progress = -1
+                last_sent_progress = -1
 
-            if process.stdout:
-                while True:
-                    chunk = await process.stdout.read(1024)
-                    if not chunk:
-                        break
-                    raw_data = chunk.decode('utf-8', errors='ignore')
+                if process.stdout:
+                    while True:
+                        chunk = await process.stdout.read(1024)
+                        if not chunk:
+                            break
+                        raw_data = chunk.decode('utf-8', errors='ignore')
 
-                    if not is_install:
+                        if not is_install:
+                            if callback:
+                                for line in raw_data.splitlines():
+                                    line = line.strip()
+                                    if line:
+                                        await callback(f"[INFO] {line}")
+                            continue
+
+                        # 1. Match summary: Installing 3/8... 19%
+                        summary_match = re.search(
+                            r"(\d+)/(\d+).*?(\d+)\s*%", raw_data)
+
+                        # 2. Match progress in list: [  19%]
+                        list_progress_match = re.search(
+                            r"\[\s*(\d+)%\s*\]", raw_data)
+
+                        # 3. Match speed: 4.5 MB/s
+                        speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", raw_data)
+
+                        total_prog = None
+
+                        if summary_match:
+                            cur, total, sub = map(int, summary_match.groups())
+                            total_prog = int(((cur - 1) / total)
+                                             * 100 + (sub / total))
+                        elif list_progress_match:
+                            total_prog = int(list_progress_match.group(1))
+
+                        if speed_match:
+                            if callback:
+                                await callback(f"[SPEED] {speed_match.group(1)}")
+
+                        if total_prog is not None and total_prog > last_sent_progress:
+                            if callback:
+                                await callback(f"[PROGRESS] {total_prog}")
+                            last_sent_progress = total_prog
+
+                        # Stage recognition for Flatpak
                         if callback:
-                            for line in raw_data.splitlines():
-                                line = line.strip()
-                                if line:
-                                    await callback(f"[INFO] {line}")
-                        continue
+                            if "downloading" in raw_data.lower():
+                                await callback("[STAGE] Downloading")
+                            elif "installing" in raw_data.lower():
+                                await callback("[STAGE] Installing")
+                            elif "uninstalling" in raw_data.lower():
+                                await callback("[STAGE] Uninstalling")
+                            elif "updating" in raw_data.lower():
+                                await callback("[STAGE] Updating")
 
-                    # 1. Match summary: Installing 3/8... 19%
-                    summary_match = re.search(
-                        r"(\d+)/(\d+).*?(\d+)\s*%", raw_data)
-
-                    # 2. Match progress in list: [  19%]
-                    list_progress_match = re.search(
-                        r"\[\s*(\d+)%\s*\]", raw_data)
-
-                    # 3. Match speed: 4.5 MB/s
-                    speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", raw_data)
-
-                    total_prog = None
-
-                    if summary_match:
-                        cur, total, sub = map(int, summary_match.groups())
-                        total_prog = int(((cur - 1) / total)
-                                         * 100 + (sub / total))
-                    elif list_progress_match:
-                        total_prog = int(list_progress_match.group(1))
-
-                    if speed_match:
-                        if callback:
-                            await callback(f"[SPEED] {speed_match.group(1)}")
-
-                    if total_prog is not None and total_prog > last_sent_progress:
-                        if callback:
-                            await callback(f"[PROGRESS] {total_prog}")
-                        last_sent_progress = total_prog
-
-                    # Stage recognition for Flatpak
+                await process.wait()
+                self.current_process = None
+                if is_install and process.returncode == 0:
                     if callback:
-                        if "downloading" in raw_data.lower():
-                            await callback("[STAGE] Downloading")
-                        elif "installing" in raw_data.lower():
-                            await callback("[STAGE] Installing")
-                        elif "uninstalling" in raw_data.lower():
-                            await callback("[STAGE] Uninstalling")
-                        elif "updating" in raw_data.lower():
-                            await callback("[STAGE] Updating")
-
-            await process.wait()
-            self.current_process = None
-            if is_install and process.returncode == 0:
-                if callback:
-                    await callback("[PROGRESS] 100")
+                        await callback("[PROGRESS] 100")
 
         except Exception as e:
             if callback:

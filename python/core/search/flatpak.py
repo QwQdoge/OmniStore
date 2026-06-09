@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 from .base import SearchSource
 
 
@@ -10,14 +11,14 @@ class FlatpakSearch(SearchSource):
     async def _get_installed_flatpaks(self) -> set:
         """异步获取本地已安装的 Flatpak 应用 ID 集合"""
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "list", "--installed", "--columns=application",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            output = stdout.decode().strip()
-            return {line.strip() for line in output.splitlines() if line.strip()}
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                output = stdout.decode().strip()
+                return {line.strip() for line in output.splitlines() if line.strip()}
         except Exception:
             return set()
 
@@ -27,19 +28,19 @@ class FlatpakSearch(SearchSource):
 
         try:
             # 并发执行
-            tasks = [
-                asyncio.create_subprocess_exec(
-                    "flatpak", "search", "--columns=name,application,version,description", query,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.DEVNULL
-                ),
-                self._get_installed_flatpaks()
-            ]
+            async with safe_subprocess(
+                "flatpak", "search", "--columns=name,application,version,description", query,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL
+            ) as proc:
+                tasks = [
+                    proc.communicate(),
+                    self._get_installed_flatpaks()
+                ]
 
-            # 使用 wait_for 防止命令挂起（虽然 flatpak 通常很快）
-            results = await asyncio.gather(*tasks)
-            proc, installed_set = results
-            stdout, _ = await proc.communicate()
+                # 使用 wait_for 防止命令挂起（虽然 flatpak 通常很快）
+                results = await asyncio.gather(*tasks)
+                (stdout, _), installed_set = results
 
             if not stdout:
                 return []

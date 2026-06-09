@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import aiohttp
 from aiohttp import ClientTimeout
 from .base import SearchSource
@@ -15,19 +16,19 @@ class AurSearch(SearchSource):
         # 获取本地已安装的所有 AUR/外来包名
         try:
             # -Qm 仅列出不在官方数据库中的包（通常就是从 AUR 安装的）
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 'pacman', '-Qm',
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
-            )
-            stdout, _ = await proc.communicate()
-            output = stdout.decode().strip()
-            if not output:
-                return set()
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                output = stdout.decode().strip()
+                if not output:
+                    return set()
 
-            # 提取每一行的第一个单词（包名）
-            # 输出格式通常是: pkgname version
-            return {line.split()[0] for line in output.splitlines() if line.strip()}
+                # 提取每一行的第一个单词（包名）
+                # 输出格式通常是: pkgname version
+                return {line.split()[0] for line in output.splitlines() if line.strip()}
         except Exception:
             return set()
 

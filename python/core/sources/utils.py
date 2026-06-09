@@ -1,6 +1,7 @@
 import os
 import time
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import sys
 from typing import Optional, Callable, Awaitable
 
@@ -21,18 +22,26 @@ class PrivilegeManager:
             return True
 
         # 1. Silent check with timeout
+        check = None
         try:
-            check = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "sudo", "-n", "true",
                 stderr=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.DEVNULL,
-            )
-            await asyncio.wait_for(check.wait(), timeout=5)
-            if check.returncode == 0:
-                self._last_auth_time = time.time()
-                return True
+            ) as check:
+                await asyncio.wait_for(check.wait(), timeout=5)
+                if check.returncode == 0:
+                    self._last_auth_time = time.time()
+                    return True
         except (asyncio.TimeoutError, Exception):
             pass
+        finally:
+            if check and check.returncode is None:
+                try:
+                    check.kill()
+                    await check.wait()
+                except:
+                    pass
 
         # 2. Memory cache
         if self._is_auth_cached():
@@ -71,17 +80,17 @@ class PrivilegeManager:
 
             sudo_proc = None
             try:
-                sudo_proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "sudo", "-S", "-p", "", "-v",
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.DEVNULL,
                     stderr=asyncio.subprocess.PIPE,
                     env=env,
-                )
+                ) as sudo_proc:
 
-                password_bytes = (password + "\n").encode("utf-8")
-                # Absolute safety: Never wait indefinitely for sudo
-                _, stderr_bytes = await asyncio.wait_for(sudo_proc.communicate(input=password_bytes), timeout=15)
+                    password_bytes = (password + "\n").encode("utf-8")
+                    # Absolute safety: Never wait indefinitely for sudo
+                    _, stderr_bytes = await asyncio.wait_for(sudo_proc.communicate(input=password_bytes), timeout=15)
             except asyncio.TimeoutError:
                 if sudo_proc and sudo_proc.returncode is None:
                     try:
@@ -118,13 +127,21 @@ class PrivilegeManager:
 
         # Boundary Defense: Don't spend too much time looking for tools
         for prog in preferred_order:
+            which = None
             try:
-                which = await asyncio.create_subprocess_exec("which", prog, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                stdout, _ = await asyncio.wait_for(which.communicate(), timeout=2)
-                if which.returncode == 0:
-                    return stdout.decode().strip()
+                async with safe_subprocess("which", prog, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as which:
+                    stdout, _ = await asyncio.wait_for(which.communicate(), timeout=2)
+                    if which.returncode == 0:
+                        return stdout.decode().strip()
             except Exception:
                 continue
+            finally:
+                if which and which.returncode is None:
+                    try:
+                        which.kill()
+                        await which.wait()
+                    except:
+                        pass
         return None
 
     async def _run_askpass(self, tool: str) -> Optional[str]:
@@ -134,7 +151,16 @@ class PrivilegeManager:
         else:
             cmd = [tool, "Omnistore Needs Privileges\nPlease enter password:"]
 
-        proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-        stdout, _ = await proc.communicate()
-        if proc.returncode != 0: return None
-        return stdout.decode("utf-8", errors="replace").rstrip("\n") or None
+        proc = None
+        try:
+            async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                if proc.returncode != 0: return None
+                return stdout.decode("utf-8", errors="replace").rstrip("\n") or None
+        finally:
+            if proc and proc.returncode is None:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except:
+                    pass

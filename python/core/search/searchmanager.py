@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
@@ -155,10 +156,10 @@ class SearchManager:
                 return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
             p = None
             try:
-                p = await asyncio.create_subprocess_exec("flatpak", "list", "--installed", "--columns=application",
-                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                stdout, _ = await p.communicate()
-                return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
+                async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
+                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                    stdout, _ = await p.communicate()
+                    return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
             except:
                 return set()
             finally:
@@ -173,9 +174,9 @@ class SearchManager:
                 return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
             p = None
             try:
-                p = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                stdout, _ = await p.communicate()
-                return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
+                async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                    stdout, _ = await p.communicate()
+                    return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
             except:
                 return set()
             finally:

@@ -77,6 +77,8 @@ from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
+from core.subprocess_utils import safe_subprocess
+
 
 
 def safe_command(func):
@@ -574,31 +576,19 @@ class OmnistoreBackend:
             if orphans:
                 await cb(f"[INFO] Cleaning {len(orphans)} orphans...");
                 if not await self.executor._ensure_privileged(cb): return False
-                p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Rs", "--noconfirm", *orphans)
-                try:
-                    await asyncio.wait_for(p.wait(), timeout=60)
-                except asyncio.TimeoutError:
-                    pass
-                finally:
-                    if p and p.returncode is None:
-                        try:
-                            p.kill()
-                            await p.wait()
-                        except: pass
+                async with safe_subprocess("sudo", "pacman", "-Rs", "--noconfirm", *orphans) as p:
+                    try:
+                        await asyncio.wait_for(p.wait(), timeout=60)
+                    except asyncio.TimeoutError:
+                        pass
 
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
-                p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Scc", "--noconfirm")
-                try:
-                    await asyncio.wait_for(p.wait(), timeout=60)
-                except asyncio.TimeoutError:
-                    pass
-                finally:
-                    if p and p.returncode is None:
-                        try:
-                            p.kill()
-                            await p.wait()
-                        except: pass
+                async with safe_subprocess("sudo", "pacman", "-Scc", "--noconfirm") as p:
+                    try:
+                        await asyncio.wait_for(p.wait(), timeout=60)
+                    except asyncio.TimeoutError:
+                        pass
 
             await cb("[INFO] System cleanup finished!")
             if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
@@ -685,28 +675,6 @@ class OmnistoreBackend:
                           (app.get('description', '')[:50] + "...") if len(app.get('description', '')) > 50 else app.get('description', ''))
         console.print(table); console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
-
-@contextlib.asynccontextmanager
-async def safe_subprocess(*args, **kwargs):
-    """Murphy-proof subprocess wrapper that guarantees absolute cleanup and reaping."""
-    proc = None
-    try:
-        proc = await asyncio.create_subprocess_exec(*args, **kwargs)
-        yield proc
-    finally:
-        if proc:
-            try:
-                if proc.returncode is None:
-                    # Attempt graceful termination (SIGTERM)
-                    proc.terminate()
-                    try:
-                        await asyncio.wait_for(proc.wait(), timeout=2)
-                    except asyncio.TimeoutError:
-                        # Escalation: Force kill (SIGKILL)
-                        proc.kill()
-                        await proc.wait()
-            except Exception as e:
-                logging.error(f"Murphy-proof Error Reaping Subprocess: {e}")
 
 async def main():
     main.json_mode_active = "--json" in sys.argv

@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 from typing import Dict, Any, List, Optional, Callable
 from core.sources.pacman.search import search_pacman, get_pacman_details
 from core.sources.pacman.download import install_pacman, uninstall_pacman
@@ -31,17 +32,17 @@ class PacmanSource(UnifiedSource):
     async def locate(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "which", name,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            if proc.returncode == 0:
-                binary_path = stdout.decode().strip()
-                binary_dir = os.path.dirname(binary_path)
-                subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                if proc.returncode == 0:
+                    binary_path = stdout.decode().strip()
+                    binary_dir = os.path.dirname(binary_path)
+                    subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    return True
         except Exception:
             pass
         return False
