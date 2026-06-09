@@ -5,9 +5,9 @@ abstract final class OmnistoreTheme {
   static const Color seedDeepPurple = Color(0xFF6750A4);
   static const Color accentPinkBlue = Color(0xFF7BA3D4);
 
-  static ThemeData light() => _build(Brightness.light);
+  static ThemeData light({String? fontFamily}) => _build(Brightness.light, fontFamily);
 
-  static ThemeData dark() => _build(Brightness.dark);
+  static ThemeData dark({String? fontFamily}) => _build(Brightness.dark, fontFamily);
 
   static TextStyle standardHeader(BuildContext context) {
     final theme = Theme.of(context);
@@ -19,7 +19,7 @@ abstract final class OmnistoreTheme {
     );
   }
 
-  static ThemeData _build(Brightness brightness) {
+  static ThemeData _build(Brightness brightness, String? fontFamily) {
     final base = ColorScheme.fromSeed(
       seedColor: seedDeepPurple,
       brightness: brightness,
@@ -37,6 +37,7 @@ abstract final class OmnistoreTheme {
       useMaterial3: true,
       colorScheme: scheme,
       brightness: brightness,
+      fontFamily: fontFamily == 'System' ? null : fontFamily,
       iconTheme: const IconThemeData(size: 24),
       visualDensity: VisualDensity.adaptivePlatformDensity,
       cardTheme: CardThemeData(

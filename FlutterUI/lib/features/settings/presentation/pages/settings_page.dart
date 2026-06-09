@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 
+// TODO: Decouple SettingsController from pure view page logic to follow cleaner MVVM architecture.
+// TODO: Store sensitive API keys in system keychain/keystore instead of cleartext in config file.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -19,6 +21,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _showAdvanced = false;
   final Map<String, Timer?> _debounces = {};
+  String? _tempError;
   
   late TextEditingController _endpointController;
   late TextEditingController _modelController;
@@ -246,6 +249,46 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
 
+          const SizedBox(height: 24),
+          _buildSection("字体与排版 / Typography"),
+          ListTile(
+            title: const Text("字体系列 / Font Family"),
+            subtitle: Text(settings.fontFamily),
+            trailing: DropdownButton<String>(
+              value: settings.fontFamily,
+              underline: const SizedBox(),
+              borderRadius: BorderRadius.circular(12),
+              items: const [
+                DropdownMenuItem(value: 'System', child: Text('系统默认 / System')),
+                DropdownMenuItem(value: 'Inter', child: Text('Inter')),
+                DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+                DropdownMenuItem(value: 'Outfit', child: Text('Outfit')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  settings.setFontFamily(val);
+                }
+              },
+            ),
+          ),
+          ListTile(
+            title: const Text("字体缩放比例 / Font Scale"),
+            subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
+            trailing: SizedBox(
+              width: 150,
+              child: Slider(
+                value: settings.fontScale,
+                min: 0.8,
+                max: 1.6,
+                divisions: 8,
+                label: "${(settings.fontScale * 100).toInt()}%",
+                onChanged: (val) {
+                  settings.setFontScale(double.parse(val.toStringAsFixed(2)));
+                },
+              ),
+            ),
+          ),
+
           if (_showAdvanced) ...[
             const SizedBox(height: 32),
             _buildSection(l10n.aiProvider),
@@ -274,10 +317,16 @@ class _SettingsPageState extends State<SettingsPage> {
               _tempFocus,
               (val) {
                 final d = double.tryParse(val);
-                if (d != null) {
+                if (d == null) {
+                  setState(() => _tempError = "请输入有效的数字 / Please enter a valid number");
+                } else if (d < 0.0 || d > 2.0) {
+                  setState(() => _tempError = "温度必须在 0.0 到 2.0 之间 / Must be between 0.0 and 2.0");
+                } else {
+                  setState(() => _tempError = null);
                   _debounceUpdateAIConfig('temperature', d, settings);
                 }
               },
+              errorText: _tempError,
             ),
           ],
         ],
@@ -299,7 +348,14 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, FocusNode focusNode, Function(String) onChanged, {bool isPassword = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    FocusNode focusNode,
+    Function(String) onChanged, {
+    bool isPassword = false,
+    String? errorText,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
@@ -309,6 +365,7 @@ class _SettingsPageState extends State<SettingsPage> {
           labelText: label,
           border: const OutlineInputBorder(),
           isDense: true,
+          errorText: errorText,
         ),
         obscureText: isPassword,
         onChanged: onChanged,
@@ -549,9 +606,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
                       return;
                     }
+                    final messenger = ScaffoldMessenger.of(context);
                     Navigator.pop(context);
                     
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(content: Text(l10n.addingCustomSource)),
                     );
 
@@ -567,11 +625,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       success = result;
                     }
 
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(success ? l10n.sourceAddSuccess : l10n.sourceAddFailed)),
-                      );
-                    }
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(success ? l10n.sourceAddSuccess : l10n.sourceAddFailed)),
+                    );
                   },
                   child: Text(l10n.add),
                 ),

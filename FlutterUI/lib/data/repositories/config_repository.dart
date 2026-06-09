@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
 
@@ -42,19 +41,30 @@ class ConfigRepository {
     }
   };
 
-  Future<Map<String, dynamic>> loadConfig() async {
+  Map<String, dynamic>? _cachedConfig;
+  Map<String, dynamic>? _cachedEnv;
+
+  // TODO: Consider reducing timeout to prevent UI freezes if Python startup is extremely slow.
+  Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
+    if (_cachedConfig != null && !forceRefresh) {
+      return _cachedConfig!;
+    }
+
     if (kIsWeb) {
       try {
         final prefs = await SharedPreferences.getInstance();
         final raw = prefs.getString(_webConfigKey);
         if (raw == null) {
           await prefs.setString(_webConfigKey, jsonEncode(_defaultWebConfig));
-          return Map<String, dynamic>.from(_defaultWebConfig);
+          _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
+          return _cachedConfig!;
         }
-        return jsonDecode(raw) as Map<String, dynamic>;
+        _cachedConfig = jsonDecode(raw) as Map<String, dynamic>;
+        return _cachedConfig!;
       } catch (e) {
         debugPrint("Web loadConfig Exception: $e");
-        return Map<String, dynamic>.from(_defaultWebConfig);
+        _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
+        return _cachedConfig!;
       }
     }
 
@@ -74,7 +84,8 @@ class ConfigRepository {
 
       final output = result.stdout.toString().trim();
       if (output.isEmpty) return {};
-      return jsonDecode(output) as Map<String, dynamic>;
+      _cachedConfig = jsonDecode(output) as Map<String, dynamic>;
+      return _cachedConfig!;
     } catch (e) {
       debugPrint("loadConfig Exception: $e");
       // Fallback to SharedPreferences on desktop if python is broken
@@ -82,18 +93,26 @@ class ConfigRepository {
         final prefs = await SharedPreferences.getInstance();
         final raw = prefs.getString(_webConfigKey);
         if (raw != null) {
-          return jsonDecode(raw) as Map<String, dynamic>;
+          _cachedConfig = jsonDecode(raw) as Map<String, dynamic>;
+          return _cachedConfig!;
         }
       } catch (_) {}
-      return Map<String, dynamic>.from(_defaultWebConfig);
+      _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
+      return _cachedConfig!;
     }
   }
 
+  // TODO: Batch configuration updates to avoid spawning a process on every single change.
+  // TODO: Move away from spawning a short-lived python process for config saving. Use persistent UDS/Socket connection.
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     if (kIsWeb) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        return await prefs.setString(_webConfigKey, jsonEncode(config));
+        final success = await prefs.setString(_webConfigKey, jsonEncode(config));
+        if (success) {
+          _cachedConfig = config;
+        }
+        return success;
       } catch (e) {
         debugPrint("Web saveConfig Exception: $e");
         return false;
@@ -101,6 +120,7 @@ class ConfigRepository {
     }
 
     try {
+      // TODO: Define a shared JSON schema or Protobuf spec so Dart and Python config files are strongly typed.
       final process = await Process.start(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
@@ -120,25 +140,39 @@ class ConfigRepository {
         await prefs.setString(_webConfigKey, jsonEncode(config));
       } catch (_) {}
 
-      return exitCode == 0;
+      final success = exitCode == 0;
+      if (success) {
+        _cachedConfig = config;
+        _cachedEnv = null; // Invalidate env check cache in case source configs changed
+      }
+      return success;
     } catch (e) {
       debugPrint("saveConfig Exception: $e");
       try {
         final prefs = await SharedPreferences.getInstance();
-        return await prefs.setString(_webConfigKey, jsonEncode(config));
+        final success = await prefs.setString(_webConfigKey, jsonEncode(config));
+        if (success) {
+          _cachedConfig = config;
+        }
+        return success;
       } catch (_) {}
       return false;
     }
   }
 
-  Future<Map<String, dynamic>> checkEnv() async {
+  Future<Map<String, dynamic>> checkEnv({bool forceRefresh = false}) async {
+    if (_cachedEnv != null && !forceRefresh) {
+      return _cachedEnv!;
+    }
+
     if (kIsWeb) {
-      return {
+      _cachedEnv = {
         "platform": "Web / Browser",
         "python_status": "Not supported (Browser Sandbox)",
         "available_sources": ["GitHub", "Bitu"],
         "os_details": "Chrome / Web browser environment"
       };
+      return _cachedEnv!;
     }
 
     try {
@@ -147,14 +181,16 @@ class ConfigRepository {
         PythonBridge.buildArgs(["--check-env", "--json"]),
         workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
-      return jsonDecode(result.stdout);
+      _cachedEnv = jsonDecode(result.stdout) as Map<String, dynamic>;
+      return _cachedEnv!;
     } catch (e) {
       debugPrint("checkEnv Exception: $e");
-      return {
+      _cachedEnv = {
         "platform": "Unknown/Desktop",
         "python_status": "Error: $e",
         "available_sources": ["GitHub", "Bitu"]
       };
+      return _cachedEnv!;
     }
   }
 }

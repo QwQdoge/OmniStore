@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import os
+import re
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
 
@@ -85,8 +86,26 @@ class FlatpakSource(UnifiedSource):
         except Exception:
             return []
 
+    async def _ensure_flathub(self, callback=None):
+        """Ensure that the Flathub user repository is added."""
+        try:
+            if callback:
+                await callback("[INFO] Ensuring Flathub repository is configured...")
+            proc = await asyncio.create_subprocess_exec(
+                "flatpak", "remote-add", "--if-not-exists", "--user",
+                "flathub", "https://dl.flathub.org/repo/flathub.flatpakrepo",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+            await proc.wait()
+        except Exception:
+            pass
+
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         app_id = package.get("id") or package.get("name")
+        
+        await self._ensure_flathub(callback)
+
         if callback:
             await callback(f"[INFO] Running: flatpak install --user -y flathub {app_id}")
 
@@ -96,15 +115,42 @@ class FlatpakSource(UnifiedSource):
             stderr=asyncio.subprocess.STDOUT
         )
 
+        last_sent_progress = -1
         if proc.stdout:
             while True:
-                line = await proc.stdout.readline()
-                if not line:
+                line_bytes = await proc.stdout.readline()
+                if not line_bytes:
                     break
+                line = line_bytes.decode('utf-8', errors='ignore').strip()
+                if not line:
+                    continue
+                
                 if callback:
-                    await callback(line.decode().strip())
+                    await callback(f"[INFO] {line}")
+                    
+                    # Regex matching for progress percentage
+                    # Format: Installing 3/8... 19% or [  19%]
+                    summary_match = re.search(r"(\d+)/(\d+).*?(\d+)\s*%", line)
+                    list_progress_match = re.search(r"\[\s*(\d+)%\s*\]", line)
+                    speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", line)
+                    
+                    total_prog = None
+                    if summary_match:
+                        cur, total, sub = map(int, summary_match.groups())
+                        total_prog = int(((cur - 1) / total) * 100 + (sub / total))
+                    elif list_progress_match:
+                        total_prog = int(list_progress_match.group(1))
+                        
+                    if speed_match:
+                        await callback(f"[SPEED] {speed_match.group(1)}")
+                        
+                    if total_prog is not None and total_prog > last_sent_progress:
+                        await callback(f"[PROGRESS] {total_prog}")
+                        last_sent_progress = total_prog
 
         await proc.wait()
+        if proc.returncode == 0 and callback:
+            await callback("[PROGRESS] 100")
         return proc.returncode == 0
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,14 +8,18 @@ import '../../models/app_package.dart';
 import '../python_bridge.dart';
 
 class PackageRepository {
+  // TODO: Implement a proper debouncer in the controller to throttle/limit query frequency and prevent process spamming.
   Process? _activeSearchProcess;
 
-  Future<List<dynamic>> searchPackages(
+  // TODO: Add support for pagination (limit/offset) so we don't load all results at once.
+  // TODO: Parse custom error structures from python stdout/stderr rather than relying on exit code only.
+  Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
   }) async {
     if (kIsWeb) {
-      return _webSearchPackages(query);
+      final webResults = await _webSearchPackages(query);
+      return webResults.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)).toList();
     }
 
     if (cancelOngoing) _activeSearchProcess?.kill();
@@ -30,7 +33,7 @@ class PackageRepository {
 
       if (cancelOngoing) _activeSearchProcess = process;
 
-      final results = <dynamic>[];
+      final results = <AppPackage>[];
       final lines = process.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter());
@@ -38,7 +41,8 @@ class PackageRepository {
       await for (final line in lines) {
         final trimmed = line.trim();
         if (trimmed.isNotEmpty) {
-          results.addAll(_tryParseJson(trimmed));
+          final List<dynamic> parsed = _tryParseJson(trimmed);
+          results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
         }
       }
 
@@ -233,9 +237,11 @@ class PackageRepository {
     }
   }
 
+  // TODO: Implement a local caching layer (e.g. SQLite or hive) for recommendations to enable instant loading.
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
     if (kIsWeb) {
       try {
+        // TODO: Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
         final githubUri = Uri.parse('https://api.github.com/search/repositories?q=stars:>5000&sort=stars&order=desc');
         final response = await http.get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'}).timeout(const Duration(seconds: 10));
         if (response.statusCode != 200) return {};

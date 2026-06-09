@@ -55,7 +55,8 @@ class PythonBridge {
         Platform.isWindows ? 'python_server.exe' : 'python_server',
       );
     }
-    final candidate = p.join(projectRoot, 'python', '.venv', 'bin', 'python');
+    final String binPath = Platform.isWindows ? p.join('Scripts', 'python.exe') : p.join('bin', 'python');
+    final candidate = p.join(projectRoot, 'python', '.venv', binPath);
     return File(candidate).existsSync() ? candidate : 'python';
   }
 

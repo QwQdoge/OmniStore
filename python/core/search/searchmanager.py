@@ -67,11 +67,15 @@ class SearchManager:
         # Load external plugins - only if enabled
         if self.cm.get("search.sources.plugins", True):
             from core.sources.loader import PluginLoader
-            self.plugin_loader = PluginLoader(self)
-            self.plugin_loader.load_plugins()
+            try:
+                self.plugin_loader = PluginLoader(self)
+                self.plugin_loader.load_plugins()
+            except Exception as e:
+                import logging
+                logging.getLogger("omnistore").error(f"Failed to load plugins: {e}")
 
-        # Load custom weights from config
-        weights = self.cm.get("sources.weights", {})
+        # Load custom weights from config (using the "priority" key from config.yaml)
+        weights = self.cm.get("priority", {})
         for name, weight in weights.items():
             if name in self.sources:
                 self.sources[name].weight = weight

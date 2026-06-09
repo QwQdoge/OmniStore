@@ -48,8 +48,16 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
       ],
       themeMode: settings.themeMode,
       locale: settings.locale,
-      theme: OmnistoreTheme.light(),
-      darkTheme: OmnistoreTheme.dark(),
+      theme: OmnistoreTheme.light(fontFamily: settings.fontFamily),
+      darkTheme: OmnistoreTheme.dark(fontFamily: settings.fontFamily),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(settings.fontScale),
+          ),
+          child: child!,
+        );
+      },
       home: _isFirstRun
           ? WelcomePage(
               onFinish: () => setState(() => _isFirstRun = false),

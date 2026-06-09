@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
 import "../../services/local_apps_tracker.dart";
@@ -25,6 +24,8 @@ class TaskRepository {
       return _webExecuteAction(flag, packageName, source, url: url);
     }
 
+    // TODO: Convert stdout parsing to JSON-RPC over Local Sockets (UDS/TCP) to avoid parsing stdout text directly.
+    // TODO: Implement a heartbeat / watchdog system to detect if the Python subprocess hangs indefinitely.
     final controller = StreamController<String>();
 
     try {
@@ -33,6 +34,7 @@ class TaskRepository {
         baseArgs.addAll(["--url", url]);
       }
 
+      // TODO: Support multiplexing multiple concurrent tasks over a single persistent backend daemon process.
       Process.start(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(baseArgs),

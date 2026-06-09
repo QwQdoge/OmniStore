@@ -32,7 +32,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> {
     final results = await packageRepo.searchPackages("source:github");
     if (mounted) {
       setState(() {
-        _apps = results.map((json) => AppPackage.fromJson(json)).toList();
+        _apps = results;
         _isLoading = false;
       });
     }

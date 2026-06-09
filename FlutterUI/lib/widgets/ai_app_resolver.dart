@@ -44,7 +44,7 @@ class _AIAppResolverState extends State<AIAppResolver> {
       for (var name in names) {
         final results = await packageRepo.searchPackages(name.toString());
         if (results.isNotEmpty) {
-          apps.add(AppPackage.fromJson(results[0]));
+          apps.add(results[0]);
         }
       }
 

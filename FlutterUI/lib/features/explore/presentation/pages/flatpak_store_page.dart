@@ -30,7 +30,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     final results = await packageRepo.searchPackages("source:flatpak");
     if (mounted) {
       setState(() {
-        _apps = results.map((json) => AppPackage.fromJson(json)).toList();
+        _apps = results;
         _isLoading = false;
       });
     }

@@ -5,11 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart' as wm;
-import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'backend_service.dart';
 import 'task_manager.dart';
 
+// TODO: Support dynamic updates of checking intervals immediately upon config modification without restarting the timer.
+// TODO: Integrate with system cron or Android WorkManager / iOS BackgroundFetch for reliable updates when app is closed.
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
   factory UpdateService() => _instance;

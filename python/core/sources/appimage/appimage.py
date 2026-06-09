@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import subprocess
 import os
+import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
@@ -91,6 +92,84 @@ class AppImageSource(UnifiedSource):
                 })
         return results
 
+    async def _resolve_github_appimage(self, url: str, callback=None) -> str:
+        """If the url is a GitHub repository/release page, resolve it to the latest AppImage binary asset URL."""
+        if "github.com" not in url:
+            return url
+        if url.lower().endswith(".appimage"):
+            return url
+
+        match = re.search(r"github\.com/([^/]+)/([^/]+)", url)
+        if not match:
+            return url
+
+        owner = match.group(1)
+        repo = match.group(2).split("/")[0]
+
+        api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+        headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "Omnistore/0.1"}
+
+        pat = self.cm.get("github_store.pat")
+        if pat:
+            headers["Authorization"] = f"token {pat}"
+
+        if callback:
+            await callback(f"[INFO] Resolving GitHub release asset: {owner}/{repo}...")
+
+        try:
+            async with self.session.get(api_url, headers=headers) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    assets = data.get("assets", [])
+                    appimage_assets = [
+                        a for a in assets 
+                        if a.get("name", "").lower().endswith(".appimage")
+                    ]
+                    if not appimage_assets:
+                        return url
+
+                    for a in appimage_assets:
+                        name_lower = a.get("name", "").lower()
+                        if "x86_64" in name_lower or "amd64" in name_lower or "x64" in name_lower:
+                            resolved = a.get("browser_download_url")
+                            if callback:
+                                await callback(f"[INFO] Resolved architecture matching asset: {a.get('name')}")
+                            return resolved
+
+                    resolved = appimage_assets[0].get("browser_download_url")
+                    if callback:
+                        await callback(f"[INFO] Resolved first available asset: {appimage_assets[0].get('name')}")
+                    return resolved
+        except Exception as e:
+            if callback:
+                await callback(f"[INFO] Failed to resolve GitHub URL ({e}). Attempting direct download.")
+        return url
+
+    def _create_desktop_entry(self, name: str, exec_path: Path):
+        desktop_dir = Path.home() / ".local/share/applications"
+        desktop_dir.mkdir(parents=True, exist_ok=True)
+        desktop_file = desktop_dir / f"{name.lower()}.desktop"
+        content = f"""[Desktop Entry]
+Version=1.0
+Type=Application
+Name={name}
+Comment=Installed via Omnistore
+Exec="{exec_path}" %U
+Icon={name.lower()}
+Terminal=false
+Categories=Utility;Application;
+"""
+        with open(desktop_file, "w") as f:
+            f.write(content)
+
+    def _delete_desktop_entry(self, name: str):
+        desktop_file = Path.home() / f".local/share/applications/{name.lower()}.desktop"
+        if desktop_file.exists():
+            try:
+                desktop_file.unlink()
+            except Exception:
+                pass
+
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         name = package.get("name")
         url = package.get("url")
@@ -102,6 +181,8 @@ class AppImageSource(UnifiedSource):
         apps_dir.mkdir(parents=True, exist_ok=True)
         dest = apps_dir / f"{name}.AppImage"
 
+        url = await self._resolve_github_appimage(url, callback)
+
         if callback: await callback(f"[INFO] Downloading {name} AppImage from {url}...")
 
         try:
@@ -112,16 +193,24 @@ class AppImageSource(UnifiedSource):
 
                 total = int(resp.headers.get('content-length', 0))
                 downloaded = 0
+                last_percent = -1
                 with open(dest, 'wb') as f:
                     async for chunk in resp.content.iter_chunked(8192):
                         f.write(chunk)
                         downloaded += len(chunk)
                         if total > 0 and callback:
                             progress = int(downloaded / total * 100)
-                            await callback(f"[PROGRESS] {progress}")
+                            if progress > last_percent:
+                                await callback(f"[PROGRESS] {progress}")
+                                last_percent = progress
 
-            # Make executable
             dest.chmod(0o755)
+            try:
+                self._create_desktop_entry(name, dest)
+                if callback: await callback(f"[INFO] Created desktop menu entry for {name}")
+            except Exception as e:
+                if callback: await callback(f"[INFO] Failed to create desktop entry: {e}")
+
             if callback: await callback(f"[INFO] Successfully installed {name} to {dest}")
             return True
         except Exception as e:
@@ -132,6 +221,15 @@ class AppImageSource(UnifiedSource):
         name = package.get("name")
         apps_dir = Path.home() / "Applications"
         found = list(apps_dir.glob(f"*{name}*.AppImage"))
+
+        self._delete_desktop_entry(name)
+        if callback: await callback(f"[INFO] Removed desktop entry for {name}")
+
+        if not found:
+            fallback = apps_dir / f"{name}.AppImage"
+            if fallback.exists():
+                found = [fallback]
+
         if not found:
             if callback: await callback(f"[ERROR] {name} AppImage not found in {apps_dir}")
             return False

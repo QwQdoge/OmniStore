@@ -31,10 +31,7 @@ class BrowseController with ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
-    final results = await _packageRepository.searchPackages(query);
-    _searchResults = results
-        .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
-        .toList();
+    _searchResults = await _packageRepository.searchPackages(query);
 
     _isSearching = false;
     notifyListeners();

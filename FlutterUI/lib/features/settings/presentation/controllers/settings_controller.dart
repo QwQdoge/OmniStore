@@ -165,4 +165,27 @@ class SettingsController with ChangeNotifier {
     }
     return success;
   }
+
+  // ─── Font Customization ──────────────────────────────
+  String get fontFamily => _config['ui']?['font_family'] ?? 'System';
+
+  double get fontScale {
+    final scale = _config['ui']?['font_scale'];
+    if (scale is num) return scale.toDouble();
+    return 1.0;
+  }
+
+  Future<void> setFontFamily(String value) async {
+    final config = Map<String, dynamic>.from(_config);
+    config['ui'] = Map<String, dynamic>.from(config['ui'] ?? {});
+    config['ui']['font_family'] = value;
+    await updateConfig(config);
+  }
+
+  Future<void> setFontScale(double value) async {
+    final config = Map<String, dynamic>.from(_config);
+    config['ui'] = Map<String, dynamic>.from(config['ui'] ?? {});
+    config['ui']['font_scale'] = value;
+    await updateConfig(config);
+  }
 }

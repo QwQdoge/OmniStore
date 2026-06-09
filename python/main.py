@@ -731,6 +731,7 @@ class OmnistoreBackend:
         console.print(table); console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
 
+# TODO: Migrate command argument validation and parsing to Pydantic for robust runtime type checking.
 async def main():
     main.json_mode_active = "--json" in sys.argv
     parser = argparse.ArgumentParser(description="Omnistore Backend")

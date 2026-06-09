@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
@@ -15,6 +13,9 @@ class BackendService {
   factory BackendService() => instance;
   BackendService._internal();
 
+  // TODO: Implement Unix Domain Sockets (UDS) or Localhost TCP IPC to run Python backend as a single persistent service.
+  // TODO: Add auto-recovery and health-check loops to restart the Python backend daemon if it terminates unexpectedly.
+  // TODO: Divert Python stderr outputs to a structured local debug log file rather than console print.
   // Registry for tracking all active subprocesses to prevent leaks
   final Set<Process> _allProcesses = {};
 
@@ -346,7 +347,7 @@ class BackendService {
     }
   }
 
-  Future<List<dynamic>> searchPackages(
+  Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
   }) async {
@@ -373,7 +374,7 @@ class BackendService {
       _allProcesses.add(process);
       activeSearchProcess = process;
 
-      final results = <dynamic>[];
+      final results = <AppPackage>[];
       final output = await process.stdout
           .transform(utf8.decoder)
           .join()
@@ -381,9 +382,9 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-        results.addAll(parsed);
+        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
-        results.add(parsed);
+        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
       }
 
       return results;
@@ -391,8 +392,9 @@ class BackendService {
       debugPrint("searchPackages [query: $query] Error: $e");
       return [];
     } finally {
-      if (activeSearchProcess != null)
+      if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
+      }
       activeSearchProcess = null;
     }
   }
@@ -664,8 +666,9 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
-    if (n.trim().isEmpty)
+    if (n.trim().isEmpty) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
+    }
     List<String> args = [f, n, "--source", s, "--json"];
     if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
     return _safeStream(args);

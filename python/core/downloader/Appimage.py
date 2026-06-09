@@ -23,6 +23,16 @@ class AppImageDownloader:
                 await callback("[ERROR] Invalid package data")
             return
 
+        # Try to get content-length to show progress percentage
+        total_size = 0
+        try:
+            async with aiohttp.ClientSession(timeout=self.timeout) as session:
+                async with session.head(url, allow_redirects=True) as resp:
+                    if resp.status == 200:
+                        total_size = int(resp.headers.get("Content-Length", 0))
+        except Exception:
+            pass
+
         # Start wget download
         cmd = ["wget", "-q", "-O", str(dest_path), str(url)]
         
@@ -32,7 +42,6 @@ class AppImageDownloader:
                 env=os.environ.copy()
             )
             process = self.current_download_task
-            total_size = 0  # Initial 0
             last_percent = -1
 
             # 3. Poll disk file size

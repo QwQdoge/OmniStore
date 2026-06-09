@@ -7,7 +7,6 @@ import "package:frontend/features/settings/presentation/controllers/settings_con
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -24,6 +23,8 @@ import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.d
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 
 
+// TODO: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
+// TODO: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
   final String? heroTag;
@@ -35,6 +36,8 @@ class AppDetailsPage extends StatefulWidget {
 }
 
 class _AppDetailsPageState extends State<AppDetailsPage> {
+  // TODO: Add strict accessibility Semantics wrappers around action buttons and icons.
+  // TODO: Replace loading spinner with beautiful animated Skeleton loaders matching the card layout.
   late String _selectedSource;
   late bool _isAppInstalled;
   Map<String, dynamic>? _extraDetails;
@@ -415,14 +418,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                 width: 360,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 720,
-                                placeholder: (context, url) => Container(
+                                placeholder: (context, url) => const Skeleton(
                                   width: 360,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
+                                  height: 220,
+                                  borderRadius: 20.0,
                                 ),
                                 errorWidget: (context, url, error) => Container(
                                   width: 360,
@@ -673,8 +672,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       fit: BoxFit.cover,
                       memCacheWidth: 200,
                       memCacheHeight: 200,
-                      placeholder: (context, url) =>
-                          const CircularProgressIndicator(strokeWidth: 2),
+                      placeholder: (context, url) => const Skeleton(
+                        width: 100,
+                        height: 100,
+                        borderRadius: 24.0,
+                      ),
                     ),
                   )
                 : Text(

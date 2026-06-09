@@ -450,7 +450,7 @@ class _DownloadPageState extends State<DownloadPage>
                         );
                         if (!context.mounted) return;
                         if (results.isNotEmpty) {
-                          final app = AppPackage.fromJson(results[0]);
+                          final app = results[0];
                           Navigator.push(
                             context,
                             MaterialPageRoute(

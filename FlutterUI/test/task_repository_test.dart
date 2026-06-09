@@ -12,13 +12,13 @@ void main() {
   test('TaskRepository streams stdout and stderr', () async {
     final repo = TaskRepository();
     
-    // Attempting to install a nonexistent package from Pacman source
-    final stream = repo.executeAction("-I", "nonexistent-pkg-abc-xyz", "Pacman");
+    // Attempting to install a nonexistent package from AppImage source
+    final stream = repo.executeAction("-I", "nonexistent-pkg-abc-xyz", "AppImage");
     
     final logs = <String>[];
     await for (final line in stream) {
       logs.add(line);
-      print("TEST STREAM OUT: $line");
+      // print("TEST STREAM OUT: $line");
     }
 
     expect(logs, isNotEmpty);
