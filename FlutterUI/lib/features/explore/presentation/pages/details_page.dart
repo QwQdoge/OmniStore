@@ -22,7 +22,6 @@ import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 
-
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
   final String? heroTag;
@@ -46,14 +45,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     try {
       final sources = BackendService.availableSources.value;
       if (sources.isEmpty) return true;
-      final cap = sources.firstWhere((s) => s['name'] == _selectedSource, orElse: () => {});
+      final cap = sources.firstWhere(
+        (s) => s['name'] == _selectedSource,
+        orElse: () => {},
+      );
       if (cap.isEmpty) return true;
       return cap['capabilities']?[capability] ?? true;
     } catch (_) {
       return true;
     }
   }
-
 
   @override
   void initState() {
@@ -120,10 +121,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   void _showTerminalDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => const TerminalDialog(),
-    );
+    showDialog(context: context, builder: (ctx) => const TerminalDialog());
   }
 
   Future<void> _handleAction(String flag) async {
@@ -152,9 +150,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    localizations.confirmActionMsg(widget.app.name),
-                  ),
+                  Text(localizations.confirmActionMsg(widget.app.name)),
                   if (isUninstall && _selectedSource == "Native") ...[
                     const SizedBox(height: 16),
                     CheckboxListTile(
@@ -237,7 +233,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     String? variantId = variantMap?['id']?.toString();
     if (variantId == null || variantId.isEmpty) {
       try {
-        final v = widget.app.variants.firstWhere((v) => v.source == _selectedSource);
+        final v = widget.app.variants.firstWhere(
+          (v) => v.source == _selectedSource,
+        );
         variantId = v.id;
       } catch (_) {}
     }
@@ -351,7 +349,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 _buildHeader(theme),
                 const SizedBox(height: 24),
                 Consumer<TaskController>(
-                  builder: (context, task, _) => _buildActionArea(colorScheme, task),
+                  builder: (context, task, _) =>
+                      _buildActionArea(colorScheme, task),
                 ),
                 const SizedBox(height: 32),
                 const Divider(),
@@ -403,7 +402,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         padding: const EdgeInsets.only(bottom: 16),
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
-                        itemCount: (_extraDetails!['screenshots'] as List).length,
+                        itemCount:
+                            (_extraDetails!['screenshots'] as List).length,
                         separatorBuilder: (context, _) =>
                             const SizedBox(width: 16),
                         itemBuilder: (context, index) {
@@ -438,11 +438,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                       ),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) => Container(
-                                    width: 360,
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: const Icon(Icons.broken_image_rounded),
-                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        width: 360,
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
+                                        child: const Icon(
+                                          Icons.broken_image_rounded,
+                                        ),
+                                      ),
                                 ),
                               ),
                             ),
@@ -727,9 +731,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       Clipboard.setData(ClipboardData(text: widget.app.name));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content:
-                              Text(AppLocalizations.of(context)!.nameCopied),
-                          behavior: SnackBarBehavior.floating,
+                          content: Text(
+                            AppLocalizations.of(context)!.nameCopied,
+                          ),
                         ),
                       );
                     },
@@ -742,7 +746,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  if (_githubRepositoryUrl != null && _hasCapability('has_rating'))
+                  if (_githubRepositoryUrl != null &&
+                      _hasCapability('has_rating'))
                     GitHubStarBadge(
                       client: context.read<GitHubClient>(),
                       repositoryUrl: _githubRepositoryUrl,
@@ -768,58 +773,62 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<String>(
-                    segments:
-                        <String>{
-                          for (var v in widget.app.variants) v.source,
-                          if (_extraDetails != null &&
-                              _extraDetails!['variants'] != null)
-                            for (var v in _extraDetails!['variants'])
-                              v['source'].toString(),
-                          _selectedSource,
-                        }.map((String source) {
-                          final version = _getVersionForSource(source);
-                          return ButtonSegment<String>(
-                            value: source,
-                            label: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    source,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  if (version != null)
+                      segments:
+                          <String>{
+                            for (var v in widget.app.variants) v.source,
+                            if (_extraDetails != null &&
+                                _extraDetails!['variants'] != null)
+                              for (var v in _extraDetails!['variants'])
+                                v['source'].toString(),
+                            _selectedSource,
+                          }.map((String source) {
+                            final version = _getVersionForSource(source);
+                            return ButtonSegment<String>(
+                              value: source,
+                              label: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
                                     Text(
-                                      "v$version",
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w500,
-                                        color: theme.colorScheme.onSurfaceVariant
-                                            .withValues(alpha: 0.8),
+                                      source,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                ],
+                                    if (version != null)
+                                      Text(
+                                        "v$version",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.8),
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            icon: _getSourceIcon(source),
-                          );
-                        }).toList(),
-                    selected: {_selectedSource},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      final newValue = newSelection.first;
-                      setState(() {
-                        _selectedSource = newValue;
-                        _isAppInstalled = _isSourceInstalled(newValue);
-                      });
-                    },
-                    showSelectedIcon: false,
+                              icon: _getSourceIcon(source),
+                            );
+                          }).toList(),
+                      selected: {_selectedSource},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        final newValue = newSelection.first;
+                        setState(() {
+                          _selectedSource = newValue;
+                          _isAppInstalled = _isSourceInstalled(newValue);
+                        });
+                      },
+                      showSelectedIcon: false,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -929,7 +938,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       context: context,
       builder: (ctx) => AIMarkdownDialog(
         title: AppLocalizations.of(context)!.aiPromptExplain,
-        future: context.read<AIRepository>().aiExplain(widget.app.name, widget.app.description),
+        future: context.read<AIRepository>().aiExplain(
+          widget.app.name,
+          widget.app.description,
+        ),
       ),
     );
   }
@@ -1018,5 +1030,4 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ),
     );
   }
-
 }
