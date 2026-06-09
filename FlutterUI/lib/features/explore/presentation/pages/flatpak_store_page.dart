@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class FlatpakStorePage extends StatefulWidget {
   const FlatpakStorePage({super.key});
@@ -40,11 +41,14 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView.builder(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: _isLoading
+            ? _buildSkeletonList(key: const ValueKey('loading'))
+            : RefreshIndicator(
+                key: const ValueKey('list'),
+                onRefresh: _refresh,
+                child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: _apps.length,
                 itemBuilder: (context, index) {
@@ -90,6 +94,26 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
                 },
               ),
             ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList({Key? key}) {
+    return ListView.builder(
+      key: key,
+      padding: const EdgeInsets.all(16),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return const Card(
+          margin: EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(width: double.infinity, height: 12),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+          ),
+        );
+      },
     );
   }
 }
