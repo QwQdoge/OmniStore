@@ -8,6 +8,7 @@ import asyncio
 import os
 import re
 import signal
+import contextlib
 from pathlib import Path
 from typing import Optional
 from rich.console import Console
@@ -76,6 +77,8 @@ from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
+from core.subprocess_utils import safe_subprocess
+
 
 
 def safe_command(func):
@@ -344,32 +347,21 @@ class OmnistoreBackend:
 
             # Fetch extra info for Native/AUR variants
             # ⚡ Optimization: Parallelize extra info fetching for variants
+            # Murphy-proof: Use safe_subprocess to prevent zombies
             async def _fetch_variant_info(variant):
                 if variant['source'] in ("Native", "Pacman", "AUR"):
-                    proc = None
                     try:
                         flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
-                        proc = await asyncio.create_subprocess_exec(
-                            "pacman" if variant['source'] in ("Native", "Pacman") else "yay",
-                            flag, variant.get('name', search_name),
-                            stdout=asyncio.subprocess.PIPE,
-                            stderr=asyncio.subprocess.DEVNULL,
-                            env={**os.environ, "LC_ALL": "C"}
-                        )
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                        if stdout:
-                            info = stdout.decode()
-                            if (m := re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)): variant["depends"] = m.group(1).split()
-                            if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
-                            if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
+                        cmd = ["pacman" if variant['source'] in ("Native", "Pacman") else "yay", flag, variant.get('name', search_name)]
+                        async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                            if stdout:
+                                info = stdout.decode()
+                                if (m := re.search(r"(?:Depends On|Depends)\s+:\s+(.*)", info)): variant["depends"] = m.group(1).split()
+                                if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
+                                if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
                     except Exception:
                         pass
-                    finally:
-                        if proc and proc.returncode is None:
-                            try:
-                                proc.kill()
-                                await proc.wait()
-                            except: pass
 
             variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
             if variant_tasks:
@@ -402,68 +394,47 @@ class OmnistoreBackend:
 
             async def scan_flatpak():
                 res = []
-                proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec("flatpak", "list", "--app", "--columns=name,application,version,description",
-                                                               stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            parts = [p.strip() for p in line.split('\t')]
-                            if len(parts) >= 2:
-                                res.append({
-                                    "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
-                                    "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
-                                    "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
-                                })
+                    async with safe_subprocess("flatpak", "list", "--app", "--columns=name,application,version,description",
+                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                parts = [p.strip() for p in line.split('\t')]
+                                if len(parts) >= 2:
+                                    res.append({
+                                        "name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
+                                        "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
+                                        "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"
+                                    })
                 except Exception:
                     pass
-                finally:
-                    if proc and proc.returncode is None:
-                        try:
-                            proc.kill()
-                            await proc.wait()
-                        except: pass
                 return res
 
             async def scan_native():
                 res = []
-                proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
-                                                   "installed": True, "description": "Native package", "version": "Local"})
+                    async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
+                                                       "installed": True, "description": "Native package", "version": "Local"})
                 except Exception:
                     pass
-                finally:
-                    if proc and proc.returncode is None:
-                        try:
-                            proc.kill()
-                            await proc.wait()
-                        except: pass
                 return res
 
             async def scan_aur():
                 res = []
-                proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                    if stdout:
-                        for line in stdout.decode().strip().splitlines():
-                            if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
-                                                   "installed": True, "description": "AUR package", "version": "Local"})
+                    async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                        if stdout:
+                            for line in stdout.decode().strip().splitlines():
+                                if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
+                                                       "installed": True, "description": "AUR package", "version": "Local"})
                 except Exception:
                     pass
-                finally:
-                    if proc and proc.returncode is None:
-                        try:
-                            proc.kill()
-                            await proc.wait()
-                        except: pass
                 return res
 
             results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native(), scan_aur())
@@ -568,21 +539,14 @@ class OmnistoreBackend:
     async def run_export_packages(self, filepath: str):
         installed = []
         for cmd, src in [(["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR")]:
-            proc = None
             try:
-                proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                if stdout:
-                    for line in stdout.decode().strip().splitlines():
-                        if line: installed.append({"name": line.split()[0], "source": src})
+                async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                    if stdout:
+                        for line in stdout.decode().strip().splitlines():
+                            if line: installed.append({"name": line.split()[0], "source": src})
             except Exception:
                 pass
-            finally:
-                if proc and proc.returncode is None:
-                    try:
-                        proc.kill()
-                        await proc.wait()
-                    except: pass
 
         export_dir = os.path.dirname(os.path.abspath(filepath))
         if export_dir: os.makedirs(export_dir, exist_ok=True)
@@ -602,48 +566,29 @@ class OmnistoreBackend:
                 await cb("[INFO] pacman not found, skipping."); return True
 
             await cb("[INFO] Detecting orphan packages...")
-            proc = None
             try:
-                proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
+                async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                    orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
             except Exception:
                 orphans = []
-            finally:
-                if proc and proc.returncode is None:
-                    try:
-                        proc.kill()
-                        await proc.wait()
-                    except: pass
 
             if orphans:
                 await cb(f"[INFO] Cleaning {len(orphans)} orphans...");
                 if not await self.executor._ensure_privileged(cb): return False
-                p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Rs", "--noconfirm", *orphans)
-                try:
-                    await asyncio.wait_for(p.wait(), timeout=60)
-                except asyncio.TimeoutError:
-                    pass
-                finally:
-                    if p and p.returncode is None:
-                        try:
-                            p.kill()
-                            await p.wait()
-                        except: pass
+                async with safe_subprocess("sudo", "pacman", "-Rs", "--noconfirm", *orphans) as p:
+                    try:
+                        await asyncio.wait_for(p.wait(), timeout=60)
+                    except asyncio.TimeoutError:
+                        pass
 
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
-                p = await asyncio.create_subprocess_exec("sudo", "pacman", "-Scc", "--noconfirm")
-                try:
-                    await asyncio.wait_for(p.wait(), timeout=60)
-                except asyncio.TimeoutError:
-                    pass
-                finally:
-                    if p and p.returncode is None:
-                        try:
-                            p.kill()
-                            await p.wait()
-                        except: pass
+                async with safe_subprocess("sudo", "pacman", "-Scc", "--noconfirm") as p:
+                    try:
+                        await asyncio.wait_for(p.wait(), timeout=60)
+                    except asyncio.TimeoutError:
+                        pass
 
             await cb("[INFO] System cleanup finished!")
             if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
@@ -897,18 +842,11 @@ async def main():
 
             elif args.ai_health:
                 status = await backend.env.check_env()
-                proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    status["orphaned_count"] = len(stdout.decode().splitlines())
+                    async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        status["orphaned_count"] = len(stdout.decode().splitlines())
                 except: status["orphaned_count"] = 0
-                finally:
-                    if proc and proc.returncode is None:
-                        try:
-                            proc.kill()
-                            await proc.wait()
-                        except: pass
                 res = await backend.ai.generate_health_report(status)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
@@ -938,19 +876,12 @@ async def main():
 
             elif args.ai_conflicts:
                 p = validate_str(args.ai_conflicts, "ai-conflicts")
-                proc = None
                 try:
-                    proc = await asyncio.create_subprocess_exec("pacman", "-Qq", stdout=asyncio.subprocess.PIPE)
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
+                    async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                        sys.stdout.write(json.dumps({"response": res}) + "\n")
                 except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
-                finally:
-                    if proc and proc.returncode is None:
-                        try:
-                            proc.kill()
-                            await proc.wait()
-                        except: pass
 
             elif args.essentials:
                 async with backend: await backend.run_get_essentials()

@@ -1,5 +1,9 @@
 import asyncio
+<<<<<<< HEAD
 import re
+=======
+from core.subprocess_utils import safe_subprocess
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
 from typing import Dict, Any, Callable
 from core.sources.utils import PrivilegeManager
 
@@ -13,12 +17,13 @@ async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> 
     if callback:
         await callback(f"[INFO] Running: sudo pacman -S --noconfirm {name}")
 
-    proc = await asyncio.create_subprocess_exec(
+    async with safe_subprocess(
         "sudo", "pacman", "-S", "--noconfirm", name,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT
-    )
+    ) as proc:
 
+<<<<<<< HEAD
     last_sent_progress = -1
     if proc.stdout:
         while True:
@@ -48,6 +53,18 @@ async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> 
     if proc.returncode == 0 and callback:
         await callback("[PROGRESS] 100")
     return proc.returncode == 0
+=======
+        if proc.stdout:
+            while True:
+                line = await proc.stdout.readline()
+                if not line:
+                    break
+                if callback:
+                    await callback(line.decode().strip())
+
+        await proc.wait()
+        return proc.returncode == 0
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
 
 async def uninstall_pacman(package: Dict[str, Any], callback: Callable = None) -> bool:
     if not await privilege.ensure_privileged(callback):
@@ -57,12 +74,13 @@ async def uninstall_pacman(package: Dict[str, Any], callback: Callable = None) -
     if callback:
         await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
 
-    proc = await asyncio.create_subprocess_exec(
+    async with safe_subprocess(
         "sudo", "pacman", "-Rs", "--noconfirm", name,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT
-    )
+    ) as proc:
 
+<<<<<<< HEAD
     if proc.stdout:
         while True:
             line_bytes = await proc.stdout.readline()
@@ -78,3 +96,15 @@ async def uninstall_pacman(package: Dict[str, Any], callback: Callable = None) -
     if proc.returncode == 0 and callback:
         await callback("[PROGRESS] 100")
     return proc.returncode == 0
+=======
+        if proc.stdout:
+            while True:
+                line = await proc.stdout.readline()
+                if not line:
+                    break
+                if callback:
+                    await callback(line.decode().strip())
+
+        await proc.wait()
+        return proc.returncode == 0
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954

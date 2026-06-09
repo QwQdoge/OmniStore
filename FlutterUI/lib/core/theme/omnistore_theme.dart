@@ -70,7 +70,29 @@ abstract final class OmnistoreTheme {
         selectedIconTheme: IconThemeData(color: scheme.onSecondaryContainer),
         unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
       ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+      ),
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+        showCheckmark: true,
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      hoverColor: scheme.onSurface.withValues(alpha: 0.08),
+      focusColor: scheme.onSurface.withValues(alpha: 0.12),
+      splashColor: scheme.onSurface.withValues(alpha: 0.1),
       highlightColor: Colors.transparent,
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import aiohttp
 import subprocess
 import os
@@ -17,16 +18,16 @@ class AurSource(UnifiedSource):
 
     async def _get_installed_aur_packages(self):
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 'pacman', '-Qmq',
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            output = stdout.decode().strip()
-            if not output:
-                return set()
-            return {line.split()[0] for line in output.splitlines() if line.strip()}
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                output = stdout.decode().strip()
+                if not output:
+                    return set()
+                return {line.split()[0] for line in output.splitlines() if line.strip()}
         except Exception:
             return set()
 
@@ -92,10 +93,11 @@ class AurSource(UnifiedSource):
         if helper == "yay":
             if callback:
                 await callback(f"[INFO] Running: yay -S --noconfirm {name}")
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "yay", "-S", "--noconfirm", name,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
+<<<<<<< HEAD
             )
             
             last_sent_progress = -1
@@ -126,6 +128,16 @@ class AurSource(UnifiedSource):
             if proc.returncode == 0 and callback:
                 await callback("[PROGRESS] 100")
             return proc.returncode == 0
+=======
+            ) as proc:
+                if proc.stdout:
+                    while True:
+                        line = await proc.stdout.readline()
+                        if not line: break
+                        if callback: await callback(line.decode().strip())
+                await proc.wait()
+                return proc.returncode == 0
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
         else:
             if callback:
                 await callback("[ERROR] No AUR helper (like yay) found. Please install one.")
@@ -138,18 +150,18 @@ class AurSource(UnifiedSource):
         name = package.get("name")
         if callback:
             await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
-        proc = await asyncio.create_subprocess_exec(
+        async with safe_subprocess(
             "sudo", "pacman", "-Rs", "--noconfirm", name,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT
-        )
-        if proc.stdout:
-            while True:
-                line = await proc.stdout.readline()
-                if not line: break
-                if callback: await callback(line.decode().strip())
-        await proc.wait()
-        return proc.returncode == 0
+        ) as proc:
+            if proc.stdout:
+                while True:
+                    line = await proc.stdout.readline()
+                    if not line: break
+                    if callback: await callback(line.decode().strip())
+            await proc.wait()
+            return proc.returncode == 0
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
@@ -162,12 +174,12 @@ class AurSource(UnifiedSource):
     async def locate(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
         try:
-            proc = await asyncio.create_subprocess_exec("which", name, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
-            stdout, _ = await proc.communicate()
-            if proc.returncode == 0:
-                binary_dir = os.path.dirname(stdout.decode().strip())
-                subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
+            async with safe_subprocess("which", name, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                if proc.returncode == 0:
+                    binary_dir = os.path.dirname(stdout.decode().strip())
+                    subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    return True
         except Exception: pass
         return False
 

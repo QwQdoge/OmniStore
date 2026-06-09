@@ -69,7 +69,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get version => 'Versión';
 
   @override
-  String get ready => 'Listo';
+  String get ready => 'Instalado';
 
   @override
   String resultsFound(int count) {

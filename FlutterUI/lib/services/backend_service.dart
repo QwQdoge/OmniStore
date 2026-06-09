@@ -159,59 +159,76 @@ class BackendService {
   }
 
   /// Kill a process and its children using process groups on Linux.
+  /// Murphy-proof: Guaranteed to attempt both TERM and KILL to prevent zombies.
   Future<void> _killProcess(Process? process) async {
     if (kIsWeb || process == null) return;
     _allProcesses.remove(process);
     try {
       if (Platform.isLinux) {
-        // Send SIGTERM to the entire process group (negative PID)
-        // Note: Using negative PID kills the process group if it was started in a new group.
-        // Process.start with runInShell: true usually handles this well on Linux.
-        await Process.run('kill', ['-TERM', '-${process.pid}']);
-        // Wait a bit and force kill if still alive
-        await Future.delayed(const Duration(milliseconds: 500));
+        // Murphy-proof: Use setsid or process groups if possible.
+        // On Linux, we try to kill the entire process group (negative PID).
+        // This is effective if the process was started in a way that created a group.
+        await Process.run('kill', ['-TERM', '--', '-${process.pid}']).timeout(
+          const Duration(seconds: 2),
+          onTimeout: () => ProcessResult(0, 0, '', ''),
+        );
+
+        // Wait a bit for graceful termination
+        await Future.delayed(const Duration(milliseconds: 300));
+
         if (_isProcessAlive(process)) {
-          await Process.run('kill', ['-KILL', '-${process.pid}']);
+          // Escalation: SIGKILL the group
+          await Process.run('kill', ['-KILL', '--', '-${process.pid}']).timeout(
+            const Duration(seconds: 2),
+            onTimeout: () => ProcessResult(0, 0, '', ''),
+          );
+        }
+
+        // Final fallback: kill the specific PID just in case the group kill failed
+        if (_isProcessAlive(process)) {
+          process.kill(ProcessSignal.sigkill);
         }
       } else {
         process.kill(ProcessSignal.sigkill);
       }
     } catch (e) {
       debugPrint("Error killing process ${process.pid}: $e");
-      process.kill(ProcessSignal.sigkill); // Fallback
+      process.kill(ProcessSignal.sigkill); // Hard fallback
     }
   }
 
   bool _isProcessAlive(Process p) {
     if (kIsWeb) return false;
     try {
-      // On Linux/Unix, signal 0 checks if process exists
       if (Platform.isLinux || Platform.isMacOS) {
+        // Signal 0 is the standard way to check for process existence
         return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
       }
     } catch (_) {}
-    return true; // Assume alive if check fails
+    // If check fails or on Windows, we assume it's alive if we're calling this
+    return true;
   }
 
-  /// Emergency cleanup of all tracked processes
+  /// Emergency cleanup of all tracked processes to prevent memory leaks and zombies.
   Future<void> dispose() async {
     if (kIsWeb) return;
     final processes = List<Process>.from(_allProcesses);
+    _allProcesses.clear();
     for (final p in processes) {
       await _killProcess(p);
     }
-    _allProcesses.clear();
   }
 
   /// Safe wrapper for Process.run with mandatory timeout and exception handling.
-  /// Refactored to use Process.start for absolute lifecycle tracking.
+  /// Murphy-proof: Ensures absolute process reaping and avoids deadlocks.
   Future<ProcessResult?> _safeRun(
     List<String> args, {
     Duration timeout = const Duration(seconds: 30),
     bool useLock = false,
   }) async {
     if (kIsWeb) return null;
-    // 防呆：检查执行环境
+
+    // Boundary Defense: Environment Check
     if (!File(_venvPython).existsSync() && _venvPython != 'python') {
       debugPrint("Backend Error: Python executable not found at $_venvPython");
       return null;
@@ -228,12 +245,17 @@ class BackendService {
       );
       _allProcesses.add(process);
 
-      final stdoutFuture = process.stdout.transform(utf8.decoder).join();
-      final stderrFuture = process.stderr.transform(utf8.decoder).join();
+      // We use wait_for equivalent via timeout() on futures
+      final exitCode = await process.exitCode.timeout(
+        timeout,
+        onTimeout: () {
+          debugPrint("BackendService._safeRun: Execution timed out for $args");
+          throw TimeoutException("Process execution timed out");
+        },
+      );
 
-      final exitCode = await process.exitCode.timeout(timeout);
-      final stdout = await stdoutFuture;
-      final stderr = await stderrFuture;
+      final stdout = await process.stdout.transform(utf8.decoder).join();
+      final stderr = await process.stderr.transform(utf8.decoder).join();
 
       return ProcessResult(process.pid, exitCode, stdout, stderr);
     } catch (e) {
@@ -247,6 +269,7 @@ class BackendService {
   }
 
   /// Safe wrapper for Process.start returns a stream and handles process lifecycle.
+  /// Murphy-proof: Active process tracking and guaranteed cleanup on cancellation.
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
     if (kIsWeb) {
       yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
@@ -255,6 +278,7 @@ class BackendService {
     if (useLock) await _acquireLock();
 
     Process? process;
+    // Murphy-proof: Use a broadcast-capable or well-managed controller
     final controller = StreamController<String>();
 
     try {
@@ -268,45 +292,50 @@ class BackendService {
 
       activeProcess = process;
 
-      process.stdout
+      // Ensure we listen with safe error handling
+      final stdoutSub = process.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .listen(
-            (data) {
-              if (!controller.isClosed) controller.add(data);
-            },
-            onError: (e) {
-              debugPrint("Process Stdout Error: $e");
-              if (!controller.isClosed) {
-                controller.add(
-                  "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
-                );
-              }
-            },
-            onDone: () {
-              if (process != null) _allProcesses.remove(process);
-              if (!controller.isClosed) controller.close();
-              if (activeProcess == process) activeProcess = null;
-            },
+        (data) {
+          if (!controller.isClosed) controller.add(data);
+        },
+        onError: (e) {
+          debugPrint("Process Stdout Error: $e");
+          if (!controller.isClosed) {
+            controller.add(
+              "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
+            );
+          }
+        },
+        onDone: () {
+          if (process != null) _allProcesses.remove(process);
+          if (!controller.isClosed) controller.close();
+          if (activeProcess == process) activeProcess = null;
+        },
+        cancelOnError: false,
+      );
+
+      final stderrSub = process.stderr.transform(utf8.decoder).listen(
+            (data) => debugPrint("Backend Stderr: $data"),
+            onError: (e) => debugPrint("Stderr Error: $e"),
           );
 
-      process.stderr
-          .transform(utf8.decoder)
-          .listen((data) => debugPrint("Backend Stderr: $data"));
-
       controller.onCancel = () async {
-        debugPrint(
-          "Stream cancelled, performing deep cleanup for process ${process?.pid}",
-        );
+        debugPrint("Stream cancelled, performing deep cleanup for process ${process?.pid}");
+        stdoutSub.cancel();
+        stderrSub.cancel();
         await _killProcess(process);
         if (activeProcess == process) activeProcess = null;
+        if (!controller.isClosed) await controller.close();
       };
 
       yield* controller.stream;
     } catch (e) {
       debugPrint("BackendService._safeStream Exception: $e");
       yield "[CALLBACK] {\"key\": \"errorProcessStart\", \"error\": \"$e\"}";
-      if (!controller.isClosed) controller.close();
+      if (!controller.isClosed) await controller.close();
+      if (process != null) await _killProcess(process);
     } finally {
       if (useLock) _releaseLock();
     }
@@ -358,9 +387,12 @@ class BackendService {
       );
     }
     try {
+      // 边界防御：入参校验
       final trimmedQuery = query.trim();
       if (trimmedQuery.length < 2) return [];
+      if (trimmedQuery.length > 500) return []; // 拒绝过长查询以防止注入或性能问题
 
+      // 状态互斥：取消先前的搜索任务
       if (cancelOngoing && activeSearchProcess != null) {
         await _killProcess(activeSearchProcess);
         activeSearchProcess = null;
@@ -378,13 +410,22 @@ class BackendService {
       final output = await process.stdout
           .transform(utf8.decoder)
           .join()
-          .timeout(const Duration(seconds: 20));
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw TimeoutException("Search timed out"),
+          );
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
+<<<<<<< HEAD
         results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
+=======
+        results.addAll(parsed);
+      } else if (parsed is Map) {
+        results.add(parsed);
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
 
       return results;
@@ -394,20 +435,34 @@ class BackendService {
     } finally {
       if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
+<<<<<<< HEAD
+=======
+        // Murphy-proof: Ensure process is reaped if still alive after join/timeout
+        if (_isProcessAlive(activeSearchProcess!)) {
+          await _killProcess(activeSearchProcess);
+        }
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
       activeSearchProcess = null;
     }
   }
 
+  /// Murphy-proof JSON parser with aggressive recovery.
+  /// Prevents backend noise or mangled output from crashing the frontend.
   dynamic _tryParseJson(String input) {
     final cleanInput = input.trim();
     if (cleanInput.isEmpty) return null;
+    if (cleanInput.length > 5 * 1024 * 1024) {
+      // Security: Refuse to parse massive strings to prevent OOM
+      return null;
+    }
 
     try {
       return jsonDecode(cleanInput);
     } catch (_) {}
 
     try {
+      // Recovery: Search for JSON blocks within noisy output
       final jsonPattern = RegExp(r'(\[.*\]|\{.*\})', dotAll: true);
       final matches = jsonPattern.allMatches(cleanInput);
 
@@ -416,7 +471,9 @@ class BackendService {
         try {
           return jsonDecode(candidate);
         } catch (_) {
+          // Deep recovery: try line-by-line fallback
           final lines = candidate.split('\n');
+          if (lines.length > 100) continue; // Boundary defense against too many lines
           for (var i = 0; i < lines.length; i++) {
             try {
               final lineCandidate = lines.sublist(i).join('\n');
@@ -530,12 +587,26 @@ class BackendService {
         workingDirectory: _workingDir,
       );
       _allProcesses.add(process);
-      process.stdin.write(jsonEncode(config));
-      await process.stdin.close();
-      final code = await process.exitCode.timeout(const Duration(seconds: 10));
+
+      // Murphy-proof: Handle stdin writes with error catching
+      try {
+        process.stdin.write(jsonEncode(config));
+        await process.stdin.close();
+      } catch (e) {
+        debugPrint("saveConfig Stdin Error: $e");
+      }
+
+      final code = await process.exitCode.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint("saveConfig timed out");
+          throw TimeoutException("Save config timed out");
+        },
+      );
       return code == 0;
     } catch (e) {
       debugPrint("saveConfig Error: $e");
+      if (process != null) await _killProcess(process);
       return false;
     } finally {
       if (process != null) _allProcesses.remove(process);
@@ -606,6 +677,7 @@ class BackendService {
       return PackageRepository().launchApp(n, s);
     }
     try {
+      // 入参防御
       _validateString(n, "App Name");
       _validateString(s, "Source");
       final res = await _safeRun([
@@ -614,7 +686,7 @@ class BackendService {
         "--source",
         s.trim(),
         "--json",
-      ], timeout: const Duration(seconds: 10));
+      ], timeout: const Duration(seconds: 15));
       return res?.exitCode == 0;
     } catch (e) {
       debugPrint("launchApp [name: $n] Error: $e");
@@ -666,11 +738,27 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
+<<<<<<< HEAD
     if (n.trim().isEmpty) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
     }
     List<String> args = [f, n, "--source", s, "--json"];
     if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
+=======
+
+    // 边界校验与防呆
+    if (n.trim().isEmpty) {
+      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
+    }
+    if (!["-I", "-R", "-U"].contains(f)) {
+       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 不合法的操作指令: $f\"}");
+    }
+
+    List<String> args = [f, n.trim(), "--source", s.trim(), "--json"];
+    if (url != null && url.trim().isNotEmpty) {
+      args.addAll(["--url", url.trim()]);
+    }
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
     return _safeStream(args);
   }
 

@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import os
 import re
 from typing import List, Dict, Optional, TYPE_CHECKING, Any
@@ -34,70 +35,70 @@ class YayDownloader:
             final_env.update(env)
 
         try:
-            self.current_process = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 env=final_env,
                 stdin=asyncio.subprocess.DEVNULL
-            )
+            ) as self.current_process:
 
-            if self.current_process.stdout:
-                while True:
-                    line_bytes = await self.current_process.stdout.read(1024)
-                    if not line_bytes:
-                        break
+                if self.current_process.stdout:
+                    while True:
+                        line_bytes = await self.current_process.stdout.read(1024)
+                        if not line_bytes:
+                            break
 
-                    raw_msg = line_bytes.decode('utf-8', errors='replace')
+                        raw_msg = line_bytes.decode('utf-8', errors='replace')
 
-                    for part in raw_msg.splitlines(keepends=True):
-                        msg = part.strip('\n\r ')
-                        if not msg:
-                            continue
+                        for part in raw_msg.splitlines(keepends=True):
+                            msg = part.strip('\n\r ')
+                            if not msg:
+                                continue
 
-                        if callback:
-                            # --- Progress parsing ---
-                            # Pacman download progress: (1/1) package-name 1.2 MiB 4.5 MiB/s 00:00 [######################] 100%
-                            progress_match = re.search(r"(\d+)%", msg)
-                            # Match speed like 4.5 MiB/s or 400 KiB/s
-                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", msg)
+                            if callback:
+                                # --- Progress parsing ---
+                                # Pacman download progress: (1/1) package-name 1.2 MiB 4.5 MiB/s 00:00 [######################] 100%
+                                progress_match = re.search(r"(\d+)%", msg)
+                                # Match speed like 4.5 MiB/s or 400 KiB/s
+                                speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", msg)
 
-                            if progress_match:
-                                await callback(f"[PROGRESS] {progress_match.group(1)}")
+                                if progress_match:
+                                    await callback(f"[PROGRESS] {progress_match.group(1)}")
 
-                            if speed_match:
-                                await callback(f"[SPEED] {speed_match.group(1)}")
+                                if speed_match:
+                                    await callback(f"[SPEED] {speed_match.group(1)}")
 
-                            # --- Stage recognition ---
-                            if "downloading" in msg.lower() or "正在下载" in msg:
-                                await callback("[STAGE] Downloading")
-                            elif "installing" in msg.lower() or "正在安装" in msg:
-                                await callback("[STAGE] Installing")
-                            elif "verifying" in msg.lower() or "正在校验" in msg:
-                                await callback("[STAGE] Verifying")
-                            elif "building" in msg.lower() or "正在构建" in msg:
-                                await callback("[STAGE] Building")
-                            elif "checking" in msg.lower() or "正在检查" in msg:
-                                await callback("[STAGE] Checking")
+                                # --- Stage recognition ---
+                                if "downloading" in msg.lower() or "正在下载" in msg:
+                                    await callback("[STAGE] Downloading")
+                                elif "installing" in msg.lower() or "正在安装" in msg:
+                                    await callback("[STAGE] Installing")
+                                elif "verifying" in msg.lower() or "正在校验" in msg:
+                                    await callback("[STAGE] Verifying")
+                                elif "building" in msg.lower() or "正在构建" in msg:
+                                    await callback("[STAGE] Building")
+                                elif "checking" in msg.lower() or "正在检查" in msg:
+                                    await callback("[STAGE] Checking")
 
-                            # --- Raw log relay ---
-                            await callback(f"[INFO] {msg}")
+                                # --- Raw log relay ---
+                                await callback(f"[INFO] {msg}")
 
-                        # Local console debug (only if not in json mode)
-                        # We can't easily check for json_mode here without passing it down,
-                        # but we can check if stdout is a TTY or use a flag.
-                        # For now, let's just make it quieter if it's being captured.
+                            # Local console debug (only if not in json mode)
+                            # We can't easily check for json_mode here without passing it down,
+                            # but we can check if stdout is a TTY or use a flag.
+                            # For now, let's just make it quieter if it's being captured.
 
-            return_code = await self.current_process.wait()
+                return_code = await self.current_process.wait()
 
-            if return_code == 0:
-                res = "[INFO] Success"
-            else:
-                res = f"[ERROR] Failed with exit code: {return_code}"
+                if return_code == 0:
+                    res = "[INFO] Success"
+                else:
+                    res = f"[ERROR] Failed with exit code: {return_code}"
 
-            if callback:
-                await callback(res)
-            return return_code == 0
+                if callback:
+                    await callback(res)
+                return return_code == 0
 
         except Exception as e:
             error_msg = f"[ERROR] Runtime Error during command execution: {str(e)}"

@@ -1,6 +1,7 @@
 import os
 import aiohttp
 import asyncio
+from core.subprocess_utils import safe_subprocess
 from pathlib import Path
 
 
@@ -37,44 +38,51 @@ class AppImageDownloader:
         cmd = ["wget", "-q", "-O", str(dest_path), str(url)]
         
         try:
-            self.current_download_task = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 *cmd,
                 env=os.environ.copy()
+<<<<<<< HEAD
             )
             process = self.current_download_task
             last_percent = -1
+=======
+            ) as self.current_download_task:
+                process = self.current_download_task
+                total_size = 0  # Initial 0
+                last_percent = -1
+>>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
 
-            # 3. Poll disk file size
-            while process.returncode is None:
-                if dest_path.exists():
-                    current_size = dest_path.stat().st_size
-                    if total_size > 0:
-                        percent = int((current_size / total_size) * 100)
-                        if percent > last_percent and percent < 100:
-                            if callback:
-                                await callback(f"[PROGRESS] {percent}")
-                            last_percent = percent
-                    else:
-                        mb = current_size // (1024 * 1024)
-                        if mb > last_percent:
-                            if callback:
-                                await callback(f"[INFO] Downloaded: {mb}MB")
-                            last_percent = mb
+                # 3. Poll disk file size
+                while process.returncode is None:
+                    if dest_path.exists():
+                        current_size = dest_path.stat().st_size
+                        if total_size > 0:
+                            percent = int((current_size / total_size) * 100)
+                            if percent > last_percent and percent < 100:
+                                if callback:
+                                    await callback(f"[PROGRESS] {percent}")
+                                last_percent = percent
+                        else:
+                            mb = current_size // (1024 * 1024)
+                            if mb > last_percent:
+                                if callback:
+                                    await callback(f"[INFO] Downloaded: {mb}MB")
+                                last_percent = mb
 
-                if process.returncode is not None:
-                    break
-                await asyncio.sleep(1)
+                    if process.returncode is not None:
+                        break
+                    await asyncio.sleep(1)
 
-            ret_code = await process.wait()
+                ret_code = await process.wait()
 
-            if ret_code == 0:
-                dest_path.chmod(0o755)
-                self._create_desktop_entry(name, dest_path)
-                if callback:
-                    await callback("[PROGRESS] 100")
-            else:
-                if callback:
-                    await callback(f"[ERROR] Download failed (Code: {ret_code})")
+                if ret_code == 0:
+                    dest_path.chmod(0o755)
+                    self._create_desktop_entry(name, dest_path)
+                    if callback:
+                        await callback("[PROGRESS] 100")
+                else:
+                    if callback:
+                        await callback(f"[ERROR] Download failed (Code: {ret_code})")
 
         except Exception as e:
             if callback:

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/widgets/magic_pulse_icon.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class AIMarkdownDialog extends StatelessWidget {
   final Future<String> future;
@@ -21,8 +22,18 @@ class AIMarkdownDialog extends StatelessWidget {
   Widget _buildAIMarkdown(AsyncSnapshot<String> snapshot, AppLocalizations l10n) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const SizedBox(
+        key: ValueKey('loading'),
         height: 200,
-        child: Center(child: CircularProgressIndicator()),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Skeleton(width: double.infinity, height: 14),
+            SizedBox(height: 8),
+            Skeleton(width: double.infinity, height: 14),
+            SizedBox(height: 8),
+            Skeleton(width: 200, height: 14),
+          ],
+        ),
       );
     }
     String data = snapshot.data ?? l10n.aiResponseFailed;
@@ -34,6 +45,7 @@ class AIMarkdownDialog extends StatelessWidget {
     }
 
     return SingleChildScrollView(
+      key: const ValueKey('loaded'),
       child: MarkdownBody(
         data: data,
         selectable: true,
@@ -56,7 +68,12 @@ class AIMarkdownDialog extends StatelessWidget {
         height: height,
         child: FutureBuilder<String>(
           future: future,
-          builder: (context, snapshot) => _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+          builder: (context, snapshot) {
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+            );
+          },
         ),
       ),
       actions: [
@@ -87,43 +104,52 @@ class AICliDialog extends StatelessWidget {
       content: FutureBuilder<String>(
         future: future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
           final cmd = snapshot.data ?? "";
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  cmd,
-                  style: const TextStyle(fontFamily: 'monospace'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: cmd));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppLocalizations.of(context)!.aiCommandCopied,
-                      ),
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: snapshot.connectionState == ConnectionState.waiting
+                ? const SizedBox(
+                    key: ValueKey('loading'),
+                    height: 100,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Skeleton(width: double.infinity, height: 24, borderRadius: 8),
+                      ],
                     ),
-                  );
-                },
-                icon: const Icon(Icons.copy_rounded),
-                label: Text(AppLocalizations.of(context)!.aiCopyCommand),
-              ),
-            ],
+                  )
+                : Column(
+                    key: const ValueKey('loaded'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          cmd,
+                          style: const TextStyle(fontFamily: 'monospace'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: cmd));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(context)!.aiCommandCopied,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_rounded),
+                        label: Text(AppLocalizations.of(context)!.aiCopyCommand),
+                      ),
+                    ],
+                  ),
           );
         },
       ),
