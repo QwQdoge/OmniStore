@@ -21,6 +21,8 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
+import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+
 
 
 class AppDetailsPage extends StatefulWidget {
@@ -136,97 +138,25 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final isUninstall = flag == "-R";
     bool cleanOrphans = false;
 
-    final confirmed = await showDialog<bool>(
+    final cleanOrphansResult = await showDialog<bool?>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(
-                isUninstall
-                    ? localizations.confirmUninstall
-                    : localizations.confirmInstall,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    localizations.confirmActionMsg(widget.app.name),
-                  ),
-                  if (isUninstall && _selectedSource == "Native") ...[
-                    const SizedBox(height: 16),
-                    CheckboxListTile(
-                      value: cleanOrphans,
-                      onChanged: (val) {
-                        setDialogState(() => cleanOrphans = val ?? false);
-                      },
-                      title: Text(
-                        localizations.cleanOrphans,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(localizations.cancel),
-                ),
-                FilledButton(
-                  style: isUninstall
-                      ? FilledButton.styleFrom(
-                          backgroundColor: theme.colorScheme.error,
-                          foregroundColor: theme.colorScheme.onError,
-                        )
-                      : null,
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(localizations.confirm),
-                ),
-              ],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => ActionConfirmDialog(
+        isUninstall: isUninstall,
+        appName: widget.app.name,
+        selectedSource: _selectedSource,
+      ),
     );
 
-    if (confirmed != true) {
+    if (cleanOrphansResult == null) {
       return;
     }
+
+    cleanOrphans = cleanOrphansResult;
 
     if (_selectedSource == "AUR" && mounted) {
       final aurConfirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(
-            Icons.warning_amber_rounded,
-            color: Colors.orange,
-            size: 48,
-          ),
-          title: Text(localizations.securityWarning),
-          content: Text(localizations.aurSecurityDesc),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(localizations.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(localizations.continueInstall),
-            ),
-          ],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
+        builder: (context) => const AurSecurityDialog(),
       );
       if (aurConfirmed != true) {
         return;
