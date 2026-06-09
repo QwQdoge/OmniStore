@@ -73,12 +73,8 @@ abstract final class OmnistoreTheme {
         behavior: SnackBarBehavior.floating,
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.4),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
         showCheckmark: true,
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -93,6 +89,9 @@ abstract final class OmnistoreTheme {
       focusColor: scheme.onSurface.withValues(alpha: 0.12),
       splashColor: scheme.onSurface.withValues(alpha: 0.1),
       highlightColor: Colors.transparent,
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }
