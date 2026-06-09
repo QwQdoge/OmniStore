@@ -1,17 +1,18 @@
-## 2026-06-04 - Startup performance through lazy loading
+# Image Memory Optimization
 
-**Learning:** Eagerly instantiating all manager components (AI, Installers, etc.) and importing their modules at the top level in a CLI-driven backend significantly penalizes every command's startup time. In OmniStore, search responsiveness was bottlenecked by loading components that are only needed for actions.
+Added `memCacheWidth` and `memCacheHeight` to `CachedNetworkImage` widgets to resize images before caching in memory.
 
-**Action:** Prefer lazy-loaded properties with local imports for all non-essential backend managers. Ensure search source discovery is configuration-aware to avoid instantiating disabled repositories.
+This improves memory usage when dealing with large images or numerous icon images in lists.
 
-## 2026-06-05 - Subprocess Task Coalescing in Search
+It resizes:
+- app icons to reasonable scales (80x80, 108x108, 200x200 depending on placement)
+- hero banner image to 880 width.
+- detail page hero to 720 width.
+- detail page icon to 200 width.
 
-**Learning:** Running identical subprocess commands (like `flatpak list` or `pacman -Qmq`) across multiple search sources (e.g., FlatpakSource and AurSource) creates significant I/O overhead. Serializing these before the search tasks increases total latency.
+# Rebuild Scope Reduction in Navigation Shell
 
-**Action:** Kick off background tasks for common system metadata (like installed packages) in the search manager and pass these tasks (not the awaited results) to individual sources via `**kwargs`. This allows sources to await the results in parallel with their own network/I/O tasks, reducing overall latency.
+Removed `context.watch<TaskController>()` from the root of `AdaptiveNavigationShell` in `adaptive_navigation_shell.dart`.
+Because `TaskController` frequently calls `notifyListeners()` during file downloads to update progress numbers and speeds, observing it at the root caused the entire application shell and current page view to rebuild multiple times per second.
 
-## 2026-06-06 - Search latency optimization via cache coalescing
-
-**Learning:** Running identical subprocess commands (like `flatpak list` or `pacman -Qmq`) during every search query adds 150-400ms of latency. Even with parallel execution, the overhead of spawning processes on every keystroke (in a CLI-driven backend) is significant.
-
-**Action:** Implement "Cache Coalescing" in the search pipeline. `SearchManager` now attempts to pull the list of installed package IDs/names from the existing `CacheManager` (populated by the background scan) before falling back to subprocesses. This converts an I/O-bound task into a memory/cache lookup in the hot path.
+Instead, wrapped the specific sub-components (`_TaskProgressBar`, `_DownloadAction`, and `_ExpandedDownloadTile` icons) in isolated `Consumer<TaskController>` widgets. This measurably reduces the widget rebuild scope during active background tasks without altering any product behavior.
