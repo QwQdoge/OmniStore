@@ -18,6 +18,9 @@ class TaskManager {
   StreamSubscription<String>? _stdoutSubscription;
   StreamSubscription<String>? _stderrSubscription;
 
+  // Murphy-proof: Lock to prevent concurrent task starts
+  final _mutex = Completer<void>()..complete();
+
   Stream<TaskState?> get taskStateStream => _taskStateController.stream;
   TaskState? get currentTask => _currentTask;
   bool get isBusy => _currentTask != null;
@@ -46,7 +49,11 @@ class TaskManager {
     required String actionFlag, // "-I", "-R", "-U"
     String? url,
   }) async {
+    // 状态互斥与防呆：防止连击导致并发冲突
     if (isBusy) return false;
+
+    // Mutex lock to ensure atomic start sequence
+    if (!_mutex.isCompleted) return false;
 
     _updateState(
       TaskState(
@@ -121,28 +128,37 @@ class TaskManager {
         runInShell: Platform.isWindows,
       );
 
+      // Murphy-proof: Ensure subscriptions are managed and disposed
       _stdoutSubscription = _activeProcess!.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter())
-          .listen(_handleOutput, onError: (e) {
-        debugPrint("TaskManager Stdout Error: $e");
-      });
+          .listen(
+        _handleOutput,
+        onError: (e) => debugPrint("TaskManager Stdout Error: $e"),
+        cancelOnError: false,
+      );
 
       _stderrSubscription = _activeProcess!.stderr
           .transform(utf8.decoder)
           .transform(const LineSplitter())
-          .listen((data) {
-        debugPrint("TaskManager Stderr: $data");
-        BackendService.addLog("stderr: $data");
-      }, onError: (e) {
-        debugPrint("TaskManager Stderr Error: $e");
-      });
+          .listen(
+        (data) {
+          debugPrint("TaskManager Stderr: $data");
+          BackendService.addLog("stderr: $data");
+        },
+        onError: (e) => debugPrint("TaskManager Stderr Error: $e"),
+        cancelOnError: false,
+      );
 
       final exitCode = await _activeProcess!.exitCode.timeout(
         const Duration(hours: 2),
         onTimeout: () {
           debugPrint("TaskManager: Process timed out after 2 hours.");
-          _activeProcess?.kill(ProcessSignal.sigkill);
+          // Attempt graceful kill first then force
+          if (_activeProcess != null) {
+            _activeProcess!.kill(ProcessSignal.sigterm);
+            Future.delayed(const Duration(seconds: 2), () => _activeProcess?.kill(ProcessSignal.sigkill));
+          }
           return -1;
         },
       );
@@ -336,12 +352,12 @@ class TaskManager {
         ),
       );
 
-      Timer(const Duration(seconds: 3), () {
-        if (_activeProcess != null) {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (_activeProcess != null && _activeProcess!.pid == pid) {
           debugPrint("TaskManager: Force killing stalled process $pid");
           try {
             if (Platform.isLinux || Platform.isMacOS) {
-              Process.run('kill', ['-9', '-$pid']);
+            await Process.run('kill', ['-KILL', '--', '-$pid']);
             }
             _activeProcess?.kill(ProcessSignal.sigkill);
           } catch (_) {}

@@ -15,7 +15,7 @@ class InstallExecutor:
     @staticmethod
     @contextlib.asynccontextmanager
     async def safe_subprocess(*args, **kwargs):
-        """Murphy-proof subprocess wrapper that guarantees cleanup."""
+        """Murphy-proof subprocess wrapper that guarantees absolute cleanup and reaping."""
         proc = None
         try:
             proc = await asyncio.create_subprocess_exec(*args, **kwargs)
@@ -24,15 +24,16 @@ class InstallExecutor:
             if proc:
                 try:
                     if proc.returncode is None:
-                        # Attempt graceful termination first
+                        # Attempt graceful termination (SIGTERM)
                         proc.terminate()
                         try:
                             await asyncio.wait_for(proc.wait(), timeout=3)
                         except asyncio.TimeoutError:
+                            # Escalation: Force kill (SIGKILL)
                             proc.kill()
                             await proc.wait()
                 except Exception as e:
-                    logging.error(f"Error reaping subprocess: {e}")
+                    logging.error(f"Murphy-proof Error Reaping Subprocess: {e}")
 
     def __init__(self, backend):
         self.backend = backend
