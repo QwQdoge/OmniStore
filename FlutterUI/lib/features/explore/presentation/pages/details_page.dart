@@ -729,7 +729,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         SnackBar(
                           content:
                               Text(AppLocalizations.of(context)!.nameCopied),
-                          behavior: SnackBarBehavior.floating,
                         ),
                       );
                     },
@@ -1002,9 +1001,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
