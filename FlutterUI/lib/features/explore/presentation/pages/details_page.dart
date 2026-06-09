@@ -21,6 +21,8 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
+import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+
 
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
@@ -134,7 +136,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final isUninstall = flag == "-R";
     bool cleanOrphans = false;
 
-    final confirmed = await showDialog<bool>(
+    final cleanOrphansResult = await showDialog<bool?>(
       context: context,
       builder: (context) {
         final theme = Theme.of(context);
@@ -194,35 +196,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       },
     );
 
-    if (confirmed != true) {
+    if (cleanOrphansResult == null) {
       return;
     }
+
+    cleanOrphans = cleanOrphansResult;
 
     if (_selectedSource == "AUR" && mounted) {
       final aurConfirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(
-            Icons.warning_amber_rounded,
-            color: Colors.orange,
-            size: 48,
-          ),
-          title: Text(localizations.securityWarning),
-          content: Text(localizations.aurSecurityDesc),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(localizations.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(localizations.continueInstall),
-            ),
-          ],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
+        builder: (context) => const AurSecurityDialog(),
       );
       if (aurConfirmed != true) {
         return;
@@ -1014,9 +997,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(

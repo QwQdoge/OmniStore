@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+import 'package:frontend/l10n/app_localizations.dart';
+
+class ActionConfirmDialog extends StatefulWidget {
+  final bool isUninstall;
+  final String appName;
+  final String selectedSource;
+
+  const ActionConfirmDialog({
+    super.key,
+    required this.isUninstall,
+    required this.appName,
+    required this.selectedSource,
+  });
+
+  @override
+  State<ActionConfirmDialog> createState() => _ActionConfirmDialogState();
+}
+
+class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
+  bool cleanOrphans = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: Text(
+        widget.isUninstall
+            ? localizations.confirmUninstall
+            : localizations.confirmInstall,
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            localizations.confirmActionMsg(widget.appName),
+          ),
+          if (widget.isUninstall && widget.selectedSource == "Native") ...[
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              value: cleanOrphans,
+              onChanged: (val) {
+                setState(() => cleanOrphans = val ?? false);
+              },
+              title: Text(
+                localizations.cleanOrphans,
+                style: const TextStyle(fontSize: 14),
+              ),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: Text(localizations.cancel),
+        ),
+        FilledButton(
+          style: widget.isUninstall
+              ? FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.error,
+                  foregroundColor: theme.colorScheme.onError,
+                )
+              : null,
+          onPressed: () => Navigator.pop(context, cleanOrphans),
+          child: Text(localizations.confirm),
+        ),
+      ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+    );
+  }
+}
+
+class AurSecurityDialog extends StatelessWidget {
+  const AurSecurityDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return AlertDialog(
+      icon: const Icon(
+        Icons.warning_amber_rounded,
+        color: Colors.orange,
+        size: 48,
+      ),
+      title: Text(localizations.securityWarning),
+      content: Text(localizations.aurSecurityDesc),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(localizations.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(localizations.continueInstall),
+        ),
+      ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+    );
+  }
+}

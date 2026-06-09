@@ -17,3 +17,9 @@
 **Learning:** Large monolithic files, especially in presentation layers (like `details_page.dart`), quickly become difficult to navigate and maintain when they contain numerous inline dialog builders.
 
 **Action:** Extract inline dialog definitions (e.g., `showDialog(builder: (ctx) => AlertDialog(...))`) into their own `StatelessWidget` files within a `widgets/` subdirectory. This significantly cleans up the main UI class, makes the dialogs reusable across the app (like `TerminalDialog`), and makes unit testing the dialog components easier.
+
+## 2024-03-22 - Extracting Action Dialog Widgets
+
+**Learning:** Extracted action confirmation and AUR security warning dialogs from `details_page.dart` into a new `action_dialogs.dart` widget to reduce file size and simplify `details_page.dart` UI logic.
+
+**Action:** Continue identifying oversized widgets and inline widget building logic, extracting them into dedicated component files where logical.
