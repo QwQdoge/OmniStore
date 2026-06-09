@@ -275,7 +275,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 }
 
-class _DiscoveryContent extends StatelessWidget {
+class _DiscoveryContent extends StatefulWidget {
   final AppLocalizations l10n;
   final TextEditingController searchController;
   final Function(String) performSearch;
@@ -288,10 +288,26 @@ class _DiscoveryContent extends StatelessWidget {
   });
 
   @override
+  State<_DiscoveryContent> createState() => _DiscoveryContentState();
+}
+
+class _DiscoveryContentState extends State<_DiscoveryContent> {
+  final ScrollController _categoryScrollController = ScrollController();
+  final ScrollController _trendingScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _categoryScrollController.dispose();
+    _trendingScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final categories = CategoryService.getCategories(context);
     final browse = context.watch<BrowseController>();
     final trending = browse.recommendations['trending'] ?? [];
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -301,60 +317,79 @@ class _DiscoveryContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              l10n.categories,
+              widget.l10n.categories,
               style: OmnistoreTheme.standardHeader(context),
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final cat = categories[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Material(
-                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(20),
-                    clipBehavior: Clip.antiAlias,
-                    child: Semantics(
-                      label: 'Category: ${cat.name}',
-                      button: true,
-                      child: InkWell(
-                        onTap: () {
-                          searchController.text = '/${cat.id.toLowerCase()}';
-                          performSearch(searchController.text);
-                        },
-                        child: SizedBox(
-                          width: 100,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                cat.icon,
-                                size: 32,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                cat.name,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+            height: 156,
+            child: Scrollbar(
+              controller: _categoryScrollController,
+              thumbVisibility: true,
+              child: ListView.builder(
+                controller: _categoryScrollController,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Card(
+                      elevation: 0,
+                      margin: EdgeInsets.zero,
+                      color: colorScheme.surfaceContainerLow,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Semantics(
+                        label: 'Category: ${cat.name}',
+                        button: true,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            widget.searchController.text = '/${cat.id.toLowerCase()}';
+                            widget.performSearch(widget.searchController.text);
+                          },
+                          child: SizedBox(
+                            width: 100,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    cat.icon,
+                                    size: 28,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  cat.name,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           if (trending.isNotEmpty) ...[
@@ -362,66 +397,72 @@ class _DiscoveryContent extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                l10n.hotApps,
+                widget.l10n.hotApps,
                 style: OmnistoreTheme.standardHeader(context),
               ),
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 180,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: trending.length,
-                itemBuilder: (context, index) {
-                  final app = trending[index];
-                  final trendingHeroTag =
-                      'trending-shelf-${app.name}-${app.primarySource}';
-                  return Container(
-                    width: 150,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Card(
-                      child: InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AppDetailsPage(
-                              app: app,
-                              heroTag: trendingHeroTag,
+              height: 196,
+              child: Scrollbar(
+                controller: _trendingScrollController,
+                thumbVisibility: true,
+                child: ListView.builder(
+                  controller: _trendingScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: trending.length,
+                  itemBuilder: (context, index) {
+                    final app = trending[index];
+                    final trendingHeroTag =
+                        'trending-shelf-${app.name}-${app.primarySource}';
+                    return Container(
+                      width: 150,
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppDetailsPage(
+                                app: app,
+                                heroTag: trendingHeroTag,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Hero(
-                                tag: trendingHeroTag,
-                                child: app.icon != null
-                                    ? CachedNetworkImage(
-                                        imageUrl: app.icon!,
-                                        fit: BoxFit.cover,
-                                        memCacheWidth: 300,
-                                      )
-                                    : const Icon(Icons.apps, size: 48),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Text(
-                                app.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Hero(
+                                  tag: trendingHeroTag,
+                                  child: app.icon != null
+                                      ? CachedNetworkImage(
+                                          imageUrl: app.icon!,
+                                          fit: BoxFit.cover,
+                                          memCacheWidth: 300,
+                                        )
+                                      : const Icon(Icons.apps, size: 48),
                                 ),
                               ),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Text(
+                                  app.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ],

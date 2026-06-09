@@ -7,7 +7,6 @@ import "package:frontend/features/settings/presentation/controllers/settings_con
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -40,6 +39,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Map<String, dynamic>? _extraDetails;
   bool _isLoadingDetails = false;
 
+  final ScrollController _screenshotScrollController = ScrollController();
+  final ScrollController _variantScrollController = ScrollController();
+
   bool _hasCapability(String capability) {
     try {
       final sources = BackendService.availableSources.value;
@@ -66,6 +68,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _screenshotScrollController.dispose();
+    _variantScrollController.dispose();
+    super.dispose();
   }
 
   void _checkSourceSuggestion() {
@@ -385,55 +394,61 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: 220,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: (_extraDetails!['screenshots'] as List).length,
-                      separatorBuilder: (context, _) =>
-                          const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        final imageUrl = _extraDetails!['screenshots'][index];
-                        return Hero(
-                          tag: 'screenshot-$imageUrl',
-                          child: Card(
-                            elevation: 0,
-                            margin: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                              side: BorderSide(
-                                color: colorScheme.outlineVariant.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: () => _showScreenshotViewer(imageUrl),
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: 360,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 720,
-                                placeholder: (context, url) => Container(
-                                  width: 360,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                    height: 236,
+                    child: Scrollbar(
+                      controller: _screenshotScrollController,
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        controller: _screenshotScrollController,
+                        padding: const EdgeInsets.only(bottom: 16),
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: (_extraDetails!['screenshots'] as List).length,
+                        separatorBuilder: (context, _) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final imageUrl = _extraDetails!['screenshots'][index];
+                          return Hero(
+                            tag: 'screenshot-$imageUrl',
+                            child: Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                side: BorderSide(
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
                                   ),
                                 ),
-                                errorWidget: (context, url, error) => Container(
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => _showScreenshotViewer(imageUrl),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
                                   width: 360,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Icon(Icons.broken_image_rounded),
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 720,
+                                  placeholder: (context, url) => Container(
+                                    width: 360,
+                                    color: colorScheme.surfaceContainerHighest,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    width: 360,
+                                    color: colorScheme.surfaceContainerHighest,
+                                    child: const Icon(Icons.broken_image_rounded),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -542,12 +557,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             style: IconButton.styleFrom(
               minimumSize: const Size(56, 56),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
+            flex: 2,
             child: SizedBox(
               height: 56,
               child: OutlinedButton(
@@ -558,7 +574,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     width: 1,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.0),
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                 ),
                 onPressed: () => _handleAction("-R"),
@@ -569,15 +585,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: SizedBox(
               height: 56,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.0),
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                 ),
                 onPressed: _launchApp,
@@ -602,7 +618,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         child: FilledButton.icon(
           style: FilledButton.styleFrom(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28.0),
+              borderRadius: BorderRadius.circular(16.0),
             ),
           ),
           onPressed: () => _handleAction("-I"),
@@ -667,7 +683,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             alignment: Alignment.center,
             child: iconUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(24.0),
+                    borderRadius: BorderRadius.circular(16.0),
                     child: CachedNetworkImage(
                       imageUrl: iconUrl,
                       fit: BoxFit.cover,
@@ -744,63 +760,63 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
               const SizedBox(height: 12),
               if (_hasCapability('has_versions'))
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SegmentedButton<String>(
-                  segments:
-                      <String>{
-                        for (var v in widget.app.variants) v.source,
-                        if (_extraDetails != null &&
-                            _extraDetails!['variants'] != null)
-                          for (var v in _extraDetails!['variants'])
-                            v['source'].toString(),
-                        _selectedSource,
-                      }.map((String source) {
-                        final version = _getVersionForSource(source);
-                        return ButtonSegment<String>(
-                          value: source,
-                          label: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  source,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (version != null)
+                Scrollbar(
+                  controller: _variantScrollController,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: _variantScrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SegmentedButton<String>(
+                    segments:
+                        <String>{
+                          for (var v in widget.app.variants) v.source,
+                          if (_extraDetails != null &&
+                              _extraDetails!['variants'] != null)
+                            for (var v in _extraDetails!['variants'])
+                              v['source'].toString(),
+                          _selectedSource,
+                        }.map((String source) {
+                          final version = _getVersionForSource(source);
+                          return ButtonSegment<String>(
+                            value: source,
+                            label: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   Text(
-                                    "v$version",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: theme.colorScheme.onSurfaceVariant
-                                          .withValues(alpha: 0.8),
+                                    source,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                              ],
+                                  if (version != null)
+                                    Text(
+                                      "v$version",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: theme.colorScheme.onSurfaceVariant
+                                            .withValues(alpha: 0.8),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                          icon: _getSourceIcon(source),
-                        );
-                      }).toList(),
-                  selected: {_selectedSource},
-                  onSelectionChanged: (Set<String> newSelection) {
-                    final newValue = newSelection.first;
-                    setState(() {
-                      _selectedSource = newValue;
-                      _isAppInstalled = _isSourceInstalled(newValue);
-                    });
-                  },
-                  showSelectedIcon: false,
-                  style: SegmentedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                            icon: _getSourceIcon(source),
+                          );
+                        }).toList(),
+                    selected: {_selectedSource},
+                    onSelectionChanged: (Set<String> newSelection) {
+                      final newValue = newSelection.first;
+                      setState(() {
+                        _selectedSource = newValue;
+                        _isAppInstalled = _isSourceInstalled(newValue);
+                      });
+                    },
+                    showSelectedIcon: false,
                   ),
                 ),
               ),
@@ -982,6 +998,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
@@ -989,8 +1006,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             label,
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
-          const Spacer(),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
