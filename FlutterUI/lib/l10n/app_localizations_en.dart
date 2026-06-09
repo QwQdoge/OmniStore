@@ -131,7 +131,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveAndApply => 'Save and Apply';
 
   @override
-  String get configSaved => 'Configuration saved';
+  String get configSaved =>
+      'Configuration saved, some changes will take effect after restart';
 
   @override
   String get configSaveFailed => 'Failed to save configuration';

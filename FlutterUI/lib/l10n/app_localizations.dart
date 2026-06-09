@@ -346,7 +346,7 @@ abstract class AppLocalizations {
   /// Description for configSaved
   ///
   /// In en, this message translates to:
-  /// **'Configuration saved'**
+  /// **'Configuration saved, some changes will take effect after restart'**
   String get configSaved;
 
   /// Description for configSaveFailed
