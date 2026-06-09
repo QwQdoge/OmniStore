@@ -71,8 +71,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final browse = context.watch<BrowseController>();
-    final settings = context.watch<SettingsController>();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -103,16 +101,26 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          if (!_showDiscovery) _buildSourceFilters(settings),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _showDiscovery
-                  ? _buildDiscovery(l10n)
-                  : browse.isSearching
-                  ? _buildSkeletonResults()
-                  : _buildResults(browse, l10n, settings),
+          if (!_showDiscovery)
+            Consumer<SettingsController>(
+              builder: (context, settings, _) => _buildSourceFilters(settings),
             ),
+          Expanded(
+            child: _showDiscovery
+                ? AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildDiscovery(l10n),
+                  )
+                : Consumer2<BrowseController, SettingsController>(
+                    builder: (context, browse, settings, _) {
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: browse.isSearching
+                            ? _buildSkeletonResults()
+                            : _buildResults(browse, l10n, settings),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -305,8 +313,6 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
   @override
   Widget build(BuildContext context) {
     final categories = CategoryService.getCategories(context);
-    final browse = context.watch<BrowseController>();
-    final trending = browse.recommendations['trending'] ?? [];
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
@@ -392,80 +398,89 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
               ),
             ),
           ),
-          if (trending.isNotEmpty) ...[
-            const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                widget.l10n.hotApps,
-                style: OmnistoreTheme.standardHeader(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 196,
-              child: Scrollbar(
-                controller: _trendingScrollController,
-                thumbVisibility: true,
-                child: ListView.builder(
-                  controller: _trendingScrollController,
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: trending.length,
-                  itemBuilder: (context, index) {
-                    final app = trending[index];
-                    final trendingHeroTag =
-                        'trending-shelf-${app.name}-${app.primarySource}';
-                    return Container(
-                      width: 150,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AppDetailsPage(
-                                app: app,
-                                heroTag: trendingHeroTag,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Hero(
-                                  tag: trendingHeroTag,
-                                  child: app.icon != null
-                                      ? CachedNetworkImage(
-                                          imageUrl: app.icon!,
-                                          fit: BoxFit.cover,
-                                          memCacheWidth: 300,
-                                        )
-                                      : const Icon(Icons.apps, size: 48),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Text(
-                                  app.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+          Consumer<BrowseController>(
+            builder: (context, browse, _) {
+              final trending = browse.recommendations['trending'] ?? [];
+              if (trending.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      widget.l10n.hotApps,
+                      style: OmnistoreTheme.standardHeader(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 196,
+                    child: Scrollbar(
+                      controller: _trendingScrollController,
+                      thumbVisibility: true,
+                      child: ListView.builder(
+                        controller: _trendingScrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemCount: trending.length,
+                        itemBuilder: (context, index) {
+                          final app = trending[index];
+                          final trendingHeroTag =
+                              'trending-shelf-${app.name}-${app.primarySource}';
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Card(
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AppDetailsPage(
+                                      app: app,
+                                      heroTag: trendingHeroTag,
+                                    ),
                                   ),
                                 ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Hero(
+                                        tag: trendingHeroTag,
+                                        child: app.icon != null
+                                            ? CachedNetworkImage(
+                                                imageUrl: app.icon!,
+                                                fit: BoxFit.cover,
+                                                memCacheWidth: 300,
+                                              )
+                                            : const Icon(Icons.apps, size: 48),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Text(
+                                        app.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );

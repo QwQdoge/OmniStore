@@ -121,27 +121,32 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final browse = context.watch<BrowseController>();
-    final settings = context.watch<SettingsController>();
-
-    final featured = browse.recommendations['featured'] ?? [];
-    final trending = browse.recommendations['trending'] ?? [];
-    final forYou = browse.recommendations['for_you'] ?? [];
 
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _buildHeroSection(featured)),
-            if (settings.isAIEnabled)
-              SliverToBoxAdapter(
-                child: _isAILoading
-                    ? _buildAIPickSkeleton()
-                    : (_aiPickBlurb != null
-                          ? _buildAIPickSection()
-                          : const SizedBox.shrink()),
+            SliverToBoxAdapter(
+              child: Consumer<BrowseController>(
+                builder: (context, browse, _) {
+                  final featured = browse.recommendations['featured'] ?? [];
+                  return _buildHeroSection(featured);
+                },
               ),
+            ),
+            SliverToBoxAdapter(
+              child: Consumer<SettingsController>(
+                builder: (context, settings, _) {
+                  if (!settings.isAIEnabled) return const SizedBox.shrink();
+                  return _isAILoading
+                      ? _buildAIPickSkeleton()
+                      : (_aiPickBlurb != null
+                          ? _buildAIPickSection()
+                          : const SizedBox.shrink());
+                },
+              ),
+            ),
             _buildCategoryQuickAccess(),
             SliverToBoxAdapter(
               child: Padding(
@@ -162,12 +167,22 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: _buildCategoryShelf(l10n.hotApps, trending),
-            ),
-            if (forYou.isNotEmpty)
-              SliverToBoxAdapter(
-                child: _buildCategoryShelf(l10n.forYou, forYou),
+              child: Consumer<BrowseController>(
+                builder: (context, browse, _) {
+                  final trending = browse.recommendations['trending'] ?? [];
+                  return _buildCategoryShelf(l10n.hotApps, trending);
+                },
               ),
+            ),
+            SliverToBoxAdapter(
+              child: Consumer<BrowseController>(
+                builder: (context, browse, _) {
+                  final forYou = browse.recommendations['for_you'] ?? [];
+                  if (forYou.isEmpty) return const SizedBox.shrink();
+                  return _buildCategoryShelf(l10n.forYou, forYou);
+                },
+              ),
+            ),
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
           ],
         ),
