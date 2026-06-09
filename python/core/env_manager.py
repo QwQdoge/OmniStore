@@ -1,6 +1,7 @@
 import os
 import subprocess
 import asyncio
+from core.subprocess_utils import safe_subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -104,18 +105,18 @@ class EnvManager:
     async def _run_pacman(self, args: List[str], callback) -> bool:
         # Needs sudo
         cmd = ["sudo", "pacman"] + args
-        proc = await asyncio.create_subprocess_exec(
+        async with safe_subprocess(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT
-        )
-        if proc.stdout:
-            while True:
-                line = await proc.stdout.readline()
-                if not line: break
-                if callback: await callback(f"[INFO] {line.decode().strip()}")
-        await proc.wait()
-        return proc.returncode == 0
+        ) as proc:
+            if proc.stdout:
+                while True:
+                    line = await proc.stdout.readline()
+                    if not line: break
+                    if callback: await callback(f"[INFO] {line.decode().strip()}")
+            await proc.wait()
+            return proc.returncode == 0
 
     async def _install_yay(self, callback) -> bool:
         import tempfile
@@ -124,31 +125,31 @@ class EnvManager:
         tmpdir = tempfile.mkdtemp()
         try:
             if callback: await callback("[INFO] Cloning yay repository...")
-            clone = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "git", "clone", "https://aur.archlinux.org/yay-bin.git", tmpdir,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
-            )
-            await clone.wait()
-            if clone.returncode != 0:
-                if callback: await callback("[ERROR] Failed to clone yay repository.")
-                return False
+            ) as clone:
+                await clone.wait()
+                if clone.returncode != 0:
+                    if callback: await callback("[ERROR] Failed to clone yay repository.")
+                    return False
 
-            if callback: await callback("[INFO] Building yay package...")
-            # makepkg cannot be run as root
-            makepkg = await asyncio.create_subprocess_exec(
-                "makepkg", "-si", "--noconfirm",
-                cwd=tmpdir,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
-            )
-            if makepkg.stdout:
-                while True:
-                    line = await makepkg.stdout.readline()
-                    if not line: break
-                    if callback: await callback(f"[INFO] {line.decode().strip()}")
-            await makepkg.wait()
-            return makepkg.returncode == 0
+                if callback: await callback("[INFO] Building yay package...")
+                # makepkg cannot be run as root
+                async with safe_subprocess(
+                    "makepkg", "-si", "--noconfirm",
+                    cwd=tmpdir,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT
+                ) as makepkg:
+                    if makepkg.stdout:
+                        while True:
+                            line = await makepkg.stdout.readline()
+                            if not line: break
+                            if callback: await callback(f"[INFO] {line.decode().strip()}")
+                    await makepkg.wait()
+                    return makepkg.returncode == 0
         except Exception as e:
             if callback: await callback(f"[ERROR] Yay installation failed: {e}")
             return False

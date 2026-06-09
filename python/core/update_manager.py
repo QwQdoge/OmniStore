@@ -1,4 +1,5 @@
 import asyncio
+from core.subprocess_utils import safe_subprocess
 import shutil
 import re
 from typing import List, Dict
@@ -48,29 +49,29 @@ class UpdateManager:
 
     async def _run_qu_command(self, cmd: List[str], source: str) -> List[Dict]:
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            if not stdout:
-                return []
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                if not stdout:
+                    return []
 
-            updates = []
-            for line in stdout.decode().strip().splitlines():
-                # Format: pkgname old_version -> new_version
-                match = re.match(r"^([^\s]+)\s+([^\s]+)\s+->\s+([^\s]+)", line)
-                if match:
-                    name, old_ver, new_ver = match.groups()
-                    updates.append({
-                        "name": name,
-                        "source": source,
-                        "current_version": old_ver,
-                        "new_version": new_ver,
-                        "description": f"Update available from {source}"
-                    })
-            return updates
+                updates = []
+                for line in stdout.decode().strip().splitlines():
+                    # Format: pkgname old_version -> new_version
+                    match = re.match(r"^([^\s]+)\s+([^\s]+)\s+->\s+([^\s]+)", line)
+                    if match:
+                        name, old_ver, new_ver = match.groups()
+                        updates.append({
+                            "name": name,
+                            "source": source,
+                            "current_version": old_ver,
+                            "new_version": new_ver,
+                            "description": f"Update available from {source}"
+                        })
+                return updates
         except Exception:
             return []
 
@@ -81,27 +82,27 @@ class UpdateManager:
 
         try:
             # columns: name, application, version, new-version
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "list", "--updates", "--columns=name,application,version,new-version",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            stdout, _ = await proc.communicate()
-            if not stdout:
-                return []
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                if not stdout:
+                    return []
 
-            updates = []
-            for line in stdout.decode().strip().splitlines():
-                parts = [p.strip() for p in line.split('\t')]
-                if len(parts) >= 4:
-                    updates.append({
-                        "name": parts[0],
-                        "id": parts[1],
-                        "source": "Flatpak",
-                        "current_version": parts[2],
-                        "new_version": parts[3],
-                        "description": f"Flatpak update: {parts[1]}"
-                    })
-            return updates
+                updates = []
+                for line in stdout.decode().strip().splitlines():
+                    parts = [p.strip() for p in line.split('\t')]
+                    if len(parts) >= 4:
+                        updates.append({
+                            "name": parts[0],
+                            "id": parts[1],
+                            "source": "Flatpak",
+                            "current_version": parts[2],
+                            "new_version": parts[3],
+                            "description": f"Flatpak update: {parts[1]}"
+                        })
+                return updates
         except Exception:
             return []
