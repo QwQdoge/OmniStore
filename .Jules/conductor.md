@@ -3,3 +3,5 @@
 - Also utilized `AnimatedSwitcher` to smooth out transitions in the `_buildActionArea` (install, uninstall, busy/progress tasks) to prevent abrupt visual jumps.
 - Keep animation durations reasonably short (e.g., 300ms) to preserve UI responsiveness while adding clarity.
 - Replaced `CircularProgressIndicator` with loading skeletons across list views and dialogs in `github_store_page.dart`, `flatpak_store_page.dart`, `download_page.dart`, and `ai_dialogs.dart`. Wrapped these elements in `AnimatedSwitcher`s using explicit `ValueKey`s to smooth state transitions per Conductor directives.
+- Used  in  to animate transitions in the AI Pick section (, , and empty state). Ensured s were explicitly added to the children so the switcher can detect changes.
+- Used `AnimatedSwitcher` in `FlutterUI/lib/features/home/home_page.dart` to animate transitions in the AI Pick section (`_isAILoading`, `_aiPickBlurb`, and empty state). Ensured `ValueKey`s were explicitly added to the children so the switcher can detect changes.

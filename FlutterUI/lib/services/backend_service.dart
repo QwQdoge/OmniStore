@@ -387,10 +387,15 @@ class BackendService {
       );
     }
     try {
-      // 边界防御：入参校验
+      // 边界防御：入参校验与防呆
       final trimmedQuery = query.trim();
-      if (trimmedQuery.length < 2) return [];
-      if (trimmedQuery.length > 500) return []; // 拒绝过长查询以防止注入或性能问题
+      if (trimmedQuery.length < 2 || trimmedQuery.length > 500) return [];
+
+      // 防范 Shell 注入字符
+      if (RegExp(r'[;&|]').hasMatch(trimmedQuery)) {
+        debugPrint("Security: Illegal characters in search query");
+        return [];
+      }
 
       // 状态互斥：取消先前的搜索任务
       if (cancelOngoing && activeSearchProcess != null) {
@@ -417,15 +422,9 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-<<<<<<< HEAD
         results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-=======
-        results.addAll(parsed);
-      } else if (parsed is Map) {
-        results.add(parsed);
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
 
       return results;
@@ -435,13 +434,10 @@ class BackendService {
     } finally {
       if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
-<<<<<<< HEAD
-=======
         // Murphy-proof: Ensure process is reaped if still alive after join/timeout
         if (_isProcessAlive(activeSearchProcess!)) {
           await _killProcess(activeSearchProcess);
         }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
       activeSearchProcess = null;
     }
@@ -738,27 +734,31 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
-<<<<<<< HEAD
-    if (n.trim().isEmpty) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
-    }
-    List<String> args = [f, n, "--source", s, "--json"];
-    if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
-=======
-
     // 边界校验与防呆
-    if (n.trim().isEmpty) {
+    final trimmedName = n.trim();
+    if (trimmedName.isEmpty) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
     }
+
+    // 入参防御：防止非法指令
     if (!["-I", "-R", "-U"].contains(f)) {
-       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 不合法的操作指令: $f\"}");
+      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 非法操作指令: $f\"}");
     }
 
-    List<String> args = [f, n.trim(), "--source", s.trim(), "--json"];
-    if (url != null && url.trim().isNotEmpty) {
-      args.addAll(["--url", url.trim()]);
+    // 注入防御
+    if (RegExp(r'[;&|]').hasMatch(trimmedName) ||
+        RegExp(r'[;&|]').hasMatch(s)) {
+      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 输入包含非法字符\"}");
     }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
+
+    List<String> args = [f, trimmedName, "--source", s.trim(), "--json"];
+    if (url != null && url.trim().isNotEmpty) {
+      final trimmedUrl = url.trim();
+      if (RegExp(r'[;&|]').hasMatch(trimmedUrl)) {
+        return Stream.value("[CALLBACK] {\"log\": \"[ERROR] URL 包含非法字符\"}");
+      }
+      args.addAll(["--url", trimmedUrl]);
+    }
     return _safeStream(args);
   }
 

@@ -972,4 +972,65 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get nameCopied => '名前をクリップボードにコピーしました';
+
+  @override
+  String get language => '表示言語';
+
+  @override
+  String get languageSubtitle => '再起動後に有効になります';
+
+  @override
+  String get restartTitleBar => 'タイトルバーの設定を適用するには再起動してください';
+
+  @override
+  String get enableDaemon => 'バックグラウンド更新を有効にする';
+
+  @override
+  String get enableDaemonDesc => 'バックグラウンドで定期的に更新を確認します';
+
+  @override
+  String get autoUpdate => 'サイレント自動更新';
+
+  @override
+  String get autoUpdateDesc => 'バックグラウンドでパッケージを自動的に更新します';
+
+  @override
+  String get checkIntervalTitle => '更新確認の間隔';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return '$hours 時間ごとに確認';
+  }
+
+  @override
+  String get typography => 'フォントとタイポグラフィ';
+
+  @override
+  String get fontFamily => 'フォントファミリー';
+
+  @override
+  String get fontScale => 'フォントの拡大率';
+
+  @override
+  String get systemDefault => 'システム既定';
+
+  @override
+  String hourValue(int count) {
+    return '$count 時間';
+  }
+
+  @override
+  String get langSimplifiedChinese => '中国語 (簡体字)';
+
+  @override
+  String get langTraditionalChinese => '中国語 (繁体字)';
+
+  @override
+  String get langEnglish => '英語';
+
+  @override
+  String get langJapanese => '日本語';
+
+  @override
+  String get langSpanish => 'スペイン語';
 }
