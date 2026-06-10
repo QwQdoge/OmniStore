@@ -167,7 +167,8 @@ class OmnistoreBackend:
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
         self.manager = SearchManager(
             self.config, self.session, self.habit_tracker,
-            recommender=self.recommender, cache_manager=self.cache
+            recommender=self.recommender, cache_manager=self.cache,
+            ai_assistant=self.ai
         )
         return self
 

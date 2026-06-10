@@ -41,16 +41,9 @@ class AppImageDownloader:
             async with safe_subprocess(
                 *cmd,
                 env=os.environ.copy()
-<<<<<<< HEAD
-            )
-            process = self.current_download_task
-            last_percent = -1
-=======
             ) as self.current_download_task:
                 process = self.current_download_task
-                total_size = 0  # Initial 0
                 last_percent = -1
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
 
                 # 3. Poll disk file size
                 while process.returncode is None:
