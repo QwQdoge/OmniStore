@@ -80,6 +80,79 @@ from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 
+async def handle_daemon_client(backend, reader, writer):
+    import io
+    try:
+        while True:
+            line_bytes = await reader.readline()
+            if not line_bytes:
+                break
+            line = line_bytes.decode('utf-8').strip()
+            if not line:
+                continue
+            
+            try:
+                cmd_data = json.loads(line)
+            except Exception as ex:
+                writer.write(json.dumps({"error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
+                await writer.drain()
+                continue
+            
+            # Setup a capture for stdout
+            old_stdout = sys.stdout
+            captured_stdout = io.StringIO()
+            sys.stdout = captured_stdout
+            
+            try:
+                action = cmd_data.get("action")
+                args = cmd_data.get("args", [])
+                kwargs = cmd_data.get("kwargs", {})
+                
+                # Resolve nested attributes recursively, e.g. "config.data"
+                obj = backend
+                parts = action.split('.')
+                for part in parts:
+                    if hasattr(obj, part):
+                        obj = getattr(obj, part)
+                    else:
+                        obj = None
+                        break
+                
+                if obj is not None:
+                    # If it's a callable (method or function), call it
+                    if callable(obj):
+                        if asyncio.iscoroutinefunction(obj):
+                            res = await obj(*args, **kwargs)
+                        else:
+                            res = obj(*args, **kwargs)
+                    else:
+                        # Otherwise it's an attribute/property
+                        res = obj
+                    
+                    sys.stdout = old_stdout
+                    stdout_content = captured_stdout.getvalue()
+                    
+                    writer.write(json.dumps({
+                        "status": "success",
+                        "response": res,
+                        "stdout": stdout_content
+                    }, ensure_ascii=False).encode('utf-8') + b'\n')
+                else:
+                    sys.stdout = old_stdout
+                    writer.write(json.dumps({"error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+            except Exception as e:
+                sys.stdout = old_stdout
+                writer.write(json.dumps({"error": str(e)}).encode('utf-8') + b'\n')
+            await writer.drain()
+    except Exception as e:
+        pass
+    finally:
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except:
+            pass
+
 
 
 def safe_command(func):
@@ -331,7 +404,16 @@ class OmnistoreBackend:
             if json_mode:
                 sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
             else:
-                for app in results: print(f"推荐: {app['name']} ({app['id']})")
+                if isinstance(results, dict):
+                    for category, apps in results.items():
+                        print(f"\n[{category}]")
+                        for app in apps:
+                            if isinstance(app, dict):
+                                print(f"  推荐: {app.get('name')} ({app.get('id')})")
+                elif isinstance(results, list):
+                    for app in results:
+                        if isinstance(app, dict):
+                            print(f"推荐: {app.get('name')} ({app.get('id')})")
 
     @safe_command
     async def run_app_details(self, app_id: str, json_mode: bool = False):
@@ -569,6 +651,95 @@ class OmnistoreBackend:
         sys.stdout.flush()
 
     @safe_command
+    async def run_launch(self, name: str, source: str, json_mode: bool = False) -> bool:
+        async with self:
+            src = source.lower()
+            if src == "native":
+                src = "pacman"
+            if self.manager and src in self.manager.sources:
+                success = await self.manager.sources[src].launch({"name": name, "id": name})
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                return success
+            return False
+
+    @safe_command
+    async def run_locate(self, name: str, source: str, json_mode: bool = False) -> bool:
+        async with self:
+            src = source.lower()
+            if src == "native":
+                src = "pacman"
+            if self.manager and src in self.manager.sources:
+                success = await self.manager.sources[src].locate({"name": name, "id": name})
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                return success
+            return False
+
+    @safe_command
+    async def run_get_storage_info(self, json_mode: bool = False):
+        import shutil
+        async with self:
+            home_path = os.path.expanduser("~")
+            total, used, free = shutil.disk_usage(home_path)
+            
+            pacman_cache = 0
+            if os.path.exists("/var/cache/pacman/pkg"):
+                try:
+                    for entry in os.scandir("/var/cache/pacman/pkg"):
+                        if entry.is_file():
+                            pacman_cache += entry.stat().st_size
+                except Exception:
+                    pass
+            
+            flatpak_cache = 0
+            flatpak_paths = [
+                os.path.expanduser("~/.local/share/flatpak"),
+                os.path.expanduser("~/.var/app")
+            ]
+            for p in flatpak_paths:
+                if os.path.exists(p):
+                    try:
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                flatpak_cache += os.path.getsize(os.path.join(root, file))
+                    except Exception:
+                        pass
+            
+            omnistore_cache = 0
+            omnistore_paths = [
+                os.path.expanduser("~/.config/omnistore"),
+                os.path.expanduser("~/.cache/omnistore")
+            ]
+            for p in omnistore_paths:
+                if os.path.exists(p):
+                    try:
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                omnistore_cache += os.path.getsize(os.path.join(root, file))
+                    except Exception:
+                        pass
+                        
+            info = {
+                "disk_total": total,
+                "disk_used": used,
+                "disk_free": free,
+                "pacman_cache": pacman_cache,
+                "flatpak_cache": flatpak_cache,
+                "omnistore_cache": omnistore_cache,
+                "total_cache": pacman_cache + flatpak_cache + omnistore_cache
+            }
+            
+            if json_mode:
+                sys.stdout.write(json.dumps(info) + "\n")
+            else:
+                console.print(f"Disk Total: {total / (1024**3):.2f} GB")
+                console.print(f"Disk Free: {free / (1024**3):.2f} GB")
+                console.print(f"Total Cache: {(pacman_cache + flatpak_cache + omnistore_cache) / (1024**2):.2f} MB")
+            sys.stdout.flush()
+            return info
+
+    @safe_command
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         import shutil
         async def cb(m): await self._flutter_callback(m, json_mode)
@@ -721,7 +892,9 @@ class CLIArguments(BaseModel):
     export_packages: Optional[str] = None
     launch: Optional[str] = None
     locate: Optional[str] = None
-    json: bool = False
+    daemon: bool = False
+    storage_info: bool = False
+    json_mode: bool = Field(default=False, alias="json")
     source: str = "AUR"
     url: Optional[str] = None
     ai_desc: Optional[str] = None
@@ -782,7 +955,7 @@ class CLIArguments(BaseModel):
         return v
 
 async def main():
-    main.json_mode_active = "--json" in sys.argv
+    setattr(main, "json_mode_active", "--json" in sys.argv)
     parser = argparse.ArgumentParser(description="Omnistore Backend")
     
     cmd = parser.add_mutually_exclusive_group()
@@ -818,6 +991,8 @@ async def main():
     cmd.add_argument("--export-packages")
     cmd.add_argument("--launch")
     cmd.add_argument("--locate")
+    cmd.add_argument("--daemon", action="store_true")
+    cmd.add_argument("--storage-info", action="store_true")
 
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--source", default="AUR")
@@ -841,20 +1016,7 @@ async def main():
 
     async def dispatch():
         """Strictly validated CLI command dispatcher."""
-<<<<<<< HEAD
-=======
-        def validate_str(val, name, pattern: Optional[str] = None):
-            if val is None or not str(val).strip():
-                raise ValueError(f"Argument '{name}' cannot be empty.")
-            cleaned = str(val).strip()
-            if pattern and not re.match(pattern, cleaned):
-                raise ValueError(f"Argument '{name}' contains illegal characters.")
-            # Default boundary defense against common shell injection characters
-            if re.search(r'[;&|]', cleaned):
-                raise ValueError(f"Argument '{name}' contains forbidden characters (;&|).")
-            return cleaned
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
         try:
             try:
                 validated_args = CLIArguments(**vars(args))
@@ -878,48 +1040,48 @@ async def main():
                 sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
             elif validated_args.search:
-                await backend.run_search(validated_args.search, validated_args.json)
+                await backend.run_search(validated_args.search, validated_args.json_mode)
 
             elif validated_args.install:
                 async with backend:
-                    if not await backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json):
+                    if not await backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode):
                         sys.exit(1)
 
             elif validated_args.remove:
                 async with backend:
-                    if not await backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json, validated_args.remove):
+                    if not await backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove):
                         sys.exit(1)
 
             elif validated_args.update:
                 async with backend:
-                    if not await backend.run_update(validated_args.update, validated_args.source, validated_args.json):
+                    if not await backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode):
                         sys.exit(1)
 
             elif validated_args.check_updates:
-                async with backend: await backend.run_check_updates(validated_args.json)
+                async with backend: await backend.run_check_updates(validated_args.json_mode)
 
             elif validated_args.list_installed:
-                await backend.run_list_installed(validated_args.json, validated_args.force_refresh)
+                await backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh)
 
             elif validated_args.details:
-                await backend.run_app_details(validated_args.details, validated_args.json)
+                await backend.run_app_details(validated_args.details, validated_args.json_mode)
 
             elif validated_args.recommend:
-                await backend.run_recommendations(validated_args.json)
+                await backend.run_recommendations(validated_args.json_mode)
 
             elif validated_args.clean_system:
-                async with backend: await backend.run_clean_system(validated_args.json)
+                async with backend: await backend.run_clean_system(validated_args.json_mode)
 
             elif validated_args.ai_summary:
-                async with backend: await backend.run_ai_summary(validated_args.json)
+                async with backend: await backend.run_ai_summary(validated_args.json_mode)
 
             elif validated_args.check_env:
                 env_res = await backend.env.check_env()
                 sys.stdout.write(json.dumps(env_res) + "\n")
 
             elif validated_args.bootstrap:
-                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, validated_args.json))
-                if validated_args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, validated_args.json_mode))
+                if validated_args.json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
 
             elif validated_args.list_custom_repos:
                 async with backend: await backend.run_list_custom_repos()
@@ -928,12 +1090,12 @@ async def main():
                 raw_repo = validated_args.add_custom_repo
                 parts = [p.strip() for p in raw_repo.split(',', 2)]
                 if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
-                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json)
+                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json_mode)
 
             elif validated_args.remove_custom_repo:
                 raw_repo = validated_args.remove_custom_repo
                 parts = [p.strip() for p in raw_repo.split(',', 1)]
-                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], validated_args.json)
+                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], validated_args.json_mode)
 
             elif validated_args.ai_explain:
                 await backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or "")
@@ -966,7 +1128,7 @@ async def main():
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
             elif validated_args.ai_pick:
-                await backend.run_ai_pick(validated_args.json)
+                await backend.run_ai_pick(validated_args.json_mode)
 
             elif validated_args.ai_correct:
                 p = validated_args.ai_correct
@@ -1004,24 +1166,23 @@ async def main():
                 async with backend: await backend.run_export_packages(validated_args.export_packages)
 
             elif validated_args.launch:
-                p = validated_args.launch
-                async with backend:
-                    src = validated_args.source.lower()
-                    if src == "native":
-                        src = "pacman"
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].launch({"name": p, "id": p})
-                        if validated_args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                await backend.run_launch(validated_args.launch, validated_args.source, validated_args.json_mode)
 
             elif validated_args.locate:
-                p = validated_args.locate
+                await backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode)
+
+            elif validated_args.storage_info:
+                await backend.run_get_storage_info(validated_args.json_mode)
+
+            elif validated_args.daemon:
                 async with backend:
-                    src = validated_args.source.lower()
-                    if src == "native":
-                        src = "pacman"
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].locate({"name": p, "id": p})
-                        if validated_args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    # Start local TCP socket server on port 9081
+                    server = await asyncio.start_server(
+                        lambda r, w: handle_daemon_client(backend, r, w),
+                        '127.0.0.1', 9081
+                    )
+                    async with server:
+                        await server.serve_forever()
 
             sys.stdout.flush()
         except Exception as e:

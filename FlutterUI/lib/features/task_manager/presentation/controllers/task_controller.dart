@@ -62,6 +62,24 @@ class TaskController with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> runCleanSystem(AppLocalizations l10n) async {
+    _isBusy = true;
+    _progress = null;
+    _status = l10n.systemCleaningStarted;
+    notifyListeners();
+
+    final stream = _taskRepository.cleanSystem();
+
+    await for (final line in stream) {
+      _parseLine(line, l10n);
+      notifyListeners();
+    }
+
+    _isBusy = false;
+    _progress = null;
+    notifyListeners();
+  }
+
   void _parseLine(String line, AppLocalizations l10n) {
     if (line.startsWith("[PROGRESS]")) {
       final val = double.tryParse(line.replaceFirst("[PROGRESS]", "").trim());

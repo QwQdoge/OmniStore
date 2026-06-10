@@ -35,7 +35,7 @@ class FlatpakSource(UnifiedSource):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
             ) as proc:
-                tasks = [proc.communicate()]
+                tasks: List[Any] = [proc.communicate()]
                 if installed_task is None:
                     tasks.append(self._get_installed_flatpaks())
                 else:
@@ -113,44 +113,26 @@ class FlatpakSource(UnifiedSource):
                         line = line_bytes.decode('utf-8', errors='ignore').strip()
                         if not line:
                             continue
-<<<<<<< HEAD
-                        
-                        if callback:
-                            await callback(f"[INFO] {line}")
-                            
-=======
 
                         if callback:
                             await callback(f"[INFO] {line}")
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
                             # Regex matching for progress percentage
                             # Format: Installing 3/8... 19% or [  19%]
                             summary_match = re.search(r"(\d+)/(\d+).*?(\d+)\s*%", line)
                             list_progress_match = re.search(r"\[\s*(\d+)%\s*\]", line)
                             speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", line)
-<<<<<<< HEAD
-                            
-=======
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
                             total_prog = None
                             if summary_match:
                                 cur, total, sub = map(int, summary_match.groups())
                                 total_prog = int(((cur - 1) / total) * 100 + (sub / total))
                             elif list_progress_match:
                                 total_prog = int(list_progress_match.group(1))
-<<<<<<< HEAD
-                                
-                            if speed_match:
-                                await callback(f"[SPEED] {speed_match.group(1)}")
-                                
-=======
 
                             if speed_match:
                                 await callback(f"[SPEED] {speed_match.group(1)}")
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
                             if total_prog is not None and total_prog > last_sent_progress:
                                 await callback(f"[PROGRESS] {total_prog}")
                                 last_sent_progress = total_prog
@@ -162,7 +144,7 @@ class FlatpakSource(UnifiedSource):
         except Exception:
             return False
         finally:
-            if proc and proc.returncode is None:
+            if 'proc' in locals() and proc and proc.returncode is None:
                 try:
                     proc.kill()
                     await proc.wait()
@@ -193,6 +175,8 @@ class FlatpakSource(UnifiedSource):
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")
+        if not app_id:
+            return False
         try:
             subprocess.Popen(["flatpak", "run", app_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return True
@@ -201,6 +185,8 @@ class FlatpakSource(UnifiedSource):
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")
+        if not app_id:
+            return False
         try:
             user_path = os.path.expanduser(f"~/.local/share/flatpak/app/{app_id}")
             if os.path.exists(user_path):

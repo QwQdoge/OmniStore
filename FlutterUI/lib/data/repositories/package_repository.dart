@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/app_package.dart';
-import '../python_bridge.dart';
+import '../../services/backend_service.dart';
 
 class PackageRepository {
-  Process? _activeSearchProcess;
   Map<String, List<AppPackage>>? _cachedRecs;
 
   Future<List<AppPackage>> searchPackages(
@@ -21,62 +19,7 @@ class PackageRepository {
       final webResults = await _webSearchPackages(query);
       return webResults.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)).toList();
     }
-
-    if (cancelOngoing) _activeSearchProcess?.kill();
-
-    try {
-      final args = ["-S", query, "--json"];
-      if (limit != null) {
-        args.addAll(["--limit", limit.toString()]);
-      }
-      if (offset != null) {
-        args.addAll(["--offset", offset.toString()]);
-      }
-
-      final process = await PythonBridge.start(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(args),
-        workingDirectory: PythonBridge.workingDir,
-      );
-
-      if (cancelOngoing) _activeSearchProcess = process;
-
-      final results = <AppPackage>[];
-      final lines = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-
-      await for (final line in lines) {
-        final trimmed = line.trim();
-        if (trimmed.isNotEmpty) {
-          final parsed = _tryParseJson(trimmed);
-          if (parsed is List) {
-            results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-          } else if (parsed is Map) {
-            if (parsed['status'] == 'error') {
-              throw Exception(parsed['error'] ?? 'Unknown backend search error');
-            }
-            results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-          }
-        }
-      }
-
-      final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 45),
-      );
-      _activeSearchProcess = null;
-
-      if (exitCode != 0) {
-        debugPrint('searchPackages failed with code $exitCode');
-        return [];
-      }
-
-      return results;
-    } catch (e) {
-      _activeSearchProcess = null;
-      debugPrint('searchPackages Exception: $e');
-      return [];
-    }
+    return BackendService.instance.searchPackages(query, cancelOngoing: cancelOngoing);
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {
@@ -200,37 +143,6 @@ class PackageRepository {
     }
   }
 
-  dynamic _tryParseJson(String input) {
-    try {
-      return jsonDecode(input);
-    } catch (_) {
-      const separator = "###JSON_START###";
-      String target = input;
-      if (input.contains(separator)) {
-        target = input.split(separator).last.trim();
-      }
-
-      // Try list brackets first
-      final startList = target.lastIndexOf('[');
-      final endList = target.lastIndexOf(']');
-      if (startList != -1 && endList != -1 && endList > startList) {
-        try {
-          return jsonDecode(target.substring(startList, endList + 1));
-        } catch (_) {}
-      }
-
-      // Try map braces
-      final startMap = target.lastIndexOf('{');
-      final endMap = target.lastIndexOf('}');
-      if (startMap != -1 && endMap != -1 && endMap > startMap) {
-        try {
-          return jsonDecode(target.substring(startMap, endMap + 1));
-        } catch (_) {}
-      }
-
-      return null;
-    }
-  }
 
   Future<List<dynamic>> listInstalled() async {
     if (kIsWeb) {
@@ -245,22 +157,7 @@ class PackageRepository {
         return [];
       }
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["-L", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 15));
-
-      if (result.exitCode != 0) return [];
-      final parsed = _tryParseJson(result.stdout.toString().trim());
-      if (parsed is List) return parsed;
-      return [];
-    } catch (e) {
-      debugPrint("ListInstalled Exception: $e");
-      return [];
-    }
+    return BackendService.instance.listInstalled();
   }
 
   Map<String, List<AppPackage>> _parseRecommendationsJson(dynamic data) {
@@ -310,7 +207,6 @@ class PackageRepository {
   }
 
   Future<Map<String, List<AppPackage>>> _fetchAndCacheRecommendations() async {
-    Map<String, List<AppPackage>> results = {};
     if (kIsWeb) {
       try {
         // Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
@@ -347,7 +243,7 @@ class PackageRepository {
             );
           }).toList();
 
-          results = {
+          return {
             "featured": apps.take(5).toList(),
             "trending": apps.skip(5).take(5).toList(),
             "for_you": apps.skip(10).take(5).toList(),
@@ -356,40 +252,24 @@ class PackageRepository {
       } catch (e) {
         debugPrint("getRecommendations Web Exception: $e");
       }
+      return {};
     } else {
-      try {
-        final result = await PythonBridge.run(
-          PythonBridge.venvPython,
-          PythonBridge.buildArgs(["--recommend", "--json"]),
-          workingDirectory: PythonBridge.workingDir,
-        ).timeout(const Duration(seconds: 20));
-
-        if (result.exitCode == 0) {
-          final output = result.stdout.toString().trim();
-          if (output.isNotEmpty) {
-            final dynamic data = jsonDecode(output);
-            results = _parseRecommendationsJson(data);
-          }
+      final results = await BackendService.instance.getRecommendations();
+      if (results.isNotEmpty) {
+        _cachedRecs = results;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final Map<String, dynamic> jsonMap = {};
+          results.forEach((key, list) {
+            jsonMap[key] = list.map((app) => app.toJson()).toList();
+          });
+          await prefs.setString('omnistore_recommendations_cache', jsonEncode(jsonMap));
+        } catch (e) {
+          debugPrint("Error writing recommendations cache: $e");
         }
-      } catch (e) {
-        debugPrint("Recommendations Exception: $e");
       }
+      return results;
     }
-
-    if (results.isNotEmpty) {
-      _cachedRecs = results;
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final Map<String, dynamic> jsonMap = {};
-        results.forEach((key, list) {
-          jsonMap[key] = list.map((app) => app.toJson()).toList();
-        });
-        await prefs.setString('omnistore_recommendations_cache', jsonEncode(jsonMap));
-      } catch (e) {
-        debugPrint("Error writing recommendations cache: $e");
-      }
-    }
-    return results;
   }
 
   void _refreshRecommendationsCache() {
@@ -448,18 +328,7 @@ class PackageRepository {
         return {};
       }
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--details", appId, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 20));
-      return jsonDecode(result.stdout);
-    } catch (e) {
-      debugPrint("getAppDetails Exception: $e");
-      return {};
-    }
+    return BackendService.instance.getAppDetails(appId);
   }
 
   Future<List<dynamic>> getEssentials() async {
@@ -487,22 +356,7 @@ class PackageRepository {
         }
       ];
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--essentials", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      final parsed = _tryParseJson(result.stdout.toString().trim());
-      if (parsed is List) return parsed;
-      return [];
-    } catch (e) {
-      debugPrint("getEssentials Exception: $e");
-      return [];
-    }
+    return BackendService.instance.getEssentials();
   }
 
   Future<bool> launchApp(String name, String source) async {
@@ -515,67 +369,20 @@ class PackageRepository {
       }
       return false;
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs([
-          "--launch",
-          name,
-          "--source",
-          source,
-          "--json",
-        ]),
-        workingDirectory: PythonBridge.workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    return BackendService.instance.launchApp(name, source);
   }
 
   Future<bool> locateApp(String name, String source) async {
     if (kIsWeb) {
       return launchApp(name, source);
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs([
-          "--locate",
-          name,
-          "--source",
-          source,
-          "--json",
-        ]),
-        workingDirectory: PythonBridge.workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    return BackendService.instance.locateApp(name, source);
   }
 
   Future<List<dynamic>> importPackages(String filepath) async {
     if (kIsWeb) {
       return [];
     }
-
-    try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--import-packages", filepath, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      final parsed = _tryParseJson(result.stdout.toString().trim());
-      if (parsed is List) return parsed;
-      return [];
-    } catch (e) {
-      debugPrint("importPackages Exception: $e");
-      return [];
-    }
+    return BackendService.instance.importPackages(filepath);
   }
 }

@@ -1065,4 +1065,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get langSpanish => 'Español';
+
+  @override
+  String get taskInProgress => 'Otra tarea ya está en progreso';
 }

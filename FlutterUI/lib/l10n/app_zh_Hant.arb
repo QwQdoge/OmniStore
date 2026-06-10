@@ -1359,5 +1359,9 @@
   "langTraditionalChinese": "繁體中文",
   "langEnglish": "英語 (English)",
   "langJapanese": "日語 (日本語)",
-  "langSpanish": "西班牙語 (Español)"
+  "langSpanish": "西班牙語 (Español)",
+  "taskInProgress": "另一個任務正在進行中",
+  "@taskInProgress": {
+    "description": "Error message when trying to start a task while another is running"
+  }
 }

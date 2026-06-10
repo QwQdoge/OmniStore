@@ -2028,6 +2028,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Spanish'**
   String get langSpanish;
+
+  /// Error message when trying to start a task while another is running
+  ///
+  /// In en, this message translates to:
+  /// **'Another task is already in progress'**
+  String get taskInProgress;
 }
 
 class _AppLocalizationsDelegate

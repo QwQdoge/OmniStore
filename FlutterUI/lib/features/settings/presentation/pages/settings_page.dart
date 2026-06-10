@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
 import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -30,6 +30,94 @@ class _SettingsPageState extends State<SettingsPage> {
   final FocusNode _apiKeyFocus = FocusNode();
   final FocusNode _tempFocus = FocusNode();
 
+  Map<String, dynamic>? _storageInfo;
+  bool _loadingStorage = false;
+
+  Future<void> _fetchStorageInfo() async {
+    if (!mounted) return;
+    setState(() => _loadingStorage = true);
+    try {
+      final info = await BackendService.instance.getStorageInfo();
+      if (mounted) {
+        setState(() {
+          _storageInfo = info;
+          _loadingStorage = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loadingStorage = false);
+      }
+    }
+  }
+
+  Future<void> _triggerCleanup(BuildContext context, AppLocalizations l10n) async {
+    final taskController = context.read<TaskController>();
+    if (taskController.isBusy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.taskInProgress)),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AnimatedBuilder(
+          animation: taskController,
+          builder: (context, child) {
+            return AlertDialog(
+              title: Text(l10n.systemCleaning),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(taskController.status),
+                  const SizedBox(height: 16),
+                  if (taskController.progress != null)
+                    LinearProgressIndicator(value: taskController.progress)
+                  else
+                    const LinearProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 150,
+                    width: double.maxFinite,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        taskController.logs.join('\n'),
+                        style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (!taskController.isBusy)
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l10n.confirm),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    await taskController.runCleanSystem(l10n);
+    await _fetchStorageInfo();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _tempController = TextEditingController(
       text: (settings.config['ai']?['temperature'] ?? 0.7).toString(),
     );
+    _fetchStorageInfo();
   }
 
   SettingsController? _settingsController;
@@ -159,20 +248,6 @@ class _SettingsPageState extends State<SettingsPage> {
           // Primary Settings
           _buildSection(l10n.general),
           ListTile(
-<<<<<<< HEAD
-            title: const Text("界面语言 / Language"),
-            subtitle: Text(
-              settings.language == 'zh-CN'
-                  ? '简体中文'
-                  : settings.language == 'zh-TW'
-                  ? '繁體中文'
-                  : settings.language == 'ja-JP'
-                  ? '日本語'
-                  : settings.language == 'es-ES' || settings.language == 'es'
-                  ? 'Español'
-                  : 'English',
-            ),
-=======
             title: Text(l10n.language),
             subtitle: Text(settings.language == 'zh-CN'
                 ? l10n.langSimplifiedChinese
@@ -183,7 +258,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         : settings.language == 'es-ES' || settings.language == 'es'
                             ? l10n.langSpanish
                             : l10n.langEnglish),
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
             trailing: DropdownButton<String>(
               value: settings.language,
               underline: const SizedBox(),
@@ -216,15 +290,8 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (val) {
               settings.setUseSystemTitleBar(val);
               ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-                const SnackBar(
-                  content: Text(
-                    "请重启应用以应用标题栏设置 / Please restart to apply title bar changes",
-                  ),
-=======
                 SnackBar(
                   content: Text(l10n.configSaved),
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
                 ),
               );
             },
@@ -240,16 +307,100 @@ class _SettingsPageState extends State<SettingsPage> {
               settings.updateConfig(config);
             },
           ),
-          ListTile(
-            title: Text(l10n.systemCleaning),
-            subtitle: Text(l10n.systemCleaningSubtitle),
-            trailing: const Icon(Icons.delete_sweep_rounded),
-            onTap: () {
-              context.read<TaskRepository>().cleanSystem().listen((_) {});
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(l10n.processing)));
-            },
+          // Storage & Cleanup Card
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.storage_rounded, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.systemCleaning,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.refresh_rounded),
+                        onPressed: _fetchStorageInfo,
+                        tooltip: l10n.refresh,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_loadingStorage)
+                    const LinearProgressIndicator()
+                  else if (_storageInfo != null) ...[
+                    // Disk Space
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Disk: ${((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB free / ${((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB total",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: ((_storageInfo!['disk_used'] ?? 0) /
+                            ((_storageInfo!['disk_total'] ?? 1) == 0 ? 1 : (_storageInfo!['disk_total'] ?? 1))),
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Cache Info
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Pacman: ${((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB | Flatpak: ${((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB | Custom: ${((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton.icon(
+                          onPressed: () => _triggerCleanup(context, l10n),
+                          icon: const Icon(Icons.delete_sweep_rounded),
+                          label: Text(l10n.systemCleaning),
+                        ),
+                      ],
+                    ),
+                  ] else
+                    Text(
+                      l10n.systemCleaningSubtitle,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                ],
+              ),
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -357,26 +508,6 @@ class _SettingsPageState extends State<SettingsPage> {
               (val) => _debounceUpdateAIConfig('api_key', val, settings),
               isPassword: true,
             ),
-<<<<<<< HEAD
-            _buildTextField(l10n.aiTemperature, _tempController, _tempFocus, (
-              val,
-            ) {
-              final d = double.tryParse(val);
-              if (d == null) {
-                setState(
-                  () => _tempError = "请输入有效的数字 / Please enter a valid number",
-                );
-              } else if (d < 0.0 || d > 2.0) {
-                setState(
-                  () => _tempError =
-                      "温度必须在 0.0 到 2.0 之间 / Must be between 0.0 and 2.0",
-                );
-              } else {
-                setState(() => _tempError = null);
-                _debounceUpdateAIConfig('temperature', d, settings);
-              }
-            }, errorText: _tempError),
-=======
             _buildTextField(
               l10n.aiTemperature,
               _tempController,
@@ -394,7 +525,6 @@ class _SettingsPageState extends State<SettingsPage> {
               },
               errorText: _tempError,
             ),
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
           ],
         ],
       ),

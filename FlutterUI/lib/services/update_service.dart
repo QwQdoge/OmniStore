@@ -218,13 +218,70 @@ class UpdateService {
     }
   }
 
+  int? _currentInterval;
+
   void _startUpdateTimer() {
-    _updateTimer?.cancel();
     final interval = _config['updates']?['check_interval_hours'] ?? 1;
+    if (_updateTimer != null && _currentInterval == interval) {
+      return; // Do not restart if interval is unchanged
+    }
+    _currentInterval = interval;
+    _updateTimer?.cancel();
     _updateTimer = Timer.periodic(Duration(hours: interval), (timer) {
       checkNow();
     });
     checkNow();
+    _setupSystemdBackgroundTimer(interval);
+  }
+
+  Future<void> _setupSystemdBackgroundTimer(int intervalHours) async {
+    if (!Platform.isLinux) return;
+    try {
+      final home = Platform.environment['HOME'] ?? '/home/user';
+      final systemdDir = Directory(p.join(home, '.config', 'systemd', 'user'));
+      if (!systemdDir.existsSync()) {
+        systemdDir.createSync(recursive: true);
+      }
+
+      final serviceFile = File(
+        p.join(systemdDir.path, 'omnistore-update.service'),
+      );
+      final timerFile = File(p.join(systemdDir.path, 'omnistore-update.timer'));
+
+      final exePath = Platform.resolvedExecutable;
+
+      serviceFile.writeAsStringSync('''[Unit]
+Description=OmniStore Background Update Checker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=$exePath --check-updates-background
+Restart=no
+''');
+
+      timerFile.writeAsStringSync('''[Unit]
+Description=Run OmniStore Background Update Checker
+
+[Timer]
+OnCalendar=*:0/$intervalHours
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+''');
+
+      // Enable the timer
+      await Process.run('systemctl', ['--user', 'daemon-reload']);
+      await Process.run('systemctl', [
+        '--user',
+        'enable',
+        '--now',
+        'omnistore-update.timer',
+      ]);
+    } catch (e) {
+      debugPrint("Failed to setup systemd background timer: $e");
+    }
   }
 
   Future<void> checkNow() async {

@@ -1033,4 +1033,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get langSpanish => 'スペイン語';
+
+  @override
+  String get taskInProgress => '別のタスクが既に実行中です';
 }

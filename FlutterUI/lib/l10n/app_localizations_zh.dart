@@ -1028,6 +1028,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get langSpanish => '西班牙语 (Español)';
+
+  @override
+  String get taskInProgress => '另一个任务正在进行中';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2054,4 +2057,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get langSpanish => '西班牙語 (Español)';
+
+  @override
+  String get taskInProgress => '另一個任務正在進行中';
 }

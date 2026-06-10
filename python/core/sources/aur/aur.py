@@ -38,7 +38,7 @@ class AurSource(UnifiedSource):
         try:
             installed_task = kwargs.get("installed_aur_task")
 
-            tasks = [
+            tasks: List[Any] = [
                 self.session.get(f"{self.api}{query}", timeout=aiohttp.ClientTimeout(total=8))
             ]
             if installed_task is None:
@@ -78,7 +78,6 @@ class AurSource(UnifiedSource):
             return final_results
         except Exception:
             return []
-
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         if not await self.privilege.ensure_privileged(callback):
             return False
@@ -87,69 +86,48 @@ class AurSource(UnifiedSource):
         helper = "yay" if os.path.exists("/usr/bin/yay") else "makepkg"
 
         if helper == "yay":
-            if callback:
-                await callback(f"[INFO] Running: yay -S --noconfirm {name}")
-            async with safe_subprocess(
-                "yay", "-S", "--noconfirm", name,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
-            ) as proc:
-<<<<<<< HEAD
-                
-=======
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
-                last_sent_progress = -1
-                if proc.stdout:
-                    while True:
-                        line_bytes = await proc.stdout.readline()
-                        if not line_bytes: break
-                        line = line_bytes.decode('utf-8', errors='ignore').strip()
-                        if not line: continue
-<<<<<<< HEAD
-                        
-                        if callback:
-                            await callback(f"[INFO] {line}")
-                            
-                            # Parse yay/pacman download progress & speed
-                            progress_match = re.search(r"(\d+)%", line)
-                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", line)
-                            
-=======
+            try:
+                if callback:
+                    await callback(f"[INFO] Running: yay -S --noconfirm {name}")
+                async with safe_subprocess(
+                    "yay", "-S", "--noconfirm", name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT
+                ) as proc:
+                    last_sent_progress = -1
+                    if proc.stdout:
+                        while True:
+                            line_bytes = await proc.stdout.readline()
+                            if not line_bytes: break
+                            line = line_bytes.decode('utf-8', errors='ignore').strip()
+                            if not line: continue
 
-                        if callback:
-                            await callback(f"[INFO] {line}")
+                            if callback:
+                                await callback(f"[INFO] {line}")
 
-                            # Parse yay/pacman download progress & speed
-                            progress_match = re.search(r"(\d+)%", line)
-                            speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", line)
+                                # Parse yay/pacman download progress & speed
+                                progress_match = re.search(r"(\d+)%", line)
+                                speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?i?B/s)", line)
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
-                            if progress_match:
-                                percent = int(progress_match.group(1))
-                                if percent > last_sent_progress:
-                                    await callback(f"[PROGRESS] {percent}")
-                                    last_sent_progress = percent
-<<<<<<< HEAD
-                            
-=======
+                                if progress_match:
+                                    percent = int(progress_match.group(1))
+                                    if percent > last_sent_progress:
+                                        await callback(f"[PROGRESS] {percent}")
+                                        last_sent_progress = percent
+                                if speed_match:
+                                    await callback(f"[SPEED] {speed_match.group(1)}")
 
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
-                            if speed_match:
-                                await callback(f"[SPEED] {speed_match.group(1)}")
-
-                await proc.wait()
-                if proc.returncode == 0 and callback:
-                    await callback("[PROGRESS] 100")
-                return proc.returncode == 0
-<<<<<<< HEAD
-=======
+                    await proc.wait()
+                    if proc.returncode == 0 and callback:
+                        await callback("[PROGRESS] 100")
+                    return proc.returncode == 0
             except Exception:
                 return False
->>>>>>> 0a17cab997c6763e54edc6d7310373d52334eb62
         else:
             if callback:
                 await callback("[ERROR] No AUR helper (like yay) found. Please install one.")
             return False
+
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
         if not await self.privilege.ensure_privileged(callback):
@@ -176,6 +154,8 @@ class AurSource(UnifiedSource):
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
+        if not name:
+            return False
         try:
             subprocess.Popen([name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return True
@@ -184,6 +164,8 @@ class AurSource(UnifiedSource):
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
+        if not name:
+            return False
         try:
             async with safe_subprocess("which", name, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                 stdout, _ = await proc.communicate()
