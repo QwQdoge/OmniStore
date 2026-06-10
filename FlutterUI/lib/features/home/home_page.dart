@@ -139,11 +139,14 @@ class _HomePageState extends State<HomePage> {
               child: Consumer<SettingsController>(
                 builder: (context, settings, _) {
                   if (!settings.isAIEnabled) return const SizedBox.shrink();
-                  return _isAILoading
-                      ? _buildAIPickSkeleton()
-                      : (_aiPickBlurb != null
-                          ? _buildAIPickSection()
-                          : const SizedBox.shrink());
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _isAILoading
+                        ? _buildAIPickSkeleton(key: const ValueKey('ai_skeleton'))
+                        : (_aiPickBlurb != null
+                            ? _buildAIPickSection(key: const ValueKey('ai_content'))
+                            : SizedBox.shrink(key: const ValueKey('ai_empty'))),
+                  );
                 },
               ),
             ),
@@ -460,8 +463,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSkeleton() {
+  Widget _buildAIPickSkeleton({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -489,8 +493,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSection() {
+  Widget _buildAIPickSection({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

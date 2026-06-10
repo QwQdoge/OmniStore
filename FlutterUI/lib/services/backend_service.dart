@@ -423,7 +423,7 @@ class BackendService {
       final parsed = _tryParseJson(output);
       if (parsed is List) {
         results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-      } else if (parsed is Map) {
+      } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
       }
 
@@ -734,7 +734,6 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
-
     // 边界校验与防呆
     final trimmedName = n.trim();
     if (trimmedName.isEmpty) {
