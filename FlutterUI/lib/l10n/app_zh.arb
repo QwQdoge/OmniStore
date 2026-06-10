@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已就绪",
+  "ready": "已安装",
   "@ready": {
     "description": "Description for ready"
   },
@@ -745,7 +745,7 @@
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！您的系统非常完美。",
+  "envOkDesc": "一切就绪！系统环境已完美配置。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -777,7 +777,7 @@
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
+  "bootstrapNote": "提示：配置过程可能需要多次输入管理员密码。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -1291,5 +1291,74 @@
   },
   "@personalAccessToken": {
     "description": "Label for personal access token"
-  }
+  },
+  "language": "界面语言",
+  "languageSubtitle": "重启应用后生效",
+  "restartTitleBar": "请重启应用以使标题栏设置生效",
+  "enableDaemon": "启用后台更新守护进程",
+  "enableDaemonDesc": "在系统后台定期静默检查应用更新",
+  "autoUpdate": "静默自动更新",
+  "autoUpdateDesc": "在后台自动下载并更新所有可升级的软件包",
+  "checkIntervalTitle": "检查更新频率",
+  "checkIntervalSubtitle": "每隔 {hours} 小时检查一次",
+  "typography": "字体与排版",
+  "fontFamily": "字体系列",
+  "fontScale": "字体缩放比例",
+  "systemDefault": "系统默认",
+  "hourValue": "{count} 小时",
+  "@language": {
+    "description": "Label for language setting"
+  },
+  "@languageSubtitle": {
+    "description": "Subtitle for language setting"
+  },
+  "@restartTitleBar": {
+    "description": "Message to restart for title bar changes"
+  },
+  "@enableDaemon": {
+    "description": "Label for background daemon"
+  },
+  "@enableDaemonDesc": {
+    "description": "Description for background daemon"
+  },
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
+  "@autoUpdateDesc": {
+    "description": "Description for auto update"
+  },
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@typography": {
+    "description": "Title for typography settings"
+  },
+  "@fontFamily": {
+    "description": "Label for font family setting"
+  },
+  "@fontScale": {
+    "description": "Label for font scale setting"
+  },
+  "@systemDefault": {
+    "description": "Label for system default option"
+  },
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "简体中文",
+  "langTraditionalChinese": "繁體中文",
+  "langEnglish": "英语 (English)",
+  "langJapanese": "日语 (日本語)",
+  "langSpanish": "西班牙语 (Español)"
 }

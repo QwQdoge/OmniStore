@@ -36,7 +36,6 @@ class AurSource(UnifiedSource):
             return []
 
         try:
-            # ⚡ Optimization: Use provided pre-fetch task to avoid redundant subprocess calls while maintaining parallelism
             installed_task = kwargs.get("installed_aur_task")
 
             tasks = [
@@ -81,13 +80,10 @@ class AurSource(UnifiedSource):
             return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        # Note: yay handles its own sudo, but for manual makepkg we might need it.
-        # Also ensure_privileged caches the auth for other operations.
         if not await self.privilege.ensure_privileged(callback):
             return False
 
         name = package.get("name")
-        # Prefer 'yay' for AUR
         helper = "yay" if os.path.exists("/usr/bin/yay") else "makepkg"
 
         if helper == "yay":
@@ -126,6 +122,8 @@ class AurSource(UnifiedSource):
                 if proc.returncode == 0 and callback:
                     await callback("[PROGRESS] 100")
                 return proc.returncode == 0
+            except Exception:
+                return False
         else:
             if callback:
                 await callback("[ERROR] No AUR helper (like yay) found. Please install one.")
@@ -138,18 +136,21 @@ class AurSource(UnifiedSource):
         name = package.get("name")
         if callback:
             await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
-        async with safe_subprocess(
-            "sudo", "pacman", "-Rs", "--noconfirm", name,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT
-        ) as proc:
-            if proc.stdout:
-                while True:
-                    line = await proc.stdout.readline()
-                    if not line: break
-                    if callback: await callback(line.decode().strip())
-            await proc.wait()
-            return proc.returncode == 0
+        try:
+            async with safe_subprocess(
+                "sudo", "pacman", "-Rs", "--noconfirm", name,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT
+            ) as proc:
+                if proc.stdout:
+                    while True:
+                        line = await proc.stdout.readline()
+                        if not line: break
+                        if callback: await callback(line.decode().strip())
+                await proc.wait()
+                return proc.returncode == 0
+        except Exception:
+            return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
