@@ -405,7 +405,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final settings = context.watch<SettingsController>();
-    final task = context.watch<TaskController>();
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
@@ -491,9 +490,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 label: AppLocalizations.of(context)!.terminalOutput,
                 button: true,
                 child: IconButton(
-                  icon: Badge(
-                    isLabelVisible: task.isBusy,
-                    child: const Icon(Icons.terminal_rounded),
+                  icon: Selector<TaskController, bool>(
+                    selector: (context, tc) => tc.isBusy,
+                    builder: (context, isBusy, child) => Badge(
+                      isLabelVisible: isBusy,
+                      child: const Icon(Icons.terminal_rounded),
+                    ),
                   ),
                   tooltip: AppLocalizations.of(context)!.terminalOutput,
                   onPressed: _showTerminalDialog,
@@ -518,7 +520,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           children: [
                             _buildHeader(theme),
                             const SizedBox(height: 24),
-                            _buildActionArea(colorScheme, task),
+                            Consumer<TaskController>(
+                              builder: (context, task, _) =>
+                                  _buildActionArea(colorScheme, task),
+                            ),
                             const SizedBox(height: 32),
                             _buildSectionTitle(
                               theme,
@@ -665,7 +670,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                     ],
                   )
-                : _buildMainContent(context, colorScheme, theme, task, settings),
+                : Consumer<TaskController>(
+                    builder: (context, task, _) => _buildMainContent(
+                      context,
+                      colorScheme,
+                      theme,
+                      task,
+                      settings,
+                    ),
+                  ),
           ),
         ),
       ),
