@@ -211,10 +211,10 @@ abstract class AppLocalizations {
   /// **'Source'**
   String get source;
 
-  /// Description for variant
+  /// Label for app variants/versions
   ///
   /// In en, this message translates to:
-  /// **'Variant'**
+  /// **'Versions'**
   String get variant;
 
   /// Description for version
@@ -1914,6 +1914,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name copied to clipboard'**
   String get nameCopied;
+
+  /// Label for language setting
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// Subtitle for language setting
+  ///
+  /// In en, this message translates to:
+  /// **'Requires restart to take effect'**
+  String get languageSubtitle;
+
+  /// Message to restart for title bar changes
+  ///
+  /// In en, this message translates to:
+  /// **'Please restart to apply title bar changes'**
+  String get restartTitleBar;
+
+  /// Label for background daemon
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Background Update Daemon'**
+  String get enableDaemon;
+
+  /// Description for background daemon
+  ///
+  /// In en, this message translates to:
+  /// **'Regularly check for updates in the background'**
+  String get enableDaemonDesc;
+
+  /// Label for auto update
+  ///
+  /// In en, this message translates to:
+  /// **'Silent Auto Update'**
+  String get autoUpdate;
+
+  /// Description for auto update
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically download and update all packages in the background'**
+  String get autoUpdateDesc;
+
+  /// Title for update check interval
+  ///
+  /// In en, this message translates to:
+  /// **'Update Check Frequency'**
+  String get checkIntervalTitle;
+
+  /// No description provided for @checkIntervalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically check every {hours} hours'**
+  String checkIntervalSubtitle(int hours);
+
+  /// Title for typography settings
+  ///
+  /// In en, this message translates to:
+  /// **'Typography'**
+  String get typography;
+
+  /// Label for font family setting
+  ///
+  /// In en, this message translates to:
+  /// **'Font Family'**
+  String get fontFamily;
+
+  /// Label for font scale setting
+  ///
+  /// In en, this message translates to:
+  /// **'Font Scale'**
+  String get fontScale;
+
+  /// Label for system default option
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemDefault;
+
+  /// No description provided for @hourValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour} other{{count} hours}}'**
+  String hourValue(int count);
+
+  /// No description provided for @langSimplifiedChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplified Chinese'**
+  String get langSimplifiedChinese;
+
+  /// No description provided for @langTraditionalChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'Traditional Chinese'**
+  String get langTraditionalChinese;
+
+  /// No description provided for @langEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get langEnglish;
+
+  /// No description provided for @langJapanese.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get langJapanese;
+
+  /// No description provided for @langSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get langSpanish;
 }
 
 class _AppLocalizationsDelegate

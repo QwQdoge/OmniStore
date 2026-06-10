@@ -69,7 +69,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get version => '版本';
 
   @override
-  String get ready => '已就绪';
+  String get ready => '已安装';
 
   @override
   String resultsFound(int count) {
@@ -554,7 +554,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！您的系统非常完美。';
+  String get envOkDesc => '一切就绪！系统环境已完美配置。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -578,7 +578,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
 
   @override
-  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
+  String get bootstrapNote => '提示：配置过程可能需要多次输入管理员密码。';
 
   @override
   String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
@@ -967,6 +967,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nameCopied => '名称已复制到剪贴板';
+
+  @override
+  String get language => '界面语言';
+
+  @override
+  String get languageSubtitle => '重启应用后生效';
+
+  @override
+  String get restartTitleBar => '请重启应用以使标题栏设置生效';
+
+  @override
+  String get enableDaemon => '启用后台更新守护进程';
+
+  @override
+  String get enableDaemonDesc => '在系统后台定期静默检查应用更新';
+
+  @override
+  String get autoUpdate => '静默自动更新';
+
+  @override
+  String get autoUpdateDesc => '在后台自动下载并更新所有可升级的软件包';
+
+  @override
+  String get checkIntervalTitle => '检查更新频率';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return '每隔 $hours 小时检查一次';
+  }
+
+  @override
+  String get typography => '字体与排版';
+
+  @override
+  String get fontFamily => '字体系列';
+
+  @override
+  String get fontScale => '字体缩放比例';
+
+  @override
+  String get systemDefault => '系统默认';
+
+  @override
+  String hourValue(int count) {
+    return '$count 小时';
+  }
+
+  @override
+  String get langSimplifiedChinese => '简体中文';
+
+  @override
+  String get langTraditionalChinese => '繁體中文';
+
+  @override
+  String get langEnglish => '英语 (English)';
+
+  @override
+  String get langJapanese => '日语 (日本語)';
+
+  @override
+  String get langSpanish => '西班牙语 (Español)';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1034,7 +1095,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get version => '版本';
 
   @override
-  String get ready => '已就緒';
+  String get ready => '已安裝';
 
   @override
   String resultsFound(int count) {
@@ -1519,7 +1580,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動設定。';
 
   @override
-  String get envOkDesc => '一切就緒！您的系統非常完美。';
+  String get envOkDesc => '一切就緒！系統環境已完美配置。';
 
   @override
   String get fixProblems => '一鍵修復/設定';
@@ -1543,7 +1604,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
 
   @override
-  String get bootstrapNote => '注意：設定過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '提示：設定過程可能需要多次輸入管理員密碼。';
 
   @override
   String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
@@ -1932,4 +1993,65 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get nameCopied => '名稱已複製到剪貼簿';
+
+  @override
+  String get language => '介面語言';
+
+  @override
+  String get languageSubtitle => '重啟應用程式後生效';
+
+  @override
+  String get restartTitleBar => '請重啟應用程式以使標題列設定生效';
+
+  @override
+  String get enableDaemon => '啟用背景更新守護程序';
+
+  @override
+  String get enableDaemonDesc => '在系統背景定期靜默檢查應用程式更新';
+
+  @override
+  String get autoUpdate => '靜默自動更新';
+
+  @override
+  String get autoUpdateDesc => '在背景自動下載並更新所有可升級的套件';
+
+  @override
+  String get checkIntervalTitle => '檢查更新頻率';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return '每隔 $hours 小時檢查一次';
+  }
+
+  @override
+  String get typography => '字體與排版';
+
+  @override
+  String get fontFamily => '字體系列';
+
+  @override
+  String get fontScale => '字體縮放比例';
+
+  @override
+  String get systemDefault => '系統預設';
+
+  @override
+  String hourValue(int count) {
+    return '$count 小時';
+  }
+
+  @override
+  String get langSimplifiedChinese => '簡體中文';
+
+  @override
+  String get langTraditionalChinese => '繁體中文';
+
+  @override
+  String get langEnglish => '英語 (English)';
+
+  @override
+  String get langJapanese => '日語 (日本語)';
+
+  @override
+  String get langSpanish => '西班牙語 (Español)';
 }

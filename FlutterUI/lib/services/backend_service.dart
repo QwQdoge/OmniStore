@@ -422,10 +422,9 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-        results.addAll(parsed
-            .map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-      } else if (parsed is Map<String, dynamic>) {
-        results.add(AppPackage.fromJson(parsed));
+        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
+      } else if (parsed is Map) {
+        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
       }
 
       return results;
@@ -435,12 +434,10 @@ class BackendService {
     } finally {
       if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
-        // Murphy-proof: 显式释放进程资源，防止僵尸进程
-        try {
-          if (_isProcessAlive(activeSearchProcess!)) {
-            await _killProcess(activeSearchProcess);
-          }
-        } catch (_) {}
+        // Murphy-proof: Ensure process is reaped if still alive after join/timeout
+        if (_isProcessAlive(activeSearchProcess!)) {
+          await _killProcess(activeSearchProcess);
+        }
       }
       activeSearchProcess = null;
     }
