@@ -1287,5 +1287,50 @@
   },
   "@personalAccessToken": {
     "description": "Label for personal access token"
-  }
+  },
+  "language": "表示言語",
+  "languageSubtitle": "再起動後に有効になります",
+  "restartTitleBar": "タイトルバーの設定を適用するには再起動してください",
+  "enableDaemon": "バックグラウンド更新を有効にする",
+  "enableDaemonDesc": "バックグラウンドで定期的に更新を確認します",
+  "autoUpdate": "サイレント自動更新",
+  "autoUpdateDesc": "バックグラウンドでパッケージを自動的に更新します",
+  "checkIntervalTitle": "更新確認の間隔",
+  "checkIntervalSubtitle": "{hours} 時間ごとに確認",
+  "typography": "フォントとタイポグラフィ",
+  "fontFamily": "フォントファミリー",
+  "fontScale": "フォントの拡大率",
+  "systemDefault": "システム既定",
+  "hourValue": "{count} 時間",
+  "@language": {},
+  "@languageSubtitle": {},
+  "@restartTitleBar": {},
+  "@enableDaemon": {},
+  "@enableDaemonDesc": {},
+  "@autoUpdate": {},
+  "@autoUpdateDesc": {},
+  "@checkIntervalTitle": {},
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@typography": {},
+  "@fontFamily": {},
+  "@fontScale": {},
+  "@systemDefault": {},
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "中国語 (簡体字)",
+  "langTraditionalChinese": "中国語 (繁体字)",
+  "langEnglish": "英語",
+  "langJapanese": "日本語",
+  "langSpanish": "スペイン語"
 }

@@ -995,4 +995,74 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nameCopied => 'Nombre copiado al portapapeles';
+
+  @override
+  String get language => 'Idioma de la interfaz';
+
+  @override
+  String get languageSubtitle => 'Requiere reiniciar para aplicarse';
+
+  @override
+  String get restartTitleBar =>
+      'Reinicie la aplicación para aplicar los cambios en la barra de título';
+
+  @override
+  String get enableDaemon => 'Activar demonio de actualización';
+
+  @override
+  String get enableDaemonDesc =>
+      'Buscar actualizaciones periódicamente en segundo plano';
+
+  @override
+  String get autoUpdate => 'Actualización automática silenciosa';
+
+  @override
+  String get autoUpdateDesc =>
+      'Descargar e instalar actualizaciones automáticamente en segundo plano';
+
+  @override
+  String get checkIntervalTitle => 'Frecuencia de comprobación';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return 'Comprobar cada $hours horas';
+  }
+
+  @override
+  String get typography => 'Tipografía';
+
+  @override
+  String get fontFamily => 'Familia de fuentes';
+
+  @override
+  String get fontScale => 'Escala de fuente';
+
+  @override
+  String get systemDefault => 'Predeterminado del sistema';
+
+  @override
+  String hourValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get langSimplifiedChinese => 'Chino simplificado';
+
+  @override
+  String get langTraditionalChinese => 'Chino tradicional';
+
+  @override
+  String get langEnglish => 'Inglés';
+
+  @override
+  String get langJapanese => 'Japonés';
+
+  @override
+  String get langSpanish => 'Español';
 }
