@@ -141,6 +141,8 @@ class FlatpakSource(UnifiedSource):
                 if proc.returncode == 0 and callback:
                     await callback("[PROGRESS] 100")
                 return proc.returncode == 0
+        except Exception:
+            return False
         finally:
             if proc and proc.returncode is None:
                 try:
