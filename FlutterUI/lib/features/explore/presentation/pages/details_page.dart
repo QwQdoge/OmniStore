@@ -380,7 +380,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-<<<<<<< HEAD
                     height: 220,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
@@ -415,34 +414,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   width: 360,
                                   height: 220,
                                   borderRadius: 20.0,
-=======
-                    height: 236,
-                    child: Scrollbar(
-                      controller: _screenshotScrollController,
-                      thumbVisibility: true,
-                      child: ListView.separated(
-                        controller: _screenshotScrollController,
-                        padding: const EdgeInsets.only(bottom: 16),
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount:
-                            (_extraDetails!['screenshots'] as List).length,
-                        separatorBuilder: (context, _) =>
-                            const SizedBox(width: 16),
-                        itemBuilder: (context, index) {
-                          final imageUrl = _extraDetails!['screenshots'][index];
-                          return Hero(
-                            tag: 'screenshot-$imageUrl',
-                            child: Card(
-                              elevation: 0,
-                              margin: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: BorderSide(
-                                  color: colorScheme.outlineVariant.withValues(
-                                    alpha: 0.5,
-                                  ),
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
                                 ),
                               ),
                               clipBehavior: Clip.antiAlias,

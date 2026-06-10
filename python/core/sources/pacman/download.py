@@ -3,6 +3,7 @@ import re
 from core.subprocess_utils import safe_subprocess
 from typing import Dict, Any, Callable
 from core.sources.utils import PrivilegeManager
+from core.subprocess_utils import safe_subprocess
 
 privilege = PrivilegeManager()
 
@@ -14,11 +15,12 @@ async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> 
     if callback:
         await callback(f"[INFO] Running: sudo pacman -S --noconfirm {name}")
 
-    async with safe_subprocess(
-        "sudo", "pacman", "-S", "--noconfirm", name,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT
-    ) as proc:
+    try:
+        async with safe_subprocess(
+            "sudo", "pacman", "-S", "--noconfirm", name,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT
+        ) as proc:
 
         last_sent_progress = -1
         if proc.stdout:
@@ -58,11 +60,12 @@ async def uninstall_pacman(package: Dict[str, Any], callback: Callable = None) -
     if callback:
         await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
 
-    async with safe_subprocess(
-        "sudo", "pacman", "-Rs", "--noconfirm", name,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT
-    ) as proc:
+    try:
+        async with safe_subprocess(
+            "sudo", "pacman", "-Rs", "--noconfirm", name,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT
+        ) as proc:
 
         if proc.stdout:
             while True:
