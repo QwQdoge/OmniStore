@@ -380,42 +380,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-<<<<<<< HEAD
-                    height: 220,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: (_extraDetails!['screenshots'] as List).length,
-                      separatorBuilder: (context, _) =>
-                          const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        final imageUrl = _extraDetails!['screenshots'][index];
-                        return Hero(
-                          tag: 'screenshot-$imageUrl',
-                          child: Card(
-                            elevation: 0,
-                            margin: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                              side: BorderSide(
-                                color: colorScheme.outlineVariant.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: () => _showScreenshotViewer(imageUrl),
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: 360,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 720,
-                                placeholder: (context, url) => const Skeleton(
-                                  width: 360,
-                                  height: 220,
-                                  borderRadius: 20.0,
-=======
                     height: 236,
                     child: Scrollbar(
                       controller: _screenshotScrollController,
@@ -442,7 +406,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   color: colorScheme.outlineVariant.withValues(
                                     alpha: 0.5,
                                   ),
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
                                 ),
                               ),
                               clipBehavior: Clip.antiAlias,
@@ -453,14 +416,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   width: 360,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 720,
-                                  placeholder: (context, url) => Container(
+                                  placeholder: (context, url) => const Skeleton(
                                     width: 360,
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
+                                    height: 220,
+                                    borderRadius: 20.0,
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(

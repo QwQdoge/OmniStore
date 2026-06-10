@@ -417,15 +417,9 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-<<<<<<< HEAD
         results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-=======
-        results.addAll(parsed);
-      } else if (parsed is Map) {
-        results.add(parsed);
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
 
       return results;
@@ -435,13 +429,10 @@ class BackendService {
     } finally {
       if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
-<<<<<<< HEAD
-=======
         // Murphy-proof: Ensure process is reaped if still alive after join/timeout
         if (_isProcessAlive(activeSearchProcess!)) {
           await _killProcess(activeSearchProcess);
         }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
       activeSearchProcess = null;
     }
@@ -738,14 +729,6 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
-<<<<<<< HEAD
-    if (n.trim().isEmpty) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
-    }
-    List<String> args = [f, n, "--source", s, "--json"];
-    if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
-=======
-
     // 边界校验与防呆
     if (n.trim().isEmpty) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
@@ -758,7 +741,6 @@ class BackendService {
     if (url != null && url.trim().isNotEmpty) {
       args.addAll(["--url", url.trim()]);
     }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
     return _safeStream(args);
   }
 
