@@ -90,6 +90,10 @@ def safe_command(func):
         except asyncio.CancelledError:
             raise
         except Exception as e:
+            import traceback
+            # Divert full traceback to stderr for diagnostics, isolated from UI stdout
+            traceback.print_exc(file=sys.stderr)
+
             json_mode = getattr(self, "json_mode", False)
             await self._handle_error(f"Internal error in {func.__name__}", e, json_mode)
             return False
@@ -383,13 +387,19 @@ class OmnistoreBackend:
             # ⚡ Optimization: Parallelize package scanning for different sources
             async def scan_appimage():
                 res = []
-                apps_dir = Path.home() / "Applications"
-                if apps_dir.exists():
-                    for f in apps_dir.glob("*.AppImage"):
-                        res.append({
-                            "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                            "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
-                        })
+                try:
+                    apps_dir = Path.home() / "Applications"
+                    if apps_dir.exists():
+                        # Boundary defense: offload blocking glob to thread
+                        loop = asyncio.get_running_loop()
+                        files = await loop.run_in_executor(None, lambda: list(apps_dir.glob("*.AppImage")))
+                        for f in files:
+                            res.append({
+                                "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
+                                "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
+                            })
+                except Exception as e:
+                    logging.debug(f"scan_appimage error: {e}")
                 return res
 
             async def scan_flatpak():
@@ -737,10 +747,16 @@ async def main():
 
     async def dispatch():
         """Strictly validated CLI command dispatcher."""
-        def validate_str(val, name):
+        def validate_str(val, name, pattern: Optional[str] = None):
             if val is None or not str(val).strip():
                 raise ValueError(f"Argument '{name}' cannot be empty.")
-            return str(val).strip()
+            cleaned = str(val).strip()
+            if pattern and not re.match(pattern, cleaned):
+                raise ValueError(f"Argument '{name}' contains illegal characters.")
+            # Default boundary defense against common shell injection characters
+            if re.search(r'[;&|]', cleaned):
+                raise ValueError(f"Argument '{name}' contains forbidden characters (;&|).")
+            return cleaned
 
         try:
             if args.get_config:
