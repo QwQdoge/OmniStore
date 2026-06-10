@@ -43,7 +43,7 @@ class UpdateService {
 
   Future<void> init() async {
     if (kIsWeb) return;
-    
+
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =

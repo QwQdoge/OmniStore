@@ -23,7 +23,6 @@ import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.d
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
 
-
 // TODO: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
 // TODO: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
 class AppDetailsPage extends StatefulWidget {
@@ -269,55 +268,85 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 letterSpacing: -0.5,
               ),
             ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () => Navigator.pop(context),
+            leading: Semantics(
+              label: 'Back',
+              hint: 'Go back to the previous screen',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
             actions: [
               if (widget.app.url != null && widget.app.url!.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.language_rounded),
-                  tooltip: AppLocalizations.of(context)!.visitWebsite,
-                  onPressed: () async {
-                    final uri = Uri.parse(widget.app.url!);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
+                Semantics(
+                  label: AppLocalizations.of(context)!.visitWebsite,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.language_rounded),
+                    tooltip: AppLocalizations.of(context)!.visitWebsite,
+                    onPressed: () async {
+                      final uri = Uri.parse(widget.app.url!);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      }
+                    },
+                  ),
                 ),
               if (settings.isAIEnabled) ...[
-                IconButton(
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiPromptExplain,
-                  onPressed: _showAIExplainDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiPromptExplain,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.auto_awesome_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                    onPressed: _showAIExplainDialog,
+                  ),
                 ),
                 if (widget.app.variants.length > 1)
-                  IconButton(
-                    icon: const Icon(Icons.compare_arrows_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiCompareTitle,
-                    onPressed: _showAICompareDialog,
+                  Semantics(
+                    label: AppLocalizations.of(context)!.aiCompareTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.compare_arrows_rounded),
+                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                      onPressed: _showAICompareDialog,
+                    ),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.terminal_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiCliTitle,
-                  onPressed: _showAICliDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiCliTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.terminal_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                    onPressed: _showAICliDialog,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.report_problem_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiConflictTitle,
-                  onPressed: _showAIConflictDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiConflictTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.report_problem_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                    onPressed: _showAIConflictDialog,
+                  ),
                 ),
               ],
               Consumer<TaskController>(
                 builder: (context, task, _) {
                   if (task.isBusy || task.logs.isNotEmpty) {
-                    return IconButton(
-                      icon: Badge(
-                        isLabelVisible: task.isBusy,
-                        child: const Icon(Icons.terminal_rounded),
+                    return Semantics(
+                      label: AppLocalizations.of(context)!.terminalOutput,
+                      button: true,
+                      child: IconButton(
+                        icon: Badge(
+                          isLabelVisible: task.isBusy,
+                          child: const Icon(Icons.terminal_rounded),
+                        ),
+                        tooltip: AppLocalizations.of(context)!.terminalOutput,
+                        onPressed: _showTerminalDialog,
                       ),
-                      tooltip: AppLocalizations.of(context)!.terminalOutput,
-                      onPressed: _showTerminalDialog,
                     );
                   }
                   return const SizedBox.shrink();
@@ -380,42 +409,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-<<<<<<< HEAD
-                    height: 220,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: (_extraDetails!['screenshots'] as List).length,
-                      separatorBuilder: (context, _) =>
-                          const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        final imageUrl = _extraDetails!['screenshots'][index];
-                        return Hero(
-                          tag: 'screenshot-$imageUrl',
-                          child: Card(
-                            elevation: 0,
-                            margin: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                              side: BorderSide(
-                                color: colorScheme.outlineVariant.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: () => _showScreenshotViewer(imageUrl),
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: 360,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 720,
-                                placeholder: (context, url) => const Skeleton(
-                                  width: 360,
-                                  height: 220,
-                                  borderRadius: 20.0,
-=======
                     height: 236,
                     child: Scrollbar(
                       controller: _screenshotScrollController,
@@ -442,7 +435,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   color: colorScheme.outlineVariant.withValues(
                                     alpha: 0.5,
                                   ),
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
                                 ),
                               ),
                               clipBehavior: Clip.antiAlias,
@@ -453,14 +445,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   width: 360,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 720,
-                                  placeholder: (context, url) => Container(
+                                  placeholder: (context, url) => const Skeleton(
                                     width: 360,
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
+                                    height: 220,
+                                    borderRadius: 20.0,
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(

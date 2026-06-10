@@ -6,6 +6,9 @@ import 'package:frontend/features/onboarding/welcome_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend/data/repositories/package_repository.dart';
+import 'package:frontend/models/app_package.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 
 class OmnistoreApp extends StatefulWidget {
   const OmnistoreApp({super.key, required this.initialConfig});
@@ -58,11 +61,49 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
           child: child!,
         );
       },
-      home: _isFirstRun
-          ? WelcomePage(
-              onFinish: () => setState(() => _isFirstRun = false),
-            )
-          : const MainNavigationEntry(),
+      initialRoute: _isFirstRun ? '/welcome' : '/home',
+      routes: {
+        '/welcome': (context) => WelcomePage(
+              onFinish: () => Navigator.pushReplacementNamed(context, '/home'),
+            ),
+        '/home': (context) => const MainNavigationEntry(),
+      },
+      onGenerateRoute: (routeSettings) {
+        if (routeSettings.name != null && routeSettings.name!.startsWith('/app/')) {
+          final appId = Uri.decodeComponent(routeSettings.name!.substring(5));
+          final app = routeSettings.arguments as AppPackage?;
+          if (app != null) {
+            return MaterialPageRoute(
+              settings: routeSettings,
+              builder: (context) => AppDetailsPage(app: app),
+            );
+          } else {
+            return MaterialPageRoute(
+              settings: routeSettings,
+              builder: (context) => FutureBuilder<Map<String, dynamic>>(
+                future: PackageRepository().getAppDetails(appId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Scaffold(
+                      appBar: AppBar(title: const Text('Error')),
+                      body: const Center(child: Text('App details not found')),
+                    );
+                  }
+                  final appDetails = snapshot.data!;
+                  final appPackage = AppPackage.fromJson(appDetails);
+                  return AppDetailsPage(app: appPackage);
+                },
+              ),
+            );
+          }
+        }
+        return null;
+      },
     );
   }
 }

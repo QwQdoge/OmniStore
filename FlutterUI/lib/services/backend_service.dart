@@ -297,32 +297,36 @@ class BackendService {
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .listen(
-        (data) {
-          if (!controller.isClosed) controller.add(data);
-        },
-        onError: (e) {
-          debugPrint("Process Stdout Error: $e");
-          if (!controller.isClosed) {
-            controller.add(
-              "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
-            );
-          }
-        },
-        onDone: () {
-          if (process != null) _allProcesses.remove(process);
-          if (!controller.isClosed) controller.close();
-          if (activeProcess == process) activeProcess = null;
-        },
-        cancelOnError: false,
-      );
+            (data) {
+              if (!controller.isClosed) controller.add(data);
+            },
+            onError: (e) {
+              debugPrint("Process Stdout Error: $e");
+              if (!controller.isClosed) {
+                controller.add(
+                  "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
+                );
+              }
+            },
+            onDone: () {
+              if (process != null) _allProcesses.remove(process);
+              if (!controller.isClosed) controller.close();
+              if (activeProcess == process) activeProcess = null;
+            },
+            cancelOnError: false,
+          );
 
-      final stderrSub = process.stderr.transform(utf8.decoder).listen(
+      final stderrSub = process.stderr
+          .transform(utf8.decoder)
+          .listen(
             (data) => debugPrint("Backend Stderr: $data"),
             onError: (e) => debugPrint("Stderr Error: $e"),
           );
 
       controller.onCancel = () async {
-        debugPrint("Stream cancelled, performing deep cleanup for process ${process?.pid}");
+        debugPrint(
+          "Stream cancelled, performing deep cleanup for process ${process?.pid}",
+        );
         stdoutSub.cancel();
         stderrSub.cancel();
         await _killProcess(process);
@@ -417,15 +421,13 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-<<<<<<< HEAD
-        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-      } else if (parsed != null) {
-        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-=======
-        results.addAll(parsed);
+        results.addAll(
+          parsed.map(
+            (item) => AppPackage.fromJson(item as Map<String, dynamic>),
+          ),
+        );
       } else if (parsed is Map) {
-        results.add(parsed);
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
+        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
       }
 
       return results;
@@ -435,13 +437,10 @@ class BackendService {
     } finally {
       if (activeSearchProcess != null) {
         _allProcesses.remove(activeSearchProcess);
-<<<<<<< HEAD
-=======
         // Murphy-proof: Ensure process is reaped if still alive after join/timeout
         if (_isProcessAlive(activeSearchProcess!)) {
           await _killProcess(activeSearchProcess);
         }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
       }
       activeSearchProcess = null;
     }
@@ -473,7 +472,8 @@ class BackendService {
         } catch (_) {
           // Deep recovery: try line-by-line fallback
           final lines = candidate.split('\n');
-          if (lines.length > 100) continue; // Boundary defense against too many lines
+          if (lines.length > 100)
+            continue; // Boundary defense against too many lines
           for (var i = 0; i < lines.length; i++) {
             try {
               final lineCandidate = lines.sublist(i).join('\n');
@@ -738,27 +738,19 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
-<<<<<<< HEAD
-    if (n.trim().isEmpty) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
-    }
-    List<String> args = [f, n, "--source", s, "--json"];
-    if (url != null && url.isNotEmpty) args.addAll(["--url", url]);
-=======
 
     // 边界校验与防呆
     if (n.trim().isEmpty) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
     }
     if (!["-I", "-R", "-U"].contains(f)) {
-       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 不合法的操作指令: $f\"}");
+      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 不合法的操作指令: $f\"}");
     }
 
     List<String> args = [f, n.trim(), "--source", s.trim(), "--json"];
     if (url != null && url.trim().isNotEmpty) {
       args.addAll(["--url", url.trim()]);
     }
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
     return _safeStream(args);
   }
 

@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/data/python_bridge.dart';
 import 'package:frontend/data/repositories/config_repository.dart';
+import 'package:frontend/services/update_service.dart';
 
 class SettingsController with ChangeNotifier {
   final ConfigRepository _configRepository;
@@ -147,21 +151,104 @@ class SettingsController with ChangeNotifier {
     }
   }
 
+  // ─── Auto-Detect Sources ──────────────────────────────
+  Future<bool> autoDetectSources() async {
+    final Map<String, bool> detectedSources = {
+      "pacman": false,
+      "aur": false,
+      "flatpak": false,
+      "appimage": false,
+      "snap": false,
+      "github": true,
+      "bitu": true,
+      "winget": false,
+      "scoop": false,
+      "brew": false,
+    };
+
+    if (kIsWeb) {
+      // Browser: keep defaults (github, bitu)
+    } else {
+      if (Platform.isLinux) {
+        detectedSources["pacman"] = File("/usr/bin/pacman").existsSync();
+        detectedSources["aur"] =
+            detectedSources["pacman"]! &&
+            (File("/usr/bin/yay").existsSync() ||
+                File("/usr/bin/paru").existsSync());
+        detectedSources["flatpak"] = _isCommandAvailable("flatpak");
+        detectedSources["appimage"] = true;
+        detectedSources["snap"] = _isCommandAvailable("snap");
+        detectedSources["brew"] = _isCommandAvailable("brew");
+      } else if (Platform.isWindows) {
+        detectedSources["winget"] = _isCommandAvailable("winget");
+        detectedSources["scoop"] = _isCommandAvailable("scoop");
+      } else if (Platform.isMacOS) {
+        detectedSources["brew"] = _isCommandAvailable("brew");
+      }
+    }
+
+    final config = Map<String, dynamic>.from(_config);
+    config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
+    config['search']['sources'] = Map<String, dynamic>.from(
+      config['search']['sources'] ?? {},
+    );
+
+    detectedSources.forEach((key, value) {
+      config['search']['sources'][key] = value;
+    });
+
+    return await updateConfig(config);
+  }
+
+  bool _isCommandAvailable(String cmd) {
+    try {
+      final check = Platform.isWindows ? 'where' : 'which';
+      final res = Process.runSync(check, [cmd]);
+      return res.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ─── Config Lifecycle ────────────────────────────────
   Future<void> loadConfig() async {
     _config = await _configRepository.loadConfig();
     _isAIEnabled = _config['ai']?['enabled'] ?? false;
     _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
+
+    // Read secure API key and merge into UI-facing config map
+    final apiKey = await PythonBridge.getApiKey();
+    if (apiKey != null && apiKey.isNotEmpty) {
+      _config['ai'] = Map<String, dynamic>.from(_config['ai'] ?? {});
+      _config['ai']['api_key'] = apiKey;
+    }
     notifyListeners();
   }
 
   Future<bool> updateConfig(Map<String, dynamic> newConfig) async {
-    final success = await _configRepository.saveConfig(newConfig);
+    // Extract and save key to SecureStorage
+    if (newConfig['ai'] != null && newConfig['ai']['api_key'] != null) {
+      final apiKey = newConfig['ai']['api_key'] as String;
+      if (apiKey != '******') {
+        await PythonBridge.saveApiKey(apiKey);
+      }
+    }
+
+    // Prepare config to save to disk with key scrubbed
+    final configToSave = Map<String, dynamic>.from(newConfig);
+    if (configToSave['ai'] != null) {
+      configToSave['ai'] = Map<String, dynamic>.from(configToSave['ai']);
+      configToSave['ai']['api_key'] = ''; // Scrubbed!
+    }
+
+    final success = await _configRepository.saveConfig(configToSave);
     if (success) {
       _config = newConfig;
       _isAIEnabled = _config['ai']?['enabled'] ?? false;
       _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
       notifyListeners();
+      // Propagate configuration updates dynamically to the background updates manager
+      UpdateService().updateConfig();
     }
     return success;
   }
