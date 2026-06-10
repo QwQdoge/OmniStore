@@ -170,13 +170,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SwitchListTile(
             title: Text(l10n.useSystemTitleBar),
-            subtitle: const Text("需要重新启动应用才能生效 / Requires restart"),
+            subtitle: Text(l10n.configSaved),
             value: settings.useSystemTitleBar,
             onChanged: (val) {
               settings.setUseSystemTitleBar(val);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("请重启应用以应用标题栏设置 / Please restart to apply title bar changes"),
+                SnackBar(
+                  content: Text(l10n.configSaved),
                 ),
               );
             },
