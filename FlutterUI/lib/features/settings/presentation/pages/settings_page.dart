@@ -133,26 +133,26 @@ class _SettingsPageState extends State<SettingsPage> {
           // Primary Settings
           _buildSection(l10n.general),
           ListTile(
-            title: const Text("界面语言 / Language"),
+            title: Text(l10n.language),
             subtitle: Text(settings.language == 'zh-CN'
-                ? '简体中文'
+                ? l10n.langSimplifiedChinese
                 : settings.language == 'zh-TW'
-                    ? '繁體中文'
+                    ? l10n.langTraditionalChinese
                     : settings.language == 'ja-JP'
-                        ? '日本語'
+                        ? l10n.langJapanese
                         : settings.language == 'es-ES' || settings.language == 'es'
-                            ? 'Español'
-                            : 'English'),
+                            ? l10n.langSpanish
+                            : l10n.langEnglish),
             trailing: DropdownButton<String>(
               value: settings.language,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 'zh-CN', child: Text('简体中文')),
-                DropdownMenuItem(value: 'zh-TW', child: Text('繁體中文')),
-                DropdownMenuItem(value: 'en-US', child: Text('English')),
-                DropdownMenuItem(value: 'ja-JP', child: Text('日本語')),
-                DropdownMenuItem(value: 'es-ES', child: Text('Español')),
+              items: [
+                DropdownMenuItem(value: 'zh-CN', child: Text(l10n.langSimplifiedChinese)),
+                DropdownMenuItem(value: 'zh-TW', child: Text(l10n.langTraditionalChinese)),
+                DropdownMenuItem(value: 'en-US', child: Text(l10n.langEnglish)),
+                DropdownMenuItem(value: 'ja-JP', child: Text(l10n.langJapanese)),
+                DropdownMenuItem(value: 'es-ES', child: Text(l10n.langSpanish)),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -170,13 +170,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SwitchListTile(
             title: Text(l10n.useSystemTitleBar),
-            subtitle: const Text("需要重新启动应用才能生效 / Requires restart"),
+            subtitle: Text(l10n.languageSubtitle),
             value: settings.useSystemTitleBar,
             onChanged: (val) {
               settings.setUseSystemTitleBar(val);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("请重启应用以应用标题栏设置 / Please restart to apply title bar changes"),
+                SnackBar(
+                  content: Text(l10n.restartTitleBar),
                 ),
               );
             },
@@ -211,36 +211,34 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
           _buildSection(l10n.updates),
           SwitchListTile(
-            title: const Text("启用后台更新守护进程"),
-            subtitle: const Text("在系统后台定期静默检查应用更新"),
+            title: Text(l10n.enableDaemon),
+            subtitle: Text(l10n.enableDaemonDesc),
             value: settings.daemonEnabled,
             onChanged: (val) {
               settings.setDaemonEnabled(val);
             },
           ),
           SwitchListTile(
-            title: const Text("静默自动更新"),
-            subtitle: const Text("在后台自动下载并更新所有可升级的软件包"),
+            title: Text(l10n.autoUpdate),
+            subtitle: Text(l10n.autoUpdateDesc),
             value: settings.autoUpdate,
             onChanged: (val) {
               settings.setAutoUpdate(val);
             },
           ),
           ListTile(
-            title: const Text("检查更新频率"),
-            subtitle: Text("每隔 ${settings.checkIntervalHours} 小时自动检查一次"),
+            title: Text(l10n.checkIntervalTitle),
+            subtitle: Text(l10n.checkIntervalSubtitle(settings.checkIntervalHours)),
             trailing: DropdownButton<int>(
               value: settings.checkIntervalHours,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 1, child: Text('1 小时')),
-                DropdownMenuItem(value: 2, child: Text('2 小时')),
-                DropdownMenuItem(value: 4, child: Text('4 小时')),
-                DropdownMenuItem(value: 8, child: Text('8 小时')),
-                DropdownMenuItem(value: 12, child: Text('12 小时')),
-                DropdownMenuItem(value: 24, child: Text('24 小时')),
-              ],
+              items: [1, 2, 4, 8, 12, 24].map((h) {
+                return DropdownMenuItem(
+                  value: h,
+                  child: Text(l10n.hourValue(h)),
+                );
+              }).toList(),
               onChanged: (val) {
                 if (val != null) {
                   settings.setCheckIntervalHours(val);
@@ -250,19 +248,19 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          _buildSection("字体与排版 / Typography"),
+          _buildSection(l10n.typography),
           ListTile(
-            title: const Text("字体系列 / Font Family"),
-            subtitle: Text(settings.fontFamily),
+            title: Text(l10n.fontFamily),
+            subtitle: Text(settings.fontFamily == 'System' ? l10n.systemDefault : settings.fontFamily),
             trailing: DropdownButton<String>(
               value: settings.fontFamily,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 'System', child: Text('系统默认 / System')),
-                DropdownMenuItem(value: 'Inter', child: Text('Inter')),
-                DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
-                DropdownMenuItem(value: 'Outfit', child: Text('Outfit')),
+              items: [
+                DropdownMenuItem(value: 'System', child: Text(l10n.systemDefault)),
+                const DropdownMenuItem(value: 'Inter', child: Text('Inter')),
+                const DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+                const DropdownMenuItem(value: 'Outfit', child: Text('Outfit')),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -272,7 +270,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: const Text("字体缩放比例 / Font Scale"),
+            title: Text(l10n.fontScale),
             subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
             trailing: SizedBox(
               width: 150,
@@ -318,9 +316,9 @@ class _SettingsPageState extends State<SettingsPage> {
               (val) {
                 final d = double.tryParse(val);
                 if (d == null) {
-                  setState(() => _tempError = "请输入有效的数字 / Please enter a valid number");
+                  setState(() => _tempError = l10n.failed);
                 } else if (d < 0.0 || d > 2.0) {
-                  setState(() => _tempError = "温度必须在 0.0 到 2.0 之间 / Must be between 0.0 and 2.0");
+                  setState(() => _tempError = "0.0 - 2.0");
                 } else {
                   setState(() => _tempError = null);
                   _debounceUpdateAIConfig('temperature', d, settings);

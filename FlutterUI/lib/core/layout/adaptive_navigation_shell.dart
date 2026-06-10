@@ -52,6 +52,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
     final nav = context.watch<NavigationController>();
     final settings = context.watch<SettingsController>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -117,12 +118,12 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   if (showSearch && nav.selectedIndex != 2)
                     IconButton(
                       onPressed: onSearch,
-                      tooltip: AppLocalizations.of(context)!.search,
+                      tooltip: l10n.search,
                       icon: const Icon(Icons.search_rounded),
                     ),
                   IconButton(
                     icon: const Icon(Icons.account_circle_outlined),
-                    tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+                    tooltip: l10n.githubAuthTitle,
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -477,7 +478,7 @@ class _ExpandedDownloadTile extends StatelessWidget {
                       ),
                     ),
                     if (updates.isNotEmpty)
-                      Badge(label: Text('${updates.length}')),
+                      Badge(label: Text(l10n.resultsFound(updates.length))),
                   ],
                 ),
               ),
@@ -504,6 +505,7 @@ class _DesktopTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 72,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
@@ -522,12 +524,12 @@ class _DesktopTopBar extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onSearch,
               icon: const Icon(Icons.search_rounded, size: 20),
-              label: Text(AppLocalizations.of(context)!.search),
+              label: Text(l10n.search),
             ),
           const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.account_circle_outlined),
-            tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+            tooltip: l10n.githubAuthTitle,
             onPressed: () {
               Navigator.push(
                 context,
@@ -647,7 +649,7 @@ class _DownloadAction extends StatelessWidget {
               Positioned(
                 top: compact ? 4 : 8,
                 right: compact ? 4 : 8,
-                child: Badge(label: Text('${updates.length}')),
+                child: Badge(label: Text(l10n.resultsFound(updates.length))),
               ),
           ],
         );

@@ -1287,5 +1287,50 @@
   },
   "@personalAccessToken": {
     "description": "Label for personal access token"
-  }
+  },
+  "language": "Idioma de la interfaz",
+  "languageSubtitle": "Requiere reiniciar para aplicarse",
+  "restartTitleBar": "Reinicie la aplicación para aplicar los cambios en la barra de título",
+  "enableDaemon": "Activar demonio de actualización",
+  "enableDaemonDesc": "Buscar actualizaciones periódicamente en segundo plano",
+  "autoUpdate": "Actualización automática silenciosa",
+  "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
+  "checkIntervalTitle": "Frecuencia de comprobación",
+  "checkIntervalSubtitle": "Comprobar cada {hours} horas",
+  "typography": "Tipografía",
+  "fontFamily": "Familia de fuentes",
+  "fontScale": "Escala de fuente",
+  "systemDefault": "Predeterminado del sistema",
+  "hourValue": "{count, plural, =1{1 hora} other{{count} horas}}",
+  "@language": {},
+  "@languageSubtitle": {},
+  "@restartTitleBar": {},
+  "@enableDaemon": {},
+  "@enableDaemonDesc": {},
+  "@autoUpdate": {},
+  "@autoUpdateDesc": {},
+  "@checkIntervalTitle": {},
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@typography": {},
+  "@fontFamily": {},
+  "@fontScale": {},
+  "@systemDefault": {},
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "Chino simplificado",
+  "langTraditionalChinese": "Chino tradicional",
+  "langEnglish": "Inglés",
+  "langJapanese": "Japonés",
+  "langSpanish": "Español"
 }
