@@ -170,13 +170,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SwitchListTile(
             title: Text(l10n.useSystemTitleBar),
-            subtitle: Text(l10n.languageSubtitle),
+            subtitle: Text(l10n.configSaved),
             value: settings.useSystemTitleBar,
             onChanged: (val) {
               settings.setUseSystemTitleBar(val);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(l10n.restartTitleBar),
+                  content: Text(l10n.configSaved),
                 ),
               );
             },
