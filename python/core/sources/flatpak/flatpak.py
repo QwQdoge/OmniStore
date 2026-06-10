@@ -103,37 +103,51 @@ class FlatpakSource(UnifiedSource):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
             ) as proc:
+
                 last_sent_progress = -1
                 if proc.stdout:
                     while True:
                         line_bytes = await proc.stdout.readline()
                         if not line_bytes:
                             break
-                        line = line_bytes.decode("utf-8", errors="ignore").strip()
+                        line = line_bytes.decode('utf-8', errors='ignore').strip()
                         if not line:
                             continue
+
                         if callback:
                             await callback(f"[INFO] {line}")
+
+                            # Regex matching for progress percentage
+                            # Format: Installing 3/8... 19% or [  19%]
                             summary_match = re.search(r"(\d+)/(\d+).*?(\d+)\s*%", line)
                             list_progress_match = re.search(r"\[\s*(\d+)%\s*\]", line)
                             speed_match = re.search(r"(\d+(\.\d+)?\s*(k|M|G)?B/s)", line)
+
                             total_prog = None
                             if summary_match:
                                 cur, total, sub = map(int, summary_match.groups())
                                 total_prog = int(((cur - 1) / total) * 100 + (sub / total))
                             elif list_progress_match:
                                 total_prog = int(list_progress_match.group(1))
+
                             if speed_match:
                                 await callback(f"[SPEED] {speed_match.group(1)}")
+
                             if total_prog is not None and total_prog > last_sent_progress:
                                 await callback(f"[PROGRESS] {total_prog}")
                                 last_sent_progress = total_prog
+
                 await proc.wait()
                 if proc.returncode == 0 and callback:
                     await callback("[PROGRESS] 100")
                 return proc.returncode == 0
-        except Exception:
-            return False
+        finally:
+            if proc and proc.returncode is None:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except:
+                    pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
         app_id = package.get("id") or package.get("name")
