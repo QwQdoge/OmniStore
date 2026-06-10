@@ -1064,5 +1064,5 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trayInitFailedExiting =>
-      'Background residency unavailable. The app will now exit.';
+      'System tray initialization failed, exiting app to ensure consistency.';
 }

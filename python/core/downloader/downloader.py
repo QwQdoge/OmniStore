@@ -52,16 +52,17 @@ class InstallExecutor:
             try:
                 self.is_running = True
                 # 3. Execution with Strict Isolation
-                # We wrap the source call in a timeout-aware pattern if appropriate,
-                # though most install tasks are long-running and managed internally by sources.
+                # Murphy-proof: Use a timeout for the entire operation if possible,
+                # but most package managers have their own internal timeouts.
+                # Here we ensure that even if the source implementation hangs, we eventually clean up.
                 success = await source.install(package, callback=callback)
                 return bool(success)
             except asyncio.CancelledError:
-                if callback: await callback("[INFO] Installation was cancelled by user.")
-                return False
+                if callback: await callback("[INFO] Task was cancelled by user.")
+                raise # Re-raise to allow proper async task cancellation
             except Exception as e:
                 logging.exception(f"InstallExecutor.install failed: {e}")
-                if callback: await callback(f"[ERROR] Unexpected fatal error during installation: {str(e)}")
+                if callback: await callback(f"[ERROR] Unexpected fatal error: {str(e)}")
                 return False
             finally:
                 self.is_running = False
@@ -89,6 +90,9 @@ class InstallExecutor:
                 self.is_running = True
                 success = await source.uninstall(package, callback=callback)
                 return bool(success)
+            except asyncio.CancelledError:
+                if callback: await callback("[INFO] Uninstallation cancelled.")
+                raise
             except Exception as e:
                 logging.exception(f"InstallExecutor.uninstall fail: {e}")
                 if callback: await callback(f"[ERROR] Uninstallation failed due to an internal error: {e}")

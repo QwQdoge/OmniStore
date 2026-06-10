@@ -1360,5 +1360,9 @@
   "taskInProgress": "Otra tarea ya está en progreso",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "Error al inicializar la bandeja del sistema. Saliendo de la aplicación para garantizar la consistencia.",
+  "@trayInitFailedExiting": {
+    "description": "Error message shown when tray fails to initialize while close to tray is enabled"
   }
 }

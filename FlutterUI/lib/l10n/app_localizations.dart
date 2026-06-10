@@ -2035,10 +2035,10 @@ abstract class AppLocalizations {
   /// **'Another task is already in progress'**
   String get taskInProgress;
 
-  /// Shown when system tray initialization failed and the app is about to exit.
+  /// Error message shown when tray fails to initialize while close to tray is enabled
   ///
   /// In en, this message translates to:
-  /// **'Background residency unavailable. The app will now exit.'**
+  /// **'System tray initialization failed, exiting app to ensure consistency.'**
   String get trayInitFailedExiting;
 }
 
