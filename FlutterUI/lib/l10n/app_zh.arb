@@ -1364,5 +1364,9 @@
   "taskInProgress": "另一个任务正在进行中",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "系统托盘初始化失败，正在退出应用以确保状态一致。",
+  "@trayInitFailedExiting": {
+    "description": "Error message shown when tray fails to initialize while close to tray is enabled"
   }
 }

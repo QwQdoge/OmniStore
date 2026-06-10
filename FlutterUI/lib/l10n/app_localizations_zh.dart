@@ -1031,6 +1031,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get taskInProgress => '另一个任务正在进行中';
+
+  @override
+  String get trayInitFailedExiting => '系统托盘初始化失败，正在退出应用以确保状态一致。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2060,4 +2063,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get taskInProgress => '另一個任務正在進行中';
+
+  @override
+  String get trayInitFailedExiting => '系統匣初始化失敗，正在結束應用程式以確保狀態一致。';
 }

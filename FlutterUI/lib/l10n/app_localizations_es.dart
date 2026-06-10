@@ -1071,5 +1071,5 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trayInitFailedExiting =>
-      'Residencia en segundo plano no disponible. La aplicación se cerrará.';
+      'Error al inicializar la bandeja del sistema. Saliendo de la aplicación para garantizar la consistencia.';
 }

@@ -1363,5 +1363,9 @@
   "taskInProgress": "另一個任務正在進行中",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "系統匣初始化失敗，正在結束應用程式以確保狀態一致。",
+  "@trayInitFailedExiting": {
+    "description": "Error message shown when tray fails to initialize while close to tray is enabled"
   }
 }

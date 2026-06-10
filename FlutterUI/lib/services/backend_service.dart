@@ -36,6 +36,9 @@ class BackendService {
   // Murphy-proof: Global lock to prevent race conditions in I/O operations
   Completer<void>? _globalLock;
 
+  // Murphy-proof: Mutex for daemon socket transactions to prevent interleaving
+  Completer<void>? _daemonMutex;
+
   static String get _projectRoot {
     if (kIsWeb) return '';
     final searchRoots = <String>{Directory.current.path};
@@ -226,11 +229,22 @@ class BackendService {
   /// Emergency cleanup of all tracked processes to prevent memory leaks and zombies.
   Future<void> dispose() async {
     if (kIsWeb) return;
+
+    // Stop health check timer immediately
+    _healthCheckTimer?.cancel();
+    _healthCheckTimer = null;
+
+    // Close daemon socket
+    _daemonSocket?.destroy();
+    _daemonSocket = null;
+
     final processes = List<Process>.from(_allProcesses);
     _allProcesses.clear();
     for (final p in processes) {
       await _killProcess(p);
     }
+
+    _daemonProcess = null;
   }
 
   Process? _daemonProcess;
@@ -294,58 +308,115 @@ class BackendService {
     });
   }
 
-  Future<DaemonResult?> _sendToDaemon(String action, List<dynamic> args, [Map<String, dynamic>? kwargs]) async {
-    await _startDaemonIfNeeded();
-    if (_daemonSocket == null) {
-      debugPrint("Daemon socket is null, trying to run command standalone");
-      return null;
+  Future<void> _acquireDaemonLock() async {
+    while (_daemonMutex != null) {
+      await _daemonMutex!.future;
     }
+    _daemonMutex = Completer<void>();
+  }
+
+  void _releaseDaemonLock() {
+    final lock = _daemonMutex;
+    _daemonMutex = null;
+    if (lock != null && !lock.isCompleted) lock.complete();
+  }
+
+  /// Sends a command to the persistent Python daemon.
+  /// Murphy-proof: Implements automated retry, state-safe socket management,
+  /// a transaction mutex, and guaranteed subscription cleanup to prevent memory leaks.
+  Future<DaemonResult?> _sendToDaemon(String action, List<dynamic> args,
+      [Map<String, dynamic>? kwargs]) async {
+    // Murphy-proof: Acquire transaction mutex to prevent concurrent socket access
+    await _acquireDaemonLock();
 
     try {
-      final payload = jsonEncode({
-        "action": action,
-        "args": args,
-        "kwargs": kwargs ?? {},
-      });
-      _daemonSocket!.write('$payload\n');
-      await _daemonSocket!.flush();
+      // Boundary defense: Enforce strict timeout and retry policy
+      const maxRetries = 2;
+      int attempt = 0;
 
-      // Read response
-      final completer = Completer<DaemonResult>();
-      late StreamSubscription sub;
-      
-      sub = _daemonSocket!.cast<List<int>>().transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
+      while (attempt <= maxRetries) {
         try {
-          final res = jsonDecode(line);
-          if (res is Map && res.containsKey('status')) {
-            sub.cancel();
-            if (res['status'] == 'success') {
-              completer.complete(DaemonResult(
-                status: 'success',
-                response: res['response'],
-                stdout: res['stdout'] ?? '',
-              ));
-            } else {
-              completer.complete(DaemonResult(
-                status: 'error',
-                error: res['error'] ?? 'Daemon error',
-                stdout: res['stdout'] ?? '',
-              ));
-            }
+          await _startDaemonIfNeeded();
+          if (_daemonSocket == null) {
+            debugPrint("Daemon socket unavailable on attempt ${attempt + 1}");
+            attempt++;
+            continue;
           }
-        } catch (e) {
-          sub.cancel();
-          completer.completeError(e);
-        }
-      }, onError: (err) {
-        sub.cancel();
-        completer.completeError(err);
-      });
 
-      return await completer.future.timeout(const Duration(seconds: 60));
-    } catch (e) {
-      debugPrint("Daemon transaction error: $e");
+          final payload = jsonEncode({
+            "action": action,
+            "args": args,
+            "kwargs": kwargs ?? {},
+          });
+
+          _daemonSocket!.write('$payload\n');
+          await _daemonSocket!.flush();
+
+          final completer = Completer<DaemonResult>();
+          StreamSubscription? sub;
+
+          sub = _daemonSocket!
+              .cast<List<int>>()
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(
+            (line) {
+              try {
+                final res = jsonDecode(line);
+                if (res is Map && res.containsKey('status')) {
+                  sub?.cancel();
+                  if (res['status'] == 'success') {
+                    completer.complete(DaemonResult(
+                      status: 'success',
+                      response: res['response'],
+                      stdout: res['stdout'] ?? '',
+                    ));
+                  } else {
+                    completer.complete(DaemonResult(
+                      status: 'error',
+                      error: res['error'] ?? 'Daemon error',
+                      stdout: res['stdout'] ?? '',
+                    ));
+                  }
+                }
+              } catch (e) {
+                sub?.cancel();
+                if (!completer.isCompleted) completer.completeError(e);
+              }
+            },
+            onError: (err) {
+              sub?.cancel();
+              if (!completer.isCompleted) completer.completeError(err);
+            },
+            onDone: () {
+              sub?.cancel();
+              if (!completer.isCompleted) {
+                completer.completeError(Exception("Daemon socket closed unexpectedly"));
+              }
+            },
+            cancelOnError: true,
+          );
+
+          // Murphy-proof: Hard timeout for the request to prevent UI hanging
+          return await completer.future.timeout(
+            const Duration(seconds: 120),
+            onTimeout: () {
+              sub?.cancel();
+              throw TimeoutException("Daemon response timed out for $action");
+            },
+          );
+        } catch (e) {
+          debugPrint("Daemon attempt ${attempt + 1} failed: $e");
+          _daemonSocket?.destroy();
+          _daemonSocket = null;
+          attempt++;
+          if (attempt > maxRetries) return null;
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
       return null;
+    } finally {
+      _releaseDaemonLock();
     }
   }
 
@@ -981,9 +1052,10 @@ class BackendService {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 非法操作指令: $f\"}");
     }
 
-    // 注入防御
-    if (RegExp(r'[;&|]').hasMatch(trimmedName) ||
-        RegExp(r'[;&|]').hasMatch(s)) {
+    // 注入防御 (Murphy-proof: Strict RegEx for shell injection prevention)
+    final injectionPattern = RegExp(r'[;&|`$><]');
+    if (injectionPattern.hasMatch(trimmedName) ||
+        injectionPattern.hasMatch(s)) {
       return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 输入包含非法字符\"}");
     }
 

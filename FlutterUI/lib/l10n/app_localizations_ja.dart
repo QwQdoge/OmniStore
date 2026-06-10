@@ -1036,4 +1036,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get taskInProgress => '別のタスクが既に実行中です';
+
+  @override
+  String get trayInitFailedExiting => 'システムトレイの初期化に失敗しました。一貫性を確保するためアプリを終了します。';
 }

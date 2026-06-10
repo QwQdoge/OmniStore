@@ -81,7 +81,14 @@ from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 
 async def handle_daemon_client(backend, reader, writer):
+    """
+    Handles persistent daemon connections with strict action isolation.
+    Murphy-proof: Uses contextlib to guarantee stdout restoration and prevents
+    concurrent request interleaving on the same connection.
+    """
     import io
+    import contextlib
+
     try:
         while True:
             line_bytes = await reader.readline()
@@ -93,65 +100,74 @@ async def handle_daemon_client(backend, reader, writer):
             
             try:
                 cmd_data = json.loads(line)
-            except Exception as ex:
-                writer.write(json.dumps({"error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
+            except json.JSONDecodeError as ex:
+                writer.write(json.dumps({"status": "error", "error": f"Malformed JSON: {ex}"}).encode('utf-8') + b'\n')
                 await writer.drain()
                 continue
             
-            # Setup a capture for stdout
-            old_stdout = sys.stdout
+            action = cmd_data.get("action")
+            args = cmd_data.get("args", [])
+            kwargs = cmd_data.get("kwargs", {})
+
+            # Murphy-proof: Strict Action Whitelisting to prevent arbitrary code execution
+            ALLOWED_ACTIONS = {
+                "run_search", "run_install", "run_uninstall", "run_update",
+                "run_check_updates", "run_recommendations", "run_app_details",
+                "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
+                "run_remove_custom_repo", "run_ai_explain", "run_ai_recommend",
+                "run_ai_analyze_error", "run_ai_summary", "run_ai_pick",
+                "run_get_essentials", "run_import_packages", "run_export_packages",
+                "run_launch", "run_locate", "run_get_storage_info", "run_clean_system",
+                "config.data", "env.check_env"
+            }
+
+            if action not in ALLOWED_ACTIONS:
+                writer.write(json.dumps({"status": "error", "error": f"Unauthorized action: {action}"}).encode('utf-8') + b'\n')
+                await writer.drain()
+                continue
+
             captured_stdout = io.StringIO()
-            sys.stdout = captured_stdout
-            
             try:
-                action = cmd_data.get("action")
-                args = cmd_data.get("args", [])
-                kwargs = cmd_data.get("kwargs", {})
-                
-                # Resolve nested attributes recursively, e.g. "config.data"
-                obj = backend
-                parts = action.split('.')
-                for part in parts:
-                    if hasattr(obj, part):
-                        obj = getattr(obj, part)
-                    else:
-                        obj = None
-                        break
-                
-                if obj is not None:
-                    # If it's a callable (method or function), call it
-                    if callable(obj):
+                # Murphy-proof: redirect_stdout ensures restoration even if an exception occurs
+                with contextlib.redirect_stdout(captured_stdout):
+                    # Resolve nested attributes safely
+                    obj = backend
+                    parts = action.split('.')
+                    for part in parts:
+                        obj = getattr(obj, part, None)
+                        if obj is None: break
+
+                    if obj is not None and callable(obj):
                         if asyncio.iscoroutinefunction(obj):
-                            res = await obj(*args, **kwargs)
+                            res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
                         else:
                             res = obj(*args, **kwargs)
                     else:
-                        # Otherwise it's an attribute/property
-                        res = obj
-                    
-                    sys.stdout = old_stdout
-                    stdout_content = captured_stdout.getvalue()
-                    
-                    writer.write(json.dumps({
-                        "status": "success",
-                        "response": res,
-                        "stdout": stdout_content
-                    }, ensure_ascii=False).encode('utf-8') + b'\n')
-                else:
-                    sys.stdout = old_stdout
-                    writer.write(json.dumps({"error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+                        res = obj # Property or attribute
+
+                writer.write(json.dumps({
+                    "status": "success",
+                    "response": res,
+                    "stdout": captured_stdout.getvalue()
+                }, ensure_ascii=False).encode('utf-8') + b'\n')
+            except asyncio.TimeoutError:
+                writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out"}).encode('utf-8') + b'\n')
             except Exception as e:
-                sys.stdout = old_stdout
-                writer.write(json.dumps({"error": str(e)}).encode('utf-8') + b'\n')
+                logging.exception(f"Daemon execution error for {action}")
+                writer.write(json.dumps({"status": "error", "error": f"Execution failed: {str(e)}"}).encode('utf-8') + b'\n')
+
             await writer.drain()
-    except Exception as e:
+            # Explicitly clear captured buffer to save memory
+            captured_stdout.close()
+
+    except ConnectionResetError:
         pass
+    except Exception as e:
+        logging.error(f"Daemon connection handler fatal error: {e}")
     finally:
-        try:
+        with contextlib.suppress(Exception):
             writer.close()
             await writer.wait_closed()
-        except:
-            pass
 
 
 
@@ -255,14 +271,27 @@ class OmnistoreBackend:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Guaranteed cleanup of all persistent resources."""
+        await self.close()
+
+    async def close(self):
+        """Murphy-proof: Idempotent resource cleanup."""
         try:
-            if self.session:
+            if self.session and not self.session.closed:
                 await self.session.close()
                 self.session = None
 
-            # Ensure executor is stopped if active
+            # Ensure executor is stopped and its resources freed
             if self._executor:
                 self._executor.stop()
+                self._executor = None
+
+            # Clear large caches from memory
+            self.manager = None
+            self.recommender = None
+            self._ai = None
+            self._updater = None
+            self._repo_manager = None
+            self._essentials = None
         except Exception as e:
             logging.error(f"Error during OmnistoreBackend cleanup: {e}")
 
@@ -913,6 +942,9 @@ class CLIArguments(BaseModel):
             v_stripped = v.strip()
             if not v_stripped:
                 raise ValueError("Argument cannot be empty.")
+            # Murphy-proof: Strict Shell-injection Defense
+            if re.search(r'[;&|`$><]', v_stripped):
+                raise ValueError("Argument contains illegal characters (; & | ` $ > <)")
             return v_stripped
         return v
 
