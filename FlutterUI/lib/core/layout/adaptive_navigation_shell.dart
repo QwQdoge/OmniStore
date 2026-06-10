@@ -5,7 +5,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
-import 'package:frontend/widgets/window_title_bar.dart';
+// import 'package:frontend/widgets/window_title_bar.dart'; // 自定义标题栏已禁用
 import 'package:provider/provider.dart';
 import 'package:frontend/features/auth/auth_page.dart';
 
@@ -171,18 +171,19 @@ class AdaptiveNavigationShell extends StatelessWidget {
           backgroundColor: scheme.surface,
           body: Column(
             children: [
-              if (useWindowTitleBar)
-                WindowTitleBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearchPressed: onSearch,
-                )
-              else
-                _DesktopTopBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearch: onSearch,
-                ),
+              // 自定义标题栏已注释掉，始终使用系统原生标题栏
+              // if (useWindowTitleBar)
+              //   WindowTitleBar(
+              //     title: pageTitle,
+              //     showSearch: showSearch && nav.selectedIndex != 2,
+              //     onSearchPressed: onSearch,
+              //   )
+              // else
+              _DesktopTopBar(
+                title: pageTitle,
+                showSearch: showSearch && nav.selectedIndex != 2,
+                onSearch: onSearch,
+              ),
               taskBar,
               Expanded(
                 child: Row(

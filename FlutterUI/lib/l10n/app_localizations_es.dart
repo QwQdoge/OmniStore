@@ -1068,4 +1068,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get taskInProgress => 'Otra tarea ya está en progreso';
+
+  @override
+  String get trayInitFailedExiting =>
+      'Residencia en segundo plano no disponible. La aplicación se cerrará.';
 }

@@ -2034,6 +2034,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Another task is already in progress'**
   String get taskInProgress;
+
+  /// Shown when system tray initialization failed and the app is about to exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Background residency unavailable. The app will now exit.'**
+  String get trayInitFailedExiting;
 }
 
 class _AppLocalizationsDelegate

@@ -28,6 +28,7 @@ class _DownloadPageState extends State<DownloadPage>
   List<AppPackage> _installedApps = [];
   List<AppPackage> _filteredApps = [];
   bool _isLoadingInstalled = false;
+  bool _isCheckingUpdates = false;
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
@@ -47,6 +48,50 @@ class _DownloadPageState extends State<DownloadPage>
         });
       }
     });
+  }
+
+  Future<void> _checkUpdatesWithFeedback() async {
+    if (_isCheckingUpdates) return;
+    setState(() => _isCheckingUpdates = true);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final prevCount = UpdateService().availableUpdates.value.length;
+      await UpdateService().checkUpdates();
+      if (!mounted) return;
+      final newCount = UpdateService().availableUpdates.value.length;
+      final msg = newCount == 0
+          ? l10n.allUpdated
+          : l10n.foundUpdates(newCount);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                newCount > 0 ? Icons.system_update_alt : Icons.check_circle_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(msg),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      if (newCount > 0 && prevCount == 0) {
+        // 自动跳转到更新标签页
+        _tabController.animateTo(1);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('检查更新失败: $e'), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingUpdates = false);
+    }
   }
 
   Future<void> _loadInstalledApps() async {
@@ -295,14 +340,23 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _loadInstalledApps();
-              UpdateService().checkUpdates();
-            },
-            tooltip: AppLocalizations.of(context)!.refresh,
-          ),
+          _isCheckingUpdates
+              ? const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    _loadInstalledApps();
+                    _checkUpdatesWithFeedback();
+                  },
+                  tooltip: AppLocalizations.of(context)!.refresh,
+                ),
         ],
       ),
       body: TabBarView(

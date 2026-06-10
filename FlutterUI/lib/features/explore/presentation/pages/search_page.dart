@@ -9,6 +9,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/models/app_package.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -23,6 +24,8 @@ class _SearchPageState extends State<SearchPage> {
   final FocusNode _focusNode = FocusNode();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
+  AppPackage? _selectedApp;
+  BrowseController? _browseController;
 
   String _displayName(String key) {
     final mapping = {
@@ -59,18 +62,69 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final newBrowse = Provider.of<BrowseController>(context);
+    if (_browseController != newBrowse) {
+      _browseController?.removeListener(_onBrowseChanged);
+      _browseController = newBrowse;
+      _browseController?.addListener(_onBrowseChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _browseController?.removeListener(_onBrowseChanged);
+    super.dispose();
+  }
+
+  void _onBrowseChanged() {
+    if (!mounted) return;
+    if (_browseController == null) return;
+    if (!_browseController!.isSearching) {
+      _autoSelectFirstApp();
+    }
+  }
+
+  void _autoSelectFirstApp() {
+    if (!mounted) return;
+    final browse = context.read<BrowseController>();
+    var filteredResults = browse.searchResults;
+    if (_selectedSources.isNotEmpty) {
+      filteredResults = browse.searchResults.where((app) {
+        return _selectedSources.contains(app.primarySource.toLowerCase());
+      }).toList();
+    }
+
+    setState(() {
+      if (filteredResults.isNotEmpty) {
+        _selectedApp = filteredResults.first;
+      } else {
+        _selectedApp = null;
+      }
+    });
+  }
+
   void _performSearch(String query) {
     if (query.length < 2) {
-      setState(() => _showDiscovery = true);
+      setState(() {
+        _showDiscovery = true;
+        _selectedApp = null;
+      });
       return;
     }
-    setState(() => _showDiscovery = false);
+    setState(() {
+      _showDiscovery = false;
+      _selectedApp = null;
+    });
     context.read<BrowseController>().search(query);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -95,6 +149,7 @@ class _SearchPageState extends State<SearchPage> {
                       setState(() {
                         _showDiscovery = true;
                         _selectedSources.clear();
+                        _selectedApp = null;
                       });
                     },
                   ),
@@ -113,12 +168,41 @@ class _SearchPageState extends State<SearchPage> {
                   )
                 : Consumer2<BrowseController, SettingsController>(
                     builder: (context, browse, settings, _) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: browse.isSearching
-                            ? _buildSkeletonResults()
-                            : _buildResults(browse, l10n, settings),
-                      );
+                      final resultsContent = browse.isSearching
+                          ? _buildSkeletonResults()
+                          : _buildResults(browse, l10n, settings);
+
+                      if (isDesktop) {
+                        return Row(
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: resultsContent,
+                            ),
+                            const VerticalDivider(width: 1),
+                            Expanded(
+                              flex: 6,
+                              child: _selectedApp == null
+                                  ? Center(
+                                      child: Text(
+                                        l10n.noResults,
+                                        style: Theme.of(context).textTheme.bodyLarge,
+                                      ),
+                                    )
+                                  : AppDetailsPage(
+                                      app: _selectedApp!,
+                                      isEmbedded: true,
+                                      key: ValueKey(_selectedApp!.id),
+                                    ),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: resultsContent,
+                        );
+                      }
                     },
                   ),
           ),
@@ -152,6 +236,7 @@ class _SearchPageState extends State<SearchPage> {
                   setState(() {
                     _selectedSources.clear();
                   });
+                  _autoSelectFirstApp();
                 }
               },
             ),
@@ -172,6 +257,7 @@ class _SearchPageState extends State<SearchPage> {
                       _selectedSources.remove(name.toLowerCase());
                     }
                   });
+                  _autoSelectFirstApp();
                 },
               ),
             );
@@ -214,6 +300,7 @@ class _SearchPageState extends State<SearchPage> {
     AppLocalizations l10n,
     SettingsController settings,
   ) {
+    final isDesktop = MediaQuery.of(context).size.width > 900;
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = browse.searchResults.where((app) {
@@ -237,8 +324,12 @@ class _SearchPageState extends State<SearchPage> {
       itemBuilder: (context, index) {
         final app = filteredResults[index];
         final heroTag = 'search-result-${app.name}-${app.primarySource}';
+        final isSelected = _selectedApp?.id == app.id;
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
+          color: isSelected && isDesktop
+              ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+              : null,
           child: ListTile(
             leading: Hero(
               tag: heroTag,
@@ -269,13 +360,21 @@ class _SearchPageState extends State<SearchPage> {
               source: app.primarySource,
               mode: AppSourceTagMode.source,
             ),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    AppDetailsPage(app: app, heroTag: heroTag),
-              ),
-            ),
+            onTap: () {
+              if (isDesktop) {
+                setState(() {
+                  _selectedApp = app;
+                });
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AppDetailsPage(app: app, heroTag: heroTag),
+                  ),
+                );
+              }
+            },
           ),
         );
       },

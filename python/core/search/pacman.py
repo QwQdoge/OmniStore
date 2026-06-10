@@ -74,7 +74,7 @@ class PacmanSearch(SearchSource):
                     }
                 elif current_pkg and line.startswith("    "):
                     # 2. 识别描述行：标题行下方带 4 个空格缩进的行
-                    current_pkg["description"] += line.strip() + " "
+                    current_pkg["description"] = current_pkg["description"] + line.strip() + " "
 
             # 别忘了最后一个包
             if current_pkg:

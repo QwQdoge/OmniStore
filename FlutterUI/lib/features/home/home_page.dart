@@ -50,11 +50,20 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          // Hide AI section if the response is an error message
-          final isError = pick.startsWith('⚠') ||
-              pick.startsWith('⏱') ||
-              pick.contains('AI service') ||
-              pick.contains('timed out');
+          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
+          final errorPatterns = [
+            '⚠', '⏱',
+            'AI 服务', 'AI service',
+            'timed out', '超时',
+            '无法连接', 'Connection',
+            '错误', 'error', 'Error',
+            '未启用', 'not enabled',
+            'failed', 'Failed',
+            'Today\'s recommendation: OmniStore',
+          ];
+          final isError = errorPatterns.any(
+            (p) => pick.toLowerCase().contains(p.toLowerCase()),
+          );
           _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });

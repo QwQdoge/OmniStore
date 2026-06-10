@@ -1061,4 +1061,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskInProgress => 'Another task is already in progress';
+
+  @override
+  String get trayInitFailedExiting =>
+      'Background residency unavailable. The app will now exit.';
 }

@@ -13,7 +13,7 @@ import logging
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
 class SearchManager:
-    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, recommender: RecommendationManager = None, cache_manager: Any = None, ai_assistant: Any = None):
+    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: Optional[HabitTracker] = None, recommender: Optional[RecommendationManager] = None, cache_manager: Any = None, ai_assistant: Any = None):
         self.cm = config_manager
         self.habit_tracker = habit_tracker or HabitTracker()
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
@@ -129,14 +129,28 @@ class SearchManager:
                     if source_filter == "flatpak":
                         try:
                             recs = await self.recommender.get_recommendations()
-                            return recs
+                            # get_recommendations returns a dict; flatten to a list
+                            if isinstance(recs, dict):
+                                flat: List[Dict] = []
+                                for v in recs.values():
+                                    if isinstance(v, list):
+                                        flat.extend(v)
+                                return flat
+                            return recs if isinstance(recs, list) else []
                         except Exception:
                             return []
                     else:
                         if hasattr(source_obj, "get_recommendations"):
                             try:
                                 recs = await source_obj.get_recommendations()
-                                return recs
+                                # Handle dict return (e.g., flatpak recommendations grouped by category)
+                                if isinstance(recs, dict):
+                                    flat2: List[Dict] = []
+                                    for v in recs.values():
+                                        if isinstance(v, list):
+                                            flat2.extend(v)
+                                    return flat2
+                                return recs if isinstance(recs, list) else []
                             except Exception:
                                 return []
                         return []
@@ -255,7 +269,8 @@ class SearchManager:
             )
 
             # Apply manual source weights
-            source_weight = self.sources.get(item.get("source", "").lower()).weight if self.sources.get(item.get("source", "").lower()) else 1.0
+            src_obj = self.sources.get(item.get("source", "").lower())
+            source_weight: float = src_obj.weight if src_obj is not None else 1.0
             item['_smart_score'] = base_score * source_weight
 
             # AI boost
