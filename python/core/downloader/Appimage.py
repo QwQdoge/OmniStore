@@ -1,56 +1,24 @@
 import os
-import aiohttp
 import asyncio
 from core.subprocess_utils import safe_subprocess
-from pathlib import Path
 
+async def install_appimage(package, callback=None):
+    if callback:
+        await callback(f"[INFO] Installing AppImage: {package.get('name')}")
 
-class AppImageDownloader:
-    def __init__(self, executor):
-        self.executor = executor
-        self.apps_dir = Path.home() / "Applications"
-        self.desktop_dir = Path.home() / ".local/share/applications"
-        self.current_download_task = None
-        self.timeout = aiohttp.ClientTimeout(total=5)
-
-    async def install(self, package_data: dict, callback=None):
-        name = package_data.get("name")
-        url = package_data.get("url")
-        dest_path = self.apps_dir / f"{name}.AppImage"
-        self.apps_dir.mkdir(parents=True, exist_ok=True)
-
-        if not url or not name:
-            if callback:
-                await callback("[ERROR] Invalid package data")
-            return
-
-        # Try to get content-length to show progress percentage
-        total_size = 0
-        try:
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                async with session.head(url, allow_redirects=True) as resp:
-                    if resp.status == 200:
-                        total_size = int(resp.headers.get("Content-Length", 0))
-        except Exception:
-            pass
-
-        # Start wget download
-        cmd = ["wget", "-q", "-O", str(dest_path), str(url)]
+    url = package.get("url")
+    if not url:
+        if callback:
+            await callback("[ERROR] No URL provided for AppImage install")
+        return False
         
         try:
             async with safe_subprocess(
                 *cmd,
                 env=os.environ.copy()
-<<<<<<< HEAD
-            )
-            process = self.current_download_task
-            last_percent = -1
-=======
             ) as self.current_download_task:
                 process = self.current_download_task
-                total_size = 0  # Initial 0
                 last_percent = -1
->>>>>>> 9a099d35cee880121b6d111f4c881408ac86a954
 
                 # 3. Poll disk file size
                 while process.returncode is None:
@@ -110,60 +78,27 @@ class AppImageDownloader:
                                 appimage_path = Path(path_str)
                             break
             
-            # 2. Fuzzy match by name if not found
-            if not appimage_path or not appimage_path.exists():
-                for f in self.apps_dir.glob("*.AppImage"):
-                    if name.lower() in f.name.lower():
-                        appimage_path = f
-                        break
-            
-            # 3. Fallback to default path
-            if not appimage_path:
-                appimage_path = self.apps_dir / f"{name}.AppImage"
-
-            # Delete binary
-            if appimage_path.exists():
-                appimage_path.unlink()
-                if callback:
-                    await callback(f"[INFO] Removed binary: {appimage_path}")
-
-            # Delete menu entry
-            if desktop_file.exists():
-                desktop_file.unlink()
-                if callback:
-                    await callback(f"[INFO] Removed menu entry: {desktop_file}")
-
-            msg = f"[INFO] Success: {name} uninstalled"
+        if os.path.exists(target_path):
+            os.chmod(target_path, 0o755)
             if callback:
-                await callback(msg)
-            print(msg)
+                await callback("[PROGRESS] 100")
+            return True
+    except Exception as e:
+        if callback:
+            await callback(f"[ERROR] AppImage install failed: {e}")
 
-        except Exception as e:
-            err = f"[ERROR] Uninstall Error: {e}"
-            if callback:
-                await callback(err)
-            print(err)
+    return False
 
-    def _create_desktop_entry(self, name: str, exec_path: Path):
-        """Generate .desktop file"""
-        desktop_file = self.desktop_dir / f"{name.lower()}.desktop"
-        content = f"""[Desktop Entry]
-Version=1.0
-Type=Application
-Name={name}
-Comment=Installed via Omnistore
-Exec="{exec_path}" %U
-Icon={name.lower()}
-Terminal=false
-Categories=Utility;Application;
-"""
-        with open(desktop_file, "w") as f:
-            f.write(content)
+async def uninstall_appimage(package, callback=None):
+    url = package.get("url")
+    if not url: return False
 
-    def stop(self):
-        """Stop current download task"""
-        if self.current_download_task and self.current_download_task.returncode is None:
-            try:
-                self.current_download_task.terminate()
-            except Exception:
-                pass
+    filename = url.split("/")[-1]
+    target_path = os.path.expanduser(f"~/Applications/{filename}")
+
+    if os.path.exists(target_path):
+        os.remove(target_path)
+        if callback:
+            await callback(f"[INFO] Removed {target_path}")
+        return True
+    return False
