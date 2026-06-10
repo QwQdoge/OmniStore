@@ -702,7 +702,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
+      'AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
 
   @override
   String get continueInstall => 'インストールを続行';
@@ -917,7 +917,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get githubRepoType => 'GitHub リポジトリ (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType => 'Bitu / Bitbucket (ワークスペース/リポジトリ)';
 
   @override
   String get flatpakRemoteType => 'Flatpak リモート';
@@ -1036,4 +1036,8 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get taskInProgress => '別のタスクが既に実行中です';
+
+  @override
+  String get trayInitFailedExiting =>
+      'システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。';
 }

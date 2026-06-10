@@ -1360,5 +1360,9 @@
   "taskInProgress": "Another task is already in progress",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "System tray initialization failed. Exiting to prevent background errors.",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
   }
 }

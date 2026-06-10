@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "共有 {count} 項可更新",
+  "foundUpdates": "發現 {count} 個可用更新",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -441,11 +441,11 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "刪除孤立套件並清理 pacman 快取",
+  "systemCleaningDesc": "刪除孤兒套件並清理 pacman 快取",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "刪除孤立套件並清理 pacman 快取",
+  "systemCleaningSubtitle": "刪除孤兒套件並清理 pacman 快取",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -928,7 +928,7 @@
   "@analyzeNow": {
     "description": "Description for analyzeNow"
   },
-  "cleanOrphans": "同時清理無用依賴 (孤立套件)",
+  "cleanOrphans": "同時清理無用依賴 (孤兒套件)",
   "@cleanOrphans": {
     "description": "Description for cleanOrphans"
   },
@@ -936,7 +936,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的存放庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。",
+  "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -1203,7 +1203,7 @@
   "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
   "sourceType": "來源類型",
   "githubRepoType": "GitHub 存放庫 (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "bituRepoType": "Bitu / Bitbucket (工作區/存放庫)",
   "flatpakRemoteType": "Flatpak 遠端庫",
   "appImageFeedType": "AppImage 訂閱連結",
   "sourceName": "來源名稱",
@@ -1363,5 +1363,9 @@
   "taskInProgress": "另一個任務正在進行中",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "系統匣初始化失敗。正在退出以防止背景執行錯誤。",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
   }
 }
