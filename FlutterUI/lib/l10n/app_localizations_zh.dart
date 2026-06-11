@@ -1250,7 +1250,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String foundUpdates(int count) {
-    return '共有 $count 項可更新';
+    return '發現 $count 個可用更新';
   }
 
   @override
