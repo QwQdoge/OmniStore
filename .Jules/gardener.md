@@ -23,3 +23,10 @@
 **Learning:** Extracted action confirmation and AUR security warning dialogs from `details_page.dart` into a new `action_dialogs.dart` widget to reduce file size and simplify `details_page.dart` UI logic.
 
 **Action:** Continue identifying oversized widgets and inline widget building logic, extracting them into dedicated component files where logical.
+\n## 2024-03-22 - Extracted Dialog Implementation in Action Area\n\n**Learning:** When extracting dialogs using  out of a parent component (like  into ), the state returned by  must be properly captured by the awaiting function ().  definition inline in the parent component can simply be replaced with the widget, removing large unreadable sections of code and leaving clean declarative logic.\n\n**Action:** Replaced inline  logic for confirm install/uninstall in  with the already existing  widget from .
+
+## 2024-03-22 - Extracted Dialog Implementation in Action Area
+
+**Learning:** When extracting dialogs using `StatefulBuilder` out of a parent component (like `details_page.dart` into `ActionConfirmDialog`), the state returned by `Navigator.pop(context, result)` must be properly captured by the awaiting function (`_handleAction`). `showDialog` definition inline in the parent component can simply be replaced with the widget, removing large unreadable sections of code and leaving clean declarative logic.
+
+**Action:** Replaced inline `AlertDialog` logic for confirm install/uninstall in `details_page.dart` with the already existing `ActionConfirmDialog` widget from `action_dialogs.dart`.
