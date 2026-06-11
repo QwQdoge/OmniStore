@@ -76,7 +76,6 @@ class _DownloadPageState extends State<DownloadPage>
             ],
           ),
           duration: const Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
         ),
       );
       if (newCount > 0 && prevCount == 0) {
@@ -86,7 +85,7 @@ class _DownloadPageState extends State<DownloadPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('检查更新失败: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(AppLocalizations.of(context)!.checkUpdateFailed(e.toString()))),
         );
       }
     } finally {

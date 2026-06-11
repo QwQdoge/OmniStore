@@ -1136,6 +1136,14 @@
       }
     }
   },
+  "checkUpdateFailed": "檢查更新失敗: {error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "清理失敗：{error}",
   "@errorCleanFailed": {
     "placeholders": {
