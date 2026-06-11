@@ -16,7 +16,7 @@ class AppImageSource(UnifiedSource):
         self.session = session
         self.cm = config_manager
         self.cache: List[Dict] = []
-        self.cache_timestamp = 0
+        self.cache_timestamp: float = 0.0
         self.cache_duration = 3600
         self.lock = asyncio.Lock()
 
@@ -171,10 +171,10 @@ Categories=Utility;Application;
                 pass
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        name = package.get("name")
+        name = str(package.get("name") or "")
         url = package.get("url")
-        if not url:
-            if callback: await callback("[ERROR] No download URL for AppImage.")
+        if not name or not url:
+            if callback: await callback("[ERROR] Missing package name or download URL for AppImage.")
             return False
 
         apps_dir = Path.home() / "Applications"
@@ -218,7 +218,10 @@ Categories=Utility;Application;
             return False
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
-        name = package.get("name")
+        name = str(package.get("name") or "")
+        if not name:
+            if callback: await callback("[ERROR] Missing package name for AppImage uninstall.")
+            return False
         apps_dir = Path.home() / "Applications"
         found = list(apps_dir.glob(f"*{name}*.AppImage"))
 

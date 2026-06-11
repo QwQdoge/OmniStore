@@ -39,6 +39,11 @@ class _HomePageState extends State<HomePage> {
     _bannerScrollController.dispose();
     _newArrivalsScrollController.dispose();
     _categoriesScrollController.dispose();
+    _heroScrollController.dispose();
+    _quickAccessScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -48,15 +53,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
   }
 
-  @override
-  void dispose() {
-    _heroScrollController.dispose();
-    _quickAccessScrollController.dispose();
-    for (var controller in _shelfControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
+  // Second dispose method removed
 
   Future<void> _refresh() async {
     final browse = context.read<BrowseController>();
@@ -407,62 +404,63 @@ class _HomePageState extends State<HomePage> {
               itemCount: apps.length,
               separatorBuilder: (context, index) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
-              final app = apps[index];
-              final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
-              return SizedBox(
-                width: 130,
-                child: InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AppDetailsPage(app: app, heroTag: heroTag),
+                final app = apps[index];
+                final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
+                return SizedBox(
+                  width: 130,
+                  child: InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AppDetailsPage(app: app, heroTag: heroTag),
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Column(
+                      children: [
+                        Hero(
+                          tag: heroTag,
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: app.icon != null
+                                ? CachedNetworkImage(
+                                    imageUrl: app.icon!,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 200,
+                                    memCacheHeight: 200,
+                                    errorWidget: (c, e, s) =>
+                                        const Icon(Icons.apps),
+                                  )
+                                : const Icon(Icons.apps, size: 40),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text(
+                            app.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Column(
-                    children: [
-                      Hero(
-                        tag: heroTag,
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: app.icon != null
-                              ? CachedNetworkImage(
-                                  imageUrl: app.icon!,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 200,
-                                  memCacheHeight: 200,
-                                  errorWidget: (c, e, s) =>
-                                      const Icon(Icons.apps),
-                                )
-                              : const Icon(Icons.apps, size: 40),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          app.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -483,19 +481,20 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: categories.length,
             itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Semantics(
-              label: 'Category: ${categories[index].name}',
-              child: ActionChip(
-                avatar: Icon(categories[index].icon, size: 18),
-                label: Text(categories[index].name),
-                tooltip: categories[index].name,
-                onPressed: () {
-                  final browse = context.read<BrowseController>();
-                  browse.pendingSearchQuery =
-                      '/${categories[index].id.toLowerCase()}';
-                  context.read<NavigationController>().setIndex(2);
-                },
+              padding: const EdgeInsets.only(right: 8),
+              child: Semantics(
+                label: 'Category: ${categories[index].name}',
+                child: ActionChip(
+                  avatar: Icon(categories[index].icon, size: 18),
+                  label: Text(categories[index].name),
+                  tooltip: categories[index].name,
+                  onPressed: () {
+                    final browse = context.read<BrowseController>();
+                    browse.pendingSearchQuery =
+                        '/${categories[index].id.toLowerCase()}';
+                    context.read<NavigationController>().setIndex(2);
+                  },
+                ),
               ),
             ),
           ),

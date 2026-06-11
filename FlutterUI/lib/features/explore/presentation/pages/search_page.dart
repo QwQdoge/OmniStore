@@ -80,6 +80,8 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _browseController?.removeListener(_onBrowseChanged);
     _hasSearchText.dispose();
+    _searchController.dispose();
+    _quickFilterScrollController.dispose();
     super.dispose();
   }
 
@@ -125,12 +127,7 @@ class _SearchPageState extends State<SearchPage> {
     context.read<BrowseController>().search(query);
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _quickFilterScrollController.dispose();
-    super.dispose();
-  }
+  // Duplicate dispose removed
 
   @override
   Widget build(BuildContext context) {
