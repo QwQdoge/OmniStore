@@ -25,11 +25,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _bannerScrollController = ScrollController();
+  final ScrollController _newArrivalsScrollController = ScrollController();
+  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
   final ScrollController _heroScrollController = ScrollController();
   final ScrollController _quickAccessScrollController = ScrollController();
   final Map<String, ScrollController> _shelfControllers = {};
+
+  @override
+  void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -226,11 +237,11 @@ class _HomePageState extends State<HomePage> {
         SizedBox(
           height: 260,
           child: Scrollbar(
-            controller: _heroScrollController,
+            controller: _bannerScrollController,
             thumbVisibility: true,
             child: ListView.separated(
-              controller: _heroScrollController,
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              controller: _bannerScrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               scrollDirection: Axis.horizontal,
               itemCount: apps.length,
               separatorBuilder: (context, index) => const SizedBox(width: 20),

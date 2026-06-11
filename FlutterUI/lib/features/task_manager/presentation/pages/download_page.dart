@@ -24,6 +24,7 @@ class DownloadPage extends StatefulWidget {
 
 class _DownloadPageState extends State<DownloadPage>
     with SingleTickerProviderStateMixin {
+  final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   List<AppPackage> _installedApps = [];
   List<AppPackage> _filteredApps = [];
@@ -130,6 +131,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   void dispose() {
+    _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();

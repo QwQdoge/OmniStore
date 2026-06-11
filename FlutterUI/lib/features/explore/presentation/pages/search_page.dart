@@ -21,6 +21,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final ValueNotifier<bool> _hasSearchText = ValueNotifier(false);
   bool _showDiscovery = true;
@@ -122,6 +123,13 @@ class _SearchPageState extends State<SearchPage> {
       _selectedApp = null;
     });
     context.read<BrowseController>().search(query);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _quickFilterScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -232,9 +240,13 @@ class _SearchPageState extends State<SearchPage> {
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
+      child: Scrollbar(
+        controller: _quickFilterScrollController,
+        thumbVisibility: true,
+        child: ListView(
+          controller: _quickFilterScrollController,
+          scrollDirection: Axis.horizontal,
+          children: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: FilterChip(
@@ -272,6 +284,7 @@ class _SearchPageState extends State<SearchPage> {
             );
           }),
         ],
+        ),
       ),
     );
   }
