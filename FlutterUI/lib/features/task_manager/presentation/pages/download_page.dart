@@ -644,11 +644,15 @@ class _DownloadPageState extends State<DownloadPage>
           : Column(
               key: const ValueKey('loaded'),
               children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                Scrollbar(
+                  controller: _filterScrollController,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: _filterScrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                    child: Row(
+                      children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
                         .map(
                           (s) => Padding(
                             padding: const EdgeInsets.only(right: 8),
@@ -669,6 +673,7 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                         )
                         .toList(),
+                    ),
                   ),
                 ),
                 Expanded(child: _buildInstalledList()),
