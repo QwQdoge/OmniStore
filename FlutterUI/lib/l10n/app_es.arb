@@ -933,7 +933,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
+  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -1218,7 +1218,7 @@
   "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
   "sourceType": "Tipo de fuente",
   "githubRepoType": "Repositorio de GitHub (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "bituRepoType": "Bitu / Bitbucket (espacio de trabajo/repositorio)",
   "flatpakRemoteType": "Remoto de Flatpak",
   "appImageFeedType": "URL de feed de AppImage",
   "sourceName": "Nombre de la fuente",
@@ -1360,5 +1360,9 @@
   "taskInProgress": "Otra tarea ya está en progreso",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
   }
 }

@@ -718,7 +718,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
+      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
 
   @override
   String get continueInstall => 'Continuar instalación';
@@ -937,7 +937,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get githubRepoType => 'Repositorio de GitHub (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType =>
+      'Bitu / Bitbucket (espacio de trabajo/repositorio)';
 
   @override
   String get flatpakRemoteType => 'Remoto de Flatpak';
@@ -1071,5 +1072,5 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trayInitFailedExiting =>
-      'Residencia en segundo plano no disponible. La aplicación se cerrará.';
+      'Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.';
 }

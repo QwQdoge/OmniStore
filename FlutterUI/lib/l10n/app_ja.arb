@@ -933,7 +933,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。",
+  "aurSecurityDesc": "AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -1200,7 +1200,7 @@
   "addCustomSourceDesc": "カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します",
   "sourceType": "ソースの種類",
   "githubRepoType": "GitHub リポジトリ (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "bituRepoType": "Bitu / Bitbucket (ワークスペース/リポジトリ)",
   "flatpakRemoteType": "Flatpak リモート",
   "appImageFeedType": "AppImage フィード URL",
   "sourceName": "ソース名",
@@ -1336,5 +1336,9 @@
   "taskInProgress": "別のタスクが既に実行中です",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
   }
 }

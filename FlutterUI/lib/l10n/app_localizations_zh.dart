@@ -218,7 +218,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return '共有 $count 项可更新';
+    return '发现 $count 个可用更新';
   }
 
   @override
@@ -333,10 +333,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaning => '系统清理';
 
   @override
-  String get systemCleaningDesc => '删除孤立软件包并清理 pacman 缓存';
+  String get systemCleaningDesc => '删除孤儿软件包并清理 pacman 缓存';
 
   @override
-  String get systemCleaningSubtitle => '删除孤立软件包并清理 pacman 缓存';
+  String get systemCleaningSubtitle => '删除孤儿软件包并清理 pacman 缓存';
 
   @override
   String get systemCleaningStarted => '系统清理任务已启动';
@@ -691,14 +691,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '同时清理无用依赖 (孤立软件包)';
+  String get cleanOrphans => '同时清理无用依赖 (孤儿软件包)';
 
   @override
   String get securityWarning => '安全风险提示';
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传软件包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。';
+      'AUR (Arch User Repository) 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。';
 
   @override
   String get continueInstall => '继续安装';
@@ -912,7 +912,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubRepoType => 'GitHub 仓库 (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType => 'Bitu / Bitbucket (工作区/仓库)';
 
   @override
   String get flatpakRemoteType => 'Flatpak 远程库';
@@ -1031,6 +1031,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get taskInProgress => '另一个任务正在进行中';
+
+  @override
+  String get trayInitFailedExiting => '系统托盘初始化失败。正在退出以防止后台运行错误。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1362,10 +1365,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaning => '系統清理';
 
   @override
-  String get systemCleaningDesc => '刪除孤立套件並清理 pacman 快取';
+  String get systemCleaningDesc => '刪除孤兒套件並清理 pacman 快取';
 
   @override
-  String get systemCleaningSubtitle => '刪除孤立套件並清理 pacman 快取';
+  String get systemCleaningSubtitle => '刪除孤兒套件並清理 pacman 快取';
 
   @override
   String get systemCleaningStarted => '系統清理任務已啟動';
@@ -1720,14 +1723,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '同時清理無用依賴 (孤立套件)';
+  String get cleanOrphans => '同時清理無用依賴 (孤兒套件)';
 
   @override
   String get securityWarning => '安全風險提示';
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) 是由社群維護的存放庫。由於任何人都可以上傳套件，因此可能存在不安全代碼。在安裝之前，建議檢查 PKGBUILD。';
+      'AUR (Arch User Repository) 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -1941,7 +1944,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubRepoType => 'GitHub 存放庫 (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType => 'Bitu / Bitbucket (工作區/存放庫)';
 
   @override
   String get flatpakRemoteType => 'Flatpak 遠端庫';
@@ -2060,4 +2063,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get taskInProgress => '另一個任務正在進行中';
+
+  @override
+  String get trayInitFailedExiting => '系統匣初始化失敗。正在退出以防止背景執行錯誤。';
 }

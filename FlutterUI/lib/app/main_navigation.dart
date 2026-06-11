@@ -66,6 +66,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
       // 如果后台驻留（系统托盘）初始化失败，自动退出
       if (!trayOk && DesktopWindowService.isSupported) {
+        if (!mounted) return;
         final settings = context.read<SettingsController>();
         final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
         if (closeToTray) {
@@ -102,13 +103,15 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   void onWindowClose() async {
-    final settings = context.read<SettingsController>();
+    if (!mounted) return;
+        final settings = context.read<SettingsController>();
     final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
       await wm.windowManager.hide();
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.runningInBackground),
