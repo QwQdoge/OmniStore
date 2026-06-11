@@ -1039,6 +1039,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get trayInitFailedExiting => '系统托盘初始化失败。正在退出以防止后台运行错误。';
+
+  @override
+  String get errorTitle => '错误';
+
+  @override
+  String get appDetailsNotFound => '未找到应用详情';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return '磁盘空间: $free GB 可用 / $total GB 总计';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | 自定义: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => '返回';
+
+  @override
+  String get backSemanticsHint => '返回上一页';
+
+  @override
+  String categorySemantics(String name) {
+    return '分类：$name';
+  }
+
+  @override
+  String get temperatureRangeError => '值必须在 0.0 到 2.0 之间';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2076,4 +2106,34 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get trayInitFailedExiting => '系統匣初始化失敗。正在退出以防止背景執行錯誤。';
+
+  @override
+  String get errorTitle => '錯誤';
+
+  @override
+  String get appDetailsNotFound => '未找到應用程式詳情';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return '磁碟空間: $free GB 可用 / $total GB 總計';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | 自定義: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => '返回';
+
+  @override
+  String get backSemanticsHint => '返回上一頁';
+
+  @override
+  String categorySemantics(String name) {
+    return '分類：$name';
+  }
+
+  @override
+  String get temperatureRangeError => '值必須在 0.0 到 2.0 之間';
 }

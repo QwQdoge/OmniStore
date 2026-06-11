@@ -483,7 +483,7 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Semantics(
-                label: 'Category: ${categories[index].name}',
+                label: AppLocalizations.of(context)!.categorySemantics(categories[index].name),
                 child: ActionChip(
                   avatar: Icon(categories[index].icon, size: 18),
                   label: Text(categories[index].name),

@@ -497,7 +497,7 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                         ),
                       ),
                       child: Semantics(
-                        label: 'Category: ${cat.name}',
+                        label: AppLocalizations.of(context)!.categorySemantics(cat.name),
                         button: true,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
