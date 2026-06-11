@@ -12,7 +12,6 @@ class FlatpakSource(UnifiedSource):
         self.enabled = os.path.exists("/usr/bin/flatpak")
 
     async def _get_installed_flatpaks(self) -> set:
-        proc = None
         try:
             async with safe_subprocess(
                 "flatpak", "list", "--installed", "--columns=application",
@@ -30,19 +29,13 @@ class FlatpakSource(UnifiedSource):
             return []
 
         try:
-            # ⚡ Optimization: Use provided pre-fetch task to avoid redundant subprocess calls while maintaining parallelism
             installed_task = kwargs.get("installed_flatpak_task")
-
             async with safe_subprocess(
                 "flatpak", "search", "--columns=name,application,version,description", query,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL
             ) as proc:
-
-                tasks = [
-                    proc.communicate()
-                ]
-
+                tasks: List[Any] = [proc.communicate()]
                 if installed_task is None:
                     tasks.append(self._get_installed_flatpaks())
                 else:
@@ -57,20 +50,16 @@ class FlatpakSource(UnifiedSource):
 
                 lines = stdout.decode().strip().splitlines()
                 final_results = []
-
                 for line in lines:
                     if "Application ID" in line or "Name" in line:
                         continue
-
-                    parts = [p.strip() for p in line.split('\t')]
+                    parts = [p.strip() for p in line.split("\t")]
                     if len(parts) < 2:
                         continue
-
                     display_name = parts[0]
                     app_id = parts[1]
                     version = parts[2] if len(parts) > 2 else "Unknown"
                     desc = parts[3] if len(parts) > 3 else f"Flatpak app {app_id}"
-
                     final_results.append({
                         "id": app_id,
                         "name": display_name,
@@ -90,25 +79,22 @@ class FlatpakSource(UnifiedSource):
             return []
 
     async def _ensure_flathub(self, callback=None):
-        """Ensure that the Flathub user repository is added."""
         try:
             if callback:
                 await callback("[INFO] Ensuring Flathub repository is configured...")
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "remote-add", "--if-not-exists", "--user",
                 "flathub", "https://dl.flathub.org/repo/flathub.flatpakrepo",
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL
-            )
-            await proc.wait()
+            ) as proc:
+                await proc.wait()
         except Exception:
             pass
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         app_id = package.get("id") or package.get("name")
-        
         await self._ensure_flathub(callback)
-
         if callback:
             await callback(f"[INFO] Running: flatpak install --user -y flathub {app_id}")
 
@@ -157,8 +143,14 @@ class FlatpakSource(UnifiedSource):
                     await callback("[PROGRESS] 100")
                 return proc.returncode == 0
         except Exception:
-            pass
-        return False
+            return False
+        finally:
+            if 'proc' in locals() and proc and proc.returncode is None:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except:
+                    pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
         app_id = package.get("id") or package.get("name")
@@ -171,7 +163,6 @@ class FlatpakSource(UnifiedSource):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
             ) as proc:
-
                 if proc.stdout:
                     while True:
                         line = await proc.stdout.readline()
@@ -179,7 +170,6 @@ class FlatpakSource(UnifiedSource):
                             break
                         if callback:
                             await callback(line.decode().strip())
-
                 await proc.wait()
                 return proc.returncode == 0
         except Exception:
@@ -188,6 +178,8 @@ class FlatpakSource(UnifiedSource):
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")
+        if not app_id:
+            return False
         try:
             subprocess.Popen(["flatpak", "run", app_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return True
@@ -196,9 +188,9 @@ class FlatpakSource(UnifiedSource):
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")
-        # For Flatpak, we can open the app info or the export dir
+        if not app_id:
+            return False
         try:
-            # Most user flatpaks are in ~/.local/share/flatpak/app/
             user_path = os.path.expanduser(f"~/.local/share/flatpak/app/{app_id}")
             if os.path.exists(user_path):
                 subprocess.Popen(["xdg-open", user_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -212,7 +204,6 @@ class FlatpakSource(UnifiedSource):
         return False
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
-        # Could use flathub API here
         return {"id": package_id, "source": "Flatpak"}
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:

@@ -9,8 +9,19 @@ import '../l10n/app_localizations.dart';
 import 'backend_service.dart';
 import 'task_manager.dart';
 
-// TODO: Support dynamic updates of checking intervals immediately upon config modification without restarting the timer.
-// TODO: Integrate with system cron or Android WorkManager / iOS BackgroundFetch for reliable updates when app is closed.
+// Background update scheduling for OmniStore (Linux desktop):
+//
+// Dynamic interval updates: When the user changes `updates.check_interval_hours`
+// in Settings, SettingsController.updateConfig() automatically calls
+// UpdateService().updateConfig(), which triggers _startUpdateTimer().
+// _startUpdateTimer() compares the new interval with _currentInterval and only
+// restarts the Dart Timer when the value has actually changed — so in-app
+// interval changes take effect immediately without restarting the app.
+//
+// Background updates when app is closed: Handled via a systemd user-level timer
+// (omnistore-update.timer) written to ~/.config/systemd/user/ on Linux.
+// Android WorkManager and iOS BackgroundFetch are NOT applicable — OmniStore
+// is a Linux desktop application.
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
   factory UpdateService() => _instance;
@@ -41,9 +52,11 @@ class UpdateService {
   String Function(int) _notificationBody = (count) =>
       "$count applications are available";
 
-  Future<void> init() async {
-    if (kIsWeb) return;
-    
+  /// Returns true if the system tray was successfully initialized (or not required).
+  /// Returns false if tray init failed and background residency is unavailable.
+  Future<bool> init() async {
+    if (kIsWeb) return true;
+
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =
@@ -51,9 +64,11 @@ class UpdateService {
     await _notificationsPlugin.initialize(settings: initializationSettings);
 
     try {
-      await _initSystemTray();
+      final trayOk = await _initSystemTray();
+      return trayOk;
     } catch (e) {
       debugPrint('System tray init failed: $e');
+      return false;
     }
   }
 
@@ -83,9 +98,38 @@ class UpdateService {
         await _notificationsPlugin.initialize(settings: initializationSettings);
       }
       _startUpdateTimer();
-      await _initSystemTray();
+      // 更新托盘菜单文本（初始化已在 init() 中完成）
+      await _refreshTrayMenu();
     } else {
       _startUpdateTimer();
+    }
+  }
+
+  /// 仅更新托盘右键菜单文本，不重新初始化托盘
+  Future<void> _refreshTrayMenu() async {
+    if (kIsWeb) return;
+    try {
+      final Menu menu = Menu();
+      await menu
+          .buildFrom([
+            MenuItemLabel(
+              label: _showWindowLabel,
+              onClicked: (menuItem) => wm.windowManager.show(),
+            ),
+            MenuItemLabel(
+              label: _checkUpdatesLabel,
+              onClicked: (menuItem) => checkNow(),
+            ),
+            MenuSeparator(),
+            MenuItemLabel(
+              label: _exitLabel,
+              onClicked: (menuItem) => _handleFullExit(),
+            ),
+          ])
+          .timeout(const Duration(seconds: 2));
+      await _systemTray.setContextMenu(menu).timeout(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('Failed to refresh tray menu: $e');
     }
   }
 
@@ -110,15 +154,16 @@ class UpdateService {
     }
   }
 
-  Future<void> _initSystemTray() async {
-    if (kIsWeb) return;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return;
+  /// Returns true on success, false on failure.
+  Future<bool> _initSystemTray() async {
+    if (kIsWeb) return true;
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
 
     final config = await BackendService.instance.loadConfig();
     final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
     if (!trayEnabled) {
       debugPrint("System tray disabled in config.");
-      return;
+      return true; // 用户主动禁用，不视为失败
     }
 
     final String home =
@@ -130,7 +175,7 @@ class UpdateService {
     if (Platform.isLinux) {
       if (guardFile.existsSync()) {
         debugPrint("System tray previously crashed. Skipping to prevent loop.");
-        return;
+        return false; // 之前崩溃过，视为失败
       }
 
       final hasDeps = await _checkLinuxTrayDependencies();
@@ -138,7 +183,7 @@ class UpdateService {
         debugPrint(
           "Skipping system tray initialization due to missing dependencies.",
         );
-        return;
+        return false; // 缺少依赖库，视为失败
       }
     }
 
@@ -213,18 +258,113 @@ class UpdateService {
       if (Platform.isLinux && guardFile.existsSync()) {
         guardFile.deleteSync();
       }
+      return true; // 初始化成功
     } catch (e) {
       debugPrint("System tray initialization failed gracefully: $e");
+      return false; // 初始化失败
     }
   }
 
+  int? _currentInterval;
+
+  /// Starts or restarts the in-app periodic timer only when the configured
+  /// interval has actually changed.  Also synchronises the systemd background
+  /// timer so that background checks (when the app is closed) use the same
+  /// cadence.  When the `updates` section is entirely absent from config the
+  /// timer is left running with the previous interval to avoid accidental
+  /// disabling.
   void _startUpdateTimer() {
-    _updateTimer?.cancel();
     final interval = _config['updates']?['check_interval_hours'] ?? 1;
-    _updateTimer = Timer.periodic(Duration(hours: interval), (timer) {
-      checkNow();
-    });
+    final enabled = _config['updates']?['remind_updates'] ?? true;
+
+    if (!enabled) {
+      // User disabled background update checks — cancel any running timer
+      // and remove the systemd timer so the app also stops checking in the
+      // background when closed.
+      if (_updateTimer != null) {
+        _updateTimer!.cancel();
+        _updateTimer = null;
+        _currentInterval = null;
+        debugPrint('Update timer disabled by config.');
+        _disableSystemdBackgroundTimer();
+      }
+      return;
+    }
+
+    if (_updateTimer != null && _currentInterval == interval) {
+      return; // Interval unchanged — nothing to do.
+    }
+    _currentInterval = interval;
+    _updateTimer?.cancel();
+    _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
     checkNow();
+    _setupSystemdBackgroundTimer(interval);
+  }
+
+  /// Writes a systemd user-level service + timer that runs OmniStore in
+  /// headless mode to check for updates even when the GUI is closed.
+  /// Called whenever the check interval changes.
+  Future<void> _setupSystemdBackgroundTimer(int intervalHours) async {
+    if (!Platform.isLinux) return;
+    try {
+      final home = Platform.environment['HOME'] ?? '/home/user';
+      final systemdDir = Directory(p.join(home, '.config', 'systemd', 'user'));
+      if (!systemdDir.existsSync()) {
+        systemdDir.createSync(recursive: true);
+      }
+
+      final serviceFile = File(
+        p.join(systemdDir.path, 'omnistore-update.service'),
+      );
+      final timerFile = File(p.join(systemdDir.path, 'omnistore-update.timer'));
+
+      final exePath = Platform.resolvedExecutable;
+
+      serviceFile.writeAsStringSync('''[Unit]
+Description=OmniStore Background Update Checker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=$exePath --check-updates-background
+Restart=no
+''');
+
+      timerFile.writeAsStringSync('''[Unit]
+Description=Run OmniStore Background Update Checker
+
+[Timer]
+OnCalendar=*:0/$intervalHours
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+''');
+
+      await Process.run('systemctl', ['--user', 'daemon-reload']);
+      await Process.run(
+        'systemctl',
+        ['--user', 'enable', '--now', 'omnistore-update.timer'],
+      );
+      debugPrint('systemd background timer set to every $intervalHours hour(s).');
+    } catch (e) {
+      debugPrint('Failed to setup systemd background timer: $e');
+    }
+  }
+
+  /// Stops and disables the systemd user-level timer so the app no longer
+  /// checks for updates in the background when the GUI is closed.
+  Future<void> _disableSystemdBackgroundTimer() async {
+    if (!Platform.isLinux) return;
+    try {
+      await Process.run(
+        'systemctl',
+        ['--user', 'disable', '--now', 'omnistore-update.timer'],
+      );
+      debugPrint('systemd background timer disabled.');
+    } catch (e) {
+      debugPrint('Failed to disable systemd background timer: $e');
+    }
   }
 
   Future<void> checkNow() async {

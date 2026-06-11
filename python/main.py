@@ -11,6 +11,7 @@ import signal
 import contextlib
 from pathlib import Path
 from typing import Optional
+from pydantic import BaseModel, Field, field_validator, ValidationError
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.panel import Panel
@@ -79,6 +80,79 @@ from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 
+async def handle_daemon_client(backend, reader, writer):
+    import io
+    try:
+        while True:
+            line_bytes = await reader.readline()
+            if not line_bytes:
+                break
+            line = line_bytes.decode('utf-8').strip()
+            if not line:
+                continue
+            
+            try:
+                cmd_data = json.loads(line)
+            except Exception as ex:
+                writer.write(json.dumps({"error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
+                await writer.drain()
+                continue
+            
+            # Setup a capture for stdout
+            old_stdout = sys.stdout
+            captured_stdout = io.StringIO()
+            sys.stdout = captured_stdout
+            
+            try:
+                action = cmd_data.get("action")
+                args = cmd_data.get("args", [])
+                kwargs = cmd_data.get("kwargs", {})
+                
+                # Resolve nested attributes recursively, e.g. "config.data"
+                obj = backend
+                parts = action.split('.')
+                for part in parts:
+                    if hasattr(obj, part):
+                        obj = getattr(obj, part)
+                    else:
+                        obj = None
+                        break
+                
+                if obj is not None:
+                    # If it's a callable (method or function), call it
+                    if callable(obj):
+                        if asyncio.iscoroutinefunction(obj):
+                            res = await obj(*args, **kwargs)
+                        else:
+                            res = obj(*args, **kwargs)
+                    else:
+                        # Otherwise it's an attribute/property
+                        res = obj
+                    
+                    sys.stdout = old_stdout
+                    stdout_content = captured_stdout.getvalue()
+                    
+                    writer.write(json.dumps({
+                        "status": "success",
+                        "response": res,
+                        "stdout": stdout_content
+                    }, ensure_ascii=False).encode('utf-8') + b'\n')
+                else:
+                    sys.stdout = old_stdout
+                    writer.write(json.dumps({"error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+            except Exception as e:
+                sys.stdout = old_stdout
+                writer.write(json.dumps({"error": str(e)}).encode('utf-8') + b'\n')
+            await writer.drain()
+    except Exception as e:
+        pass
+    finally:
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except:
+            pass
+
 
 
 def safe_command(func):
@@ -90,6 +164,10 @@ def safe_command(func):
         except asyncio.CancelledError:
             raise
         except Exception as e:
+            import traceback
+            # Divert full traceback to stderr for diagnostics, isolated from UI stdout
+            traceback.print_exc(file=sys.stderr)
+
             json_mode = getattr(self, "json_mode", False)
             await self._handle_error(f"Internal error in {func.__name__}", e, json_mode)
             return False
@@ -167,7 +245,8 @@ class OmnistoreBackend:
         self.recommender = RecommendationManager(self.session, self.habit_tracker)
         self.manager = SearchManager(
             self.config, self.session, self.habit_tracker,
-            recommender=self.recommender, cache_manager=self.cache
+            recommender=self.recommender, cache_manager=self.cache,
+            ai_assistant=self.ai
         )
         return self
 
@@ -325,7 +404,16 @@ class OmnistoreBackend:
             if json_mode:
                 sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
             else:
-                for app in results: print(f"推荐: {app['name']} ({app['id']})")
+                if isinstance(results, dict):
+                    for category, apps in results.items():
+                        print(f"\n[{category}]")
+                        for app in apps:
+                            if isinstance(app, dict):
+                                print(f"  推荐: {app.get('name')} ({app.get('id')})")
+                elif isinstance(results, list):
+                    for app in results:
+                        if isinstance(app, dict):
+                            print(f"推荐: {app.get('name')} ({app.get('id')})")
 
     @safe_command
     async def run_app_details(self, app_id: str, json_mode: bool = False):
@@ -383,13 +471,19 @@ class OmnistoreBackend:
             # ⚡ Optimization: Parallelize package scanning for different sources
             async def scan_appimage():
                 res = []
-                apps_dir = Path.home() / "Applications"
-                if apps_dir.exists():
-                    for f in apps_dir.glob("*.AppImage"):
-                        res.append({
-                            "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                            "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
-                        })
+                try:
+                    apps_dir = Path.home() / "Applications"
+                    if apps_dir.exists():
+                        # Boundary defense: offload blocking glob to thread
+                        loop = asyncio.get_running_loop()
+                        files = await loop.run_in_executor(None, lambda: list(apps_dir.glob("*.AppImage")))
+                        for f in files:
+                            res.append({
+                                "name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
+                                "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()
+                            })
+                except Exception as e:
+                    logging.debug(f"scan_appimage error: {e}")
                 return res
 
             async def scan_flatpak():
@@ -557,6 +651,95 @@ class OmnistoreBackend:
         sys.stdout.flush()
 
     @safe_command
+    async def run_launch(self, name: str, source: str, json_mode: bool = False) -> bool:
+        async with self:
+            src = source.lower()
+            if src == "native":
+                src = "pacman"
+            if self.manager and src in self.manager.sources:
+                success = await self.manager.sources[src].launch({"name": name, "id": name})
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                return success
+            return False
+
+    @safe_command
+    async def run_locate(self, name: str, source: str, json_mode: bool = False) -> bool:
+        async with self:
+            src = source.lower()
+            if src == "native":
+                src = "pacman"
+            if self.manager and src in self.manager.sources:
+                success = await self.manager.sources[src].locate({"name": name, "id": name})
+                if json_mode:
+                    sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                return success
+            return False
+
+    @safe_command
+    async def run_get_storage_info(self, json_mode: bool = False):
+        import shutil
+        async with self:
+            home_path = os.path.expanduser("~")
+            total, used, free = shutil.disk_usage(home_path)
+            
+            pacman_cache = 0
+            if os.path.exists("/var/cache/pacman/pkg"):
+                try:
+                    for entry in os.scandir("/var/cache/pacman/pkg"):
+                        if entry.is_file():
+                            pacman_cache += entry.stat().st_size
+                except Exception:
+                    pass
+            
+            flatpak_cache = 0
+            flatpak_paths = [
+                os.path.expanduser("~/.local/share/flatpak"),
+                os.path.expanduser("~/.var/app")
+            ]
+            for p in flatpak_paths:
+                if os.path.exists(p):
+                    try:
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                flatpak_cache += os.path.getsize(os.path.join(root, file))
+                    except Exception:
+                        pass
+            
+            omnistore_cache = 0
+            omnistore_paths = [
+                os.path.expanduser("~/.config/omnistore"),
+                os.path.expanduser("~/.cache/omnistore")
+            ]
+            for p in omnistore_paths:
+                if os.path.exists(p):
+                    try:
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                omnistore_cache += os.path.getsize(os.path.join(root, file))
+                    except Exception:
+                        pass
+                        
+            info = {
+                "disk_total": total,
+                "disk_used": used,
+                "disk_free": free,
+                "pacman_cache": pacman_cache,
+                "flatpak_cache": flatpak_cache,
+                "omnistore_cache": omnistore_cache,
+                "total_cache": pacman_cache + flatpak_cache + omnistore_cache
+            }
+            
+            if json_mode:
+                sys.stdout.write(json.dumps(info) + "\n")
+            else:
+                console.print(f"Disk Total: {total / (1024**3):.2f} GB")
+                console.print(f"Disk Free: {free / (1024**3):.2f} GB")
+                console.print(f"Total Cache: {(pacman_cache + flatpak_cache + omnistore_cache) / (1024**2):.2f} MB")
+            sys.stdout.flush()
+            return info
+
+    @safe_command
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         import shutil
         async def cb(m): await self._flutter_callback(m, json_mode)
@@ -676,9 +859,103 @@ class OmnistoreBackend:
         console.print(table); console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
 
-# TODO: Migrate command argument validation and parsing to Pydantic for robust runtime type checking.
+class CLIArguments(BaseModel):
+    search: Optional[str] = None
+    install: Optional[str] = None
+    remove: Optional[str] = None
+    update: Optional[str] = None
+    check_updates: bool = False
+    list_installed: bool = False
+    recommend: bool = False
+    details: Optional[str] = None
+    clean_system: bool = False
+    ai_summary: bool = False
+    get_config: bool = False
+    set_config: Optional[str] = None
+    check_env: bool = False
+    bootstrap: bool = False
+    list_custom_repos: bool = False
+    add_custom_repo: Optional[str] = None
+    remove_custom_repo: Optional[str] = None
+    ai_explain: Optional[str] = None
+    ai_recommend: Optional[str] = None
+    ai_analyze_error: Optional[str] = None
+    ai_compare: Optional[str] = None
+    ai_health: bool = False
+    ai_pick: bool = False
+    ai_correct: Optional[str] = None
+    ai_changelog: Optional[str] = None
+    ai_cli: Optional[str] = None
+    ai_conflicts: Optional[str] = None
+    essentials: bool = False
+    import_packages: Optional[str] = None
+    export_packages: Optional[str] = None
+    launch: Optional[str] = None
+    locate: Optional[str] = None
+    daemon: bool = False
+    storage_info: bool = False
+    json_mode: bool = Field(default=False, alias="json")
+    source: str = "AUR"
+    url: Optional[str] = None
+    ai_desc: Optional[str] = None
+    force_refresh: bool = False
+
+    @field_validator(
+        "search", "install", "remove", "update", "details",
+        "add_custom_repo", "remove_custom_repo", "ai_explain",
+        "ai_recommend", "ai_analyze_error", "ai_compare",
+        "ai_correct", "ai_changelog", "ai_cli", "ai_conflicts",
+        "import_packages", "export_packages", "launch", "locate"
+    )
+    @classmethod
+    def validate_non_empty_str(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v_stripped = v.strip()
+            if not v_stripped:
+                raise ValueError("Argument cannot be empty.")
+            return v_stripped
+        return v
+
+    @field_validator("add_custom_repo")
+    @classmethod
+    def validate_add_custom_repo(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            parts = [p.strip() for p in v.split(',', 2)]
+            if len(parts) < 3 and parts[0] == "appimage":
+                parts = ["appimage", "", parts[1]]
+            if len(parts) < 3:
+                raise ValueError("Invalid format: type,name,url")
+        return v
+
+    @field_validator("remove_custom_repo")
+    @classmethod
+    def validate_remove_custom_repo(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            parts = [p.strip() for p in v.split(',', 1)]
+            if len(parts) < 2:
+                raise ValueError("Invalid format: type,name")
+        return v
+
+    @field_validator("ai_changelog")
+    @classmethod
+    def validate_ai_changelog(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            parts = v.split(',')
+            if len(parts) < 3:
+                raise ValueError("Changelog format: name,current,next")
+        return v
+
+    @field_validator("ai_cli")
+    @classmethod
+    def validate_ai_cli(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            parts = v.split(',')
+            if len(parts) < 2:
+                raise ValueError("AI CLI format: name,summary")
+        return v
+
 async def main():
-    main.json_mode_active = "--json" in sys.argv
+    setattr(main, "json_mode_active", "--json" in sys.argv)
     parser = argparse.ArgumentParser(description="Omnistore Backend")
     
     cmd = parser.add_mutually_exclusive_group()
@@ -714,6 +991,8 @@ async def main():
     cmd.add_argument("--export-packages")
     cmd.add_argument("--launch")
     cmd.add_argument("--locate")
+    cmd.add_argument("--daemon", action="store_true")
+    cmd.add_argument("--storage-info", action="store_true")
 
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--source", default="AUR")
@@ -737,100 +1016,98 @@ async def main():
 
     async def dispatch():
         """Strictly validated CLI command dispatcher."""
-        def validate_str(val, name):
-            if val is None or not str(val).strip():
-                raise ValueError(f"Argument '{name}' cannot be empty.")
-            return str(val).strip()
 
         try:
-            if args.get_config:
+            try:
+                validated_args = CLIArguments(**vars(args))
+            except ValidationError as ve:
+                errors = []
+                for err in ve.errors():
+                    field_name = err["loc"][0]
+                    msg = err["msg"]
+                    if "Value error, " in msg:
+                        msg = msg.replace("Value error, ", "")
+                    errors.append(f"Argument '{field_name}' invalid: {msg}")
+                raise ValueError("; ".join(errors))
+
+            if validated_args.get_config:
                 sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n")
 
-            elif args.set_config:
-                data = sys.stdin.read().strip() or args.set_config
+            elif validated_args.set_config:
+                data = sys.stdin.read().strip() or validated_args.set_config
                 if not data or data == "true": raise ValueError("No configuration data provided")
                 success = backend.config.save(json.loads(data))
                 sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
-            elif args.search:
-                q = validate_str(args.search, "search")
-                await backend.run_search(q, args.json)
+            elif validated_args.search:
+                await backend.run_search(validated_args.search, validated_args.json_mode)
 
-            elif args.install:
-                p = validate_str(args.install, "install")
+            elif validated_args.install:
                 async with backend:
-                    if not await backend.run_install(p, args.source, args.url, args.json):
+                    if not await backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode):
                         sys.exit(1)
 
-            elif args.remove:
-                p = validate_str(args.remove, "remove")
+            elif validated_args.remove:
                 async with backend:
-                    if not await backend.run_uninstall(p, args.source, args.json, args.remove):
+                    if not await backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove):
                         sys.exit(1)
 
-            elif args.update:
-                p = validate_str(args.update, "update")
+            elif validated_args.update:
                 async with backend:
-                    if not await backend.run_update(p, args.source, args.json):
+                    if not await backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode):
                         sys.exit(1)
 
-            elif args.check_updates:
-                async with backend: await backend.run_check_updates(args.json)
+            elif validated_args.check_updates:
+                async with backend: await backend.run_check_updates(validated_args.json_mode)
 
-            elif args.list_installed:
-                await backend.run_list_installed(args.json, args.force_refresh)
+            elif validated_args.list_installed:
+                await backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh)
 
-            elif args.details:
-                p = validate_str(args.details, "details")
-                await backend.run_app_details(p, args.json)
+            elif validated_args.details:
+                await backend.run_app_details(validated_args.details, validated_args.json_mode)
 
-            elif args.recommend:
-                await backend.run_recommendations(args.json)
+            elif validated_args.recommend:
+                await backend.run_recommendations(validated_args.json_mode)
 
-            elif args.clean_system:
-                async with backend: await backend.run_clean_system(args.json)
+            elif validated_args.clean_system:
+                async with backend: await backend.run_clean_system(validated_args.json_mode)
 
-            elif args.ai_summary:
-                async with backend: await backend.run_ai_summary(args.json)
+            elif validated_args.ai_summary:
+                async with backend: await backend.run_ai_summary(validated_args.json_mode)
 
-            elif args.check_env:
+            elif validated_args.check_env:
                 env_res = await backend.env.check_env()
                 sys.stdout.write(json.dumps(env_res) + "\n")
 
-            elif args.bootstrap:
-                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
-                if args.json: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+            elif validated_args.bootstrap:
+                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, validated_args.json_mode))
+                if validated_args.json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
 
-            elif args.list_custom_repos:
+            elif validated_args.list_custom_repos:
                 async with backend: await backend.run_list_custom_repos()
 
-            elif args.add_custom_repo:
-                raw_repo = validate_str(args.add_custom_repo, "add-custom-repo")
+            elif validated_args.add_custom_repo:
+                raw_repo = validated_args.add_custom_repo
                 parts = [p.strip() for p in raw_repo.split(',', 2)]
                 if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
-                if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
-                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
+                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json_mode)
 
-            elif args.remove_custom_repo:
-                raw_repo = validate_str(args.remove_custom_repo, "remove-custom-repo")
+            elif validated_args.remove_custom_repo:
+                raw_repo = validated_args.remove_custom_repo
                 parts = [p.strip() for p in raw_repo.split(',', 1)]
-                if len(parts) < 2: raise ValueError("Invalid format: type,name")
-                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
+                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], validated_args.json_mode)
 
-            elif args.ai_explain:
-                p = validate_str(args.ai_explain, "ai-explain")
-                await backend.run_ai_explain(p, args.ai_desc or "")
+            elif validated_args.ai_explain:
+                await backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or "")
 
-            elif args.ai_recommend:
-                p = validate_str(args.ai_recommend, "ai-recommend")
-                await backend.run_ai_recommend(p)
+            elif validated_args.ai_recommend:
+                await backend.run_ai_recommend(validated_args.ai_recommend)
 
-            elif args.ai_analyze_error:
-                p = validate_str(args.ai_analyze_error, "ai-analyze-error")
-                await backend.run_ai_analyze_error(p)
+            elif validated_args.ai_analyze_error:
+                await backend.run_ai_analyze_error(validated_args.ai_analyze_error)
 
-            elif args.ai_compare:
-                p = validate_str(args.ai_compare, "ai-compare")
+            elif validated_args.ai_compare:
+                p = validated_args.ai_compare
                 async with backend:
                     if backend.manager:
                         candidates = await backend.manager.search_all(p)
@@ -840,7 +1117,7 @@ async def main():
                             sys.stdout.write(json.dumps({"response": res}) + "\n")
                         else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
 
-            elif args.ai_health:
+            elif validated_args.ai_health:
                 status = await backend.env.check_env()
                 try:
                     async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
@@ -850,32 +1127,28 @@ async def main():
                 res = await backend.ai.generate_health_report(status)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
-            elif args.ai_pick:
-                await backend.run_ai_pick(args.json)
+            elif validated_args.ai_pick:
+                await backend.run_ai_pick(validated_args.json_mode)
 
-            elif args.ai_correct:
-                p = validate_str(args.ai_correct, "ai-correct")
+            elif validated_args.ai_correct:
+                p = validated_args.ai_correct
                 res = await backend.ai.suggest_correction(p)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
-            elif args.ai_changelog:
-                p = validate_str(args.ai_changelog, "ai-changelog")
+            elif validated_args.ai_changelog:
+                p = validated_args.ai_changelog
                 parts = p.split(',')
-                if len(parts) >= 3:
-                    res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-                else: raise ValueError("Changelog format: name,current,next")
+                res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
+                sys.stdout.write(json.dumps({"response": res}) + "\n")
 
-            elif args.ai_cli:
-                p = validate_str(args.ai_cli, "ai-cli")
+            elif validated_args.ai_cli:
+                p = validated_args.ai_cli
                 parts = p.split(',')
-                if len(parts) >= 2:
-                    res = await backend.ai.generate_cli_command(parts[0], parts[1])
-                    sys.stdout.write(json.dumps({"response": res}) + "\n")
-                else: raise ValueError("AI CLI format: name,summary")
+                res = await backend.ai.generate_cli_command(parts[0], parts[1])
+                sys.stdout.write(json.dumps({"response": res}) + "\n")
 
-            elif args.ai_conflicts:
-                p = validate_str(args.ai_conflicts, "ai-conflicts")
+            elif validated_args.ai_conflicts:
+                p = validated_args.ai_conflicts
                 try:
                     async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
                         stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
@@ -883,36 +1156,33 @@ async def main():
                         sys.stdout.write(json.dumps({"response": res}) + "\n")
                 except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
 
-            elif args.essentials:
+            elif validated_args.essentials:
                 async with backend: await backend.run_get_essentials()
 
-            elif args.import_packages:
-                p = validate_str(args.import_packages, "import-packages")
-                async with backend: await backend.run_import_packages(p)
+            elif validated_args.import_packages:
+                async with backend: await backend.run_import_packages(validated_args.import_packages)
 
-            elif args.export_packages:
-                p = validate_str(args.export_packages, "export-packages")
-                async with backend: await backend.run_export_packages(p)
+            elif validated_args.export_packages:
+                async with backend: await backend.run_export_packages(validated_args.export_packages)
 
-            elif args.launch:
-                p = validate_str(args.launch, "launch")
+            elif validated_args.launch:
+                await backend.run_launch(validated_args.launch, validated_args.source, validated_args.json_mode)
+
+            elif validated_args.locate:
+                await backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode)
+
+            elif validated_args.storage_info:
+                await backend.run_get_storage_info(validated_args.json_mode)
+
+            elif validated_args.daemon:
                 async with backend:
-                    src = args.source.lower()
-                    if src == "native":
-                        src = "pacman"
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].launch({"name": p, "id": p})
-                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-
-            elif args.locate:
-                p = validate_str(args.locate, "locate")
-                async with backend:
-                    src = args.source.lower()
-                    if src == "native":
-                        src = "pacman"
-                    if backend.manager and src in backend.manager.sources:
-                        success = await backend.manager.sources[src].locate({"name": p, "id": p})
-                        if args.json: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+                    # Start local TCP socket server on port 9081
+                    server = await asyncio.start_server(
+                        lambda r, w: handle_daemon_client(backend, r, w),
+                        '127.0.0.1', 9081
+                    )
+                    async with server:
+                        await server.serve_forever()
 
             sys.stdout.flush()
         except Exception as e:

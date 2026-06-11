@@ -63,7 +63,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get source => 'Source';
 
   @override
-  String get variant => 'Variant';
+  String get variant => 'Versions';
 
   @override
   String get version => 'Version';
@@ -862,6 +862,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return 'Check update failed: $error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return 'Cleanup failed: $error';
   }
@@ -989,4 +994,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nameCopied => 'Name copied to clipboard';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageSubtitle => 'Requires restart to take effect';
+
+  @override
+  String get restartTitleBar => 'Please restart to apply title bar changes';
+
+  @override
+  String get enableDaemon => 'Enable Background Update Daemon';
+
+  @override
+  String get enableDaemonDesc =>
+      'Regularly check for updates in the background';
+
+  @override
+  String get autoUpdate => 'Silent Auto Update';
+
+  @override
+  String get autoUpdateDesc =>
+      'Automatically download and update all packages in the background';
+
+  @override
+  String get checkIntervalTitle => 'Update Check Frequency';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return 'Automatically check every $hours hours';
+  }
+
+  @override
+  String get typography => 'Typography';
+
+  @override
+  String get fontFamily => 'Font Family';
+
+  @override
+  String get fontScale => 'Font Scale';
+
+  @override
+  String get systemDefault => 'System Default';
+
+  @override
+  String hourValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get langSimplifiedChinese => 'Simplified Chinese';
+
+  @override
+  String get langTraditionalChinese => 'Traditional Chinese';
+
+  @override
+  String get langEnglish => 'English';
+
+  @override
+  String get langJapanese => 'Japanese';
+
+  @override
+  String get langSpanish => 'Spanish';
+
+  @override
+  String get taskInProgress => 'Another task is already in progress';
+
+  @override
+  String get trayInitFailedExiting =>
+      'System tray initialization failed. Exiting to prevent background errors.';
 }

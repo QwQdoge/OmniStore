@@ -80,7 +80,7 @@
   "@version": {
     "description": "Description for version"
   },
-  "ready": "已就绪",
+  "ready": "已安装",
   "@ready": {
     "description": "Description for ready"
   },
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "共有 {count} 项可更新",
+  "foundUpdates": "发现 {count} 个可用更新",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -441,11 +441,11 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "删除孤立软件包并清理 pacman 缓存",
+  "systemCleaningDesc": "删除孤儿软件包并清理 pacman 缓存",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "删除孤立软件包并清理 pacman 缓存",
+  "systemCleaningSubtitle": "删除孤儿软件包并清理 pacman 缓存",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -745,7 +745,7 @@
   "@envWarningDesc": {
     "description": "Description for envWarningDesc"
   },
-  "envOkDesc": "一切就绪！您的系统非常完美。",
+  "envOkDesc": "一切就绪！系统环境已完美配置。",
   "@envOkDesc": {
     "description": "Description for envOkDesc"
   },
@@ -777,7 +777,7 @@
   "@aurWarning": {
     "description": "Description for aurWarning"
   },
-  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
+  "bootstrapNote": "提示：配置过程可能需要多次输入管理员密码。",
   "@bootstrapNote": {
     "description": "Description for bootstrapNote"
   },
@@ -929,7 +929,7 @@
   "@analyzeNow": {
     "description": "Description for analyzeNow"
   },
-  "cleanOrphans": "同时清理无用依赖 (孤立软件包)",
+  "cleanOrphans": "同时清理无用依赖 (孤儿软件包)",
   "@cleanOrphans": {
     "description": "Description for cleanOrphans"
   },
@@ -937,7 +937,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) 是由社区维护的仓库。由于任何人都可以上传软件包，因此可能存在不安全的代码。在安装之前，建议检查 PKGBUILD。",
+  "aurSecurityDesc": "AUR (Arch User Repository) 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -1137,6 +1137,14 @@
       }
     }
   },
+  "checkUpdateFailed": "检查更新失败: {error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "清理失败：{error}",
   "@errorCleanFailed": {
     "placeholders": {
@@ -1204,7 +1212,7 @@
   "addCustomSourceDesc": "配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库",
   "sourceType": "来源类型",
   "githubRepoType": "GitHub 仓库 (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "bituRepoType": "Bitu / Bitbucket (工作区/仓库)",
   "flatpakRemoteType": "Flatpak 远程库",
   "appImageFeedType": "AppImage 订阅链接",
   "sourceName": "来源名称",
@@ -1291,5 +1299,82 @@
   },
   "@personalAccessToken": {
     "description": "Label for personal access token"
+  },
+  "language": "界面语言",
+  "languageSubtitle": "重启应用后生效",
+  "restartTitleBar": "请重启应用以使标题栏设置生效",
+  "enableDaemon": "启用后台更新守护进程",
+  "enableDaemonDesc": "在系统后台定期静默检查应用更新",
+  "autoUpdate": "静默自动更新",
+  "autoUpdateDesc": "在后台自动下载并更新所有可升级的软件包",
+  "checkIntervalTitle": "检查更新频率",
+  "checkIntervalSubtitle": "每隔 {hours} 小时检查一次",
+  "typography": "字体与排版",
+  "fontFamily": "字体系列",
+  "fontScale": "字体缩放比例",
+  "systemDefault": "系统默认",
+  "hourValue": "{count} 小时",
+  "@language": {
+    "description": "Label for language setting"
+  },
+  "@languageSubtitle": {
+    "description": "Subtitle for language setting"
+  },
+  "@restartTitleBar": {
+    "description": "Message to restart for title bar changes"
+  },
+  "@enableDaemon": {
+    "description": "Label for background daemon"
+  },
+  "@enableDaemonDesc": {
+    "description": "Description for background daemon"
+  },
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
+  "@autoUpdateDesc": {
+    "description": "Description for auto update"
+  },
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@typography": {
+    "description": "Title for typography settings"
+  },
+  "@fontFamily": {
+    "description": "Label for font family setting"
+  },
+  "@fontScale": {
+    "description": "Label for font scale setting"
+  },
+  "@systemDefault": {
+    "description": "Label for system default option"
+  },
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "简体中文",
+  "langTraditionalChinese": "繁體中文",
+  "langEnglish": "英语 (English)",
+  "langJapanese": "日语 (日本語)",
+  "langSpanish": "西班牙语 (Español)",
+  "taskInProgress": "另一个任务正在进行中",
+  "@taskInProgress": {
+    "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "系统托盘初始化失败。正在退出以防止后台运行错误。",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
   }
 }

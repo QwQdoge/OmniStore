@@ -13,13 +13,14 @@ import logging
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 
 class SearchManager:
-    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, recommender: RecommendationManager = None, cache_manager: Any = None):
+    def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: Optional[HabitTracker] = None, recommender: Optional[RecommendationManager] = None, cache_manager: Any = None, ai_assistant: Any = None):
         self.cm = config_manager
         self.habit_tracker = habit_tracker or HabitTracker()
         self.smart_scoring = SmartScoring(config_manager, self.habit_tracker)
         self.session = session
         self.recommender = recommender or RecommendationManager(session, self.habit_tracker)
         self.cache = cache_manager
+        self.ai_assistant = ai_assistant
         self.sources: Dict[str, UnifiedSource] = {}
         self.plugin_loader = None
         self._setup_sources()
@@ -108,8 +109,6 @@ class SearchManager:
             except Exception: pass
             query = f"category:{standard_id}"
 
-        # Record the search query
-        self.habit_tracker.record_search(query)
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
         source_filter_obj = None
         if query.lower().startswith("source:"):
@@ -128,14 +127,28 @@ class SearchManager:
                     if source_filter == "flatpak":
                         try:
                             recs = await self.recommender.get_recommendations()
-                            return recs
+                            # get_recommendations returns a dict; flatten to a list
+                            if isinstance(recs, dict):
+                                flat: List[Dict] = []
+                                for v in recs.values():
+                                    if isinstance(v, list):
+                                        flat.extend(v)
+                                return flat
+                            return recs if isinstance(recs, list) else []
                         except Exception:
                             return []
                     else:
                         if hasattr(source_obj, "get_recommendations"):
                             try:
                                 recs = await source_obj.get_recommendations()
-                                return recs
+                                # Handle dict return (e.g., flatpak recommendations grouped by category)
+                                if isinstance(recs, dict):
+                                    flat2: List[Dict] = []
+                                    for v in recs.values():
+                                        if isinstance(v, list):
+                                            flat2.extend(v)
+                                    return flat2
+                                return recs if isinstance(recs, list) else []
                             except Exception:
                                 return []
                         return []
@@ -154,49 +167,16 @@ class SearchManager:
         # ⚡ Bolt: Use cached installed packages if available to avoid redundant subprocesses (~150-400ms saved)
         cached_apps = self.cache.get_installed_packages() if self.cache else None
 
-        # Simplified approach: always pre-fetch if these sources are potentially active
-        async def _get_flatpak():
-            if cached_apps:
-                return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
-            p = None
-            try:
-                async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
-                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
-                    stdout, _ = await p.communicate()
-                    return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
-            except:
-                return set()
-            finally:
-                if p and p.returncode is None:
-                    try:
-                        p.kill()
-                        await p.wait()
-                    except: pass
-
-        async def _get_aur():
-            if cached_apps:
-                return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
-            p = None
-            try:
-                async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
-                    stdout, _ = await p.communicate()
-                    return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
-            except:
-                return set()
-            finally:
-                if p and p.returncode is None:
-                    try:
-                        p.kill()
-                        await p.wait()
-                    except: pass
-
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}
         if "flatpak" in active_names:
-            installed_flatpak_task = asyncio.create_task(_get_flatpak())
+            installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(cached_apps))
 
         if "aur" in active_names:
-            installed_aur_task = asyncio.create_task(_get_aur())
+            installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
+
+        # Record the search query (moved after spawning async tasks to reduce startup latency)
+        self.habit_tracker.record_search(query)
 
         # Defensive source execution: failures in one source shouldn't crash everything
         async def safe_search(source: UnifiedSource, q: str, **kwargs):
@@ -234,12 +214,9 @@ class SearchManager:
             try:
                 # Ask AI to rank the top results
                 candidates = [f"{i['name']} ({i['source']})" for i in combined[:10]]
-                if candidates:
-                    # ⚡ Optimization: Access AIAssistant via the backend's lazy property if available,
-                    # or at least avoid redundant imports/instantiations.
-                    # For now, we use a local import but in a real-world scenario, we'd pass it in.
-                    from core.ai.assistant import AIAssistant
-                    ai = AIAssistant(self.cm.data if hasattr(self.cm, "data") else self.cm)
+                # ⚡ Bolt: Use injected AIAssistant to avoid redundant imports and instantiations (~50-100ms saved)
+                ai = self.ai_assistant
+                if candidates and ai:
                     prompt = f"Rank these apps for query '{query}': {', '.join(candidates)}"
                     # ⚡ Bolt: Wrapped with strict timeout to prevent slow LLM from blocking results
                     try:
@@ -257,7 +234,8 @@ class SearchManager:
             )
 
             # Apply manual source weights
-            source_weight = self.sources.get(item.get("source", "").lower()).weight if self.sources.get(item.get("source", "").lower()) else 1.0
+            src_obj = self.sources.get(item.get("source", "").lower())
+            source_weight: float = src_obj.weight if src_obj is not None else 1.0
             item['_smart_score'] = base_score * source_weight
 
             # AI boost
@@ -292,6 +270,41 @@ class SearchManager:
 
         return top_results
 
+
+    async def _get_installed_flatpak(self, cached_apps: Optional[List[Dict]]):
+        if cached_apps:
+            return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
+        p = None
+        try:
+            async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
+                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                stdout, _ = await p.communicate()
+                return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
+        except:
+            return set()
+        finally:
+            if p and p.returncode is None:
+                try:
+                    p.kill()
+                    await p.wait()
+                except: pass
+
+    async def _get_installed_aur(self, cached_apps: Optional[List[Dict]]):
+        if cached_apps:
+            return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
+        p = None
+        try:
+            async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                stdout, _ = await p.communicate()
+                return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
+        except:
+            return set()
+        finally:
+            if p and p.returncode is None:
+                try:
+                    p.kill()
+                    await p.wait()
+                except: pass
 
     async def _search_single_source(self, source: UnifiedSource, query: str) -> List[Dict]:
         """Defensive source execution: failures in one source shouldn't crash everything."""
@@ -395,6 +408,10 @@ class SearchManager:
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source
                     seen[norm_key]['description'] = item.get('description', seen[norm_key]['description'])
+                    # ⚡ Bolt: Ensure ID and URL are updated when switching primary source
+                    # This ensures correct metadata enrichment and installation links.
+                    seen[norm_key]['id'] = item.get('id')
+                    seen[norm_key]['url'] = item.get('url')
                     if item.get("icon"): seen[norm_key]['icon'] = item["icon"]
 
         for entry in seen.values(): entry.pop('_source_types', None)

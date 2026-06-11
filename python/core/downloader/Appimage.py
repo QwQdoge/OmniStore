@@ -1,8 +1,6 @@
 import os
-import aiohttp
 import asyncio
 from core.subprocess_utils import safe_subprocess
-from pathlib import Path
 
 
 class AppImageDownloader:
@@ -80,84 +78,24 @@ class AppImageDownloader:
 
         except Exception as e:
             if callback:
-                await callback(f"[ERROR] Exception: {e}")
-        finally:
-            self.current_download_task = None
+                await callback("[PROGRESS] 100")
+            return True
+    except Exception as e:
+        if callback:
+            await callback(f"[ERROR] AppImage install failed: {e}")
 
-    async def uninstall(self, package_data: dict, callback=None):
-        """Unified uninstallation interface"""
-        name = package_data.get("name")
-        if not name:
-            return
+    return False
 
-        desktop_file = self.desktop_dir / f"{name.lower()}.desktop"
-        appimage_path = None
+async def uninstall_appimage(package, callback=None):
+    url = package.get("url")
+    if not url: return False
 
-        try:
-            # 1. Try to read actual path from .desktop file
-            if desktop_file.exists():
-                with open(desktop_file, "r") as f:
-                    for line in f:
-                        if line.startswith("Exec="):
-                            path_str = line.split("Exec=")[1].split("%U")[0].strip().strip('"\'')
-                            if path_str:
-                                appimage_path = Path(path_str)
-                            break
-            
-            # 2. Fuzzy match by name if not found
-            if not appimage_path or not appimage_path.exists():
-                for f in self.apps_dir.glob("*.AppImage"):
-                    if name.lower() in f.name.lower():
-                        appimage_path = f
-                        break
-            
-            # 3. Fallback to default path
-            if not appimage_path:
-                appimage_path = self.apps_dir / f"{name}.AppImage"
+    filename = url.split("/")[-1]
+    target_path = os.path.expanduser(f"~/Applications/{filename}")
 
-            # Delete binary
-            if appimage_path.exists():
-                appimage_path.unlink()
-                if callback:
-                    await callback(f"[INFO] Removed binary: {appimage_path}")
-
-            # Delete menu entry
-            if desktop_file.exists():
-                desktop_file.unlink()
-                if callback:
-                    await callback(f"[INFO] Removed menu entry: {desktop_file}")
-
-            msg = f"[INFO] Success: {name} uninstalled"
-            if callback:
-                await callback(msg)
-            print(msg)
-
-        except Exception as e:
-            err = f"[ERROR] Uninstall Error: {e}"
-            if callback:
-                await callback(err)
-            print(err)
-
-    def _create_desktop_entry(self, name: str, exec_path: Path):
-        """Generate .desktop file"""
-        desktop_file = self.desktop_dir / f"{name.lower()}.desktop"
-        content = f"""[Desktop Entry]
-Version=1.0
-Type=Application
-Name={name}
-Comment=Installed via Omnistore
-Exec="{exec_path}" %U
-Icon={name.lower()}
-Terminal=false
-Categories=Utility;Application;
-"""
-        with open(desktop_file, "w") as f:
-            f.write(content)
-
-    def stop(self):
-        """Stop current download task"""
-        if self.current_download_task and self.current_download_task.returncode is None:
-            try:
-                self.current_download_task.terminate()
-            except Exception:
-                pass
+    if os.path.exists(target_path):
+        os.remove(target_path)
+        if callback:
+            await callback(f"[INFO] Removed {target_path}")
+        return True
+    return False

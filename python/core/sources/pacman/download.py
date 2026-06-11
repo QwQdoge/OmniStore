@@ -1,12 +1,12 @@
 import asyncio
 import re
 from core.subprocess_utils import safe_subprocess
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Optional
 from core.sources.utils import PrivilegeManager
 
 privilege = PrivilegeManager()
 
-async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> bool:
+async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
     if not await privilege.ensure_privileged(callback):
         return False
 
@@ -14,11 +14,23 @@ async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> 
     if callback:
         await callback(f"[INFO] Running: sudo pacman -S --noconfirm {name}")
 
-    async with safe_subprocess(
-        "sudo", "pacman", "-S", "--noconfirm", name,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT
-    ) as proc:
+    try:
+        async with safe_subprocess(
+            "sudo", "pacman", "-S", "--noconfirm", name,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT
+        ) as proc:
+            last_sent_progress = -1
+            if proc.stdout:
+                while True:
+                    line_bytes = await proc.stdout.readline()
+                    if not line_bytes:
+                        break
+                    line = line_bytes.decode('utf-8', errors='ignore').strip()
+                    if not line:
+                        continue
+                    if callback:
+                        await callback(f"[INFO] {line}")
 
         last_sent_progress = -1
         if proc.stdout:
@@ -50,7 +62,7 @@ async def install_pacman(package: Dict[str, Any], callback: Callable = None) -> 
             await callback("[PROGRESS] 100")
         return proc.returncode == 0
 
-async def uninstall_pacman(package: Dict[str, Any], callback: Callable = None) -> bool:
+async def uninstall_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
     if not await privilege.ensure_privileged(callback):
         return False
 

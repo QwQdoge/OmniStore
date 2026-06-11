@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class FlatpakStorePage extends StatefulWidget {
   const FlatpakStorePage({super.key});
@@ -17,6 +18,7 @@ class FlatpakStorePage extends StatefulWidget {
 class _FlatpakStorePageState extends State<FlatpakStorePage> {
   List<AppPackage> _apps = [];
   bool _isLoading = true;
+  AppPackage? _selectedApp;
 
   @override
   void initState() {
@@ -33,69 +35,120 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
       setState(() {
         _apps = results;
         _isLoading = false;
+        if (results.isNotEmpty && _selectedApp == null) {
+          _selectedApp = results.first;
+        }
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _isLoading
-            ? _buildSkeletonList(key: const ValueKey('loading'))
-            : RefreshIndicator(
-                key: const ValueKey('list'),
-                onRefresh: _refresh,
-                child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _apps.length,
-                itemBuilder: (context, index) {
-                  final app = _apps[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: app.icon != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                width: 40,
-                                height: 40,
-                                memCacheWidth: 80,
-                                memCacheHeight: 80,
-                                errorWidget: (c, e, s) =>
-                                    const Icon(Icons.shopping_bag_rounded),
-                              ),
-                            )
-                          : const Icon(Icons.shopping_bag_rounded, size: 40),
-                      title: Text(
-                        app.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
+    Widget buildListContent() {
+      return ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _apps.length,
+        itemBuilder: (context, index) {
+          final app = _apps[index];
+          final isSelected = _selectedApp?.id == app.id;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            color: isSelected && isDesktop ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) : null,
+            child: ListTile(
+              leading: app.icon != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: app.icon!,
+                        width: 40,
+                        height: 40,
+                        memCacheWidth: 80,
+                        memCacheHeight: 80,
+                        errorWidget: (c, e, s) =>
+                            const Icon(Icons.shopping_bag_rounded),
                       ),
-                      subtitle: Text(
-                        app.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: AppSourceTag(
-                        source: app.primarySource,
-                        mode: AppSourceTagMode.source,
-                      ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AppDetailsPage(app: app),
-                        ),
-                      ),
+                    )
+                  : const Icon(Icons.shopping_bag_rounded, size: 40),
+              title: Text(
+                app.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                app.description,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: AppSourceTag(
+                source: app.primarySource,
+                mode: AppSourceTagMode.source,
+              ),
+              onTap: () {
+                if (isDesktop) {
+                  setState(() {
+                    _selectedApp = app;
+                  });
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AppDetailsPage(app: app),
                     ),
                   );
-                },
-              ),
+                }
+              },
             ),
-      ),
+          );
+        },
+      );
+    }
+
+    Widget bodyContent = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: _isLoading
+          ? _buildSkeletonList(key: const ValueKey('loading'))
+          : RefreshIndicator(
+              key: const ValueKey('list'),
+              onRefresh: _refresh,
+              child: buildListContent(),
+            ),
     );
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: bodyContent,
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(
+              flex: 6,
+              child: _selectedApp == null
+                  ? Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noResults,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    )
+                  : AppDetailsPage(
+                      app: _selectedApp!,
+                      isEmbedded: true,
+                      key: ValueKey(_selectedApp!.id),
+                    ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: bodyContent,
+      );
+    }
   }
 
   Widget _buildSkeletonList({Key? key}) {

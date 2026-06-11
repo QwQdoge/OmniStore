@@ -57,8 +57,37 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   Future<void> _initUpdateService(AppLocalizations l10n) async {
     try {
-      await UpdateService().init().timeout(const Duration(seconds: 10));
-      await UpdateService().updateConfig(l10n).timeout(const Duration(seconds: 5));
+      final trayOk = await UpdateService()
+          .init()
+          .timeout(const Duration(seconds: 10));
+      await UpdateService()
+          .updateConfig(l10n)
+          .timeout(const Duration(seconds: 5));
+
+      // 如果后台驻留（系统托盘）初始化失败，自动退出
+      if (!trayOk && DesktopWindowService.isSupported) {
+        if (!mounted) return;
+        final settings = context.read<SettingsController>();
+        final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
+        if (closeToTray) {
+          debugPrint(
+            '[UpdateService] System tray init failed while close_to_tray=true. '
+            'Exiting to prevent broken background residency.',
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.trayInitFailedExiting),
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          // 等待 SnackBar 稍微展示后退出
+          await Future.delayed(const Duration(seconds: 3));
+          exit(1);
+        }
+      }
     } catch (e) {
       debugPrint('UpdateService initialization failed: $e');
     }
@@ -74,13 +103,15 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   void onWindowClose() async {
-    final settings = context.read<SettingsController>();
+    if (!mounted) return;
+        final settings = context.read<SettingsController>();
     final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
       await wm.windowManager.hide();
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.runningInBackground),

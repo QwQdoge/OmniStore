@@ -5,7 +5,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
-import 'package:frontend/widgets/window_title_bar.dart';
+// import 'package:frontend/widgets/window_title_bar.dart'; // 自定义标题栏已禁用
 import 'package:provider/provider.dart';
 import 'package:frontend/features/auth/auth_page.dart';
 
@@ -52,6 +52,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
     final nav = context.watch<NavigationController>();
     final settings = context.watch<SettingsController>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -76,14 +77,15 @@ class AdaptiveNavigationShell extends StatelessWidget {
           child: content,
         );
 
-        final taskBar = Consumer<TaskController>(
-          builder: (context, task, child) {
+        final taskBar = Selector<TaskController, bool>(
+          selector: (context, task) => task.isBusy,
+          builder: (context, isBusy, child) {
             return AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
+                child: isBusy ? const _TaskProgressBar() : const SizedBox.shrink(),
               ),
             );
           },
@@ -117,12 +119,12 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   if (showSearch && nav.selectedIndex != 2)
                     IconButton(
                       onPressed: onSearch,
-                      tooltip: AppLocalizations.of(context)!.search,
+                      tooltip: l10n.search,
                       icon: const Icon(Icons.search_rounded),
                     ),
                   IconButton(
                     icon: const Icon(Icons.account_circle_outlined),
-                    tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+                    tooltip: l10n.githubAuthTitle,
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -170,18 +172,19 @@ class AdaptiveNavigationShell extends StatelessWidget {
           backgroundColor: scheme.surface,
           body: Column(
             children: [
-              if (useWindowTitleBar)
-                WindowTitleBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearchPressed: onSearch,
-                )
-              else
-                _DesktopTopBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearch: onSearch,
-                ),
+              // 自定义标题栏已注释掉，始终使用系统原生标题栏
+              // if (useWindowTitleBar)
+              //   WindowTitleBar(
+              //     title: pageTitle,
+              //     showSearch: showSearch && nav.selectedIndex != 2,
+              //     onSearchPressed: onSearch,
+              //   )
+              // else
+              _DesktopTopBar(
+                title: pageTitle,
+                showSearch: showSearch && nav.selectedIndex != 2,
+                onSearch: onSearch,
+              ),
               taskBar,
               Expanded(
                 child: Row(
@@ -450,9 +453,10 @@ class _ExpandedDownloadTile extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   children: [
-                    Consumer<TaskController>(
-                      builder: (context, task, child) => Icon(
-                        task.isBusy
+                    Selector<TaskController, bool>(
+                      selector: (context, task) => task.isBusy,
+                      builder: (context, isBusy, child) => Icon(
+                        isBusy
                             ? Icons.downloading_rounded
                             : Icons.download_for_offline_rounded,
                         size: 24,
@@ -477,7 +481,7 @@ class _ExpandedDownloadTile extends StatelessWidget {
                       ),
                     ),
                     if (updates.isNotEmpty)
-                      Badge(label: Text('${updates.length}')),
+                      Badge(label: Text(l10n.resultsFound(updates.length))),
                   ],
                 ),
               ),
@@ -504,6 +508,7 @@ class _DesktopTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 72,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
@@ -522,12 +527,12 @@ class _DesktopTopBar extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onSearch,
               icon: const Icon(Icons.search_rounded, size: 20),
-              label: Text(AppLocalizations.of(context)!.search),
+              label: Text(l10n.search),
             ),
           const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.account_circle_outlined),
-            tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+            tooltip: l10n.githubAuthTitle,
             onPressed: () {
               Navigator.push(
                 context,
@@ -544,9 +549,7 @@ class _DesktopTopBar extends StatelessWidget {
 }
 
 class _TaskProgressBar extends StatelessWidget {
-  const _TaskProgressBar({required this.task});
-
-  final TaskController task;
+  const _TaskProgressBar();
 
   @override
   Widget build(BuildContext context) {
@@ -565,47 +568,49 @@ class _TaskProgressBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.downloading_rounded,
-                  size: 14,
-                  color: scheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${l10n.processing} ${task.status} ${task.speed}',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+      child: Consumer<TaskController>(
+        builder: (context, task, child) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.downloading_rounded,
+                    size: 14,
+                    color: scheme.primary,
                   ),
-                ),
-                if (task.progress != null)
-                  Text(
-                    '${(task.progress! * 100).toInt()}%',
-                    style: textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: scheme.primary,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${l10n.processing} ${task.status} ${task.speed}',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-              ],
+                  if (task.progress != null)
+                    Text(
+                      '${(task.progress! * 100).toInt()}%',
+                      style: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: scheme.primary,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          LinearProgressIndicator(
-            value: task.progress,
-            minHeight: 3,
-            backgroundColor: scheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-          ),
-        ],
+            LinearProgressIndicator(
+              value: task.progress,
+              minHeight: 3,
+              backgroundColor: scheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -632,9 +637,10 @@ class _DownloadAction extends StatelessWidget {
             IconButton(
               tooltip: l10n.downloads,
               onPressed: () => nav.setIndex(4),
-              icon: Consumer<TaskController>(
-                builder: (context, task, child) => Icon(
-                  task.isBusy
+              icon: Selector<TaskController, bool>(
+                selector: (context, task) => task.isBusy,
+                builder: (context, isBusy, child) => Icon(
+                  isBusy
                       ? Icons.downloading_rounded
                       : Icons.download_for_offline_rounded,
                   color: nav.selectedIndex == 4
@@ -647,7 +653,7 @@ class _DownloadAction extends StatelessWidget {
               Positioned(
                 top: compact ? 4 : 8,
                 right: compact ? 4 : 8,
-                child: Badge(label: Text('${updates.length}')),
+                child: Badge(label: Text(l10n.resultsFound(updates.length))),
               ),
           ],
         );

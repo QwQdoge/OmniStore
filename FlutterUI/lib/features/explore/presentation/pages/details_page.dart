@@ -23,22 +23,27 @@ import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.d
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
 
-
-// TODO: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
-// TODO: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
+// Feature: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
+// Feature: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
 class AppDetailsPage extends StatefulWidget {
   final AppPackage app;
   final String? heroTag;
+  final bool isEmbedded;
 
-  const AppDetailsPage({super.key, required this.app, this.heroTag});
+  const AppDetailsPage({
+    super.key,
+    required this.app,
+    this.heroTag,
+    this.isEmbedded = false,
+  });
 
   @override
   State<AppDetailsPage> createState() => _AppDetailsPageState();
 }
 
 class _AppDetailsPageState extends State<AppDetailsPage> {
-  // TODO: Add strict accessibility Semantics wrappers around action buttons and icons.
-  // TODO: Replace loading spinner with beautiful animated Skeleton loaders matching the card layout.
+  // Feature: Add strict accessibility Semantics wrappers around action buttons and icons.
+  // Feature: Replace loading spinner with beautiful animated Skeleton loaders matching the card layout.
   late String _selectedSource;
   late bool _isAppInstalled;
   Map<String, dynamic>? _extraDetails;
@@ -142,62 +147,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     final cleanOrphansResult = await showDialog<bool?>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(
-                isUninstall
-                    ? localizations.confirmUninstall
-                    : localizations.confirmInstall,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(localizations.confirmActionMsg(widget.app.name)),
-                  if (isUninstall && _selectedSource == "Native") ...[
-                    const SizedBox(height: 16),
-                    CheckboxListTile(
-                      value: cleanOrphans,
-                      onChanged: (val) {
-                        setDialogState(() => cleanOrphans = val ?? false);
-                      },
-                      title: Text(
-                        localizations.cleanOrphans,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(localizations.cancel),
-                ),
-                FilledButton(
-                  style: isUninstall
-                      ? FilledButton.styleFrom(
-                          backgroundColor: theme.colorScheme.error,
-                          foregroundColor: theme.colorScheme.onError,
-                        )
-                      : null,
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(localizations.confirm),
-                ),
-              ],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => ActionConfirmDialog(
+        isUninstall: isUninstall,
+        appName: widget.app.name,
+        selectedSource: _selectedSource,
+      ),
     );
 
     if (cleanOrphansResult == null) {
@@ -251,11 +205,158 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, SettingsController settings) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(theme),
+        const SizedBox(height: 24),
+        _buildActionArea(colorScheme),
+        const SizedBox(height: 32),
+        const Divider(),
+        _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _isLoadingDetails
+              ? const Column(
+                  key: ValueKey('loading'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Skeleton(width: double.infinity, height: 14),
+                    SizedBox(height: 8),
+                    Skeleton(width: double.infinity, height: 14),
+                    SizedBox(height: 8),
+                    Skeleton(width: 200, height: 14),
+                  ],
+                )
+              : MarkdownBody(
+                  key: const ValueKey('loaded'),
+                  data:
+                      _extraDetails?['description'] ??
+                      (widget.app.description.isEmpty
+                          ? AppLocalizations.of(context)!.noResults
+                          : widget.app.description),
+                  selectable: true,
+                  styleSheet: MarkdownStyleSheet(
+                    p: theme.textTheme.bodyLarge,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 24),
+        if (_hasCapability('has_screenshots') &&
+            _extraDetails != null &&
+            _extraDetails!['screenshots'] != null &&
+            (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+          _buildSectionTitle(
+            theme,
+            AppLocalizations.of(context)!.screenshots,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 236,
+            child: Scrollbar(
+              controller: _screenshotScrollController,
+              thumbVisibility: true,
+              child: ListView.separated(
+                controller: _screenshotScrollController,
+                padding: const EdgeInsets.only(bottom: 16),
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount:
+                    (_extraDetails!['screenshots'] as List).length,
+                separatorBuilder: (context, _) =>
+                    const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final imageUrl = _extraDetails!['screenshots'][index];
+                  return Hero(
+                    tag: 'screenshot-$imageUrl',
+                    child: Card(
+                      elevation: 0,
+                      margin: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        side: BorderSide(
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => _showScreenshotViewer(imageUrl),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          width: 360,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 720,
+                          placeholder: (context, url) => const Skeleton(
+                            width: 360,
+                            height: 220,
+                            borderRadius: 20.0,
+                          ),
+                          errorWidget: (context, url, error) =>
+                              Container(
+                                width: 360,
+                                color:
+                                    colorScheme.surfaceContainerHighest,
+                                child: const Icon(
+                                  Icons.broken_image_rounded,
+                                ),
+                              ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+        _buildSectionTitle(
+          theme,
+          AppLocalizations.of(context)!.details,
+        ),
+        _buildInfoRow(
+          Icons.source_rounded,
+          AppLocalizations.of(context)!.source,
+          widget.app.primarySource,
+        ),
+        _buildInfoRow(
+          Icons.all_inclusive_rounded,
+          AppLocalizations.of(context)!.variant,
+          widget.app.sources.join(", "),
+        ),
+        _buildInfoRow(
+          Icons.verified_rounded,
+          AppLocalizations.of(context)!.version,
+          widget.app.version,
+        ),
+        if (_extraDetails?['developer'] != null)
+          _buildInfoRow(
+            Icons.person_rounded,
+            AppLocalizations.of(context)!.developer,
+            _extraDetails!['developer'],
+          ),
+        if (_extraDetails?['license'] != null)
+          _buildInfoRow(
+            Icons.description_rounded,
+            AppLocalizations.of(context)!.license,
+            _extraDetails!['license'],
+          ),
+        _buildDependencySection(theme),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final settings = context.watch<SettingsController>();
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
 
     return Scaffold(
       body: NestedScrollView(
@@ -269,59 +370,85 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 letterSpacing: -0.5,
               ),
             ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () => Navigator.pop(context),
+            leading: widget.isEmbedded ? null : Semantics(
+              label: 'Back',
+              hint: 'Go back to the previous screen',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
             actions: [
               if (widget.app.url != null && widget.app.url!.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.language_rounded),
-                  tooltip: AppLocalizations.of(context)!.visitWebsite,
-                  onPressed: () async {
-                    final uri = Uri.parse(widget.app.url!);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
+                Semantics(
+                  label: AppLocalizations.of(context)!.visitWebsite,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.language_rounded),
+                    tooltip: AppLocalizations.of(context)!.visitWebsite,
+                    onPressed: () async {
+                      final uri = Uri.parse(widget.app.url!);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      }
+                    },
+                  ),
                 ),
               if (settings.isAIEnabled) ...[
-                IconButton(
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiPromptExplain,
-                  onPressed: _showAIExplainDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiPromptExplain,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.auto_awesome_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                    onPressed: _showAIExplainDialog,
+                  ),
                 ),
                 if (widget.app.variants.length > 1)
-                  IconButton(
-                    icon: const Icon(Icons.compare_arrows_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiCompareTitle,
-                    onPressed: _showAICompareDialog,
+                  Semantics(
+                    label: AppLocalizations.of(context)!.aiCompareTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.compare_arrows_rounded),
+                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                      onPressed: _showAICompareDialog,
+                    ),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.terminal_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiCliTitle,
-                  onPressed: _showAICliDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiCliTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.terminal_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                    onPressed: _showAICliDialog,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.report_problem_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiConflictTitle,
-                  onPressed: _showAIConflictDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiConflictTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.report_problem_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                    onPressed: _showAIConflictDialog,
+                  ),
                 ),
               ],
-              Consumer<TaskController>(
-                builder: (context, task, _) {
-                  if (task.isBusy || task.logs.isNotEmpty) {
-                    return IconButton(
-                      icon: Badge(
-                        isLabelVisible: task.isBusy,
-                        child: const Icon(Icons.terminal_rounded),
-                      ),
-                      tooltip: AppLocalizations.of(context)!.terminalOutput,
-                      onPressed: _showTerminalDialog,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
+              Semantics(
+                label: AppLocalizations.of(context)!.terminalOutput,
+                button: true,
+                child: IconButton(
+                  icon: Selector<TaskController, bool>(
+                    selector: (context, tc) => tc.isBusy,
+                    builder: (context, isBusy, child) => Badge(
+                      isLabelVisible: isBusy,
+                      child: const Icon(Icons.terminal_rounded),
+                    ),
+                  ),
+                  tooltip: AppLocalizations.of(context)!.terminalOutput,
+                  onPressed: _showTerminalDialog,
+                ),
               ),
               const SizedBox(width: 8),
             ],
@@ -330,23 +457,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         body: SelectionArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(theme),
-                const SizedBox(height: 24),
-                Consumer<TaskController>(
-                  builder: (context, task, _) =>
-                      _buildActionArea(colorScheme, task),
-                ),
-                const SizedBox(height: 32),
-                const Divider(),
-                _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _isLoadingDetails
-                      ? const Column(
-                          key: ValueKey('loading'),
+            child: isDesktop
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left Column: Header metadata and primary actions
+                      Expanded(
+                        flex: 4,
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Skeleton(width: double.infinity, height: 14),
@@ -408,76 +526,132 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   ),
                                 ),
                               ),
-                              clipBehavior: Clip.antiAlias,
-                              child: InkWell(
-                                onTap: () => _showScreenshotViewer(imageUrl),
-                                child: CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  width: 360,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 720,
-                                  placeholder: (context, url) => Container(
-                                    width: 360,
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                            if (_extraDetails?['license'] != null)
+                              _buildInfoRow(
+                                Icons.description_rounded,
+                                AppLocalizations.of(context)!.license,
+                                _extraDetails!['license'],
+                              ),
+                            _buildDependencySection(theme),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 32),
+                      // Right Column: Screenshots, About and details
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: _isLoadingDetails
+                                  ? const Column(
+                                      key: ValueKey('loading'),
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Skeleton(width: double.infinity, height: 14),
+                                        SizedBox(height: 8),
+                                        Skeleton(width: double.infinity, height: 14),
+                                        SizedBox(height: 8),
+                                        Skeleton(width: 200, height: 14),
+                                      ],
+                                    )
+                                  : MarkdownBody(
+                                      key: const ValueKey('loaded'),
+                                      data:
+                                          _extraDetails?['description'] ??
+                                          (widget.app.description.isEmpty
+                                              ? AppLocalizations.of(context)!.noResults
+                                              : widget.app.description),
+                                      selectable: true,
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: theme.textTheme.bodyLarge,
                                       ),
                                     ),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Container(
-                                        width: 360,
-                                        color:
-                                            colorScheme.surfaceContainerHighest,
-                                        child: const Icon(
-                                          Icons.broken_image_rounded,
+                            ),
+                            const SizedBox(height: 24),
+                            if (_hasCapability('has_screenshots') &&
+                                _extraDetails != null &&
+                                _extraDetails!['screenshots'] != null &&
+                                (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                              _buildSectionTitle(
+                                theme,
+                                AppLocalizations.of(context)!.screenshots,
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 236,
+                                child: Scrollbar(
+                                  controller: _screenshotScrollController,
+                                  thumbVisibility: true,
+                                  child: ListView.separated(
+                                    controller: _screenshotScrollController,
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount:
+                                        (_extraDetails!['screenshots'] as List).length,
+                                    separatorBuilder: (context, _) =>
+                                        const SizedBox(width: 16),
+                                    itemBuilder: (context, index) {
+                                      final imageUrl = _extraDetails!['screenshots'][index];
+                                      return Hero(
+                                        tag: 'screenshot-$imageUrl',
+                                        child: Card(
+                                          elevation: 0,
+                                          margin: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20.0),
+                                            side: BorderSide(
+                                              color: colorScheme.outlineVariant.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                          clipBehavior: Clip.antiAlias,
+                                          child: InkWell(
+                                            onTap: () => _showScreenshotViewer(imageUrl),
+                                            child: CachedNetworkImage(
+                                              imageUrl: imageUrl,
+                                              width: 360,
+                                              fit: BoxFit.cover,
+                                              memCacheWidth: 720,
+                                              placeholder: (context, url) => const Skeleton(
+                                                width: 360,
+                                                height: 220,
+                                                borderRadius: 20.0,
+                                              ),
+                                              errorWidget: (context, url, error) =>
+                                                  Container(
+                                                    width: 360,
+                                                    color:
+                                                        colorScheme.surfaceContainerHighest,
+                                                    child: const Icon(
+                                                      Icons.broken_image_rounded,
+                                                    ),
+                                                  ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
+                  )
+                : _buildMainContent(
+                    context,
+                    colorScheme,
+                    theme,
+                    settings,
                   ),
-                  const SizedBox(height: 32),
-                ],
-                _buildSectionTitle(
-                  theme,
-                  AppLocalizations.of(context)!.details,
-                ),
-                _buildInfoRow(
-                  Icons.source_rounded,
-                  AppLocalizations.of(context)!.source,
-                  widget.app.primarySource,
-                ),
-                _buildInfoRow(
-                  Icons.all_inclusive_rounded,
-                  AppLocalizations.of(context)!.variant,
-                  widget.app.sources.join(", "),
-                ),
-                _buildInfoRow(
-                  Icons.verified_rounded,
-                  AppLocalizations.of(context)!.version,
-                  widget.app.version,
-                ),
-                if (_extraDetails?['developer'] != null)
-                  _buildInfoRow(
-                    Icons.person_rounded,
-                    AppLocalizations.of(context)!.developer,
-                    _extraDetails!['developer'],
-                  ),
-                if (_extraDetails?['license'] != null)
-                  _buildInfoRow(
-                    Icons.description_rounded,
-                    AppLocalizations.of(context)!.license,
-                    _extraDetails!['license'],
-                  ),
-                _buildDependencySection(theme),
-              ],
-            ),
           ),
         ),
       ),
@@ -512,9 +686,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildActionArea(ColorScheme colorScheme, TaskController task) {
+  Widget _buildActionArea(ColorScheme colorScheme) {
     Widget content;
-    if (task.isBusy) {
+    if (context.select((TaskController task) => task.isBusy)) {
       content = Container(
         key: const ValueKey('busy'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -525,30 +699,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        child: SmoothProgressBar(
-          taskState: TaskState(
-            id: "active",
-            packageName: widget.app.name,
-            status: TaskStatus.downloading,
-            progress: task.progress ?? 0.0,
-            stage: task.status,
-            speed: task.speed,
+        child: Consumer<TaskController>(
+          builder: (context, task, _) => SmoothProgressBar(
+            taskState: TaskState(
+              id: "active",
+              packageName: widget.app.name,
+              status: TaskStatus.downloading,
+              progress: task.progress ?? 0.0,
+              stage: task.status,
+              speed: task.speed,
+            ),
+            onCancel: _cancelAction,
           ),
-          onCancel: _cancelAction,
         ),
       );
     } else if (_isAppInstalled) {
       content = Row(
         key: const ValueKey('installed'),
         children: [
-          IconButton.filledTonal(
-            onPressed: _locateApp,
-            icon: const Icon(Icons.folder_open_rounded),
-            tooltip: AppLocalizations.of(context)!.locateInstallation,
-            style: IconButton.styleFrom(
-              minimumSize: const Size(56, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          Semantics(
+            label: AppLocalizations.of(context)!.locateInstallation,
+            button: true,
+            child: IconButton.filledTonal(
+              onPressed: _locateApp,
+              icon: const Icon(Icons.folder_open_rounded),
+              tooltip: AppLocalizations.of(context)!.locateInstallation,
+              style: IconButton.styleFrom(
+                minimumSize: const Size(56, 56),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
           ),
@@ -557,21 +737,25 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             flex: 2,
             child: SizedBox(
               height: 56,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  side: BorderSide(
-                    color: colorScheme.error.withValues(alpha: 0.5),
-                    width: 1,
+              child: Semantics(
+                label: AppLocalizations.of(context)!.uninstall,
+                button: true,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.error,
+                    side: BorderSide(
+                      color: colorScheme.error.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                  onPressed: () => _handleAction("-R"),
+                  child: Text(
+                    AppLocalizations.of(context)!.uninstall,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
                   ),
-                ),
-                onPressed: () => _handleAction("-R"),
-                child: Text(
-                  AppLocalizations.of(context)!.uninstall,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
                 ),
               ),
             ),
@@ -581,19 +765,23 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             flex: 3,
             child: SizedBox(
               height: 56,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+              child: Semantics(
+                label: AppLocalizations.of(context)!.launch,
+                button: true,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
                   ),
-                ),
-                onPressed: _launchApp,
-                icon: const Icon(Icons.rocket_launch_rounded),
-                label: Text(
-                  AppLocalizations.of(context)!.launch,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
+                  onPressed: _launchApp,
+                  icon: const Icon(Icons.rocket_launch_rounded),
+                  label: Text(
+                    AppLocalizations.of(context)!.launch,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -606,17 +794,21 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         key: const ValueKey('install'),
         width: double.infinity,
         height: 56,
-        child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
+        child: Semantics(
+          label: AppLocalizations.of(context)!.install,
+          button: true,
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
             ),
-          ),
-          onPressed: () => _handleAction("-I"),
-          icon: const Icon(Icons.download_rounded),
-          label: Text(
-            AppLocalizations.of(context)!.install,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            onPressed: () => _handleAction("-I"),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(
+              AppLocalizations.of(context)!.install,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            ),
           ),
         ),
       );

@@ -1,67 +1,25 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/app_package.dart';
-import '../python_bridge.dart';
+import '../../services/backend_service.dart';
 
 class PackageRepository {
-  // TODO: Implement a proper debouncer in the controller to throttle/limit query frequency and prevent process spamming.
-  Process? _activeSearchProcess;
+  Map<String, List<AppPackage>>? _cachedRecs;
 
-  // TODO: Add support for pagination (limit/offset) so we don't load all results at once.
-  // TODO: Parse custom error structures from python stdout/stderr rather than relying on exit code only.
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
+    int? limit,
+    int? offset,
   }) async {
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
       return webResults.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)).toList();
     }
-
-    if (cancelOngoing) _activeSearchProcess?.kill();
-
-    try {
-      final process = await Process.start(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["-S", query, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      );
-
-      if (cancelOngoing) _activeSearchProcess = process;
-
-      final results = <AppPackage>[];
-      final lines = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-
-      await for (final line in lines) {
-        final trimmed = line.trim();
-        if (trimmed.isNotEmpty) {
-          final List<dynamic> parsed = _tryParseJson(trimmed);
-          results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-        }
-      }
-
-      final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 45),
-      );
-      _activeSearchProcess = null;
-
-      if (exitCode != 0) {
-        debugPrint('searchPackages failed with code $exitCode');
-        return [];
-      }
-
-      return results;
-    } catch (e) {
-      _activeSearchProcess = null;
-      debugPrint('searchPackages Exception: $e');
-      return [];
-    }
+    return BackendService.instance.searchPackages(query, cancelOngoing: cancelOngoing);
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {
@@ -185,28 +143,6 @@ class PackageRepository {
     }
   }
 
-  List<dynamic> _tryParseJson(String input) {
-    try {
-      return jsonDecode(input);
-    } catch (_) {
-      const separator = "###JSON_START###";
-      String target = input;
-      if (input.contains(separator)) {
-        target = input.split(separator).last.trim();
-      }
-
-      final start = target.lastIndexOf('[');
-      final end = target.lastIndexOf(']');
-      if (start != -1 && end != -1 && end > start) {
-        try {
-          return jsonDecode(target.substring(start, end + 1));
-        } catch (e) {
-          debugPrint("Failed to parse extracted JSON block: $e");
-        }
-      }
-      return [];
-    }
-  }
 
   Future<List<dynamic>> listInstalled() async {
     if (kIsWeb) {
@@ -221,109 +157,126 @@ class PackageRepository {
         return [];
       }
     }
+    return BackendService.instance.listInstalled();
+  }
+
+  Map<String, List<AppPackage>> _parseRecommendationsJson(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final Map<String, List<AppPackage>> categories = {};
+      data.forEach((key, value) {
+        if (value is List) {
+          categories[key] = value
+              .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+              .toList();
+        }
+      });
+      return categories;
+    } else if (data is List) {
+      return {
+        "featured": data
+            .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      };
+    }
+    return {};
+  }
+
+  Future<Map<String, List<AppPackage>>> getRecommendations() async {
+    if (_cachedRecs != null) {
+      _refreshRecommendationsCache();
+      return _cachedRecs!;
+    }
 
     try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["-L", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 15));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
+      final prefs = await SharedPreferences.getInstance();
+      final cachedJson = prefs.getString('omnistore_recommendations_cache');
+      if (cachedJson != null) {
+        final decoded = jsonDecode(cachedJson);
+        final parsed = _parseRecommendationsJson(decoded);
+        if (parsed.isNotEmpty) {
+          _cachedRecs = parsed;
+          _refreshRecommendationsCache();
+          return parsed;
+        }
+      }
     } catch (e) {
-      debugPrint("ListInstalled Exception: $e");
-      return [];
+      debugPrint("Error reading recommendations cache: $e");
+    }
+
+    return _fetchAndCacheRecommendations();
+  }
+
+  Future<Map<String, List<AppPackage>>> _fetchAndCacheRecommendations() async {
+    if (kIsWeb) {
+      try {
+        // Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
+        final githubUri = Uri.parse('https://api.github.com/search/repositories?q=stars:>5000+OR+topic:flatpak+OR+topic:aur&sort=stars&order=desc');
+        final response = await http.get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'}).timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final items = data['items'] as List<dynamic>? ?? [];
+          
+          final prefs = await SharedPreferences.getInstance();
+          final installedRaw = prefs.getStringList('omnistore_installed_ids') ?? [];
+
+          final apps = items.map((item) {
+            final fullName = item['full_name'] as String;
+            final isInstalled = installedRaw.contains(fullName);
+            return AppPackage(
+              name: item['name'] ?? '',
+              description: item['description'] ?? '',
+              installed: isInstalled,
+              primarySource: "GitHub",
+              url: item['html_url'] ?? '',
+              version: "Latest",
+              icon: item['owner']?['avatar_url'],
+              variants: [
+                AppVariant(
+                  source: "GitHub",
+                  version: "Latest",
+                  installed: isInstalled,
+                  id: fullName,
+                  description: item['description'] ?? '',
+                )
+              ],
+              screenshots: [],
+            );
+          }).toList();
+
+          return {
+            "featured": apps.take(5).toList(),
+            "trending": apps.skip(5).take(5).toList(),
+            "for_you": apps.skip(10).take(5).toList(),
+          };
+        }
+      } catch (e) {
+        debugPrint("getRecommendations Web Exception: $e");
+      }
+      return {};
+    } else {
+      final results = await BackendService.instance.getRecommendations();
+      if (results.isNotEmpty) {
+        _cachedRecs = results;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final Map<String, dynamic> jsonMap = {};
+          results.forEach((key, list) {
+            jsonMap[key] = list.map((app) => app.toJson()).toList();
+          });
+          await prefs.setString('omnistore_recommendations_cache', jsonEncode(jsonMap));
+        } catch (e) {
+          debugPrint("Error writing recommendations cache: $e");
+        }
+      }
+      return results;
     }
   }
 
-  // TODO: Implement a local caching layer (e.g. SQLite or hive) for recommendations to enable instant loading.
-  Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    if (kIsWeb) {
-      try {
-        // TODO: Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
-        final githubUri = Uri.parse('https://api.github.com/search/repositories?q=stars:>5000&sort=stars&order=desc');
-        final response = await http.get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'}).timeout(const Duration(seconds: 10));
-        if (response.statusCode != 200) return {};
-        
-        final data = jsonDecode(response.body);
-        final items = data['items'] as List<dynamic>? ?? [];
-        
-        final prefs = await SharedPreferences.getInstance();
-        final installedRaw = prefs.getStringList('omnistore_installed_ids') ?? [];
-
-        final apps = items.map((item) {
-          final fullName = item['full_name'] as String;
-          final isInstalled = installedRaw.contains(fullName);
-          return AppPackage(
-            name: item['name'] ?? '',
-            description: item['description'] ?? '',
-            installed: isInstalled,
-            primarySource: "GitHub",
-            url: item['html_url'] ?? '',
-            version: "Latest",
-            icon: item['owner']?['avatar_url'],
-            variants: [
-              AppVariant(
-                source: "GitHub",
-                version: "Latest",
-                installed: isInstalled,
-                id: fullName,
-                description: item['description'] ?? '',
-              )
-            ],
-            screenshots: [],
-          );
-        }).toList();
-
-        return {
-          "featured": apps.take(5).toList(),
-          "trending": apps.skip(5).take(5).toList(),
-          "for_you": apps.skip(10).take(5).toList(),
-        };
-      } catch (e) {
-        debugPrint("getRecommendations Web Exception: $e");
-        return {};
-      }
-    }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--recommend", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 20));
-
-      if (result.exitCode != 0) return {};
-      final output = result.stdout.toString().trim();
-      if (output.isEmpty) return {};
-
-      final dynamic data = jsonDecode(output);
-
-      if (data is Map<String, dynamic>) {
-        final Map<String, List<AppPackage>> categories = {};
-        data.forEach((key, value) {
-          if (value is List) {
-            categories[key] = value
-                .map(
-                  (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-                )
-                .toList();
-          }
-        });
-        return categories;
-      } else if (data is List) {
-        return {
-          "featured": data
-              .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
-              .toList(),
-        };
-      }
-      return {};
-    } catch (e) {
-      debugPrint("Recommendations Exception: $e");
-      return {};
-    }
+  void _refreshRecommendationsCache() {
+    _fetchAndCacheRecommendations().catchError((e) {
+      debugPrint("Background recommendations update failed: $e");
+      return <String, List<AppPackage>>{};
+    });
   }
 
   Future<Map<String, dynamic>> getAppDetails(String appId) async {
@@ -375,18 +328,7 @@ class PackageRepository {
         return {};
       }
     }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--details", appId, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 20));
-      return jsonDecode(result.stdout);
-    } catch (e) {
-      debugPrint("getAppDetails Exception: $e");
-      return {};
-    }
+    return BackendService.instance.getAppDetails(appId);
   }
 
   Future<List<dynamic>> getEssentials() async {
@@ -414,20 +356,7 @@ class PackageRepository {
         }
       ];
     }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--essentials", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("getEssentials Exception: $e");
-      return [];
-    }
+    return BackendService.instance.getEssentials();
   }
 
   Future<bool> launchApp(String name, String source) async {
@@ -440,65 +369,20 @@ class PackageRepository {
       }
       return false;
     }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs([
-          "--launch",
-          name,
-          "--source",
-          source,
-          "--json",
-        ]),
-        workingDirectory: PythonBridge.workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    return BackendService.instance.launchApp(name, source);
   }
 
   Future<bool> locateApp(String name, String source) async {
     if (kIsWeb) {
       return launchApp(name, source);
     }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs([
-          "--locate",
-          name,
-          "--source",
-          source,
-          "--json",
-        ]),
-        workingDirectory: PythonBridge.workingDir,
-      );
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    return BackendService.instance.locateApp(name, source);
   }
 
   Future<List<dynamic>> importPackages(String filepath) async {
     if (kIsWeb) {
       return [];
     }
-
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--import-packages", filepath, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("importPackages Exception: $e");
-      return [];
-    }
+    return BackendService.instance.importPackages(filepath);
   }
 }
