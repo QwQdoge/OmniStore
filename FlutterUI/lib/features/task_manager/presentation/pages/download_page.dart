@@ -339,23 +339,28 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          _isCheckingUpdates
-              ? const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps();
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
                   ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    _loadInstalledApps();
-                    _checkUpdatesWithFeedback();
-                  },
-                  tooltip: AppLocalizations.of(context)!.refresh,
-                ),
+          ),
         ],
       ),
       body: TabBarView(
