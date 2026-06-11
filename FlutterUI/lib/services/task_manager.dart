@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/task_state.dart';
 import 'backend_service.dart';
@@ -14,9 +13,6 @@ class TaskManager {
 
   final _taskStateController = StreamController<TaskState?>.broadcast();
   TaskState? _currentTask;
-  Process? _activeProcess;
-  StreamSubscription<String>? _stdoutSubscription;
-  StreamSubscription<String>? _stderrSubscription;
 
   // Murphy-proof: Lock to prevent concurrent task starts
   final _mutex = Completer<void>()..complete();
@@ -111,58 +107,27 @@ class TaskManager {
     }
 
     try {
-      final List<String> args = [
-        BackendService.scriptPath,
+      // Murphy-proof: Use unified _safeStream for consistent process lifecycle and cleanup
+      final stream = BackendService.instance.executeAction(
         actionFlag,
         packageName,
-        "--source",
         source,
-        "--json",
-        if (url != null && url.isNotEmpty) ...["--url", url],
-      ];
-
-      _activeProcess = await Process.start(
-        BackendService.venvPython,
-        args,
-        workingDirectory: BackendService.workingDir,
-        runInShell: Platform.isWindows,
+        url: url,
       );
 
-      // Murphy-proof: Ensure subscriptions are managed and disposed
-      _stdoutSubscription = _activeProcess!.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen(
-        _handleOutput,
-        onError: (e) => debugPrint("TaskManager Stdout Error: $e"),
-        cancelOnError: false,
-      );
-
-      _stderrSubscription = _activeProcess!.stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen(
-        (data) {
-          debugPrint("TaskManager Stderr: $data");
-          BackendService.addLog("stderr: $data");
-        },
-        onError: (e) => debugPrint("TaskManager Stderr Error: $e"),
-        cancelOnError: false,
-      );
-
-      final exitCode = await _activeProcess!.exitCode.timeout(
-        const Duration(hours: 2),
-        onTimeout: () {
-          debugPrint("TaskManager: Process timed out after 2 hours.");
-          // Attempt graceful kill first then force
-          if (_activeProcess != null) {
-            _activeProcess!.kill(ProcessSignal.sigterm);
-            Future.delayed(const Duration(seconds: 2), () => _activeProcess?.kill(ProcessSignal.sigkill));
+      bool success = true;
+      try {
+        await for (final line in stream) {
+          _handleOutput(line);
+          // Check for fatal errors in the stream
+          if (line.contains("errorFatalStream") || line.contains("errorProcessStart") || line.contains("[ERROR]")) {
+            success = false;
           }
-          return -1;
-        },
-      );
-      final success = exitCode == 0;
+        }
+      } catch (e) {
+        debugPrint("TaskManager Stream Error: $e");
+        success = false;
+      }
 
       if (success) {
         _updateState(
@@ -178,8 +143,7 @@ class TaskManager {
           _updateState(
             _currentTask?.copyWith(
               status: TaskStatus.failed,
-              messageKey: "taskFailedWithCode",
-              messageArgs: {"code": exitCode},
+              messageKey: "taskFailed",
               speed: "",
             ),
           );
@@ -205,11 +169,6 @@ class TaskManager {
         ),
       );
     } finally {
-      _stdoutSubscription?.cancel();
-      _stderrSubscription?.cancel();
-      _stdoutSubscription = null;
-      _stderrSubscription = null;
-      _activeProcess = null;
       BackendService.isDownloading.value = false;
 
       if (_currentTask != null &&
@@ -329,44 +288,22 @@ class TaskManager {
       return;
     }
 
-    if (_activeProcess != null) {
-      final pid = _activeProcess!.pid;
-      debugPrint("TaskManager: User requested cancellation for PID $pid");
+    // Murphy-proof: Use unified cancellation through BackendService
+    await BackendService.cancelCurrentTask();
 
-      try {
-        if (Platform.isLinux || Platform.isMacOS) {
-          await Process.run('kill', ['-TERM', '-$pid']);
-          await Process.run('pkill', ['-P', pid.toString()]);
-        }
-        _activeProcess?.kill(ProcessSignal.sigterm);
-      } catch (e) {
-        debugPrint("TaskManager cancellation error: $e");
-        _activeProcess?.kill(ProcessSignal.sigterm);
+    _updateState(
+      _currentTask?.copyWith(
+        status: TaskStatus.failed,
+        messageKey: "taskCancelledByUser",
+        speed: "",
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_currentTask?.status == TaskStatus.failed) {
+        _updateState(null);
       }
-
-      _updateState(
-        _currentTask?.copyWith(
-          status: TaskStatus.failed,
-          messageKey: "taskCancelledByUser",
-          speed: "",
-        ),
-      );
-
-    Future.delayed(const Duration(seconds: 3), () async {
-      if (_activeProcess != null && _activeProcess!.pid == pid) {
-          debugPrint("TaskManager: Force killing stalled process $pid");
-          try {
-            if (Platform.isLinux || Platform.isMacOS) {
-            await Process.run('kill', ['-KILL', '--', '-$pid']);
-            }
-            _activeProcess?.kill(ProcessSignal.sigkill);
-          } catch (_) {}
-          _activeProcess = null;
-        }
-      });
-    } else if (_currentTask != null) {
-      _updateState(null);
-    }
+    });
   }
 
   void clearTask() {
