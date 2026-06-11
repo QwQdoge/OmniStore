@@ -25,8 +25,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _bannerScrollController = ScrollController();
+  final ScrollController _newArrivalsScrollController = ScrollController();
+  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
+
+  @override
+  void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -200,12 +211,17 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 260,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 20),
-            itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+          child: Scrollbar(
+            controller: _bannerScrollController,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: _bannerScrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 20),
+              itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+            ),
           ),
         ),
       ],

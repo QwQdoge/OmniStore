@@ -21,6 +21,7 @@ class AIAppResolver extends StatefulWidget {
 }
 
 class _AIAppResolverState extends State<AIAppResolver> {
+  final ScrollController _scrollController = ScrollController();
   List<AppPackage> _resolvedApps = [];
   bool _isLoading = false;
 
@@ -57,6 +58,12 @@ class _AIAppResolverState extends State<AIAppResolver> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
