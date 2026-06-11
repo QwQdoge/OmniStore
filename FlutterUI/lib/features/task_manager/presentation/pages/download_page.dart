@@ -371,9 +371,10 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return Consumer<TaskController>(
-      builder: (context, taskController, _) {
-        if (!taskController.isBusy) {
+    return Selector<TaskController, bool>(
+      selector: (context, controller) => controller.isBusy,
+      builder: (context, isBusy, _) {
+        if (!isBusy) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -407,16 +408,18 @@ class _DownloadPageState extends State<DownloadPage>
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      SmoothProgressBar(
-                        taskState: TaskState(
-                          id: "active",
-                          packageName: AppLocalizations.of(context)!.taskProcessing,
-                          status: TaskStatus.downloading,
-                          progress: taskController.progress ?? 0.0,
-                          stage: taskController.status,
-                          speed: taskController.speed,
+                      Consumer<TaskController>(
+                        builder: (context, taskController, _) => SmoothProgressBar(
+                          taskState: TaskState(
+                            id: "active",
+                            packageName: AppLocalizations.of(context)!.taskProcessing,
+                            status: TaskStatus.downloading,
+                            progress: taskController.progress ?? 0.0,
+                            stage: taskController.status,
+                            speed: taskController.speed,
+                          ),
+                          onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                         ),
-                        onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                       ),
                       const SizedBox(height: 24),
                       Row(

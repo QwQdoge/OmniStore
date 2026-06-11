@@ -205,13 +205,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, TaskController task, SettingsController settings) {
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, SettingsController settings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(theme),
         const SizedBox(height: 24),
-        _buildActionArea(colorScheme, task),
+        _buildActionArea(colorScheme),
         const SizedBox(height: 32),
         const Divider(),
         _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
@@ -469,10 +469,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           children: [
                             _buildHeader(theme),
                             const SizedBox(height: 24),
-                            Consumer<TaskController>(
-                              builder: (context, task, _) =>
-                                  _buildActionArea(colorScheme, task),
-                            ),
+                            _buildActionArea(colorScheme),
                             const SizedBox(height: 32),
                             _buildSectionTitle(
                               theme,
@@ -619,14 +616,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                     ],
                   )
-                : Consumer<TaskController>(
-                    builder: (context, task, _) => _buildMainContent(
-                      context,
-                      colorScheme,
-                      theme,
-                      task,
-                      settings,
-                    ),
+                : _buildMainContent(
+                    context,
+                    colorScheme,
+                    theme,
+                    settings,
                   ),
           ),
         ),
@@ -662,9 +656,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildActionArea(ColorScheme colorScheme, TaskController task) {
+  Widget _buildActionArea(ColorScheme colorScheme) {
     Widget content;
-    if (task.isBusy) {
+    if (context.select((TaskController task) => task.isBusy)) {
       content = Container(
         key: const ValueKey('busy'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -675,16 +669,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        child: SmoothProgressBar(
-          taskState: TaskState(
-            id: "active",
-            packageName: widget.app.name,
-            status: TaskStatus.downloading,
-            progress: task.progress ?? 0.0,
-            stage: task.status,
-            speed: task.speed,
+        child: Consumer<TaskController>(
+          builder: (context, task, _) => SmoothProgressBar(
+            taskState: TaskState(
+              id: "active",
+              packageName: widget.app.name,
+              status: TaskStatus.downloading,
+              progress: task.progress ?? 0.0,
+              stage: task.status,
+              speed: task.speed,
+            ),
+            onCancel: _cancelAction,
           ),
-          onCancel: _cancelAction,
         ),
       );
     } else if (_isAppInstalled) {
