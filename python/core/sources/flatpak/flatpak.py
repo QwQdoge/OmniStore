@@ -97,6 +97,7 @@ class FlatpakSource(UnifiedSource):
         await self._ensure_flathub(callback)
         if callback:
             await callback(f"[INFO] Running: flatpak install --user -y flathub {app_id}")
+
         try:
             async with safe_subprocess(
                 "flatpak", "install", "--user", "-y", "flathub", app_id,
@@ -155,6 +156,7 @@ class FlatpakSource(UnifiedSource):
         app_id = package.get("id") or package.get("name")
         if callback:
             await callback(f"[INFO] Running: flatpak uninstall --user -y {app_id}")
+
         try:
             async with safe_subprocess(
                 "flatpak", "uninstall", "--user", "-y", app_id,
@@ -171,7 +173,8 @@ class FlatpakSource(UnifiedSource):
                 await proc.wait()
                 return proc.returncode == 0
         except Exception:
-            return False
+            pass
+        return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")

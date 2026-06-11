@@ -467,34 +467,64 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildHeader(theme),
-                            const SizedBox(height: 24),
-                            _buildActionArea(colorScheme),
-                            const SizedBox(height: 32),
-                            _buildSectionTitle(
-                              theme,
-                              AppLocalizations.of(context)!.details,
-                            ),
-                            _buildInfoRow(
-                              Icons.source_rounded,
-                              AppLocalizations.of(context)!.source,
-                              widget.app.primarySource,
-                            ),
-                            _buildInfoRow(
-                              Icons.all_inclusive_rounded,
-                              AppLocalizations.of(context)!.variant,
-                              widget.app.sources.join(", "),
-                            ),
-                            _buildInfoRow(
-                              Icons.verified_rounded,
-                              AppLocalizations.of(context)!.version,
-                              widget.app.version,
-                            ),
-                            if (_extraDetails?['developer'] != null)
-                              _buildInfoRow(
-                                Icons.person_rounded,
-                                AppLocalizations.of(context)!.developer,
-                                _extraDetails!['developer'],
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: 200, height: 14),
+                          ],
+                        )
+                      : MarkdownBody(
+                          key: const ValueKey('loaded'),
+                          data:
+                              _extraDetails?['description'] ??
+                              (widget.app.description.isEmpty
+                                  ? AppLocalizations.of(context)!.noResults
+                                  : widget.app.description),
+                          selectable: true,
+                          styleSheet: MarkdownStyleSheet(
+                            p: theme.textTheme.bodyLarge,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 24),
+                if (_hasCapability('has_screenshots') &&
+                    _extraDetails != null &&
+                    _extraDetails!['screenshots'] != null &&
+                    (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                  _buildSectionTitle(
+                    theme,
+                    AppLocalizations.of(context)!.screenshots,
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 236,
+                    child: Scrollbar(
+                      controller: _screenshotScrollController,
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        controller: _screenshotScrollController,
+                        padding: const EdgeInsets.only(bottom: 16),
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount:
+                            (_extraDetails!['screenshots'] as List).length,
+                        separatorBuilder: (context, _) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final imageUrl = _extraDetails!['screenshots'][index];
+                          return Hero(
+                            tag: 'screenshot-$imageUrl',
+                            child: Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                side: BorderSide(
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
                               ),
                             if (_extraDetails?['license'] != null)
                               _buildInfoRow(
