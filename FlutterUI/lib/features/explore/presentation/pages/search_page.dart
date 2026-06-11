@@ -139,27 +139,27 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               focusNode: _focusNode,
               hintText: l10n.searchHint,
-              onChanged: (value) => _hasSearchText.value = value.isNotEmpty,
               onSubmitted: _performSearch,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                ValueListenableBuilder<bool>(
-                  valueListenable: _hasSearchText,
-                  builder: (context, hasText, _) {
-                    if (!hasText) return const SizedBox.shrink();
-                    return IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      tooltip: l10n.clearSearch,
-                      onPressed: () {
-                        _searchController.clear();
-                        _hasSearchText.value = false;
-                        setState(() {
-                          _showDiscovery = true;
-                          _selectedSources.clear();
-                          _selectedApp = null;
-                        });
-                      },
-                    );
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchController,
+                  builder: (context, value, child) {
+                    if (value.text.isNotEmpty) {
+                      return IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: l10n.clearSearch,
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _showDiscovery = true;
+                            _selectedSources.clear();
+                            _selectedApp = null;
+                          });
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ],
