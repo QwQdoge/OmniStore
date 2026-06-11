@@ -1136,6 +1136,14 @@
       }
     }
   },
+  "checkUpdateFailed": "Error al buscar actualizaciones: {error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "Error al limpiar: {error}",
   "@errorCleanFailed": {
     "placeholders": {

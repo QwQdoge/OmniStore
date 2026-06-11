@@ -862,6 +862,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return 'Check update failed: $error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return 'Cleanup failed: $error';
   }

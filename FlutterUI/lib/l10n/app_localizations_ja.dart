@@ -846,6 +846,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return '更新の確認に失敗しました：$error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return 'クリーンアップに失敗しました：$error';
   }
