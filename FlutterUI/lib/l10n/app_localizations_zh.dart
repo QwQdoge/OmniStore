@@ -841,6 +841,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return '检查更新失败: $error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return '清理失败：$error';
   }
@@ -1870,6 +1875,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String errorUpdateFailed(String error) {
     return '更新失敗：$error';
+  }
+
+  @override
+  String checkUpdateFailed(String error) {
+    return '檢查更新失敗: $error';
   }
 
   @override

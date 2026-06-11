@@ -24,6 +24,7 @@ class DownloadPage extends StatefulWidget {
 
 class _DownloadPageState extends State<DownloadPage>
     with SingleTickerProviderStateMixin {
+  final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   List<AppPackage> _installedApps = [];
   List<AppPackage> _filteredApps = [];
@@ -76,7 +77,6 @@ class _DownloadPageState extends State<DownloadPage>
             ],
           ),
           duration: const Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
         ),
       );
       if (newCount > 0 && prevCount == 0) {
@@ -86,7 +86,7 @@ class _DownloadPageState extends State<DownloadPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('检查更新失败: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(AppLocalizations.of(context)!.checkUpdateFailed(e.toString()))),
         );
       }
     } finally {
@@ -131,6 +131,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   void dispose() {
+    _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -340,23 +341,28 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          _isCheckingUpdates
-              ? const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps();
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
                   ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    _loadInstalledApps();
-                    _checkUpdatesWithFeedback();
-                  },
-                  tooltip: AppLocalizations.of(context)!.refresh,
-                ),
+          ),
         ],
       ),
       body: TabBarView(
@@ -367,9 +373,10 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return Consumer<TaskController>(
-      builder: (context, taskController, _) {
-        if (!taskController.isBusy) {
+    return Selector<TaskController, bool>(
+      selector: (context, controller) => controller.isBusy,
+      builder: (context, isBusy, _) {
+        if (!isBusy) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -403,16 +410,18 @@ class _DownloadPageState extends State<DownloadPage>
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      SmoothProgressBar(
-                        taskState: TaskState(
-                          id: "active",
-                          packageName: AppLocalizations.of(context)!.taskProcessing,
-                          status: TaskStatus.downloading,
-                          progress: taskController.progress ?? 0.0,
-                          stage: taskController.status,
-                          speed: taskController.speed,
+                      Consumer<TaskController>(
+                        builder: (context, taskController, _) => SmoothProgressBar(
+                          taskState: TaskState(
+                            id: "active",
+                            packageName: AppLocalizations.of(context)!.taskProcessing,
+                            status: TaskStatus.downloading,
+                            progress: taskController.progress ?? 0.0,
+                            stage: taskController.status,
+                            speed: taskController.speed,
+                          ),
+                          onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                         ),
-                        onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                       ),
                       const SizedBox(height: 24),
                       Row(

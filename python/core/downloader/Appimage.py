@@ -2,40 +2,81 @@ import os
 import asyncio
 from core.subprocess_utils import safe_subprocess
 
-async def install_appimage(package, callback=None):
-    if callback:
-        await callback(f"[INFO] Installing AppImage: {package.get('name')}")
 
-    url = package.get("url")
-    if not url:
-        if callback:
-            await callback("[ERROR] No URL provided for AppImage install")
-        return False
+class AppImageDownloader:
+    def __init__(self, executor):
+        self.executor = executor
+        self.apps_dir = Path.home() / "Applications"
+        self.desktop_dir = Path.home() / ".local/share/applications"
+        self.current_download_task = None
+        self.timeout = aiohttp.ClientTimeout(total=5)
 
-    apps_dir = os.path.expanduser("~/Applications")
-    os.makedirs(apps_dir, exist_ok=True)
+    async def install(self, package_data: dict, callback=None):
+        name = package_data.get("name")
+        url = package_data.get("url")
+        dest_path = self.apps_dir / f"{name}.AppImage"
+        self.apps_dir.mkdir(parents=True, exist_ok=True)
 
-    filename = url.split("/")[-1]
-    target_path = os.path.join(apps_dir, filename)
+        if not url or not name:
+            if callback:
+                await callback("[ERROR] Invalid package data")
+            return
 
-    if callback:
-        await callback(f"[INFO] Downloading to {target_path}")
+        # Try to get content-length to show progress percentage
+        total_size = 0
+        try:
+            async with aiohttp.ClientSession(timeout=self.timeout) as session:
+                async with session.head(url, allow_redirects=True) as resp:
+                    if resp.status == 200:
+                        total_size = int(resp.headers.get("Content-Length", 0))
+        except Exception:
+            pass
 
-    try:
-        async with safe_subprocess(
-            "curl", "-L", url, "-o", target_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT
-        ) as proc:
-            if proc.stdout:
-                while True:
-                    line = await proc.stdout.readline()
-                    if not line: break
-                    if callback: await callback(f"[INFO] {line.decode().strip()}")
-            await proc.wait()
+        # Start wget download
+        cmd = ["wget", "-q", "-O", str(dest_path), str(url)]
+        
+        try:
+            async with safe_subprocess(
+                *cmd,
+                env=os.environ.copy()
+            ) as self.current_download_task:
+                process = self.current_download_task
+                total_size = 0  # Initial 0
+                last_percent = -1
 
-        if os.path.exists(target_path):
-            os.chmod(target_path, 0o755)
+                # 3. Poll disk file size
+                while process.returncode is None:
+                    if dest_path.exists():
+                        current_size = dest_path.stat().st_size
+                        if total_size > 0:
+                            percent = int((current_size / total_size) * 100)
+                            if percent > last_percent and percent < 100:
+                                if callback:
+                                    await callback(f"[PROGRESS] {percent}")
+                                last_percent = percent
+                        else:
+                            mb = current_size // (1024 * 1024)
+                            if mb > last_percent:
+                                if callback:
+                                    await callback(f"[INFO] Downloaded: {mb}MB")
+                                last_percent = mb
+
+                    if process.returncode is not None:
+                        break
+                    await asyncio.sleep(1)
+
+                ret_code = await process.wait()
+
+                if ret_code == 0:
+                    dest_path.chmod(0o755)
+                    self._create_desktop_entry(name, dest_path)
+                    if callback:
+                        await callback("[PROGRESS] 100")
+                else:
+                    if callback:
+                        await callback(f"[ERROR] Download failed (Code: {ret_code})")
+
+        except Exception as e:
             if callback:
                 await callback("[PROGRESS] 100")
             return True

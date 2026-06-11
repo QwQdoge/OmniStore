@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class OmnistoreApp extends StatefulWidget {
   const OmnistoreApp({super.key, required this.initialConfig});
@@ -83,20 +84,41 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
               builder: (context) => FutureBuilder<Map<String, dynamic>>(
                 future: PackageRepository().getAppDetails(appId),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Scaffold(
-                      appBar: AppBar(title: const Text('Error')),
-                      body: const Center(child: Text('App details not found')),
-                    );
-                  }
-                  final appDetails = snapshot.data!;
-                  final appPackage = AppPackage.fromJson(appDetails);
-                  return AppDetailsPage(app: appPackage);
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: snapshot.connectionState == ConnectionState.waiting
+                        ? const Scaffold(
+                            key: ValueKey('loading'),
+                            body: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Skeleton(width: 80, height: 80, borderRadius: 16),
+                                  SizedBox(height: 16),
+                                  Skeleton(width: 200, height: 24),
+                                  SizedBox(height: 8),
+                                  Skeleton(width: double.infinity, height: 16),
+                                  SizedBox(height: 8),
+                                  Skeleton(width: 150, height: 16),
+                                ],
+                              ),
+                            ),
+                          )
+                        : snapshot.hasError ||
+                                !snapshot.hasData ||
+                                snapshot.data!.isEmpty
+                            ? Scaffold(
+                                key: const ValueKey('error'),
+                                appBar: AppBar(title: const Text('Error')),
+                                body: const Center(
+                                    child: Text('App details not found')),
+                              )
+                            : AppDetailsPage(
+                                key: const ValueKey('loaded'),
+                                app: AppPackage.fromJson(snapshot.data!),
+                              ),
+                  );
                 },
               ),
             );

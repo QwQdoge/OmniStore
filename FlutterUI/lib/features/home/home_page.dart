@@ -25,13 +25,37 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _bannerScrollController = ScrollController();
+  final ScrollController _newArrivalsScrollController = ScrollController();
+  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  final ScrollController _heroScrollController = ScrollController();
+  final ScrollController _quickAccessScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
+
+  @override
+  void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
+  }
+
+  @override
+  void dispose() {
+    _heroScrollController.dispose();
+    _quickAccessScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _refresh() async {
@@ -212,12 +236,17 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 260,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 20),
-            itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+          child: Scrollbar(
+            controller: _bannerScrollController,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: _bannerScrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 20),
+              itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+            ),
           ),
         ),
       ],
@@ -358,6 +387,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
+    final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -366,12 +397,16 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 160,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
+          child: Scrollbar(
+            controller: controller,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
               final app = apps[index];
               final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
               return SizedBox(
@@ -438,12 +473,16 @@ class _HomePageState extends State<HomePage> {
     final categories = CategoryService.getCategories(context);
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 50,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: categories.length,
-          itemBuilder: (context, index) => Padding(
+        height: 64,
+        child: Scrollbar(
+          controller: _quickAccessScrollController,
+          thumbVisibility: true,
+          child: ListView.builder(
+            controller: _quickAccessScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: categories.length,
+            itemBuilder: (context, index) => Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Semantics(
               label: 'Category: ${categories[index].name}',

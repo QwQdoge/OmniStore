@@ -1681,6 +1681,12 @@ abstract class AppLocalizations {
   /// **'Update failed: {error}'**
   String errorUpdateFailed(String error);
 
+  /// No description provided for @checkUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check update failed: {error}'**
+  String checkUpdateFailed(String error);
+
   /// No description provided for @errorCleanFailed.
   ///
   /// In en, this message translates to:

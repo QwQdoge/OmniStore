@@ -21,7 +21,9 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  final ValueNotifier<bool> _hasSearchText = ValueNotifier(false);
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
   AppPackage? _selectedApp;
@@ -56,6 +58,7 @@ class _SearchPageState extends State<SearchPage> {
       final browse = context.read<BrowseController>();
       if (browse.pendingSearchQuery != null) {
         _searchController.text = browse.pendingSearchQuery!;
+        _hasSearchText.value = _searchController.text.isNotEmpty;
         _performSearch(browse.pendingSearchQuery!);
         browse.pendingSearchQuery = null;
       }
@@ -76,6 +79,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     _browseController?.removeListener(_onBrowseChanged);
+    _hasSearchText.dispose();
     super.dispose();
   }
 
@@ -122,6 +126,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    _quickFilterScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDesktop = MediaQuery.of(context).size.width > 900;
@@ -136,23 +147,29 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               focusNode: _focusNode,
               hintText: l10n.searchHint,
-              onChanged: (value) => setState(() {}),
               onSubmitted: _performSearch,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    tooltip: l10n.clearSearch,
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _showDiscovery = true;
-                        _selectedSources.clear();
-                        _selectedApp = null;
-                      });
-                    },
-                  ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchController,
+                  builder: (context, value, child) {
+                    if (value.text.isNotEmpty) {
+                      return IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: l10n.clearSearch,
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _showDiscovery = true;
+                            _selectedSources.clear();
+                            _selectedApp = null;
+                          });
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
               ],
             ),
           ),
@@ -223,9 +240,13 @@ class _SearchPageState extends State<SearchPage> {
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
+      child: Scrollbar(
+        controller: _quickFilterScrollController,
+        thumbVisibility: true,
+        child: ListView(
+          controller: _quickFilterScrollController,
+          scrollDirection: Axis.horizontal,
+          children: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: FilterChip(
@@ -263,6 +284,7 @@ class _SearchPageState extends State<SearchPage> {
             );
           }),
         ],
+        ),
       ),
     );
   }
@@ -323,61 +345,87 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: filteredResults.length,
       itemBuilder: (context, index) {
         final app = filteredResults[index];
-        final heroTag = 'search-result-${app.name}-${app.primarySource}';
-        final isSelected = _selectedApp?.id == app.id;
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          color: isSelected && isDesktop
-              ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-              : null,
-          child: ListTile(
-            leading: Hero(
-              tag: heroTag,
-              child: app.icon != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        width: 40,
-                        height: 40,
-                        memCacheWidth: 80,
-                        memCacheHeight: 80,
-                        errorWidget: (c, e, s) => const Icon(Icons.apps),
-                      ),
-                    )
-                  : const Icon(Icons.apps, size: 40),
-            ),
-            title: Text(
-              app.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              app.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: AppSourceTag(
-              source: app.primarySource,
-              mode: AppSourceTagMode.source,
-            ),
-            onTap: () {
-              if (isDesktop) {
-                setState(() {
-                  _selectedApp = app;
-                });
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AppDetailsPage(app: app, heroTag: heroTag),
+        return SearchResultTile(
+          app: app,
+          isSelected: _selectedApp?.id == app.id,
+          isDesktop: isDesktop,
+          onTap: () {
+            if (isDesktop) {
+              setState(() {
+                _selectedApp = app;
+              });
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AppDetailsPage(
+                    app: app,
+                    heroTag: 'search-result-${app.name}-${app.primarySource}',
                   ),
-                );
-              }
-            },
-          ),
+                ),
+              );
+            }
+          },
         );
       },
+    );
+  }
+}
+
+class SearchResultTile extends StatelessWidget {
+  final AppPackage app;
+  final bool isSelected;
+  final bool isDesktop;
+  final VoidCallback onTap;
+
+  const SearchResultTile({
+    super.key,
+    required this.app,
+    required this.isSelected,
+    required this.isDesktop,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final heroTag = 'search-result-${app.name}-${app.primarySource}';
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: isSelected && isDesktop
+          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+          : null,
+      child: ListTile(
+        leading: Hero(
+          tag: heroTag,
+          child: app.icon != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: app.icon!,
+                    width: 40,
+                    height: 40,
+                    memCacheWidth: 80,
+                    memCacheHeight: 80,
+                    errorWidget: (c, e, s) => const Icon(Icons.apps),
+                  ),
+                )
+              : const Icon(Icons.apps, size: 40),
+        ),
+        title: Text(
+          app.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          app.description,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: AppSourceTag(
+          source: app.primarySource,
+          mode: AppSourceTagMode.source,
+        ),
+        onTap: onTap,
+      ),
     );
   }
 }

@@ -147,62 +147,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     final cleanOrphansResult = await showDialog<bool?>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(
-                isUninstall
-                    ? localizations.confirmUninstall
-                    : localizations.confirmInstall,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(localizations.confirmActionMsg(widget.app.name)),
-                  if (isUninstall && _selectedSource == "Native") ...[
-                    const SizedBox(height: 16),
-                    CheckboxListTile(
-                      value: cleanOrphans,
-                      onChanged: (val) {
-                        setDialogState(() => cleanOrphans = val ?? false);
-                      },
-                      title: Text(
-                        localizations.cleanOrphans,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(localizations.cancel),
-                ),
-                FilledButton(
-                  style: isUninstall
-                      ? FilledButton.styleFrom(
-                          backgroundColor: theme.colorScheme.error,
-                          foregroundColor: theme.colorScheme.onError,
-                        )
-                      : null,
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(localizations.confirm),
-                ),
-              ],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => ActionConfirmDialog(
+        isUninstall: isUninstall,
+        appName: widget.app.name,
+        selectedSource: _selectedSource,
+      ),
     );
 
     if (cleanOrphansResult == null) {
@@ -256,13 +205,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, TaskController task, SettingsController settings) {
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, SettingsController settings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(theme),
         const SizedBox(height: 24),
-        _buildActionArea(colorScheme, task),
+        _buildActionArea(colorScheme),
         const SizedBox(height: 32),
         const Divider(),
         _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
@@ -518,37 +467,64 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildHeader(theme),
-                            const SizedBox(height: 24),
-                            Consumer<TaskController>(
-                              builder: (context, task, _) =>
-                                  _buildActionArea(colorScheme, task),
-                            ),
-                            const SizedBox(height: 32),
-                            _buildSectionTitle(
-                              theme,
-                              AppLocalizations.of(context)!.details,
-                            ),
-                            _buildInfoRow(
-                              Icons.source_rounded,
-                              AppLocalizations.of(context)!.source,
-                              widget.app.primarySource,
-                            ),
-                            _buildInfoRow(
-                              Icons.all_inclusive_rounded,
-                              AppLocalizations.of(context)!.variant,
-                              widget.app.sources.join(", "),
-                            ),
-                            _buildInfoRow(
-                              Icons.verified_rounded,
-                              AppLocalizations.of(context)!.version,
-                              widget.app.version,
-                            ),
-                            if (_extraDetails?['developer'] != null)
-                              _buildInfoRow(
-                                Icons.person_rounded,
-                                AppLocalizations.of(context)!.developer,
-                                _extraDetails!['developer'],
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: double.infinity, height: 14),
+                            SizedBox(height: 8),
+                            Skeleton(width: 200, height: 14),
+                          ],
+                        )
+                      : MarkdownBody(
+                          key: const ValueKey('loaded'),
+                          data:
+                              _extraDetails?['description'] ??
+                              (widget.app.description.isEmpty
+                                  ? AppLocalizations.of(context)!.noResults
+                                  : widget.app.description),
+                          selectable: true,
+                          styleSheet: MarkdownStyleSheet(
+                            p: theme.textTheme.bodyLarge,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 24),
+                if (_hasCapability('has_screenshots') &&
+                    _extraDetails != null &&
+                    _extraDetails!['screenshots'] != null &&
+                    (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                  _buildSectionTitle(
+                    theme,
+                    AppLocalizations.of(context)!.screenshots,
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 236,
+                    child: Scrollbar(
+                      controller: _screenshotScrollController,
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        controller: _screenshotScrollController,
+                        padding: const EdgeInsets.only(bottom: 16),
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount:
+                            (_extraDetails!['screenshots'] as List).length,
+                        separatorBuilder: (context, _) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final imageUrl = _extraDetails!['screenshots'][index];
+                          return Hero(
+                            tag: 'screenshot-$imageUrl',
+                            child: Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                side: BorderSide(
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
                               ),
                             if (_extraDetails?['license'] != null)
                               _buildInfoRow(
@@ -670,14 +646,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       ),
                     ],
                   )
-                : Consumer<TaskController>(
-                    builder: (context, task, _) => _buildMainContent(
-                      context,
-                      colorScheme,
-                      theme,
-                      task,
-                      settings,
-                    ),
+                : _buildMainContent(
+                    context,
+                    colorScheme,
+                    theme,
+                    settings,
                   ),
           ),
         ),
@@ -713,9 +686,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildActionArea(ColorScheme colorScheme, TaskController task) {
+  Widget _buildActionArea(ColorScheme colorScheme) {
     Widget content;
-    if (task.isBusy) {
+    if (context.select((TaskController task) => task.isBusy)) {
       content = Container(
         key: const ValueKey('busy'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -726,16 +699,18 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        child: SmoothProgressBar(
-          taskState: TaskState(
-            id: "active",
-            packageName: widget.app.name,
-            status: TaskStatus.downloading,
-            progress: task.progress ?? 0.0,
-            stage: task.status,
-            speed: task.speed,
+        child: Consumer<TaskController>(
+          builder: (context, task, _) => SmoothProgressBar(
+            taskState: TaskState(
+              id: "active",
+              packageName: widget.app.name,
+              status: TaskStatus.downloading,
+              progress: task.progress ?? 0.0,
+              stage: task.status,
+              speed: task.speed,
+            ),
+            onCancel: _cancelAction,
           ),
-          onCancel: _cancelAction,
         ),
       );
     } else if (_isAppInstalled) {

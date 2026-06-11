@@ -77,14 +77,15 @@ class AdaptiveNavigationShell extends StatelessWidget {
           child: content,
         );
 
-        final taskBar = Consumer<TaskController>(
-          builder: (context, task, child) {
+        final taskBar = Selector<TaskController, bool>(
+          selector: (context, task) => task.isBusy,
+          builder: (context, isBusy, child) {
             return AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
+                child: isBusy ? const _TaskProgressBar() : const SizedBox.shrink(),
               ),
             );
           },
@@ -452,9 +453,10 @@ class _ExpandedDownloadTile extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   children: [
-                    Consumer<TaskController>(
-                      builder: (context, task, child) => Icon(
-                        task.isBusy
+                    Selector<TaskController, bool>(
+                      selector: (context, task) => task.isBusy,
+                      builder: (context, isBusy, child) => Icon(
+                        isBusy
                             ? Icons.downloading_rounded
                             : Icons.download_for_offline_rounded,
                         size: 24,
@@ -547,9 +549,7 @@ class _DesktopTopBar extends StatelessWidget {
 }
 
 class _TaskProgressBar extends StatelessWidget {
-  const _TaskProgressBar({required this.task});
-
-  final TaskController task;
+  const _TaskProgressBar();
 
   @override
   Widget build(BuildContext context) {
@@ -568,47 +568,49 @@ class _TaskProgressBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.downloading_rounded,
-                  size: 14,
-                  color: scheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${l10n.processing} ${task.status} ${task.speed}',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+      child: Consumer<TaskController>(
+        builder: (context, task, child) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.downloading_rounded,
+                    size: 14,
+                    color: scheme.primary,
                   ),
-                ),
-                if (task.progress != null)
-                  Text(
-                    '${(task.progress! * 100).toInt()}%',
-                    style: textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: scheme.primary,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${l10n.processing} ${task.status} ${task.speed}',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-              ],
+                  if (task.progress != null)
+                    Text(
+                      '${(task.progress! * 100).toInt()}%',
+                      style: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: scheme.primary,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          LinearProgressIndicator(
-            value: task.progress,
-            minHeight: 3,
-            backgroundColor: scheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-          ),
-        ],
+            LinearProgressIndicator(
+              value: task.progress,
+              minHeight: 3,
+              backgroundColor: scheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -635,9 +637,10 @@ class _DownloadAction extends StatelessWidget {
             IconButton(
               tooltip: l10n.downloads,
               onPressed: () => nav.setIndex(4),
-              icon: Consumer<TaskController>(
-                builder: (context, task, child) => Icon(
-                  task.isBusy
+              icon: Selector<TaskController, bool>(
+                selector: (context, task) => task.isBusy,
+                builder: (context, isBusy, child) => Icon(
+                  isBusy
                       ? Icons.downloading_rounded
                       : Icons.download_for_offline_rounded,
                   color: nav.selectedIndex == 4
