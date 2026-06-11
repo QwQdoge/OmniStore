@@ -1133,6 +1133,14 @@
       }
     }
   },
+  "checkUpdateFailed": "Check update failed: {error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "Cleanup failed: {error}",
   "@errorCleanFailed": {
     "placeholders": {

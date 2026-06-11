@@ -864,6 +864,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return 'Error al buscar actualizaciones: $error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return 'Error al limpiar: $error';
   }

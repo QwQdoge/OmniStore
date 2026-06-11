@@ -1133,6 +1133,14 @@
       }
     }
   },
+  "checkUpdateFailed": "更新の確認に失敗しました：{error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "クリーンアップに失敗しました：{error}",
   "@errorCleanFailed": {
     "placeholders": {
