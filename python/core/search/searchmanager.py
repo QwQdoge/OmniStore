@@ -109,8 +109,6 @@ class SearchManager:
             except Exception: pass
             query = f"category:{standard_id}"
 
-        # Record the search query
-        self.habit_tracker.record_search(query)
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
         source_filter_obj = None
         if query.lower().startswith("source:"):
@@ -169,49 +167,16 @@ class SearchManager:
         # ⚡ Bolt: Use cached installed packages if available to avoid redundant subprocesses (~150-400ms saved)
         cached_apps = self.cache.get_installed_packages() if self.cache else None
 
-        # Simplified approach: always pre-fetch if these sources are potentially active
-        async def _get_flatpak():
-            if cached_apps:
-                return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
-            p = None
-            try:
-                async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
-                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
-                    stdout, _ = await p.communicate()
-                    return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
-            except:
-                return set()
-            finally:
-                if p and p.returncode is None:
-                    try:
-                        p.kill()
-                        await p.wait()
-                    except: pass
-
-        async def _get_aur():
-            if cached_apps:
-                return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
-            p = None
-            try:
-                async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
-                    stdout, _ = await p.communicate()
-                    return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
-            except:
-                return set()
-            finally:
-                if p and p.returncode is None:
-                    try:
-                        p.kill()
-                        await p.wait()
-                    except: pass
-
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}
         if "flatpak" in active_names:
-            installed_flatpak_task = asyncio.create_task(_get_flatpak())
+            installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(cached_apps))
 
         if "aur" in active_names:
-            installed_aur_task = asyncio.create_task(_get_aur())
+            installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
+
+        # Record the search query (moved after spawning async tasks to reduce startup latency)
+        self.habit_tracker.record_search(query)
 
         # Defensive source execution: failures in one source shouldn't crash everything
         async def safe_search(source: UnifiedSource, q: str, **kwargs):
@@ -305,6 +270,41 @@ class SearchManager:
 
         return top_results
 
+
+    async def _get_installed_flatpak(self, cached_apps: Optional[List[Dict]]):
+        if cached_apps:
+            return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
+        p = None
+        try:
+            async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
+                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                stdout, _ = await p.communicate()
+                return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
+        except:
+            return set()
+        finally:
+            if p and p.returncode is None:
+                try:
+                    p.kill()
+                    await p.wait()
+                except: pass
+
+    async def _get_installed_aur(self, cached_apps: Optional[List[Dict]]):
+        if cached_apps:
+            return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
+        p = None
+        try:
+            async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
+                stdout, _ = await p.communicate()
+                return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
+        except:
+            return set()
+        finally:
+            if p and p.returncode is None:
+                try:
+                    p.kill()
+                    await p.wait()
+                except: pass
 
     async def _search_single_source(self, source: UnifiedSource, query: str) -> List[Dict]:
         """Defensive source execution: failures in one source shouldn't crash everything."""
