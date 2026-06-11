@@ -147,62 +147,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     final cleanOrphansResult = await showDialog<bool?>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(
-                isUninstall
-                    ? localizations.confirmUninstall
-                    : localizations.confirmInstall,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(localizations.confirmActionMsg(widget.app.name)),
-                  if (isUninstall && _selectedSource == "Native") ...[
-                    const SizedBox(height: 16),
-                    CheckboxListTile(
-                      value: cleanOrphans,
-                      onChanged: (val) {
-                        setDialogState(() => cleanOrphans = val ?? false);
-                      },
-                      title: Text(
-                        localizations.cleanOrphans,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(localizations.cancel),
-                ),
-                FilledButton(
-                  style: isUninstall
-                      ? FilledButton.styleFrom(
-                          backgroundColor: theme.colorScheme.error,
-                          foregroundColor: theme.colorScheme.onError,
-                        )
-                      : null,
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(localizations.confirm),
-                ),
-              ],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            );
-          },
-        );
-      },
+      builder: (context) => ActionConfirmDialog(
+        isUninstall: isUninstall,
+        appName: widget.app.name,
+        selectedSource: _selectedSource,
+      ),
     );
 
     if (cleanOrphansResult == null) {
