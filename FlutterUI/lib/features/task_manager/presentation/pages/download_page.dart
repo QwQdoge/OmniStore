@@ -29,6 +29,7 @@ class _DownloadPageState extends State<DownloadPage>
   List<AppPackage> _installedApps = [];
   List<AppPackage> _filteredApps = [];
   bool _isLoadingInstalled = false;
+  bool _isCheckingUpdates = false;
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
@@ -48,6 +49,49 @@ class _DownloadPageState extends State<DownloadPage>
         });
       }
     });
+  }
+
+  Future<void> _checkUpdatesWithFeedback() async {
+    if (_isCheckingUpdates) return;
+    setState(() => _isCheckingUpdates = true);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final prevCount = UpdateService().availableUpdates.value.length;
+      await UpdateService().checkUpdates();
+      if (!mounted) return;
+      final newCount = UpdateService().availableUpdates.value.length;
+      final msg = newCount == 0
+          ? l10n.allUpdated
+          : l10n.foundUpdates(newCount);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                newCount > 0 ? Icons.system_update_alt : Icons.check_circle_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(msg),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      if (newCount > 0 && prevCount == 0) {
+        // 自动跳转到更新标签页
+        _tabController.animateTo(1);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.checkUpdateFailed(e.toString()))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingUpdates = false);
+    }
   }
 
   Future<void> _loadInstalledApps() async {
@@ -297,13 +341,27 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _loadInstalledApps();
-              UpdateService().checkUpdates();
-            },
-            tooltip: AppLocalizations.of(context)!.refresh,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps();
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
+                  ),
           ),
         ],
       ),
@@ -315,9 +373,10 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return Consumer<TaskController>(
-      builder: (context, taskController, _) {
-        if (!taskController.isBusy) {
+    return Selector<TaskController, bool>(
+      selector: (context, controller) => controller.isBusy,
+      builder: (context, isBusy, _) {
+        if (!isBusy) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -351,16 +410,18 @@ class _DownloadPageState extends State<DownloadPage>
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      SmoothProgressBar(
-                        taskState: TaskState(
-                          id: "active",
-                          packageName: AppLocalizations.of(context)!.taskProcessing,
-                          status: TaskStatus.downloading,
-                          progress: taskController.progress ?? 0.0,
-                          stage: taskController.status,
-                          speed: taskController.speed,
+                      Consumer<TaskController>(
+                        builder: (context, taskController, _) => SmoothProgressBar(
+                          taskState: TaskState(
+                            id: "active",
+                            packageName: AppLocalizations.of(context)!.taskProcessing,
+                            status: TaskStatus.downloading,
+                            progress: taskController.progress ?? 0.0,
+                            stage: taskController.status,
+                            speed: taskController.speed,
+                          ),
+                          onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                         ),
-                        onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
                       ),
                       const SizedBox(height: 24),
                       Row(

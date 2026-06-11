@@ -30,6 +30,9 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  final ScrollController _heroScrollController = ScrollController();
+  final ScrollController _quickAccessScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
 
   @override
   void dispose() {
@@ -43,6 +46,16 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
+  }
+
+  @override
+  void dispose() {
+    _heroScrollController.dispose();
+    _quickAccessScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _refresh() async {
@@ -61,11 +74,20 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          // Hide AI section if the response is an error message
-          final isError = pick.startsWith('⚠') ||
-              pick.startsWith('⏱') ||
-              pick.contains('AI service') ||
-              pick.contains('timed out');
+          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
+          final errorPatterns = [
+            '⚠', '⏱',
+            'AI 服务', 'AI service',
+            'timed out', '超时',
+            '无法连接', 'Connection',
+            '错误', 'error', 'Error',
+            '未启用', 'not enabled',
+            'failed', 'Failed',
+            'Today\'s recommendation: OmniStore',
+          ];
+          final isError = errorPatterns.any(
+            (p) => pick.toLowerCase().contains(p.toLowerCase()),
+          );
           _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });
@@ -150,11 +172,14 @@ class _HomePageState extends State<HomePage> {
               child: Consumer<SettingsController>(
                 builder: (context, settings, _) {
                   if (!settings.isAIEnabled) return const SizedBox.shrink();
-                  return _isAILoading
-                      ? _buildAIPickSkeleton()
-                      : (_aiPickBlurb != null
-                          ? _buildAIPickSection()
-                          : const SizedBox.shrink());
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _isAILoading
+                        ? _buildAIPickSkeleton(key: const ValueKey('ai_skeleton'))
+                        : (_aiPickBlurb != null
+                            ? _buildAIPickSection(key: const ValueKey('ai_content'))
+                            : SizedBox.shrink(key: const ValueKey('ai_empty'))),
+                  );
                 },
               ),
             ),
@@ -362,6 +387,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
+    final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -370,12 +397,16 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 160,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
+          child: Scrollbar(
+            controller: controller,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
               final app = apps[index];
               final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
               return SizedBox(
@@ -442,12 +473,16 @@ class _HomePageState extends State<HomePage> {
     final categories = CategoryService.getCategories(context);
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 50,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: categories.length,
-          itemBuilder: (context, index) => Padding(
+        height: 64,
+        child: Scrollbar(
+          controller: _quickAccessScrollController,
+          thumbVisibility: true,
+          child: ListView.builder(
+            controller: _quickAccessScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: categories.length,
+            itemBuilder: (context, index) => Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Semantics(
               label: 'Category: ${categories[index].name}',
@@ -476,8 +511,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSkeleton() {
+  Widget _buildAIPickSkeleton({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -505,8 +541,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSection() {
+  Widget _buildAIPickSection({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

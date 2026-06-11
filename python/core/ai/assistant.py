@@ -63,6 +63,9 @@ class AIAssistant:
         endpoint = str(cfg.get("endpoint", "")).rstrip('/')
         model = str(cfg.get("model", ""))
         api_key = str(cfg.get("api_key", ""))
+        if not api_key or api_key == "******":
+            import os
+            api_key = os.environ.get("OMNISTORE_AI_API_KEY", "")
         proxy = str(cfg.get("proxy", ""))
 
         headers = {"Content-Type": "application/json"}

@@ -88,6 +88,8 @@ abstract final class OmnistoreTheme {
       ),
       hoverColor: scheme.onSurface.withValues(alpha: 0.08),
       focusColor: scheme.onSurface.withValues(alpha: 0.12),
+      splashColor: scheme.onSurface.withValues(alpha: 0.1),
+      highlightColor: Colors.transparent,
     );
   }
 }

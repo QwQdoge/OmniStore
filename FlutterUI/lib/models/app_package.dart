@@ -25,6 +25,17 @@ class AppVariant {
       id: json['id'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'source': source,
+      'version': version,
+      'installed': installed,
+      'description': description,
+      'url': url,
+      'id': id,
+    };
+  }
 }
 
 class AppPackage {
@@ -107,6 +118,24 @@ class AppPackage {
       homepage: json['homepage']?.toString(),
       isExactMatch: json['is_exact_match'] == true,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'installed': installed,
+      'primary_source': primarySource,
+      'version': version,
+      'variants': variants.map((v) => v.toJson()).toList(),
+      'url': url,
+      'id': id,
+      'icon': icon,
+      'screenshots': screenshots,
+      'developer': developer,
+      'homepage': homepage,
+      'is_exact_match': isExactMatch,
+    };
   }
 
   // 模拟数据保留以供参考或测试，但通常我们会通过 BackendService 获取

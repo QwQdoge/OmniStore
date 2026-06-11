@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
 
 class ConfigRepository {
   static const String _webConfigKey = 'omnistore_config';
+
+  Timer? _saveTimer;
+  Map<String, dynamic>? _pendingConfig;
+  Completer<bool>? _pendingCompleter;
 
   final Map<String, dynamic> _defaultWebConfig = {
     "first_run": true,
@@ -44,7 +48,6 @@ class ConfigRepository {
   Map<String, dynamic>? _cachedConfig;
   Map<String, dynamic>? _cachedEnv;
 
-  // TODO: Consider reducing timeout to prevent UI freezes if Python startup is extremely slow.
   Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
     if (_cachedConfig != null && !forceRefresh) {
       return _cachedConfig!;
@@ -69,11 +72,11 @@ class ConfigRepository {
     }
 
     try {
-      final result = await Process.run(
+      final result = await PythonBridge.run(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(["--get-config", "--json"]),
         workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 5));
 
       if (result.exitCode != 0) {
         debugPrint(
@@ -102,62 +105,56 @@ class ConfigRepository {
     }
   }
 
-  // TODO: Batch configuration updates to avoid spawning a process on every single change.
-  // TODO: Move away from spawning a short-lived python process for config saving. Use persistent UDS/Socket connection.
   Future<bool> saveConfig(Map<String, dynamic> config) async {
-    if (kIsWeb) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final success = await prefs.setString(_webConfigKey, jsonEncode(config));
-        if (success) {
-          _cachedConfig = config;
-        }
-        return success;
-      } catch (e) {
-        debugPrint("Web saveConfig Exception: $e");
-        return false;
-      }
-    }
+    _cachedConfig = config;
+    _cachedEnv = null; // Invalidate env check cache in case source configs changed
 
+    // Save to preferences instantly (web or desktop backup)
     try {
-      // TODO: Define a shared JSON schema or Protobuf spec so Dart and Python config files are strongly typed.
-      final process = await Process.start(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 5));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_webConfigKey, jsonEncode(config));
+    } catch (_) {}
 
-      process.stdin.write(jsonEncode(config));
-      await process.stdin.close();
-
-      final exitCode = await process.exitCode.timeout(
-        const Duration(seconds: 5),
-      );
-      
-      // Also save to preferences as a backup/sync mechanism
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_webConfigKey, jsonEncode(config));
-      } catch (_) {}
-
-      final success = exitCode == 0;
-      if (success) {
-        _cachedConfig = config;
-        _cachedEnv = null; // Invalidate env check cache in case source configs changed
-      }
-      return success;
-    } catch (e) {
-      debugPrint("saveConfig Exception: $e");
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final success = await prefs.setString(_webConfigKey, jsonEncode(config));
-        if (success) {
-          _cachedConfig = config;
-        }
-        return success;
-      } catch (_) {}
-      return false;
+    if (kIsWeb) {
+      return true;
     }
+
+    _pendingConfig = config;
+    _pendingCompleter ??= Completer<bool>();
+
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 500), () async {
+      final configToSave = _pendingConfig;
+      final completer = _pendingCompleter;
+      _pendingConfig = null;
+      _pendingCompleter = null;
+
+      if (configToSave == null) {
+        completer?.complete(true);
+        return;
+      }
+
+      try {
+        final process = await PythonBridge.start(
+          PythonBridge.venvPython,
+          PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
+          workingDirectory: PythonBridge.workingDir,
+        ).timeout(const Duration(seconds: 5));
+
+        process.stdin.write(jsonEncode(configToSave));
+        await process.stdin.close();
+
+        final exitCode = await process.exitCode.timeout(
+          const Duration(seconds: 5),
+        );
+        completer?.complete(exitCode == 0);
+      } catch (e) {
+        debugPrint("saveConfig Exception: $e");
+        completer?.complete(false);
+      }
+    });
+
+    return _pendingCompleter!.future;
   }
 
   Future<Map<String, dynamic>> checkEnv({bool forceRefresh = false}) async {
@@ -176,7 +173,7 @@ class ConfigRepository {
     }
 
     try {
-      final result = await Process.run(
+      final result = await PythonBridge.run(
         PythonBridge.venvPython,
         PythonBridge.buildArgs(["--check-env", "--json"]),
         workingDirectory: PythonBridge.workingDir,
