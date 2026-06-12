@@ -170,6 +170,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       }
     }
 
+    if (!mounted) return;
+
     final variantMap = _getVariantForSource(_selectedSource);
     String? variantId = variantMap?['id']?.toString();
     if (variantId == null || variantId.isEmpty) {
