@@ -1,3 +1,4 @@
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
@@ -110,15 +111,26 @@ class _AppsPageState extends State<AppsPage> {
                               final app = _filteredApps[index];
                               final heroTag =
                                   'installed-app-${app.name}-${app.primarySource}';
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                child: ListTile(
-                                  leading: Hero(
-                                    tag: heroTag,
-                                    child: app.icon != null
+                              return Semantics(
+                                label: 'Installed app: ${app.name} from ${app.primarySource}',
+                                button: true,
+                                child: AppCard(
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AppDetailsPage(
+                                        app: app,
+                                        heroTag: heroTag,
+                                      ),
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    leading: Hero(
+                                      tag: heroTag,
+                                      child: app.icon != null
                                         ? ClipRRect(
                                             borderRadius:
-                                                BorderRadius.circular(8),
+                                                BorderRadius.circular(12),
                                             child: CachedNetworkImage(
                                               imageUrl: app.icon!,
                                               width: 40,
@@ -137,22 +149,14 @@ class _AppsPageState extends State<AppsPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  subtitle: Text(
-                                    app.description,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  trailing: AppSourceTag(
-                                    source: app.primarySource,
-                                    mode: AppSourceTagMode.source,
-                                  ),
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AppDetailsPage(
-                                        app: app,
-                                        heroTag: heroTag,
-                                      ),
+                                    subtitle: Text(
+                                      app.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    trailing: AppSourceTag(
+                                      source: app.primarySource,
+                                      mode: AppSourceTagMode.source,
                                     ),
                                   ),
                                 ),
