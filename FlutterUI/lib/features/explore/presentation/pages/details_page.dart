@@ -317,33 +317,48 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           theme,
           AppLocalizations.of(context)!.details,
         ),
-        _buildInfoRow(
-          Icons.source_rounded,
-          AppLocalizations.of(context)!.source,
-          widget.app.primarySource,
-        ),
-        _buildInfoRow(
-          Icons.all_inclusive_rounded,
-          AppLocalizations.of(context)!.variant,
-          widget.app.sources.join(", "),
-        ),
-        _buildInfoRow(
-          Icons.verified_rounded,
-          AppLocalizations.of(context)!.version,
-          widget.app.version,
-        ),
-        if (_extraDetails?['developer'] != null)
-          _buildInfoRow(
-            Icons.person_rounded,
-            AppLocalizations.of(context)!.developer,
-            _extraDetails!['developer'],
+        Card(
+          color: colorScheme.surfaceContainerLow,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        if (_extraDetails?['license'] != null)
-          _buildInfoRow(
-            Icons.description_rounded,
-            AppLocalizations.of(context)!.license,
-            _extraDetails!['license'],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  Icons.source_rounded,
+                  AppLocalizations.of(context)!.source,
+                  widget.app.primarySource,
+                ),
+                _buildInfoRow(
+                  Icons.all_inclusive_rounded,
+                  AppLocalizations.of(context)!.variant,
+                  widget.app.sources.join(", "),
+                ),
+                _buildInfoRow(
+                  Icons.verified_rounded,
+                  AppLocalizations.of(context)!.version,
+                  widget.app.version,
+                ),
+                if (_extraDetails?['developer'] != null)
+                  _buildInfoRow(
+                    Icons.person_rounded,
+                    AppLocalizations.of(context)!.developer,
+                    _extraDetails!['developer'],
+                  ),
+                if (_extraDetails?['license'] != null)
+                  _buildInfoRow(
+                    Icons.description_rounded,
+                    AppLocalizations.of(context)!.license,
+                    _extraDetails!['license'],
+                  ),
+              ],
+            ),
           ),
+        ),
         _buildDependencySection(theme),
       ],
     );
