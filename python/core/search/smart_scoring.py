@@ -1,4 +1,5 @@
 import re
+from functools import lru_cache
 
 # Pre-compiled regex for library detection to avoid redundant compilation during search
 _LIB_RE = re.compile(r'^lib|-(devel|dev|debug|library)$|^python-|^perl-|^ruby-|^php-|^lua-|^js-|^node-')
@@ -13,7 +14,9 @@ class SmartScoring:
         self.habit_tracker = habit_tracker
         self._query_re_cache = {}
 
-    def _is_library(self, name_lower: str, desc_lower: str):
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _is_library(name_lower: str, desc_lower: str):
         """识别是否为库文件或开发包"""
         # 1. Check name pattern using pre-compiled regex (Fast)
         if _LIB_RE.search(name_lower):

@@ -274,7 +274,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       elevation: 0,
                       margin: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+                        borderRadius: BorderRadius.circular(16.0),
                         side: BorderSide(
                           color: colorScheme.outlineVariant.withValues(
                             alpha: 0.5,
@@ -292,7 +292,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           placeholder: (context, url) => const Skeleton(
                             width: 360,
                             height: 220,
-                            borderRadius: 20.0,
+                            borderRadius: 16.0,
                           ),
                           errorWidget: (context, url, error) =>
                               Container(
@@ -387,8 +387,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
             ),
             leading: widget.isEmbedded ? null : Semantics(
-              label: 'Back',
-              hint: 'Go back to the previous screen',
+              label: AppLocalizations.of(context)!.backSemanticsLabel,
+              hint: AppLocalizations.of(context)!.backSemanticsHint,
               button: true,
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
@@ -1012,23 +1012,31 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Flexible(
+            flex: 2,
             child: Text(
               label,
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
+            flex: 3,
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
               textAlign: TextAlign.end,
             ),
           ),

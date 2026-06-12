@@ -110,9 +110,17 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
                                 snapshot.data!.isEmpty
                             ? Scaffold(
                                 key: const ValueKey('error'),
-                                appBar: AppBar(title: const Text('Error')),
-                                body: const Center(
-                                    child: Text('App details not found')),
+                                appBar: AppBar(
+                                  title: Text(
+                                    AppLocalizations.of(context)!.errorTitle,
+                                  ),
+                                ),
+                                body: Center(
+                                  child: Text(
+                                    AppLocalizations.of(context)!
+                                        .appDetailsNotFound,
+                                  ),
+                                ),
                               )
                             : AppDetailsPage(
                                 key: const ValueKey('loaded'),

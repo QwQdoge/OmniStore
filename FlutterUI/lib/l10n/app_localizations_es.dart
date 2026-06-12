@@ -1078,4 +1078,35 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get trayInitFailedExiting =>
       'Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get appDetailsNotFound =>
+      'No se encontraron detalles de la aplicación';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'Espacio en disco: $free GB libres / $total GB en total';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | Personalizado: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => 'Atrás';
+
+  @override
+  String get backSemanticsHint => 'Volver a la pantalla anterior';
+
+  @override
+  String categorySemantics(String name) {
+    return 'Categoría: $name';
+  }
+
+  @override
+  String get temperatureRangeError => 'El valor debe estar entre 0.0 y 2.0';
 }

@@ -237,6 +237,7 @@ class BackendService {
   Socket? _daemonSocket;
   Timer? _healthCheckTimer;
   final int _daemonPort = 9081;
+  Completer<void> _daemonMutex = Completer<void>()..complete();
 
   Future<void> _startDaemonIfNeeded() async {
     if (kIsWeb) return;
@@ -294,19 +295,27 @@ class BackendService {
     });
   }
 
+  /// Murphy-proof: Thread-safe daemon communication with strict timeout and mutex
   Future<DaemonResult?> _sendToDaemon(String action, List<dynamic> args, [Map<String, dynamic>? kwargs]) async {
-    await _startDaemonIfNeeded();
-    if (_daemonSocket == null) {
-      debugPrint("Daemon socket is null, trying to run command standalone");
-      return null;
-    }
+    // 状态互斥：使用 Completer 链确保一次只有一个 daemon 通信，防止消息乱序
+    final previousMutex = _daemonMutex;
+    final currentMutex = Completer<void>();
+    _daemonMutex = currentMutex;
+    await previousMutex.future;
 
     try {
+      await _startDaemonIfNeeded();
+      if (_daemonSocket == null) {
+        debugPrint("Daemon socket is null, trying to run command standalone");
+        return null;
+      }
+
       final payload = jsonEncode({
         "action": action,
         "args": args,
         "kwargs": kwargs ?? {},
       });
+
       _daemonSocket!.write('$payload\n');
       await _daemonSocket!.flush();
 
@@ -317,35 +326,49 @@ class BackendService {
       sub = _daemonSocket!.cast<List<int>>().transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
         try {
           final res = jsonDecode(line);
-          if (res is Map && res.containsKey('status')) {
-            sub.cancel();
-            if (res['status'] == 'success') {
-              completer.complete(DaemonResult(
-                status: 'success',
-                response: res['response'],
-                stdout: res['stdout'] ?? '',
-              ));
-            } else {
-              completer.complete(DaemonResult(
-                status: 'error',
-                error: res['error'] ?? 'Daemon error',
-                stdout: res['stdout'] ?? '',
-              ));
+          if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
+            if (!completer.isCompleted) {
+              if (res['status'] == 'success') {
+                completer.complete(DaemonResult(
+                  status: 'success',
+                  response: res['response'],
+                  stdout: res['stdout'] ?? '',
+                ));
+              } else {
+                completer.complete(DaemonResult(
+                  status: 'error',
+                  error: res['error'] ?? 'Daemon error',
+                  stdout: res['stdout'] ?? '',
+                ));
+              }
             }
           }
         } catch (e) {
-          sub.cancel();
-          completer.completeError(e);
+          if (!completer.isCompleted) completer.completeError(e);
         }
       }, onError: (err) {
-        sub.cancel();
-        completer.completeError(err);
+        if (!completer.isCompleted) completer.completeError(err);
+      }, onDone: () {
+        if (!completer.isCompleted) completer.completeError(Exception("Daemon socket closed unexpectedly"));
       });
 
-      return await completer.future.timeout(const Duration(seconds: 60));
+      final result = await completer.future.timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          sub.cancel();
+          throw TimeoutException("Daemon communication timed out");
+        },
+      );
+      await sub.cancel();
+      return result;
     } catch (e) {
       debugPrint("Daemon transaction error: $e");
+      // If we have a socket error, it might be dead
+      _daemonSocket?.destroy();
+      _daemonSocket = null;
       return null;
+    } finally {
+      currentMutex.complete();
     }
   }
 
@@ -520,8 +543,20 @@ class BackendService {
         cancelOngoing: cancelOngoing,
       );
     }
+
+    // 边界防御：入参校验与防呆
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) return [];
+    if (trimmedQuery.length > 500) return []; // 防止超长字符串导致后端崩溃
+
+    // 防范 Shell 注入字符
+    if (RegExp(r'[;&|]').hasMatch(trimmedQuery)) {
+      debugPrint("Security: Illegal characters in search query");
+      return [];
+    }
+
     try {
-      final daemonRes = await _sendToDaemon("run_search", [query.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_search", [trimmedQuery, true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final results = <AppPackage>[];
         final parsed = _tryParseJson(daemonRes.stdout);
@@ -538,16 +573,6 @@ class BackendService {
       debugPrint("Daemon searchPackages error: $e. Falling back.");
     }
     try {
-      // 边界防御：入参校验与防呆
-      final trimmedQuery = query.trim();
-      if (trimmedQuery.length < 2 || trimmedQuery.length > 500) return [];
-
-      // 防范 Shell 注入字符
-      if (RegExp(r'[;&|]').hasMatch(trimmedQuery)) {
-        debugPrint("Security: Illegal characters in search query");
-        return [];
-      }
-
       // 状态互斥：取消先前的搜索任务
       if (cancelOngoing && activeSearchProcess != null) {
         await _killProcess(activeSearchProcess);
@@ -970,18 +995,18 @@ class BackendService {
     // 边界校验与防呆
     final trimmedName = n.trim();
     if (trimmedName.isEmpty) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 应用名称不能为空\"}");
+      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 应用名称不能为空\", \"level\": \"ERROR\"}");
     }
 
     // 入参防御：防止非法指令
     if (!["-I", "-R", "-U"].contains(f)) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 非法操作指令: $f\"}");
+      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 非法操作指令: $f\", \"level\": \"ERROR\"}");
     }
 
     // 注入防御
     if (RegExp(r'[;&|]').hasMatch(trimmedName) ||
         RegExp(r'[;&|]').hasMatch(s)) {
-      return Stream.value("[CALLBACK] {\"log\": \"[ERROR] 输入包含非法字符\"}");
+      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 输入包含非法字符\", \"level\": \"ERROR\"}");
     }
 
     List<String> args = [f, trimmedName, "--source", s.trim(), "--json"];
