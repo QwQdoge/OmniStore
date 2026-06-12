@@ -1,5 +1,6 @@
 import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
@@ -259,7 +260,7 @@ class _HomePageState extends State<HomePage> {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: InkWell(
         onTap: () => Navigator.push(
           context,
@@ -383,7 +384,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
     final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
 
     return Column(
@@ -408,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                 final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
                 return SizedBox(
                   width: 130,
-                  child: InkWell(
+                  child: AppCard(
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -416,7 +416,7 @@ class _HomePageState extends State<HomePage> {
                             AppDetailsPage(app: app, heroTag: heroTag),
                       ),
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: 16,
                     child: Column(
                       children: [
                         Hero(
@@ -425,8 +425,8 @@ class _HomePageState extends State<HomePage> {
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: app.icon != null

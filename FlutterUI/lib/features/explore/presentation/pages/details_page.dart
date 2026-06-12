@@ -274,7 +274,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                       elevation: 0,
                       margin: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+                        borderRadius: BorderRadius.circular(16.0),
                         side: BorderSide(
                           color: colorScheme.outlineVariant.withValues(
                             alpha: 0.5,
@@ -292,7 +292,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           placeholder: (context, url) => const Skeleton(
                             width: 360,
                             height: 220,
-                            borderRadius: 20.0,
+                            borderRadius: 16.0,
                           ),
                           errorWidget: (context, url, error) =>
                               Container(
@@ -317,33 +317,44 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           theme,
           AppLocalizations.of(context)!.details,
         ),
-        _buildInfoRow(
-          Icons.source_rounded,
-          AppLocalizations.of(context)!.source,
-          widget.app.primarySource,
-        ),
-        _buildInfoRow(
-          Icons.all_inclusive_rounded,
-          AppLocalizations.of(context)!.variant,
-          widget.app.sources.join(", "),
-        ),
-        _buildInfoRow(
-          Icons.verified_rounded,
-          AppLocalizations.of(context)!.version,
-          widget.app.version,
-        ),
-        if (_extraDetails?['developer'] != null)
-          _buildInfoRow(
-            Icons.person_rounded,
-            AppLocalizations.of(context)!.developer,
-            _extraDetails!['developer'],
+        Card(
+          color: colorScheme.surfaceContainerLow,
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  Icons.source_rounded,
+                  AppLocalizations.of(context)!.source,
+                  widget.app.primarySource,
+                ),
+                _buildInfoRow(
+                  Icons.all_inclusive_rounded,
+                  AppLocalizations.of(context)!.variant,
+                  widget.app.sources.join(", "),
+                ),
+                _buildInfoRow(
+                  Icons.verified_rounded,
+                  AppLocalizations.of(context)!.version,
+                  widget.app.version,
+                ),
+                if (_extraDetails?['developer'] != null)
+                  _buildInfoRow(
+                    Icons.person_rounded,
+                    AppLocalizations.of(context)!.developer,
+                    _extraDetails!['developer'],
+                  ),
+                if (_extraDetails?['license'] != null)
+                  _buildInfoRow(
+                    Icons.description_rounded,
+                    AppLocalizations.of(context)!.license,
+                    _extraDetails!['license'],
+                  ),
+              ],
+            ),
           ),
-        if (_extraDetails?['license'] != null)
-          _buildInfoRow(
-            Icons.description_rounded,
-            AppLocalizations.of(context)!.license,
-            _extraDetails!['license'],
-          ),
+        ),
         _buildDependencySection(theme),
       ],
     );
@@ -994,23 +1005,31 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Flexible(
+            flex: 2,
             child: Text(
               label,
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
+            flex: 3,
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
               textAlign: TextAlign.end,
             ),
           ),

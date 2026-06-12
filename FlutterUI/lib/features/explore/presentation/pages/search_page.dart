@@ -1,3 +1,4 @@
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -386,17 +387,20 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: isSelected && isDesktop
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-          : null,
-      child: ListTile(
-        leading: Hero(
-          tag: heroTag,
-          child: app.icon != null
+    return Semantics(
+      label: 'Search result: ${app.name} from ${app.primarySource}',
+      button: true,
+      child: AppCard(
+        color: isSelected && isDesktop
+            ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : null,
+        onTap: onTap,
+        child: ListTile(
+          leading: Hero(
+            tag: heroTag,
+            child: app.icon != null
               ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
                     imageUrl: app.icon!,
                     width: 40,
@@ -412,16 +416,16 @@ class SearchResultTile extends StatelessWidget {
           app.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(
-          app.description,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          subtitle: Text(
+            app.description,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: AppSourceTag(
+            source: app.primarySource,
+            mode: AppSourceTagMode.source,
+          ),
         ),
-        trailing: AppSourceTag(
-          source: app.primarySource,
-          mode: AppSourceTagMode.source,
-        ),
-        onTap: onTap,
       ),
     );
   }
