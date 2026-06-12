@@ -26,3 +26,10 @@ Wrapped the terminal output `Badge` in a `Selector<TaskController, bool>` to onl
 
 Replaced `setState` in the text input `onChanged` handler with `ValueListenableBuilder` tied to `_searchController` in `FlutterUI/lib/features/explore/presentation/pages/search_page.dart`.
 Previously, every keystroke triggered a full-page rebuild just to determine whether to display the "Clear" trailing button in the `SearchBar`. By removing `onChanged` and moving the trailing `IconButton` into a `ValueListenableBuilder<TextEditingValue>`, state updates are now correctly isolated to the clear button itself. This measurably improves responsiveness during active typing by eliminating unnecessary widget tree traversal and rendering.
+## 2024-06-12 - Search UI Responsiveness
+
+Learning:
+Replacing `setState` in text input `onChanged` with `ValueNotifier` prevents full-page rebuilds per keystroke by isolating state updates to specific sub-components like 'Clear' buttons.
+
+Action:
+Replaced TextEditingValue listenable with _hasSearchText ValueNotifier and implemented onChanged in SearchPage.dart.
