@@ -94,7 +94,7 @@ async def handle_daemon_client(backend, reader, writer):
             try:
                 cmd_data = json.loads(line)
             except Exception as ex:
-                writer.write(json.dumps({"error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
+                writer.write(json.dumps({"status": "error", "error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
                 await writer.drain()
                 continue
             
@@ -108,6 +108,23 @@ async def handle_daemon_client(backend, reader, writer):
                 args = cmd_data.get("args", [])
                 kwargs = cmd_data.get("kwargs", {})
                 
+                # Boundary defense: only allow whitelist actions to prevent remote code execution
+                ALLOWED_ACTIONS = [
+                    "run_search", "run_install", "run_uninstall", "run_update",
+                    "run_check_updates", "run_recommendations", "run_app_details",
+                    "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
+                    "run_remove_custom_repo", "run_launch", "run_locate",
+                    "run_get_storage_info", "run_clean_system", "run_get_essentials",
+                    "run_import_packages", "run_export_packages",
+                    "config.data", "env.check_env"
+                ]
+
+                if action not in ALLOWED_ACTIONS:
+                    sys.stdout = old_stdout
+                    writer.write(json.dumps({"status": "error", "error": f"Forbidden action: {action}"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                    continue
+
                 # Resolve nested attributes recursively, e.g. "config.data"
                 obj = backend
                 parts = action.split('.')
@@ -122,7 +139,7 @@ async def handle_daemon_client(backend, reader, writer):
                     # If it's a callable (method or function), call it
                     if callable(obj):
                         if asyncio.iscoroutinefunction(obj):
-                            res = await obj(*args, **kwargs)
+                            res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
                         else:
                             res = obj(*args, **kwargs)
                     else:
@@ -139,13 +156,18 @@ async def handle_daemon_client(backend, reader, writer):
                     }, ensure_ascii=False).encode('utf-8') + b'\n')
                 else:
                     sys.stdout = old_stdout
-                    writer.write(json.dumps({"error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+                    writer.write(json.dumps({"status": "error", "error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
             except Exception as e:
                 sys.stdout = old_stdout
-                writer.write(json.dumps({"error": str(e)}).encode('utf-8') + b'\n')
+                import traceback
+                error_trace = traceback.format_exc()
+                logging.error(f"Daemon action error: {e}\n{error_trace}")
+                writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
             await writer.drain()
-    except Exception as e:
+    except asyncio.CancelledError:
         pass
+    except Exception as e:
+        logging.error(f"Daemon client handler fatal error: {e}")
     finally:
         try:
             writer.close()
@@ -956,6 +978,22 @@ class CLIArguments(BaseModel):
 
 async def main():
     setattr(main, "json_mode_active", "--json" in sys.argv)
+
+    # Murphy-proof: Register signal handlers for graceful shutdown
+    loop = asyncio.get_running_loop()
+    stop_event = asyncio.Event()
+
+    def _shutdown(sig_name):
+        logging.info(f"Received exit signal {sig_name}. Shutting down...")
+        stop_event.set()
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        try:
+            loop.add_signal_handler(sig, lambda s=sig: _shutdown(s.name))
+        except NotImplementedError:
+            # Signal handlers not supported on Windows loop
+            pass
+
     parser = argparse.ArgumentParser(description="Omnistore Backend")
     
     cmd = parser.add_mutually_exclusive_group()
@@ -1181,8 +1219,21 @@ async def main():
                         lambda r, w: handle_daemon_client(backend, r, w),
                         '127.0.0.1', 9081
                     )
+                    logging.info("Python daemon started on 127.0.0.1:9081")
                     async with server:
-                        await server.serve_forever()
+                        # Murphy-proof: Wait for stop event or server close
+                        serve_task = asyncio.create_task(server.serve_forever())
+                        wait_task = asyncio.create_task(stop_event.wait())
+
+                        done, pending = await asyncio.wait(
+                            [serve_task, wait_task],
+                            return_when=asyncio.FIRST_COMPLETED
+                        )
+
+                        for task in pending:
+                            task.cancel()
+
+                        logging.info("Stopping daemon server...")
 
             sys.stdout.flush()
         except Exception as e:
