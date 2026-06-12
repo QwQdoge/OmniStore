@@ -1,4 +1,4 @@
-import "package:flutter/services.dart";
+
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:frontend/services/backend_service.dart";
@@ -8,20 +8,20 @@ import "package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/network/github_client.dart';
-import 'package:frontend/widgets/smooth_progress_bar.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
-import 'package:frontend/widgets/github_star_badge.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+
+import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_details_actions.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_dependency_section.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
 
 // Feature: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
 // Feature: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
@@ -209,12 +209,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(theme),
+        AppDetailsHeader(
+          app: widget.app,
+          extraDetails: _extraDetails,
+          selectedSource: _selectedSource,
+          isAppInstalled: _isAppInstalled,
+          githubRepositoryUrl: _githubRepositoryUrl,
+          variantScrollController: _variantScrollController,
+          heroTag: widget.heroTag,
+          hasCapability: _hasCapability,
+          getVersionForSource: _getVersionForSource,
+          isSourceInstalled: _isSourceInstalled,
+          onSourceSelected: (String newValue) {
+            setState(() {
+              _selectedSource = newValue;
+              _isAppInstalled = _isSourceInstalled(newValue);
+            });
+          },
+        ),
         const SizedBox(height: 24),
-        _buildActionArea(colorScheme),
+        AppDetailsActions(
+          appName: widget.app.name,
+          isAppInstalled: _isAppInstalled,
+          onLocateApp: _locateApp,
+          onHandleAction: _handleAction,
+          onLaunchApp: _launchApp,
+          onCancelAction: _cancelAction,
+        ),
         const SizedBox(height: 32),
         const Divider(),
-        _buildSectionTitle(theme, AppLocalizations.of(context)!.about),
+        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: _isLoadingDetails
@@ -247,11 +271,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-          _buildSectionTitle(
-            theme,
-            AppLocalizations.of(context)!.screenshots,
+          AppDetailsSectionTitle(
+            title: AppLocalizations.of(context)!.screenshots,
           ),
           const SizedBox(height: 12),
+          AppScreenshots(
+            screenshots: _extraDetails!['screenshots'] as List,
+            scrollController: _screenshotScrollController,
+            onShowScreenshotViewer: _showScreenshotViewer,
           SizedBox(
             height: 236,
             child: Scrollbar(
@@ -313,56 +340,40 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
           const SizedBox(height: 32),
         ],
-        _buildSectionTitle(
-          theme,
-          AppLocalizations.of(context)!.details,
+        AppDetailsSectionTitle(
+          title: AppLocalizations.of(context)!.details,
         ),
-        Card(
-          elevation: 0,
-          color: theme.colorScheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              children: [
-                _buildInfoRow(
-                  Icons.source_rounded,
-                  AppLocalizations.of(context)!.source,
-                  widget.app.primarySource,
-                ),
-                _buildInfoRow(
-                  Icons.all_inclusive_rounded,
-                  AppLocalizations.of(context)!.variant,
-                  widget.app.sources.join(", "),
-                ),
-                _buildInfoRow(
-                  Icons.verified_rounded,
-                  AppLocalizations.of(context)!.version,
-                  widget.app.version,
-                ),
-                if (_extraDetails?['developer'] != null)
-                  _buildInfoRow(
-                    Icons.person_rounded,
-                    AppLocalizations.of(context)!.developer,
-                    _extraDetails!['developer'],
-                  ),
-                if (_extraDetails?['license'] != null)
-                  _buildInfoRow(
-                    Icons.description_rounded,
-                    AppLocalizations.of(context)!.license,
-                    _extraDetails!['license'],
-                  ),
-              ],
-            ),
-          ),
+        AppDetailsInfoRow(
+          icon: Icons.source_rounded,
+          label: AppLocalizations.of(context)!.source,
+          value: widget.app.primarySource,
         ),
-        _buildDependencySection(theme),
+        AppDetailsInfoRow(
+          icon: Icons.all_inclusive_rounded,
+          label: AppLocalizations.of(context)!.variant,
+          value: widget.app.sources.join(", "),
+        ),
+        AppDetailsInfoRow(
+          icon: Icons.verified_rounded,
+          label: AppLocalizations.of(context)!.version,
+          value: widget.app.version,
+        ),
+        if (_extraDetails?['developer'] != null)
+          AppDetailsInfoRow(
+            icon: Icons.person_rounded,
+            label: AppLocalizations.of(context)!.developer,
+            value: _extraDetails!['developer'],
+          ),
+        if (_extraDetails?['license'] != null)
+          AppDetailsInfoRow(
+            icon: Icons.description_rounded,
+            label: AppLocalizations.of(context)!.license,
+            value: _extraDetails!['license'],
+          ),
+        AppDependencySection(
+          variant: _getVariantForSource(_selectedSource),
+          hasCapability: _hasCapability,
+        ),
       ],
     );
   }
@@ -508,140 +519,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildActionArea(ColorScheme colorScheme) {
-    Widget content;
-    if (context.select((TaskController task) => task.isBusy)) {
-      content = Container(
-        key: const ValueKey('busy'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
-        child: Consumer<TaskController>(
-          builder: (context, task, _) => SmoothProgressBar(
-            taskState: TaskState(
-              id: "active",
-              packageName: widget.app.name,
-              status: TaskStatus.downloading,
-              progress: task.progress ?? 0.0,
-              stage: task.status,
-              speed: task.speed,
-            ),
-            onCancel: _cancelAction,
-          ),
-        ),
-      );
-    } else if (_isAppInstalled) {
-      content = Row(
-        key: const ValueKey('installed'),
-        children: [
-          Semantics(
-            label: AppLocalizations.of(context)!.locateInstallation,
-            button: true,
-            child: IconButton.filledTonal(
-              onPressed: _locateApp,
-              icon: const Icon(Icons.folder_open_rounded),
-              tooltip: AppLocalizations.of(context)!.locateInstallation,
-              style: IconButton.styleFrom(
-                minimumSize: const Size(56, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: SizedBox(
-              height: 56,
-              child: Semantics(
-                label: AppLocalizations.of(context)!.uninstall,
-                button: true,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colorScheme.error,
-                    side: BorderSide(
-                      color: colorScheme.error.withValues(alpha: 0.5),
-                      width: 1,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                  ),
-                  onPressed: () => _handleAction("-R"),
-                  child: Text(
-                    AppLocalizations.of(context)!.uninstall,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 3,
-            child: SizedBox(
-              height: 56,
-              child: Semantics(
-                label: AppLocalizations.of(context)!.launch,
-                button: true,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                  ),
-                  onPressed: _launchApp,
-                  icon: const Icon(Icons.rocket_launch_rounded),
-                  label: Text(
-                    AppLocalizations.of(context)!.launch,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    } else {
-      content = SizedBox(
-        key: const ValueKey('install'),
-        width: double.infinity,
-        height: 56,
-        child: Semantics(
-          label: AppLocalizations.of(context)!.install,
-          button: true,
-          child: FilledButton.icon(
-            style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-            ),
-            onPressed: () => _handleAction("-I"),
-            icon: const Icon(Icons.download_rounded),
-            label: Text(
-              AppLocalizations.of(context)!.install,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: content,
-    );
-  }
-
   String? get _githubRepositoryUrl {
     final candidates = <String?>[
       widget.app.url,
@@ -666,185 +543,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       }
     }
     return null;
-  }
-
-  Widget _buildHeader(ThemeData theme) {
-    final iconUrl = widget.app.icon ?? _extraDetails?['icon'];
-    final colorScheme = theme.colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Hero(
-          tag:
-              widget.heroTag ??
-              'app-icon-${widget.app.name}-${widget.app.primarySource}',
-          child: Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            alignment: Alignment.center,
-            child: iconUrl != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(16.0),
-                    child: CachedNetworkImage(
-                      imageUrl: iconUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 200,
-                      memCacheHeight: 200,
-                      placeholder: (context, url) => const Skeleton(
-                        width: 100,
-                        height: 100,
-                        borderRadius: 24.0,
-                      ),
-                    ),
-                  )
-                : Text(
-                    widget.app.name[0].toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 48,
-                      color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-          ),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.app.name,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.0,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded, size: 18),
-                    tooltip: AppLocalizations.of(context)!.copyName,
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: widget.app.name));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.nameCopied,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (_githubRepositoryUrl != null &&
-                      _hasCapability('has_rating'))
-                    GitHubStarBadge(
-                      client: context.read<GitHubClient>(),
-                      repositoryUrl: _githubRepositoryUrl,
-                    ),
-                  if (_isAppInstalled)
-                    AppSourceTag(
-                      source: _selectedSource,
-                      mode: AppSourceTagMode.ready,
-                    ),
-                  AppSourceTag(
-                    source: _selectedSource,
-                    mode: AppSourceTagMode.trust,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (_hasCapability('has_versions'))
-                Scrollbar(
-                  controller: _variantScrollController,
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
-                    controller: _variantScrollController,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: SegmentedButton<String>(
-                      segments:
-                          <String>{
-                            for (var v in widget.app.variants) v.source,
-                            if (_extraDetails != null &&
-                                _extraDetails!['variants'] != null)
-                              for (var v in _extraDetails!['variants'])
-                                v['source'].toString(),
-                            _selectedSource,
-                          }.map((String source) {
-                            final version = _getVersionForSource(source);
-                            return ButtonSegment<String>(
-                              value: source,
-                              label: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      source,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    if (version != null)
-                                      Text(
-                                        "v$version",
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w500,
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant
-                                              .withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              icon: _getSourceIcon(source),
-                            );
-                          }).toList(),
-                      selected: {_selectedSource},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        final newValue = newSelection.first;
-                        setState(() {
-                          _selectedSource = newValue;
-                          _isAppInstalled = _isSourceInstalled(newValue);
-                        });
-                      },
-                      showSelectedIcon: false,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(ThemeData theme, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, top: 16),
-      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
-    );
   }
 
   String? _getVersionForSource(String source) {
@@ -877,64 +575,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       }
     }
     return false;
-  }
-
-  Widget _buildDependencySection(ThemeData theme) {
-    final variant = _getVariantForSource(_selectedSource);
-    if (variant == null) {
-      return const SizedBox.shrink();
-    }
-    final deps = variant['depends'] as List?;
-    final dlSize = variant['download_size'];
-    final insSize = variant['installed_size'];
-    if ((deps == null || deps.isEmpty) && dlSize == null && insSize == null) {
-      return const SizedBox.shrink();
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        _buildSectionTitle(theme, AppLocalizations.of(context)!.installInfo),
-        if (_hasCapability('has_size') && dlSize != null)
-          _buildInfoRow(
-            Icons.downloading_rounded,
-            AppLocalizations.of(context)!.downloadSize,
-            dlSize.toString(),
-          ),
-        if (_hasCapability('has_size') && insSize != null)
-          _buildInfoRow(
-            Icons.storage_rounded,
-            AppLocalizations.of(context)!.installedSize,
-            insSize.toString(),
-          ),
-        if (deps != null && deps.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.dependenciesCount(deps.length),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: deps
-                .map(
-                  (d) => Chip(
-                    label: Text(
-                      d.toString(),
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ],
-    );
   }
 
   Future<void> _showAIExplainDialog() async {
@@ -982,23 +622,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         future: context.read<AIRepository>().aiDetectConflicts(widget.app.name),
       ),
     );
-  }
-
-  Widget? _getSourceIcon(String source) {
-    IconData? iconData;
-    if (source == "Pacman" || source == "Native") {
-      iconData = Icons.apps_rounded;
-    } else if (source == "AUR") {
-      iconData = Icons.cloud_outlined;
-    } else if (source == "Flatpak") {
-      iconData = Icons.inventory_2_outlined;
-    } else if (source == "AppImage") {
-      iconData = Icons.insert_drive_file_outlined;
-    }
-    if (iconData == null) {
-      return null;
-    }
-    return Icon(iconData, size: 16);
   }
 
   void _showScreenshotViewer(String url) {
