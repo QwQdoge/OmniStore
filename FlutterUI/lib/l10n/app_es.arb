@@ -84,7 +84,7 @@
   "@ready": {
     "description": "Description for ready"
   },
-  "resultsFound": "{count} resultados encontrados",
+  "resultsFound": "{count, plural, =1{1 resultado encontrado} other{{count} resultados encontrados}}",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "Se encontraron {count} actualizaciones",
+  "foundUpdates": "{count, plural, =1{Se encontró 1 actualización} other{Se encontraron {count} actualizaciones}}",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -324,7 +324,7 @@
   "@exit": {
     "description": "Description for exit"
   },
-  "trayTooltipUpdates": "OmniStore: Se encontraron {count} actualizaciones",
+  "trayTooltipUpdates": "{count, plural, =1{OmniStore: Se encontró 1 actualización} other{OmniStore: Se encontraron {count} actualizaciones}}",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
     "placeholders": {
@@ -473,7 +473,7 @@
   "@selectExportLocation": {
     "description": "selectExportLocation"
   },
-  "exportSuccess": "Exportación exitosa: {count} paquetes",
+  "exportSuccess": "{count, plural, =1{Exportación exitosa: 1 paquete} other{Exportación exitosa: {count} paquetes}}",
   "@exportSuccess": {
     "placeholders": {
       "count": {
@@ -493,7 +493,7 @@
   "@importBackup": {
     "description": "importBackup"
   },
-  "importBackupConfirm": "Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?",
+  "importBackupConfirm": "{count, plural, =1{Se leyó 1 paquete de la copia. ¿Iniciar recuperación?} other{Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?}}",
   "@importBackupConfirm": {
     "placeholders": {
       "count": {
@@ -869,7 +869,7 @@
   "@importPackages": {
     "description": "Description for importPackages"
   },
-  "importPackagesConfirm": "Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?",
+  "importPackagesConfirm": "{count, plural, =1{Se leyó 1 paquete del archivo. ¿Iniciar descarga?} other{Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?}}",
   "@importPackagesConfirm": {
     "placeholders": {
       "count": {
@@ -953,7 +953,7 @@
   "@installedSize": {
     "description": "Description for installedSize"
   },
-  "dependenciesCount": "Dependencias ({count})",
+  "dependenciesCount": "{count, plural, =1{Dependencia (1)} other{Dependencias ({count})}}",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -1013,7 +1013,7 @@
   "@notificationTitle": {
     "description": "Description for notificationTitle"
   },
-  "notificationBody": "Hay {count} aplicaciones disponibles para actualizar",
+  "notificationBody": "{count, plural, =1{Hay 1 aplicación disponible para actualizar} other{Hay {count} aplicaciones disponibles para actualizar}}",
   "@notificationBody": {
     "placeholders": {
       "count": {
@@ -1328,7 +1328,7 @@
   "autoUpdate": "Actualización automática silenciosa",
   "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
   "checkIntervalTitle": "Frecuencia de comprobación",
-  "checkIntervalSubtitle": "Comprobar cada {hours} horas",
+  "checkIntervalSubtitle": "{hours, plural, =1{Comprobar cada hora} other{Comprobar cada {hours} horas}}",
   "typography": "Tipografía",
   "fontFamily": "Familia de fuentes",
   "fontScale": "Escala de fuente",

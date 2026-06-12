@@ -441,7 +441,7 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
-  "systemCleaningDesc": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
+  "systemCleaningDesc": "孤立パッケージの削除と pacman キャッシュのクリーンアップ",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },

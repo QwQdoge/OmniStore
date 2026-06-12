@@ -441,7 +441,7 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "删除孤儿软件包并清理 pacman 缓存",
+  "systemCleaningDesc": "清理孤儿软件包与 pacman 缓存",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -789,7 +789,7 @@
   "@aiAssistant": {
     "description": "Description for aiAssistant"
   },
-  "aiAssistantDesc": "开启 AI 辅助搜索、应用解释与错误诊断。",
+  "aiAssistantDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
   "@aiAssistantDesc": {
     "description": "Description for aiAssistantDesc"
   },

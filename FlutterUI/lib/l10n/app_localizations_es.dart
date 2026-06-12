@@ -73,7 +73,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count resultados encontrados';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados encontrados',
+      one: '1 resultado encontrado',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -219,7 +225,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return 'Se encontraron $count actualizaciones';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se encontraron $count actualizaciones',
+      one: 'Se encontró 1 actualización',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -251,7 +263,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: Se encontraron $count actualizaciones';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'OmniStore: Se encontraron $count actualizaciones',
+      one: 'OmniStore: Se encontró 1 actualización',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -363,7 +381,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return 'Exportación exitosa: $count paquetes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exportación exitosa: $count paquetes',
+      one: 'Exportación exitosa: 1 paquete',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -376,7 +400,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return 'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?',
+      one: 'Se leyó 1 paquete de la copia. ¿Iniciar recuperación?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -669,7 +700,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String importPackagesConfirm(int count) {
-    return 'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?',
+      one: 'Se leyó 1 paquete del archivo. ¿Iniciar descarga?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -734,7 +772,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return 'Dependencias ($count)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dependencias ($count)',
+      one: 'Dependencia (1)',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -780,7 +824,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return 'Hay $count aplicaciones disponibles para actualizar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count aplicaciones disponibles para actualizar',
+      one: 'Hay 1 aplicación disponible para actualizar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1031,7 +1081,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return 'Comprobar cada $hours horas';
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Comprobar cada $hours horas',
+      one: 'Comprobar cada hora',
+    );
+    return '$_temp0';
   }
 
   @override

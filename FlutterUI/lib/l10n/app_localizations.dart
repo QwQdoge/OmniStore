@@ -232,7 +232,7 @@ abstract class AppLocalizations {
   /// No description provided for @resultsFound.
   ///
   /// In en, this message translates to:
-  /// **'{count} results'**
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
   String resultsFound(int count);
 
   /// Description for noResults
@@ -514,7 +514,7 @@ abstract class AppLocalizations {
   /// No description provided for @foundUpdates.
   ///
   /// In en, this message translates to:
-  /// **'Found {count} updates'**
+  /// **'{count, plural, =1{Found 1 update} other{Found {count} updates}}'**
   String foundUpdates(int count);
 
   /// Description for updateAll
@@ -574,7 +574,7 @@ abstract class AppLocalizations {
   /// Description for trayTooltipUpdates
   ///
   /// In en, this message translates to:
-  /// **'OmniStore: Found {count} updates'**
+  /// **'{count, plural, =1{OmniStore: Found 1 update} other{OmniStore: Found {count} updates}}'**
   String trayTooltipUpdates(int count);
 
   /// Description for trayTooltipUpToDate
@@ -778,7 +778,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Export successful: {count} packages'**
+  /// **'{count, plural, =1{Export successful: 1 package} other{Export successful: {count} packages}}'**
   String exportSuccess(int count);
 
   /// No description provided for @exportFailed.
@@ -796,7 +796,7 @@ abstract class AppLocalizations {
   /// No description provided for @importBackupConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Read {count} packages from backup. Start batch recovery?'**
+  /// **'{count, plural, =1{Read 1 package from backup. Start recovery?} other{Read {count} packages from backup. Start batch recovery?}}'**
   String importBackupConfirm(int count);
 
   /// startRecovery
@@ -1342,7 +1342,7 @@ abstract class AppLocalizations {
   /// No description provided for @importPackagesConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Read {count} packages from file. Start batch download?'**
+  /// **'{count, plural, =1{Read 1 package from file. Start download?} other{Read {count} packages from file. Start batch download?}}'**
   String importPackagesConfirm(int count);
 
   /// Description for allDownloads
@@ -1456,7 +1456,7 @@ abstract class AppLocalizations {
   /// No description provided for @dependenciesCount.
   ///
   /// In en, this message translates to:
-  /// **'Dependencies ({count})'**
+  /// **'{count, plural, =1{Dependency (1)} other{Dependencies ({count})}}'**
   String dependenciesCount(int count);
 
   /// Description for runningInBackground
@@ -1540,7 +1540,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationBody.
   ///
   /// In en, this message translates to:
-  /// **'{count} applications are available for update'**
+  /// **'{count, plural, =1{1 application is available for update} other{{count} applications are available for update}}'**
   String notificationBody(int count);
 
   /// Description for preparingUpdate
@@ -1972,7 +1972,7 @@ abstract class AppLocalizations {
   /// No description provided for @checkIntervalSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Automatically check every {hours} hours'**
+  /// **'{hours, plural, =1{Automatically check every hour} other{Automatically check every {hours} hours}}'**
   String checkIntervalSubtitle(int hours);
 
   /// Title for typography settings
