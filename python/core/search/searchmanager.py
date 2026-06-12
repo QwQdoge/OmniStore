@@ -208,26 +208,10 @@ class SearchManager:
         source_weights = {s: self.habit_tracker.get_source_weight(s) for s in potential_sources}
         query_re = re.compile(rf"\b{re.escape(query_lower)}")
 
-        # AI Ranking (Optional)
-        ai_ranked_names = []
-        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True) and len(query) >= 3:
-            try:
-                # Ask AI to rank the top results
-                candidates = [f"{i['name']} ({i['source']})" for i in combined[:10]]
-                # ⚡ Bolt: Use injected AIAssistant to avoid redundant imports and instantiations (~50-100ms saved)
-                ai = self.ai_assistant
-                if candidates and ai:
-                    prompt = f"Rank these apps for query '{query}': {', '.join(candidates)}"
-                    # ⚡ Bolt: Wrapped with strict timeout to prevent slow LLM from blocking results
-                    try:
-                        res = await asyncio.wait_for(ai.recommend_apps(prompt, combined[:10]), timeout=1.5)
-                        # Parse AI response for preferred names
-                        ai_ranked_names = [n.strip() for n in res.split("\n") if n.strip()]
-                    except asyncio.TimeoutError:
-                        logging.warning("AI Ranking timed out (1.5s)")
-            except Exception: pass
-
         for item in combined:
+            # Restoration: Ensure _norm_name is set for scoring and merging
+            item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
+
             # Base smart score
             base_score = self.smart_scoring._calculate_smart_score(
                 item, query_lower, priority_map, source_weights, query_re
@@ -238,15 +222,31 @@ class SearchManager:
             source_weight: float = src_obj.weight if src_obj is not None else 1.0
             item['_smart_score'] = base_score * source_weight
 
-            # AI boost
-            if item['name'] in ai_ranked_names:
-                item['_smart_score'] *= 1.5
-
-            # Restoration: Ensure _norm_name is set for merge_duplicates
-            item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
-
         combined.sort(key=lambda x: x['_smart_score'], reverse=True)
         merged = self.merge_duplicates(combined)
+
+        # ⚡ Bolt: Move AI Ranking after initial scoring and merging
+        # This ensures the AI ranks unique, relevant results instead of raw source output.
+        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True) and len(query) >= 3:
+            try:
+                # Ask AI to rank the top results from the merged list
+                candidates_list = merged[:10]
+                candidates_str = [f"{i['name']} ({i['primary_source']})" for i in candidates_list]
+                ai = self.ai_assistant
+                if candidates_str and ai:
+                    prompt = f"Rank these apps for query '{query}': {', '.join(candidates_str)}"
+                    try:
+                        res = await asyncio.wait_for(ai.recommend_apps(prompt, candidates_list), timeout=1.5)
+                        ai_ranked_names = {n.strip() for n in res.split("\n") if n.strip()}
+
+                        # Apply AI boost to merged results and re-sort
+                        for item in merged:
+                            if item['name'] in ai_ranked_names:
+                                item['_smart_score'] *= 1.5
+                        merged.sort(key=lambda x: x['_smart_score'], reverse=True)
+                    except asyncio.TimeoutError:
+                        logging.warning("AI Ranking timed out (1.5s)")
+            except Exception: pass
 
         exact_match_idx = -1
         for idx, item in enumerate(merged):
@@ -318,13 +318,14 @@ class SearchManager:
             return []
 
     async def _enrich_metadata(self, items: List[Dict]):
-        # Tiered enrichment: top 5 with network, rest without network (cache only)
+        # ⚡ Bolt: Reduced network enrichment from 5 to 3 to improve perceived latency
+        # Tiered enrichment: top 3 with network, rest without network (cache only)
         tasks = []
         for i, item in enumerate(items):
             if item.get("icon") and item.get("description") and len(item.get("description", "")) >= 50:
                 continue
 
-            use_network = (i < 5)
+            use_network = (i < 3)
             tasks.append(self._enrich_single(item, use_network=use_network))
 
         if tasks:
@@ -374,7 +375,8 @@ class SearchManager:
         seen: Dict[str, Dict] = {}
         for item in items:
             raw_name = item.get('name', 'unknown')
-            norm_key = item.get('_norm_name') or self._normalize_app_name(raw_name)
+            # ⚡ Bolt: Using pre-calculated _norm_name to avoid redundant calls
+            norm_key = item.get('_norm_name')
             source = item.get('source', 'Unknown')
             is_installed = item.get('installed', False)
 
