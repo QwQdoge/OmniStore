@@ -2046,6 +2046,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System tray initialization failed. Exiting to prevent background errors.'**
   String get trayInitFailedExiting;
+
+  /// General error title
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorTitle;
+
+  /// Message shown when app details cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'App details not found'**
+  String get appDetailsNotFound;
+
+  /// No description provided for @diskSpaceInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk Space: {free} GB free / {total} GB total'**
+  String diskSpaceInfo(String free, String total);
+
+  /// No description provided for @cacheTypeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacman: {pacman} MB | Flatpak: {flatpak} MB | Custom: {custom} MB'**
+  String cacheTypeInfo(String pacman, String flatpak, String custom);
+
+  /// Accessibility label for back button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backSemanticsLabel;
+
+  /// Accessibility hint for back button
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to the previous screen'**
+  String get backSemanticsHint;
+
+  /// No description provided for @categorySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Category: {name}'**
+  String categorySemantics(String name);
+
+  /// Error message for invalid temperature value
+  ///
+  /// In en, this message translates to:
+  /// **'Value must be between 0.0 and 2.0'**
+  String get temperatureRangeError;
 }
 
 class _AppLocalizationsDelegate

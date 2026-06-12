@@ -85,7 +85,7 @@ class _CategoryCard extends StatelessWidget {
         ),
       ),
       child: Semantics(
-        label: 'Category: ${category.name}',
+        label: AppLocalizations.of(context)!.categorySemantics(category.name),
         button: true,
         child: InkWell(
           onTap: () {

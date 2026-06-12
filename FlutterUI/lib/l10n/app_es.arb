@@ -1372,5 +1372,48 @@
   "trayInitFailedExiting": "Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.",
   "@trayInitFailedExiting": {
     "description": "Error message when system tray fails to initialize"
-  }
+  },
+  "errorTitle": "Error",
+  "@errorTitle": {
+    "description": "General error title"
+  },
+  "appDetailsNotFound": "No se encontraron detalles de la aplicación",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "Espacio en disco: {free} GB libres / {total} GB en total",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | Personalizado: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "Atrás",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "Volver a la pantalla anterior",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "Categoría: {name}",
+  "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0"
 }

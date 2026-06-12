@@ -1070,4 +1070,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get trayInitFailedExiting =>
       'System tray initialization failed. Exiting to prevent background errors.';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get appDetailsNotFound => 'App details not found';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'Disk Space: $free GB free / $total GB total';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | Custom: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => 'Back';
+
+  @override
+  String get backSemanticsHint => 'Go back to the previous screen';
+
+  @override
+  String categorySemantics(String name) {
+    return 'Category: $name';
+  }
+
+  @override
+  String get temperatureRangeError => 'Value must be between 0.0 and 2.0';
 }

@@ -369,8 +369,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               ),
             ),
             leading: widget.isEmbedded ? null : Semantics(
-              label: 'Back',
-              hint: 'Go back to the previous screen',
+              label: AppLocalizations.of(context)!.backSemanticsLabel,
+              hint: AppLocalizations.of(context)!.backSemanticsHint,
               button: true,
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
