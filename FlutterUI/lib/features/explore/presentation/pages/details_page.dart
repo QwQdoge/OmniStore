@@ -205,7 +205,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, SettingsController settings) {
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -353,7 +353,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final settings = context.watch<SettingsController>();
+    final isAIEnabled = context.select<SettingsController, bool>((s) => s.isAIEnabled);
 
 
     return Scaffold(
@@ -394,7 +394,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     },
                   ),
                 ),
-              if (settings.isAIEnabled) ...[
+              if (isAIEnabled) ...[
                 Semantics(
                   label: AppLocalizations.of(context)!.aiPromptExplain,
                   button: true,
@@ -455,7 +455,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         body: SelectionArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: _buildMainContent(context, colorScheme, theme, settings),
+            child: _buildMainContent(context, colorScheme, theme),
           ),
         ),
       ),

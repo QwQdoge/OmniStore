@@ -49,8 +49,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
-    final settings = context.watch<SettingsController>();
+    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -63,7 +62,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.fastOutSlowIn,
           child: KeyedSubtree(
-            key: ValueKey<int>(nav.selectedIndex),
+            key: ValueKey<int>(selectedIndex),
             child: pageChild,
           ),
         );
@@ -105,10 +104,10 @@ class AdaptiveNavigationShell extends StatelessWidget {
           ];
 
           return PopScope(
-            canPop: nav.selectedIndex == destinations.first.index,
+            canPop: selectedIndex == destinations.first.index,
             onPopInvokedWithResult: (didPop, result) {
               if (didPop) return;
-              nav.setIndex(destinations.first.index);
+              context.read<NavigationController>().setIndex(destinations.first.index);
             },
             child: Scaffold(
               backgroundColor: scheme.surface,
@@ -116,7 +115,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 title: Text(pageTitle),
                 centerTitle: false,
                 actions: [
-                  if (showSearch && nav.selectedIndex != 2)
+                  if (showSearch && selectedIndex != 2)
                     IconButton(
                       onPressed: onSearch,
                       tooltip: l10n.search,
@@ -146,9 +145,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 children: [
                   taskBar,
                   NavigationBar(
-                    selectedIndex: _navBarIndex(compactDests, nav.selectedIndex),
+                    selectedIndex: _navBarIndex(compactDests, selectedIndex),
                     onDestinationSelected: (i) =>
-                        nav.setIndex(compactDests[i].index),
+                        context.read<NavigationController>().setIndex(compactDests[i].index),
                     destinations: [
                       for (final d in compactDests)
                         NavigationDestination(
@@ -166,7 +165,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
         // ─── Desktop Layout (Navigation Rail) ───
         final railDestinations = [...destinations, ...secondaryDestinations];
-        final isExpanded = settings.isRailExpanded;
+        final isExpanded = context.select<SettingsController, bool>((s) => s.isRailExpanded);
 
         return Scaffold(
           backgroundColor: scheme.surface,
@@ -176,13 +175,13 @@ class AdaptiveNavigationShell extends StatelessWidget {
               // if (useWindowTitleBar)
               //   WindowTitleBar(
               //     title: pageTitle,
-              //     showSearch: showSearch && nav.selectedIndex != 2,
+              //     showSearch: showSearch && selectedIndex != 2,
               //     onSearchPressed: onSearch,
               //   )
               // else
               _DesktopTopBar(
                 title: pageTitle,
-                showSearch: showSearch && nav.selectedIndex != 2,
+                showSearch: showSearch && selectedIndex != 2,
                 onSearch: onSearch,
               ),
               taskBar,
@@ -196,15 +195,15 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       child: NavigationRail(
                         extended: isExpanded,
                         minExtendedWidth: 180,
-                        selectedIndex: _railIndex(railDestinations, nav.selectedIndex),
+                        selectedIndex: _railIndex(railDestinations, selectedIndex),
                         onDestinationSelected: (i) =>
-                            nav.setIndex(railDestinations[i].index),
+                            context.read<NavigationController>().setIndex(railDestinations[i].index),
                         labelType: isExpanded
                             ? NavigationRailLabelType.none
                             : NavigationRailLabelType.all,
                         leading: _HamburgerButton(
                           isExpanded: isExpanded,
-                          onToggle: () => settings.setRailExpanded(!isExpanded),
+                          onToggle: () => context.read<SettingsController>().setRailExpanded(!isExpanded),
                         ),
                         destinations: [
                           for (final d in railDestinations)
@@ -298,9 +297,9 @@ class _RailBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
     final l10n = AppLocalizations.of(context)!;
-    final isSettingsSelected = nav.selectedIndex == settingsIndex;
+    final isSettingsSelected = selectedIndex == settingsIndex;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -313,7 +312,7 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 label: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => nav.setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(settingsIndex),
               )
             : _CompactActionButton(
                 icon: isSettingsSelected
@@ -321,7 +320,7 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 tooltip: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => nav.setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(settingsIndex),
               ),
         const SizedBox(height: 4),
         // Download button
@@ -428,10 +427,10 @@ class _ExpandedActionTile extends StatelessWidget {
 class _ExpandedDownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final isSelected = nav.selectedIndex == 4;
+    final isSelected = selectedIndex == 4;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
@@ -446,7 +445,7 @@ class _ExpandedDownloadTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () => nav.setIndex(4),
+              onTap: () => context.read<NavigationController>().setIndex(4),
               borderRadius: BorderRadius.circular(28),
               child: Padding(
                 padding:
@@ -623,7 +622,7 @@ class _DownloadAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -636,14 +635,14 @@ class _DownloadAction extends StatelessWidget {
           children: [
             IconButton(
               tooltip: l10n.downloads,
-              onPressed: () => nav.setIndex(4),
+              onPressed: () => context.read<NavigationController>().setIndex(4),
               icon: Selector<TaskController, bool>(
                 selector: (context, task) => task.isBusy,
                 builder: (context, isBusy, child) => Icon(
                   isBusy
                       ? Icons.downloading_rounded
                       : Icons.download_for_offline_rounded,
-                  color: nav.selectedIndex == 4
+                  color: selectedIndex == 4
                       ? scheme.primary
                       : scheme.onSurfaceVariant,
                 ),

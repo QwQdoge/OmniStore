@@ -71,7 +71,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final settings = context.watch<SettingsController>();
+    final useSystemTitleBar = context.select<SettingsController, bool>((s) => s.useSystemTitleBar);
 
     return Material(
       color: colorScheme.surface,
@@ -198,7 +198,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                               );
                             },
                           ),
-                          if (!settings.useSystemTitleBar) ...[
+                          if (!useSystemTitleBar) ...[
                             _buildWindowButton(
                               icon: Icons.minimize_rounded,
                               tooltip: AppLocalizations.of(context)!.windowMinimize,

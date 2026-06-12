@@ -221,12 +221,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsController>();
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: ListView(
+      body: Consumer<SettingsController>(
+        builder: (context, settings, child) {
+          return ListView(
         padding: const EdgeInsets.all(24),
         children: [
           Row(
@@ -527,6 +528,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ],
+          );
+        },
       ),
     );
   }
