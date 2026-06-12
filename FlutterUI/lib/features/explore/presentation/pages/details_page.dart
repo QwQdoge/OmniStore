@@ -318,10 +318,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           AppLocalizations.of(context)!.details,
         ),
         Card(
-          color: colorScheme.surfaceContainerLow,
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
           margin: EdgeInsets.zero,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
               children: [
                 _buildInfoRow(
