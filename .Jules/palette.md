@@ -1,3 +1,9 @@
+## 2026-06-27 - Technical Metadata Grouping and MD3 Interaction
+
+**Learning:** Grouping technical metadata (Version, Source, License, etc.) into a single `Card` with `surfaceContainerLow` significantly improves scan-ability and visual hierarchy on details pages compared to a flat list. Using a standardized `AppCard` wrapper for interactive tiles across the app (Home, Search) ensures consistent Material 3 hover/tap feedback (1.0 to 0.98 scale) and simplifies state layer management.
+
+**Action:** Standardize metadata grouping in `AppDetailsPage` and replace standard `Card`/`ListTile` combinations with `AppCard` + `Semantics` for all primary app entry points to maintain MD3 consistency and accessibility.
+
 ## 2026-06-25 - Task Progress and Accessibility Refinement
 
 **Learning:** Subtle, integrated progress indicators (like a `LinearProgressIndicator` at the bottom of a surface container) feel more part of the OS/shell than abrupt circular spinners. `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts.

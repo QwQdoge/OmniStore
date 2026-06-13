@@ -333,7 +333,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaning => '系统清理';
 
   @override
-  String get systemCleaningDesc => '删除孤儿软件包并清理 pacman 缓存';
+  String get systemCleaningDesc => '清理孤儿软件包与 pacman 缓存';
 
   @override
   String get systemCleaningSubtitle => '删除孤儿软件包并清理 pacman 缓存';
@@ -587,7 +587,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
+  String get aiAssistantDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
 
   @override
   String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
@@ -1400,7 +1400,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaning => '系統清理';
 
   @override
-  String get systemCleaningDesc => '刪除孤兒套件並清理 pacman 快取';
+  String get systemCleaningDesc => '清理孤兒套件與 pacman 快取';
 
   @override
   String get systemCleaningSubtitle => '刪除孤兒套件並清理 pacman 快取';
@@ -1654,7 +1654,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。';
+  String get aiAssistantDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
 
   @override
   String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';

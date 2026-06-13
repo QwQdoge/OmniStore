@@ -82,6 +82,7 @@ from core.subprocess_utils import safe_subprocess
 
 async def handle_daemon_client(backend, reader, writer):
     import io
+    from contextlib import redirect_stdout
     try:
         while True:
             line_bytes = await reader.readline()
@@ -92,77 +93,80 @@ async def handle_daemon_client(backend, reader, writer):
                 continue
             
             try:
+                # 入参极端校验：限制单行 JSON 大小，防止 OOM
+                if len(line) > 1024 * 1024:
+                    raise ValueError("Payload too large")
                 cmd_data = json.loads(line)
             except Exception as ex:
-                writer.write(json.dumps({"status": "error", "error": f"Invalid JSON: {ex}"}).encode('utf-8') + b'\n')
+                writer.write(json.dumps({"status": "error", "error": f"Invalid request: {ex}"}).encode('utf-8') + b'\n')
                 await writer.drain()
                 continue
             
-            # Setup a capture for stdout
-            old_stdout = sys.stdout
             captured_stdout = io.StringIO()
-            sys.stdout = captured_stdout
-            
-            try:
-                action = cmd_data.get("action")
-                args = cmd_data.get("args", [])
-                kwargs = cmd_data.get("kwargs", {})
-                
-                # Boundary defense: only allow whitelist actions to prevent remote code execution
-                ALLOWED_ACTIONS = [
-                    "run_search", "run_install", "run_uninstall", "run_update",
-                    "run_check_updates", "run_recommendations", "run_app_details",
-                    "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
-                    "run_remove_custom_repo", "run_launch", "run_locate",
-                    "run_get_storage_info", "run_clean_system", "run_get_essentials",
-                    "run_import_packages", "run_export_packages",
-                    "config.data", "env.check_env"
-                ]
+            # 故障隔离：使用 context manager 确保 stdout 在任何情况下都能正确恢复
+            with redirect_stdout(captured_stdout):
+                try:
+                    action = cmd_data.get("action")
+                    args = cmd_data.get("args", [])
+                    kwargs = cmd_data.get("kwargs", {})
 
-                if action not in ALLOWED_ACTIONS:
-                    sys.stdout = old_stdout
-                    writer.write(json.dumps({"status": "error", "error": f"Forbidden action: {action}"}).encode('utf-8') + b'\n')
-                    await writer.drain()
-                    continue
+                    # 防呆机制：严格白名单校验
+                    ALLOWED_ACTIONS = {
+                        "run_search", "run_install", "run_uninstall", "run_update",
+                        "run_check_updates", "run_recommendations", "run_app_details",
+                        "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
+                        "run_remove_custom_repo", "run_launch", "run_locate",
+                        "run_get_storage_info", "run_clean_system", "run_get_essentials",
+                        "run_import_packages", "run_export_packages",
+                        "config.data", "env.check_env"
+                    }
 
-                # Resolve nested attributes recursively, e.g. "config.data"
-                obj = backend
-                parts = action.split('.')
-                for part in parts:
-                    if hasattr(obj, part):
-                        obj = getattr(obj, part)
-                    else:
-                        obj = None
-                        break
-                
-                if obj is not None:
-                    # If it's a callable (method or function), call it
-                    if callable(obj):
-                        if asyncio.iscoroutinefunction(obj):
-                            res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                    if action not in ALLOWED_ACTIONS:
+                        writer.write(json.dumps({"status": "error", "error": f"Forbidden action: {action}"}).encode('utf-8') + b'\n')
+                        await writer.drain()
+                        continue
+
+                    # 入参校验：确保 args 是 list，kwargs 是 dict
+                    if not isinstance(args, list) or not isinstance(kwargs, dict):
+                        writer.write(json.dumps({"status": "error", "error": "Invalid arguments format"}).encode('utf-8') + b'\n')
+                        await writer.drain()
+                        continue
+
+                    # Resolve nested attributes recursively, e.g. "config.data"
+                    obj = backend
+                    parts = action.split('.')
+                    for part in parts:
+                        obj = getattr(obj, part, None)
+                        if obj is None:
+                            break
+
+                    if obj is not None:
+                        # If it's a callable (method or function), call it
+                        if callable(obj):
+                            if asyncio.iscoroutinefunction(obj):
+                                # 严禁雪崩：加装 120s 强制超时
+                                res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                            else:
+                                res = obj(*args, **kwargs)
                         else:
-                            res = obj(*args, **kwargs)
+                            # Otherwise it's an attribute/property
+                            res = obj
+
+                        stdout_content = captured_stdout.getvalue()
+                        writer.write(json.dumps({
+                            "status": "success",
+                            "response": res,
+                            "stdout": stdout_content
+                        }, ensure_ascii=False).encode('utf-8') + b'\n')
                     else:
-                        # Otherwise it's an attribute/property
-                        res = obj
-                    
-                    sys.stdout = old_stdout
-                    stdout_content = captured_stdout.getvalue()
-                    
-                    writer.write(json.dumps({
-                        "status": "success",
-                        "response": res,
-                        "stdout": stdout_content
-                    }, ensure_ascii=False).encode('utf-8') + b'\n')
-                else:
-                    sys.stdout = old_stdout
-                    writer.write(json.dumps({"status": "error", "error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
-            except Exception as e:
-                sys.stdout = old_stdout
-                import traceback
-                error_trace = traceback.format_exc()
-                logging.error(f"Daemon action error: {e}\n{error_trace}")
-                writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
+                        writer.write(json.dumps({"status": "error", "error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+                except asyncio.TimeoutError:
+                    writer.write(json.dumps({"status": "error", "error": "Action timed out"}).encode('utf-8') + b'\n')
+                except Exception as e:
+                    import traceback
+                    error_trace = traceback.format_exc()
+                    logging.error(f"Daemon action error: {e}\n{error_trace}")
+                    writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
             await writer.drain()
     except asyncio.CancelledError:
         pass
@@ -983,9 +987,16 @@ async def main():
     loop = asyncio.get_running_loop()
     stop_event = asyncio.Event()
 
+    # Registry for all active OmnistoreBackend instances to ensure cleanup
+    active_backends = []
+
     def _shutdown(sig_name):
         logging.info(f"Received exit signal {sig_name}. Shutting down...")
         stop_event.set()
+        # Trigger cleanup for all known backends
+        for b in active_backends:
+            if hasattr(b, 'executor') and b.executor:
+                b.executor.stop()
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         try:
@@ -1040,14 +1051,10 @@ async def main():
 
     args = parser.parse_args()
     backend = OmnistoreBackend(json_mode=args.json)
+    active_backends.append(backend)
 
     if not args.json:
         console.print(Panel.fit(f"[bold blue]OmniStore[/bold blue] v0.1.0\n[dim]{get_friendly_message()}[/dim]", border_style="blue"))
-
-    def handle_exit(sig, frame):
-        if backend and hasattr(backend, "executor"): backend.executor.stop()
-        sys.exit(0)
-    signal.signal(signal.SIGTERM, handle_exit); signal.signal(signal.SIGINT, handle_exit)
 
     if not sys.platform.startswith("linux") and not args.json:
         console.print("[bold yellow]Warning: OmniStore is optimized for Linux (Arch).[/bold yellow]")

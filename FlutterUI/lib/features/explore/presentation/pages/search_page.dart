@@ -11,6 +11,7 @@ import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/models/app_package.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -392,40 +393,45 @@ class SearchResultTile extends StatelessWidget {
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
       button: true,
+      selected: isSelected,
       child: AppCard(
+        borderRadius: 12,
         color: isSelected && isDesktop
             ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
             : null,
         onTap: onTap,
-        child: ListTile(
-          leading: Hero(
-            tag: heroTag,
-            child: app.icon != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
-                    imageUrl: app.icon!,
-                    width: 40,
-                    height: 40,
-                    memCacheWidth: 80,
-                    memCacheHeight: 80,
-                    errorWidget: (c, e, s) => const Icon(Icons.apps),
-                  ),
-                )
-              : const Icon(Icons.apps, size: 40),
-        ),
-        title: Text(
-          app.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-          subtitle: Text(
-            app.description,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: AppSourceTag(
-            source: app.primarySource,
-            mode: AppSourceTagMode.source,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: Hero(
+              tag: heroTag,
+              child: app.icon != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: app.icon!,
+                        width: 40,
+                        height: 40,
+                        memCacheWidth: 80,
+                        memCacheHeight: 80,
+                        errorWidget: (c, e, s) => const Icon(Icons.apps),
+                      ),
+                    )
+                  : const Icon(Icons.apps, size: 40),
+            ),
+            title: Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              app.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: AppSourceTag(
+              source: app.primarySource,
+              mode: AppSourceTagMode.source,
+            ),
           ),
         ),
       ),

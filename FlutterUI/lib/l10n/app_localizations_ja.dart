@@ -334,7 +334,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemCleaning => 'システムクリーニング';
 
   @override
-  String get systemCleaningDesc => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
+  String get systemCleaningDesc => '孤立パッケージの削除と pacman キャッシュのクリーンアップ';
 
   @override
   String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
