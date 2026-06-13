@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/models/task_state.dart';
 
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;
@@ -13,6 +14,7 @@ class TaskController with ChangeNotifier {
   String? _packageName;
   String? _flag;
   final List<String> _logs = [];
+  final List<TaskState> _completedTasks = [];
 
   TaskController(this._taskRepository);
 
@@ -23,9 +25,15 @@ class TaskController with ChangeNotifier {
   String? get packageName => _packageName;
   String? get flag => _flag;
   List<String> get logs => List.unmodifiable(_logs);
+  List<TaskState> get completedTasks => List.unmodifiable(_completedTasks);
 
   void clearLogs() {
     _logs.clear();
+    notifyListeners();
+  }
+
+  void clearHistory() {
+    _completedTasks.clear();
     notifyListeners();
   }
 
@@ -78,6 +86,20 @@ class TaskController with ChangeNotifier {
 
     _isBusy = false;
     _progress = null;
+    
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: packageName,
+        source: source,
+        status: !hasError ? TaskStatus.success : TaskStatus.failed,
+        progress: !hasError ? 1.0 : 0.0,
+        stage: flag == "-I" ? "Install" : flag == "-R" ? "Uninstall" : "Update",
+        message: !hasError ? "Success" : _status,
+      ),
+    );
+
     _packageName = null;
     _flag = null;
     notifyListeners();
@@ -99,6 +121,18 @@ class TaskController with ChangeNotifier {
 
     _isBusy = false;
     _progress = null;
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: "System Cleanup",
+        source: "System",
+        status: TaskStatus.success,
+        progress: 1.0,
+        stage: "Clean",
+        message: _status,
+      ),
+    );
     notifyListeners();
   }
 

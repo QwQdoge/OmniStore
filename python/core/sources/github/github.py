@@ -29,6 +29,17 @@ class GitHubSource(UnifiedSource):
             # Handle advanced filters in query or via separate dict
             sort = (filters or {}).get("sort", "stars")
             order = (filters or {}).get("order", "desc")
+
+            sort_match = re.search(r'\bsort:(\w+)\b', query)
+            if sort_match:
+                sort = sort_match.group(1)
+                query = query.replace(sort_match.group(0), "").strip()
+
+            order_match = re.search(r'\border:(asc|desc)\b', query)
+            if order_match:
+                order = order_match.group(1)
+                query = query.replace(order_match.group(0), "").strip()
+
             # GitHub API uses 'page' parameter
             repos = await self.forge.search_repositories(query, sort=sort, order=order)
 
@@ -221,7 +232,7 @@ class GitHubSource(UnifiedSource):
                 repos = data.get("items", [])
 
                 featured = []
-                for repo in repos[:5]:
+                for repo in repos[:20]:
                     featured.append({
                         "name": repo["name"],
                         "id": repo["full_name"],

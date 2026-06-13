@@ -11,6 +11,7 @@ import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/models/app_package.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
   const SearchPage({super.key, this.autoFocus = false});

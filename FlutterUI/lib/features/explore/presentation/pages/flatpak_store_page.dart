@@ -84,24 +84,36 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
         itemBuilder: (context, index) {
           final app = _apps[index];
           final isSelected = _selectedApp?.id == app.id;
-          return Card(
+          return Card.filled(
             margin: const EdgeInsets.only(bottom: 12),
-            color: isSelected && isDesktop ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) : null,
+            color: isSelected && isDesktop
+                ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                : Theme.of(context).colorScheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.15),
+              ),
+            ),
             child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
               leading: app.icon != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
                         imageUrl: app.icon!,
-                        width: 40,
-                        height: 40,
-                        memCacheWidth: 80,
-                        memCacheHeight: 80,
+                        width: 44,
+                        height: 44,
+                        memCacheWidth: 88,
+                        memCacheHeight: 88,
                         errorWidget: (c, e, s) =>
                             const Icon(Icons.shopping_bag_rounded),
                       ),
                     )
-                  : const Icon(Icons.shopping_bag_rounded, size: 40),
+                  : const Icon(Icons.shopping_bag_rounded, size: 44),
               title: Text(
                 app.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -183,15 +195,27 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
   }
 
   Widget _buildSkeletonList({Key? key}) {
+    final scheme = Theme.of(context).colorScheme;
     return ListView.builder(
       key: key,
       padding: const EdgeInsets.all(16),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+        return Card.filled(
+          margin: const EdgeInsets.only(bottom: 12),
+          color: scheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.15),
+            ),
+          ),
+          child: const ListTile(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            leading: Skeleton(width: 44, height: 44, borderRadius: 12),
             title: Skeleton(width: 120, height: 16),
             subtitle: Skeleton(width: double.infinity, height: 12),
             trailing: Skeleton(width: 60, height: 24, borderRadius: 6),

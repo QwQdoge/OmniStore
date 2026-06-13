@@ -72,6 +72,15 @@ class TaskManager {
     BackendService.isDownloading.value = true;
     BackendService.globalStatus.value = ""; 
 
+    String actionTitle = "正在处理";
+    if (actionFlag == "-I") actionTitle = "开始安装";
+    if (actionFlag == "-R") actionTitle = "开始卸载";
+    if (actionFlag == "-U") actionTitle = "开始更新";
+    UpdateService().showSimpleNotification(
+      "$actionTitle: $packageName",
+      "源: $source。任务已启动，请稍候...",
+    );
+
     if (kIsWeb) {
       try {
         final stream = TaskRepository().executeAction(actionFlag, packageName, source, url: url);
@@ -108,6 +117,7 @@ class TaskManager {
           ),
         );
         BackendService.isDownloading.value = false;
+        UpdateService().showCompletionNotification(packageName, false);
         return false;
       }
     }
@@ -128,7 +138,7 @@ class TaskManager {
       sub = stream.listen(
         (line) {
           _handleOutput(line);
-          if (line.contains("errorFatalStream") || line.contains("errorProcessStart") || line.contains("[ERROR]")) {
+          if (line.toLowerCase().contains("error") || line.contains("[ERROR]")) {
             success = false;
           }
         },

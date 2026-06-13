@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
+import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
 
 class DaemonResult {
@@ -456,10 +457,17 @@ class BackendService {
 
     Process? process;
     try {
+      final apiKey = await PythonBridge.getApiKey();
+      final env = <String, String>{};
+      if (apiKey != null && apiKey.isNotEmpty) {
+        env['OMNISTORE_AI_API_KEY'] = apiKey;
+      }
+
       process = await Process.start(
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
+        environment: env.isEmpty ? null : env,
       );
       _allProcesses.add(process);
 
@@ -500,10 +508,17 @@ class BackendService {
     final controller = StreamController<String>();
 
     try {
+      final apiKey = await PythonBridge.getApiKey();
+      final env = <String, String>{};
+      if (apiKey != null && apiKey.isNotEmpty) {
+        env['OMNISTORE_AI_API_KEY'] = apiKey;
+      }
+
       process = await Process.start(
         _venvPython,
         _buildArgs(args),
         workingDirectory: _workingDir,
+        environment: env.isEmpty ? null : env,
         runInShell: true,
       );
       _allProcesses.add(process);
