@@ -441,7 +441,7 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "刪除孤兒套件並清理 pacman 快取",
+  "systemCleaningDesc": "清理孤兒套件與 pacman 快取",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -788,7 +788,7 @@
   "@aiAssistant": {
     "description": "Description for aiAssistant"
   },
-  "aiAssistantDesc": "開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。",
+  "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "@aiAssistantDesc": {
     "description": "Description for aiAssistantDesc"
   },
