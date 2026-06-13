@@ -4,10 +4,7 @@ import 'package:frontend/core/theme/omnistore_theme.dart';
 class AppDetailsSectionTitle extends StatelessWidget {
   final String title;
 
-  const AppDetailsSectionTitle({
-    super.key,
-    required this.title,
-  });
+  const AppDetailsSectionTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

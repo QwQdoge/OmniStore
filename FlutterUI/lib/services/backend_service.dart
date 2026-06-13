@@ -266,7 +266,8 @@ class BackendService {
     if (kIsWeb) return;
 
     // Murphy-proof: check both process and socket health
-    bool processAlive = _daemonProcess != null && _isProcessAlive(_daemonProcess!);
+    bool processAlive =
+        _daemonProcess != null && _isProcessAlive(_daemonProcess!);
     bool socketHealthy = _daemonSocket != null;
 
     if (processAlive && socketHealthy) {
@@ -297,27 +298,35 @@ class BackendService {
 
         // Divert python stderr outputs to a structured local debug log file
         final logSink = logFile.openWrite(mode: FileMode.append);
-        _daemonProcess!.stderr.transform(utf8.decoder).listen(
-          (data) => logSink.write(data),
-          onError: (e) => debugPrint("Daemon stderr write error: $e"),
-          onDone: () => logSink.close(),
-        );
+        _daemonProcess!.stderr
+            .transform(utf8.decoder)
+            .listen(
+              (data) => logSink.write(data),
+              onError: (e) => debugPrint("Daemon stderr write error: $e"),
+              onDone: () => logSink.close(),
+            );
       }
 
       // Connect to socket with exponential backoff retry
       for (int i = 0; i < 6; i++) {
         try {
-          _daemonSocket = await Socket.connect('127.0.0.1', _daemonPort, timeout: const Duration(seconds: 2));
+          _daemonSocket = await Socket.connect(
+            '127.0.0.1',
+            _daemonPort,
+            timeout: const Duration(seconds: 2),
+          );
           debugPrint("Connected to Python backend daemon on port $_daemonPort");
 
           // Detect unexpected socket closure
-          _daemonSocket!.done.then((_) {
-            debugPrint("Daemon socket closed.");
-            _daemonSocket = null;
-          }).catchError((e) {
-            debugPrint("Daemon socket error: $e");
-            _daemonSocket = null;
-          });
+          _daemonSocket!.done
+              .then((_) {
+                debugPrint("Daemon socket closed.");
+                _daemonSocket = null;
+              })
+              .catchError((e) {
+                debugPrint("Daemon socket error: $e");
+                _daemonSocket = null;
+              });
 
           break;
         } catch (_) {
@@ -337,7 +346,9 @@ class BackendService {
 
   void _startHealthCheckLoop() {
     _healthCheckTimer?.cancel();
-    _healthCheckTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    _healthCheckTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
       if (_daemonProcess == null || !_isProcessAlive(_daemonProcess!)) {
         debugPrint("Daemon dead! Restarting daemon...");
         await _startDaemonIfNeeded();
@@ -346,7 +357,11 @@ class BackendService {
   }
 
   /// Murphy-proof: Thread-safe daemon communication with strict timeout and mutex
-  Future<DaemonResult?> _sendToDaemon(String action, List<dynamic> args, [Map<String, dynamic>? kwargs]) async {
+  Future<DaemonResult?> _sendToDaemon(
+    String action,
+    List<dynamic> args, [
+    Map<String, dynamic>? kwargs,
+  ]) async {
     // 状态互斥：使用 Completer 链确保一次只有一个 daemon 通信，防止消息乱序
     final previousMutex = _daemonMutex;
     final currentMutex = Completer<void>();
@@ -356,7 +371,8 @@ class BackendService {
       // 严禁雪崩：确保即使前一个任务由于某种原因卡死，我们也能最终释放锁或超时
       await previousMutex.future.timeout(
         const Duration(seconds: 65),
-        onTimeout: () => debugPrint("Warning: Previous daemon mutex timed out."),
+        onTimeout: () =>
+            debugPrint("Warning: Previous daemon mutex timed out."),
       );
     } catch (_) {}
 
@@ -386,41 +402,59 @@ class BackendService {
       // Read response
       final completer = Completer<DaemonResult>();
       late StreamSubscription sub;
-      
-      sub = _daemonSocket!.cast<List<int>>().transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
-        try {
-          final res = jsonDecode(line);
-          if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
-            if (!completer.isCompleted) {
-              if (res['status'] == 'success') {
-                completer.complete(DaemonResult(
-                  status: 'success',
-                  response: res['response'],
-                  stdout: res['stdout'] ?? '',
-                ));
-              } else {
-                completer.complete(DaemonResult(
-                  status: 'error',
-                  error: res['error'] ?? 'Daemon error',
-                  stdout: res['stdout'] ?? '',
-                ));
+
+      sub = _daemonSocket!
+          .cast<List<int>>()
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen(
+            (line) {
+              try {
+                final res = jsonDecode(line);
+                if (res is Map &&
+                    (res.containsKey('status') || res.containsKey('error'))) {
+                  if (!completer.isCompleted) {
+                    if (res['status'] == 'success') {
+                      completer.complete(
+                        DaemonResult(
+                          status: 'success',
+                          response: res['response'],
+                          stdout: res['stdout'] ?? '',
+                        ),
+                      );
+                    } else {
+                      completer.complete(
+                        DaemonResult(
+                          status: 'error',
+                          error: res['error'] ?? 'Daemon error',
+                          stdout: res['stdout'] ?? '',
+                        ),
+                      );
+                    }
+                  }
+                }
+              } catch (e) {
+                debugPrint("Failed to parse daemon response: $e");
               }
-            }
-          }
-        } catch (e) {
-          debugPrint("Failed to parse daemon response: $e");
-        }
-      }, onError: (err) {
-        if (!completer.isCompleted) completer.completeError(err);
-      }, onDone: () {
-        if (!completer.isCompleted) completer.completeError(Exception("Daemon socket closed unexpectedly"));
-      });
+            },
+            onError: (err) {
+              if (!completer.isCompleted) completer.completeError(err);
+            },
+            onDone: () {
+              if (!completer.isCompleted)
+                completer.completeError(
+                  Exception("Daemon socket closed unexpectedly"),
+                );
+            },
+          );
 
       try {
         final result = await completer.future.timeout(
           const Duration(seconds: 60),
           onTimeout: () {
-            throw TimeoutException("Daemon communication timed out for action: $action");
+            throw TimeoutException(
+              "Daemon communication timed out for action: $action",
+            );
           },
         );
         return result;
@@ -643,7 +677,9 @@ class BackendService {
         final parsed = _tryParseJson(daemonRes.stdout);
         if (parsed is List) {
           results.addAll(
-            parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)),
+            parsed.map(
+              (item) => AppPackage.fromJson(item as Map<String, dynamic>),
+            ),
           );
         } else if (parsed is Map<String, dynamic>) {
           results.add(AppPackage.fromJson(parsed));
@@ -679,11 +715,13 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
-
-        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
+        results.addAll(
+          parsed.map(
+            (item) => AppPackage.fromJson(item as Map<String, dynamic>),
+          ),
+        );
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-
       }
 
       return results;
@@ -697,7 +735,6 @@ class BackendService {
         if (_isProcessAlive(activeSearchProcess!)) {
           await _killProcess(activeSearchProcess);
         }
-
       }
       activeSearchProcess = null;
     }
@@ -752,7 +789,10 @@ class BackendService {
       return PackageRepository().listInstalled();
     }
     try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
+      final daemonRes = await _sendToDaemon("run_list_installed", [
+        true,
+        false,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return data is List ? data : [];
@@ -782,7 +822,9 @@ class BackendService {
     }
     try {
       final daemonRes = await _sendToDaemon("config.data", []);
-      if (daemonRes != null && daemonRes.status == 'success' && daemonRes.response is Map<String, dynamic>) {
+      if (daemonRes != null &&
+          daemonRes.status == 'success' &&
+          daemonRes.response is Map<String, dynamic>) {
         final configMap = daemonRes.response as Map<String, dynamic>;
         isAIEnabled.value = configMap['ai']?['enabled'] ?? false;
         return configMap;
@@ -897,7 +939,9 @@ class BackendService {
     }
     try {
       final daemonRes = await _sendToDaemon("env.check_env", []);
-      if (daemonRes != null && daemonRes.status == 'success' && daemonRes.response is Map<String, dynamic>) {
+      if (daemonRes != null &&
+          daemonRes.status == 'success' &&
+          daemonRes.response is Map<String, dynamic>) {
         return daemonRes.response as Map<String, dynamic>;
       }
     } catch (e) {
@@ -987,7 +1031,11 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_launch", [
+        n.trim(),
+        s.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1018,7 +1066,11 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_locate", [
+        n.trim(),
+        s.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1048,7 +1100,10 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_app_details", [
+        id.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
@@ -1090,7 +1145,9 @@ class BackendService {
         _validateString(url, "URL");
       }
     } catch (e) {
-      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] $e\", \"level\": \"ERROR\"}");
+      return Stream.value(
+        "[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] $e\", \"level\": \"ERROR\"}",
+      );
     }
 
     final trimmedName = n.trim();
@@ -1185,7 +1242,9 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
+      final daemonRes = await _sendToDaemon("run_import_packages", [
+        path.trim(),
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return data is List ? data : [];
@@ -1210,7 +1269,9 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
+      final daemonRes = await _sendToDaemon("run_export_packages", [
+        path.trim(),
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
@@ -1243,7 +1304,12 @@ class BackendService {
   Future<bool> addCustomRepo(String type, String name, String url) async {
     if (kIsWeb) return true;
     try {
-      final daemonRes = await _sendToDaemon("run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_add_custom_repo", [
+        type.trim(),
+        name.trim(),
+        url.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1265,7 +1331,11 @@ class BackendService {
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {
-      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [type.trim(), name.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [
+        type.trim(),
+        name.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1296,7 +1366,10 @@ class BackendService {
       debugPrint("Daemon getStorageInfo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
+      final res = await _safeRun([
+        "--storage-info",
+        "--json",
+      ], timeout: const Duration(seconds: 15));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1311,15 +1384,22 @@ class BackendService {
       final daemonRes = await _sendToDaemon("run_ai_test", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {"status": "error", "response": "Invalid format"};
+        return (data is Map<String, dynamic>)
+            ? data
+            : {"status": "error", "response": "Invalid format"};
       }
     } catch (e) {
       debugPrint("Daemon testAiConnection error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
+      final res = await _safeRun([
+        "--ai-test",
+        "--json",
+      ], timeout: const Duration(seconds: 60));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {"status": "error", "response": "Invalid response"};
+      return (data is Map<String, dynamic>)
+          ? data
+          : {"status": "error", "response": "Invalid response"};
     } catch (e) {
       debugPrint("testAiConnection Error: $e");
       return {"status": "error", "response": e.toString()};

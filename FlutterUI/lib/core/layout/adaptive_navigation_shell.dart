@@ -49,7 +49,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -84,7 +86,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
               curve: Curves.easeInOut,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: isBusy ? const _TaskProgressBar() : const SizedBox.shrink(),
+                child: isBusy
+                    ? const _TaskProgressBar()
+                    : const SizedBox.shrink(),
               ),
             );
           },
@@ -107,7 +111,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
             canPop: selectedIndex == destinations.first.index,
             onPopInvokedWithResult: (didPop, result) {
               if (didPop) return;
-              context.read<NavigationController>().setIndex(destinations.first.index);
+              context.read<NavigationController>().setIndex(
+                destinations.first.index,
+              );
             },
             child: Scaffold(
               backgroundColor: scheme.surface,
@@ -146,8 +152,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   taskBar,
                   NavigationBar(
                     selectedIndex: _navBarIndex(compactDests, selectedIndex),
-                    onDestinationSelected: (i) =>
-                        context.read<NavigationController>().setIndex(compactDests[i].index),
+                    onDestinationSelected: (i) => context
+                        .read<NavigationController>()
+                        .setIndex(compactDests[i].index),
                     destinations: [
                       for (final d in compactDests)
                         NavigationDestination(
@@ -165,7 +172,9 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
         // ─── Desktop Layout (Navigation Rail) ───
         final railDestinations = [...destinations, ...secondaryDestinations];
-        final isExpanded = context.select<SettingsController, bool>((s) => s.isRailExpanded);
+        final isExpanded = context.select<SettingsController, bool>(
+          (s) => s.isRailExpanded,
+        );
 
         return Scaffold(
           backgroundColor: scheme.surface,
@@ -195,15 +204,21 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       child: NavigationRail(
                         extended: isExpanded,
                         minExtendedWidth: 180,
-                        selectedIndex: _railIndex(railDestinations, selectedIndex),
-                        onDestinationSelected: (i) =>
-                            context.read<NavigationController>().setIndex(railDestinations[i].index),
+                        selectedIndex: _railIndex(
+                          railDestinations,
+                          selectedIndex,
+                        ),
+                        onDestinationSelected: (i) => context
+                            .read<NavigationController>()
+                            .setIndex(railDestinations[i].index),
                         labelType: isExpanded
                             ? NavigationRailLabelType.none
                             : NavigationRailLabelType.all,
                         leading: _HamburgerButton(
                           isExpanded: isExpanded,
-                          onToggle: () => context.read<SettingsController>().setRailExpanded(!isExpanded),
+                          onToggle: () => context
+                              .read<SettingsController>()
+                              .setRailExpanded(!isExpanded),
                         ),
                         destinations: [
                           for (final d in railDestinations)
@@ -253,10 +268,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
 // ─── Hamburger Toggle Button ────────────────────────────
 class _HamburgerButton extends StatelessWidget {
-  const _HamburgerButton({
-    required this.isExpanded,
-    required this.onToggle,
-  });
+  const _HamburgerButton({required this.isExpanded, required this.onToggle});
 
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -272,8 +284,10 @@ class _HamburgerButton extends StatelessWidget {
         tooltip: isExpanded ? l10n.collapse : l10n.expand,
         icon: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
-          transitionBuilder: (child, anim) =>
-              RotationTransition(turns: Tween(begin: 0.5, end: 1.0).animate(anim), child: child),
+          transitionBuilder: (child, anim) => RotationTransition(
+            turns: Tween(begin: 0.5, end: 1.0).animate(anim),
+            child: child,
+          ),
           child: Icon(
             isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
             key: ValueKey(isExpanded),
@@ -297,7 +311,9 @@ class _RailBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final l10n = AppLocalizations.of(context)!;
     final isSettingsSelected = selectedIndex == settingsIndex;
 
@@ -312,7 +328,9 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 label: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => context.read<NavigationController>().setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(
+                  settingsIndex,
+                ),
               )
             : _CompactActionButton(
                 icon: isSettingsSelected
@@ -320,7 +338,9 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 tooltip: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => context.read<NavigationController>().setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(
+                  settingsIndex,
+                ),
               ),
         const SizedBox(height: 4),
         // Download button
@@ -382,9 +402,7 @@ class _ExpandedActionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Material(
-        color: isSelected
-            ? scheme.secondaryContainer
-            : Colors.transparent,
+        color: isSelected ? scheme.secondaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(28),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -407,8 +425,9 @@ class _ExpandedActionTile extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected
                           ? scheme.onSecondaryContainer
                           : scheme.onSurfaceVariant,
@@ -427,7 +446,9 @@ class _ExpandedActionTile extends StatelessWidget {
 class _ExpandedDownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isSelected = selectedIndex == 4;
@@ -439,17 +460,17 @@ class _ExpandedDownloadTile extends StatelessWidget {
         builder: (context, _) {
           final updates = UpdateService().availableUpdates.value;
           return Material(
-            color: isSelected
-                ? scheme.secondaryContainer
-                : Colors.transparent,
+            color: isSelected ? scheme.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(28),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => context.read<NavigationController>().setIndex(4),
               borderRadius: BorderRadius.circular(28),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     Selector<TaskController, bool>(
@@ -535,9 +556,7 @@ class _DesktopTopBar extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AuthPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const AuthPage()),
               );
             },
           ),
@@ -622,7 +641,9 @@ class _DownloadAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 

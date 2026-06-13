@@ -168,49 +168,50 @@ class AppDetailsHeader extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<String>(
-                      segments: <String>{
-                        for (var v in app.variants) v.source,
-                        if (extraDetails != null &&
-                            extraDetails!['variants'] != null)
-                          for (var v in extraDetails!['variants'])
-                            v['source'].toString(),
-                        selectedSource,
-                      }.map((String source) {
-                        final version = getVersionForSource(source);
-                        return ButtonSegment<String>(
-                          value: source,
-                          label: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  source,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      segments:
+                          <String>{
+                            for (var v in app.variants) v.source,
+                            if (extraDetails != null &&
+                                extraDetails!['variants'] != null)
+                              for (var v in extraDetails!['variants'])
+                                v['source'].toString(),
+                            selectedSource,
+                          }.map((String source) {
+                            final version = getVersionForSource(source);
+                            return ButtonSegment<String>(
+                              value: source,
+                              label: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
                                 ),
-                                if (version != null)
-                                  Text(
-                                    "v$version",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: theme
-                                          .colorScheme
-                                          .onSurfaceVariant
-                                          .withValues(alpha: 0.8),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      source,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          icon: _getSourceIcon(source),
-                        );
-                      }).toList(),
+                                    if (version != null)
+                                      Text(
+                                        "v$version",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.8),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              icon: _getSourceIcon(source),
+                            );
+                          }).toList(),
                       selected: {selectedSource},
                       onSelectionChanged: (Set<String> newSelection) {
                         final newValue = newSelection.first;

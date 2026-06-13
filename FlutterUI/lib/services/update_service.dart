@@ -127,7 +127,9 @@ class UpdateService {
             ),
           ])
           .timeout(const Duration(seconds: 2));
-      await _systemTray.setContextMenu(menu).timeout(const Duration(seconds: 2));
+      await _systemTray
+          .setContextMenu(menu)
+          .timeout(const Duration(seconds: 2));
     } catch (e) {
       debugPrint('Failed to refresh tray menu: $e');
     }
@@ -157,7 +159,8 @@ class UpdateService {
   /// Returns true on success, false on failure.
   Future<bool> _initSystemTray() async {
     if (kIsWeb) return true;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS)
+      return true;
 
     final config = await BackendService.instance.loadConfig();
     final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
@@ -276,7 +279,8 @@ class UpdateService {
   void _startUpdateTimer() {
     final interval = _config['updates']?['check_interval_hours'] ?? 1;
     final enabled = _config['updates']?['remind_updates'] ?? true;
-    final systemdEnabled = _config['updates']?['enable_systemd_service'] ?? false;
+    final systemdEnabled =
+        _config['updates']?['enable_systemd_service'] ?? false;
 
     if (!enabled) {
       // User disabled background update checks — cancel any running timer
@@ -349,11 +353,15 @@ WantedBy=timers.target
 ''');
 
       await Process.run('systemctl', ['--user', 'daemon-reload']);
-      await Process.run(
-        'systemctl',
-        ['--user', 'enable', '--now', 'omnistore-update.timer'],
+      await Process.run('systemctl', [
+        '--user',
+        'enable',
+        '--now',
+        'omnistore-update.timer',
+      ]);
+      debugPrint(
+        'systemd background timer set to every $intervalHours hour(s).',
       );
-      debugPrint('systemd background timer set to every $intervalHours hour(s).');
     } catch (e) {
       debugPrint('Failed to setup systemd background timer: $e');
     }
@@ -364,10 +372,12 @@ WantedBy=timers.target
   Future<void> _disableSystemdBackgroundTimer() async {
     if (!Platform.isLinux) return;
     try {
-      await Process.run(
-        'systemctl',
-        ['--user', 'disable', '--now', 'omnistore-update.timer'],
-      );
+      await Process.run('systemctl', [
+        '--user',
+        'disable',
+        '--now',
+        'omnistore-update.timer',
+      ]);
       debugPrint('systemd background timer disabled.');
     } catch (e) {
       debugPrint('Failed to disable systemd background timer: $e');

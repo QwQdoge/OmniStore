@@ -129,7 +129,8 @@ class SettingsController with ChangeNotifier {
     await updateConfig(config);
   }
 
-  int get checkIntervalHours => _config['updates']?['check_interval_hours'] ?? 1;
+  int get checkIntervalHours =>
+      _config['updates']?['check_interval_hours'] ?? 1;
 
   Future<void> setCheckIntervalHours(int value) async {
     final config = Map<String, dynamic>.from(_config);
@@ -138,7 +139,8 @@ class SettingsController with ChangeNotifier {
     await updateConfig(config);
   }
 
-  bool get enableSystemdService => _config['updates']?['enable_systemd_service'] ?? false;
+  bool get enableSystemdService =>
+      _config['updates']?['enable_systemd_service'] ?? false;
 
   Future<void> setEnableSystemdService(bool value) async {
     final config = Map<String, dynamic>.from(_config);
@@ -262,7 +264,9 @@ class SettingsController with ChangeNotifier {
       // Sync environment variables (like API keys) to the background daemon
       final apiKey = await PythonBridge.getApiKey();
       if (apiKey != null) {
-        BackendService.instance.updateDaemonEnv({'OMNISTORE_AI_API_KEY': apiKey});
+        BackendService.instance.updateDaemonEnv({
+          'OMNISTORE_AI_API_KEY': apiKey,
+        });
       }
     }
     return success;

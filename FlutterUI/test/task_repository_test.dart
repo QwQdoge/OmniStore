@@ -11,10 +11,14 @@ void main() {
 
   test('TaskRepository streams stdout and stderr', () async {
     final repo = TaskRepository();
-    
+
     // Attempting to install a nonexistent package from AppImage source
-    final stream = repo.executeAction("-I", "nonexistent-pkg-abc-xyz", "AppImage");
-    
+    final stream = repo.executeAction(
+      "-I",
+      "nonexistent-pkg-abc-xyz",
+      "AppImage",
+    );
+
     final logs = <String>[];
     await for (final line in stream) {
       logs.add(line);
@@ -22,13 +26,14 @@ void main() {
     }
 
     expect(logs, isNotEmpty);
-    
+
     // The stream should contain the stdout command running log, stderr output, or exit code error callback
-    final hasExpectedLogs = logs.any((l) => 
-      l.contains('errorStartFailed') || 
-      l.contains('target not found') || 
-      l.contains('Running') ||
-      l.contains('exited with code')
+    final hasExpectedLogs = logs.any(
+      (l) =>
+          l.contains('errorStartFailed') ||
+          l.contains('target not found') ||
+          l.contains('Running') ||
+          l.contains('exited with code'),
     );
     expect(hasExpectedLogs, isTrue);
 

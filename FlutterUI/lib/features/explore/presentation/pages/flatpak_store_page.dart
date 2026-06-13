@@ -52,13 +52,19 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cloud_off_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 64,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context)!.noResults,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -87,12 +93,16 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
           return Card.filled(
             margin: const EdgeInsets.only(bottom: 12),
             color: isSelected && isDesktop
-                ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                ? Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer.withValues(alpha: 0.3)
                 : Theme.of(context).colorScheme.surfaceContainerLow,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.15),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.15),
               ),
             ),
             child: ListTile(
@@ -163,10 +173,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
         backgroundColor: Colors.transparent,
         body: Row(
           children: [
-            Expanded(
-              flex: 4,
-              child: bodyContent,
-            ),
+            Expanded(flex: 4, child: bodyContent),
             const VerticalDivider(width: 1),
             Expanded(
               flex: 6,
@@ -187,10 +194,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
         ),
       );
     } else {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: bodyContent,
-      );
+      return Scaffold(backgroundColor: Colors.transparent, body: bodyContent);
     }
   }
 
@@ -211,10 +215,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
             ),
           ),
           child: const ListTile(
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Skeleton(width: 44, height: 44, borderRadius: 12),
             title: Skeleton(width: 120, height: 16),
             subtitle: Skeleton(width: double.infinity, height: 12),

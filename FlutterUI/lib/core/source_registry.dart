@@ -40,9 +40,7 @@ class SourceRegistry {
 
   /// Get the effective source list from a config map.
   /// Falls back to known sources if config is empty.
-  static Map<String, bool> effectiveSources(
-    Map<String, dynamic> config,
-  ) {
+  static Map<String, bool> effectiveSources(Map<String, dynamic> config) {
     final sourcesMap =
         config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
     if (sourcesMap.isEmpty) {

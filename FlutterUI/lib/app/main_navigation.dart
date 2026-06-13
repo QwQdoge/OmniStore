@@ -57,9 +57,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   Future<void> _initUpdateService(AppLocalizations l10n) async {
     try {
-      final trayOk = await UpdateService()
-          .init()
-          .timeout(const Duration(seconds: 10));
+      final trayOk = await UpdateService().init().timeout(
+        const Duration(seconds: 10),
+      );
       await UpdateService()
           .updateConfig(l10n)
           .timeout(const Duration(seconds: 5));
@@ -74,13 +74,15 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
             '[UpdateService] System tray init failed while close_to_tray=true. '
             'Disabling close_to_tray instead of exiting.',
           );
-          
+
           await settings.setCloseToTray(false);
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.'),
+                content: Text(
+                  '托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.',
+                ),
                 duration: Duration(seconds: 5),
               ),
             );
@@ -103,7 +105,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
   @override
   void onWindowClose() async {
     if (!mounted) return;
-        final settings = context.read<SettingsController>();
+    final settings = context.read<SettingsController>();
     final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
@@ -143,7 +145,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final l10n = AppLocalizations.of(context)!;
 
     final primary = [

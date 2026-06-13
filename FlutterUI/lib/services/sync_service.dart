@@ -48,20 +48,28 @@ class SyncService {
           .select('app_id')
           .eq('user_id', user.id);
 
-      final Set<String> remoteApps = (remoteData as List).map((row) => row['app_id'].toString()).toSet();
+      final Set<String> remoteApps = (remoteData as List)
+          .map((row) => row['app_id'].toString())
+          .toSet();
       final Set<String> localAppsSet = localApps.toSet();
 
       final appsToUpload = localAppsSet.difference(remoteApps);
       final appsToDelete = remoteApps.difference(localAppsSet);
 
       if (appsToUpload.isNotEmpty) {
-        final insertPayload = appsToUpload.map((appId) => {
-          'user_id': user.id,
-          'app_id': appId,
-          'installed_at': DateTime.now().toIso8601String(),
-        }).toList();
+        final insertPayload = appsToUpload
+            .map(
+              (appId) => {
+                'user_id': user.id,
+                'app_id': appId,
+                'installed_at': DateTime.now().toIso8601String(),
+              },
+            )
+            .toList();
 
-        await Supabase.instance.client.from('installed_apps').insert(insertPayload);
+        await Supabase.instance.client
+            .from('installed_apps')
+            .insert(insertPayload);
       }
 
       if (appsToDelete.isNotEmpty) {
@@ -72,7 +80,9 @@ class SyncService {
             .inFilter('app_id', appsToDelete.toList());
       }
 
-      debugPrint('Sync successful: Uploaded ${appsToUpload.length}, Deleted ${appsToDelete.length}');
+      debugPrint(
+        'Sync successful: Uploaded ${appsToUpload.length}, Deleted ${appsToDelete.length}',
+      );
     } catch (e) {
       debugPrint('Error syncing installed apps: $e');
     } finally {

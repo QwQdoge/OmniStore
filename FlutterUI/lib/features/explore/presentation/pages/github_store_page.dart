@@ -16,10 +16,11 @@ class GitHubStorePage extends StatefulWidget {
   State<GitHubStorePage> createState() => _GitHubStorePageState();
 }
 
-class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProviderStateMixin {
+class _GitHubStorePageState extends State<GitHubStorePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  
+
   // Lists for each category
   List<AppPackage> _recommendedApps = [];
   List<AppPackage> _rankingApps = [];
@@ -42,7 +43,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabSelection);
-    
+
     // Initial fetch
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchRecommended();
@@ -59,7 +60,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) return;
-    
+
     // Lazy load tabs on switch
     switch (_tabController.index) {
       case 0:
@@ -101,7 +102,9 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
     setState(() => _isLoadingRankings = true);
     final packageRepo = context.read<PackageRepository>();
     try {
-      final results = await packageRepo.searchPackages("source:github:stars:>5000 sort:stars");
+      final results = await packageRepo.searchPackages(
+        "source:github:stars:>5000 sort:stars",
+      );
       if (mounted) {
         setState(() {
           _rankingApps = results;
@@ -119,7 +122,9 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
     setState(() => _isLoadingTrending = true);
     final packageRepo = context.read<PackageRepository>();
     try {
-      final results = await packageRepo.searchPackages("source:github:stars:>1000 sort:forks");
+      final results = await packageRepo.searchPackages(
+        "source:github:stars:>1000 sort:forks",
+      );
       if (mounted) {
         setState(() {
           _trendingApps = results;
@@ -137,7 +142,9 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
     setState(() => _isLoadingUpdated = true);
     final packageRepo = context.read<PackageRepository>();
     try {
-      final results = await packageRepo.searchPackages("source:github:stars:>500 sort:updated");
+      final results = await packageRepo.searchPackages(
+        "source:github:stars:>500 sort:updated",
+      );
       if (mounted) {
         setState(() {
           _updatedApps = results;
@@ -258,7 +265,9 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.3 : 0.05,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: scheme.outlineVariant.withValues(alpha: 0.3),
@@ -326,7 +335,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
               ],
             ),
           ),
-          
+
           // Navigation / Tabs (Hidden when searching)
           if (!_isSearching)
             Padding(
@@ -347,10 +356,22 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
                   unselectedLabelColor: scheme.onSurfaceVariant,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                   tabs: const [
-                    Tab(text: "推荐", icon: Icon(Icons.recommend_rounded, size: 20)),
-                    Tab(text: "排行榜", icon: Icon(Icons.leaderboard_rounded, size: 20)),
-                    Tab(text: "热度榜", icon: Icon(Icons.local_fire_department_rounded, size: 20)),
-                    Tab(text: "最新更新", icon: Icon(Icons.update_rounded, size: 20)),
+                    Tab(
+                      text: "推荐",
+                      icon: Icon(Icons.recommend_rounded, size: 20),
+                    ),
+                    Tab(
+                      text: "排行榜",
+                      icon: Icon(Icons.leaderboard_rounded, size: 20),
+                    ),
+                    Tab(
+                      text: "热度榜",
+                      icon: Icon(Icons.local_fire_department_rounded, size: 20),
+                    ),
+                    Tab(
+                      text: "最新更新",
+                      icon: Icon(Icons.update_rounded, size: 20),
+                    ),
                   ],
                 ),
               ),
@@ -365,10 +386,26 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildAppListView(_recommendedApps, _isLoadingRecommended, 'recommended'),
-                        _buildAppListView(_rankingApps, _isLoadingRankings, 'rankings'),
-                        _buildAppListView(_trendingApps, _isLoadingTrending, 'trending'),
-                        _buildAppListView(_updatedApps, _isLoadingUpdated, 'updated'),
+                        _buildAppListView(
+                          _recommendedApps,
+                          _isLoadingRecommended,
+                          'recommended',
+                        ),
+                        _buildAppListView(
+                          _rankingApps,
+                          _isLoadingRankings,
+                          'rankings',
+                        ),
+                        _buildAppListView(
+                          _trendingApps,
+                          _isLoadingTrending,
+                          'trending',
+                        ),
+                        _buildAppListView(
+                          _updatedApps,
+                          _isLoadingUpdated,
+                          'updated',
+                        ),
                       ],
                     ),
             ),
@@ -387,16 +424,26 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+            Icon(
+              Icons.search_off_rounded,
+              size: 64,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               "No results found",
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               "Try searching for something else",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -405,7 +452,11 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
     return _buildAppListView(_searchApps, false, 'search');
   }
 
-  Widget _buildAppListView(List<AppPackage> apps, bool isLoading, String keyPrefix) {
+  Widget _buildAppListView(
+    List<AppPackage> apps,
+    bool isLoading,
+    String keyPrefix,
+  ) {
     if (isLoading) {
       return _buildSkeletonList();
     }
@@ -415,11 +466,19 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 64,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               "No packages available",
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             FilledButton.icon(
@@ -456,9 +515,7 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
             borderRadius: BorderRadius.circular(16),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => AppDetailsPage(app: app),
-              ),
+              MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -482,14 +539,15 @@ class _GitHubStorePageState extends State<GitHubStorePage> with SingleTickerProv
                                 memCacheWidth: 112,
                                 memCacheHeight: 112,
                                 fit: BoxFit.cover,
-                                errorWidget: (c, e, s) => const Icon(Icons.code_rounded, size: 28),
+                                errorWidget: (c, e, s) =>
+                                    const Icon(Icons.code_rounded, size: 28),
                               )
                             : const Icon(Icons.code_rounded, size: 28),
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // App Info Details
                   Expanded(
                     child: Column(

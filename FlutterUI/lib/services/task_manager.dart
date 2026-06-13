@@ -70,7 +70,7 @@ class TaskManager {
 
     BackendService.clearLogs();
     BackendService.isDownloading.value = true;
-    BackendService.globalStatus.value = ""; 
+    BackendService.globalStatus.value = "";
 
     String actionTitle = "正在处理";
     if (actionFlag == "-I") actionTitle = "开始安装";
@@ -83,7 +83,12 @@ class TaskManager {
 
     if (kIsWeb) {
       try {
-        final stream = TaskRepository().executeAction(actionFlag, packageName, source, url: url);
+        final stream = TaskRepository().executeAction(
+          actionFlag,
+          packageName,
+          source,
+          url: url,
+        );
         await for (final line in stream) {
           _handleOutput(line);
         }
@@ -96,9 +101,9 @@ class TaskManager {
           ),
         );
         BackendService.isDownloading.value = false;
-        
+
         UpdateService().showCompletionNotification(packageName, true);
-        
+
         Future.delayed(const Duration(seconds: 5), () {
           if (_currentTask?.status == TaskStatus.success ||
               _currentTask?.status == TaskStatus.failed) {
@@ -138,7 +143,8 @@ class TaskManager {
       sub = stream.listen(
         (line) {
           _handleOutput(line);
-          if (line.toLowerCase().contains("error") || line.contains("[ERROR]")) {
+          if (line.toLowerCase().contains("error") ||
+              line.contains("[ERROR]")) {
             success = false;
           }
         },

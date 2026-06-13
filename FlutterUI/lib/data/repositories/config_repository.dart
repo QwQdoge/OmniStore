@@ -25,24 +25,24 @@ class ConfigRepository {
         "winget": false,
         "scoop": false,
         "brew": false,
-        "ai": false
+        "ai": false,
       },
-      "max_results": 50
+      "max_results": 50,
     },
     "ui": {
       "appearance": "system",
       "color_seed": "#4E7EEF",
       "language": "zh-CN",
       "enable_system_tray": false,
-      "close_to_tray": false
+      "close_to_tray": false,
     },
     "ai": {
       "enabled": false,
       "provider": "openai",
       "endpoint": "",
       "model": "",
-      "api_key": ""
-    }
+      "api_key": "",
+    },
   };
 
   Map<String, dynamic>? _cachedConfig;
@@ -107,7 +107,8 @@ class ConfigRepository {
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     _cachedConfig = config;
-    _cachedEnv = null; // Invalidate env check cache in case source configs changed
+    _cachedEnv =
+        null; // Invalidate env check cache in case source configs changed
 
     // Save to preferences instantly (web or desktop backup)
     try {
@@ -167,7 +168,7 @@ class ConfigRepository {
         "platform": "Web / Browser",
         "python_status": "Not supported (Browser Sandbox)",
         "available_sources": ["GitHub", "Bitu"],
-        "os_details": "Chrome / Web browser environment"
+        "os_details": "Chrome / Web browser environment",
       };
       return _cachedEnv!;
     }
@@ -185,7 +186,7 @@ class ConfigRepository {
       _cachedEnv = {
         "platform": "Unknown/Desktop",
         "python_status": "Error: $e",
-        "available_sources": ["GitHub", "Bitu"]
+        "available_sources": ["GitHub", "Bitu"],
       };
       return _cachedEnv!;
     }

@@ -5,9 +5,11 @@ abstract final class OmnistoreTheme {
   static const Color seedDeepPurple = Color(0xFF6750A4);
   static const Color accentPinkBlue = Color(0xFF7BA3D4);
 
-  static ThemeData light({String? fontFamily}) => _build(Brightness.light, fontFamily);
+  static ThemeData light({String? fontFamily}) =>
+      _build(Brightness.light, fontFamily);
 
-  static ThemeData dark({String? fontFamily}) => _build(Brightness.dark, fontFamily);
+  static ThemeData dark({String? fontFamily}) =>
+      _build(Brightness.dark, fontFamily);
 
   static TextStyle standardHeader(BuildContext context) {
     final theme = Theme.of(context);

@@ -67,7 +67,9 @@ class SmoothProgressBar extends StatelessWidget {
     } else if (isFailed) {
       targetColor = theme.colorScheme.error;
     } else if (isSuccess) {
-      targetColor = const Color(0xFF10B981); // Premium emerald green for success
+      targetColor = const Color(
+        0xFF10B981,
+      ); // Premium emerald green for success
     } else {
       targetColor = theme.colorScheme.primary;
     }
@@ -82,7 +84,8 @@ class SmoothProgressBar extends StatelessWidget {
       curve: Curves.easeInOut,
       builder: (context, animatedColor, _) {
         final currentColor = animatedColor ?? targetColor;
-        final currentBgColor = customBackgroundColor ?? currentColor.withValues(alpha: 0.1);
+        final currentBgColor =
+            customBackgroundColor ?? currentColor.withValues(alpha: 0.1);
 
         return Column(
           mainAxisSize: MainAxisSize.min,

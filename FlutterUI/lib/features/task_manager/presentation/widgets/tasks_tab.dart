@@ -45,15 +45,14 @@ class TasksTab extends StatelessWidget {
           if (isBusy) ...[
             Text(
               l10n.currentTask,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 12),
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -61,7 +60,8 @@ class TasksTab extends StatelessWidget {
                     SmoothProgressBar(
                       taskState: TaskState(
                         id: "active",
-                        packageName: taskController.packageName ?? l10n.taskProcessing,
+                        packageName:
+                            taskController.packageName ?? l10n.taskProcessing,
                         status: TaskStatus.downloading,
                         progress: taskController.progress ?? 0.0,
                         stage: taskController.status,
@@ -95,10 +95,7 @@ class TasksTab extends StatelessWidget {
               children: [
                 const Text(
                   "任务历史记录 (History)",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 TextButton.icon(
                   onPressed: () => taskController.clearHistory(),
@@ -117,7 +114,9 @@ class TasksTab extends StatelessWidget {
                 final isSuccess = task.status == TaskStatus.success;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: isSuccess
@@ -138,7 +137,10 @@ class TasksTab extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(6),
@@ -163,7 +165,10 @@ class TasksTab extends StatelessWidget {
                     ),
                     trailing: Text(
                       task.source ?? "",
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 );

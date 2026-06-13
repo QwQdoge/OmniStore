@@ -29,7 +29,10 @@ class GitHubClient {
     return headers;
   }
 
-  Future<Map<String, dynamic>?> getRepoDetails(String owner, String repo) async {
+  Future<Map<String, dynamic>?> getRepoDetails(
+    String owner,
+    String repo,
+  ) async {
     final cacheKey = '${_cachePrefix}repo_${owner}_$repo';
 
     final mem = _memory[cacheKey];
@@ -43,7 +46,8 @@ class GitHubClient {
       if (cachedData != null) {
         final decoded = jsonDecode(cachedData) as Map<String, dynamic>;
         final timestamp = decoded['timestamp'] as int? ?? 0;
-        if (DateTime.now().millisecondsSinceEpoch - timestamp < _cacheTtl.inMilliseconds) {
+        if (DateTime.now().millisecondsSinceEpoch - timestamp <
+            _cacheTtl.inMilliseconds) {
           final data = decoded['data'] as Map<String, dynamic>?;
           if (data != null) {
             _putMemory(cacheKey, data);
@@ -57,10 +61,7 @@ class GitHubClient {
 
     try {
       final response = await http
-          .get(
-            Uri.parse('$_baseUrl/repos/$owner/$repo'),
-            headers: _headers,
-          )
+          .get(Uri.parse('$_baseUrl/repos/$owner/$repo'), headers: _headers)
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {

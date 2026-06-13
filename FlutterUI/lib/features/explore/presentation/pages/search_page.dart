@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
   const SearchPage({super.key, this.autoFocus = false});
@@ -192,10 +193,7 @@ class _SearchPageState extends State<SearchPage> {
                       if (isDesktop) {
                         return Row(
                           children: [
-                            Expanded(
-                              flex: 4,
-                              child: resultsContent,
-                            ),
+                            Expanded(flex: 4, child: resultsContent),
                             const VerticalDivider(width: 1),
                             Expanded(
                               flex: 6,
@@ -203,7 +201,9 @@ class _SearchPageState extends State<SearchPage> {
                                   ? Center(
                                       child: Text(
                                         l10n.noResults,
-                                        style: Theme.of(context).textTheme.bodyLarge,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge,
                                       ),
                                     )
                                   : AppDetailsPage(
@@ -229,7 +229,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildSourceFilters(SettingsController settings) {
-    final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+    final sourcesMap =
+        settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key.toString())
@@ -247,43 +248,43 @@ class _SearchPageState extends State<SearchPage> {
           controller: _quickFilterScrollController,
           scrollDirection: Axis.horizontal,
           children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FilterChip(
-              label: Text(AppLocalizations.of(context)!.all),
-              selected: _selectedSources.isEmpty,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedSources.clear();
-                  });
-                  _autoSelectFirstApp();
-                }
-              },
-            ),
-          ),
-          ...enabledSources.map((src) {
-            final name = _displayName(src);
-            final isSelected = _selectedSources.contains(name.toLowerCase());
-            return Padding(
+            Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: FilterChip(
-                label: Text(name),
-                selected: isSelected,
+                label: Text(AppLocalizations.of(context)!.all),
+                selected: _selectedSources.isEmpty,
                 onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedSources.add(name.toLowerCase());
-                    } else {
-                      _selectedSources.remove(name.toLowerCase());
-                    }
-                  });
-                  _autoSelectFirstApp();
+                  if (selected) {
+                    setState(() {
+                      _selectedSources.clear();
+                    });
+                    _autoSelectFirstApp();
+                  }
                 },
               ),
-            );
-          }),
-        ],
+            ),
+            ...enabledSources.map((src) {
+              final name = _displayName(src);
+              final isSelected = _selectedSources.contains(name.toLowerCase());
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilterChip(
+                  label: Text(name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedSources.add(name.toLowerCase());
+                      } else {
+                        _selectedSources.remove(name.toLowerCase());
+                      }
+                    });
+                    _autoSelectFirstApp();
+                  },
+                ),
+              );
+            }),
+          ],
         ),
       ),
     );
@@ -309,7 +310,11 @@ class _SearchPageState extends State<SearchPage> {
           child: ListTile(
             leading: Skeleton(width: 40, height: 40, borderRadius: 8),
             title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12, borderRadius: 4),
+            subtitle: Skeleton(
+              width: double.infinity,
+              height: 12,
+              borderRadius: 4,
+            ),
             trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
         );
@@ -390,8 +395,10 @@ class SearchResultTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
     final taskController = context.watch<TaskController>();
-    final isCurrentTask = taskController.isBusy && 
-        (taskController.packageName == app.name || taskController.packageName == app.id);
+    final isCurrentTask =
+        taskController.isBusy &&
+        (taskController.packageName == app.name ||
+            taskController.packageName == app.id);
 
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
@@ -400,7 +407,9 @@ class SearchResultTile extends StatelessWidget {
       child: AppCard(
         borderRadius: 12,
         color: isSelected && isDesktop
-            ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            ? Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.3)
             : null,
         onTap: onTap,
         child: Padding(
@@ -438,7 +447,9 @@ class SearchResultTile extends StatelessWidget {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -451,17 +462,25 @@ class SearchResultTile extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              isCurrentTask 
+              isCurrentTask
                   ? "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}"
                   : app.description,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: isCurrentTask ? TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold) : null,
+              style: isCurrentTask
+                  ? TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    )
+                  : null,
             ),
             trailing: isCurrentTask
                 ? Text(
                     taskController.speed,
-                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   )
                 : AppSourceTag(
                     source: app.primarySource,
@@ -527,7 +546,10 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
               child: ListView.builder(
                 controller: _categoryScrollController,
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final cat = categories[index];
@@ -540,16 +562,21 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
                         ),
                       ),
                       child: Semantics(
-                        label: AppLocalizations.of(context)!.categorySemantics(cat.name),
+                        label: AppLocalizations.of(
+                          context,
+                        )!.categorySemantics(cat.name),
                         button: true,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () {
-                            widget.searchController.text = '/${cat.id.toLowerCase()}';
+                            widget.searchController.text =
+                                '/${cat.id.toLowerCase()}';
                             widget.performSearch(widget.searchController.text);
                           },
                           child: SizedBox(
@@ -613,7 +640,10 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                       child: ListView.builder(
                         controller: _trendingScrollController,
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         itemCount: trending.length,
                         itemBuilder: (context, index) {
                           final app = trending[index];

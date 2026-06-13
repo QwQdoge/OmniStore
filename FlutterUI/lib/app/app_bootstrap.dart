@@ -33,7 +33,9 @@ Future<void> bootstrapOmniStore() async {
     const useSystemTitleBar = true;
 
     final results = await Future.wait([
-      DesktopWindowService.initialize(useSystemTitleBar: useSystemTitleBar).timeout(const Duration(seconds: 5)),
+      DesktopWindowService.initialize(
+        useSystemTitleBar: useSystemTitleBar,
+      ).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
     ]);
     prefs = results[1] as SharedPreferences;

@@ -1,4 +1,3 @@
-
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:frontend/services/backend_service.dart";
@@ -138,9 +137,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final localizations = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizations.taskInProgress)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(localizations.taskInProgress)));
       return;
     }
 
@@ -212,7 +211,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 children: [
                   const Icon(Icons.check_circle_rounded, color: Colors.white),
                   const SizedBox(width: 8),
-                  Text(flag == "-I" ? localizations.success : localizations.success),
+                  Text(
+                    flag == "-I"
+                        ? localizations.success
+                        : localizations.success,
+                  ),
                 ],
               ),
               backgroundColor: Colors.green.shade700,
@@ -224,7 +227,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(localizations.failed),
-              content: Text("${taskController.status}\n\n${localizations.errorFatalStream("Check task logs for details")}"),
+              content: Text(
+                "${taskController.status}\n\n${localizations.errorFatalStream("Check task logs for details")}",
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
@@ -238,8 +243,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme,
-      ThemeData theme, bool isAIEnabled) {
+  Widget _buildMainContent(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ThemeData theme,
+    bool isAIEnabled,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,9 +304,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                           ? AppLocalizations.of(context)!.noResults
                           : widget.app.description),
                   selectable: true,
-                  styleSheet: MarkdownStyleSheet(
-                    p: theme.textTheme.bodyLarge,
-                  ),
+                  styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
                 ),
         ),
         const SizedBox(height: 24),
@@ -316,9 +323,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
           const SizedBox(height: 32),
         ],
-        AppDetailsSectionTitle(
-          title: AppLocalizations.of(context)!.details,
-        ),
+        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -368,8 +373,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isAIEnabled =
-        context.select<SettingsController, bool>((s) => s.isAIEnabled);
+    final isAIEnabled = context.select<SettingsController, bool>(
+      (s) => s.isAIEnabled,
+    );
 
     return Scaffold(
       body: NestedScrollView(
@@ -391,8 +397,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     button: true,
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_rounded),
-                      tooltip:
-                          MaterialLocalizations.of(context).backButtonTooltip,
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).backButtonTooltip,
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -620,5 +627,4 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       builder: (context) => ScreenshotViewer(url: url),
     );
   }
-
 }

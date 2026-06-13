@@ -13,7 +13,6 @@ import 'package:frontend/features/task_manager/presentation/widgets/terminal_dia
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
 
-
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
 
@@ -140,7 +139,6 @@ class _DownloadPageState extends State<DownloadPage>
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -235,7 +233,10 @@ class _DownloadPageState extends State<DownloadPage>
                     isLabelVisible: controller.isBusy,
                     child: const Icon(Icons.terminal_outlined),
                   ),
-                  onPressed: () => showDialog(context: context, builder: (_) => const TerminalDialog()),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => const TerminalDialog(),
+                  ),
                   tooltip: AppLocalizations.of(context)!.terminalOutput,
                 );
               }
@@ -268,14 +269,14 @@ class _DownloadPageState extends State<DownloadPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [const TasksTab(), UpdatesTab(onUpdateStarted: () => _tabController.animateTo(0)), _buildInstalledTab()],
+        children: [
+          const TasksTab(),
+          UpdatesTab(onUpdateStarted: () => _tabController.animateTo(0)),
+          _buildInstalledTab(),
+        ],
       ),
     );
   }
-
-
-
-
 
   Widget _buildInstalledTab() {
     return AnimatedSwitcher(
@@ -377,54 +378,56 @@ class _DownloadPageState extends State<DownloadPage>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-            leading: app.icon != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                      imageUrl: app.icon!,
-                      width: 40,
-                      height: 40,
-                      memCacheWidth: 80,
-                      memCacheHeight: 80,
-                      placeholder: (context, url) => const Skeleton(
+              leading: app.icon != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: app.icon!,
                         width: 40,
                         height: 40,
-                        borderRadius: 0,
+                        memCacheWidth: 80,
+                        memCacheHeight: 80,
+                        placeholder: (context, url) => const Skeleton(
+                          width: 40,
+                          height: 40,
+                          borderRadius: 0,
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.apps),
                       ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.apps),
+                    )
+                  : const Icon(Icons.apps, size: 40),
+              title: Text(
+                app.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Row(
+                children: [
+                  Text(
+                    app.primarySource,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
-                  )
-                : const Icon(Icons.apps, size: 40),
-            title: Text(
-              app.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Row(
-              children: [
-                Text(
-                  app.primarySource,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    app.description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      app.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
+                ],
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AppDetailsPage(app: app),
                 ),
-              ],
+              ),
             ),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
-            ),
-          ),
           ),
         );
       },

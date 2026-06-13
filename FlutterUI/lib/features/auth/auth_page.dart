@@ -48,7 +48,9 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.githubAuthTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.githubAuthTitle),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

@@ -17,9 +17,14 @@ class PackageRepository {
   }) async {
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
-      return webResults.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)).toList();
+      return webResults
+          .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+          .toList();
     }
-    return BackendService.instance.searchPackages(query, cancelOngoing: cancelOngoing);
+    return BackendService.instance.searchPackages(
+      query,
+      cancelOngoing: cancelOngoing,
+    );
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {
@@ -34,7 +39,7 @@ class PackageRepository {
         config = jsonDecode(configRaw);
       } catch (_) {}
     }
-    
+
     final sourcesConfig = config['search']?['sources'] ?? {};
     final bool isGitHubEnabled = sourcesConfig['github'] ?? true;
     final bool isBituEnabled = sourcesConfig['bitu'] ?? true;
@@ -59,10 +64,15 @@ class PackageRepository {
 
   Future<List<dynamic>> _searchGitHub(String query) async {
     try {
-      final response = await http.get(
-        Uri.parse('https://api.github.com/search/repositories?q=$query'),
-        headers: {'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'Omnistore/0.1'},
-      ).timeout(const Duration(seconds: 8));
+      final response = await http
+          .get(
+            Uri.parse('https://api.github.com/search/repositories?q=$query'),
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'User-Agent': 'Omnistore/0.1',
+            },
+          )
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode != 200) return [];
       final data = jsonDecode(response.body);
@@ -81,17 +91,14 @@ class PackageRepository {
           "primary_source": "GitHub",
           "url": item['html_url'] ?? '',
           "variants": [
-            {
-              "source": "GitHub",
-              "id": fullName,
-              "installed": isInstalled
-            }
+            {"source": "GitHub", "id": fullName, "installed": isInstalled},
           ],
           "version": "Latest",
           "score": item['stargazers_count'] ?? 0,
           "icon": item['owner']?['avatar_url'] ?? '',
-          "is_exact_match": (item['name'] as String).toLowerCase() == query.toLowerCase(),
-          "screenshots": []
+          "is_exact_match":
+              (item['name'] as String).toLowerCase() == query.toLowerCase(),
+          "screenshots": [],
         };
       }).toList();
     } catch (e) {
@@ -102,10 +109,14 @@ class PackageRepository {
 
   Future<List<dynamic>> _searchBitu(String query) async {
     try {
-      final response = await http.get(
-        Uri.parse('https://api.bitbucket.org/2.0/repositories?q=name~"$query"'),
-        headers: {'User-Agent': 'Omnistore/0.1'},
-      ).timeout(const Duration(seconds: 8));
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://api.bitbucket.org/2.0/repositories?q=name~"$query"',
+            ),
+            headers: {'User-Agent': 'Omnistore/0.1'},
+          )
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode != 200) return [];
       final data = jsonDecode(response.body);
@@ -115,7 +126,9 @@ class PackageRepository {
       final installedRaw = prefs.getStringList('omnistore_installed_ids') ?? [];
 
       return items.map((item) {
-        final fullName = item['full_name'] ?? '${item['workspace']?['slug'] ?? 'workspace'}/${item['slug'] ?? 'repo'}';
+        final fullName =
+            item['full_name'] ??
+            '${item['workspace']?['slug'] ?? 'workspace'}/${item['slug'] ?? 'repo'}';
         final isInstalled = installedRaw.contains(fullName);
         return {
           "name": item['name'] ?? '',
@@ -124,17 +137,14 @@ class PackageRepository {
           "primary_source": "Bitu",
           "url": item['links']?['html']?['href'] ?? '',
           "variants": [
-            {
-              "source": "Bitu",
-              "id": fullName,
-              "installed": isInstalled
-            }
+            {"source": "Bitu", "id": fullName, "installed": isInstalled},
           ],
           "version": "Latest",
           "score": 0,
           "icon": item['links']?['avatar']?['href'] ?? '',
-          "is_exact_match": (item['name'] as String).toLowerCase() == query.toLowerCase(),
-          "screenshots": []
+          "is_exact_match":
+              (item['name'] as String).toLowerCase() == query.toLowerCase(),
+          "screenshots": [],
         };
       }).toList();
     } catch (e) {
@@ -142,7 +152,6 @@ class PackageRepository {
       return [];
     }
   }
-
 
   Future<List<dynamic>> listInstalled() async {
     if (kIsWeb) {
@@ -210,14 +219,19 @@ class PackageRepository {
     if (kIsWeb) {
       try {
         // Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
-        final githubUri = Uri.parse('https://api.github.com/search/repositories?q=stars:>5000+OR+topic:flatpak+OR+topic:aur&sort=stars&order=desc');
-        final response = await http.get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'}).timeout(const Duration(seconds: 10));
+        final githubUri = Uri.parse(
+          'https://api.github.com/search/repositories?q=stars:>5000+OR+topic:flatpak+OR+topic:aur&sort=stars&order=desc',
+        );
+        final response = await http
+            .get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'})
+            .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           final items = data['items'] as List<dynamic>? ?? [];
-          
+
           final prefs = await SharedPreferences.getInstance();
-          final installedRaw = prefs.getStringList('omnistore_installed_ids') ?? [];
+          final installedRaw =
+              prefs.getStringList('omnistore_installed_ids') ?? [];
 
           final apps = items.map((item) {
             final fullName = item['full_name'] as String;
@@ -237,7 +251,7 @@ class PackageRepository {
                   installed: isInstalled,
                   id: fullName,
                   description: item['description'] ?? '',
-                )
+                ),
               ],
               screenshots: [],
             );
@@ -263,7 +277,10 @@ class PackageRepository {
           results.forEach((key, list) {
             jsonMap[key] = list.map((app) => app.toJson()).toList();
           });
-          await prefs.setString('omnistore_recommendations_cache', jsonEncode(jsonMap));
+          await prefs.setString(
+            'omnistore_recommendations_cache',
+            jsonEncode(jsonMap),
+          );
         } catch (e) {
           debugPrint("Error writing recommendations cache: $e");
         }
@@ -283,20 +300,21 @@ class PackageRepository {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {
-          final isGitHub = !appId.contains('bitbucket') && !appId.contains('bitu');
-          final url = isGitHub 
+          final isGitHub =
+              !appId.contains('bitbucket') && !appId.contains('bitu');
+          final url = isGitHub
               ? 'https://api.github.com/repos/$appId'
               : 'https://api.bitbucket.org/2.0/repositories/$appId';
-          
-          final response = await http.get(
-            Uri.parse(url),
-            headers: {'User-Agent': 'Omnistore/0.1'},
-          ).timeout(const Duration(seconds: 10));
+
+          final response = await http
+              .get(Uri.parse(url), headers: {'User-Agent': 'Omnistore/0.1'})
+              .timeout(const Duration(seconds: 10));
 
           if (response.statusCode == 200) {
             final repo = jsonDecode(response.body);
             final prefs = await SharedPreferences.getInstance();
-            final installedRaw = prefs.getStringList('omnistore_installed_ids') ?? [];
+            final installedRaw =
+                prefs.getStringList('omnistore_installed_ids') ?? [];
             final isInstalled = installedRaw.contains(appId);
 
             return {
@@ -311,17 +329,18 @@ class PackageRepository {
                 {
                   "source": isGitHub ? "GitHub" : "Bitu",
                   "id": appId,
-                  "installed": isInstalled
-                }
-              ]
+                  "installed": isInstalled,
+                },
+              ],
             };
           }
         }
         return {
           "name": appId.split('/').last,
           "id": appId,
-          "description": "Detailed package information is unavailable in web mode.",
-          "variants": []
+          "description":
+              "Detailed package information is unavailable in web mode.",
+          "variants": [],
         };
       } catch (e) {
         debugPrint("getAppDetails Web Exception: $e");
@@ -340,20 +359,27 @@ class PackageRepository {
           "installed": false,
           "primary_source": "GitHub",
           "url": "https://github.com/microsoft/vscode",
-          "variants": [{"source": "GitHub", "id": "microsoft/vscode", "installed": false}],
+          "variants": [
+            {"source": "GitHub", "id": "microsoft/vscode", "installed": false},
+          ],
           "version": "Latest",
-          "icon": "https://github.com/microsoft/vscode/raw/main/resources/win32/code.ico"
+          "icon":
+              "https://github.com/microsoft/vscode/raw/main/resources/win32/code.ico",
         },
         {
           "name": "Flutter SDK",
-          "description": "Flutter makes it easy and fast to build beautiful apps for mobile and beyond.",
+          "description":
+              "Flutter makes it easy and fast to build beautiful apps for mobile and beyond.",
           "installed": false,
           "primary_source": "GitHub",
           "url": "https://github.com/flutter/flutter",
-          "variants": [{"source": "GitHub", "id": "flutter/flutter", "installed": false}],
+          "variants": [
+            {"source": "GitHub", "id": "flutter/flutter", "installed": false},
+          ],
           "version": "Latest",
-          "icon": "https://github.com/flutter/flutter/raw/main/dev/integration_tests/flutter_gallery/assets/icons/gallery_ping.png"
-        }
+          "icon":
+              "https://github.com/flutter/flutter/raw/main/dev/integration_tests/flutter_gallery/assets/icons/gallery_ping.png",
+        },
       ];
     }
     return BackendService.instance.getEssentials();
@@ -361,7 +387,9 @@ class PackageRepository {
 
   Future<bool> launchApp(String name, String source) async {
     if (kIsWeb) {
-      final urlString = source.toLowerCase() == "github" ? "https://github.com/$name" : "https://bitbucket.org/$name";
+      final urlString = source.toLowerCase() == "github"
+          ? "https://github.com/$name"
+          : "https://bitbucket.org/$name";
       final uri = Uri.tryParse(urlString);
       if (uri != null) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);

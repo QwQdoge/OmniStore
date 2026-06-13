@@ -116,10 +116,8 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
             duration: const Duration(milliseconds: 420),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.fastOutSlowIn,
-            transitionBuilder: (child, animation) => ScaleTransition(
-              scale: animation,
-              child: child,
-            ),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
             child: Text(
               label,
               key: ValueKey<String>(label),

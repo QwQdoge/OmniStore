@@ -19,7 +19,10 @@ class AIMarkdownDialog extends StatelessWidget {
     this.height = 400,
   });
 
-  Widget _buildAIMarkdown(AsyncSnapshot<String> snapshot, AppLocalizations l10n) {
+  Widget _buildAIMarkdown(
+    AsyncSnapshot<String> snapshot,
+    AppLocalizations l10n,
+  ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const SizedBox(
         key: ValueKey('loading'),
@@ -46,10 +49,7 @@ class AIMarkdownDialog extends StatelessWidget {
 
     return SingleChildScrollView(
       key: const ValueKey('loaded'),
-      child: MarkdownBody(
-        data: data,
-        selectable: true,
-      ),
+      child: MarkdownBody(data: data, selectable: true),
     );
   }
 
@@ -114,7 +114,11 @@ class AICliDialog extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Skeleton(width: double.infinity, height: 24, borderRadius: 8),
+                        Skeleton(
+                          width: double.infinity,
+                          height: 24,
+                          borderRadius: 8,
+                        ),
                       ],
                     ),
                   )
@@ -146,7 +150,9 @@ class AICliDialog extends StatelessWidget {
                           );
                         },
                         icon: const Icon(Icons.copy_rounded),
-                        label: Text(AppLocalizations.of(context)!.aiCopyCommand),
+                        label: Text(
+                          AppLocalizations.of(context)!.aiCopyCommand,
+                        ),
                       ),
                     ],
                   ),

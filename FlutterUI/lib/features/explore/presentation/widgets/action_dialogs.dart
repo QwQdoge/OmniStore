@@ -35,9 +35,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            localizations.confirmActionMsg(widget.appName),
-          ),
+          Text(localizations.confirmActionMsg(widget.appName)),
           if (widget.isUninstall && widget.selectedSource == "Native") ...[
             const SizedBox(height: 16),
             CheckboxListTile(
@@ -72,9 +70,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
           child: Text(localizations.confirm),
         ),
       ],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     );
   }
 }
@@ -103,9 +99,7 @@ class AurSecurityDialog extends StatelessWidget {
           child: Text(localizations.continueInstall),
         ),
       ],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     );
   }
 }

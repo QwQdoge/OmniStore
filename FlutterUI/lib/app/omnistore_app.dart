@@ -56,21 +56,22 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
       darkTheme: OmnistoreTheme.dark(fontFamily: settings.fontFamily),
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(settings.fontScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(settings.fontScale)),
           child: child!,
         );
       },
       initialRoute: _isFirstRun ? '/welcome' : '/home',
       routes: {
         '/welcome': (context) => WelcomePage(
-              onFinish: () => Navigator.pushReplacementNamed(context, '/home'),
-            ),
+          onFinish: () => Navigator.pushReplacementNamed(context, '/home'),
+        ),
         '/home': (context) => const MainNavigationEntry(),
       },
       onGenerateRoute: (routeSettings) {
-        if (routeSettings.name != null && routeSettings.name!.startsWith('/app/')) {
+        if (routeSettings.name != null &&
+            routeSettings.name!.startsWith('/app/')) {
           final appId = Uri.decodeComponent(routeSettings.name!.substring(5));
           final app = routeSettings.arguments as AppPackage?;
           if (app != null) {
@@ -94,7 +95,11 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Skeleton(width: 80, height: 80, borderRadius: 16),
+                                  Skeleton(
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: 16,
+                                  ),
                                   SizedBox(height: 16),
                                   Skeleton(width: 200, height: 24),
                                   SizedBox(height: 8),
@@ -106,26 +111,27 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
                             ),
                           )
                         : snapshot.hasError ||
-                                !snapshot.hasData ||
-                                snapshot.data!.isEmpty
-                            ? Scaffold(
-                                key: const ValueKey('error'),
-                                appBar: AppBar(
-                                  title: Text(
-                                    AppLocalizations.of(context)!.errorTitle,
-                                  ),
-                                ),
-                                body: Center(
-                                  child: Text(
-                                    AppLocalizations.of(context)!
-                                        .appDetailsNotFound,
-                                  ),
-                                ),
-                              )
-                            : AppDetailsPage(
-                                key: const ValueKey('loaded'),
-                                app: AppPackage.fromJson(snapshot.data!),
+                              !snapshot.hasData ||
+                              snapshot.data!.isEmpty
+                        ? Scaffold(
+                            key: const ValueKey('error'),
+                            appBar: AppBar(
+                              title: Text(
+                                AppLocalizations.of(context)!.errorTitle,
                               ),
+                            ),
+                            body: Center(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.appDetailsNotFound,
+                              ),
+                            ),
+                          )
+                        : AppDetailsPage(
+                            key: const ValueKey('loaded'),
+                            app: AppPackage.fromJson(snapshot.data!),
+                          ),
                   );
                 },
               ),

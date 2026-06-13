@@ -74,13 +74,21 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
           final errorPatterns = [
-            '⚠', '⏱',
-            'AI 服务', 'AI service',
-            'timed out', '超时',
-            '无法连接', 'Connection',
-            '错误', 'error', 'Error',
-            '未启用', 'not enabled',
-            'failed', 'Failed',
+            '⚠',
+            '⏱',
+            'AI 服务',
+            'AI service',
+            'timed out',
+            '超时',
+            '无法连接',
+            'Connection',
+            '错误',
+            'error',
+            'Error',
+            '未启用',
+            'not enabled',
+            'failed',
+            'Failed',
             'Today\'s recommendation: OmniStore',
           ];
           final isError = errorPatterns.any(
@@ -173,10 +181,16 @@ class _HomePageState extends State<HomePage> {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _isAILoading
-                        ? _buildAIPickSkeleton(key: const ValueKey('ai_skeleton'))
+                        ? _buildAIPickSkeleton(
+                            key: const ValueKey('ai_skeleton'),
+                          )
                         : (_aiPickBlurb != null
-                            ? _buildAIPickSection(key: const ValueKey('ai_content'))
-                            : SizedBox.shrink(key: const ValueKey('ai_empty'))),
+                              ? _buildAIPickSection(
+                                  key: const ValueKey('ai_content'),
+                                )
+                              : SizedBox.shrink(
+                                  key: const ValueKey('ai_empty'),
+                                )),
                   );
                 },
               ),
@@ -284,7 +298,8 @@ class _HomePageState extends State<HomePage> {
                       imageUrl: screenshot,
                       fit: BoxFit.cover,
                       memCacheWidth: 880,
-                      errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
+                      errorWidget: (c, e, s) =>
+                          const Icon(Icons.image, size: 48),
                     ),
                   )
                 else
@@ -339,8 +354,10 @@ class _HomePageState extends State<HomePage> {
                                   fit: BoxFit.cover,
                                   memCacheWidth: 108,
                                   memCacheHeight: 108,
-                                  errorWidget: (c, e, s) =>
-                                      const Icon(Icons.apps, color: Colors.black),
+                                  errorWidget: (c, e, s) => const Icon(
+                                    Icons.apps,
+                                    color: Colors.black,
+                                  ),
                                 )
                               : const Icon(Icons.apps, color: Colors.black),
                         ),
@@ -388,7 +405,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
+    final controller = _shelfControllers.putIfAbsent(
+      title,
+      () => ScrollController(),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +453,9 @@ class _HomePageState extends State<HomePage> {
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHigh,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               clipBehavior: Clip.antiAlias,
@@ -492,7 +514,9 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Semantics(
-                label: AppLocalizations.of(context)!.categorySemantics(categories[index].name),
+                label: AppLocalizations.of(
+                  context,
+                )!.categorySemantics(categories[index].name),
                 child: ActionChip(
                   avatar: Icon(categories[index].icon, size: 18),
                   label: Text(categories[index].name),

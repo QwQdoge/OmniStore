@@ -37,7 +37,9 @@ class PythonBridge {
     bool runInShell = false,
   }) async {
     final apiKey = await getApiKey();
-    final env = environment != null ? Map<String, String>.from(environment) : <String, String>{};
+    final env = environment != null
+        ? Map<String, String>.from(environment)
+        : <String, String>{};
     if (apiKey != null && apiKey.isNotEmpty) {
       env['OMNISTORE_AI_API_KEY'] = apiKey;
     }
@@ -61,7 +63,9 @@ class PythonBridge {
     ProcessStartMode mode = ProcessStartMode.normal,
   }) async {
     final apiKey = await getApiKey();
-    final env = environment != null ? Map<String, String>.from(environment) : <String, String>{};
+    final env = environment != null
+        ? Map<String, String>.from(environment)
+        : <String, String>{};
     if (apiKey != null && apiKey.isNotEmpty) {
       env['OMNISTORE_AI_API_KEY'] = apiKey;
     }
@@ -75,6 +79,7 @@ class PythonBridge {
       mode: mode,
     );
   }
+
   static String get projectRoot {
     final searchRoots = <String>{Directory.current.path};
 
@@ -125,7 +130,9 @@ class PythonBridge {
         Platform.isWindows ? 'python_server.exe' : 'python_server',
       );
     }
-    final String binPath = Platform.isWindows ? p.join('Scripts', 'python.exe') : p.join('bin', 'python');
+    final String binPath = Platform.isWindows
+        ? p.join('Scripts', 'python.exe')
+        : p.join('bin', 'python');
     final candidate = p.join(projectRoot, 'python', '.venv', binPath);
     return File(candidate).existsSync() ? candidate : 'python';
   }

@@ -89,31 +89,34 @@ class _CategoryCard extends StatelessWidget {
         button: true,
         child: InkWell(
           onTap: () {
-          final browse = context.read<BrowseController>();
-          final nav = context.read<NavigationController>();
-          browse.pendingSearchQuery = '/${category.id.toLowerCase()}';
-          nav.setIndex(2); // Search page
-        },
-        borderRadius: BorderRadius.circular(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                shape: BoxShape.circle,
+            final browse = context.read<BrowseController>();
+            final nav = context.read<NavigationController>();
+            browse.pendingSearchQuery = '/${category.id.toLowerCase()}';
+            nav.setIndex(2); // Search page
+          },
+          borderRadius: BorderRadius.circular(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  category.icon,
+                  size: 32,
+                  color: colorScheme.onPrimaryContainer,
+                ),
               ),
-              child: Icon(
-                category.icon,
-                size: 32,
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
                 category.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

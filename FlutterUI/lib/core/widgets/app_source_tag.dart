@@ -79,10 +79,7 @@ class AppSourceTag extends StatelessWidget {
             ? colorScheme.primaryContainer.withValues(alpha: 0.7)
             : colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(isSmall ? 6 : 8),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

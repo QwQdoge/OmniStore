@@ -86,7 +86,7 @@ class TaskController with ChangeNotifier {
 
     _isBusy = false;
     _progress = null;
-    
+
     _completedTasks.insert(
       0,
       TaskState(
@@ -95,7 +95,11 @@ class TaskController with ChangeNotifier {
         source: source,
         status: !hasError ? TaskStatus.success : TaskStatus.failed,
         progress: !hasError ? 1.0 : 0.0,
-        stage: flag == "-I" ? "Install" : flag == "-R" ? "Uninstall" : "Update",
+        stage: flag == "-I"
+            ? "Install"
+            : flag == "-R"
+            ? "Uninstall"
+            : "Update",
         message: !hasError ? "Success" : _status,
       ),
     );

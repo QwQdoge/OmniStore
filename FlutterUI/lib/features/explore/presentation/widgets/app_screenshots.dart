@@ -39,9 +39,7 @@ class AppScreenshots extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.0),
                   side: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(
-                      alpha: 0.5,
-                    ),
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -60,9 +58,7 @@ class AppScreenshots extends StatelessWidget {
                     errorWidget: (context, url, error) => Container(
                       width: 360,
                       color: colorScheme.surfaceContainerHighest,
-                      child: const Icon(
-                        Icons.broken_image_rounded,
-                      ),
+                      child: const Icon(Icons.broken_image_rounded),
                     ),
                   ),
                 ),

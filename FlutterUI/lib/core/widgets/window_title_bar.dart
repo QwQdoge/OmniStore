@@ -71,7 +71,9 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final useSystemTitleBar = context.select<SettingsController, bool>((s) => s.useSystemTitleBar);
+    final useSystemTitleBar = context.select<SettingsController, bool>(
+      (s) => s.useSystemTitleBar,
+    );
 
     return Material(
       color: colorScheme.surface,
@@ -141,9 +143,8 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                                       .withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(28.0),
                                   border: Border.all(
-                                    color: colorScheme.outlineVariant.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                    color: colorScheme.outlineVariant
+                                        .withValues(alpha: 0.5),
                                   ),
                                 ),
                                 child: Row(
@@ -157,7 +158,9 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        AppLocalizations.of(context)?.searchHint ??
+                                        AppLocalizations.of(
+                                              context,
+                                            )?.searchHint ??
                                             "Search",
                                         style: TextStyle(
                                           fontSize: 13,
@@ -188,7 +191,9 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                             ),
                           IconButton(
                             icon: const Icon(Icons.account_circle_outlined),
-                            tooltip: AppLocalizations.of(context)!.githubAuthTitle,
+                            tooltip: AppLocalizations.of(
+                              context,
+                            )!.githubAuthTitle,
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -201,7 +206,9 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                           if (!useSystemTitleBar) ...[
                             _buildWindowButton(
                               icon: Icons.minimize_rounded,
-                              tooltip: AppLocalizations.of(context)!.windowMinimize,
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.windowMinimize,
                               onPressed: () => windowManager.minimize(),
                               colorScheme: colorScheme,
                             ),
@@ -210,8 +217,12 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                                   ? Icons.filter_none_rounded
                                   : Icons.crop_square_rounded,
                               tooltip: _isMaximized
-                                  ? (AppLocalizations.of(context)!.windowRestore)
-                                  : (AppLocalizations.of(context)!.windowMaximize),
+                                  ? (AppLocalizations.of(
+                                      context,
+                                    )!.windowRestore)
+                                  : (AppLocalizations.of(
+                                      context,
+                                    )!.windowMaximize),
                               onPressed: () async {
                                 if (_isMaximized) {
                                   await windowManager.unmaximize();
@@ -223,7 +234,9 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                             ),
                             _buildWindowButton(
                               icon: Icons.close_rounded,
-                              tooltip: AppLocalizations.of(context)!.windowClose,
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.windowClose,
                               onPressed: () => windowManager.close(),
                               isClose: true,
                               colorScheme: colorScheme,

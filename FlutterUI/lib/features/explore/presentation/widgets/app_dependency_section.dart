@@ -29,7 +29,9 @@ class AppDependencySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 24),
-        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.installInfo),
+        AppDetailsSectionTitle(
+          title: AppLocalizations.of(context)!.installInfo,
+        ),
         if (hasCapability('has_size') && dlSize != null)
           AppDetailsInfoRow(
             icon: Icons.downloading_rounded,
