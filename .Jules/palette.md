@@ -27,3 +27,9 @@ Learning:
 
 Action:
 [Continue exploring similar flat lists and group them intelligently without adding visual noise]
+
+## 2026-06-13 - Metadata Grouping and Visual Hierarchy
+
+**Learning:** Wrapping technical metadata in a specialized surface container like `AppCard` with `surfaceContainerLow` color and zero elevation significantly improves the visual hierarchy of detail pages. It separates descriptive content from technical specifications without adding visual noise. Standardizing border radii to MD3 medium tokens (16dp) across cards and their placeholders (Skeletons) ensures a polished, cohesive look.
+
+**Action:** Prefer grouping flat lists of key-value technical data into `AppCard` components to establish clear content boundaries. Ensure Skeletons match the parent's border radius exactly.

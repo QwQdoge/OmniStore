@@ -37,7 +37,7 @@ class AppScreenshots extends StatelessWidget {
                 elevation: 0,
                 margin: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(16.0),
                   side: BorderSide(
                     color: colorScheme.outlineVariant.withValues(
                       alpha: 0.5,
@@ -55,7 +55,7 @@ class AppScreenshots extends StatelessWidget {
                     placeholder: (context, url) => const Skeleton(
                       width: 360,
                       height: 220,
-                      borderRadius: 20.0,
+                      borderRadius: 16.0,
                     ),
                     errorWidget: (context, url, error) => Container(
                       width: 360,
