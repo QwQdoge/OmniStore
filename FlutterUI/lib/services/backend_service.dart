@@ -1153,6 +1153,17 @@ class BackendService {
     }
   }
 
+  Future<bool> updateDaemonEnv(Map<String, String> env) async {
+    if (kIsWeb) return false;
+    try {
+      final daemonRes = await _sendToDaemon("run_update_env", [env, true]);
+      return daemonRes != null && daemonRes.status == 'success';
+    } catch (e) {
+      debugPrint("Daemon updateDaemonEnv error: $e");
+      return false;
+    }
+  }
+
   Future<List<dynamic>> importPackages(String path) async {
     if (kIsWeb) {
       return PackageRepository().importPackages(path);
@@ -1276,6 +1287,27 @@ class BackendService {
     } catch (e) {
       debugPrint("getStorageInfo Error: $e");
       return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> testAiConnection() async {
+    if (kIsWeb) return {"status": "error", "response": "Not supported on web"};
+    try {
+      final daemonRes = await _sendToDaemon("run_ai_test", [true]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _tryParseJson(daemonRes.stdout);
+        return (data is Map<String, dynamic>) ? data : {"status": "error", "response": "Invalid format"};
+      }
+    } catch (e) {
+      debugPrint("Daemon testAiConnection error: $e. Falling back.");
+    }
+    try {
+      final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
+      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      return (data is Map<String, dynamic>) ? data : {"status": "error", "response": "Invalid response"};
+    } catch (e) {
+      debugPrint("testAiConnection Error: $e");
+      return {"status": "error", "response": e.toString()};
     }
   }
 }

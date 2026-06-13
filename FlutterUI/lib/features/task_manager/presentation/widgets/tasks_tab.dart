@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/models/task_state.dart';
-import 'package:frontend/widgets/smooth_progress_bar.dart';
+import 'package:frontend/core/widgets/smooth_progress_bar.dart';
 import 'terminal_dialog.dart';
 
 class TasksTab extends StatelessWidget {

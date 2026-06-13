@@ -5,6 +5,7 @@ import argparse
 import aiohttp
 import logging
 import asyncio
+import inspect
 import os
 import re
 import signal
@@ -117,8 +118,8 @@ async def handle_daemon_client(backend, reader, writer):
                         "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
                         "run_remove_custom_repo", "run_launch", "run_locate",
                         "run_get_storage_info", "run_clean_system", "run_get_essentials",
-                        "run_import_packages", "run_export_packages",
-                        "config.data", "env.check_env"
+                        "run_import_packages", "run_export_packages", "run_ai_test",
+                        "run_update_env", "config.data", "env.check_env"
                     }
 
                     if action not in ALLOWED_ACTIONS:
@@ -143,7 +144,7 @@ async def handle_daemon_client(backend, reader, writer):
                     if obj is not None:
                         # If it's a callable (method or function), call it
                         if callable(obj):
-                            if asyncio.iscoroutinefunction(obj):
+                            if inspect.iscoroutinefunction(obj):
                                 # 严禁雪崩：加装 120s 强制超时
                                 res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
                             else:
@@ -793,11 +794,34 @@ class OmnistoreBackend:
 
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
-                async with safe_subprocess("sudo", "pacman", "-Scc", "--noconfirm") as p:
+                # We do not use --noconfirm here because it defaults to 'N' for pacman -Scc.
+                # Instead, we pipe 'y' to stdin so it actually clears the cache.
+                async with safe_subprocess(
+                    "sudo", "pacman", "-Scc",
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT
+                ) as p:
                     try:
+                        # Feed 'y' for the two prompts: 
+                        # 1. remove all files from cache?
+                        # 2. remove unused repositories?
+                        p.stdin.write(b"y\ny\n")
+                        await p.stdin.drain()
+                        p.stdin.close()
+                        
+                        while True:
+                            line_bytes = await p.stdout.readline()
+                            if not line_bytes:
+                                break
+                            line = line_bytes.decode('utf-8', errors='ignore').strip()
+                            if line:
+                                await cb(f"[INFO] {line}")
                         await asyncio.wait_for(p.wait(), timeout=60)
                     except asyncio.TimeoutError:
-                        pass
+                        if p and p.returncode is None:
+                            try: p.kill()
+                            except: pass
 
             await cb("[INFO] System cleanup finished!")
             if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
@@ -811,6 +835,25 @@ class OmnistoreBackend:
         res = await self.ai.summarize_project()
         if json_mode: sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
         else: print(f"AI Summary:\n{res}")
+
+    @safe_command
+    async def run_update_env(self, env_vars: dict, json_mode: bool = False):
+        import os
+        for k, v in env_vars.items():
+            if v is not None:
+                os.environ[k] = str(v)
+            elif k in os.environ:
+                del os.environ[k]
+        self.config.current_config = self.config.load()
+        if json_mode: sys.stdout.write(json.dumps({"status": "success"}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        return True
+
+    @safe_command
+    async def run_ai_test(self, json_mode: bool = False):
+        self.config.current_config = self.config.load()
+        res = await self.ai.test_connection()
+        if json_mode: sys.stdout.write(json.dumps({"status": "success" if res == "success" else "error", "response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        else: print(f"AI Connection Test:\n{res}")
 
     @safe_command
     async def run_ai_pick(self, json_mode: bool = False):
@@ -908,6 +951,7 @@ class CLIArguments(BaseModel):
     ai_analyze_error: Optional[str] = None
     ai_compare: Optional[str] = None
     ai_health: bool = False
+    ai_test: bool = False
     ai_pick: bool = False
     ai_correct: Optional[str] = None
     ai_changelog: Optional[str] = None
@@ -1030,6 +1074,7 @@ async def main():
     cmd.add_argument("--ai-analyze-error")
     cmd.add_argument("--ai-compare")
     cmd.add_argument("--ai-health", action="store_true")
+    cmd.add_argument("--ai-test", action="store_true")
     cmd.add_argument("--ai-pick", action="store_true")
     cmd.add_argument("--ai-correct")
     cmd.add_argument("--ai-changelog")
@@ -1171,6 +1216,9 @@ async def main():
                 except: status["orphaned_count"] = 0
                 res = await backend.ai.generate_health_report(status)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
+
+            elif validated_args.ai_test:
+                await backend.run_ai_test(validated_args.json_mode)
 
             elif validated_args.ai_pick:
                 await backend.run_ai_pick(validated_args.json_mode)

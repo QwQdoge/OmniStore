@@ -41,6 +41,22 @@ async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] =
                             if percent > last_sent_progress:
                                 await callback(f"[PROGRESS] {percent}")
                                 last_sent_progress = percent
+                        else:
+                            # Pseudo-progress for piped output
+                            if "resolving dependencies" in line.lower():
+                                await callback("[PROGRESS] 10")
+                                last_sent_progress = 10
+                            elif "downloading" in line.lower() and last_sent_progress < 30:
+                                await callback("[PROGRESS] 30")
+                                last_sent_progress = 30
+                            elif "installing" in line.lower() and last_sent_progress < 70:
+                                await callback("[PROGRESS] 70")
+                                last_sent_progress = 70
+                            
+                            # Use [SPEED] to display the current status text to the user
+                            if len(line) > 0 and not line.startswith("("):
+                                display_line = line[:40] + "..." if len(line) > 40 else line
+                                await callback(f"[SPEED] {display_line}")
 
                         if speed_match:
                             await callback(f"[SPEED] {speed_match.group(1)}")
@@ -76,6 +92,13 @@ async def uninstall_pacman(package: Dict[str, Any], callback: Optional[Callable]
                     continue
                 if callback:
                     await callback(f"[INFO] {line}")
+                    if "checking dependencies" in line.lower():
+                        await callback("[PROGRESS] 20")
+                    elif "removing" in line.lower():
+                        await callback("[PROGRESS] 50")
+                    if len(line) > 0 and not line.startswith("("):
+                        display_line = line[:40] + "..." if len(line) > 40 else line
+                        await callback(f"[SPEED] {display_line}")
 
         await proc.wait()
         if proc.returncode == 0 and callback:

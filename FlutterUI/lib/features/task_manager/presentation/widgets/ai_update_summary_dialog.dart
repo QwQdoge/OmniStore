@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/data/repositories/ai_repository.dart';
-import 'package:frontend/widgets/magic_pulse_icon.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 
 class AIUpdateSummaryDialog extends StatelessWidget {

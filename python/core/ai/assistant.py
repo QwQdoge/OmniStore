@@ -183,3 +183,12 @@ class AIAssistant:
         except: readme = ""
         system = "Summarize the OmniStore project in concise markdown."
         return await self._post_request(system, f"README:\n{readme}" if readme else "OmniStore project summary.")
+
+    async def test_connection(self) -> str:
+        """Test the AI connection and configuration."""
+        lang = self._get_language()
+        system = f"You are a connection tester. Reply exactly with 'CONNECTION_OK'. Do not add any other text."
+        response = await self._post_request(system, "Ping")
+        if "CONNECTION_OK" in response or "OK" in response.upper():
+            return "success"
+        return f"failed: {response}"

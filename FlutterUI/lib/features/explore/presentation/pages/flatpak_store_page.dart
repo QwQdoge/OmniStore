@@ -47,6 +47,37 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     Widget buildListContent() {
+      if (_apps.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.noResults,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Check your network connection and try again",
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _refresh,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text("Retry"),
+              ),
+            ],
+          ),
+        );
+      }
+
       return ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _apps.length,

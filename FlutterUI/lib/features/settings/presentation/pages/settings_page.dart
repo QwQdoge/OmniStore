@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,47 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Map<String, dynamic>? _storageInfo;
   bool _loadingStorage = false;
+  bool _isTestingAI = false;
+
+  Future<void> _testAIConnection() async {
+    if (!mounted) return;
+    setState(() => _isTestingAI = true);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final res = await BackendService.instance.testAiConnection();
+      if (!mounted) return;
+      setState(() => _isTestingAI = false);
+      
+      final isSuccess = res["status"] == "success";
+      final msg = res["response"] ?? (isSuccess ? "Connection OK" : "Connection failed");
+      
+      showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(isSuccess ? Icons.check_circle : Icons.error, color: isSuccess ? Colors.green : Colors.red),
+              const SizedBox(width: 8),
+              Text(isSuccess ? "AI Connection Success" : "AI Connection Failed"),
+            ],
+          ),
+          content: SelectableText(msg.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isTestingAI = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
 
   Future<void> _fetchStorageInfo() async {
     if (!mounted) return;
@@ -506,6 +548,27 @@ class _SettingsPageState extends State<SettingsPage> {
           if (_showAdvanced) ...[
             const SizedBox(height: 32),
             _buildSection(l10n.aiProvider),
+            ListTile(
+              title: const Text("Provider Type"),
+              trailing: DropdownButton<String>(
+                value: settings.config['ai']?['provider'] ?? 'ollama',
+                underline: const SizedBox(),
+                borderRadius: BorderRadius.circular(12),
+                items: const [
+                  DropdownMenuItem(value: 'ollama', child: Text('Ollama')),
+                  DropdownMenuItem(value: 'openai', child: Text('OpenAI Compatible')),
+                  DropdownMenuItem(value: 'gemini', child: Text('Google Gemini')),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    final config = Map<String, dynamic>.from(settings.config);
+                    config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
+                    config['ai']['provider'] = val;
+                    settings.updateConfig(config);
+                  }
+                },
+              ),
+            ),
             _buildTextField(
               l10n.aiEndpoint,
               _endpointController,
@@ -541,6 +604,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
               errorText: _tempError,
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                onPressed: _isTestingAI ? null : _testAIConnection,
+                icon: _isTestingAI 
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.network_check_rounded),
+                label: const Text("Test Connection"),
+              ),
             ),
           ],
         ],

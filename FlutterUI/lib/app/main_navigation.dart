@@ -64,7 +64,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
           .updateConfig(l10n)
           .timeout(const Duration(seconds: 5));
 
-      // 如果后台驻留（系统托盘）初始化失败，自动退出
+      // 如果后台驻留（系统托盘）初始化失败，给一个提示并关闭该功能，而不是退出
       if (!trayOk && DesktopWindowService.isSupported) {
         if (!mounted) return;
         final settings = context.read<SettingsController>();
@@ -72,19 +72,19 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
         if (closeToTray) {
           debugPrint(
             '[UpdateService] System tray init failed while close_to_tray=true. '
-            'Exiting to prevent broken background residency.',
+            'Disabling close_to_tray instead of exiting.',
           );
+          
+          await settings.setCloseToTray(false);
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.trayInitFailedExiting),
-                duration: const Duration(seconds: 3),
+              const SnackBar(
+                content: Text('托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.'),
+                duration: Duration(seconds: 5),
               ),
             );
           }
-          // 等待 SnackBar 稍微展示后退出
-          await Future.delayed(const Duration(seconds: 3));
-          exit(1);
         }
       }
     } catch (e) {

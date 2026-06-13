@@ -5,7 +5,7 @@ import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:frontend/widgets/magic_pulse_icon.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'ai_update_summary_dialog.dart';
 
 class UpdatesTab extends StatelessWidget {

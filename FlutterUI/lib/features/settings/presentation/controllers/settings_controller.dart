@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/data/python_bridge.dart';
 import 'package:frontend/data/repositories/config_repository.dart';
 import 'package:frontend/services/update_service.dart';
+import 'package:frontend/services/backend_service.dart';
 
 class SettingsController with ChangeNotifier {
   final ConfigRepository _configRepository;
@@ -258,6 +259,11 @@ class SettingsController with ChangeNotifier {
       notifyListeners();
       // Propagate configuration updates dynamically to the background updates manager
       UpdateService().updateConfig();
+      // Sync environment variables (like API keys) to the background daemon
+      final apiKey = await PythonBridge.getApiKey();
+      if (apiKey != null) {
+        BackendService.instance.updateDaemonEnv({'OMNISTORE_AI_API_KEY': apiKey});
+      }
     }
     return success;
   }

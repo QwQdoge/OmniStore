@@ -15,7 +15,7 @@ class TaskManager {
   TaskState? _currentTask;
 
   // Murphy-proof: Lock to prevent concurrent task starts
-  final _mutex = Completer<void>()..complete();
+  Completer<void> _mutex = Completer<void>()..complete();
 
   Stream<TaskState?> get taskStateStream => _taskStateController.stream;
   TaskState? get currentTask => _currentTask;

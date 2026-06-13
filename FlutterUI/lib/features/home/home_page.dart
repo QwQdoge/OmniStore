@@ -434,7 +434,7 @@ class _HomePageState extends State<HomePage> {
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHigh,
+                                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               clipBehavior: Clip.antiAlias,
