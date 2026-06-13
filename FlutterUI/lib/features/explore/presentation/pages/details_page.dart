@@ -208,7 +208,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme) {
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme,
+      ThemeData theme, bool isAIEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -445,8 +446,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isAIEnabled = context.select<SettingsController, bool>((s) => s.isAIEnabled);
-
+    final isAIEnabled =
+        context.select<SettingsController, bool>((s) => s.isAIEnabled);
 
     return Scaffold(
       body: NestedScrollView(
@@ -460,16 +461,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 letterSpacing: -0.5,
               ),
             ),
-            leading: widget.isEmbedded ? null : Semantics(
-              label: AppLocalizations.of(context)!.backSemanticsLabel,
-              hint: AppLocalizations.of(context)!.backSemanticsHint,
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
+            leading: widget.isEmbedded
+                ? null
+                : Semantics(
+                    label: AppLocalizations.of(context)!.backSemanticsLabel,
+                    hint: AppLocalizations.of(context)!.backSemanticsHint,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      tooltip:
+                          MaterialLocalizations.of(context).backButtonTooltip,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
             actions: [
               if (widget.app.url != null && widget.app.url!.isNotEmpty)
                 Semantics(
@@ -547,7 +551,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         body: SelectionArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: _buildMainContent(context, colorScheme, theme),
+            child: _buildMainContent(context, colorScheme, theme, isAIEnabled),
           ),
         ),
       ),
