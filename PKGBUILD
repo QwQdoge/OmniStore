@@ -9,38 +9,33 @@ license=('MIT')
 depends=('krita' 'libdbusmenu-gtk3' 'libappindicator-gtk3')
 provides=('omnistore')
 conflicts=('omnistore' 'omnistore-git')
-source=("omnistore-v${pkgver}-linux-x64.tar.gz::https://github.com/QwQdoge/OmniStore/releases/download/v${pkgver}/omnistore-v${pkgver}-linux-x64.tar.gz"
-        "omnistore.svg::https://raw.githubusercontent.com/QwQdoge/OmniStore/v${pkgver}/omnistore.svg")
-sha256sums=('SKIP' 'SKIP')
-# Define a user-writable pkgdir to avoid permission issues
-pkgdir=${HOME}/pkg/omnistore
+source=("omnistore-v${pkgver}-linux-x64.tar.gz::https://github.com/QwQdoge/OmniStore/releases/download/v${pkgver}/omnistore-v${pkgver}-linux-x64.tar.gz")
+sha256sums=('SKIP')
 
 package() {
   # 1. 创建安装到系统 /opt/omnistore 的目录
   install -d "${pkgdir}/opt/omnistore" 
 
-  # 2. 拷贝解压出来的所有东西 (根据实际解压目录进行拷贝)
+  # 确定源文件目录
+  local _src_dir
   if [ -d "$srcdir/release_bundle" ]; then
-    cp -r "$srcdir/release_bundle"/* "${pkgdir}/opt/omnistore/"
+    _src_dir="$srcdir/release_bundle"
   elif [ -d "$srcdir/omnistore-v${pkgver}-linux-x64" ]; then
-    cp -r "$srcdir/omnistore-v${pkgver}-linux-x64"/* "${pkgdir}/opt/omnistore/"
+    _src_dir="$srcdir/omnistore-v${pkgver}-linux-x64"
   else
-    # 假设直接解压在 $srcdir
-    for item in frontend lib data backends; do
-      if [ -e "$srcdir/$item" ]; then
-        cp -r "$srcdir/$item" "${pkgdir}/opt/omnistore/"
-      fi
-    done
+    _src_dir="$srcdir"
   fi
+
+  # 2. 拷贝解压出来的所有东西
+  cp -r "$_src_dir"/* "${pkgdir}/opt/omnistore/"
 
   # 3. 在系统的 /usr/bin 下建一个软链接
   install -d "${pkgdir}/usr/bin"
   echo -e '#!/bin/sh\ncd /opt/omnistore && ./frontend "$@"' > "${pkgdir}/usr/bin/omnistore"
   chmod +x "${pkgdir}/usr/bin/omnistore"
 
-  # 4. 安装图标
-  install -d "${pkgdir}/usr/share/pixmaps"
-  install -m644 "$srcdir/omnistore.svg" "${pkgdir}/usr/share/pixmaps/omnistore.svg"
+  # 4. 安装图标到系统图标库，以便桌面环境自动识别
+  install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"
 
   # 5. 安装桌面文件
   install -d "${pkgdir}/usr/share/applications"
@@ -48,8 +43,8 @@ package() {
 [Desktop Entry]
 Name=OmniStore
 Comment=A unified software repository search and management tool built with Flutter, Rust, and Python.
-Exec=/opt/omnistore/frontend
-Icon=/opt/omnistore/omnistore.svg
+Exec=/usr/bin/omnistore
+Icon=omnistore
 Terminal=false
 Type=Application
 Categories=Utility;
