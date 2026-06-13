@@ -43,8 +43,6 @@ class AppDetailsPage extends StatefulWidget {
 }
 
 class _AppDetailsPageState extends State<AppDetailsPage> {
-  // Feature: Add strict accessibility Semantics wrappers around action buttons and icons.
-  // Feature: Replace loading spinner with beautiful animated Skeleton loaders matching the card layout.
   late String _selectedSource;
   late bool _isAppInstalled;
   Map<String, dynamic>? _extraDetails;

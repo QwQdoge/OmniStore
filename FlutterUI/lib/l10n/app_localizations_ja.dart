@@ -1080,5 +1080,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enableSystemdService => 'systemd バックグラウンド更新サービスを有効にする';
 
   @override
-  String get enableSystemdServiceDesc => 'アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します';
+  String get enableSystemdServiceDesc =>
+      'アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します';
 }

@@ -1170,5 +1170,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enableSystemdService => 'Habilitar servicio de fondo systemd';
 
   @override
-  String get enableSystemdServiceDesc => 'Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada';
+  String get enableSystemdServiceDesc =>
+      'Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada';
 }
