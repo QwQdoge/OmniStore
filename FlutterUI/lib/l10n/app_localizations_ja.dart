@@ -1045,4 +1045,34 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get trayInitFailedExiting =>
       'システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。';
+
+  @override
+  String get errorTitle => 'エラー';
+
+  @override
+  String get appDetailsNotFound => 'アプリの詳細が見つかりませんでした';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'ディスク空間: $free GB 空き / $total GB 合計';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | カスタム: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => '戻る';
+
+  @override
+  String get backSemanticsHint => '前の画面に戻る';
+
+  @override
+  String categorySemantics(String name) {
+    return 'カテゴリー：$name';
+  }
+
+  @override
+  String get temperatureRangeError => '値は 0.0 から 2.0 の間である必要があります';
 }

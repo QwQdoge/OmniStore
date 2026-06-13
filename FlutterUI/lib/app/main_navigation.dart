@@ -79,7 +79,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
               SnackBar(
                 content: Text(l10n.trayInitFailedExiting),
                 duration: const Duration(seconds: 3),
-                behavior: SnackBarBehavior.floating,
               ),
             );
           }

@@ -60,15 +60,15 @@ class _DownloadPageState extends State<DownloadPage>
       await UpdateService().checkUpdates();
       if (!mounted) return;
       final newCount = UpdateService().availableUpdates.value.length;
-      final msg = newCount == 0
-          ? l10n.allUpdated
-          : l10n.foundUpdates(newCount);
+      final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
               Icon(
-                newCount > 0 ? Icons.system_update_alt : Icons.check_circle_outline,
+                newCount > 0
+                    ? Icons.system_update_alt
+                    : Icons.check_circle_outline,
                 color: Colors.white,
                 size: 18,
               ),
@@ -86,7 +86,11 @@ class _DownloadPageState extends State<DownloadPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.checkUpdateFailed(e.toString()))),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.checkUpdateFailed(e.toString()),
+            ),
+          ),
         );
       }
     } finally {
@@ -350,7 +354,7 @@ class _DownloadPageState extends State<DownloadPage>
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: Skeleton(width: 20, height: 20, borderRadius: 10),
                     ),
                   )
                 : IconButton(
@@ -402,7 +406,10 @@ class _DownloadPageState extends State<DownloadPage>
             children: [
               Text(
                 AppLocalizations.of(context)!.currentTask,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               const SizedBox(height: 20),
               Card(
@@ -411,17 +418,22 @@ class _DownloadPageState extends State<DownloadPage>
                   child: Column(
                     children: [
                       Consumer<TaskController>(
-                        builder: (context, taskController, _) => SmoothProgressBar(
-                          taskState: TaskState(
-                            id: "active",
-                            packageName: AppLocalizations.of(context)!.taskProcessing,
-                            status: TaskStatus.downloading,
-                            progress: taskController.progress ?? 0.0,
-                            stage: taskController.status,
-                            speed: taskController.speed,
-                          ),
-                          onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
-                        ),
+                        builder: (context, taskController, _) =>
+                            SmoothProgressBar(
+                              taskState: TaskState(
+                                id: "active",
+                                packageName: AppLocalizations.of(
+                                  context,
+                                )!.taskProcessing,
+                                status: TaskStatus.downloading,
+                                progress: taskController.progress ?? 0.0,
+                                stage: taskController.status,
+                                speed: taskController.speed,
+                              ),
+                              onCancel: () => taskController.cancelTask(
+                                AppLocalizations.of(context)!,
+                              ),
+                            ),
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -507,8 +519,17 @@ class _DownloadPageState extends State<DownloadPage>
                   final update = updates[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      onTap: () async {
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Semantics(
+                      label: 'Update available: ${update['name']}',
+                      button: true,
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        onTap: () async {
                         final results = await packageRepo.searchPackages(
                           update['name'],
                         );
@@ -569,8 +590,9 @@ class _DownloadPageState extends State<DownloadPage>
                         ],
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              },
               ),
             ),
           ],
@@ -653,26 +675,28 @@ class _DownloadPageState extends State<DownloadPage>
                     padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
                     child: Row(
                       children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                        .map(
-                          (s) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(
-                                s == "all" ? AppLocalizations.of(context)!.explore : s,
+                          .map(
+                            (s) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(
+                                  s == "all"
+                                      ? AppLocalizations.of(context)!.explore
+                                      : s,
+                                ),
+                                selected: _selectedSourceFilter == s,
+                                onSelected: (v) {
+                                  if (v) {
+                                    setState(() {
+                                      _selectedSourceFilter = s;
+                                      _applyFilters();
+                                    });
+                                  }
+                                },
                               ),
-                              selected: _selectedSourceFilter == s,
-                              onSelected: (v) {
-                                if (v) {
-                                  setState(() {
-                                    _selectedSourceFilter = s;
-                                    _applyFilters();
-                                  });
-                                }
-                              },
                             ),
-                          ),
-                        )
-                        .toList(),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
@@ -724,18 +748,30 @@ class _DownloadPageState extends State<DownloadPage>
         final app = _filteredApps[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Semantics(
+            label: 'Installed app: ${app.name}',
+            button: true,
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             leading: app.icon != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: CachedNetworkImage(
                       imageUrl: app.icon!,
                       width: 40,
                       height: 40,
                       memCacheWidth: 80,
                       memCacheHeight: 80,
-                      placeholder: (context, url) =>
-                          const Skeleton(width: 40, height: 40, borderRadius: 0),
+                      placeholder: (context, url) => const Skeleton(
+                        width: 40,
+                        height: 40,
+                        borderRadius: 0,
+                      ),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.apps),
                     ),
@@ -769,6 +805,7 @@ class _DownloadPageState extends State<DownloadPage>
               context,
               MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
             ),
+          ),
           ),
         );
       },

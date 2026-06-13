@@ -1,3 +1,4 @@
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -10,6 +11,7 @@ import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/models/app_package.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -144,18 +146,20 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               focusNode: _focusNode,
               hintText: l10n.searchHint,
+              onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
               onSubmitted: _performSearch,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _searchController,
-                  builder: (context, value, child) {
-                    if (value.text.isNotEmpty) {
+                ValueListenableBuilder<bool>(
+                  valueListenable: _hasSearchText,
+                  builder: (context, hasText, child) {
+                    if (hasText) {
                       return IconButton(
                         icon: const Icon(Icons.close_rounded),
                         tooltip: l10n.clearSearch,
                         onPressed: () {
                           _searchController.clear();
+                          _hasSearchText.value = false;
                           setState(() {
                             _showDiscovery = true;
                             _selectedSources.clear();
@@ -386,42 +390,50 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: isSelected && isDesktop
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-          : null,
-      child: ListTile(
-        leading: Hero(
-          tag: heroTag,
-          child: app.icon != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: app.icon!,
-                    width: 40,
-                    height: 40,
-                    memCacheWidth: 80,
-                    memCacheHeight: 80,
-                    errorWidget: (c, e, s) => const Icon(Icons.apps),
-                  ),
-                )
-              : const Icon(Icons.apps, size: 40),
-        ),
-        title: Text(
-          app.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          app.description,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: AppSourceTag(
-          source: app.primarySource,
-          mode: AppSourceTagMode.source,
-        ),
+    return Semantics(
+      label: 'Search result: ${app.name} from ${app.primarySource}',
+      button: true,
+      selected: isSelected,
+      child: AppCard(
+        borderRadius: 12,
+        color: isSelected && isDesktop
+            ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : null,
         onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: Hero(
+              tag: heroTag,
+              child: app.icon != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: app.icon!,
+                        width: 40,
+                        height: 40,
+                        memCacheWidth: 80,
+                        memCacheHeight: 80,
+                        errorWidget: (c, e, s) => const Icon(Icons.apps),
+                      ),
+                    )
+                  : const Icon(Icons.apps, size: 40),
+            ),
+            title: Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              app.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: AppSourceTag(
+              source: app.primarySource,
+              mode: AppSourceTagMode.source,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -497,7 +509,7 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                         ),
                       ),
                       child: Semantics(
-                        label: 'Category: ${cat.name}',
+                        label: AppLocalizations.of(context)!.categorySemantics(cat.name),
                         button: true,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),

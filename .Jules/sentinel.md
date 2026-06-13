@@ -20,3 +20,11 @@ Unmanaged asyncio subprocesses can become zombies if coroutines are cancelled or
 
 Action:
 Refactored and unified asynchronous process execution using the `safe_subprocess` async context manager across Flatpak, Pacman, and AUR backend sources. Removed redundant manual `proc.kill()` blocks to rely on `safe_subprocess`'s multi-stage reaping (SIGTERM -> 3s wait -> SIGKILL). Ensured that `asyncio.create_subprocess_exec` is never called directly without context management.
+
+## 2025-02-27 - [Async Lifecycle Context Safety]
+
+Learning:
+Accessing `widget` or `context` providers (or using them within deeply nested logic) after `await` calls in asynchronous gaps without checking `if (!mounted)` can result in unhandled exceptions and real-world application crashes if the user navigates away or dismisses the UI before the asynchronous operation completes. This is particularly prevalent in settings flows, dialog interactions, and onboarding screens.
+
+Action:
+I added explicit `if (!mounted) return;` checks following `await` instructions in both the Details Page (`details_page.dart`) after asynchronous security dialog responses, and the Onboarding Welcome Page (`welcome_page.dart`) following configuration initialization saves. This safely halts execution on unmounted views and prevents exceptions.

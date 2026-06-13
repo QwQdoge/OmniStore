@@ -1348,5 +1348,48 @@
   "trayInitFailedExiting": "システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。",
   "@trayInitFailedExiting": {
     "description": "Error message when system tray fails to initialize"
-  }
+  },
+  "errorTitle": "エラー",
+  "@errorTitle": {
+    "description": "General error title"
+  },
+  "appDetailsNotFound": "アプリの詳細が見つかりませんでした",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "ディスク空間: {free} GB 空き / {total} GB 合計",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | カスタム: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "戻る",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "前の画面に戻る",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "カテゴリー：{name}",
+  "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります"
 }

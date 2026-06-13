@@ -346,7 +346,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Disk: ${((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB free / ${((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB total",
+                          l10n.diskSpaceInfo(
+                            ((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                            ((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                          ),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -378,7 +381,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "Pacman: ${((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB | Flatpak: ${((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB | Custom: ${((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                l10n.cacheTypeInfo(
+                                  ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                  ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                  ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                ),
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
@@ -518,7 +525,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (d == null) {
                   setState(() => _tempError = l10n.failed);
                 } else if (d < 0.0 || d > 2.0) {
-                  setState(() => _tempError = "0.0 - 2.0");
+                  setState(() => _tempError = l10n.temperatureRangeError);
                 } else {
                   setState(() => _tempError = null);
                   _debounceUpdateAIConfig('temperature', d, settings);
