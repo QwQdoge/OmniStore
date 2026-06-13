@@ -361,14 +361,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                                   fit: BoxFit.cover,
                                   memCacheWidth: 720,
                                   memCacheHeight: 440,
-                                  placeholder: (context, url) => Container(
+                                  placeholder: (context, url) => const Skeleton(
                                     width: 360,
-                                    color: colorScheme.surfaceContainerHighest,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
+                                    height: 220,
+                                    borderRadius: 0,
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
