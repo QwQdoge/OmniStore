@@ -115,6 +115,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     await taskController.runCleanSystem(l10n);
+    if (!mounted) return;
     await _fetchStorageInfo();
   }
 
