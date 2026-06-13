@@ -345,37 +345,49 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         AppDetailsSectionTitle(
           title: AppLocalizations.of(context)!.details,
         ),
-        AppDetailsInfoRow(
-          icon: Icons.source_rounded,
-          label: AppLocalizations.of(context)!.source,
-          value: widget.app.primarySource,
-        ),
-        AppDetailsInfoRow(
-          icon: Icons.all_inclusive_rounded,
-          label: AppLocalizations.of(context)!.variant,
-          value: widget.app.sources.join(", "),
-        ),
-        AppDetailsInfoRow(
-          icon: Icons.verified_rounded,
-          label: AppLocalizations.of(context)!.version,
-          value: widget.app.version,
-        ),
-        if (_extraDetails?['developer'] != null)
-          AppDetailsInfoRow(
-            icon: Icons.person_rounded,
-            label: AppLocalizations.of(context)!.developer,
-            value: _extraDetails!['developer'],
+        Card(
+          color: colorScheme.surfaceContainerLow,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        if (_extraDetails?['license'] != null)
-          AppDetailsInfoRow(
-            icon: Icons.description_rounded,
-            label: AppLocalizations.of(context)!.license,
-            value: _extraDetails!['license'],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  Icons.source_rounded,
+                  AppLocalizations.of(context)!.source,
+                  widget.app.primarySource,
+                ),
+                _buildInfoRow(
+                  Icons.all_inclusive_rounded,
+                  AppLocalizations.of(context)!.variant,
+                  widget.app.sources.join(", "),
+                ),
+                _buildInfoRow(
+                  Icons.verified_rounded,
+                  AppLocalizations.of(context)!.version,
+                  widget.app.version,
+                ),
+                if (_extraDetails?['developer'] != null)
+                  _buildInfoRow(
+                    Icons.person_rounded,
+                    AppLocalizations.of(context)!.developer,
+                    _extraDetails!['developer'],
+                  ),
+                if (_extraDetails?['license'] != null)
+                  _buildInfoRow(
+                    Icons.description_rounded,
+                    AppLocalizations.of(context)!.license,
+                    _extraDetails!['license'],
+                  ),
+              ],
+            ),
           ),
-        AppDependencySection(
-          variant: _getVariantForSource(_selectedSource),
-          hasCapability: _hasCapability,
         ),
+        _buildDependencySection(theme),
       ],
     );
   }
