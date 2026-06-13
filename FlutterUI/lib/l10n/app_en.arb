@@ -1,89 +1,29 @@
 {
   "@@locale": "en",
   "searchHint": "Search apps, games, tools...",
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
   "featured": "Featured",
-  "@featured": {
-    "description": "Description for featured"
-  },
   "forYou": "For You",
-  "@forYou": {
-    "description": "Description for forYou"
-  },
   "essentialTools": "Essential Tools",
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
   "hotApps": "Hot Apps",
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
   "explore": "Explore",
-  "@explore": {
-    "description": "Description for explore"
-  },
   "search": "Search",
-  "@search": {
-    "description": "Description for search"
-  },
   "settings": "Settings",
-  "@settings": {
-    "description": "Description for settings"
-  },
   "downloads": "Downloads",
-  "@downloads": {
-    "description": "Description for downloads"
-  },
   "help": "Help",
-  "@help": {
-    "description": "Description for help"
-  },
   "userAccount": "User Account",
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
   "install": "Install",
-  "@install": {
-    "description": "Description for install"
-  },
   "open": "Open",
-  "@open": {
-    "description": "Description for open"
-  },
   "uninstall": "Uninstall",
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
   "launch": "Launch",
-  "@launch": {
-    "description": "Description for launch"
-  },
   "about": "About",
-  "@about": {
-    "description": "Description for about"
-  },
   "details": "Details",
-  "@details": {
-    "description": "Description for details"
-  },
   "source": "Source",
-  "@source": {
-    "description": "Description for source"
-  },
   "variant": "Versions",
   "@variant": {
     "description": "Label for app variants/versions"
   },
   "version": "Version",
-  "@version": {
-    "description": "Description for version"
-  },
   "ready": "Ready",
-  "@ready": {
-    "description": "Description for ready"
-  },
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "@resultsFound": {
     "placeholders": {
@@ -93,13 +33,7 @@
     }
   },
   "noResults": "No results found",
-  "@noResults": {
-    "description": "Description for noResults"
-  },
   "searching": "Searching...",
-  "@searching": {
-    "description": "Description for searching"
-  },
   "activity": "Activity",
   "@activity": {
     "description": "Activity tab label"
@@ -109,77 +43,23 @@
     "description": "Category label"
   },
   "packageManager": "Package Manager",
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
   "pacmanOfficial": "Pacman (Official)",
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
   "aurUser": "AUR (User)",
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
   "flatpak": "Flatpak",
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
   "appImage": "AppImage",
-  "@appImage": {
-    "description": "Description for appImage"
-  },
   "sourcePriority": "Source Priority (Drag to reorder)",
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
   "maxResults": "Max Results",
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
   "appearance": "Appearance",
-  "@appearance": {
-    "description": "Description for appearance"
-  },
   "themeColor": "Theme Color Seed",
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
   "followSystem": "Follow System",
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
   "lightMode": "Light Mode",
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
   "darkMode": "Dark Mode",
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
   "loggingLevel": "Logging Level",
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
   "saveAndApply": "Save and Apply",
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
   "configSaved": "Configuration saved, some changes will take effect after restart",
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
   "configSaveFailed": "Failed to save configuration",
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
   "confirmUninstall": "Confirm Uninstall",
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
   "confirmInstall": "Confirm Install",
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
   "confirmActionMsg": "Are you sure you want to perform this action on {name}?",
   "@confirmActionMsg": {
     "placeholders": {
@@ -189,69 +69,21 @@
     }
   },
   "cancel": "Cancel",
-  "@cancel": {
-    "description": "Description for cancel"
-  },
   "confirm": "Confirm",
-  "@confirm": {
-    "description": "Description for confirm"
-  },
   "terminalOutput": "Terminal Output",
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
   "waitingForOutput": "Waiting for output...",
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
   "screenshots": "Screenshots",
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
   "developer": "Developer",
-  "@developer": {
-    "description": "Description for developer"
-  },
   "license": "License",
-  "@license": {
-    "description": "Description for license"
-  },
   "success": "Success",
-  "@success": {
-    "description": "Description for success"
-  },
   "failed": "Failed",
-  "@failed": {
-    "description": "Description for failed"
-  },
   "taskCancelled": "Task Cancelled",
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
   "catDevelopment": "Development",
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
   "catMedia": "Media",
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
   "catInternet": "Internet",
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
   "catSystem": "System",
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
   "catOffice": "Office",
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
   "catGames": "Games",
-  "@catGames": {
-    "description": "Description for catGames"
-  },
   "catGraphics": "Graphics",
   "@catGraphics": {
     "description": "Category for Graphics"
@@ -269,17 +101,8 @@
     "description": "Tooltip for visiting website"
   },
   "updates": "Updates",
-  "@updates": {
-    "description": "Description for updates"
-  },
   "upToDate": "All apps are up to date",
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
   "checkUpdates": "Check for Updates",
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
   "foundUpdates": "{count, plural, =1{Found 1 update} other{Found {count} updates}}",
   "@foundUpdates": {
     "placeholders": {
@@ -289,44 +112,16 @@
     }
   },
   "updateAll": "Update All",
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
   "notifications": "Notifications",
-  "@notifications": {
-    "description": "Description for notifications"
-  },
   "enableNotifications": "Enable Notifications",
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
   "progressNotifications": "Progress Notifications",
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
   "completionNotifications": "Completion Notifications",
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
   "closeToTray": "Close to system tray",
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
   "useSystemTitleBar": "Use system title bar",
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
   "showWindow": "Show Window",
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
   "exit": "Exit",
-  "@exit": {
-    "description": "Description for exit"
-  },
   "trayTooltipUpdates": "{count, plural, =1{OmniStore: Found 1 update} other{OmniStore: Found {count} updates}}",
   "@trayTooltipUpdates": {
-    "description": "Description for trayTooltipUpdates",
     "placeholders": {
       "count": {
         "type": "int"
@@ -334,41 +129,14 @@
     }
   },
   "trayTooltipUpToDate": "OmniStore: Up to date",
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
   "updateReminders": "Update Reminders",
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
   "maintenance": "Maintenance",
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
   "updateAllPackages": "Update All Packages",
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
   "includeAurUpdates": "Include AUR in 'Update All'",
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
   "resetOnboarding": "Reset Onboarding (Welcome Page)",
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
   "resetOnboardingConfirm": "Are you sure you want to reset onboarding? The welcome page will show on next launch.",
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
   "checkInterval": "Update Check Interval (Hours)",
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
   "remindMeOfUpdates": "Remind Me of Updates",
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
   "installingApp": "Installing {name}",
   "@installingApp": {
     "placeholders": {
@@ -386,25 +154,10 @@
     }
   },
   "installSuccessTitle": "Installation Successful",
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
   "uninstallSuccessTitle": "Uninstallation Successful",
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
   "installFailedTitle": "Installation Failed",
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
   "uninstallFailedTitle": "Uninstallation Failed",
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
   "taskCompleted": "Task Completed",
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
-  },
   "searchInstalledHint": "Search installed apps...",
   "@searchInstalledHint": {
     "description": "searchInstalledHint"
@@ -706,145 +459,40 @@
     "description": "Tooltip for locating the app installation folder"
   },
   "delete": "Delete",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "Welcome to OmniStore",
-  "@welcomeTitle": {
-    "description": "Description for welcomeTitle"
-  },
   "welcomeSubtitle": "Providing a simple and elegant software management experience for Arch Linux",
-  "@welcomeSubtitle": {
-    "description": "Description for welcomeSubtitle"
-  },
   "getStarted": "Get Started",
-  "@getStarted": {
-    "description": "Description for getStarted"
-  },
   "skip": "Skip",
-  "@skip": {
-    "description": "Description for skip"
-  },
   "envCheckTitle": "Environment Check",
-  "@envCheckTitle": {
-    "description": "Description for envCheckTitle"
-  },
   "envCheckSubtitle": "Ensuring your system is ready",
-  "@envCheckSubtitle": {
-    "description": "Description for envCheckSubtitle"
-  },
   "envFatalDesc": "Your system doesn't seem to be Arch-based. Most features will be unavailable.",
-  "@envFatalDesc": {
-    "description": "Description for envFatalDesc"
-  },
   "envWarningDesc": "Some necessary components are missing. We can configure them for you.",
-  "@envWarningDesc": {
-    "description": "Description for envWarningDesc"
-  },
   "envOkDesc": "Everything is ready! Your system is perfect.",
-  "@envOkDesc": {
-    "description": "Description for envOkDesc"
-  },
   "fixProblems": "Fix / Configure All",
-  "@fixProblems": {
-    "description": "Description for fixProblems"
-  },
   "continueAnyway": "Continue Anyway",
-  "@continueAnyway": {
-    "description": "Description for continueAnyway"
-  },
   "sourceConfigTitle": "Software Sources",
-  "@sourceConfigTitle": {
-    "description": "Description for sourceConfigTitle"
-  },
   "sourceConfigSubtitle": "Choose the sources you want to enable",
-  "@sourceConfigSubtitle": {
-    "description": "Description for sourceConfigSubtitle"
-  },
   "enableAur": "Enable AUR (Arch User Repository)",
-  "@enableAur": {
-    "description": "Description for enableAur"
-  },
   "yayDesc": "Enabling AUR requires installing the yay helper.",
-  "@yayDesc": {
-    "description": "Description for yayDesc"
-  },
   "aurWarning": "Security Warning: AUR packages are user-contributed. Ensure you trust the source.",
-  "@aurWarning": {
-    "description": "Description for aurWarning"
-  },
   "bootstrapNote": "Note: Setup may require entering your password multiple times.",
-  "@bootstrapNote": {
-    "description": "Description for bootstrapNote"
-  },
   "feedbackDesc": "If you encounter issues, please report them on GitHub.",
-  "@feedbackDesc": {
-    "description": "Description for feedbackDesc"
-  },
   "aiAssistant": "AI Assistant",
-  "@aiAssistant": {
-    "description": "Description for aiAssistant"
-  },
   "aiAssistantDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
-  "@aiAssistantDesc": {
-    "description": "Description for aiAssistantDesc"
-  },
   "aiProviderDesc": "Select your AI model source (Local or Cloud)",
-  "@aiProviderDesc": {
-    "description": "Description for aiProviderDesc"
-  },
   "aiEndpointHelper": "Ollama defaults to http://localhost:11434",
-  "@aiEndpointHelper": {
-    "description": "Description for aiEndpointHelper"
-  },
   "aiApiKeyHelper": "Leave blank for Ollama, enter sk-xxx for OpenAI",
-  "@aiApiKeyHelper": {
-    "description": "Description for aiApiKeyHelper"
-  },
   "howToGetApiKey": "How to get an API key?",
-  "@howToGetApiKey": {
-    "description": "Description for howToGetApiKey"
-  },
   "howToGetApiKeyDesc": "1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider's website, create an API Key, and enter it here.",
-  "@howToGetApiKeyDesc": {
-    "description": "Description for howToGetApiKeyDesc"
-  },
   "gotIt": "Got it",
-  "@gotIt": {
-    "description": "Description for gotIt"
-  },
   "aiOllamaNote": "Note: If using Ollama, ensure it's running with OLLAMA_ORIGINS=\"*\".",
-  "@aiOllamaNote": {
-    "description": "Description for aiOllamaNote"
-  },
   "enterStore": "Enter Store",
-  "@enterStore": {
-    "description": "Description for enterStore"
-  },
   "nextStep": "Next Step",
-  "@nextStep": {
-    "description": "Description for nextStep"
-  },
   "resetCache": "Reset Cache and History",
-  "@resetCache": {
-    "description": "Description for resetCache"
-  },
   "resetCacheDesc": "Clear search history and local recommendations cache",
-  "@resetCacheDesc": {
-    "description": "Description for resetCacheDesc"
-  },
   "resetCacheConfirm": "This will clear your search history and recommendations cache. Proceed?",
-  "@resetCacheConfirm": {
-    "description": "Description for resetCacheConfirm"
-  },
   "resetting": "Resetting...",
-  "@resetting": {
-    "description": "Description for resetting"
-  },
   "resetSuccess": "Cache and History cleared successfully",
-  "@resetSuccess": {
-    "description": "Description for resetSuccess"
-  },
   "resetFailed": "Reset failed: {error}",
   "@resetFailed": {
     "placeholders": {
@@ -854,21 +502,9 @@
     }
   },
   "ollamaLocal": "Ollama (Local)",
-  "@ollamaLocal": {
-    "description": "Description for ollamaLocal"
-  },
   "openaiCompatible": "OpenAI Compatible",
-  "@openaiCompatible": {
-    "description": "Description for openaiCompatible"
-  },
   "googleGemini": "Google Gemini",
-  "@googleGemini": {
-    "description": "Description for googleGemini"
-  },
   "importPackages": "Import Packages",
-  "@importPackages": {
-    "description": "Description for importPackages"
-  },
   "importPackagesConfirm": "{count, plural, =1{Read 1 package from file. Start download?} other{Read {count} packages from file. Start batch download?}}",
   "@importPackagesConfirm": {
     "placeholders": {
@@ -878,29 +514,11 @@
     }
   },
   "allDownloads": "Download All",
-  "@allDownloads": {
-    "description": "Description for allDownloads"
-  },
   "importList": "Import List",
-  "@importList": {
-    "description": "Description for importList"
-  },
   "loadError": "Failed to load recommendations, please check backend status",
-  "@loadError": {
-    "description": "Description for loadError"
-  },
   "community": "Community",
-  "@community": {
-    "description": "Description for community"
-  },
   "official": "Official",
-  "@official": {
-    "description": "Description for official"
-  },
   "verified": "Verified",
-  "@verified": {
-    "description": "Description for verified"
-  },
   "installingPkg": "Installing {name}...",
   "@installingPkg": {
     "placeholders": {
@@ -910,49 +528,16 @@
     }
   },
   "switchSource": "Switch",
-  "@switchSource": {
-    "description": "Description for switchSource"
-  },
   "flatpakBetterDesc": "Found a Flatpak source for this app, which is usually more stable.",
-  "@flatpakBetterDesc": {
-    "description": "Description for flatpakBetterDesc"
-  },
   "aiAnalysisPrompt": "Found error logs, do you need an AI analysis?",
-  "@aiAnalysisPrompt": {
-    "description": "Description for aiAnalysisPrompt"
-  },
   "analyzeNow": "Analyze Now",
-  "@analyzeNow": {
-    "description": "Description for analyzeNow"
-  },
   "cleanOrphans": "Clean unused dependencies (orphans)",
-  "@cleanOrphans": {
-    "description": "Description for cleanOrphans"
-  },
   "securityWarning": "Security Warning",
-  "@securityWarning": {
-    "description": "Description for securityWarning"
-  },
   "aurSecurityDesc": "AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.",
-  "@aurSecurityDesc": {
-    "description": "Description for aurSecurityDesc"
-  },
   "continueInstall": "Continue Install",
-  "@continueInstall": {
-    "description": "Description for continueInstall"
-  },
   "installInfo": "Installation Info",
-  "@installInfo": {
-    "description": "Description for installInfo"
-  },
   "downloadSize": "Download Size",
-  "@downloadSize": {
-    "description": "Description for downloadSize"
-  },
   "installedSize": "Installed Size",
-  "@installedSize": {
-    "description": "Description for installedSize"
-  },
   "dependenciesCount": "{count, plural, =1{Dependency (1)} other{Dependencies ({count})}}",
   "@dependenciesCount": {
     "placeholders": {
@@ -962,57 +547,18 @@
     }
   },
   "runningInBackground": "OmniStore is running in the background, you can open it via the tray icon.",
-  "@runningInBackground": {
-    "description": "Description for runningInBackground"
-  },
   "clearSearch": "Clear Search",
-  "@clearSearch": {
-    "description": "Description for clearSearch"
-  },
   "listView": "List View",
-  "@listView": {
-    "description": "Description for listView"
-  },
   "gridView": "Grid View",
-  "@gridView": {
-    "description": "Description for gridView"
-  },
   "categories": "Categories",
-  "@categories": {
-    "description": "Description for categories"
-  },
   "clearHistory": "Clear History",
-  "@clearHistory": {
-    "description": "Description for clearHistory"
-  },
   "confirmClearHistory": "Are you sure you want to clear all history?",
-  "@confirmClearHistory": {
-    "description": "Description for confirmClearHistory"
-  },
   "viewMore": "View More",
-  "@viewMore": {
-    "description": "Description for viewMore"
-  },
   "logDebug": "DEBUG",
-  "@logDebug": {
-    "description": "Description for logDebug"
-  },
   "logInfo": "INFO",
-  "@logInfo": {
-    "description": "Description for logInfo"
-  },
   "logWarning": "WARNING",
-  "@logWarning": {
-    "description": "Description for logWarning"
-  },
   "logError": "ERROR",
-  "@logError": {
-    "description": "Description for logError"
-  },
   "notificationTitle": "Updates Available",
-  "@notificationTitle": {
-    "description": "Description for notificationTitle"
-  },
   "notificationBody": "{count, plural, =1{1 application is available for update} other{{count} applications are available for update}}",
   "@notificationBody": {
     "placeholders": {
@@ -1022,21 +568,9 @@
     }
   },
   "preparingUpdate": "Preparing update...",
-  "@preparingUpdate": {
-    "description": "Description for preparingUpdate"
-  },
   "processing": "Processing",
-  "@processing": {
-    "description": "Description for processing"
-  },
   "clear": "Clear",
-  "@clear": {
-    "description": "Description for clear"
-  },
   "retry": "Retry",
-  "@retry": {
-    "description": "Description for retry"
-  },
   "aiResponseFailed": "AI failed to respond.",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -1187,21 +721,9 @@
   },
   "taskProcessing": "Processing",
   "collapse": "Collapse",
-  "@collapse": {
-    "description": "Description for collapse"
-  },
   "expand": "Expand",
-  "@expand": {
-    "description": "Description for expand"
-  },
   "all": "All",
-  "@all": {
-    "description": "Description for all"
-  },
   "relatedApps": "Related Apps",
-  "@relatedApps": {
-    "description": "Description for relatedApps"
-  },
   "activeSources": "Active Sources",
   "@activeSources": {
     "description": "Label for active software sources"
@@ -1215,9 +737,6 @@
     "description": "Button to add a custom source"
   },
   "addCustomSourceDesc": "Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos",
-  "@addCustomSourceDesc": {
-    "description": "Description for adding custom sources"
-  },
   "sourceType": "Source Type",
   "@sourceType": {
     "description": "Label for source type"
@@ -1313,17 +832,11 @@
     "description": "Label for background daemon"
   },
   "enableDaemonDesc": "Regularly check for updates in the background",
-  "@enableDaemonDesc": {
-    "description": "Description for background daemon"
-  },
   "autoUpdate": "Silent Auto Update",
   "@autoUpdate": {
     "description": "Label for auto update"
   },
   "autoUpdateDesc": "Automatically download and update all packages in the background",
-  "@autoUpdateDesc": {
-    "description": "Description for auto update"
-  },
   "checkIntervalTitle": "Update Check Frequency",
   "@checkIntervalTitle": {
     "description": "Title for update check interval"

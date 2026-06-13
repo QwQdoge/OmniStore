@@ -1,89 +1,26 @@
 {
   "@@locale": "zh",
   "searchHint": "搜索应用、游戏、工具...",
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
   "featured": "精选",
-  "@featured": {
-    "description": "Description for featured"
-  },
   "forYou": "为你推荐",
-  "@forYou": {
-    "description": "Description for forYou"
-  },
   "essentialTools": "必备工具",
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
   "hotApps": "热门应用",
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
   "explore": "探索",
-  "@explore": {
-    "description": "Description for explore"
-  },
   "search": "搜索",
-  "@search": {
-    "description": "Description for search"
-  },
   "settings": "设置",
-  "@settings": {
-    "description": "Description for settings"
-  },
   "downloads": "下载",
-  "@downloads": {
-    "description": "Description for downloads"
-  },
   "help": "帮助",
-  "@help": {
-    "description": "Description for help"
-  },
   "userAccount": "用户账户",
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
   "install": "安装",
-  "@install": {
-    "description": "Description for install"
-  },
   "open": "打开",
-  "@open": {
-    "description": "Description for open"
-  },
   "uninstall": "卸载",
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
   "launch": "启动",
-  "@launch": {
-    "description": "Description for launch"
-  },
   "about": "关于",
-  "@about": {
-    "description": "Description for about"
-  },
   "details": "详情",
-  "@details": {
-    "description": "Description for details"
-  },
   "source": "来源",
-  "@source": {
-    "description": "Description for source"
-  },
   "variant": "可用版本",
-  "@variant": {
-    "description": "Description for variant"
-  },
   "version": "版本",
-  "@version": {
-    "description": "Description for version"
-  },
   "ready": "已安装",
-  "@ready": {
-    "description": "Description for ready"
-  },
   "resultsFound": "找到 {count} 个结果",
   "@resultsFound": {
     "placeholders": {
@@ -93,13 +30,7 @@
     }
   },
   "noResults": "暂无搜索结果",
-  "@noResults": {
-    "description": "Description for noResults"
-  },
   "searching": "正在搜索...",
-  "@searching": {
-    "description": "Description for searching"
-  },
   "activity": "任务记录",
   "@activity": {
     "description": "Activity tab label"
@@ -109,77 +40,23 @@
     "description": "Category label"
   },
   "packageManager": "包管理器",
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
   "pacmanOfficial": "Pacman (官方库)",
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
   "aurUser": "AUR (用户库)",
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
   "flatpak": "Flatpak",
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
   "appImage": "AppImage",
-  "@appImage": {
-    "description": "Description for appImage"
-  },
   "sourcePriority": "应用源优先级 (拖动排序)",
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
   "maxResults": "最大显示结果数",
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
   "appearance": "界面外观",
-  "@appearance": {
-    "description": "Description for appearance"
-  },
   "themeColor": "主题色",
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
   "followSystem": "跟随系统",
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
   "lightMode": "浅色模式",
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
   "darkMode": "深色模式",
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
   "loggingLevel": "日志详细程度",
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
   "saveAndApply": "保存并应用",
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
   "configSaved": "配置已保存，部分更改将在重启后生效",
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
   "configSaveFailed": "保存配置失败",
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
   "confirmUninstall": "确认卸载",
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
   "confirmInstall": "确认安装",
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
   "confirmActionMsg": "确定要对 {name} 执行此操作吗？",
   "@confirmActionMsg": {
     "placeholders": {
@@ -189,69 +66,21 @@
     }
   },
   "cancel": "取消",
-  "@cancel": {
-    "description": "Description for cancel"
-  },
   "confirm": "确认",
-  "@confirm": {
-    "description": "Description for confirm"
-  },
   "terminalOutput": "终端输出",
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
   "waitingForOutput": "等待终端输出...",
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
   "screenshots": "应用截图",
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
   "developer": "开发者",
-  "@developer": {
-    "description": "Description for developer"
-  },
   "license": "许可",
-  "@license": {
-    "description": "Description for license"
-  },
   "success": "成功",
-  "@success": {
-    "description": "Description for success"
-  },
   "failed": "失败",
-  "@failed": {
-    "description": "Description for failed"
-  },
   "taskCancelled": "任务已取消",
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
   "catDevelopment": "开发工具",
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
   "catMedia": "影音娱乐",
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
   "catInternet": "互联网",
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
   "catSystem": "系统工具",
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
   "catOffice": "办公",
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
   "catGames": "游戏",
-  "@catGames": {
-    "description": "Description for catGames"
-  },
   "catGraphics": "图形设计",
   "@catGraphics": {
     "description": "Category for Graphics"
@@ -269,17 +98,8 @@
     "description": "Tooltip for visiting website"
   },
   "updates": "更新",
-  "@updates": {
-    "description": "Description for updates"
-  },
   "upToDate": "应用已是最新",
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
   "checkUpdates": "检查更新",
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
   "foundUpdates": "发现 {count} 个可用更新",
   "@foundUpdates": {
     "placeholders": {
@@ -289,44 +109,16 @@
     }
   },
   "updateAll": "全部更新",
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
   "notifications": "通知设置",
-  "@notifications": {
-    "description": "Description for notifications"
-  },
   "enableNotifications": "启用通知",
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
   "progressNotifications": "进度通知",
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
   "completionNotifications": "完成通知",
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
   "closeToTray": "关闭时隐藏到系统托盘",
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
   "useSystemTitleBar": "使用系统标题栏",
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
   "showWindow": "显示窗口",
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
   "exit": "退出",
-  "@exit": {
-    "description": "Description for exit"
-  },
   "trayTooltipUpdates": "OmniStore: 共有 {count} 项可更新",
   "@trayTooltipUpdates": {
-    "description": "Description for trayTooltipUpdates",
     "placeholders": {
       "count": {
         "type": "int"
@@ -334,41 +126,14 @@
     }
   },
   "trayTooltipUpToDate": "OmniStore: 应用已是最新",
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
   "updateReminders": "更新提醒",
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
   "maintenance": "维护",
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
   "updateAllPackages": "更新所有应用",
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
   "includeAurUpdates": "全部更新时包含 AUR",
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
   "resetOnboarding": "重置新手引导",
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
   "resetOnboardingConfirm": "确定要重置新手引导吗？下次启动时将重新显示欢迎页面。",
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
   "checkInterval": "自动检查更新间隔 (小时)",
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
   "remindMeOfUpdates": "提醒我有可用更新",
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
   "installingApp": "正在安装 {name}",
   "@installingApp": {
     "placeholders": {
@@ -386,25 +151,10 @@
     }
   },
   "installSuccessTitle": "安装成功",
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
   "uninstallSuccessTitle": "卸载成功",
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
   "installFailedTitle": "安装失败",
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
   "uninstallFailedTitle": "卸载失败",
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
   "taskCompleted": "任务已完成",
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
-  },
   "searchInstalledHint": "搜索已安装的应用...",
   "@searchInstalledHint": {
     "description": "Hint text for searching installed applications"
@@ -445,7 +195,7 @@
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "删除孤儿软件包并清理 pacman 缓存",
+  "systemCleaningSubtitle": "清理孤儿软件包与 pacman 缓存",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -540,7 +290,7 @@
   "@advanced": {
     "description": "Label for advanced settings toggle"
   },
-  "repositories": "软件仓库",
+  "repositories": "软件源",
   "@repositories": {
     "description": "Section title for software repositories"
   },
@@ -552,7 +302,7 @@
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
   },
-  "aiEnabledDesc": "启用 AI 驱动的搜索、应用解释和错误诊断。",
+  "aiEnabledDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
   "@aiEnabledDesc": {
     "description": "aiEnabledDesc"
   },
@@ -710,145 +460,40 @@
     "description": "Tooltip for locating the app installation folder"
   },
   "delete": "删除",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "欢迎来到 OmniStore",
-  "@welcomeTitle": {
-    "description": "Description for welcomeTitle"
-  },
   "welcomeSubtitle": "为您提供简单、优雅的 Arch Linux 应用管理体验",
-  "@welcomeSubtitle": {
-    "description": "Description for welcomeSubtitle"
-  },
   "getStarted": "开始使用",
-  "@getStarted": {
-    "description": "Description for getStarted"
-  },
   "skip": "跳过",
-  "@skip": {
-    "description": "Description for skip"
-  },
   "envCheckTitle": "环境检查",
-  "@envCheckTitle": {
-    "description": "Description for envCheckTitle"
-  },
   "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
-  "@envCheckSubtitle": {
-    "description": "Description for envCheckSubtitle"
-  },
   "envFatalDesc": "您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。",
-  "@envFatalDesc": {
-    "description": "Description for envFatalDesc"
-  },
   "envWarningDesc": "缺少一些必要的组件，我们可以为您自动配置。",
-  "@envWarningDesc": {
-    "description": "Description for envWarningDesc"
-  },
   "envOkDesc": "一切就绪！系统环境已完美配置。",
-  "@envOkDesc": {
-    "description": "Description for envOkDesc"
-  },
   "fixProblems": "一键修复/配置",
-  "@fixProblems": {
-    "description": "Description for fixProblems"
-  },
   "continueAnyway": "仍然继续",
-  "@continueAnyway": {
-    "description": "Description for continueAnyway"
-  },
   "sourceConfigTitle": "应用源配置",
-  "@sourceConfigTitle": {
-    "description": "Description for sourceConfigTitle"
-  },
   "sourceConfigSubtitle": "选择您想要启用的应用来源",
-  "@sourceConfigSubtitle": {
-    "description": "Description for sourceConfigSubtitle"
-  },
   "enableAur": "启用 AUR (Arch User Repository)",
-  "@enableAur": {
-    "description": "Description for enableAur"
-  },
   "yayDesc": "启用 AUR 需要安装 yay 助手。",
-  "@yayDesc": {
-    "description": "Description for yayDesc"
-  },
   "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
-  "@aurWarning": {
-    "description": "Description for aurWarning"
-  },
   "bootstrapNote": "提示：配置过程可能需要多次输入管理员密码。",
-  "@bootstrapNote": {
-    "description": "Description for bootstrapNote"
-  },
   "feedbackDesc": "如果您遇到问题，请通过 GitHub 反馈给我们。",
-  "@feedbackDesc": {
-    "description": "Description for feedbackDesc"
-  },
   "aiAssistant": "AI 助手",
-  "@aiAssistant": {
-    "description": "Description for aiAssistant"
-  },
   "aiAssistantDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
-  "@aiAssistantDesc": {
-    "description": "Description for aiAssistantDesc"
-  },
   "aiProviderDesc": "选择您的 AI 模型来源 (本地或云端)",
-  "@aiProviderDesc": {
-    "description": "Description for aiProviderDesc"
-  },
   "aiEndpointHelper": "Ollama 默认为 http://localhost:11434",
-  "@aiEndpointHelper": {
-    "description": "Description for aiEndpointHelper"
-  },
   "aiApiKeyHelper": "如果是 Ollama 则留空，OpenAI 请填入 sk-xxx",
-  "@aiApiKeyHelper": {
-    "description": "Description for aiApiKeyHelper"
-  },
   "howToGetApiKey": "如何获取 API 密钥？",
-  "@howToGetApiKey": {
-    "description": "Description for howToGetApiKey"
-  },
   "howToGetApiKeyDesc": "1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。",
-  "@howToGetApiKeyDesc": {
-    "description": "Description for howToGetApiKeyDesc"
-  },
   "gotIt": "知道了",
-  "@gotIt": {
-    "description": "Description for gotIt"
-  },
   "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
-  "@aiOllamaNote": {
-    "description": "Description for aiOllamaNote"
-  },
   "enterStore": "进入商店",
-  "@enterStore": {
-    "description": "Description for enterStore"
-  },
   "nextStep": "下一步",
-  "@nextStep": {
-    "description": "Description for nextStep"
-  },
   "resetCache": "重置缓存与历史记录",
-  "@resetCache": {
-    "description": "Description for resetCache"
-  },
   "resetCacheDesc": "清空搜索历史与本地推荐缓存",
-  "@resetCacheDesc": {
-    "description": "Description for resetCacheDesc"
-  },
   "resetCacheConfirm": "这将清空您的搜索历史和推荐缓存。是否继续？",
-  "@resetCacheConfirm": {
-    "description": "Description for resetCacheConfirm"
-  },
   "resetting": "正在重置...",
-  "@resetting": {
-    "description": "Description for resetting"
-  },
   "resetSuccess": "缓存与历史记录已成功清空",
-  "@resetSuccess": {
-    "description": "Description for resetSuccess"
-  },
   "resetFailed": "重置失败: {error}",
   "@resetFailed": {
     "placeholders": {
@@ -858,21 +503,9 @@
     }
   },
   "ollamaLocal": "Ollama (本地)",
-  "@ollamaLocal": {
-    "description": "Description for ollamaLocal"
-  },
   "openaiCompatible": "OpenAI 兼容",
-  "@openaiCompatible": {
-    "description": "Description for openaiCompatible"
-  },
   "googleGemini": "Google Gemini",
-  "@googleGemini": {
-    "description": "Description for googleGemini"
-  },
   "importPackages": "导入软件包",
-  "@importPackages": {
-    "description": "Description for importPackages"
-  },
   "importPackagesConfirm": "已从文件中读取 {count} 个软件包。是否开始批量下载？",
   "@importPackagesConfirm": {
     "placeholders": {
@@ -882,29 +515,11 @@
     }
   },
   "allDownloads": "全部下载",
-  "@allDownloads": {
-    "description": "Description for allDownloads"
-  },
   "importList": "导入列表",
-  "@importList": {
-    "description": "Description for importList"
-  },
   "loadError": "无法加载推荐内容，请检查后端状态",
-  "@loadError": {
-    "description": "Description for loadError"
-  },
   "community": "社区",
-  "@community": {
-    "description": "Description for community"
-  },
   "official": "官方",
-  "@official": {
-    "description": "Description for official"
-  },
   "verified": "官方认证",
-  "@verified": {
-    "description": "Description for verified"
-  },
   "installingPkg": "正在安装 {name}...",
   "@installingPkg": {
     "placeholders": {
@@ -914,49 +529,16 @@
     }
   },
   "switchSource": "切换",
-  "@switchSource": {
-    "description": "Description for switchSource"
-  },
   "flatpakBetterDesc": "发现此应用有 Flatpak 源，通常更稳定。",
-  "@flatpakBetterDesc": {
-    "description": "Description for flatpakBetterDesc"
-  },
   "aiAnalysisPrompt": "发现错误日志，需要 AI 分析吗？",
-  "@aiAnalysisPrompt": {
-    "description": "Description for aiAnalysisPrompt"
-  },
   "analyzeNow": "立即分析",
-  "@analyzeNow": {
-    "description": "Description for analyzeNow"
-  },
   "cleanOrphans": "同时清理无用依赖 (孤儿软件包)",
-  "@cleanOrphans": {
-    "description": "Description for cleanOrphans"
-  },
   "securityWarning": "安全风险提示",
-  "@securityWarning": {
-    "description": "Description for securityWarning"
-  },
   "aurSecurityDesc": "AUR (Arch User Repository) 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。",
-  "@aurSecurityDesc": {
-    "description": "Description for aurSecurityDesc"
-  },
   "continueInstall": "继续安装",
-  "@continueInstall": {
-    "description": "Description for continueInstall"
-  },
   "installInfo": "安装信息",
-  "@installInfo": {
-    "description": "Description for installInfo"
-  },
   "downloadSize": "下载大小",
-  "@downloadSize": {
-    "description": "Description for downloadSize"
-  },
   "installedSize": "安装后大小",
-  "@installedSize": {
-    "description": "Description for installedSize"
-  },
   "dependenciesCount": "依赖软件包 ({count})",
   "@dependenciesCount": {
     "placeholders": {
@@ -966,57 +548,18 @@
     }
   },
   "runningInBackground": "OmniStore 正在后台运行，可通过托盘图标打开",
-  "@runningInBackground": {
-    "description": "Description for runningInBackground"
-  },
   "clearSearch": "清除搜索",
-  "@clearSearch": {
-    "description": "Description for clearSearch"
-  },
   "listView": "列表视图",
-  "@listView": {
-    "description": "Description for listView"
-  },
   "gridView": "网格视图",
-  "@gridView": {
-    "description": "Description for gridView"
-  },
   "categories": "分类",
-  "@categories": {
-    "description": "Description for categories"
-  },
   "clearHistory": "清空历史记录",
-  "@clearHistory": {
-    "description": "Description for clearHistory"
-  },
   "confirmClearHistory": "确定要删除所有搜索历史吗？",
-  "@confirmClearHistory": {
-    "description": "Description for confirmClearHistory"
-  },
   "viewMore": "查看更多",
-  "@viewMore": {
-    "description": "Description for viewMore"
-  },
   "logDebug": "调试 (DEBUG)",
-  "@logDebug": {
-    "description": "Description for logDebug"
-  },
   "logInfo": "信息 (INFO)",
-  "@logInfo": {
-    "description": "Description for logInfo"
-  },
   "logWarning": "警告 (WARNING)",
-  "@logWarning": {
-    "description": "Description for logWarning"
-  },
   "logError": "错误 (ERROR)",
-  "@logError": {
-    "description": "Description for logError"
-  },
   "notificationTitle": "发现可用更新",
-  "@notificationTitle": {
-    "description": "Description for notificationTitle"
-  },
   "notificationBody": "你的系统中有 {count} 个应用可以更新",
   "@notificationBody": {
     "placeholders": {
@@ -1026,21 +569,9 @@
     }
   },
   "preparingUpdate": "正在准备更新...",
-  "@preparingUpdate": {
-    "description": "Description for preparingUpdate"
-  },
   "processing": "正在处理",
-  "@processing": {
-    "description": "Description for processing"
-  },
   "clear": "清除",
-  "@clear": {
-    "description": "Description for clear"
-  },
   "retry": "重试",
-  "@retry": {
-    "description": "Description for retry"
-  },
   "aiResponseFailed": "AI 响应失败。",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -1191,28 +722,16 @@
   },
   "taskProcessing": "正在处理",
   "collapse": "收起",
-  "@collapse": {
-    "description": "Description for collapse"
-  },
   "expand": "展开",
-  "@expand": {
-    "description": "Description for expand"
-  },
   "all": "全部",
-  "@all": {
-    "description": "Description for all"
-  },
   "relatedApps": "相关应用",
-  "@relatedApps": {
-    "description": "Description for relatedApps"
-  },
   "activeSources": "已启用软件源",
   "autoDetect": "自动检测",
   "addCustomSource": "添加自定义源",
   "addCustomSourceDesc": "配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库",
   "sourceType": "来源类型",
   "githubRepoType": "GitHub 仓库 (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (工作区/仓库)",
+  "bituRepoType": "Bitu / Bitbucket （工作区/仓库）",
   "flatpakRemoteType": "Flatpak 远程库",
   "appImageFeedType": "AppImage 订阅链接",
   "sourceName": "来源名称",
@@ -1239,9 +758,6 @@
   },
   "@addCustomSource": {
     "description": "Button to add a custom source"
-  },
-  "@addCustomSourceDesc": {
-    "description": "Description for adding custom sources"
   },
   "@sourceType": {
     "description": "Label for source type"
@@ -1326,14 +842,8 @@
   "@enableDaemon": {
     "description": "Label for background daemon"
   },
-  "@enableDaemonDesc": {
-    "description": "Description for background daemon"
-  },
   "@autoUpdate": {
     "description": "Label for auto update"
-  },
-  "@autoUpdateDesc": {
-    "description": "Description for auto update"
   },
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
@@ -1421,5 +931,12 @@
   "categorySemantics": "分类：{name}",
   "temperatureRangeError": "值必须在 0.0 到 2.0 之间",
   "enableSystemdService": "启用 systemd 后台更新服务",
-  "enableSystemdServiceDesc": "允许在应用关闭时通过注册 systemd 定时器来静默检查更新"
+  "enableSystemdServiceDesc": "允许在应用关闭时通过注册 systemd 定时器来静默检查更新",
+  "@categorySemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

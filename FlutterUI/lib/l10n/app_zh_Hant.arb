@@ -1,89 +1,26 @@
 {
   "@@locale": "zh_Hant",
   "searchHint": "搜尋應用程式、遊戲、工具...",
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
   "featured": "精選",
-  "@featured": {
-    "description": "Description for featured"
-  },
   "forYou": "為您推薦",
-  "@forYou": {
-    "description": "Description for forYou"
-  },
   "essentialTools": "必備工具",
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
   "hotApps": "熱門應用",
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
   "explore": "探索",
-  "@explore": {
-    "description": "Description for explore"
-  },
   "search": "搜尋",
-  "@search": {
-    "description": "Description for search"
-  },
   "settings": "設定",
-  "@settings": {
-    "description": "Description for settings"
-  },
   "downloads": "下載",
-  "@downloads": {
-    "description": "Description for downloads"
-  },
   "help": "幫助",
-  "@help": {
-    "description": "Description for help"
-  },
   "userAccount": "使用者帳戶",
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
   "install": "安裝",
-  "@install": {
-    "description": "Description for install"
-  },
   "open": "開啟",
-  "@open": {
-    "description": "Description for open"
-  },
   "uninstall": "解除安裝",
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
   "launch": "啟動",
-  "@launch": {
-    "description": "Description for launch"
-  },
   "about": "關於",
-  "@about": {
-    "description": "Description for about"
-  },
   "details": "詳情",
-  "@details": {
-    "description": "Description for details"
-  },
   "source": "來源",
-  "@source": {
-    "description": "Description for source"
-  },
   "variant": "可用版本",
-  "@variant": {
-    "description": "Description for variant"
-  },
   "version": "版本",
-  "@version": {
-    "description": "Description for version"
-  },
   "ready": "已安裝",
-  "@ready": {
-    "description": "Description for ready"
-  },
   "resultsFound": "找到 {count} 個結果",
   "@resultsFound": {
     "placeholders": {
@@ -93,13 +30,7 @@
     }
   },
   "noResults": "暫無搜尋結果",
-  "@noResults": {
-    "description": "Description for noResults"
-  },
   "searching": "搜尋中...",
-  "@searching": {
-    "description": "Description for searching"
-  },
   "activity": "任務記錄",
   "@activity": {
     "description": "Activity tab label"
@@ -109,77 +40,23 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
   "pacmanOfficial": "Pacman (官方庫)",
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
   "aurUser": "AUR (使用者庫)",
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
   "flatpak": "Flatpak",
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
   "appImage": "AppImage",
-  "@appImage": {
-    "description": "Description for appImage"
-  },
   "sourcePriority": "來源優先級（拖曳排序）",
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
   "maxResults": "最大結果數",
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
   "appearance": "介面外觀",
-  "@appearance": {
-    "description": "Description for appearance"
-  },
   "themeColor": "主題色",
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
   "followSystem": "跟隨系統",
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
   "lightMode": "淺色模式",
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
   "darkMode": "深色模式",
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
   "loggingLevel": "日誌詳細程度",
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
   "saveAndApply": "儲存並套用",
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
   "configSaved": "設定已儲存，部分更改將在重啟後生效",
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
   "configSaveFailed": "儲存設定失敗",
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
   "confirmUninstall": "確認解除安裝",
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
   "confirmInstall": "確認安裝",
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
   "confirmActionMsg": "確定要對 {name} 執行此操作嗎？",
   "@confirmActionMsg": {
     "placeholders": {
@@ -189,69 +66,21 @@
     }
   },
   "cancel": "取消",
-  "@cancel": {
-    "description": "Description for cancel"
-  },
   "confirm": "確定",
-  "@confirm": {
-    "description": "Description for confirm"
-  },
   "terminalOutput": "終端輸出",
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
   "waitingForOutput": "等待終端輸出...",
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
   "screenshots": "應用程式截圖",
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
   "developer": "開發者",
-  "@developer": {
-    "description": "Description for developer"
-  },
   "license": "授權",
-  "@license": {
-    "description": "Description for license"
-  },
   "success": "成功",
-  "@success": {
-    "description": "Description for success"
-  },
   "failed": "失敗",
-  "@failed": {
-    "description": "Description for failed"
-  },
   "taskCancelled": "任務已取消",
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
   "catDevelopment": "開發工具",
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
   "catMedia": "影音娛樂",
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
   "catInternet": "網際網路",
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
   "catSystem": "系統工具",
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
   "catOffice": "辦公",
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
   "catGames": "遊戲",
-  "@catGames": {
-    "description": "Description for catGames"
-  },
   "catGraphics": "圖形設計",
   "@catGraphics": {
     "description": "Category for Graphics"
@@ -269,17 +98,8 @@
     "description": "Tooltip for visiting website"
   },
   "updates": "更新",
-  "@updates": {
-    "description": "Description for updates"
-  },
   "upToDate": "已是最新",
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
   "checkUpdates": "檢查更新",
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
   "foundUpdates": "發現 {count} 個可用更新",
   "@foundUpdates": {
     "placeholders": {
@@ -289,44 +109,16 @@
     }
   },
   "updateAll": "全部更新",
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
   "notifications": "通知",
-  "@notifications": {
-    "description": "Description for notifications"
-  },
   "enableNotifications": "啟用通知",
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
   "progressNotifications": "進度通知",
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
   "completionNotifications": "完成通知",
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
   "closeToTray": "關閉時隱藏至系統匣",
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
   "useSystemTitleBar": "使用系統標題列",
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
   "showWindow": "顯示視窗",
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
   "exit": "退出",
-  "@exit": {
-    "description": "Description for exit"
-  },
   "trayTooltipUpdates": "OmniStore: 共有 {count} 項可更新",
   "@trayTooltipUpdates": {
-    "description": "Description for trayTooltipUpdates",
     "placeholders": {
       "count": {
         "type": "int"
@@ -334,41 +126,14 @@
     }
   },
   "trayTooltipUpToDate": "OmniStore: 已是最新",
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
   "updateReminders": "更新提醒",
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
   "maintenance": "維護",
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
   "updateAllPackages": "更新所有套件",
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
   "includeAurUpdates": "全部更新時包含 AUR",
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
   "resetOnboarding": "重置引導",
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
   "resetOnboardingConfirm": "確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。",
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
   "checkInterval": "更新檢查間隔（小時）",
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
   "remindMeOfUpdates": "有更新時提醒我",
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
   "installingApp": "正在安裝 {name}",
   "@installingApp": {
     "placeholders": {
@@ -386,25 +151,10 @@
     }
   },
   "installSuccessTitle": "安裝成功",
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
   "uninstallSuccessTitle": "解除安裝成功",
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
   "installFailedTitle": "安裝失敗",
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
   "uninstallFailedTitle": "解除安裝失敗",
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
   "taskCompleted": "任務已完成",
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
-  },
   "searchInstalledHint": "搜尋已安裝的應用程式...",
   "@searchInstalledHint": {
     "description": "Hint text for searching within installed applications"
@@ -445,7 +195,7 @@
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "刪除孤兒套件並清理 pacman 快取",
+  "systemCleaningSubtitle": "清理孤兒套件與 pacman 快取",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -552,7 +302,7 @@
   "@aiEnabled": {
     "description": "Toggle to enable the AI assistant"
   },
-  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解釋和錯誤診斷。",
+  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "@aiEnabledDesc": {
     "description": "aiEnabledDesc"
   },
@@ -709,145 +459,40 @@
     "description": "Tooltip for locating the app installation folder"
   },
   "delete": "刪除",
-  "@delete": {
-    "description": "Description for delete"
-  },
   "welcomeTitle": "歡迎來到 OmniStore",
-  "@welcomeTitle": {
-    "description": "Description for welcomeTitle"
-  },
   "welcomeSubtitle": "為您提供簡單、優雅的 Arch Linux 應用程式管理體驗",
-  "@welcomeSubtitle": {
-    "description": "Description for welcomeSubtitle"
-  },
   "getStarted": "開始使用",
-  "@getStarted": {
-    "description": "Description for getStarted"
-  },
   "skip": "跳過",
-  "@skip": {
-    "description": "Description for skip"
-  },
   "envCheckTitle": "環境檢查",
-  "@envCheckTitle": {
-    "description": "Description for envCheckTitle"
-  },
   "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
-  "@envCheckSubtitle": {
-    "description": "Description for envCheckSubtitle"
-  },
   "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
-  "@envFatalDesc": {
-    "description": "Description for envFatalDesc"
-  },
   "envWarningDesc": "缺少一些必要的組件，我們可以為您自動設定。",
-  "@envWarningDesc": {
-    "description": "Description for envWarningDesc"
-  },
   "envOkDesc": "一切就緒！系統環境已完美配置。",
-  "@envOkDesc": {
-    "description": "Description for envOkDesc"
-  },
   "fixProblems": "一鍵修復/設定",
-  "@fixProblems": {
-    "description": "Description for fixProblems"
-  },
   "continueAnyway": "仍然繼續",
-  "@continueAnyway": {
-    "description": "Description for continueAnyway"
-  },
   "sourceConfigTitle": "應用程式來源設定",
-  "@sourceConfigTitle": {
-    "description": "Description for sourceConfigTitle"
-  },
   "sourceConfigSubtitle": "選擇您想要啟用的應用程式來源",
-  "@sourceConfigSubtitle": {
-    "description": "Description for sourceConfigSubtitle"
-  },
   "enableAur": "啟用 AUR (Arch User Repository)",
-  "@enableAur": {
-    "description": "Description for enableAur"
-  },
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
-  "@yayDesc": {
-    "description": "Description for yayDesc"
-  },
   "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
-  "@aurWarning": {
-    "description": "Description for aurWarning"
-  },
   "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "@bootstrapNote": {
-    "description": "Description for bootstrapNote"
-  },
   "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
-  "@feedbackDesc": {
-    "description": "Description for feedbackDesc"
-  },
   "aiAssistant": "AI 助手",
-  "@aiAssistant": {
-    "description": "Description for aiAssistant"
-  },
   "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
-  "@aiAssistantDesc": {
-    "description": "Description for aiAssistantDesc"
-  },
   "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
-  "@aiProviderDesc": {
-    "description": "Description for aiProviderDesc"
-  },
   "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "@aiEndpointHelper": {
-    "description": "Description for aiEndpointHelper"
-  },
   "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
-  "@aiApiKeyHelper": {
-    "description": "Description for aiApiKeyHelper"
-  },
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "@howToGetApiKey": {
-    "description": "Description for howToGetApiKey"
-  },
   "howToGetApiKeyDesc": "1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。",
-  "@howToGetApiKeyDesc": {
-    "description": "Description for howToGetApiKeyDesc"
-  },
   "gotIt": "知道了",
-  "@gotIt": {
-    "description": "Description for gotIt"
-  },
   "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
-  "@aiOllamaNote": {
-    "description": "Description for aiOllamaNote"
-  },
   "enterStore": "進入商店",
-  "@enterStore": {
-    "description": "Description for enterStore"
-  },
   "nextStep": "下一步",
-  "@nextStep": {
-    "description": "Description for nextStep"
-  },
   "resetCache": "重置快取與歷史記錄",
-  "@resetCache": {
-    "description": "Description for resetCache"
-  },
   "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
-  "@resetCacheDesc": {
-    "description": "Description for resetCacheDesc"
-  },
   "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
-  "@resetCacheConfirm": {
-    "description": "Description for resetCacheConfirm"
-  },
   "resetting": "正在重置...",
-  "@resetting": {
-    "description": "Description for resetting"
-  },
   "resetSuccess": "快取與歷史記錄已成功清空",
-  "@resetSuccess": {
-    "description": "Description for resetSuccess"
-  },
   "resetFailed": "重置失敗: {error}",
   "@resetFailed": {
     "placeholders": {
@@ -857,21 +502,9 @@
     }
   },
   "ollamaLocal": "Ollama (本地)",
-  "@ollamaLocal": {
-    "description": "Description for ollamaLocal"
-  },
   "openaiCompatible": "OpenAI 相容",
-  "@openaiCompatible": {
-    "description": "Description for openaiCompatible"
-  },
   "googleGemini": "Google Gemini",
-  "@googleGemini": {
-    "description": "Description for googleGemini"
-  },
   "importPackages": "匯入套件",
-  "@importPackages": {
-    "description": "Description for importPackages"
-  },
   "importPackagesConfirm": "已從檔案中讀取 {count} 個套件。是否開始批次下載？",
   "@importPackagesConfirm": {
     "placeholders": {
@@ -881,29 +514,11 @@
     }
   },
   "allDownloads": "全部下載",
-  "@allDownloads": {
-    "description": "Description for allDownloads"
-  },
   "importList": "匯入列表",
-  "@importList": {
-    "description": "Description for importList"
-  },
   "loadError": "無法載入推薦內容，請檢查背景狀態",
-  "@loadError": {
-    "description": "Description for loadError"
-  },
   "community": "社群",
-  "@community": {
-    "description": "Description for community"
-  },
   "official": "官方",
-  "@official": {
-    "description": "Description for official"
-  },
   "verified": "官方認證",
-  "@verified": {
-    "description": "Description for verified"
-  },
   "installingPkg": "正在安裝 {name}...",
   "@installingPkg": {
     "placeholders": {
@@ -913,49 +528,16 @@
     }
   },
   "switchSource": "切換",
-  "@switchSource": {
-    "description": "Description for switchSource"
-  },
   "flatpakBetterDesc": "發現此應用程式有 Flatpak 來源，通常更穩定。",
-  "@flatpakBetterDesc": {
-    "description": "Description for flatpakBetterDesc"
-  },
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
-  "@aiAnalysisPrompt": {
-    "description": "Description for aiAnalysisPrompt"
-  },
   "analyzeNow": "立即分析",
-  "@analyzeNow": {
-    "description": "Description for analyzeNow"
-  },
   "cleanOrphans": "同時清理無用依賴 (孤兒套件)",
-  "@cleanOrphans": {
-    "description": "Description for cleanOrphans"
-  },
   "securityWarning": "安全風險提示",
-  "@securityWarning": {
-    "description": "Description for securityWarning"
-  },
   "aurSecurityDesc": "AUR (Arch User Repository) 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
-  "@aurSecurityDesc": {
-    "description": "Description for aurSecurityDesc"
-  },
   "continueInstall": "繼續安裝",
-  "@continueInstall": {
-    "description": "Description for continueInstall"
-  },
   "installInfo": "安裝資訊",
-  "@installInfo": {
-    "description": "Description for installInfo"
-  },
   "downloadSize": "下載大小",
-  "@downloadSize": {
-    "description": "Description for downloadSize"
-  },
   "installedSize": "安裝後大小",
-  "@installedSize": {
-    "description": "Description for installedSize"
-  },
   "dependenciesCount": "依賴套件 ({count})",
   "@dependenciesCount": {
     "placeholders": {
@@ -965,57 +547,18 @@
     }
   },
   "runningInBackground": "OmniStore 正在背景執行，可透過系統匣圖示開啟",
-  "@runningInBackground": {
-    "description": "Description for runningInBackground"
-  },
   "clearSearch": "清除搜尋",
-  "@clearSearch": {
-    "description": "Description for clearSearch"
-  },
   "listView": "列表檢視",
-  "@listView": {
-    "description": "Description for listView"
-  },
   "gridView": "網格檢視",
-  "@gridView": {
-    "description": "Description for gridView"
-  },
   "categories": "分類",
-  "@categories": {
-    "description": "Description for categories"
-  },
   "clearHistory": "清除歷史記錄",
-  "@clearHistory": {
-    "description": "Description for clearHistory"
-  },
   "confirmClearHistory": "確定要刪除所有搜尋歷史嗎？",
-  "@confirmClearHistory": {
-    "description": "Description for confirmClearHistory"
-  },
   "viewMore": "查看更多",
-  "@viewMore": {
-    "description": "Description for viewMore"
-  },
   "logDebug": "除錯 (DEBUG)",
-  "@logDebug": {
-    "description": "Description for logDebug"
-  },
   "logInfo": "資訊 (INFO)",
-  "@logInfo": {
-    "description": "Description for logInfo"
-  },
   "logWarning": "警告 (WARNING)",
-  "@logWarning": {
-    "description": "Description for logWarning"
-  },
   "logError": "錯誤 (ERROR)",
-  "@logError": {
-    "description": "Description for logError"
-  },
   "notificationTitle": "發現可用更新",
-  "@notificationTitle": {
-    "description": "Description for notificationTitle"
-  },
   "notificationBody": "您的系統中有 {count} 個應用程式可以更新",
   "@notificationBody": {
     "placeholders": {
@@ -1025,21 +568,9 @@
     }
   },
   "preparingUpdate": "正在準備更新...",
-  "@preparingUpdate": {
-    "description": "Description for preparingUpdate"
-  },
   "processing": "正在處理",
-  "@processing": {
-    "description": "Description for processing"
-  },
   "clear": "清除",
-  "@clear": {
-    "description": "Description for clear"
-  },
   "retry": "重試",
-  "@retry": {
-    "description": "Description for retry"
-  },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -1190,28 +721,16 @@
   },
   "taskProcessing": "正在處理",
   "collapse": "收起",
-  "@collapse": {
-    "description": "Description for collapse"
-  },
   "expand": "展開",
-  "@expand": {
-    "description": "Description for expand"
-  },
   "all": "全部",
-  "@all": {
-    "description": "Description for all"
-  },
   "relatedApps": "相關應用",
-  "@relatedApps": {
-    "description": "Description for relatedApps"
-  },
   "activeSources": "已啟用軟體源",
   "autoDetect": "自動偵測",
   "addCustomSource": "新增自訂源",
   "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
   "sourceType": "來源類型",
   "githubRepoType": "GitHub 存放庫 (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (工作區/存放庫)",
+  "bituRepoType": "Bitu / Bitbucket （工作區/存放庫）",
   "flatpakRemoteType": "Flatpak 遠端庫",
   "appImageFeedType": "AppImage 訂閱連結",
   "sourceName": "來源名稱",
@@ -1238,9 +757,6 @@
   },
   "@addCustomSource": {
     "description": "Button to add a custom source"
-  },
-  "@addCustomSourceDesc": {
-    "description": "Description for adding custom sources"
   },
   "@sourceType": {
     "description": "Label for source type"
@@ -1325,14 +841,8 @@
   "@enableDaemon": {
     "description": "Label for background daemon"
   },
-  "@enableDaemonDesc": {
-    "description": "Description for background daemon"
-  },
   "@autoUpdate": {
     "description": "Label for auto update"
-  },
-  "@autoUpdateDesc": {
-    "description": "Description for auto update"
   },
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
@@ -1420,5 +930,12 @@
   "categorySemantics": "分類：{name}",
   "temperatureRangeError": "值必須在 0.0 到 2.0 之間",
   "enableSystemdService": "啟用 systemd 後台更新服務",
-  "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新"
+  "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新",
+  "@categorySemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }
