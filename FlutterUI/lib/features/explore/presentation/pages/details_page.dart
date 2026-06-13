@@ -155,6 +155,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ),
     );
 
+    if (!mounted) return;
+
     if (cleanOrphansResult == null) {
       return;
     }
