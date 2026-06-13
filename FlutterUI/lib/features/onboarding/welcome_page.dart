@@ -50,6 +50,8 @@ class _WelcomePageState extends State<WelcomePage> {
                   final config = await configRepo.loadConfig();
                   config['first_run'] = false;
                   await configRepo.saveConfig(config);
+
+                  if (!mounted) return;
                   widget.onFinish();
                 }
               },

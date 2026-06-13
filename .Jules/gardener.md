@@ -30,3 +30,17 @@
 **Learning:** When extracting dialogs using `StatefulBuilder` out of a parent component (like `details_page.dart` into `ActionConfirmDialog`), the state returned by `Navigator.pop(context, result)` must be properly captured by the awaiting function (`_handleAction`). `showDialog` definition inline in the parent component can simply be replaced with the widget, removing large unreadable sections of code and leaving clean declarative logic.
 
 **Action:** Replaced inline `AlertDialog` logic for confirm install/uninstall in `details_page.dart` with the already existing `ActionConfirmDialog` widget from `action_dialogs.dart`.
+## 2026-06-12 - [Extract Widgets in AppDetailsPage]
+
+Learning:
+Extracting large UI building blocks into separate  classes significantly improves maintainability and readability of long files like . By passing down minimal state and callbacks, we can decouple the UI layout from the complex business logic residing in the .
+
+Action:
+Extracted , , , , and shared row components from  into the  directory.
+## 2024-05-24 - [Extract Widgets in AppDetailsPage]
+
+Learning:
+Extracting large UI building blocks into separate `StatelessWidget` classes significantly improves maintainability and readability of long files like `details_page.dart`. By passing down minimal state and callbacks, we can decouple the UI layout from the complex business logic residing in the `StatefulWidget`.
+
+Action:
+Extracted `AppDetailsHeader`, `AppDetailsActions`, `AppDependencySection`, `AppScreenshots`, and shared row components from `details_page.dart` into the `widgets` directory.

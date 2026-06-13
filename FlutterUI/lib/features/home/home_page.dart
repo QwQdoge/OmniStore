@@ -1,5 +1,6 @@
 import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
@@ -388,7 +389,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
     final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
 
     return Column(
@@ -493,7 +493,7 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Semantics(
-                label: 'Category: ${categories[index].name}',
+                label: AppLocalizations.of(context)!.categorySemantics(categories[index].name),
                 child: ActionChip(
                   avatar: Icon(categories[index].icon, size: 18),
                   label: Text(categories[index].name),

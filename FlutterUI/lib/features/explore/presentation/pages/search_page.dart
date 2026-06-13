@@ -1,3 +1,4 @@
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -145,18 +146,20 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               focusNode: _focusNode,
               hintText: l10n.searchHint,
+              onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
               onSubmitted: _performSearch,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _searchController,
-                  builder: (context, value, child) {
-                    if (value.text.isNotEmpty) {
+                ValueListenableBuilder<bool>(
+                  valueListenable: _hasSearchText,
+                  builder: (context, hasText, child) {
+                    if (hasText) {
                       return IconButton(
                         icon: const Icon(Icons.close_rounded),
                         tooltip: l10n.clearSearch,
                         onPressed: () {
                           _searchController.clear();
+                          _hasSearchText.value = false;
                           setState(() {
                             _showDiscovery = true;
                             _selectedSources.clear();
@@ -506,7 +509,7 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                         ),
                       ),
                       child: Semantics(
-                        label: 'Category: ${cat.name}',
+                        label: AppLocalizations.of(context)!.categorySemantics(cat.name),
                         button: true,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),

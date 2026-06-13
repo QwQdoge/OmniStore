@@ -1375,5 +1375,48 @@
   "trayInitFailedExiting": "系統匣初始化失敗。正在退出以防止背景執行錯誤。",
   "@trayInitFailedExiting": {
     "description": "Error message when system tray fails to initialize"
-  }
+  },
+  "errorTitle": "錯誤",
+  "@errorTitle": {
+    "description": "General error title"
+  },
+  "appDetailsNotFound": "未找到應用程式詳情",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "磁碟空間: {free} GB 可用 / {total} GB 總計",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | 自定義: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "返回",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "返回上一頁",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "分類：{name}",
+  "temperatureRangeError": "值必須在 0.0 到 2.0 之間"
 }
