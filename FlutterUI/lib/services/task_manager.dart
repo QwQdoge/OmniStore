@@ -38,6 +38,9 @@ class TaskManager {
     }
   }
 
+  // Murphy-proof: Use a dedicated set to track active subscriptions to prevent leaks
+  final Set<StreamSubscription> _subscriptions = {};
+
   Future<bool> startTask({
     required String id,
     required String packageName,
@@ -49,7 +52,10 @@ class TaskManager {
     if (isBusy) return false;
 
     // Mutex lock to ensure atomic start sequence
-    if (!_mutex.isCompleted) return false;
+    final previousMutex = _mutex;
+    final currentMutex = Completer<void>();
+    _mutex = currentMutex;
+    await previousMutex.future;
 
     _updateState(
       TaskState(
@@ -116,18 +122,30 @@ class TaskManager {
       );
 
       bool success = true;
-      try {
-        await for (final line in stream) {
+      final completer = Completer<bool>();
+      late StreamSubscription sub;
+
+      sub = stream.listen(
+        (line) {
           _handleOutput(line);
-          // Check for fatal errors in the stream
           if (line.contains("errorFatalStream") || line.contains("errorProcessStart") || line.contains("[ERROR]")) {
             success = false;
           }
-        }
-      } catch (e) {
-        debugPrint("TaskManager Stream Error: $e");
-        success = false;
-      }
+        },
+        onError: (e) {
+          debugPrint("TaskManager Stream Error: $e");
+          success = false;
+          if (!completer.isCompleted) completer.complete(false);
+        },
+        onDone: () {
+          if (!completer.isCompleted) completer.complete(success);
+        },
+        cancelOnError: false,
+      );
+
+      _subscriptions.add(sub);
+      success = await completer.future;
+      _subscriptions.remove(sub);
 
       if (success) {
         _updateState(
@@ -183,6 +201,8 @@ class TaskManager {
           _updateState(null);
         }
       });
+
+      if (!currentMutex.isCompleted) currentMutex.complete();
     }
 
     return false;
@@ -274,6 +294,12 @@ class TaskManager {
   }
 
   Future<void> cancelTask() async {
+    // 1. Cancel all active subscriptions
+    for (var sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+
     if (kIsWeb) {
       _updateState(
         _currentTask?.copyWith(
@@ -288,7 +314,7 @@ class TaskManager {
       return;
     }
 
-    // Murphy-proof: Use unified cancellation through BackendService
+    // 2. Murphy-proof: Use unified cancellation through BackendService
     await BackendService.cancelCurrentTask();
 
     _updateState(
