@@ -48,6 +48,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
 
   @override
   void onWindowMaximize() {
+    if (!mounted) return;
     setState(() {
       _isMaximized = true;
     });
@@ -55,6 +56,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
 
   @override
   void onWindowUnmaximize() {
+    if (!mounted) return;
     setState(() {
       _isMaximized = false;
     });
@@ -62,6 +64,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
 
   @override
   void onWindowRestore() {
+    if (!mounted) return;
     setState(() {
       _isMaximized = false;
     });

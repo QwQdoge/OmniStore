@@ -35,3 +35,11 @@ Custom styled TextFields inside feature pages cause UI fragmentation when a stan
 
 Action:
 Replaced the `TextField` with inline decoration borders and fill color in `FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart` with a `SearchBar`.
+
+## 2026-06-13 - [Async Lifecycle State Safety]
+
+Learning:
+Accessing `setState` or `context` after an `await` gap (or inside listener callbacks that can trigger after disposal) without a `mounted` check leads to "setState() called after dispose()" errors and potential crashes. Standard window listener callbacks (`onWindowMaximize`, etc.) are particularly vulnerable as they are triggered by external OS events.
+
+Action:
+Added `if (!mounted) return;` guards to `HomePage._refresh`, `WindowTitleBar` window listener callbacks, and `AppDetailsPage._handleAction` following asynchronous dialogs.
