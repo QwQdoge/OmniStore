@@ -207,7 +207,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme, ThemeData theme, SettingsController settings) {
+  Widget _buildMainContent(BuildContext context, ColorScheme colorScheme,
+      ThemeData theme, bool isAIEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,64 +282,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             screenshots: _extraDetails!['screenshots'] as List,
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
-          SizedBox(
-            height: 236,
-            child: Scrollbar(
-              controller: _screenshotScrollController,
-              thumbVisibility: true,
-              child: ListView.separated(
-                controller: _screenshotScrollController,
-                padding: const EdgeInsets.only(bottom: 16),
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount:
-                    (_extraDetails!['screenshots'] as List).length,
-                separatorBuilder: (context, _) =>
-                    const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  final imageUrl = _extraDetails!['screenshots'][index];
-                  return Hero(
-                    tag: 'screenshot-$imageUrl',
-                    child: Card(
-                      elevation: 0,
-                      margin: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.0),
-                        side: BorderSide(
-                          color: colorScheme.outlineVariant.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: () => _showScreenshotViewer(imageUrl),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          width: 360,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 720,
-                          placeholder: (context, url) => const Skeleton(
-                            width: 360,
-                            height: 220,
-                            borderRadius: 16.0,
-                          ),
-                          errorWidget: (context, url, error) =>
-                              Container(
-                                width: 360,
-                                color:
-                                    colorScheme.surfaceContainerHighest,
-                                child: const Icon(
-                                  Icons.broken_image_rounded,
-                                ),
-                              ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
           ),
           const SizedBox(height: 32),
         ],
@@ -384,8 +327,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final settings = context.watch<SettingsController>();
-
+    final isAIEnabled =
+        context.select<SettingsController, bool>((s) => s.isAIEnabled);
 
     return Scaffold(
       body: NestedScrollView(
@@ -399,16 +342,19 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 letterSpacing: -0.5,
               ),
             ),
-            leading: widget.isEmbedded ? null : Semantics(
-              label: AppLocalizations.of(context)!.backSemanticsLabel,
-              hint: AppLocalizations.of(context)!.backSemanticsHint,
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
+            leading: widget.isEmbedded
+                ? null
+                : Semantics(
+                    label: AppLocalizations.of(context)!.backSemanticsLabel,
+                    hint: AppLocalizations.of(context)!.backSemanticsHint,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      tooltip:
+                          MaterialLocalizations.of(context).backButtonTooltip,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
             actions: [
               if (widget.app.url != null && widget.app.url!.isNotEmpty)
                 Semantics(
@@ -425,7 +371,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     },
                   ),
                 ),
-              if (settings.isAIEnabled) ...[
+              if (isAIEnabled) ...[
                 Semantics(
                   label: AppLocalizations.of(context)!.aiPromptExplain,
                   button: true,
@@ -486,7 +432,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         body: SelectionArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: _buildMainContent(context, colorScheme, theme, settings),
+            child: _buildMainContent(context, colorScheme, theme, isAIEnabled),
           ),
         ),
       ),
@@ -634,39 +580,4 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          Flexible(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
