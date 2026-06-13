@@ -276,6 +276,7 @@ class UpdateService {
   void _startUpdateTimer() {
     final interval = _config['updates']?['check_interval_hours'] ?? 1;
     final enabled = _config['updates']?['remind_updates'] ?? true;
+    final systemdEnabled = _config['updates']?['enable_systemd_service'] ?? false;
 
     if (!enabled) {
       // User disabled background update checks — cancel any running timer
@@ -291,6 +292,12 @@ class UpdateService {
       return;
     }
 
+    if (systemdEnabled) {
+      _setupSystemdBackgroundTimer(interval);
+    } else {
+      _disableSystemdBackgroundTimer();
+    }
+
     if (_updateTimer != null && _currentInterval == interval) {
       return; // Interval unchanged — nothing to do.
     }
@@ -298,7 +305,6 @@ class UpdateService {
     _updateTimer?.cancel();
     _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
     checkNow();
-    _setupSystemdBackgroundTimer(interval);
   }
 
   /// Writes a systemd user-level service + timer that runs OmniStore in
@@ -328,6 +334,7 @@ After=network.target
 Type=simple
 ExecStart=$exePath --check-updates-background
 Restart=no
+ExecStopPost=/bin/sh -c 'if [ "\$\$SERVICE_RESULT" != "success" ]; then systemctl --user disable --now omnistore-update.timer; fi'
 ''');
 
       timerFile.writeAsStringSync('''[Unit]

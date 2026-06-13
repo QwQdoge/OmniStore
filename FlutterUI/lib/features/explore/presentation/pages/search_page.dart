@@ -5,7 +5,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';

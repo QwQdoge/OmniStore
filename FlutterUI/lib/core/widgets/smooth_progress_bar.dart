@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/task_state.dart';
-import '../l10n/app_localizations.dart';
+import 'package:frontend/models/task_state.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 /// A premium progress bar that supports smooth transitions, customizable theme styling,
 /// and color seed mapping. Includes micro-animations/transitions for state changes.

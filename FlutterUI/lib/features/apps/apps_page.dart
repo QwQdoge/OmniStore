@@ -5,7 +5,7 @@ import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';

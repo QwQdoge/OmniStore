@@ -3,7 +3,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/auth/auth_page.dart';
-import '../l10n/app_localizations.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class WindowTitleBar extends StatefulWidget {
   final String? title;
