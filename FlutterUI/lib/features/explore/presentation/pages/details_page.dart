@@ -16,6 +16,7 @@ import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
@@ -282,43 +283,161 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             screenshots: _extraDetails!['screenshots'] as List,
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
+          SizedBox(
+            height: 236,
+            child: Scrollbar(
+              controller: _screenshotScrollController,
+              thumbVisibility: true,
+              child: ListView.separated(
+                controller: _screenshotScrollController,
+                padding: const EdgeInsets.only(bottom: 16),
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount:
+                    (_extraDetails!['screenshots'] as List).length,
+                separatorBuilder: (context, _) =>
+                    const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final imageUrl = _extraDetails!['screenshots'][index];
+                  return Hero(
+                    tag: 'screenshot-$imageUrl',
+                    child: Card(
+                      elevation: 0,
+                      margin: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                        side: BorderSide(
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 24),
+                if (_hasCapability('has_screenshots') &&
+                    _extraDetails != null &&
+                    _extraDetails!['screenshots'] != null &&
+                    (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+                  _buildSectionTitle(
+                    theme,
+                    AppLocalizations.of(context)!.screenshots,
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 236,
+                    child: Scrollbar(
+                      controller: _screenshotScrollController,
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        controller: _screenshotScrollController,
+                        padding: const EdgeInsets.only(bottom: 16),
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount:
+                            (_extraDetails!['screenshots'] as List).length,
+                        separatorBuilder: (context, _) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final imageUrl = _extraDetails!['screenshots'][index];
+                          return Hero(
+                            tag: 'screenshot-$imageUrl',
+                            child: Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                side: BorderSide(
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => _showScreenshotViewer(imageUrl),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  width: 360,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 720,
+                                  memCacheHeight: 440,
+                                  placeholder: (context, url) => Container(
+                                    width: 360,
+                                    color: colorScheme.surfaceContainerHighest,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        width: 360,
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
+                                        child: const Icon(
+                                          Icons.broken_image_rounded,
+                                        ),
+                                      ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
           const SizedBox(height: 32),
         ],
         AppDetailsSectionTitle(
           title: AppLocalizations.of(context)!.details,
         ),
-        AppDetailsInfoRow(
-          icon: Icons.source_rounded,
-          label: AppLocalizations.of(context)!.source,
-          value: widget.app.primarySource,
-        ),
-        AppDetailsInfoRow(
-          icon: Icons.all_inclusive_rounded,
-          label: AppLocalizations.of(context)!.variant,
-          value: widget.app.sources.join(", "),
-        ),
-        AppDetailsInfoRow(
-          icon: Icons.verified_rounded,
-          label: AppLocalizations.of(context)!.version,
-          value: widget.app.version,
-        ),
-        if (_extraDetails?['developer'] != null)
-          AppDetailsInfoRow(
-            icon: Icons.person_rounded,
-            label: AppLocalizations.of(context)!.developer,
-            value: _extraDetails!['developer'],
+        AppCard(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppDetailsInfoRow(
+                  icon: Icons.source_rounded,
+                  label: AppLocalizations.of(context)!.source,
+                  value: widget.app.primarySource,
+                ),
+                AppDetailsInfoRow(
+                  icon: Icons.all_inclusive_rounded,
+                  label: AppLocalizations.of(context)!.variant,
+                  value: widget.app.sources.join(", "),
+                ),
+                AppDetailsInfoRow(
+                  icon: Icons.verified_rounded,
+                  label: AppLocalizations.of(context)!.version,
+                  value: widget.app.version,
+                ),
+                if (_extraDetails?['developer'] != null)
+                  AppDetailsInfoRow(
+                    icon: Icons.person_rounded,
+                    label: AppLocalizations.of(context)!.developer,
+                    value: _extraDetails!['developer'],
+                  ),
+                if (_extraDetails?['license'] != null)
+                  AppDetailsInfoRow(
+                    icon: Icons.description_rounded,
+                    label: AppLocalizations.of(context)!.license,
+                    value: _extraDetails!['license'],
+                  ),
+                AppDependencySection(
+                  variant: _getVariantForSource(_selectedSource),
+                  hasCapability: _hasCapability,
+                ),
+              ],
+            ),
           ),
-        if (_extraDetails?['license'] != null)
-          AppDetailsInfoRow(
-            icon: Icons.description_rounded,
-            label: AppLocalizations.of(context)!.license,
-            value: _extraDetails!['license'],
-          ),
-        AppDependencySection(
-          variant: _getVariantForSource(_selectedSource),
-          hasCapability: _hasCapability,
         ),
+        _buildDependencySection(theme),
       ],
     );
   }

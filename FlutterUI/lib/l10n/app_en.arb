@@ -84,7 +84,7 @@
   "@ready": {
     "description": "Description for ready"
   },
-  "resultsFound": "{count} results",
+  "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -280,7 +280,7 @@
   "@checkUpdates": {
     "description": "Description for checkUpdates"
   },
-  "foundUpdates": "Found {count} updates",
+  "foundUpdates": "{count, plural, =1{Found 1 update} other{Found {count} updates}}",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -324,7 +324,7 @@
   "@exit": {
     "description": "Description for exit"
   },
-  "trayTooltipUpdates": "OmniStore: Found {count} updates",
+  "trayTooltipUpdates": "{count, plural, =1{OmniStore: Found 1 update} other{OmniStore: Found {count} updates}}",
   "@trayTooltipUpdates": {
     "description": "Description for trayTooltipUpdates",
     "placeholders": {
@@ -473,7 +473,7 @@
   "@selectExportLocation": {
     "description": "selectExportLocation"
   },
-  "exportSuccess": "Export successful: {count} packages",
+  "exportSuccess": "{count, plural, =1{Export successful: 1 package} other{Export successful: {count} packages}}",
   "@exportSuccess": {
     "placeholders": {
       "count": {
@@ -493,7 +493,7 @@
   "@importBackup": {
     "description": "importBackup"
   },
-  "importBackupConfirm": "Read {count} packages from backup. Start batch recovery?",
+  "importBackupConfirm": "{count, plural, =1{Read 1 package from backup. Start recovery?} other{Read {count} packages from backup. Start batch recovery?}}",
   "@importBackupConfirm": {
     "placeholders": {
       "count": {
@@ -869,7 +869,7 @@
   "@importPackages": {
     "description": "Description for importPackages"
   },
-  "importPackagesConfirm": "Read {count} packages from file. Start batch download?",
+  "importPackagesConfirm": "{count, plural, =1{Read 1 package from file. Start download?} other{Read {count} packages from file. Start batch download?}}",
   "@importPackagesConfirm": {
     "placeholders": {
       "count": {
@@ -953,7 +953,7 @@
   "@installedSize": {
     "description": "Description for installedSize"
   },
-  "dependenciesCount": "Dependencies ({count})",
+  "dependenciesCount": "{count, plural, =1{Dependency (1)} other{Dependencies ({count})}}",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -1013,7 +1013,7 @@
   "@notificationTitle": {
     "description": "Description for notificationTitle"
   },
-  "notificationBody": "{count} applications are available for update",
+  "notificationBody": "{count, plural, =1{1 application is available for update} other{{count} applications are available for update}}",
   "@notificationBody": {
     "placeholders": {
       "count": {
@@ -1328,7 +1328,7 @@
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
   },
-  "checkIntervalSubtitle": "Automatically check every {hours} hours",
+  "checkIntervalSubtitle": "{hours, plural, =1{Automatically check every hour} other{Automatically check every {hours} hours}}",
   "@checkIntervalSubtitle": {
     "placeholders": {
       "hours": {

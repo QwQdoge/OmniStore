@@ -73,7 +73,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count results';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -219,7 +225,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return 'Found $count updates';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count updates',
+      one: 'Found 1 update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -251,7 +263,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: Found $count updates';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'OmniStore: Found $count updates',
+      one: 'OmniStore: Found 1 update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -363,7 +381,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return 'Export successful: $count packages';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Export successful: $count packages',
+      one: 'Export successful: 1 package',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -376,7 +400,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return 'Read $count packages from backup. Start batch recovery?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count packages from backup. Start batch recovery?',
+      one: 'Read 1 package from backup. Start recovery?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -668,7 +698,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importPackagesConfirm(int count) {
-    return 'Read $count packages from file. Start batch download?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count packages from file. Start batch download?',
+      one: 'Read 1 package from file. Start download?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -733,7 +769,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return 'Dependencies ($count)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dependencies ($count)',
+      one: 'Dependency (1)',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -779,7 +821,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return '$count applications are available for update';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count applications are available for update',
+      one: '1 application is available for update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1023,7 +1071,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return 'Automatically check every $hours hours';
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Automatically check every $hours hours',
+      one: 'Automatically check every hour',
+    );
+    return '$_temp0';
   }
 
   @override

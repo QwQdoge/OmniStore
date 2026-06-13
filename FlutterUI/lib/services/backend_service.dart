@@ -134,10 +134,14 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
-  // Foolproof validation helpers
+  // Murphy-proof: Strict validation helpers to prevent shell injection and malformed input
   void _validateString(String? val, String name) {
     if (val == null || val.trim().isEmpty) {
       throw ArgumentError("$name cannot be null or empty");
+    }
+    // Refuse characters that could be used for shell injection or argument breaking
+    if (RegExp(r'[;&|`$<>!]').hasMatch(val)) {
+      throw ArgumentError("Invalid characters in $name");
     }
   }
 
@@ -145,8 +149,8 @@ class BackendService {
     if (path == null || path.trim().isEmpty) {
       throw ArgumentError("Path cannot be null or empty");
     }
-    // Basic protection against obvious malicious shell injections in paths if they ever reach a shell
-    if (path.contains(';') || path.contains('&') || path.contains('|')) {
+    // Basic protection against obvious malicious shell injections in paths
+    if (RegExp(r'[;&|`$<>!]').hasMatch(path)) {
       throw ArgumentError("Invalid characters in path");
     }
   }
@@ -226,11 +230,29 @@ class BackendService {
   /// Emergency cleanup of all tracked processes to prevent memory leaks and zombies.
   Future<void> dispose() async {
     if (kIsWeb) return;
+
+    // 1. Cancel health check timer
+    _healthCheckTimer?.cancel();
+    _healthCheckTimer = null;
+
+    // 2. Close daemon socket
+    _daemonSocket?.destroy();
+    _daemonSocket = null;
+
+    // 3. Clear mutex
+    if (!_daemonMutex.isCompleted) {
+      _daemonMutex.complete();
+    }
+
+    // 4. Reap all tracked processes
     final processes = List<Process>.from(_allProcesses);
     _allProcesses.clear();
     for (final p in processes) {
       await _killProcess(p);
     }
+    _daemonProcess = null;
+    activeProcess = null;
+    activeSearchProcess = null;
   }
 
   Process? _daemonProcess;
@@ -241,8 +263,19 @@ class BackendService {
 
   Future<void> _startDaemonIfNeeded() async {
     if (kIsWeb) return;
-    if (_daemonProcess != null && _isProcessAlive(_daemonProcess!)) {
+
+    // Murphy-proof: check both process and socket health
+    bool processAlive = _daemonProcess != null && _isProcessAlive(_daemonProcess!);
+    bool socketHealthy = _daemonSocket != null;
+
+    if (processAlive && socketHealthy) {
       return;
+    }
+
+    // Cleanup stale state before restart
+    if (_daemonSocket != null) {
+      _daemonSocket!.destroy();
+      _daemonSocket = null;
     }
 
     final home = Platform.environment['HOME'] ?? '/home/user';
@@ -253,35 +286,51 @@ class BackendService {
     final logFile = File(p.join(logDir.path, 'daemon_stderr.log'));
 
     try {
-      _daemonProcess = await Process.start(
-        _venvPython,
-        _buildArgs(['--daemon', '--json']),
-        workingDirectory: _workingDir,
-      );
-      _allProcesses.add(_daemonProcess!);
+      if (!processAlive) {
+        _daemonProcess = await Process.start(
+          _venvPython,
+          _buildArgs(['--daemon', '--json']),
+          workingDirectory: _workingDir,
+        );
+        _allProcesses.add(_daemonProcess!);
 
-      // Divert python stderr outputs to a structured local debug log file
-      final logSink = logFile.openWrite(mode: FileMode.append);
-      _daemonProcess!.stderr.transform(utf8.decoder).listen(
-        (data) => logSink.write(data),
-        onError: (e) => debugPrint("Daemon stderr write error: $e"),
-        onDone: () => logSink.close(),
-      );
+        // Divert python stderr outputs to a structured local debug log file
+        final logSink = logFile.openWrite(mode: FileMode.append);
+        _daemonProcess!.stderr.transform(utf8.decoder).listen(
+          (data) => logSink.write(data),
+          onError: (e) => debugPrint("Daemon stderr write error: $e"),
+          onDone: () => logSink.close(),
+        );
+      }
 
-      // Connect to socket with retry
-      for (int i = 0; i < 5; i++) {
+      // Connect to socket with exponential backoff retry
+      for (int i = 0; i < 6; i++) {
         try {
-          _daemonSocket = await Socket.connect('127.0.0.1', _daemonPort);
+          _daemonSocket = await Socket.connect('127.0.0.1', _daemonPort, timeout: const Duration(seconds: 2));
           debugPrint("Connected to Python backend daemon on port $_daemonPort");
+
+          // Detect unexpected socket closure
+          _daemonSocket!.done.then((_) {
+            debugPrint("Daemon socket closed.");
+            _daemonSocket = null;
+          }).catchError((e) {
+            debugPrint("Daemon socket error: $e");
+            _daemonSocket = null;
+          });
+
           break;
         } catch (_) {
-          await Future.delayed(const Duration(milliseconds: 300));
+          if (i == 5) {
+            debugPrint("Failed to connect to daemon socket after 6 attempts.");
+            break;
+          }
+          await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
         }
       }
 
       _startHealthCheckLoop();
     } catch (e) {
-      debugPrint("Failed to start Python daemon: $e");
+      debugPrint("Failed to start/connect Python daemon: $e");
     }
   }
 
@@ -301,12 +350,19 @@ class BackendService {
     final previousMutex = _daemonMutex;
     final currentMutex = Completer<void>();
     _daemonMutex = currentMutex;
-    await previousMutex.future;
+
+    try {
+      // 严禁雪崩：确保即使前一个任务由于某种原因卡死，我们也能最终释放锁或超时
+      await previousMutex.future.timeout(
+        const Duration(seconds: 65),
+        onTimeout: () => debugPrint("Warning: Previous daemon mutex timed out."),
+      );
+    } catch (_) {}
 
     try {
       await _startDaemonIfNeeded();
       if (_daemonSocket == null) {
-        debugPrint("Daemon socket is null, trying to run command standalone");
+        debugPrint("Daemon socket is null, communication failed.");
         return null;
       }
 
@@ -316,8 +372,15 @@ class BackendService {
         "kwargs": kwargs ?? {},
       });
 
-      _daemonSocket!.write('$payload\n');
-      await _daemonSocket!.flush();
+      try {
+        _daemonSocket!.write('$payload\n');
+        await _daemonSocket!.flush();
+      } catch (e) {
+        debugPrint("Socket write error: $e");
+        _daemonSocket?.destroy();
+        _daemonSocket = null;
+        return null;
+      }
 
       // Read response
       final completer = Completer<DaemonResult>();
@@ -344,7 +407,7 @@ class BackendService {
             }
           }
         } catch (e) {
-          if (!completer.isCompleted) completer.completeError(e);
+          debugPrint("Failed to parse daemon response: $e");
         }
       }, onError: (err) {
         if (!completer.isCompleted) completer.completeError(err);
@@ -352,23 +415,25 @@ class BackendService {
         if (!completer.isCompleted) completer.completeError(Exception("Daemon socket closed unexpectedly"));
       });
 
-      final result = await completer.future.timeout(
-        const Duration(seconds: 60),
-        onTimeout: () {
-          sub.cancel();
-          throw TimeoutException("Daemon communication timed out");
-        },
-      );
-      await sub.cancel();
-      return result;
+      try {
+        final result = await completer.future.timeout(
+          const Duration(seconds: 60),
+          onTimeout: () {
+            throw TimeoutException("Daemon communication timed out for action: $action");
+          },
+        );
+        return result;
+      } finally {
+        await sub.cancel();
+      }
     } catch (e) {
-      debugPrint("Daemon transaction error: $e");
+      debugPrint("Daemon transaction error [$action]: $e");
       // If we have a socket error, it might be dead
       _daemonSocket?.destroy();
       _daemonSocket = null;
       return null;
     } finally {
-      currentMutex.complete();
+      if (!currentMutex.isCompleted) currentMutex.complete();
     }
   }
 
@@ -549,9 +614,10 @@ class BackendService {
     if (trimmedQuery.isEmpty) return [];
     if (trimmedQuery.length > 500) return []; // 防止超长字符串导致后端崩溃
 
-    // 防范 Shell 注入字符
-    if (RegExp(r'[;&|]').hasMatch(trimmedQuery)) {
-      debugPrint("Security: Illegal characters in search query");
+    try {
+      _validateString(trimmedQuery, "Search Query");
+    } catch (e) {
+      debugPrint("Security: $e");
       return [];
     }
 
@@ -598,9 +664,11 @@ class BackendService {
 
       final parsed = _tryParseJson(output);
       if (parsed is List) {
+
         results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
+
       }
 
       return results;
@@ -614,6 +682,7 @@ class BackendService {
         if (_isProcessAlive(activeSearchProcess!)) {
           await _killProcess(activeSearchProcess);
         }
+
       }
       activeSearchProcess = null;
     }
@@ -992,23 +1061,24 @@ class BackendService {
       return TaskRepository().executeAction(f, n, s, url: url);
     }
 
-    // 边界校验与防呆
+    try {
+      // 边界校验与防呆
+      _validateString(n, "App Name");
+      _validateString(s, "Source");
+
+      // 入参防御：防止非法指令
+      if (!["-I", "-R", "-U"].contains(f)) {
+        throw ArgumentError("Invalid action flag: $f");
+      }
+
+      if (url != null && url.trim().isNotEmpty) {
+        _validateString(url, "URL");
+      }
+    } catch (e) {
+      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] $e\", \"level\": \"ERROR\"}");
+    }
+
     final trimmedName = n.trim();
-    if (trimmedName.isEmpty) {
-      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 应用名称不能为空\", \"level\": \"ERROR\"}");
-    }
-
-    // 入参防御：防止非法指令
-    if (!["-I", "-R", "-U"].contains(f)) {
-      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 非法操作指令: $f\", \"level\": \"ERROR\"}");
-    }
-
-    // 注入防御
-    if (RegExp(r'[;&|]').hasMatch(trimmedName) ||
-        RegExp(r'[;&|]').hasMatch(s)) {
-      return Stream.value("[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] 输入包含非法字符\", \"level\": \"ERROR\"}");
-    }
-
     List<String> args = [f, trimmedName, "--source", s.trim(), "--json"];
     if (url != null && url.trim().isNotEmpty) {
       final trimmedUrl = url.trim();

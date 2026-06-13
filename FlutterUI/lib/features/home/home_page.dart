@@ -17,6 +17,7 @@ import 'package:frontend/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -258,124 +259,128 @@ class _HomePageState extends State<HomePage> {
         : null;
     final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+    return Semantics(
+      label: 'Featured app: ${app.name}',
+      button: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+            ),
           ),
-        ),
-        child: Container(
-          width: 440,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHigh,
-          ),
-          child: Stack(
-            children: [
-              if (screenshot != null)
+          child: Container(
+            width: 440,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHigh,
+            ),
+            child: Stack(
+              children: [
+                if (screenshot != null)
+                  Positioned.fill(
+                    child: CachedNetworkImage(
+                      imageUrl: screenshot,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 880,
+                      errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
+                    ),
+                  )
+                else
+                  Center(
+                    child: Icon(
+                      Icons.apps_rounded,
+                      size: 80,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    ),
+                  ),
                 Positioned.fill(
-                  child: CachedNetworkImage(
-                    imageUrl: screenshot,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 880,
-                    errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
-                  ),
-                )
-              else
-                Center(
-                  child: Icon(
-                    Icons.apps_rounded,
-                    size: 80,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  ),
-                ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      stops: const [0.5, 1.0],
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                        stops: const [0.5, 1.0],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 20,
-                bottom: 20,
-                right: 20,
-                child: Row(
-                  children: [
-                    Hero(
-                      tag: heroTag,
-                      child: Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                Positioned(
+                  left: 20,
+                  bottom: 20,
+                  right: 20,
+                  child: Row(
+                    children: [
+                      Hero(
+                        tag: heroTag,
+                        child: Container(
+                          width: 54,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: app.icon != null
+                              ? CachedNetworkImage(
+                                  imageUrl: app.icon!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 108,
+                                  memCacheHeight: 108,
+                                  errorWidget: (c, e, s) =>
+                                      const Icon(Icons.apps, color: Colors.black),
+                                )
+                              : const Icon(Icons.apps, color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              app.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              app.description,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: app.icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 108,
-                                memCacheHeight: 108,
-                                errorWidget: (c, e, s) =>
-                                    const Icon(Icons.apps, color: Colors.black),
-                              )
-                            : const Icon(Icons.apps, color: Colors.black),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            app.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            app.description,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -406,9 +411,11 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final app = apps[index];
                 final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
-                return SizedBox(
-                  width: 130,
+                return Semantics(
+                  label: 'App: ${app.name}',
+                  button: true,
                   child: AppCard(
+                    borderRadius: 16,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -416,46 +423,49 @@ class _HomePageState extends State<HomePage> {
                             AppDetailsPage(app: app, heroTag: heroTag),
                       ),
                     ),
-                    borderRadius: 16,
-                    child: Column(
-                      children: [
-                        Hero(
-                          tag: heroTag,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: app.icon != null
-                                ? CachedNetworkImage(
-                                    imageUrl: app.icon!,
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 200,
-                                    memCacheHeight: 200,
-                                    errorWidget: (c, e, s) =>
-                                        const Icon(Icons.apps),
-                                  )
-                                : const Icon(Icons.apps, size: 40),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            app.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                    child: Container(
+                      width: 130,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        children: [
+                          Hero(
+                            tag: heroTag,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: app.icon != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: app.icon!,
+                                      fit: BoxFit.cover,
+                                      memCacheWidth: 160,
+                                      memCacheHeight: 160,
+                                      errorWidget: (c, e, s) =>
+                                          const Icon(Icons.apps),
+                                    )
+                                  : const Icon(Icons.apps, size: 40),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              app.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

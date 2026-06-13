@@ -519,8 +519,17 @@ class _DownloadPageState extends State<DownloadPage>
                   final update = updates[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      onTap: () async {
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Semantics(
+                      label: 'Update available: ${update['name']}',
+                      button: true,
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        onTap: () async {
                         final results = await packageRepo.searchPackages(
                           update['name'],
                         );
@@ -581,8 +590,9 @@ class _DownloadPageState extends State<DownloadPage>
                         ],
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              },
               ),
             ),
           ],
@@ -738,10 +748,19 @@ class _DownloadPageState extends State<DownloadPage>
         final app = _filteredApps[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Semantics(
+            label: 'Installed app: ${app.name}',
+            button: true,
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             leading: app.icon != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: CachedNetworkImage(
                       imageUrl: app.icon!,
                       width: 40,
@@ -786,6 +805,7 @@ class _DownloadPageState extends State<DownloadPage>
               context,
               MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
             ),
+          ),
           ),
         );
       },

@@ -143,7 +143,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>((n) => n.selectedIndex);
     final l10n = AppLocalizations.of(context)!;
 
     final primary = [
@@ -196,10 +196,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     return AdaptiveNavigationShell(
       destinations: primary,
       secondaryDestinations: secondary,
-      pageTitle: titles[nav.selectedIndex] ?? '',
-      pageChild: _pages[nav.selectedIndex],
-      showSearch: nav.selectedIndex != 2,
-      onSearch: () => nav.setIndex(2),
+      pageTitle: titles[selectedIndex] ?? '',
+      pageChild: _pages[selectedIndex],
+      showSearch: selectedIndex != 2,
+      onSearch: () => context.read<NavigationController>().setIndex(2),
       useWindowTitleBar: DesktopWindowService.isSupported,
     );
   }
