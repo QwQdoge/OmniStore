@@ -388,6 +388,10 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
+    final taskController = context.watch<TaskController>();
+    final isCurrentTask = taskController.isBusy && 
+        (taskController.packageName == app.name || taskController.packageName == app.id);
+
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
       button: true,
@@ -403,33 +407,65 @@ class SearchResultTile extends StatelessWidget {
           child: ListTile(
             leading: Hero(
               tag: heroTag,
-              child: app.icon != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        width: 40,
-                        height: 40,
-                        memCacheWidth: 80,
-                        memCacheHeight: 80,
-                        errorWidget: (c, e, s) => const Icon(Icons.apps),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  app.icon != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
+                            width: 40,
+                            height: 40,
+                            memCacheWidth: 80,
+                            memCacheHeight: 80,
+                            errorWidget: (c, e, s) => const Icon(Icons.apps),
+                          ),
+                        )
+                      : const Icon(Icons.apps, size: 40),
+                  if (isCurrentTask)
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    )
-                  : const Icon(Icons.apps, size: 40),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             title: Text(
               app.name,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              app.description,
+              isCurrentTask 
+                  ? "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}"
+                  : app.description,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: isCurrentTask ? TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold) : null,
             ),
-            trailing: AppSourceTag(
-              source: app.primarySource,
-              mode: AppSourceTagMode.source,
-            ),
+            trailing: isCurrentTask
+                ? Text(
+                    taskController.speed,
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline),
+                  )
+                : AppSourceTag(
+                    source: app.primarySource,
+                    mode: AppSourceTagMode.source,
+                  ),
           ),
         ),
       ),

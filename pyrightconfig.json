@@ -1,6 +1,6 @@
 {
-  "venvPath": "python",
-  "venv": ".venv",
+  "venvPath": ".",
+  "venv": "python/.venv",
   "include": ["python"],
   "extraPaths": ["python"]
 }

@@ -10,6 +10,8 @@ class TaskController with ChangeNotifier {
   double? _progress;
   String _status = "Ready";
   String _speed = "";
+  String? _packageName;
+  String? _flag;
   final List<String> _logs = [];
 
   TaskController(this._taskRepository);
@@ -18,6 +20,8 @@ class TaskController with ChangeNotifier {
   double? get progress => _progress;
   String get status => _status;
   String get speed => _speed;
+  String? get packageName => _packageName;
+  String? get flag => _flag;
   List<String> get logs => List.unmodifiable(_logs);
 
   void clearLogs() {
@@ -28,12 +32,14 @@ class TaskController with ChangeNotifier {
   void cancelTask(AppLocalizations l10n) {
     _taskRepository.cancelCurrentTask();
     _isBusy = false;
+    _packageName = null;
+    _flag = null;
     _status = l10n.taskCancelled;
     _progress = null;
     notifyListeners();
   }
 
-  Future<void> runTask(
+  Future<bool> runTask(
     String flag,
     String packageName,
     String source,
@@ -41,8 +47,12 @@ class TaskController with ChangeNotifier {
     String? url,
   }) async {
     _isBusy = true;
+    _packageName = packageName;
+    _flag = flag;
     _progress = null;
     _status = l10n.taskStarting;
+    _logs.clear();
+    bool hasError = false;
     notifyListeners();
 
     final stream = _taskRepository.executeAction(
@@ -53,13 +63,25 @@ class TaskController with ChangeNotifier {
     );
 
     await for (final line in stream) {
+      if (line.contains("errorFatalStream") ||
+          line.contains("errorProcessStart") ||
+          line.contains("errorStartFailed") ||
+          line.contains("errorUpdateFailed") ||
+          line.contains("errorCleanFailed") ||
+          line.contains("errorUpdateAll") ||
+          line.contains("[ERROR]")) {
+        hasError = true;
+      }
       _parseLine(line, l10n);
       notifyListeners();
     }
 
     _isBusy = false;
     _progress = null;
+    _packageName = null;
+    _flag = null;
     notifyListeners();
+    return !hasError;
   }
 
   Future<void> runCleanSystem(AppLocalizations l10n) async {

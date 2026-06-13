@@ -191,7 +191,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         : widget.app.name;
 
     final taskFlag = isUninstall && cleanOrphans ? "-Rsn" : flag;
-    await taskController.runTask(
+    final success = await taskController.runTask(
       taskFlag,
       targetIdentifier,
       _selectedSource,
@@ -201,11 +201,40 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     if (mounted) {
       setState(() {
-        if (flag == "-I") {
-          _isAppInstalled = true;
-        }
-        if (flag == "-R") {
-          _isAppInstalled = false;
+        if (success) {
+          if (flag == "-I") {
+            _isAppInstalled = true;
+          }
+          if (flag == "-R") {
+            _isAppInstalled = false;
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(flag == "-I" ? localizations.success : localizations.success),
+                ],
+              ),
+              backgroundColor: Colors.green.shade700,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(localizations.failed),
+              content: Text("${taskController.status}\n\n${localizations.errorFatalStream("Check task logs for details")}"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(localizations.cancel),
+                ),
+              ],
+            ),
+          );
         }
       });
     }
