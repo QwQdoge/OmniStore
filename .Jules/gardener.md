@@ -44,3 +44,11 @@ Extracting large UI building blocks into separate `StatelessWidget` classes sign
 
 Action:
 Extracted `AppDetailsHeader`, `AppDetailsActions`, `AppDependencySection`, `AppScreenshots`, and shared row components from `details_page.dart` into the `widgets` directory.
+
+## 2026-06-13 - [Extract Widgets in DownloadPage]
+
+Learning:
+Extracting inline dialog definitions (`TerminalDialog`, `AIUpdateSummaryDialog`) and complex UI blocks (`TasksTab`, `UpdatesTab`) from monolithic presentation pages into their own `StatelessWidget` files in the `widgets/` subdirectory improves readability and maintainability.
+
+Action:
+Extracted `TerminalDialog`, `AIUpdateSummaryDialog`, `TasksTab`, and `UpdatesTab` from `download_page.dart` into the `lib/features/task_manager/presentation/widgets/` directory. Passed down minimal callbacks (e.g. `onUpdateStarted`) to handle state interactions cleanly.
