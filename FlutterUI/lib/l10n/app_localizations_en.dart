@@ -1159,5 +1159,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enableSystemdService => 'Enable systemd Background Service';
 
   @override
-  String get enableSystemdServiceDesc => 'Allow registering systemd timer to check for updates when the app is closed';
+  String get enableSystemdServiceDesc =>
+      'Allow registering systemd timer to check for updates when the app is closed';
 }
