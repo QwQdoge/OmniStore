@@ -17,7 +17,6 @@ import 'package:frontend/core/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
-import 'package:frontend/core/widgets/app_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

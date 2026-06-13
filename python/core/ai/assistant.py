@@ -88,7 +88,12 @@ class AIAssistant:
                     "generationConfig": {"temperature": cfg.get("temperature", 0.7), "maxOutputTokens": cfg.get("max_tokens", 2048)}
                 }
             else: # OpenAI Compatible
-                url = f"{endpoint}/v1/chat/completions" if endpoint else "https://api.openai.com/v1/chat/completions"
+                if endpoint:
+                    url = endpoint.rstrip('/')
+                    if not url.endswith("/chat/completions"):
+                        url = f"{url}/v1/chat/completions" if not url.endswith("/v1") else f"{url}/chat/completions"
+                else:
+                    url = "https://api.openai.com/v1/chat/completions"
                 if api_key: headers["Authorization"] = f"Bearer {api_key}"
                 payload = {
                     "model": model or "gpt-3.5-turbo",

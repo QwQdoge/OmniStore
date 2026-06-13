@@ -1,1 +1,0 @@
-/home/shekong/Projects/Omnistore/daemon/target/release/omnistore-daemon: /home/shekong/Projects/Omnistore/daemon/src/config.rs /home/shekong/Projects/Omnistore/daemon/src/main.rs /home/shekong/Projects/Omnistore/daemon/src/notifier.rs /home/shekong/Projects/Omnistore/daemon/src/updater.rs

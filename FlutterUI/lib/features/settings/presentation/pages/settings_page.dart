@@ -38,7 +38,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _testAIConnection() async {
     if (!mounted) return;
     setState(() => _isTestingAI = true);
-    final l10n = AppLocalizations.of(context)!;
     try {
       final res = await BackendService.instance.testAiConnection();
       if (!mounted) return;
