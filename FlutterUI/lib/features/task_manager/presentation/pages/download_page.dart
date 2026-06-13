@@ -162,35 +162,24 @@ class _DownloadPageState extends State<DownloadPage>
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: TextField(
+                child: SearchBar(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.searchInstalledHint,
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18),
-                            tooltip: AppLocalizations.of(context)!.clear,
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = "";
-                                _applyFilters();
-                              });
-                            },
-                          )
-                        : null,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(28.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
-                    ),
-                  ),
+                  hintText: AppLocalizations.of(context)!.searchInstalledHint,
+                  leading: const Icon(Icons.search_rounded),
+                  trailing: [
+                    if (_searchQuery.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: AppLocalizations.of(context)!.clear,
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = "";
+                            _applyFilters();
+                          });
+                        },
+                      ),
+                  ],
                 ),
               ),
               TabBar(
