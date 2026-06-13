@@ -140,6 +140,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final localizations = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizations.taskInProgress)),
+      );
       return;
     }
 
