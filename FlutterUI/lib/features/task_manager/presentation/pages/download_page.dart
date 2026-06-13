@@ -495,6 +495,12 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
+                      if (context.read<TaskController>().isBusy) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppLocalizations.of(context)!.taskInProgress)),
+                        );
+                        return;
+                      }
                       for (final update in updates) {
                         UpdateService().startUpdate(
                           update['id'] ?? update['name'],
@@ -577,6 +583,12 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                           ElevatedButton(
                             onPressed: () {
+                              if (context.read<TaskController>().isBusy) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(AppLocalizations.of(context)!.taskInProgress)),
+                                );
+                                return;
+                              }
                               UpdateService().startUpdate(
                                 update['id'] ?? update['name'],
                                 update['source'] == 'Pacman'
