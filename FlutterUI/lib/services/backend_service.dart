@@ -179,40 +179,43 @@ class BackendService {
 
   /// Kill a process and its children using process groups on Linux.
   /// Murphy-proof: Guaranteed to attempt both TERM and KILL to prevent zombies.
+  /// Murphy-proof: Absolutely ensure process reaping by attempting group-kill,
+  /// waiting for termination, and escalating to SIGKILL.
   Future<void> _killProcess(Process? process) async {
     if (kIsWeb || process == null) return;
     _allProcesses.remove(process);
     try {
       if (Platform.isLinux) {
-        // Murphy-proof: Use setsid or process groups if possible.
-        // On Linux, we try to kill the entire process group (negative PID).
-        // This is effective if the process was started in a way that created a group.
-        await Process.run('kill', ['-TERM', '--', '-${process.pid}']).timeout(
-          const Duration(seconds: 2),
-          onTimeout: () => ProcessResult(0, 0, '', ''),
-        );
-
-        // Wait a bit for graceful termination
-        await Future.delayed(const Duration(milliseconds: 300));
-
-        if (_isProcessAlive(process)) {
-          // Escalation: SIGKILL the group
-          await Process.run('kill', ['-KILL', '--', '-${process.pid}']).timeout(
+        // 1. Attempt SIGTERM on the entire process group to allow children to clean up.
+        // We use a negative PID to target the group.
+        try {
+          await Process.run('kill', ['-TERM', '--', '-${process.pid}']).timeout(
             const Duration(seconds: 2),
-            onTimeout: () => ProcessResult(0, 0, '', ''),
           );
-        }
+        } catch (_) {}
 
-        // Final fallback: kill the specific PID just in case the group kill failed
+        // Brief delay to allow graceful shutdown
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // 2. Escalation: SIGKILL the group if still alive
         if (_isProcessAlive(process)) {
-          process.kill(ProcessSignal.sigkill);
+          try {
+            await Process.run('kill', ['-KILL', '--', '-${process.pid}']).timeout(
+              const Duration(seconds: 2),
+            );
+          } catch (_) {}
         }
-      } else {
-        process.kill(ProcessSignal.sigkill);
       }
     } catch (e) {
-      debugPrint("Error killing process ${process.pid}: $e");
-      process.kill(ProcessSignal.sigkill); // Hard fallback
+      debugPrint("Murphy-proof Kill Warning: Error during group reap [PID ${process.pid}]: $e");
+    } finally {
+      // 3. Absolute Fallback: Kill the specific PID directly.
+      // This is the 'fail-safe' that ensures we don't leave zombie parents.
+      try {
+        process.kill(ProcessSignal.sigkill);
+      } catch (_) {
+        // Ignore errors if the process is already dead
+      }
     }
   }
 
@@ -399,67 +402,58 @@ class BackendService {
         return null;
       }
 
-      // Read response
+      // 4. Read response with robust stream management
       final completer = Completer<DaemonResult>();
-      late StreamSubscription sub;
-
-      sub = _daemonSocket!
-          .cast<List<int>>()
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen(
-            (line) {
-              try {
-                final res = jsonDecode(line);
-                if (res is Map &&
-                    (res.containsKey('status') || res.containsKey('error'))) {
-                  if (!completer.isCompleted) {
-                    if (res['status'] == 'success') {
-                      completer.complete(
-                        DaemonResult(
-                          status: 'success',
-                          response: res['response'],
-                          stdout: res['stdout'] ?? '',
-                        ),
-                      );
-                    } else {
-                      completer.complete(
-                        DaemonResult(
-                          status: 'error',
-                          error: res['error'] ?? 'Daemon error',
-                          stdout: res['stdout'] ?? '',
-                        ),
-                      );
-                    }
-                  }
-                }
-              } catch (e) {
-                debugPrint("Failed to parse daemon response: $e");
-              }
-            },
-            onError: (err) {
-              if (!completer.isCompleted) completer.completeError(err);
-            },
-            onDone: () {
-              if (!completer.isCompleted)
-                completer.completeError(
-                  Exception("Daemon socket closed unexpectedly"),
-                );
-            },
-          );
+      StreamSubscription? sub;
 
       try {
+        sub = _daemonSocket!
+            .cast<List<int>>()
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+          (line) {
+            try {
+              final res = jsonDecode(line);
+              if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
+                if (!completer.isCompleted) {
+                  if (res['status'] == 'success') {
+                    completer.complete(DaemonResult(
+                      status: 'success',
+                      response: res['response'],
+                      stdout: res['stdout'] ?? '',
+                    ));
+                  } else {
+                    completer.complete(DaemonResult(
+                      status: 'error',
+                      error: res['error'] ?? 'Daemon error',
+                      stdout: res['stdout'] ?? '',
+                    ));
+                  }
+                }
+              }
+            } catch (e) {
+              debugPrint("Murphy-proof Warning: Failed to parse daemon response line: $e");
+            }
+          },
+          onError: (err) {
+            if (!completer.isCompleted) completer.completeError(err);
+          },
+          onDone: () {
+            if (!completer.isCompleted) {
+              completer.completeError(Exception("Daemon socket closed unexpectedly"));
+            }
+          },
+          cancelOnError: true,
+        );
+
         final result = await completer.future.timeout(
           const Duration(seconds: 60),
-          onTimeout: () {
-            throw TimeoutException(
-              "Daemon communication timed out for action: $action",
-            );
-          },
+          onTimeout: () => throw TimeoutException("Daemon communication timed out for action: $action"),
         );
         return result;
       } finally {
-        await sub.cancel();
+        await sub?.cancel();
       }
     } catch (e) {
       debugPrint("Daemon transaction error [$action]: $e");
@@ -505,17 +499,24 @@ class BackendService {
       );
       _allProcesses.add(process);
 
-      // We use wait_for equivalent via timeout() on futures
+      // 3. Wait for termination with mandatory timeout
       final exitCode = await process.exitCode.timeout(
         timeout,
         onTimeout: () {
           debugPrint("BackendService._safeRun: Execution timed out for $args");
-          throw TimeoutException("Process execution timed out");
+          throw TimeoutException("Process execution timed out after ${timeout.inSeconds}s");
         },
       );
 
-      final stdout = await process.stdout.transform(utf8.decoder).join();
-      final stderr = await process.stderr.transform(utf8.decoder).join();
+      // 4. Capture output with additional safety timeout to prevent hanging on pipes
+      final stdout = await process.stdout
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 5), onTimeout: () => "");
+      final stderr = await process.stderr
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 5), onTimeout: () => "");
 
       return ProcessResult(process.pid, exitCode, stdout, stderr);
     } catch (e) {
@@ -740,45 +741,53 @@ class BackendService {
     }
   }
 
-  /// Murphy-proof JSON parser with aggressive recovery.
-  /// Prevents backend noise or mangled output from crashing the frontend.
+  /// Murphy-proof JSON parser with aggressive heuristic recovery.
+  /// Designed to extract valid JSON from noisy, mangled, or interleaved backend streams.
   dynamic _tryParseJson(String input) {
-    final cleanInput = input.trim();
-    if (cleanInput.isEmpty) return null;
-    if (cleanInput.length > 5 * 1024 * 1024) {
-      // Security: Refuse to parse massive strings to prevent OOM
-      return null;
-    }
+    // 1. Initial sanitization
+    final rawInput = input.trim();
+    if (rawInput.isEmpty) return null;
 
+    // Security Boundary: Refuse to process excessively large strings to prevent OOM
+    if (rawInput.length > 5 * 1024 * 1024) return null;
+
+    // 2. Fast-path: Standard decoding
     try {
-      return jsonDecode(cleanInput);
+      return jsonDecode(rawInput);
     } catch (_) {}
 
-    try {
-      // Recovery: Search for JSON blocks within noisy output
-      final jsonPattern = RegExp(r'(\[.*\]|\{.*\})', dotAll: true);
-      final matches = jsonPattern.allMatches(cleanInput);
+    // 3. Heuristic Recovery: Strip noise like ANSI escape codes or leading/trailing garbage
+    final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
 
-      for (final match in matches.toList().reversed) {
+    try {
+      // 4. Pattern-based extraction: Find all potential JSON blocks (objects or arrays)
+      // We use a non-greedy approach followed by verification to find the most likely valid block.
+      final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
+      final match = jsonPattern.firstMatch(cleaned);
+
+      if (match != null) {
         final candidate = match.group(0)!;
         try {
           return jsonDecode(candidate);
         } catch (_) {
-          // Deep recovery: try line-by-line fallback
-          final lines = candidate.split('\n');
-          if (lines.length > 100) {
-            continue; // Boundary defense against too many lines
-          }
-          for (var i = 0; i < lines.length; i++) {
-            try {
-              final lineCandidate = lines.sublist(i).join('\n');
-              return jsonDecode(lineCandidate);
-            } catch (_) {}
+          // 5. Deep Recovery: Scan from the end of the string to find the largest valid JSON tail.
+          // This handles cases where the beginning of the stream is corrupted but the end is valid.
+          final lines = cleaned.split('\n');
+          if (lines.length <= 150) {
+            // Limit depth to preserve performance
+            for (int i = 0; i < lines.length; i++) {
+              try {
+                final tailCandidate = lines.sublist(i).join('\n').trim();
+                if (tailCandidate.isNotEmpty) {
+                  return jsonDecode(tailCandidate);
+                }
+              } catch (_) {}
+            }
           }
         }
       }
     } catch (e) {
-      debugPrint("Murphy-proof JSON recovery failed: $e");
+      debugPrint("Murphy-proof Heuristic JSON Recovery Failed: $e");
     }
 
     return null;

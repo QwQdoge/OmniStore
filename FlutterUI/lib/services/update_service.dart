@@ -105,33 +105,34 @@ class UpdateService {
     }
   }
 
-  /// 仅更新托盘右键菜单文本，不重新初始化托盘
+  /// Murphy-proof: Safely refresh the tray menu with strict timeout and error handling.
+  /// Prevents UI hangs if the system tray backend (D-Bus, etc.) is unresponsive.
   Future<void> _refreshTrayMenu() async {
     if (kIsWeb) return;
     try {
       final Menu menu = Menu();
-      await menu
-          .buildFrom([
-            MenuItemLabel(
-              label: _showWindowLabel,
-              onClicked: (menuItem) => wm.windowManager.show(),
-            ),
-            MenuItemLabel(
-              label: _checkUpdatesLabel,
-              onClicked: (menuItem) => checkNow(),
-            ),
-            MenuSeparator(),
-            MenuItemLabel(
-              label: _exitLabel,
-              onClicked: (menuItem) => _handleFullExit(),
-            ),
-          ])
-          .timeout(const Duration(seconds: 2));
-      await _systemTray
-          .setContextMenu(menu)
-          .timeout(const Duration(seconds: 2));
+      await menu.buildFrom([
+        MenuItemLabel(
+          label: _showWindowLabel,
+          onClicked: (menuItem) => wm.windowManager.show(),
+        ),
+        MenuItemLabel(
+          label: _checkUpdatesLabel,
+          onClicked: (menuItem) => checkNow(),
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: _exitLabel,
+          onClicked: (menuItem) => _handleFullExit(),
+        ),
+      ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
+
+      await _systemTray.setContextMenu(menu).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => throw TimeoutException("Tray context menu update timed out"),
+      );
     } catch (e) {
-      debugPrint('Failed to refresh tray menu: $e');
+      debugPrint('Murphy-proof Warning: Failed to refresh tray menu: $e');
     }
   }
 
@@ -156,115 +157,121 @@ class UpdateService {
     }
   }
 
-  /// Returns true on success, false on failure.
+  /// Murphy-proof: Initializes the system tray with isolation, dependency checks,
+  /// and crash-loop guards. Returns true on success or if disabled by user.
   Future<bool> _initSystemTray() async {
     if (kIsWeb) return true;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS)
-      return true;
-
-    final config = await BackendService.instance.loadConfig();
-    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
-    if (!trayEnabled) {
-      debugPrint("System tray disabled in config.");
-      return true; // 用户主动禁用，不视为失败
-    }
-
-    final String home =
-        Platform.environment['HOME'] ??
-        '/home/${Platform.environment['USER'] ?? 'user'}';
-    final configDir = Directory(p.join(home, '.config', 'omnistore'));
-    final guardFile = File(p.join(configDir.path, '.tray_initializing'));
-
-    if (Platform.isLinux) {
-      if (guardFile.existsSync()) {
-        debugPrint("System tray previously crashed. Skipping to prevent loop.");
-        return false; // 之前崩溃过，视为失败
-      }
-
-      final hasDeps = await _checkLinuxTrayDependencies();
-      if (!hasDeps) {
-        debugPrint(
-          "Skipping system tray initialization due to missing dependencies.",
-        );
-        return false; // 缺少依赖库，视为失败
-      }
-    }
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
 
     try {
-      if (Platform.isLinux) {
-        if (!configDir.existsSync()) configDir.createSync(recursive: true);
-        guardFile.createSync();
+      final config = await BackendService.instance.loadConfig();
+      final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
+      if (!trayEnabled) {
+        debugPrint("System tray disabled in config.");
+        return true;
       }
 
-      String iconPath = 'assets/app_icon.png';
+      final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+      final configDir = Directory(p.join(home, '.config', 'omnistore'));
+      final guardFile = File(p.join(configDir.path, '.tray_initializing'));
+
       if (Platform.isLinux) {
-        final String executablePath = Platform.resolvedExecutable;
-        final String executableDir = p.dirname(executablePath);
+        if (guardFile.existsSync()) {
+          debugPrint("Murphy-proof Guard: System tray previously crashed. Skipping to prevent crash loop.");
+          return false;
+        }
 
-        final List<String> candidatePaths = [
-          p.join(
-            executableDir,
-            'data',
-            'flutter_assets',
-            'assets',
-            'app_icon.png',
-          ),
-          p.join(executableDir, 'assets', 'app_icon.png'),
-          p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
-          p.join(Directory.current.path, 'assets', 'app_icon.png'),
-        ];
+        final hasDeps = await _checkLinuxTrayDependencies();
+        if (!hasDeps) {
+          debugPrint("Skipping system tray initialization due to missing dependencies (libdbusmenu/libappindicator).");
+          return false;
+        }
+      }
 
-        for (final path in candidatePaths) {
-          if (File(path).existsSync()) {
-            iconPath = path;
-            debugPrint("Found tray icon at: $path");
-            break;
+      try {
+        if (Platform.isLinux) {
+          if (!configDir.existsSync()) configDir.createSync(recursive: true);
+          guardFile.createSync();
+        }
+
+        String iconPath = 'assets/app_icon.png';
+        if (Platform.isLinux) {
+          final String executablePath = Platform.resolvedExecutable;
+          final String executableDir = p.dirname(executablePath);
+
+          final List<String> candidatePaths = [
+            p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
+            p.join(executableDir, 'assets', 'app_icon.png'),
+            p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
+            p.join(Directory.current.path, 'assets', 'app_icon.png'),
+          ];
+
+          for (final path in candidatePaths) {
+            if (File(path).existsSync()) {
+              iconPath = path;
+              break;
+            }
           }
         }
-      }
 
-      await _systemTray
-          .initSystemTray(title: "OmniStore", iconPath: iconPath)
-          .timeout(const Duration(seconds: 3));
+        // Initialize with strict timeout
+        await _systemTray.initSystemTray(title: "OmniStore", iconPath: iconPath).timeout(
+              const Duration(seconds: 4),
+              onTimeout: () => throw TimeoutException("System tray init timed out"),
+            );
 
-      final Menu menu = Menu();
-      await menu
-          .buildFrom([
-            MenuItemLabel(
-              label: _showWindowLabel,
-              onClicked: (menuItem) => wm.windowManager.show(),
-            ),
-            MenuItemLabel(
-              label: _checkUpdatesLabel,
-              onClicked: (menuItem) => checkNow(),
-            ),
-            MenuSeparator(),
-            MenuItemLabel(
-              label: _exitLabel,
-              onClicked: (menuItem) => _handleFullExit(),
-            ),
-          ])
-          .timeout(const Duration(seconds: 2));
+        final Menu menu = Menu();
+        await menu.buildFrom([
+          MenuItemLabel(
+            label: _showWindowLabel,
+            onClicked: (menuItem) => wm.windowManager.show(),
+          ),
+          MenuItemLabel(
+            label: _checkUpdatesLabel,
+            onClicked: (menuItem) => checkNow(),
+          ),
+          MenuSeparator(),
+          MenuItemLabel(
+            label: _exitLabel,
+            onClicked: (menuItem) => _handleFullExit(),
+          ),
+        ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
 
-      await _systemTray
-          .setContextMenu(menu)
-          .timeout(const Duration(seconds: 2));
+        await _systemTray.setContextMenu(menu).timeout(
+              const Duration(seconds: 2),
+              onTimeout: () => throw TimeoutException("Tray context menu setup timed out"),
+            );
 
-      _systemTray.registerSystemTrayEventHandler((eventName) {
-        if (eventName == kSystemTrayEventClick) {
-          wm.windowManager.show();
-        } else if (eventName == kSystemTrayEventRightClick) {
-          _systemTray.popUpContextMenu();
+        _systemTray.registerSystemTrayEventHandler((eventName) {
+          try {
+            if (eventName == kSystemTrayEventClick) {
+              wm.windowManager.show();
+            } else if (eventName == kSystemTrayEventRightClick) {
+              _systemTray.popUpContextMenu();
+            }
+          } catch (e) {
+            debugPrint("Tray event error: $e");
+          }
+        });
+
+        if (Platform.isLinux && guardFile.existsSync()) {
+          guardFile.deleteSync();
         }
-      });
-
-      if (Platform.isLinux && guardFile.existsSync()) {
-        guardFile.deleteSync();
+        return true;
+      } catch (e) {
+        debugPrint("Murphy-proof Error: System tray initialization failed: $e");
+        return false;
+      } finally {
+        // Cleanup guard file if something went wrong but we're still running
+        if (Platform.isLinux && guardFile.existsSync()) {
+          try {
+            guardFile.deleteSync();
+          } catch (_) {}
+        }
       }
-      return true; // 初始化成功
-    } catch (e) {
-      debugPrint("System tray initialization failed gracefully: $e");
-      return false; // 初始化失败
+    } catch (outerError) {
+      debugPrint("Fatal tray init exception: $outerError");
+      return false;
     }
   }
 
@@ -305,10 +312,23 @@ class UpdateService {
     if (_updateTimer != null && _currentInterval == interval) {
       return; // Interval unchanged — nothing to do.
     }
+
     _currentInterval = interval;
-    _updateTimer?.cancel();
-    _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
-    checkNow();
+
+    // Murphy-proof: Explicitly cancel and nullify existing timer before reallocation
+    // to prevent memory leaks and duplicate background check loops.
+    if (_updateTimer != null) {
+      _updateTimer!.cancel();
+      _updateTimer = null;
+    }
+
+    try {
+      _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
+      // Initial trigger
+      checkNow();
+    } catch (e) {
+      debugPrint("Murphy-proof Warning: Failed to start update timer: $e");
+    }
   }
 
   /// Writes a systemd user-level service + timer that runs OmniStore in
