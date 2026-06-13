@@ -933,7 +933,7 @@
   "@securityWarning": {
     "description": "Description for securityWarning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
+  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
   "@aurSecurityDesc": {
     "description": "Description for aurSecurityDesc"
   },
@@ -1117,6 +1117,9 @@
     "description": "Full name for Flatpak"
   },
   "errorPackageNameRequired": "Error: El nombre del paquete no puede estar vacío",
+  "@errorPackageNameRequired": {
+    "description": "Error message when package name is empty"
+  },
   "errorStartFailed": "Error al iniciar: {error}",
   "@errorStartFailed": {
     "placeholders": {
@@ -1127,6 +1130,14 @@
   },
   "errorUpdateFailed": "Error al actualizar: {error}",
   "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "checkUpdateFailed": "Error al buscar actualizaciones: {error}",
+  "@checkUpdateFailed": {
     "placeholders": {
       "error": {
         "type": "String"
@@ -1158,9 +1169,21 @@
     }
   },
   "taskForcedTerminated": "Tarea terminada forzosamente",
+  "@taskForcedTerminated": {
+    "description": "Error message when a task is forcefully terminated"
+  },
   "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
+  "@aiTimeout": {
+    "description": "Error message when AI request times out"
+  },
   "aiNoResponse": "La IA no pudo proporcionar una respuesta válida.",
+  "@aiNoResponse": {
+    "description": "Error message when AI does not respond"
+  },
   "aiParseFailed": "Error al analizar la respuesta de la IA: formato incorrecto.",
+  "@aiParseFailed": {
+    "description": "Error message when AI response parsing fails"
+  },
   "aiCallFailed": "La llamada al servicio de IA falló: {error}",
   "@aiCallFailed": {
     "placeholders": {
@@ -1178,6 +1201,9 @@
     }
   },
   "taskProcessing": "Procesando",
+  "@taskProcessing": {
+    "description": "Task processing status label"
+  },
   "collapse": "Contraer",
   "@collapse": {
     "description": "Description for collapse"
@@ -1200,7 +1226,7 @@
   "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
   "sourceType": "Tipo de fuente",
   "githubRepoType": "Repositorio de GitHub (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "bituRepoType": "Bitu / Bitbucket (espacio de trabajo/repositorio)",
   "flatpakRemoteType": "Remoto de Flatpak",
   "appImageFeedType": "URL de feed de AppImage",
   "sourceName": "Nombre de la fuente",
@@ -1218,7 +1244,13 @@
   "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
   "personalAccessToken": "Token de acceso personal",
   "copyName": "Copiar nombre",
+  "@copyName": {
+    "description": "Button to copy the package name"
+  },
   "nameCopied": "Nombre copiado al portapapeles",
+  "@nameCopied": {
+    "description": "Snackbar message indicating name was copied to clipboard"
+  },
   "@activeSources": {
     "description": "Label for active software sources"
   },
@@ -1287,5 +1319,101 @@
   },
   "@personalAccessToken": {
     "description": "Label for personal access token"
-  }
+  },
+  "language": "Idioma de la interfaz",
+  "languageSubtitle": "Requiere reiniciar para aplicarse",
+  "restartTitleBar": "Reinicie la aplicación para aplicar los cambios en la barra de título",
+  "enableDaemon": "Activar demonio de actualización",
+  "enableDaemonDesc": "Buscar actualizaciones periódicamente en segundo plano",
+  "autoUpdate": "Actualización automática silenciosa",
+  "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
+  "checkIntervalTitle": "Frecuencia de comprobación",
+  "checkIntervalSubtitle": "Comprobar cada {hours} horas",
+  "typography": "Tipografía",
+  "fontFamily": "Familia de fuentes",
+  "fontScale": "Escala de fuente",
+  "systemDefault": "Predeterminado del sistema",
+  "hourValue": "{count, plural, =1{1 hora} other{{count} horas}}",
+  "@language": {},
+  "@languageSubtitle": {},
+  "@restartTitleBar": {},
+  "@enableDaemon": {},
+  "@enableDaemonDesc": {},
+  "@autoUpdate": {},
+  "@autoUpdateDesc": {},
+  "@checkIntervalTitle": {},
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@typography": {},
+  "@fontFamily": {},
+  "@fontScale": {},
+  "@systemDefault": {},
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "Chino simplificado",
+  "langTraditionalChinese": "Chino tradicional",
+  "langEnglish": "Inglés",
+  "langJapanese": "Japonés",
+  "langSpanish": "Español",
+  "taskInProgress": "Otra tarea ya está en progreso",
+  "@taskInProgress": {
+    "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
+  },
+  "errorTitle": "Error",
+  "@errorTitle": {
+    "description": "General error title"
+  },
+  "appDetailsNotFound": "No se encontraron detalles de la aplicación",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "Espacio en disco: {free} GB libres / {total} GB en total",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | Personalizado: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "Atrás",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "Volver a la pantalla anterior",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "Categoría: {name}",
+  "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0"
 }

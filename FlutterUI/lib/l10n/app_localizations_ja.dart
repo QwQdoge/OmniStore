@@ -702,7 +702,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
+      'AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
 
   @override
   String get continueInstall => 'インストールを続行';
@@ -846,6 +846,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String checkUpdateFailed(String error) {
+    return '更新の確認に失敗しました：$error';
+  }
+
+  @override
   String errorCleanFailed(String error) {
     return 'クリーンアップに失敗しました：$error';
   }
@@ -917,7 +922,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get githubRepoType => 'GitHub リポジトリ (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType => 'Bitu / Bitbucket (ワークスペース/リポジトリ)';
 
   @override
   String get flatpakRemoteType => 'Flatpak リモート';
@@ -972,4 +977,102 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get nameCopied => '名前をクリップボードにコピーしました';
+
+  @override
+  String get language => '表示言語';
+
+  @override
+  String get languageSubtitle => '再起動後に有効になります';
+
+  @override
+  String get restartTitleBar => 'タイトルバーの設定を適用するには再起動してください';
+
+  @override
+  String get enableDaemon => 'バックグラウンド更新を有効にする';
+
+  @override
+  String get enableDaemonDesc => 'バックグラウンドで定期的に更新を確認します';
+
+  @override
+  String get autoUpdate => 'サイレント自動更新';
+
+  @override
+  String get autoUpdateDesc => 'バックグラウンドでパッケージを自動的に更新します';
+
+  @override
+  String get checkIntervalTitle => '更新確認の間隔';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    return '$hours 時間ごとに確認';
+  }
+
+  @override
+  String get typography => 'フォントとタイポグラフィ';
+
+  @override
+  String get fontFamily => 'フォントファミリー';
+
+  @override
+  String get fontScale => 'フォントの拡大率';
+
+  @override
+  String get systemDefault => 'システム既定';
+
+  @override
+  String hourValue(int count) {
+    return '$count 時間';
+  }
+
+  @override
+  String get langSimplifiedChinese => '中国語 (簡体字)';
+
+  @override
+  String get langTraditionalChinese => '中国語 (繁体字)';
+
+  @override
+  String get langEnglish => '英語';
+
+  @override
+  String get langJapanese => '日本語';
+
+  @override
+  String get langSpanish => 'スペイン語';
+
+  @override
+  String get taskInProgress => '別のタスクが既に実行中です';
+
+  @override
+  String get trayInitFailedExiting =>
+      'システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。';
+
+  @override
+  String get errorTitle => 'エラー';
+
+  @override
+  String get appDetailsNotFound => 'アプリの詳細が見つかりませんでした';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'ディスク空間: $free GB 空き / $total GB 合計';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | カスタム: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => '戻る';
+
+  @override
+  String get backSemanticsHint => '前の画面に戻る';
+
+  @override
+  String categorySemantics(String name) {
+    return 'カテゴリー：$name';
+  }
+
+  @override
+  String get temperatureRangeError => '値は 0.0 から 2.0 の間である必要があります';
 }

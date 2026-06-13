@@ -1,5 +1,6 @@
 import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
@@ -16,6 +17,7 @@ import 'package:frontend/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,14 +27,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _bannerScrollController = ScrollController();
+  final ScrollController _newArrivalsScrollController = ScrollController();
+  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  final ScrollController _heroScrollController = ScrollController();
+  final ScrollController _quickAccessScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
+
+  @override
+  void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
+    _heroScrollController.dispose();
+    _quickAccessScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
   }
+
+  // Second dispose method removed
 
   Future<void> _refresh() async {
     final browse = context.read<BrowseController>();
@@ -50,11 +73,20 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          // Hide AI section if the response is an error message
-          final isError = pick.startsWith('⚠') ||
-              pick.startsWith('⏱') ||
-              pick.contains('AI service') ||
-              pick.contains('timed out');
+          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
+          final errorPatterns = [
+            '⚠', '⏱',
+            'AI 服务', 'AI service',
+            'timed out', '超时',
+            '无法连接', 'Connection',
+            '错误', 'error', 'Error',
+            '未启用', 'not enabled',
+            'failed', 'Failed',
+            'Today\'s recommendation: OmniStore',
+          ];
+          final isError = errorPatterns.any(
+            (p) => pick.toLowerCase().contains(p.toLowerCase()),
+          );
           _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });
@@ -139,11 +171,14 @@ class _HomePageState extends State<HomePage> {
               child: Consumer<SettingsController>(
                 builder: (context, settings, _) {
                   if (!settings.isAIEnabled) return const SizedBox.shrink();
-                  return _isAILoading
-                      ? _buildAIPickSkeleton()
-                      : (_aiPickBlurb != null
-                          ? _buildAIPickSection()
-                          : const SizedBox.shrink());
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _isAILoading
+                        ? _buildAIPickSkeleton(key: const ValueKey('ai_skeleton'))
+                        : (_aiPickBlurb != null
+                            ? _buildAIPickSection(key: const ValueKey('ai_content'))
+                            : SizedBox.shrink(key: const ValueKey('ai_empty'))),
+                  );
                 },
               ),
             ),
@@ -200,12 +235,17 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 260,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 20),
-            itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+          child: Scrollbar(
+            controller: _bannerScrollController,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: _bannerScrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 20),
+              itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+            ),
           ),
         ),
       ],
@@ -219,124 +259,128 @@ class _HomePageState extends State<HomePage> {
         : null;
     final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+    return Semantics(
+      label: 'Featured app: ${app.name}',
+      button: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+            ),
           ),
-        ),
-        child: Container(
-          width: 440,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHigh,
-          ),
-          child: Stack(
-            children: [
-              if (screenshot != null)
+          child: Container(
+            width: 440,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHigh,
+            ),
+            child: Stack(
+              children: [
+                if (screenshot != null)
+                  Positioned.fill(
+                    child: CachedNetworkImage(
+                      imageUrl: screenshot,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 880,
+                      errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
+                    ),
+                  )
+                else
+                  Center(
+                    child: Icon(
+                      Icons.apps_rounded,
+                      size: 80,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    ),
+                  ),
                 Positioned.fill(
-                  child: CachedNetworkImage(
-                    imageUrl: screenshot,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 880,
-                    errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
-                  ),
-                )
-              else
-                Center(
-                  child: Icon(
-                    Icons.apps_rounded,
-                    size: 80,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  ),
-                ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      stops: const [0.5, 1.0],
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                        stops: const [0.5, 1.0],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 20,
-                bottom: 20,
-                right: 20,
-                child: Row(
-                  children: [
-                    Hero(
-                      tag: heroTag,
-                      child: Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                Positioned(
+                  left: 20,
+                  bottom: 20,
+                  right: 20,
+                  child: Row(
+                    children: [
+                      Hero(
+                        tag: heroTag,
+                        child: Container(
+                          width: 54,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: app.icon != null
+                              ? CachedNetworkImage(
+                                  imageUrl: app.icon!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 108,
+                                  memCacheHeight: 108,
+                                  errorWidget: (c, e, s) =>
+                                      const Icon(Icons.apps, color: Colors.black),
+                                )
+                              : const Icon(Icons.apps, color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              app.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              app.description,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: app.icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 108,
-                                memCacheHeight: 108,
-                                errorWidget: (c, e, s) =>
-                                    const Icon(Icons.apps, color: Colors.black),
-                              )
-                            : const Icon(Icons.apps, color: Colors.black),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            app.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            app.description,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -345,7 +389,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategoryShelf(String title, List<AppPackage> apps) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
+    final controller = _shelfControllers.putIfAbsent(title, () => ScrollController());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -354,68 +399,78 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         SizedBox(
           height: 160,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: apps.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final app = apps[index];
-              final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
-              return SizedBox(
-                width: 130,
-                child: InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AppDetailsPage(app: app, heroTag: heroTag),
+          child: Scrollbar(
+            controller: controller,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final app = apps[index];
+                final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
+                return Semantics(
+                  label: 'App: ${app.name}',
+                  button: true,
+                  child: AppCard(
+                    borderRadius: 16,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AppDetailsPage(app: app, heroTag: heroTag),
+                      ),
+                    ),
+                    child: Container(
+                      width: 130,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        children: [
+                          Hero(
+                            tag: heroTag,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: app.icon != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: app.icon!,
+                                      fit: BoxFit.cover,
+                                      memCacheWidth: 160,
+                                      memCacheHeight: 160,
+                                      errorWidget: (c, e, s) =>
+                                          const Icon(Icons.apps),
+                                    )
+                                  : const Icon(Icons.apps, size: 40),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              app.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Column(
-                    children: [
-                      Hero(
-                        tag: heroTag,
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: app.icon != null
-                              ? CachedNetworkImage(
-                                  imageUrl: app.icon!,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 200,
-                                  memCacheHeight: 200,
-                                  errorWidget: (c, e, s) =>
-                                      const Icon(Icons.apps),
-                                )
-                              : const Icon(Icons.apps, size: 40),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          app.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -426,25 +481,30 @@ class _HomePageState extends State<HomePage> {
     final categories = CategoryService.getCategories(context);
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 50,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: categories.length,
-          itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Semantics(
-              label: 'Category: ${categories[index].name}',
-              child: ActionChip(
-                avatar: Icon(categories[index].icon, size: 18),
-                label: Text(categories[index].name),
-                tooltip: categories[index].name,
-                onPressed: () {
-                  final browse = context.read<BrowseController>();
-                  browse.pendingSearchQuery =
-                      '/${categories[index].id.toLowerCase()}';
-                  context.read<NavigationController>().setIndex(2);
-                },
+        height: 64,
+        child: Scrollbar(
+          controller: _quickAccessScrollController,
+          thumbVisibility: true,
+          child: ListView.builder(
+            controller: _quickAccessScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: categories.length,
+            itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Semantics(
+                label: AppLocalizations.of(context)!.categorySemantics(categories[index].name),
+                child: ActionChip(
+                  avatar: Icon(categories[index].icon, size: 18),
+                  label: Text(categories[index].name),
+                  tooltip: categories[index].name,
+                  onPressed: () {
+                    final browse = context.read<BrowseController>();
+                    browse.pendingSearchQuery =
+                        '/${categories[index].id.toLowerCase()}';
+                    context.read<NavigationController>().setIndex(2);
+                  },
+                ),
               ),
             ),
           ),
@@ -460,8 +520,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSkeleton() {
+  Widget _buildAIPickSkeleton({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -489,8 +550,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSection() {
+  Widget _buildAIPickSection({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

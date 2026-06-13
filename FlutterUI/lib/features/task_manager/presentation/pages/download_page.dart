@@ -24,10 +24,12 @@ class DownloadPage extends StatefulWidget {
 
 class _DownloadPageState extends State<DownloadPage>
     with SingleTickerProviderStateMixin {
+  final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   List<AppPackage> _installedApps = [];
   List<AppPackage> _filteredApps = [];
   bool _isLoadingInstalled = false;
+  bool _isCheckingUpdates = false;
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
@@ -47,6 +49,53 @@ class _DownloadPageState extends State<DownloadPage>
         });
       }
     });
+  }
+
+  Future<void> _checkUpdatesWithFeedback() async {
+    if (_isCheckingUpdates) return;
+    setState(() => _isCheckingUpdates = true);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final prevCount = UpdateService().availableUpdates.value.length;
+      await UpdateService().checkUpdates();
+      if (!mounted) return;
+      final newCount = UpdateService().availableUpdates.value.length;
+      final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                newCount > 0
+                    ? Icons.system_update_alt
+                    : Icons.check_circle_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(msg),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      if (newCount > 0 && prevCount == 0) {
+        // 自动跳转到更新标签页
+        _tabController.animateTo(1);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.checkUpdateFailed(e.toString()),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingUpdates = false);
+    }
   }
 
   Future<void> _loadInstalledApps() async {
@@ -86,6 +135,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   void dispose() {
+    _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -295,13 +345,27 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _loadInstalledApps();
-              UpdateService().checkUpdates();
-            },
-            tooltip: AppLocalizations.of(context)!.refresh,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Skeleton(width: 20, height: 20, borderRadius: 10),
+                    ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps();
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
+                  ),
           ),
         ],
       ),
@@ -313,9 +377,10 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget _buildTasksTab() {
-    return Consumer<TaskController>(
-      builder: (context, taskController, _) {
-        if (!taskController.isBusy) {
+    return Selector<TaskController, bool>(
+      selector: (context, controller) => controller.isBusy,
+      builder: (context, isBusy, _) {
+        if (!isBusy) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -341,7 +406,10 @@ class _DownloadPageState extends State<DownloadPage>
             children: [
               Text(
                 AppLocalizations.of(context)!.currentTask,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               const SizedBox(height: 20),
               Card(
@@ -349,16 +417,23 @@ class _DownloadPageState extends State<DownloadPage>
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      SmoothProgressBar(
-                        taskState: TaskState(
-                          id: "active",
-                          packageName: AppLocalizations.of(context)!.taskProcessing,
-                          status: TaskStatus.downloading,
-                          progress: taskController.progress ?? 0.0,
-                          stage: taskController.status,
-                          speed: taskController.speed,
-                        ),
-                        onCancel: () => taskController.cancelTask(AppLocalizations.of(context)!),
+                      Consumer<TaskController>(
+                        builder: (context, taskController, _) =>
+                            SmoothProgressBar(
+                              taskState: TaskState(
+                                id: "active",
+                                packageName: AppLocalizations.of(
+                                  context,
+                                )!.taskProcessing,
+                                status: TaskStatus.downloading,
+                                progress: taskController.progress ?? 0.0,
+                                stage: taskController.status,
+                                speed: taskController.speed,
+                              ),
+                              onCancel: () => taskController.cancelTask(
+                                AppLocalizations.of(context)!,
+                              ),
+                            ),
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -444,8 +519,17 @@ class _DownloadPageState extends State<DownloadPage>
                   final update = updates[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      onTap: () async {
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Semantics(
+                      label: 'Update available: ${update['name']}',
+                      button: true,
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        onTap: () async {
                         final results = await packageRepo.searchPackages(
                           update['name'],
                         );
@@ -506,8 +590,9 @@ class _DownloadPageState extends State<DownloadPage>
                         ],
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              },
               ),
             ),
           ],
@@ -581,31 +666,38 @@ class _DownloadPageState extends State<DownloadPage>
           : Column(
               key: const ValueKey('loaded'),
               children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                        .map(
-                          (s) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(
-                                s == "all" ? AppLocalizations.of(context)!.explore : s,
+                Scrollbar(
+                  controller: _filterScrollController,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: _filterScrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                    child: Row(
+                      children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                          .map(
+                            (s) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(
+                                  s == "all"
+                                      ? AppLocalizations.of(context)!.explore
+                                      : s,
+                                ),
+                                selected: _selectedSourceFilter == s,
+                                onSelected: (v) {
+                                  if (v) {
+                                    setState(() {
+                                      _selectedSourceFilter = s;
+                                      _applyFilters();
+                                    });
+                                  }
+                                },
                               ),
-                              selected: _selectedSourceFilter == s,
-                              onSelected: (v) {
-                                if (v) {
-                                  setState(() {
-                                    _selectedSourceFilter = s;
-                                    _applyFilters();
-                                  });
-                                }
-                              },
                             ),
-                          ),
-                        )
-                        .toList(),
+                          )
+                          .toList(),
+                    ),
                   ),
                 ),
                 Expanded(child: _buildInstalledList()),
@@ -656,18 +748,30 @@ class _DownloadPageState extends State<DownloadPage>
         final app = _filteredApps[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Semantics(
+            label: 'Installed app: ${app.name}',
+            button: true,
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             leading: app.icon != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: CachedNetworkImage(
                       imageUrl: app.icon!,
                       width: 40,
                       height: 40,
                       memCacheWidth: 80,
                       memCacheHeight: 80,
-                      placeholder: (context, url) =>
-                          const Skeleton(width: 40, height: 40, borderRadius: 0),
+                      placeholder: (context, url) => const Skeleton(
+                        width: 40,
+                        height: 40,
+                        borderRadius: 0,
+                      ),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.apps),
                     ),
@@ -701,6 +805,7 @@ class _DownloadPageState extends State<DownloadPage>
               context,
               MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
             ),
+          ),
           ),
         );
       },

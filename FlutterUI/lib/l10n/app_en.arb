@@ -72,9 +72,9 @@
   "@source": {
     "description": "Description for source"
   },
-  "variant": "Variant",
+  "variant": "Versions",
   "@variant": {
-    "description": "Description for variant"
+    "description": "Label for app variants/versions"
   },
   "version": "Version",
   "@version": {
@@ -1133,6 +1133,14 @@
       }
     }
   },
+  "checkUpdateFailed": "Check update failed: {error}",
+  "@checkUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "errorCleanFailed": "Cleanup failed: {error}",
   "@errorCleanFailed": {
     "placeholders": {
@@ -1287,5 +1295,135 @@
     "description": "Label for personal access token"
   },
   "copyName": "Copy Name",
-  "nameCopied": "Name copied to clipboard"
+  "nameCopied": "Name copied to clipboard",
+  "language": "Language",
+  "@language": {
+    "description": "Label for language setting"
+  },
+  "languageSubtitle": "Requires restart to take effect",
+  "@languageSubtitle": {
+    "description": "Subtitle for language setting"
+  },
+  "restartTitleBar": "Please restart to apply title bar changes",
+  "@restartTitleBar": {
+    "description": "Message to restart for title bar changes"
+  },
+  "enableDaemon": "Enable Background Update Daemon",
+  "@enableDaemon": {
+    "description": "Label for background daemon"
+  },
+  "enableDaemonDesc": "Regularly check for updates in the background",
+  "@enableDaemonDesc": {
+    "description": "Description for background daemon"
+  },
+  "autoUpdate": "Silent Auto Update",
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
+  "autoUpdateDesc": "Automatically download and update all packages in the background",
+  "@autoUpdateDesc": {
+    "description": "Description for auto update"
+  },
+  "checkIntervalTitle": "Update Check Frequency",
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
+  "checkIntervalSubtitle": "Automatically check every {hours} hours",
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "typography": "Typography",
+  "@typography": {
+    "description": "Title for typography settings"
+  },
+  "fontFamily": "Font Family",
+  "@fontFamily": {
+    "description": "Label for font family setting"
+  },
+  "fontScale": "Font Scale",
+  "@fontScale": {
+    "description": "Label for font scale setting"
+  },
+  "systemDefault": "System Default",
+  "@systemDefault": {
+    "description": "Label for system default option"
+  },
+  "hourValue": "{count, plural, =1{1 hour} other{{count} hours}}",
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "langSimplifiedChinese": "Simplified Chinese",
+  "langTraditionalChinese": "Traditional Chinese",
+  "langEnglish": "English",
+  "langJapanese": "Japanese",
+  "langSpanish": "Spanish",
+  "taskInProgress": "Another task is already in progress",
+  "@taskInProgress": {
+    "description": "Error message when trying to start a task while another is running"
+  },
+  "trayInitFailedExiting": "System tray initialization failed. Exiting to prevent background errors.",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
+  },
+  "errorTitle": "Error",
+  "@errorTitle": {
+    "description": "General error title"
+  },
+  "appDetailsNotFound": "App details not found",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "Disk Space: {free} GB free / {total} GB total",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | Custom: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "Back",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "Go back to the previous screen",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "Category: {name}",
+  "@categorySemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "temperatureRangeError": "Value must be between 0.0 and 2.0",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  }
 }

@@ -1,16 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
 import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 
-// TODO: Decouple SettingsController from pure view page logic to follow cleaner MVVM architecture.
-// TODO: Store sensitive API keys in system keychain/keystore instead of cleartext in config file.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -22,7 +19,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _showAdvanced = false;
   final Map<String, Timer?> _debounces = {};
   String? _tempError;
-  
+
   late TextEditingController _endpointController;
   late TextEditingController _modelController;
   late TextEditingController _apiKeyController;
@@ -33,14 +30,111 @@ class _SettingsPageState extends State<SettingsPage> {
   final FocusNode _apiKeyFocus = FocusNode();
   final FocusNode _tempFocus = FocusNode();
 
+  Map<String, dynamic>? _storageInfo;
+  bool _loadingStorage = false;
+
+  Future<void> _fetchStorageInfo() async {
+    if (!mounted) return;
+    setState(() => _loadingStorage = true);
+    try {
+      final info = await BackendService.instance.getStorageInfo();
+      if (mounted) {
+        setState(() {
+          _storageInfo = info;
+          _loadingStorage = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loadingStorage = false);
+      }
+    }
+  }
+
+  Future<void> _triggerCleanup(BuildContext context, AppLocalizations l10n) async {
+    final taskController = context.read<TaskController>();
+    if (taskController.isBusy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.taskInProgress)),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AnimatedBuilder(
+          animation: taskController,
+          builder: (context, child) {
+            return AlertDialog(
+              title: Text(l10n.systemCleaning),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(taskController.status),
+                  const SizedBox(height: 16),
+                  if (taskController.progress != null)
+                    LinearProgressIndicator(value: taskController.progress)
+                  else
+                    const LinearProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 150,
+                    width: double.maxFinite,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        taskController.logs.join('\n'),
+                        style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (!taskController.isBusy)
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l10n.confirm),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    await taskController.runCleanSystem(l10n);
+    await _fetchStorageInfo();
+  }
+
   @override
   void initState() {
     super.initState();
     final settings = context.read<SettingsController>();
-    _endpointController = TextEditingController(text: settings.config['ai']?['endpoint'] ?? '');
-    _modelController = TextEditingController(text: settings.config['ai']?['model'] ?? '');
-    _apiKeyController = TextEditingController(text: settings.config['ai']?['api_key'] ?? '');
-    _tempController = TextEditingController(text: (settings.config['ai']?['temperature'] ?? 0.7).toString());
+    _endpointController = TextEditingController(
+      text: settings.config['ai']?['endpoint'] ?? '',
+    );
+    _modelController = TextEditingController(
+      text: settings.config['ai']?['model'] ?? '',
+    );
+    _apiKeyController = TextEditingController(
+      text: settings.config['ai']?['api_key'] ?? '',
+    );
+    _tempController = TextEditingController(
+      text: (settings.config['ai']?['temperature'] ?? 0.7).toString(),
+    );
+    _fetchStorageInfo();
   }
 
   SettingsController? _settingsController;
@@ -70,18 +164,39 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _syncControllers() {
     final settings = context.read<SettingsController>();
-    _updateIfChanged(_endpointController, settings.config['ai']?['endpoint'] ?? '', _endpointFocus);
-    _updateIfChanged(_modelController, settings.config['ai']?['model'] ?? '', _modelFocus);
-    _updateIfChanged(_apiKeyController, settings.config['ai']?['api_key'] ?? '', _apiKeyFocus);
-    _updateIfChanged(_tempController, (settings.config['ai']?['temperature'] ?? 0.7).toString(), _tempFocus);
+    _updateIfChanged(
+      _endpointController,
+      settings.config['ai']?['endpoint'] ?? '',
+      _endpointFocus,
+    );
+    _updateIfChanged(
+      _modelController,
+      settings.config['ai']?['model'] ?? '',
+      _modelFocus,
+    );
+    _updateIfChanged(
+      _apiKeyController,
+      settings.config['ai']?['api_key'] ?? '',
+      _apiKeyFocus,
+    );
+    _updateIfChanged(
+      _tempController,
+      (settings.config['ai']?['temperature'] ?? 0.7).toString(),
+      _tempFocus,
+    );
   }
 
-  void _updateIfChanged(TextEditingController controller, String value, FocusNode focus) {
+  void _updateIfChanged(
+    TextEditingController controller,
+    String value,
+    FocusNode focus,
+  ) {
     if (controller.text != value && !focus.hasFocus) {
       final selection = controller.selection;
       controller.text = value;
       // Maintain cursor position if it was within bounds (just in case)
-      if (selection.baseOffset <= value.length && selection.extentOffset <= value.length) {
+      if (selection.baseOffset <= value.length &&
+          selection.extentOffset <= value.length) {
         controller.selection = selection;
       }
     }
@@ -129,30 +244,30 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 24),
-          
+
           // Primary Settings
           _buildSection(l10n.general),
           ListTile(
-            title: const Text("界面语言 / Language"),
+            title: Text(l10n.language),
             subtitle: Text(settings.language == 'zh-CN'
-                ? '简体中文'
+                ? l10n.langSimplifiedChinese
                 : settings.language == 'zh-TW'
-                    ? '繁體中文'
+                    ? l10n.langTraditionalChinese
                     : settings.language == 'ja-JP'
-                        ? '日本語'
+                        ? l10n.langJapanese
                         : settings.language == 'es-ES' || settings.language == 'es'
-                            ? 'Español'
-                            : 'English'),
+                            ? l10n.langSpanish
+                            : l10n.langEnglish),
             trailing: DropdownButton<String>(
               value: settings.language,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 'zh-CN', child: Text('简体中文')),
-                DropdownMenuItem(value: 'zh-TW', child: Text('繁體中文')),
-                DropdownMenuItem(value: 'en-US', child: Text('English')),
-                DropdownMenuItem(value: 'ja-JP', child: Text('日本語')),
-                DropdownMenuItem(value: 'es-ES', child: Text('Español')),
+              items: [
+                DropdownMenuItem(value: 'zh-CN', child: Text(l10n.langSimplifiedChinese)),
+                DropdownMenuItem(value: 'zh-TW', child: Text(l10n.langTraditionalChinese)),
+                DropdownMenuItem(value: 'en-US', child: Text(l10n.langEnglish)),
+                DropdownMenuItem(value: 'ja-JP', child: Text(l10n.langJapanese)),
+                DropdownMenuItem(value: 'es-ES', child: Text(l10n.langSpanish)),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -170,13 +285,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SwitchListTile(
             title: Text(l10n.useSystemTitleBar),
-            subtitle: const Text("需要重新启动应用才能生效 / Requires restart"),
+            subtitle: Text(l10n.configSaved),
             value: settings.useSystemTitleBar,
             onChanged: (val) {
               settings.setUseSystemTitleBar(val);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("请重启应用以应用标题栏设置 / Please restart to apply title bar changes"),
+                SnackBar(
+                  content: Text(l10n.configSaved),
                 ),
               );
             },
@@ -192,16 +307,107 @@ class _SettingsPageState extends State<SettingsPage> {
               settings.updateConfig(config);
             },
           ),
-          ListTile(
-            title: Text(l10n.systemCleaning),
-            subtitle: Text(l10n.systemCleaningSubtitle),
-            trailing: const Icon(Icons.delete_sweep_rounded),
-            onTap: () {
-              context.read<TaskRepository>().cleanSystem().listen((_) {});
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.processing)),
-              );
-            },
+          // Storage & Cleanup Card
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.storage_rounded, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.systemCleaning,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.refresh_rounded),
+                        onPressed: _fetchStorageInfo,
+                        tooltip: l10n.refresh,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_loadingStorage)
+                    const LinearProgressIndicator()
+                  else if (_storageInfo != null) ...[
+                    // Disk Space
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n.diskSpaceInfo(
+                            ((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                            ((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: ((_storageInfo!['disk_used'] ?? 0) /
+                            ((_storageInfo!['disk_total'] ?? 1) == 0 ? 1 : (_storageInfo!['disk_total'] ?? 1))),
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Cache Info
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.cacheTypeInfo(
+                                  ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                  ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                  ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                ),
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton.icon(
+                          onPressed: () => _triggerCleanup(context, l10n),
+                          icon: const Icon(Icons.delete_sweep_rounded),
+                          label: Text(l10n.systemCleaning),
+                        ),
+                      ],
+                    ),
+                  ] else
+                    Text(
+                      l10n.systemCleaningSubtitle,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                ],
+              ),
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -211,36 +417,34 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
           _buildSection(l10n.updates),
           SwitchListTile(
-            title: const Text("启用后台更新守护进程"),
-            subtitle: const Text("在系统后台定期静默检查应用更新"),
+            title: Text(l10n.enableDaemon),
+            subtitle: Text(l10n.enableDaemonDesc),
             value: settings.daemonEnabled,
             onChanged: (val) {
               settings.setDaemonEnabled(val);
             },
           ),
           SwitchListTile(
-            title: const Text("静默自动更新"),
-            subtitle: const Text("在后台自动下载并更新所有可升级的软件包"),
+            title: Text(l10n.autoUpdate),
+            subtitle: Text(l10n.autoUpdateDesc),
             value: settings.autoUpdate,
             onChanged: (val) {
               settings.setAutoUpdate(val);
             },
           ),
           ListTile(
-            title: const Text("检查更新频率"),
-            subtitle: Text("每隔 ${settings.checkIntervalHours} 小时自动检查一次"),
+            title: Text(l10n.checkIntervalTitle),
+            subtitle: Text(l10n.checkIntervalSubtitle(settings.checkIntervalHours)),
             trailing: DropdownButton<int>(
               value: settings.checkIntervalHours,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 1, child: Text('1 小时')),
-                DropdownMenuItem(value: 2, child: Text('2 小时')),
-                DropdownMenuItem(value: 4, child: Text('4 小时')),
-                DropdownMenuItem(value: 8, child: Text('8 小时')),
-                DropdownMenuItem(value: 12, child: Text('12 小时')),
-                DropdownMenuItem(value: 24, child: Text('24 小时')),
-              ],
+              items: [1, 2, 4, 8, 12, 24].map((h) {
+                return DropdownMenuItem(
+                  value: h,
+                  child: Text(l10n.hourValue(h)),
+                );
+              }).toList(),
               onChanged: (val) {
                 if (val != null) {
                   settings.setCheckIntervalHours(val);
@@ -250,19 +454,19 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          _buildSection("字体与排版 / Typography"),
+          _buildSection(l10n.typography),
           ListTile(
-            title: const Text("字体系列 / Font Family"),
-            subtitle: Text(settings.fontFamily),
+            title: Text(l10n.fontFamily),
+            subtitle: Text(settings.fontFamily == 'System' ? l10n.systemDefault : settings.fontFamily),
             trailing: DropdownButton<String>(
               value: settings.fontFamily,
               underline: const SizedBox(),
               borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 'System', child: Text('系统默认 / System')),
-                DropdownMenuItem(value: 'Inter', child: Text('Inter')),
-                DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
-                DropdownMenuItem(value: 'Outfit', child: Text('Outfit')),
+              items: [
+                DropdownMenuItem(value: 'System', child: Text(l10n.systemDefault)),
+                const DropdownMenuItem(value: 'Inter', child: Text('Inter')),
+                const DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+                const DropdownMenuItem(value: 'Outfit', child: Text('Outfit')),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -272,7 +476,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: const Text("字体缩放比例 / Font Scale"),
+            title: Text(l10n.fontScale),
             subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
             trailing: SizedBox(
               width: 150,
@@ -318,9 +522,9 @@ class _SettingsPageState extends State<SettingsPage> {
               (val) {
                 final d = double.tryParse(val);
                 if (d == null) {
-                  setState(() => _tempError = "请输入有效的数字 / Please enter a valid number");
+                  setState(() => _tempError = l10n.failed);
                 } else if (d < 0.0 || d > 2.0) {
-                  setState(() => _tempError = "温度必须在 0.0 到 2.0 之间 / Must be between 0.0 and 2.0");
+                  setState(() => _tempError = l10n.temperatureRangeError);
                 } else {
                   setState(() => _tempError = null);
                   _debounceUpdateAIConfig('temperature', d, settings);
@@ -380,24 +584,49 @@ class _SettingsPageState extends State<SettingsPage> {
     settings.updateConfig(config);
   }
 
-  void _debounceUpdateAIConfig(String key, dynamic value, SettingsController settings) {
+  void _debounceUpdateAIConfig(
+    String key,
+    dynamic value,
+    SettingsController settings,
+  ) {
     if (_debounces[key]?.isActive ?? false) _debounces[key]?.cancel();
     _debounces[key] = Timer(const Duration(milliseconds: 500), () {
       _updateAIConfig(key, value, settings);
     });
   }
 
-  void _updateSourceConfig(String key, dynamic value, SettingsController settings) {
+  void _updateSourceConfig(
+    String key,
+    dynamic value,
+    SettingsController settings,
+  ) {
     final config = Map<String, dynamic>.from(settings.config);
     config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
-    config['search']['sources'] = Map<String, dynamic>.from(config['search']['sources'] ?? {});
+    config['search']['sources'] = Map<String, dynamic>.from(
+      config['search']['sources'] ?? {},
+    );
     config['search']['sources'][key] = value;
     settings.updateConfig(config);
   }
 
-  Widget _buildSourcesConfig(SettingsController settings, AppLocalizations l10n) {
-    final sources = ['github', 'bitu', 'pacman', 'aur', 'flatpak', 'appimage', 'snap', 'winget', 'scoop', 'brew'];
-    final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+  Widget _buildSourcesConfig(
+    SettingsController settings,
+    AppLocalizations l10n,
+  ) {
+    final sources = [
+      'github',
+      'bitu',
+      'pacman',
+      'aur',
+      'flatpak',
+      'appimage',
+      'snap',
+      'winget',
+      'scoop',
+      'brew',
+    ];
+    final sourcesMap =
+        settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
 
     return Card(
       elevation: 0,
@@ -430,7 +659,8 @@ class _SettingsPageState extends State<SettingsPage> {
               spacing: 8,
               runSpacing: 8,
               children: sources.map((src) {
-                final bool isEnabled = sourcesMap[src] ?? (src == 'github' || src == 'bitu');
+                final bool isEnabled =
+                    sourcesMap[src] ?? (src == 'github' || src == 'bitu');
                 return FilterChip(
                   label: Text(_displayName(src)),
                   selected: isEnabled,
@@ -446,7 +676,11 @@ class _SettingsPageState extends State<SettingsPage> {
               title: Text(l10n.addCustomSource),
               subtitle: Text(l10n.addCustomSourceDesc),
               trailing: IconButton(
-                icon: Icon(Icons.add_circle_outline_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
+                icon: Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 28,
+                ),
                 onPressed: () => _showAddSourceDialog(settings, l10n),
               ),
             ),
@@ -472,74 +706,30 @@ class _SettingsPageState extends State<SettingsPage> {
     return mapping[key.toLowerCase()] ?? key;
   }
 
-  Future<void> _autoDetectSources(SettingsController settings, AppLocalizations l10n) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.autoDetectingSources)),
-    );
+  Future<void> _autoDetectSources(
+    SettingsController settings,
+    AppLocalizations l10n,
+  ) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.autoDetectingSources)));
 
-    final Map<String, bool> detectedSources = {
-      "pacman": false,
-      "aur": false,
-      "flatpak": false,
-      "appimage": false,
-      "snap": false,
-      "github": true,
-      "bitu": true,
-      "winget": false,
-      "scoop": false,
-      "brew": false,
-    };
-
-    if (kIsWeb) {
-      // Browser: keep defaults (github, bitu)
-    } else {
-      if (Platform.isLinux) {
-        detectedSources["pacman"] = File("/usr/bin/pacman").existsSync();
-        detectedSources["aur"] = detectedSources["pacman"]! && (File("/usr/bin/yay").existsSync() || File("/usr/bin/paru").existsSync());
-        detectedSources["flatpak"] = _isCommandAvailable("flatpak");
-        detectedSources["appimage"] = true;
-        detectedSources["snap"] = _isCommandAvailable("snap");
-        detectedSources["brew"] = _isCommandAvailable("brew");
-      } else if (Platform.isWindows) {
-        detectedSources["winget"] = _isCommandAvailable("winget");
-        detectedSources["scoop"] = _isCommandAvailable("scoop");
-      } else if (Platform.isMacOS) {
-        detectedSources["brew"] = _isCommandAvailable("brew");
-      }
-    }
-
-    final config = Map<String, dynamic>.from(settings.config);
-    config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
-    config['search']['sources'] = Map<String, dynamic>.from(config['search']['sources'] ?? {});
-    
-    detectedSources.forEach((key, value) {
-      config['search']['sources'][key] = value;
-    });
-
-    final success = await settings.updateConfig(config);
+    final success = await settings.autoDetectSources();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success 
-              ? l10n.autoDetectSuccess
-              : l10n.autoDetectFailed
+          content: Text(
+            success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
           ),
         ),
       );
     }
   }
 
-  bool _isCommandAvailable(String cmd) {
-    try {
-      final check = Platform.isWindows ? 'where' : 'which';
-      final res = Process.runSync(check, [cmd]);
-      return res.exitCode == 0;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  void _showAddSourceDialog(SettingsController settings, AppLocalizations l10n) {
+  void _showAddSourceDialog(
+    SettingsController settings,
+    AppLocalizations l10n,
+  ) {
     String type = "github";
     final nameController = TextEditingController();
     final urlController = TextEditingController();
@@ -559,10 +749,22 @@ class _SettingsPageState extends State<SettingsPage> {
                       initialValue: type,
                       decoration: InputDecoration(labelText: l10n.sourceType),
                       items: [
-                        DropdownMenuItem(value: "github", child: Text(l10n.githubRepoType)),
-                        DropdownMenuItem(value: "bitu", child: Text(l10n.bituRepoType)),
-                        DropdownMenuItem(value: "flatpak", child: Text(l10n.flatpakRemoteType)),
-                        DropdownMenuItem(value: "appimage", child: Text(l10n.appImageFeedType)),
+                        DropdownMenuItem(
+                          value: "github",
+                          child: Text(l10n.githubRepoType),
+                        ),
+                        DropdownMenuItem(
+                          value: "bitu",
+                          child: Text(l10n.bituRepoType),
+                        ),
+                        DropdownMenuItem(
+                          value: "flatpak",
+                          child: Text(l10n.flatpakRemoteType),
+                        ),
+                        DropdownMenuItem(
+                          value: "appimage",
+                          child: Text(l10n.appImageFeedType),
+                        ),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -582,8 +784,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     TextField(
                       controller: urlController,
                       decoration: InputDecoration(
-                        labelText: type == "github" || type == "bitu" ? l10n.repoOwnerRepo : l10n.sourceUrl,
-                        hintText: type == "github" || type == "bitu" 
+                        labelText: type == "github" || type == "bitu"
+                            ? l10n.repoOwnerRepo
+                            : l10n.sourceUrl,
+                        hintText: type == "github" || type == "bitu"
                             ? l10n.hintRepoFormat
                             : l10n.hintFeedUrl,
                       ),
@@ -608,7 +812,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     }
                     final messenger = ScaffoldMessenger.of(context);
                     Navigator.pop(context);
-                    
+
                     messenger.showSnackBar(
                       SnackBar(content: Text(l10n.addingCustomSource)),
                     );
@@ -616,17 +820,31 @@ class _SettingsPageState extends State<SettingsPage> {
                     bool success = false;
                     if (kIsWeb) {
                       final config = Map<String, dynamic>.from(settings.config);
-                      config['custom_repos'] = Map<String, dynamic>.from(config['custom_repos'] ?? {});
-                      config['custom_repos'][type] = List<dynamic>.from(config['custom_repos'][type] ?? []);
-                      config['custom_repos'][type].add({"name": name, "url": url});
+                      config['custom_repos'] = Map<String, dynamic>.from(
+                        config['custom_repos'] ?? {},
+                      );
+                      config['custom_repos'][type] = List<dynamic>.from(
+                        config['custom_repos'][type] ?? [],
+                      );
+                      config['custom_repos'][type].add({
+                        "name": name,
+                        "url": url,
+                      });
                       success = await settings.updateConfig(config);
                     } else {
-                      final result = await BackendService.instance.addCustomRepo(type, name, url);
+                      final result = await BackendService.instance
+                          .addCustomRepo(type, name, url);
                       success = result;
                     }
 
                     messenger.showSnackBar(
-                      SnackBar(content: Text(success ? l10n.sourceAddSuccess : l10n.sourceAddFailed)),
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? l10n.sourceAddSuccess
+                              : l10n.sourceAddFailed,
+                        ),
+                      ),
                     );
                   },
                   child: Text(l10n.add),

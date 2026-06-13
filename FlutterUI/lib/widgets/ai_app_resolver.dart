@@ -21,6 +21,7 @@ class AIAppResolver extends StatefulWidget {
 }
 
 class _AIAppResolverState extends State<AIAppResolver> {
+  final ScrollController _scrollController = ScrollController();
   List<AppPackage> _resolvedApps = [];
   bool _isLoading = false;
 
@@ -60,6 +61,12 @@ class _AIAppResolverState extends State<AIAppResolver> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isLoading) return const LinearProgressIndicator();
     if (_resolvedApps.isEmpty) return const SizedBox.shrink();
@@ -74,16 +81,24 @@ class _AIAppResolverState extends State<AIAppResolver> {
         const SizedBox(height: 8),
         SizedBox(
           height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _resolvedApps.length,
-            itemBuilder: (context, index) => ActionChip(
-              label: Text(_resolvedApps[index].name),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      AppDetailsPage(app: _resolvedApps[index]),
+          child: Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            child: ListView.builder(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              itemCount: _resolvedApps.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ActionChip(
+                  label: Text(_resolvedApps[index].name),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AppDetailsPage(app: _resolvedApps[index]),
+                    ),
+                  ),
                 ),
               ),
             ),
