@@ -28,3 +28,10 @@ Accessing `widget` or `context` providers (or using them within deeply nested lo
 
 Action:
 I added explicit `if (!mounted) return;` checks following `await` instructions in both the Details Page (`details_page.dart`) after asynchronous security dialog responses, and the Onboarding Welcome Page (`welcome_page.dart`) following configuration initialization saves. This safely halts execution on unmounted views and prevents exceptions.
+## 2024-06-13 - [UI Consistency Mandate / Sentinel Agent - Replaced TextField with SearchBar in Download Page]
+
+Learning:
+Custom styled TextFields inside feature pages cause UI fragmentation when a standard `SearchBar` MD3 component exists.
+
+Action:
+Replaced the `TextField` with inline decoration borders and fill color in `FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart` with a `SearchBar`.
