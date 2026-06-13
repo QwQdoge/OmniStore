@@ -16,6 +16,7 @@ import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
@@ -394,44 +395,43 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         AppDetailsSectionTitle(
           title: AppLocalizations.of(context)!.details,
         ),
-        Card(
-          color: colorScheme.surfaceContainerLow,
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+        AppCard(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow(
-                  Icons.source_rounded,
-                  AppLocalizations.of(context)!.source,
-                  widget.app.primarySource,
+                AppDetailsInfoRow(
+                  icon: Icons.source_rounded,
+                  label: AppLocalizations.of(context)!.source,
+                  value: widget.app.primarySource,
                 ),
-                _buildInfoRow(
-                  Icons.all_inclusive_rounded,
-                  AppLocalizations.of(context)!.variant,
-                  widget.app.sources.join(", "),
+                AppDetailsInfoRow(
+                  icon: Icons.all_inclusive_rounded,
+                  label: AppLocalizations.of(context)!.variant,
+                  value: widget.app.sources.join(", "),
                 ),
-                _buildInfoRow(
-                  Icons.verified_rounded,
-                  AppLocalizations.of(context)!.version,
-                  widget.app.version,
+                AppDetailsInfoRow(
+                  icon: Icons.verified_rounded,
+                  label: AppLocalizations.of(context)!.version,
+                  value: widget.app.version,
                 ),
                 if (_extraDetails?['developer'] != null)
-                  _buildInfoRow(
-                    Icons.person_rounded,
-                    AppLocalizations.of(context)!.developer,
-                    _extraDetails!['developer'],
+                  AppDetailsInfoRow(
+                    icon: Icons.person_rounded,
+                    label: AppLocalizations.of(context)!.developer,
+                    value: _extraDetails!['developer'],
                   ),
                 if (_extraDetails?['license'] != null)
-                  _buildInfoRow(
-                    Icons.description_rounded,
-                    AppLocalizations.of(context)!.license,
-                    _extraDetails!['license'],
+                  AppDetailsInfoRow(
+                    icon: Icons.description_rounded,
+                    label: AppLocalizations.of(context)!.license,
+                    value: _extraDetails!['license'],
                   ),
+                AppDependencySection(
+                  variant: _getVariantForSource(_selectedSource),
+                  hasCapability: _hasCapability,
+                ),
               ],
             ),
           ),
@@ -695,39 +695,4 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          Flexible(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
