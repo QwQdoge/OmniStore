@@ -33,3 +33,10 @@ Replacing `setState` in text input `onChanged` with `ValueNotifier` prevents ful
 
 Action:
 Replaced TextEditingValue listenable with _hasSearchText ValueNotifier and implemented onChanged in SearchPage.dart.
+## 2024-06-13 - Replace Loading Spinner with Skeleton in Details Page
+
+Learning:
+Using Skeleton widget instead of CircularProgressIndicator provides smoother transition.
+
+Action:
+Replaced CircularProgressIndicator with Skeleton widget in AppDetailsPage for loading screenshot image.
