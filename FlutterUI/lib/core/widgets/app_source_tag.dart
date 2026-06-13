@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 enum AppSourceTagMode {
   /// Displays the trust level (Official, Verified, Community)

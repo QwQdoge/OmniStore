@@ -3,7 +3,7 @@ from core.subprocess_utils import safe_subprocess
 import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
-from .smart_scoring import SmartScoring
+from .scoring import SmartScoring
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 import re
@@ -68,7 +68,7 @@ class SearchManager:
 
         # Load external plugins - only if enabled
         if self.cm.get("search.sources.plugins", True):
-            from core.sources.loader import PluginLoader
+            from core.sources.manager import PluginLoader
             try:
                 self.plugin_loader = PluginLoader(self)
                 self.plugin_loader.load_plugins()

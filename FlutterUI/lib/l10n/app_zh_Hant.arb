@@ -1418,5 +1418,7 @@
     "description": "Accessibility hint for back button"
   },
   "categorySemantics": "分類：{name}",
-  "temperatureRangeError": "值必須在 0.0 到 2.0 之間"
+  "temperatureRangeError": "值必須在 0.0 到 2.0 之間",
+  "enableSystemdService": "啟用 systemd 後台更新服務",
+  "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新"
 }

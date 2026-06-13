@@ -45,8 +45,8 @@ flowchart TB
   main["main.dart"] --> app["app/"]
   app --> features["features/"]
   app --> core["core/"]
+  core --> widgets["core/widgets/"]
   features --> data["data/repositories"]
-  features --> widgets["widgets/"]
   data --> py["python/main.py"]
   services["services/"] --> data
 ```
@@ -56,7 +56,7 @@ flowchart TB
 | Entry | `lib/main.dart` | Calls `bootstrapOmniStore()` only |
 | App shell | `lib/app/` | Providers, `MaterialApp`, `MainNavigationEntry` |
 | Features | `lib/features/` | Feature-first `presentation/pages` + `controllers` |
-| Core | `lib/core/` | Theme, adaptive shell, GitHub client, desktop window |
+| Core | `lib/core/` | Theme, adaptive shell, GitHub client, desktop window, core widgets |
 | Data bridge | `lib/data/` | **`PythonBridge` + repositories** (not `python/`) |
 | Services | `lib/services/` | `BackendService`, `TaskManager`, `UpdateService` |
 
@@ -108,7 +108,7 @@ flowchart TB
 - Implementation: `core/layout/adaptive_navigation_shell.dart`
 - State: `core/navigation_controller.dart` (tab indices 0–7, see `FlutterUI/ARCHITECTURE.md`)
 - Desktop: `core/platform/desktop_window_service.dart` — min size 900×640, tray minimize, hidden title bar
-- GitHub stars: `core/network/github_client.dart` + `widgets/github_star_badge.dart`
+- GitHub stars: `core/network/github_client.dart` + `core/widgets/github_star_badge.dart`
 
 **TODOs for UI Shell:**
 - [TODO 12]: Implement a proper Split-View layout for tablet/desktop (e.g., list on left, details on right) instead of just expanding the content width.
@@ -120,9 +120,10 @@ flowchart TB
 ## 3. Python backend (`python/`)
 
 - **Entry:** `python/main.py` — CLI router, JSON/`[PROGRESS]` streams to Flutter
-- **`source/`:** Dynamic plugins (Pacman, AUR, Flatpak, AppImage, GitHub) implementing `BaseSource`
-- **`core/`:** Controllers (`source_manager.py`), Recommendation Manager, and Base Source definitions.
-- **`core/modules/`:** Modularized utilities (`downloader/`, `env_manager.py`, `cache_manager.py`, etc.)
+- **`core/sources/`:** Source managers (Pacman, AUR, Flatpak, AppImage, GitHub) implementing `UnifiedSource`. Managed via `core/sources/manager.py`.
+- **`core/search/`:** Search scoring (`scoring.py`), search manager (`manager.py`), Recommendation Manager.
+- **`core/downloader/`:** Download manager (`manager.py`), AppImage handler (`appimage.py`).
+- **`core/essentials.py`:** Essentials installation manager.
 - **`core/ai/`:** Ollama, Gemini, OpenAI-compatible providers
 
 Flutter invokes via `data/repositories/*` → `PythonBridge.venvPython` + `buildArgs()`.
@@ -240,3 +241,4 @@ Drop `.py` plugins under `plugins/` subclassing `UnifiedSource` — auto-registe
 | 2026-06 | `lib/backend/` → `lib/data/`; `PythonBridge`; `lib/app/` shell split |
 | 2026-06 | `AdaptiveNavigationShell`, `GitHubClient`, `OmnistoreTheme` |
 | 2026-06 | Added Technical Debt TODOs across architecture for upcoming refactoring |
+| 2026-06 | Cleaned up Python backend structure, consolidated sources/search managers, moved UI widgets to `core/widgets/`, deleted obsolete/redundant files |

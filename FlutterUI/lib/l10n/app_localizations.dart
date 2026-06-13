@@ -2094,6 +2094,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Value must be between 0.0 and 2.0'**
   String get temperatureRangeError;
+
+  /// No description provided for @enableSystemdService.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable systemd Background Service'**
+  String get enableSystemdService;
+
+  /// No description provided for @enableSystemdServiceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow registering systemd timer to check for updates when the app is closed'**
+  String get enableSystemdServiceDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -1075,4 +1075,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get temperatureRangeError => '値は 0.0 から 2.0 の間である必要があります';
+
+  @override
+  String get enableSystemdService => 'systemd バックグラウンド更新サービスを有効にする';
+
+  @override
+  String get enableSystemdServiceDesc => 'アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します';
 }

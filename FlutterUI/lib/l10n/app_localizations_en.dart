@@ -1154,4 +1154,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get temperatureRangeError => 'Value must be between 0.0 and 2.0';
+
+  @override
+  String get enableSystemdService => 'Enable systemd Background Service';
+
+  @override
+  String get enableSystemdServiceDesc => 'Allow registering systemd timer to check for updates when the app is closed';
 }

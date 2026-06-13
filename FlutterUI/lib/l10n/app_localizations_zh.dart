@@ -1069,6 +1069,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get temperatureRangeError => '值必须在 0.0 到 2.0 之间';
+
+  @override
+  String get enableSystemdService => '启用 systemd 后台更新服务';
+
+  @override
+  String get enableSystemdServiceDesc => '允许在应用关闭时通过注册 systemd 定时器来静默检查更新';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2136,4 +2142,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get temperatureRangeError => '值必須在 0.0 到 2.0 之間';
+
+  @override
+  String get enableSystemdService => '啟用 systemd 後台更新服務';
+
+  @override
+  String get enableSystemdServiceDesc => '允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新';
 }

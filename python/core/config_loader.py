@@ -103,7 +103,8 @@ class ConfigManager:
             "updates": {
                 "check_interval_hours": 1,
                 "remind_updates": True,
-                "include_aur_in_update_all": True
+                "include_aur_in_update_all": True,
+                "enable_systemd_service": False
             },
             "ai": {
                 "enabled": False,

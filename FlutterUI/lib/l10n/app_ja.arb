@@ -1391,5 +1391,7 @@
     "description": "Accessibility hint for back button"
   },
   "categorySemantics": "カテゴリー：{name}",
-  "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります"
+  "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります",
+  "enableSystemdService": "systemd バックグラウンド更新サービスを有効にする",
+  "enableSystemdServiceDesc": "アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します"
 }

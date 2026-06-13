@@ -1415,5 +1415,7 @@
     "description": "Accessibility hint for back button"
   },
   "categorySemantics": "Categoría: {name}",
-  "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0"
+  "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0",
+  "enableSystemdService": "Habilitar servicio de fondo systemd",
+  "enableSystemdServiceDesc": "Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada"
 }

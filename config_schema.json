@@ -70,7 +70,8 @@
       "properties": {
         "check_interval_hours": { "type": "integer", "minimum": 1, "maximum": 168 },
         "remind_updates": { "type": "boolean" },
-        "include_aur_in_update_all": { "type": "boolean" }
+        "include_aur_in_update_all": { "type": "boolean" },
+        "enable_systemd_service": { "type": "boolean" }
       }
     },
     "ai": {

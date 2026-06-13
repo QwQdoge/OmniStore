@@ -1,4 +1,5 @@
 {
-  "venvPath": "/home/shekong/Projects/Omnistore/python",
-  "venv": ".venv"
+  "venvPath": "python",
+  "venv": ".venv",
+  "include": ["python"]
 }
