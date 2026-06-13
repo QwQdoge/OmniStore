@@ -39,3 +39,8 @@ Action:
 **Learning:** Wrapping technical metadata in a specialized surface container like `AppCard` with `surfaceContainerLow` color and zero elevation significantly improves the visual hierarchy of detail pages. It separates descriptive content from technical specifications without adding visual noise. Standardizing border radii to MD3 medium tokens (16dp) across cards and their placeholders (Skeletons) ensures a polished, cohesive look.
 
 **Action:** Prefer grouping flat lists of key-value technical data into `AppCard` components to establish clear content boundaries. Ensure Skeletons match the parent's border radius exactly.
+## 2026-06-28 - Strict Accessibility Semantics
+
+**Learning:** `IconButton` elements, especially those integrated deeply within complex layouts like detail headers, need explicit `Semantics` wrappers. Relying on default semantic properties can lead to insufficient context for screen reader users.
+
+**Action:** Ensure all interactive elements, particularly icon-only buttons like the 'Copy' button in app details, are wrapped in a `Semantics` widget with `button: true` and a localized, descriptive `label`.
