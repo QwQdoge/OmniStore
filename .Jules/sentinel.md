@@ -28,3 +28,10 @@ Accessing `widget` or `context` providers (or using them within deeply nested lo
 
 Action:
 I added explicit `if (!mounted) return;` checks following `await` instructions in both the Details Page (`details_page.dart`) after asynchronous security dialog responses, and the Onboarding Welcome Page (`welcome_page.dart`) following configuration initialization saves. This safely halts execution on unmounted views and prevents exceptions.
+## 2025-02-28 - [Async Lifecycle Safety]
+
+Learning:
+Missing `mounted` checks after `await` gaps can lead to real-world crashes when `context.read` or `setState` is called on an unmounted widget. Found violations in `home_page.dart` (`_fetchAIPick` invocation inside `_refresh`) and `settings_page.dart` (`_fetchStorageInfo` invocation after system cleanup).
+
+Action:
+Added strict `if (!mounted) return;` statements after async operations in `_refresh` and `_triggerCleanup` to safely terminate the execution paths and prevent unsafe `BuildContext` usage. Automated static analysis scripts should continue to monitor these async gaps.
