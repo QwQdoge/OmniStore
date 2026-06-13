@@ -5,7 +5,7 @@ from core.subprocess_utils import safe_subprocess
 import tempfile
 import shutil
 from typing import Dict, List, Any
-from core.downloader.downloader import InstallExecutor
+from core.downloader.manager import InstallExecutor
 
 
 class CustomRepoManager:

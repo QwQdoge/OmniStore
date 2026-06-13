@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
-import 'package:frontend/widgets/github_star_badge.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/github_star_badge.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 
 class GitHubStorePage extends StatefulWidget {

@@ -6,8 +6,8 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
-import 'package:frontend/widgets/app_source_tag.dart';
-import 'package:frontend/widgets/github_star_badge.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/github_star_badge.dart';
 
 class AppDetailsHeader extends StatelessWidget {
   final AppPackage app;

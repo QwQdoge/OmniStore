@@ -137,6 +137,15 @@ class SettingsController with ChangeNotifier {
     await updateConfig(config);
   }
 
+  bool get enableSystemdService => _config['updates']?['enable_systemd_service'] ?? false;
+
+  Future<void> setEnableSystemdService(bool value) async {
+    final config = Map<String, dynamic>.from(_config);
+    config['updates'] = Map<String, dynamic>.from(config['updates'] ?? {});
+    config['updates']['enable_systemd_service'] = value;
+    await updateConfig(config);
+  }
+
   // ─── Rail Expanded State ─────────────────────────────
   void setRailExpanded(bool expanded) {
     if (_isRailExpanded != expanded) {

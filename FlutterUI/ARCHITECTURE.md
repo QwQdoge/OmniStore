@@ -28,6 +28,7 @@ flowchart TB
     theme["theme/ — OmnistoreTheme"]
     network["network/ — GitHubClient"]
     platform["platform/ — DesktopWindowService"]
+    widgets["widgets/ — Shared UI (stars, title bar, progress)"]
     navctl["navigation_controller.dart"]
   end
 
@@ -56,12 +57,12 @@ flowchart TB
 |------|------|------------|
 | `lib/main.dart` | Entry: calls `bootstrapOmniStore()` | `app/` |
 | `lib/app/` | DI providers, `MaterialApp`, root navigation | `core/`, `features/`, `data/` |
-| `lib/features/` | User-facing modules (presentation + controllers) | `data/`, `core/`, `widgets/` |
-| `lib/core/` | Theme, layout, GitHub HTTP, desktop window | Flutter SDK, packages |
+| `lib/features/` | User-facing modules (presentation + controllers) | `data/`, `core/` |
+| `lib/core/` | Theme, layout, GitHub HTTP, desktop window, core widgets | Flutter SDK, packages |
 | `lib/data/` | **Flutter-side** repositories spawning Python CLI | `python/` (repo root) |
 | `lib/services/` | Streaming tasks, tray, categories (legacy bridge) | `data/`, `models/` |
 | `lib/models/` | `AppPackage`, `TaskState`, sources | — |
-| `lib/widgets/` | Shared UI (stars, title bar, progress) | `core/` |
+| `lib/core/widgets/` | Shared UI (stars, title bar, progress) | `core/` |
 | `lib/l10n/` | Generated localizations | — |
 
 > **Naming:** `lib/data/` is **not** the Python backend. Python lives in `/python`. `lib/data/repositories/` are thin CLI adapters.
@@ -101,7 +102,7 @@ flowchart TB
 1. **New screen** → `features/<name>/presentation/pages/`
 2. **Feature state** → `features/<name>/presentation/controllers/`
 3. **New Python CLI command** → `data/repositories/` + `python/main.py`
-4. **Shared UI** → `widgets/` or `core/` if app-wide
+4. **Shared UI** → `core/widgets/`
 5. **External HTTP (non-Python)** → `core/network/`
 
 ## Related docs

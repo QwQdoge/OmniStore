@@ -433,6 +433,15 @@ class _SettingsPageState extends State<SettingsPage> {
               settings.setAutoUpdate(val);
             },
           ),
+          if (Platform.isLinux)
+            SwitchListTile(
+              title: Text(l10n.enableSystemdService),
+              subtitle: Text(l10n.enableSystemdServiceDesc),
+              value: settings.enableSystemdService,
+              onChanged: (val) {
+                settings.setEnableSystemdService(val);
+              },
+            ),
           ListTile(
             title: Text(l10n.checkIntervalTitle),
             subtitle: Text(l10n.checkIntervalSubtitle(settings.checkIntervalHours)),

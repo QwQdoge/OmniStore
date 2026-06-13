@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch, MagicMock
 
 import pytest
 
-from core.essentials_manager import EssentialsManager
+from core.essentials import EssentialsManager
 
 
 @pytest.fixture

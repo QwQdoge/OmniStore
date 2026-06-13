@@ -72,7 +72,7 @@ if hasattr(sys.stderr, 'reconfigure'):
         errors='replace'
     )
 
-from core.search.searchmanager import SearchManager
+from core.search.manager import SearchManager
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
@@ -237,7 +237,7 @@ class OmnistoreBackend:
     @property
     def executor(self):
         if self._executor is None:
-            from core.downloader.downloader import InstallExecutor
+            from core.downloader.manager import InstallExecutor
             self._executor = InstallExecutor(self)
         return self._executor
 
@@ -258,7 +258,7 @@ class OmnistoreBackend:
     @property
     def essentials(self):
         if self._essentials is None:
-            from core.essentials_manager import EssentialsManager
+            from core.essentials import EssentialsManager
             self._essentials = EssentialsManager(self.config)
         return self._essentials
 

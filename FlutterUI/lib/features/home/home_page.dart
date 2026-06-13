@@ -13,7 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
-import 'package:frontend/widgets/ai_app_resolver.dart';
+import 'package:frontend/core/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';

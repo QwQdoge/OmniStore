@@ -7,7 +7,7 @@ import os
 # Add python directory to sys.path
 sys.path.insert(0, os.path.abspath("python"))
 
-from core.search.searchmanager import SearchManager
+from core.search.manager import SearchManager
 
 async def test_merge_duplicates_preserves_id():
     # Mock dependencies

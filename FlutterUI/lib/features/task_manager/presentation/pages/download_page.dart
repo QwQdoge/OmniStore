@@ -1,19 +1,23 @@
-import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/models/task_state.dart';
-import 'package:frontend/widgets/smooth_progress_bar.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/services/update_service.dart';
-import 'package:frontend/widgets/magic_pulse_icon.dart';
+import 'package:frontend/models/task_state.dart';
+import 'package:frontend/core/widgets/smooth_progress_bar.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/services/update_service.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
+
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -141,97 +145,6 @@ class _DownloadPageState extends State<DownloadPage>
     super.dispose();
   }
 
-  void _showTerminalDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: SizedBox(
-          width: 600,
-          height: 400,
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12.0),
-                    topRight: Radius.circular(12.0),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.terminalOutput,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 13,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Consumer<TaskController>(
-                  builder: (context, controller, _) {
-                    final logs = controller.logs;
-                    return logs.isEmpty
-                        ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.waitingForOutput,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontFamily: 'monospace',
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            reverse: true,
-                            padding: const EdgeInsets.all(12),
-                            itemCount: logs.length,
-                            itemBuilder: (context, i) {
-                              final log = logs[logs.length - 1 - i];
-                              Color textColor = theme.colorScheme.onSurface;
-                              if (log.contains("[ERROR]")) {
-                                textColor = Colors.redAccent;
-                              }
-                              if (log.contains("[INFO]")) {
-                                textColor = Colors.greenAccent.shade400;
-                              }
-                              return Text(
-                                log,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              );
-                            },
-                          );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -338,7 +251,7 @@ class _DownloadPageState extends State<DownloadPage>
                     isLabelVisible: controller.isBusy,
                     child: const Icon(Icons.terminal_outlined),
                   ),
-                  onPressed: () => _showTerminalDialog(context),
+                  onPressed: () => showDialog(context: context, builder: (_) => const TerminalDialog()),
                   tooltip: AppLocalizations.of(context)!.terminalOutput,
                 );
               }
@@ -371,91 +284,11 @@ class _DownloadPageState extends State<DownloadPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildTasksTab(), _buildUpdatesTab(), _buildInstalledTab()],
+        children: [const TasksTab(), UpdatesTab(onUpdateStarted: () => _tabController.animateTo(0)), _buildInstalledTab()],
       ),
     );
   }
 
-  Widget _buildTasksTab() {
-    return Selector<TaskController, bool>(
-      selector: (context, controller) => controller.isBusy,
-      builder: (context, isBusy, _) {
-        if (!isBusy) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.task_alt,
-                  size: 64,
-                  color: Colors.grey.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context)!.noActiveTasks,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.currentTask,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      Consumer<TaskController>(
-                        builder: (context, taskController, _) =>
-                            SmoothProgressBar(
-                              taskState: TaskState(
-                                id: "active",
-                                packageName: AppLocalizations.of(
-                                  context,
-                                )!.taskProcessing,
-                                status: TaskStatus.downloading,
-                                progress: taskController.progress ?? 0.0,
-                                stage: taskController.status,
-                                speed: taskController.speed,
-                              ),
-                              onCancel: () => taskController.cancelTask(
-                                AppLocalizations.of(context)!,
-                              ),
-                            ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => _showTerminalDialog(context),
-                            icon: const Icon(Icons.terminal, size: 18),
-                            label: Text(AppLocalizations.of(context)!.viewLogs),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildUpdatesTab() {
     final packageRepo = context.read<PackageRepository>();
@@ -495,6 +328,12 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
+                      if (context.read<TaskController>().isBusy) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppLocalizations.of(context)!.taskInProgress)),
+                        );
+                        return;
+                      }
                       for (final update in updates) {
                         UpdateService().startUpdate(
                           update['id'] ?? update['name'],
@@ -577,6 +416,12 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                           ElevatedButton(
                             onPressed: () {
+                              if (context.read<TaskController>().isBusy) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(AppLocalizations.of(context)!.taskInProgress)),
+                                );
+                                return;
+                              }
                               UpdateService().startUpdate(
                                 update['id'] ?? update['name'],
                                 update['source'] == 'Pacman'
@@ -601,62 +446,6 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
-  Future<void> _showAIUpdateSummary(
-    String name,
-    String current,
-    String next,
-  ) async {
-    final aiRepo = context.read<AIRepository>();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-            const SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.aiChangelogTitle),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          child: FutureBuilder<String>(
-            future: aiRepo.aiSummarizeUpdate(name, current, next),
-            builder: (context, snapshot) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: snapshot.connectionState == ConnectionState.waiting
-                    ? const SizedBox(
-                        key: ValueKey('loading'),
-                        height: 200,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Skeleton(width: double.infinity, height: 14),
-                            SizedBox(height: 8),
-                            Skeleton(width: double.infinity, height: 14),
-                            SizedBox(height: 8),
-                            Skeleton(width: 200, height: 14),
-                          ],
-                        ),
-                      )
-                    : MarkdownBody(
-                        key: const ValueKey('loaded'),
-                        data: snapshot.data ?? "AI failed to summarize.",
-                        selectable: true,
-                      ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.confirm),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildInstalledTab() {
     return AnimatedSwitcher(

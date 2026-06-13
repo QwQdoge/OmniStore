@@ -1425,5 +1425,7 @@
   "temperatureRangeError": "Value must be between 0.0 and 2.0",
   "@temperatureRangeError": {
     "description": "Error message for invalid temperature value"
-  }
+  },
+  "enableSystemdService": "Enable systemd Background Service",
+  "enableSystemdServiceDesc": "Allow registering systemd timer to check for updates when the app is closed"
 }

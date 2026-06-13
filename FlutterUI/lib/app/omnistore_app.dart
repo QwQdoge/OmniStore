@@ -129,74 +129,10 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
                   );
                 },
               ),
-              child: child!,
             );
-          },
-          initialRoute: _isFirstRun ? '/welcome' : '/home',
-          routes: {
-            '/welcome': (context) => WelcomePage(
-                  onFinish: () => Navigator.pushReplacementNamed(context, '/home'),
-                ),
-            '/home': (context) => const MainNavigationEntry(),
-          },
-          onGenerateRoute: (routeSettings) {
-            if (routeSettings.name != null && routeSettings.name!.startsWith('/app/')) {
-              final appId = Uri.decodeComponent(routeSettings.name!.substring(5));
-              final app = routeSettings.arguments as AppPackage?;
-              if (app != null) {
-                return MaterialPageRoute(
-                  settings: routeSettings,
-                  builder: (context) => AppDetailsPage(app: app),
-                );
-              } else {
-                return MaterialPageRoute(
-                  settings: routeSettings,
-                  builder: (context) => FutureBuilder<Map<String, dynamic>>(
-                    future: PackageRepository().getAppDetails(appId),
-                    builder: (context, snapshot) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: snapshot.connectionState == ConnectionState.waiting
-                            ? const Scaffold(
-                                key: ValueKey('loading'),
-                                body: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Skeleton(width: 80, height: 80, borderRadius: 16),
-                                      SizedBox(height: 16),
-                                      Skeleton(width: 200, height: 24),
-                                      SizedBox(height: 8),
-                                      Skeleton(width: double.infinity, height: 16),
-                                      SizedBox(height: 8),
-                                      Skeleton(width: 150, height: 16),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : snapshot.hasError ||
-                                    !snapshot.hasData ||
-                                    snapshot.data!.isEmpty
-                                ? Scaffold(
-                                    key: const ValueKey('error'),
-                                    appBar: AppBar(title: const Text('Error')),
-                                    body: const Center(
-                                        child: Text('App details not found')),
-                                  )
-                                : AppDetailsPage(
-                                    key: const ValueKey('loaded'),
-                                    app: AppPackage.fromJson(snapshot.data!),
-                                  ),
-                      );
-                    },
-                  ),
-                );
-              }
-            }
-            return null;
-          },
-        );
+          }
+        }
+        return null;
       },
     );
   }
