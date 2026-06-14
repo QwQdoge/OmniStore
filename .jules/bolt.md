@@ -33,3 +33,9 @@ This prevents the entire page structure (including the `Scaffold` and `CustomScr
 **Learning:** Python inner functions defined inside frequently called async methods (like `SearchManager.search_all`) incur a small but measurable creation overhead on every call. Moving them to class methods is more efficient.
 
 **Action:** Refactor utility logic in hot paths from local functions to class-level methods.
+
+## 2025-05-23 - Rebuild Scope Optimization in Search and Task Lists
+
+**Learning:** Monolithic `context.watch<TaskController>()` calls in list items (like `SearchResultTile`) cause the entire search results list to rebuild multiple times per second during active tasks (e.g., downloads), even for unrelated items. This creates significant frame-rate drops and input lag.
+
+**Action:** Replace root-level watches with `context.select` for conditional rendering logic. Isolate high-frequency reactive fields (progress, speed) into localized `Consumer` or `Selector` widgets to minimize the repaint boundary.
