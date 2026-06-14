@@ -43,3 +43,11 @@ Accessing `setState` or `context` after an `await` gap (or inside listener callb
 
 Action:
 Added `if (!mounted) return;` guards to `HomePage._refresh`, `WindowTitleBar` window listener callbacks, and `AppDetailsPage._handleAction` following asynchronous dialogs.
+
+## 2024-06-15 - [AuthPage Memory Leak & Async Crash]
+
+Learning:
+Missing `dispose()` calls for `TextEditingController` instances cause memory leaks. Additionally, accessing a controller's state (like `.text`) after an `await` without verifying `if (!mounted)` can result in unhandled exceptions and real-world application crashes if the user navigates away or dismisses the UI before the asynchronous operation completes, because the controller could have been disposed.
+
+Action:
+Added a missing `dispose()` method for `_patController` in `AuthPage` (`FlutterUI/lib/features/auth/auth_page.dart`). Also added an explicit `if (!mounted) return;` check following the asynchronous `configRepo.loadConfig()` call in `_savePat()` to prevent accessing `_patController.text` after the widget has been unmounted.
