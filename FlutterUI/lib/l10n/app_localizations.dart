@@ -103,109 +103,109 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
-  /// Description for searchHint
+  /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
   /// **'Search apps, games, tools...'**
   String get searchHint;
 
-  /// Description for featured
+  /// No description provided for @featured.
   ///
   /// In en, this message translates to:
   /// **'Featured'**
   String get featured;
 
-  /// Description for forYou
+  /// No description provided for @forYou.
   ///
   /// In en, this message translates to:
   /// **'For You'**
   String get forYou;
 
-  /// Description for essentialTools
+  /// No description provided for @essentialTools.
   ///
   /// In en, this message translates to:
   /// **'Essential Tools'**
   String get essentialTools;
 
-  /// Description for hotApps
+  /// No description provided for @hotApps.
   ///
   /// In en, this message translates to:
   /// **'Hot Apps'**
   String get hotApps;
 
-  /// Description for explore
+  /// No description provided for @explore.
   ///
   /// In en, this message translates to:
   /// **'Explore'**
   String get explore;
 
-  /// Description for search
+  /// No description provided for @search.
   ///
   /// In en, this message translates to:
   /// **'Search'**
   String get search;
 
-  /// Description for settings
+  /// No description provided for @settings.
   ///
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
 
-  /// Description for downloads
+  /// No description provided for @downloads.
   ///
   /// In en, this message translates to:
   /// **'Downloads'**
   String get downloads;
 
-  /// Description for help
+  /// No description provided for @help.
   ///
   /// In en, this message translates to:
   /// **'Help'**
   String get help;
 
-  /// Description for userAccount
+  /// No description provided for @userAccount.
   ///
   /// In en, this message translates to:
   /// **'User Account'**
   String get userAccount;
 
-  /// Description for install
+  /// No description provided for @install.
   ///
   /// In en, this message translates to:
   /// **'Install'**
   String get install;
 
-  /// Description for open
+  /// No description provided for @open.
   ///
   /// In en, this message translates to:
   /// **'Open'**
   String get open;
 
-  /// Description for uninstall
+  /// No description provided for @uninstall.
   ///
   /// In en, this message translates to:
   /// **'Uninstall'**
   String get uninstall;
 
-  /// Description for launch
+  /// No description provided for @launch.
   ///
   /// In en, this message translates to:
   /// **'Launch'**
   String get launch;
 
-  /// Description for about
+  /// No description provided for @about.
   ///
   /// In en, this message translates to:
   /// **'About'**
   String get about;
 
-  /// Description for details
+  /// No description provided for @details.
   ///
   /// In en, this message translates to:
   /// **'Details'**
   String get details;
 
-  /// Description for source
+  /// No description provided for @source.
   ///
   /// In en, this message translates to:
   /// **'Source'**
@@ -217,13 +217,13 @@ abstract class AppLocalizations {
   /// **'Versions'**
   String get variant;
 
-  /// Description for version
+  /// No description provided for @version.
   ///
   /// In en, this message translates to:
   /// **'Version'**
   String get version;
 
-  /// Description for ready
+  /// No description provided for @ready.
   ///
   /// In en, this message translates to:
   /// **'Ready'**
@@ -235,13 +235,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 result} other{{count} results}}'**
   String resultsFound(int count);
 
-  /// Description for noResults
+  /// No description provided for @noResults.
   ///
   /// In en, this message translates to:
   /// **'No results found'**
   String get noResults;
 
-  /// Description for searching
+  /// No description provided for @searching.
   ///
   /// In en, this message translates to:
   /// **'Searching...'**
@@ -259,109 +259,109 @@ abstract class AppLocalizations {
   /// **'Category'**
   String get category;
 
-  /// Description for packageManager
+  /// No description provided for @packageManager.
   ///
   /// In en, this message translates to:
   /// **'Package Manager'**
   String get packageManager;
 
-  /// Description for pacmanOfficial
+  /// No description provided for @pacmanOfficial.
   ///
   /// In en, this message translates to:
   /// **'Pacman (Official)'**
   String get pacmanOfficial;
 
-  /// Description for aurUser
+  /// No description provided for @aurUser.
   ///
   /// In en, this message translates to:
   /// **'AUR (User)'**
   String get aurUser;
 
-  /// Description for flatpak
+  /// No description provided for @flatpak.
   ///
   /// In en, this message translates to:
   /// **'Flatpak'**
   String get flatpak;
 
-  /// Description for appImage
+  /// No description provided for @appImage.
   ///
   /// In en, this message translates to:
   /// **'AppImage'**
   String get appImage;
 
-  /// Description for sourcePriority
+  /// No description provided for @sourcePriority.
   ///
   /// In en, this message translates to:
   /// **'Source Priority (Drag to reorder)'**
   String get sourcePriority;
 
-  /// Description for maxResults
+  /// No description provided for @maxResults.
   ///
   /// In en, this message translates to:
   /// **'Max Results'**
   String get maxResults;
 
-  /// Description for appearance
+  /// No description provided for @appearance.
   ///
   /// In en, this message translates to:
   /// **'Appearance'**
   String get appearance;
 
-  /// Description for themeColor
+  /// No description provided for @themeColor.
   ///
   /// In en, this message translates to:
   /// **'Theme Color Seed'**
   String get themeColor;
 
-  /// Description for followSystem
+  /// No description provided for @followSystem.
   ///
   /// In en, this message translates to:
   /// **'Follow System'**
   String get followSystem;
 
-  /// Description for lightMode
+  /// No description provided for @lightMode.
   ///
   /// In en, this message translates to:
   /// **'Light Mode'**
   String get lightMode;
 
-  /// Description for darkMode
+  /// No description provided for @darkMode.
   ///
   /// In en, this message translates to:
   /// **'Dark Mode'**
   String get darkMode;
 
-  /// Description for loggingLevel
+  /// No description provided for @loggingLevel.
   ///
   /// In en, this message translates to:
   /// **'Logging Level'**
   String get loggingLevel;
 
-  /// Description for saveAndApply
+  /// No description provided for @saveAndApply.
   ///
   /// In en, this message translates to:
   /// **'Save and Apply'**
   String get saveAndApply;
 
-  /// Description for configSaved
+  /// No description provided for @configSaved.
   ///
   /// In en, this message translates to:
   /// **'Configuration saved, some changes will take effect after restart'**
   String get configSaved;
 
-  /// Description for configSaveFailed
+  /// No description provided for @configSaveFailed.
   ///
   /// In en, this message translates to:
   /// **'Failed to save configuration'**
   String get configSaveFailed;
 
-  /// Description for confirmUninstall
+  /// No description provided for @confirmUninstall.
   ///
   /// In en, this message translates to:
   /// **'Confirm Uninstall'**
   String get confirmUninstall;
 
-  /// Description for confirmInstall
+  /// No description provided for @confirmInstall.
   ///
   /// In en, this message translates to:
   /// **'Confirm Install'**
@@ -373,97 +373,97 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to perform this action on {name}?'**
   String confirmActionMsg(String name);
 
-  /// Description for cancel
+  /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
 
-  /// Description for confirm
+  /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
 
-  /// Description for terminalOutput
+  /// No description provided for @terminalOutput.
   ///
   /// In en, this message translates to:
   /// **'Terminal Output'**
   String get terminalOutput;
 
-  /// Description for waitingForOutput
+  /// No description provided for @waitingForOutput.
   ///
   /// In en, this message translates to:
   /// **'Waiting for output...'**
   String get waitingForOutput;
 
-  /// Description for screenshots
+  /// No description provided for @screenshots.
   ///
   /// In en, this message translates to:
   /// **'Screenshots'**
   String get screenshots;
 
-  /// Description for developer
+  /// No description provided for @developer.
   ///
   /// In en, this message translates to:
   /// **'Developer'**
   String get developer;
 
-  /// Description for license
+  /// No description provided for @license.
   ///
   /// In en, this message translates to:
   /// **'License'**
   String get license;
 
-  /// Description for success
+  /// No description provided for @success.
   ///
   /// In en, this message translates to:
   /// **'Success'**
   String get success;
 
-  /// Description for failed
+  /// No description provided for @failed.
   ///
   /// In en, this message translates to:
   /// **'Failed'**
   String get failed;
 
-  /// Description for taskCancelled
+  /// No description provided for @taskCancelled.
   ///
   /// In en, this message translates to:
   /// **'Task Cancelled'**
   String get taskCancelled;
 
-  /// Description for catDevelopment
+  /// No description provided for @catDevelopment.
   ///
   /// In en, this message translates to:
   /// **'Development'**
   String get catDevelopment;
 
-  /// Description for catMedia
+  /// No description provided for @catMedia.
   ///
   /// In en, this message translates to:
   /// **'Media'**
   String get catMedia;
 
-  /// Description for catInternet
+  /// No description provided for @catInternet.
   ///
   /// In en, this message translates to:
   /// **'Internet'**
   String get catInternet;
 
-  /// Description for catSystem
+  /// No description provided for @catSystem.
   ///
   /// In en, this message translates to:
   /// **'System'**
   String get catSystem;
 
-  /// Description for catOffice
+  /// No description provided for @catOffice.
   ///
   /// In en, this message translates to:
   /// **'Office'**
   String get catOffice;
 
-  /// Description for catGames
+  /// No description provided for @catGames.
   ///
   /// In en, this message translates to:
   /// **'Games'**
@@ -493,19 +493,19 @@ abstract class AppLocalizations {
   /// **'Visit Website'**
   String get visitWebsite;
 
-  /// Description for updates
+  /// No description provided for @updates.
   ///
   /// In en, this message translates to:
   /// **'Updates'**
   String get updates;
 
-  /// Description for upToDate
+  /// No description provided for @upToDate.
   ///
   /// In en, this message translates to:
   /// **'All apps are up to date'**
   String get upToDate;
 
-  /// Description for checkUpdates
+  /// No description provided for @checkUpdates.
   ///
   /// In en, this message translates to:
   /// **'Check for Updates'**
@@ -517,115 +517,115 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Found 1 update} other{Found {count} updates}}'**
   String foundUpdates(int count);
 
-  /// Description for updateAll
+  /// No description provided for @updateAll.
   ///
   /// In en, this message translates to:
   /// **'Update All'**
   String get updateAll;
 
-  /// Description for notifications
+  /// No description provided for @notifications.
   ///
   /// In en, this message translates to:
   /// **'Notifications'**
   String get notifications;
 
-  /// Description for enableNotifications
+  /// No description provided for @enableNotifications.
   ///
   /// In en, this message translates to:
   /// **'Enable Notifications'**
   String get enableNotifications;
 
-  /// Description for progressNotifications
+  /// No description provided for @progressNotifications.
   ///
   /// In en, this message translates to:
   /// **'Progress Notifications'**
   String get progressNotifications;
 
-  /// Description for completionNotifications
+  /// No description provided for @completionNotifications.
   ///
   /// In en, this message translates to:
   /// **'Completion Notifications'**
   String get completionNotifications;
 
-  /// Description for closeToTray
+  /// No description provided for @closeToTray.
   ///
   /// In en, this message translates to:
   /// **'Close to system tray'**
   String get closeToTray;
 
-  /// Description for useSystemTitleBar
+  /// No description provided for @useSystemTitleBar.
   ///
   /// In en, this message translates to:
   /// **'Use system title bar'**
   String get useSystemTitleBar;
 
-  /// Description for showWindow
+  /// No description provided for @showWindow.
   ///
   /// In en, this message translates to:
   /// **'Show Window'**
   String get showWindow;
 
-  /// Description for exit
+  /// No description provided for @exit.
   ///
   /// In en, this message translates to:
   /// **'Exit'**
   String get exit;
 
-  /// Description for trayTooltipUpdates
+  /// No description provided for @trayTooltipUpdates.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{OmniStore: Found 1 update} other{OmniStore: Found {count} updates}}'**
   String trayTooltipUpdates(int count);
 
-  /// Description for trayTooltipUpToDate
+  /// No description provided for @trayTooltipUpToDate.
   ///
   /// In en, this message translates to:
   /// **'OmniStore: Up to date'**
   String get trayTooltipUpToDate;
 
-  /// Description for updateReminders
+  /// No description provided for @updateReminders.
   ///
   /// In en, this message translates to:
   /// **'Update Reminders'**
   String get updateReminders;
 
-  /// Description for maintenance
+  /// No description provided for @maintenance.
   ///
   /// In en, this message translates to:
   /// **'Maintenance'**
   String get maintenance;
 
-  /// Description for updateAllPackages
+  /// No description provided for @updateAllPackages.
   ///
   /// In en, this message translates to:
   /// **'Update All Packages'**
   String get updateAllPackages;
 
-  /// Description for includeAurUpdates
+  /// No description provided for @includeAurUpdates.
   ///
   /// In en, this message translates to:
   /// **'Include AUR in \'Update All\''**
   String get includeAurUpdates;
 
-  /// Description for resetOnboarding
+  /// No description provided for @resetOnboarding.
   ///
   /// In en, this message translates to:
   /// **'Reset Onboarding (Welcome Page)'**
   String get resetOnboarding;
 
-  /// Description for resetOnboardingConfirm
+  /// No description provided for @resetOnboardingConfirm.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to reset onboarding? The welcome page will show on next launch.'**
   String get resetOnboardingConfirm;
 
-  /// Description for checkInterval
+  /// No description provided for @checkInterval.
   ///
   /// In en, this message translates to:
   /// **'Update Check Interval (Hours)'**
   String get checkInterval;
 
-  /// Description for remindMeOfUpdates
+  /// No description provided for @remindMeOfUpdates.
   ///
   /// In en, this message translates to:
   /// **'Remind Me of Updates'**
@@ -643,31 +643,31 @@ abstract class AppLocalizations {
   /// **'Uninstalling {name}'**
   String uninstallingApp(String name);
 
-  /// Description for installSuccessTitle
+  /// No description provided for @installSuccessTitle.
   ///
   /// In en, this message translates to:
   /// **'Installation Successful'**
   String get installSuccessTitle;
 
-  /// Description for uninstallSuccessTitle
+  /// No description provided for @uninstallSuccessTitle.
   ///
   /// In en, this message translates to:
   /// **'Uninstallation Successful'**
   String get uninstallSuccessTitle;
 
-  /// Description for installFailedTitle
+  /// No description provided for @installFailedTitle.
   ///
   /// In en, this message translates to:
   /// **'Installation Failed'**
   String get installFailedTitle;
 
-  /// Description for uninstallFailedTitle
+  /// No description provided for @uninstallFailedTitle.
   ///
   /// In en, this message translates to:
   /// **'Uninstallation Failed'**
   String get uninstallFailedTitle;
 
-  /// Description for taskCompleted
+  /// No description provided for @taskCompleted.
   ///
   /// In en, this message translates to:
   /// **'Task Completed'**
@@ -1099,211 +1099,211 @@ abstract class AppLocalizations {
   /// **'Locate Installation'**
   String get locateInstallation;
 
-  /// Description for delete
+  /// No description provided for @delete.
   ///
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
 
-  /// Description for welcomeTitle
+  /// No description provided for @welcomeTitle.
   ///
   /// In en, this message translates to:
   /// **'Welcome to OmniStore'**
   String get welcomeTitle;
 
-  /// Description for welcomeSubtitle
+  /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Providing a simple and elegant software management experience for Arch Linux'**
   String get welcomeSubtitle;
 
-  /// Description for getStarted
+  /// No description provided for @getStarted.
   ///
   /// In en, this message translates to:
   /// **'Get Started'**
   String get getStarted;
 
-  /// Description for skip
+  /// No description provided for @skip.
   ///
   /// In en, this message translates to:
   /// **'Skip'**
   String get skip;
 
-  /// Description for envCheckTitle
+  /// No description provided for @envCheckTitle.
   ///
   /// In en, this message translates to:
   /// **'Environment Check'**
   String get envCheckTitle;
 
-  /// Description for envCheckSubtitle
+  /// No description provided for @envCheckSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Ensuring your system is ready'**
   String get envCheckSubtitle;
 
-  /// Description for envFatalDesc
+  /// No description provided for @envFatalDesc.
   ///
   /// In en, this message translates to:
   /// **'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.'**
   String get envFatalDesc;
 
-  /// Description for envWarningDesc
+  /// No description provided for @envWarningDesc.
   ///
   /// In en, this message translates to:
   /// **'Some necessary components are missing. We can configure them for you.'**
   String get envWarningDesc;
 
-  /// Description for envOkDesc
+  /// No description provided for @envOkDesc.
   ///
   /// In en, this message translates to:
   /// **'Everything is ready! Your system is perfect.'**
   String get envOkDesc;
 
-  /// Description for fixProblems
+  /// No description provided for @fixProblems.
   ///
   /// In en, this message translates to:
   /// **'Fix / Configure All'**
   String get fixProblems;
 
-  /// Description for continueAnyway
+  /// No description provided for @continueAnyway.
   ///
   /// In en, this message translates to:
   /// **'Continue Anyway'**
   String get continueAnyway;
 
-  /// Description for sourceConfigTitle
+  /// No description provided for @sourceConfigTitle.
   ///
   /// In en, this message translates to:
   /// **'Software Sources'**
   String get sourceConfigTitle;
 
-  /// Description for sourceConfigSubtitle
+  /// No description provided for @sourceConfigSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Choose the sources you want to enable'**
   String get sourceConfigSubtitle;
 
-  /// Description for enableAur
+  /// No description provided for @enableAur.
   ///
   /// In en, this message translates to:
   /// **'Enable AUR (Arch User Repository)'**
   String get enableAur;
 
-  /// Description for yayDesc
+  /// No description provided for @yayDesc.
   ///
   /// In en, this message translates to:
   /// **'Enabling AUR requires installing the yay helper.'**
   String get yayDesc;
 
-  /// Description for aurWarning
+  /// No description provided for @aurWarning.
   ///
   /// In en, this message translates to:
   /// **'Security Warning: AUR packages are user-contributed. Ensure you trust the source.'**
   String get aurWarning;
 
-  /// Description for bootstrapNote
+  /// No description provided for @bootstrapNote.
   ///
   /// In en, this message translates to:
   /// **'Note: Setup may require entering your password multiple times.'**
   String get bootstrapNote;
 
-  /// Description for feedbackDesc
+  /// No description provided for @feedbackDesc.
   ///
   /// In en, this message translates to:
   /// **'If you encounter issues, please report them on GitHub.'**
   String get feedbackDesc;
 
-  /// Description for aiAssistant
+  /// No description provided for @aiAssistant.
   ///
   /// In en, this message translates to:
   /// **'AI Assistant'**
   String get aiAssistant;
 
-  /// Description for aiAssistantDesc
+  /// No description provided for @aiAssistantDesc.
   ///
   /// In en, this message translates to:
   /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
   String get aiAssistantDesc;
 
-  /// Description for aiProviderDesc
+  /// No description provided for @aiProviderDesc.
   ///
   /// In en, this message translates to:
   /// **'Select your AI model source (Local or Cloud)'**
   String get aiProviderDesc;
 
-  /// Description for aiEndpointHelper
+  /// No description provided for @aiEndpointHelper.
   ///
   /// In en, this message translates to:
   /// **'Ollama defaults to http://localhost:11434'**
   String get aiEndpointHelper;
 
-  /// Description for aiApiKeyHelper
+  /// No description provided for @aiApiKeyHelper.
   ///
   /// In en, this message translates to:
   /// **'Leave blank for Ollama, enter sk-xxx for OpenAI'**
   String get aiApiKeyHelper;
 
-  /// Description for howToGetApiKey
+  /// No description provided for @howToGetApiKey.
   ///
   /// In en, this message translates to:
   /// **'How to get an API key?'**
   String get howToGetApiKey;
 
-  /// Description for howToGetApiKeyDesc
+  /// No description provided for @howToGetApiKeyDesc.
   ///
   /// In en, this message translates to:
   /// **'1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.'**
   String get howToGetApiKeyDesc;
 
-  /// Description for gotIt
+  /// No description provided for @gotIt.
   ///
   /// In en, this message translates to:
   /// **'Got it'**
   String get gotIt;
 
-  /// Description for aiOllamaNote
+  /// No description provided for @aiOllamaNote.
   ///
   /// In en, this message translates to:
   /// **'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".'**
   String get aiOllamaNote;
 
-  /// Description for enterStore
+  /// No description provided for @enterStore.
   ///
   /// In en, this message translates to:
   /// **'Enter Store'**
   String get enterStore;
 
-  /// Description for nextStep
+  /// No description provided for @nextStep.
   ///
   /// In en, this message translates to:
   /// **'Next Step'**
   String get nextStep;
 
-  /// Description for resetCache
+  /// No description provided for @resetCache.
   ///
   /// In en, this message translates to:
   /// **'Reset Cache and History'**
   String get resetCache;
 
-  /// Description for resetCacheDesc
+  /// No description provided for @resetCacheDesc.
   ///
   /// In en, this message translates to:
   /// **'Clear search history and local recommendations cache'**
   String get resetCacheDesc;
 
-  /// Description for resetCacheConfirm
+  /// No description provided for @resetCacheConfirm.
   ///
   /// In en, this message translates to:
   /// **'This will clear your search history and recommendations cache. Proceed?'**
   String get resetCacheConfirm;
 
-  /// Description for resetting
+  /// No description provided for @resetting.
   ///
   /// In en, this message translates to:
   /// **'Resetting...'**
   String get resetting;
 
-  /// Description for resetSuccess
+  /// No description provided for @resetSuccess.
   ///
   /// In en, this message translates to:
   /// **'Cache and History cleared successfully'**
@@ -1315,25 +1315,25 @@ abstract class AppLocalizations {
   /// **'Reset failed: {error}'**
   String resetFailed(String error);
 
-  /// Description for ollamaLocal
+  /// No description provided for @ollamaLocal.
   ///
   /// In en, this message translates to:
   /// **'Ollama (Local)'**
   String get ollamaLocal;
 
-  /// Description for openaiCompatible
+  /// No description provided for @openaiCompatible.
   ///
   /// In en, this message translates to:
   /// **'OpenAI Compatible'**
   String get openaiCompatible;
 
-  /// Description for googleGemini
+  /// No description provided for @googleGemini.
   ///
   /// In en, this message translates to:
   /// **'Google Gemini'**
   String get googleGemini;
 
-  /// Description for importPackages
+  /// No description provided for @importPackages.
   ///
   /// In en, this message translates to:
   /// **'Import Packages'**
@@ -1345,37 +1345,37 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Read 1 package from file. Start download?} other{Read {count} packages from file. Start batch download?}}'**
   String importPackagesConfirm(int count);
 
-  /// Description for allDownloads
+  /// No description provided for @allDownloads.
   ///
   /// In en, this message translates to:
   /// **'Download All'**
   String get allDownloads;
 
-  /// Description for importList
+  /// No description provided for @importList.
   ///
   /// In en, this message translates to:
   /// **'Import List'**
   String get importList;
 
-  /// Description for loadError
+  /// No description provided for @loadError.
   ///
   /// In en, this message translates to:
   /// **'Failed to load recommendations, please check backend status'**
   String get loadError;
 
-  /// Description for community
+  /// No description provided for @community.
   ///
   /// In en, this message translates to:
   /// **'Community'**
   String get community;
 
-  /// Description for official
+  /// No description provided for @official.
   ///
   /// In en, this message translates to:
   /// **'Official'**
   String get official;
 
-  /// Description for verified
+  /// No description provided for @verified.
   ///
   /// In en, this message translates to:
   /// **'Verified'**
@@ -1387,67 +1387,67 @@ abstract class AppLocalizations {
   /// **'Installing {name}...'**
   String installingPkg(String name);
 
-  /// Description for switchSource
+  /// No description provided for @switchSource.
   ///
   /// In en, this message translates to:
   /// **'Switch'**
   String get switchSource;
 
-  /// Description for flatpakBetterDesc
+  /// No description provided for @flatpakBetterDesc.
   ///
   /// In en, this message translates to:
   /// **'Found a Flatpak source for this app, which is usually more stable.'**
   String get flatpakBetterDesc;
 
-  /// Description for aiAnalysisPrompt
+  /// No description provided for @aiAnalysisPrompt.
   ///
   /// In en, this message translates to:
   /// **'Found error logs, do you need an AI analysis?'**
   String get aiAnalysisPrompt;
 
-  /// Description for analyzeNow
+  /// No description provided for @analyzeNow.
   ///
   /// In en, this message translates to:
   /// **'Analyze Now'**
   String get analyzeNow;
 
-  /// Description for cleanOrphans
+  /// No description provided for @cleanOrphans.
   ///
   /// In en, this message translates to:
   /// **'Clean unused dependencies (orphans)'**
   String get cleanOrphans;
 
-  /// Description for securityWarning
+  /// No description provided for @securityWarning.
   ///
   /// In en, this message translates to:
   /// **'Security Warning'**
   String get securityWarning;
 
-  /// Description for aurSecurityDesc
+  /// No description provided for @aurSecurityDesc.
   ///
   /// In en, this message translates to:
   /// **'AUR (Arch User Repository) is a community-maintained repository. Since anyone can upload packages, there might be insecure code. Before installing, it is recommended to check the PKGBUILD.'**
   String get aurSecurityDesc;
 
-  /// Description for continueInstall
+  /// No description provided for @continueInstall.
   ///
   /// In en, this message translates to:
   /// **'Continue Install'**
   String get continueInstall;
 
-  /// Description for installInfo
+  /// No description provided for @installInfo.
   ///
   /// In en, this message translates to:
   /// **'Installation Info'**
   String get installInfo;
 
-  /// Description for downloadSize
+  /// No description provided for @downloadSize.
   ///
   /// In en, this message translates to:
   /// **'Download Size'**
   String get downloadSize;
 
-  /// Description for installedSize
+  /// No description provided for @installedSize.
   ///
   /// In en, this message translates to:
   /// **'Installed Size'**
@@ -1459,79 +1459,79 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Dependency (1)} other{Dependencies ({count})}}'**
   String dependenciesCount(int count);
 
-  /// Description for runningInBackground
+  /// No description provided for @runningInBackground.
   ///
   /// In en, this message translates to:
   /// **'OmniStore is running in the background, you can open it via the tray icon.'**
   String get runningInBackground;
 
-  /// Description for clearSearch
+  /// No description provided for @clearSearch.
   ///
   /// In en, this message translates to:
   /// **'Clear Search'**
   String get clearSearch;
 
-  /// Description for listView
+  /// No description provided for @listView.
   ///
   /// In en, this message translates to:
   /// **'List View'**
   String get listView;
 
-  /// Description for gridView
+  /// No description provided for @gridView.
   ///
   /// In en, this message translates to:
   /// **'Grid View'**
   String get gridView;
 
-  /// Description for categories
+  /// No description provided for @categories.
   ///
   /// In en, this message translates to:
   /// **'Categories'**
   String get categories;
 
-  /// Description for clearHistory
+  /// No description provided for @clearHistory.
   ///
   /// In en, this message translates to:
   /// **'Clear History'**
   String get clearHistory;
 
-  /// Description for confirmClearHistory
+  /// No description provided for @confirmClearHistory.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to clear all history?'**
   String get confirmClearHistory;
 
-  /// Description for viewMore
+  /// No description provided for @viewMore.
   ///
   /// In en, this message translates to:
   /// **'View More'**
   String get viewMore;
 
-  /// Description for logDebug
+  /// No description provided for @logDebug.
   ///
   /// In en, this message translates to:
   /// **'DEBUG'**
   String get logDebug;
 
-  /// Description for logInfo
+  /// No description provided for @logInfo.
   ///
   /// In en, this message translates to:
   /// **'INFO'**
   String get logInfo;
 
-  /// Description for logWarning
+  /// No description provided for @logWarning.
   ///
   /// In en, this message translates to:
   /// **'WARNING'**
   String get logWarning;
 
-  /// Description for logError
+  /// No description provided for @logError.
   ///
   /// In en, this message translates to:
   /// **'ERROR'**
   String get logError;
 
-  /// Description for notificationTitle
+  /// No description provided for @notificationTitle.
   ///
   /// In en, this message translates to:
   /// **'Updates Available'**
@@ -1543,25 +1543,25 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 application is available for update} other{{count} applications are available for update}}'**
   String notificationBody(int count);
 
-  /// Description for preparingUpdate
+  /// No description provided for @preparingUpdate.
   ///
   /// In en, this message translates to:
   /// **'Preparing update...'**
   String get preparingUpdate;
 
-  /// Description for processing
+  /// No description provided for @processing.
   ///
   /// In en, this message translates to:
   /// **'Processing'**
   String get processing;
 
-  /// Description for clear
+  /// No description provided for @clear.
   ///
   /// In en, this message translates to:
   /// **'Clear'**
   String get clear;
 
-  /// Description for retry
+  /// No description provided for @retry.
   ///
   /// In en, this message translates to:
   /// **'Retry'**
@@ -1747,25 +1747,25 @@ abstract class AppLocalizations {
   /// **'Processing'**
   String get taskProcessing;
 
-  /// Description for collapse
+  /// No description provided for @collapse.
   ///
   /// In en, this message translates to:
   /// **'Collapse'**
   String get collapse;
 
-  /// Description for expand
+  /// No description provided for @expand.
   ///
   /// In en, this message translates to:
   /// **'Expand'**
   String get expand;
 
-  /// Description for all
+  /// No description provided for @all.
   ///
   /// In en, this message translates to:
   /// **'All'**
   String get all;
 
-  /// Description for relatedApps
+  /// No description provided for @relatedApps.
   ///
   /// In en, this message translates to:
   /// **'Related Apps'**
@@ -1789,7 +1789,7 @@ abstract class AppLocalizations {
   /// **'Add Custom Source'**
   String get addCustomSource;
 
-  /// Description for adding custom sources
+  /// No description provided for @addCustomSourceDesc.
   ///
   /// In en, this message translates to:
   /// **'Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos'**
@@ -1945,7 +1945,7 @@ abstract class AppLocalizations {
   /// **'Enable Background Update Daemon'**
   String get enableDaemon;
 
-  /// Description for background daemon
+  /// No description provided for @enableDaemonDesc.
   ///
   /// In en, this message translates to:
   /// **'Regularly check for updates in the background'**
@@ -1957,7 +1957,7 @@ abstract class AppLocalizations {
   /// **'Silent Auto Update'**
   String get autoUpdate;
 
-  /// Description for auto update
+  /// No description provided for @autoUpdateDesc.
   ///
   /// In en, this message translates to:
   /// **'Automatically download and update all packages in the background'**
