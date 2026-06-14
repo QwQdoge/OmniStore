@@ -40,3 +40,6 @@ Using Skeleton widget instead of CircularProgressIndicator provides smoother tra
 
 Action:
 Replaced CircularProgressIndicator with Skeleton widget in AppDetailsPage for loading screenshot image.
+# Task UI Rebuild Reduction
+
+Reduced rebuild scope in `search_page.dart` (`SearchResultTile`) and `tasks_tab.dart` by replacing monolithic `context.watch<TaskController>()` calls with targeted `context.select<TaskController, bool>` checks. High-frequency updates (status, progress, speed) are now isolated within localized `Consumer<TaskController>` blocks, ensuring non-active list items do not re-render during global task updates.

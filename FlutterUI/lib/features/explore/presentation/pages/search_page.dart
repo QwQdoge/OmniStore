@@ -394,11 +394,13 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
-    final isCurrentTask = context.select<TaskController, bool>(
-      (tc) =>
-          tc.isBusy &&
-          (tc.packageName == app.name || tc.packageName == app.id),
-    );
+
+    // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
+    final isCurrentTask = context.select<TaskController, bool>((taskController) {
+      return taskController.isBusy &&
+          (taskController.packageName == app.name ||
+              taskController.packageName == app.id);
+    });
 
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
