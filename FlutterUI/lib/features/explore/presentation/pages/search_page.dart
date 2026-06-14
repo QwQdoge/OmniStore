@@ -435,27 +435,27 @@ class SearchResultTile extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.apps, size: 40),
-                  if (isCurrentTask)
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: isCurrentTask
+                        ? Container(
+                            key: const ValueKey('task_active'),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
+                            child: const Center(
+                              child: Skeleton(
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_idle')),
+                  ),
                 ],
               ),
             ),

@@ -31,6 +31,7 @@ class AppDependencySection extends StatelessWidget {
         const SizedBox(height: 24),
         AppDetailsSectionTitle(
           title: AppLocalizations.of(context)!.installInfo,
+          isSubSection: true,
         ),
         if (hasCapability('has_size') && dlSize != null)
           AppDetailsInfoRow(

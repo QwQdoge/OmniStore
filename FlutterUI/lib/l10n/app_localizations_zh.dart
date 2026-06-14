@@ -336,7 +336,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaningDesc => '清理孤儿软件包与 pacman 缓存';
 
   @override
-  String get systemCleaningSubtitle => '删除孤儿软件包并清理 pacman 缓存';
+  String get systemCleaningSubtitle => '清理孤儿软件包与 pacman 缓存';
 
   @override
   String get systemCleaningStarted => '系统清理任务已启动';
@@ -402,7 +402,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get advanced => '高级';
 
   @override
-  String get repositories => '软件仓库';
+  String get repositories => '软件源';
 
   @override
   String get aiSettings => 'AI 助手设置';
@@ -411,7 +411,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEnabled => '启用 AI 助手';
 
   @override
-  String get aiEnabledDesc => '启用 AI 驱动的搜索、应用解释和错误诊断。';
+  String get aiEnabledDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
 
   @override
   String get aiProvider => 'AI 服务商';
@@ -917,7 +917,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubRepoType => 'GitHub 仓库 (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (工作区/仓库)';
+  String get bituRepoType => 'Bitu / Bitbucket （工作区/仓库）';
 
   @override
   String get flatpakRemoteType => 'Flatpak 远程库';
@@ -1409,7 +1409,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaningDesc => '清理孤兒套件與 pacman 快取';
 
   @override
-  String get systemCleaningSubtitle => '刪除孤兒套件並清理 pacman 快取';
+  String get systemCleaningSubtitle => '清理孤兒套件與 pacman 快取';
 
   @override
   String get systemCleaningStarted => '系統清理任務已啟動';
@@ -1484,7 +1484,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEnabled => '啟用 AI 助手';
 
   @override
-  String get aiEnabledDesc => '啟用 AI 驅動的搜尋、應用程式解釋和錯誤診斷。';
+  String get aiEnabledDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
 
   @override
   String get aiProvider => 'AI 服務商';
@@ -1990,7 +1990,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubRepoType => 'GitHub 存放庫 (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (工作區/存放庫)';
+  String get bituRepoType => 'Bitu / Bitbucket （工作區/存放庫）';
 
   @override
   String get flatpakRemoteType => 'Flatpak 遠端庫';

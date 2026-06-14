@@ -7,6 +7,7 @@ import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'ai_update_summary_dialog.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class UpdatesTab extends StatelessWidget {
   final VoidCallback onUpdateStarted;
@@ -74,18 +75,13 @@ class UpdatesTab extends StatelessWidget {
                 itemCount: updates.length,
                 itemBuilder: (context, index) {
                   final update = updates[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Semantics(
                       label: 'Update available: ${update['name']}',
                       button: true,
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                      child: AppCard(
+                        borderRadius: 16,
                         onTap: () async {
                           final results = await packageRepo.searchPackages(
                             update['name'],
@@ -101,13 +97,17 @@ class UpdatesTab extends StatelessWidget {
                             );
                           }
                         },
-                        title: Text(
-                          update['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "${update['current_version']} → ${update['new_version']}",
-                        ),
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text(
+                            update['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            "${update['current_version']} → ${update['new_version']}",
+                          ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -151,7 +151,7 @@ class UpdatesTab extends StatelessWidget {
                         ),
                       ),
                     ),
-                  );
+                  ));
                 },
               ),
             ),
