@@ -922,7 +922,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get githubRepoType => 'GitHub リポジトリ (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (ワークスペース/リポジトリ)';
+  String get bituRepoType => 'Bitu / Bitbucket （ワークスペース/リポジトリ）';
 
   @override
   String get flatpakRemoteType => 'Flatpak リモート';
