@@ -52,3 +52,17 @@ Extracting inline dialog definitions (`TerminalDialog`, `AIUpdateSummaryDialog`)
 
 Action:
 Extracted `TerminalDialog`, `AIUpdateSummaryDialog`, `TasksTab`, and `UpdatesTab` from `download_page.dart` into the `lib/features/task_manager/presentation/widgets/` directory. Passed down minimal callbacks (e.g. `onUpdateStarted`) to handle state interactions cleanly.
+## 2026-06-14 - Settings Page Widget Extraction
+
+Learning:
+Oversized Flutter UI files that try to manage multiple disparate state domains (AI settings, sources list, storage cleaning progress dialogs) become very difficult to read. By pulling discrete functional blocks into their own 'Stateless' or local 'Stateful' widgets and passing down only what's necessary (like the SettingsController), the main page file is reduced significantly in length, complexity and git-conflict surface.
+
+Action:
+Extracted , , and  out of  into the  subdirectory to drastically improve readability and separation of concerns.
+## 2024-05-18 - Settings Page Widget Extraction
+
+Learning:
+Oversized Flutter UI files that try to manage multiple disparate state domains (AI settings, sources list, storage cleaning progress dialogs) become very difficult to read. By pulling discrete functional blocks into their own 'Stateless' or local 'Stateful' widgets and passing down only what's necessary (like the SettingsController), the main page file is reduced significantly in length, complexity and git-conflict surface.
+
+Action:
+Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out of `settings_page.dart` into the `widgets/` subdirectory to drastically improve readability and separation of concerns.
