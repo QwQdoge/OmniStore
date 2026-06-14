@@ -394,11 +394,8 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
-    final taskController = context.watch<TaskController>();
-    final isCurrentTask =
-        taskController.isBusy &&
-        (taskController.packageName == app.name ||
-            taskController.packageName == app.id);
+    final isCurrentTask = context.select<TaskController, bool>((tc) =>
+        tc.isBusy && (tc.packageName == app.name || tc.packageName == app.id));
 
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
@@ -461,25 +458,31 @@ class SearchResultTile extends StatelessWidget {
               app.name,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              isCurrentTask
-                  ? "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}"
-                  : app.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: isCurrentTask
-                  ? TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    )
-                  : null,
-            ),
+            subtitle: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, tc, _) => Text(
+                      "${tc.status} ${tc.progress != null ? '(${(tc.progress! * 100).toInt()}%)' : ''}",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                : Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
             trailing: isCurrentTask
-                ? Text(
-                    taskController.speed,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.outline,
+                ? Consumer<TaskController>(
+                    builder: (context, tc, _) => Text(
+                      tc.speed,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                     ),
                   )
                 : AppSourceTag(

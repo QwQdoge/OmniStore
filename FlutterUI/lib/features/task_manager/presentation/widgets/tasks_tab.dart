@@ -11,9 +11,10 @@ class TasksTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskController = context.watch<TaskController>();
-    final isBusy = taskController.isBusy;
-    final history = taskController.completedTasks;
+    final isBusy = context.select<TaskController, bool>((tc) => tc.isBusy);
+    final history = context.select<TaskController, List<TaskState>>(
+      (tc) => tc.completedTasks,
+    );
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -48,42 +49,44 @@ class TasksTab extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 12),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    SmoothProgressBar(
-                      taskState: TaskState(
-                        id: "active",
-                        packageName:
-                            taskController.packageName ?? l10n.taskProcessing,
-                        status: TaskStatus.downloading,
-                        progress: taskController.progress ?? 0.0,
-                        stage: taskController.status,
-                        speed: taskController.speed,
-                      ),
-                      onCancel: () => taskController.cancelTask(l10n),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (_) => const TerminalDialog(),
-                          ),
-                          icon: const Icon(Icons.terminal, size: 16),
-                          label: Text(l10n.viewLogs),
+            Consumer<TaskController>(
+              builder: (context, tc, _) => Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      SmoothProgressBar(
+                        taskState: TaskState(
+                          id: "active",
+                          packageName:
+                              tc.packageName ?? l10n.taskProcessing,
+                          status: TaskStatus.downloading,
+                          progress: tc.progress ?? 0.0,
+                          stage: tc.status,
+                          speed: tc.speed,
                         ),
-                      ],
-                    ),
-                  ],
+                        onCancel: () => context.read<TaskController>().cancelTask(l10n),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (_) => const TerminalDialog(),
+                            ),
+                            icon: const Icon(Icons.terminal, size: 16),
+                            label: Text(l10n.viewLogs),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -98,7 +101,7 @@ class TasksTab extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 TextButton.icon(
-                  onPressed: () => taskController.clearHistory(),
+                  onPressed: () => context.read<TaskController>().clearHistory(),
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
                   label: const Text("清空历史"),
                 ),
