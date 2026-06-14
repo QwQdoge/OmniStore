@@ -44,3 +44,11 @@ Action:
 **Learning:** `IconButton` elements, especially those integrated deeply within complex layouts like detail headers, need explicit `Semantics` wrappers. Relying on default semantic properties can lead to insufficient context for screen reader users.
 
 **Action:** Ensure all interactive elements, particularly icon-only buttons like the 'Copy' button in app details, are wrapped in a `Semantics` widget with `button: true` and a localized, descriptive `label`.
+
+## YYYY-MM-DD - [Enforcing MD3 Consistency with AppCard and Semantics]
+
+Learning:
+[Consistent usage of AppCard instead of generic Card widgets combined with InkWell/ListTile provides standardized MD3 hover and scale-down animations. Wrapping interactive tiles with Semantics improves accessibility for screen readers.]
+
+Action:
+[Ensure list tiles and grid items throughout the app use `AppCard` and explicitly wrap them in a `Semantics` widget for screen reader accessibility.]

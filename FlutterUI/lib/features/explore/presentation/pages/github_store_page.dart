@@ -8,6 +8,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/github_star_badge.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class GitHubStorePage extends StatefulWidget {
   const GitHubStorePage({super.key});
@@ -502,22 +503,19 @@ class _GitHubStorePageState extends State<GitHubStorePage>
         final app = apps[index];
         final repoUrl = app.url ?? app.homepage;
 
-        return Card.filled(
-          margin: const EdgeInsets.only(bottom: 12),
-          color: scheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.15),
-            ),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
-            ),
-            child: Padding(
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Semantics(
+            label: 'App: ${app.name}',
+            button: true,
+            child: AppCard(
+              borderRadius: 16,
+              color: scheme.surfaceContainerLow,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
+              ),
+              child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,7 +619,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
               ),
             ),
           ),
-        );
+        ));
       },
     );
   }
