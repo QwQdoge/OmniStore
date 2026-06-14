@@ -19,3 +19,8 @@
 - Added unified UX feedback for `taskInProgress` scenario during app updates and uninstalls.
 - In `FlutterUI/lib/features/explore/presentation/pages/details_page.dart`, added the `ScaffoldMessenger` displaying `AppLocalizations.of(context)!.taskInProgress` when the `taskController` is busy, similar to `settings_page.dart`.
 - In `FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart`, explicitly prevented parallel background task execution via checking `isBusy` on "Update All" and single "Update" actions, throwing consistent `taskInProgress` localized errors via `ScaffoldMessenger`.
+## 2026-06-14 - Consistency in "Update All" task handling
+- Replaced the flawed loop in the `UpdatesTab` "Update All" button which fired multiple updates concurrently.
+- Exposed a dedicated `updateAll` method in `TaskController` utilizing the existing `TaskRepository.updateAll`.
+- Added `TaskController.isBusy` checks to both individual "Update" buttons and the "Update All" button.
+- Re-used the standardized localized `taskInProgress` SnackBar feedback to alert the user when attempting updates while the task manager is already busy, ensuring UX consistency with package installation/uninstallation scenarios.
