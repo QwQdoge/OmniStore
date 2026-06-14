@@ -81,16 +81,18 @@ class TasksTab extends StatelessWidget {
                             context: context,
                             builder: (_) => const TerminalDialog(),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          icon: const Icon(Icons.terminal_rounded),
+                          label: Text(l10n.terminalOutput),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 32),
           ],
-          if (history.isNotEmpty) ...[
+          if (historyLength > 0) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
