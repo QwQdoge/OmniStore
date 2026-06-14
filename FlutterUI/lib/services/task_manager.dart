@@ -41,6 +41,8 @@ class TaskManager {
   // Murphy-proof: Use a dedicated set to track active subscriptions to prevent leaks
   final Set<StreamSubscription> _subscriptions = {};
 
+  /// Murphy-proof: Starts a task with strict atomic locking and subscription tracking.
+  /// Prevents race conditions from "double-clicks" or rapid task transitions.
   Future<bool> startTask({
     required String id,
     required String packageName,
@@ -48,14 +50,30 @@ class TaskManager {
     required String actionFlag, // "-I", "-R", "-U"
     String? url,
   }) async {
-    // 状态互斥与防呆：防止连击导致并发冲突
+    // Fail-safe check: Do not even attempt to acquire lock if already busy
     if (isBusy) return false;
 
-    // Mutex lock to ensure atomic start sequence
+    // Mutex chain: Ensures only one task initialization sequence runs at a time
     final previousMutex = _mutex;
     final currentMutex = Completer<void>();
     _mutex = currentMutex;
-    await previousMutex.future;
+
+    try {
+      await previousMutex.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw TimeoutException("TaskManager: Could not acquire task lock."),
+      );
+    } catch (e) {
+      debugPrint("TaskManager Mutex Error: $e");
+      if (!currentMutex.isCompleted) currentMutex.complete();
+      return false;
+    }
+
+    // Re-check busy status after lock acquisition
+    if (isBusy) {
+      if (!currentMutex.isCompleted) currentMutex.complete();
+      return false;
+    }
 
     _updateState(
       TaskState(
@@ -81,6 +99,26 @@ class TaskManager {
       "源: $source。任务已启动，请稍候...",
     );
 
+    try {
+      return await _runTaskInternal(
+        packageName: packageName,
+        source: source,
+        actionFlag: actionFlag,
+        url: url,
+      );
+    } finally {
+      // Murphy-proof: Critical lock release to ensure the next task can start
+      if (!currentMutex.isCompleted) currentMutex.complete();
+    }
+  }
+
+  /// Murphy-proof: Core task execution logic wrapped in try-finally to ensure state reset.
+  Future<bool> _runTaskInternal({
+    required String packageName,
+    required String source,
+    required String actionFlag,
+    String? url,
+  }) async {
     try {
       if (kIsWeb) {
         try {
@@ -162,10 +200,15 @@ class TaskManager {
           );
 
           _subscriptions.add(sub);
-          success = await completer.future;
+          success = await completer.future.timeout(
+            const Duration(minutes: 60),
+            onTimeout: () => throw TimeoutException("Task execution exceeded 60m safety limit"),
+          );
         } finally {
-          _subscriptions.remove(sub);
-          await sub?.cancel();
+          if (sub != null) {
+            _subscriptions.remove(sub);
+            await sub.cancel();
+          }
         }
 
         if (success) {
@@ -209,23 +252,25 @@ class TaskManager {
         );
       }
     } finally {
+      // Murphy-proof: Absolute state reset to prevent the UI from being "stuck" in busy mode.
       BackendService.isDownloading.value = false;
 
       if (_currentTask != null &&
           _currentTask!.status != TaskStatus.success &&
           _currentTask!.status != TaskStatus.failed) {
-        _updateState(_currentTask!.copyWith(status: TaskStatus.failed));
+        _updateState(_currentTask!.copyWith(
+          status: TaskStatus.failed,
+          messageKey: "taskTerminatedUnexpectedly",
+        ));
       }
 
+      // Auto-clear success/failed status after a delay to revert UI to neutral state
       Future.delayed(const Duration(seconds: 5), () {
         if (_currentTask?.status == TaskStatus.success ||
             _currentTask?.status == TaskStatus.failed) {
           _updateState(null);
         }
       });
-
-      // Murphy-proof: Critical lock release to prevent deadlocks
-      if (!currentMutex.isCompleted) currentMutex.complete();
     }
 
     return false;
