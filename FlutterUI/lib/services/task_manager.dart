@@ -81,38 +81,124 @@ class TaskManager {
       "源: $source。任务已启动，请稍候...",
     );
 
-    if (kIsWeb) {
+    try {
+      if (kIsWeb) {
+        try {
+          final stream = TaskRepository().executeAction(
+            actionFlag,
+            packageName,
+            source,
+            url: url,
+          );
+          await for (final line in stream) {
+            _handleOutput(line);
+          }
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.success,
+              progress: 1.0,
+              messageKey: "taskSuccess",
+              speed: "",
+            ),
+          );
+          BackendService.isDownloading.value = false;
+
+          UpdateService().showCompletionNotification(packageName, true);
+
+          Future.delayed(const Duration(seconds: 5), () {
+            if (_currentTask?.status == TaskStatus.success ||
+                _currentTask?.status == TaskStatus.failed) {
+              _updateState(null);
+            }
+          });
+          return true;
+        } catch (e) {
+          debugPrint("Web TaskManager execution exception: $e");
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.failed,
+              messageKey: "taskError",
+              messageArgs: {"error": e.toString()},
+              speed: "",
+            ),
+          );
+          BackendService.isDownloading.value = false;
+          UpdateService().showCompletionNotification(packageName, false);
+          return false;
+        }
+      }
+
       try {
-        final stream = TaskRepository().executeAction(
+        // Murphy-proof: Use unified _safeStream for consistent process lifecycle and cleanup
+        final stream = BackendService.instance.executeAction(
           actionFlag,
           packageName,
           source,
           url: url,
         );
-        await for (final line in stream) {
-          _handleOutput(line);
+
+        bool success = true;
+        final completer = Completer<bool>();
+        StreamSubscription? sub;
+
+        try {
+          sub = stream.listen(
+            (line) {
+              _handleOutput(line);
+              if (line.toLowerCase().contains("error") ||
+                  line.contains("[ERROR]")) {
+                success = false;
+              }
+            },
+            onError: (e) {
+              debugPrint("TaskManager Stream Error: $e");
+              success = false;
+              if (!completer.isCompleted) completer.complete(false);
+            },
+            onDone: () {
+              if (!completer.isCompleted) completer.complete(success);
+            },
+            cancelOnError: false,
+          );
+
+          _subscriptions.add(sub);
+          success = await completer.future;
+        } finally {
+          _subscriptions.remove(sub);
+          await sub?.cancel();
         }
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.success,
-            progress: 1.0,
-            messageKey: "taskSuccess",
-            speed: "",
-          ),
-        );
-        BackendService.isDownloading.value = false;
 
-        UpdateService().showCompletionNotification(packageName, true);
-
-        Future.delayed(const Duration(seconds: 5), () {
-          if (_currentTask?.status == TaskStatus.success ||
-              _currentTask?.status == TaskStatus.failed) {
-            _updateState(null);
+        if (success) {
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.success,
+              progress: 1.0,
+              messageKey: "taskSuccess",
+              speed: "",
+            ),
+          );
+        } else {
+          if (_currentTask?.status != TaskStatus.failed) {
+            _updateState(
+              _currentTask?.copyWith(
+                status: TaskStatus.failed,
+                messageKey: "taskFailed",
+                speed: "",
+              ),
+            );
           }
-        });
-        return true;
+        }
+
+        if (_currentTask != null) {
+          UpdateService().showCompletionNotification(
+            _currentTask!.packageName ?? "OmniStore",
+            success,
+          );
+        }
+
+        return success;
       } catch (e) {
-        debugPrint("Web TaskManager execution exception: $e");
+        debugPrint("TaskManager execution exception: $e");
         _updateState(
           _currentTask?.copyWith(
             status: TaskStatus.failed,
@@ -121,87 +207,7 @@ class TaskManager {
             speed: "",
           ),
         );
-        BackendService.isDownloading.value = false;
-        UpdateService().showCompletionNotification(packageName, false);
-        return false;
       }
-    }
-
-    try {
-      // Murphy-proof: Use unified _safeStream for consistent process lifecycle and cleanup
-      final stream = BackendService.instance.executeAction(
-        actionFlag,
-        packageName,
-        source,
-        url: url,
-      );
-
-      bool success = true;
-      final completer = Completer<bool>();
-      late StreamSubscription sub;
-
-      sub = stream.listen(
-        (line) {
-          _handleOutput(line);
-          if (line.toLowerCase().contains("error") ||
-              line.contains("[ERROR]")) {
-            success = false;
-          }
-        },
-        onError: (e) {
-          debugPrint("TaskManager Stream Error: $e");
-          success = false;
-          if (!completer.isCompleted) completer.complete(false);
-        },
-        onDone: () {
-          if (!completer.isCompleted) completer.complete(success);
-        },
-        cancelOnError: false,
-      );
-
-      _subscriptions.add(sub);
-      success = await completer.future;
-      _subscriptions.remove(sub);
-
-      if (success) {
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.success,
-            progress: 1.0,
-            messageKey: "taskSuccess",
-            speed: "",
-          ),
-        );
-      } else {
-        if (_currentTask?.status != TaskStatus.failed) {
-          _updateState(
-            _currentTask?.copyWith(
-              status: TaskStatus.failed,
-              messageKey: "taskFailed",
-              speed: "",
-            ),
-          );
-        }
-      }
-
-      if (_currentTask != null) {
-        UpdateService().showCompletionNotification(
-          _currentTask!.packageName ?? "OmniStore",
-          success,
-        );
-      }
-
-      return success;
-    } catch (e) {
-      debugPrint("TaskManager execution exception: $e");
-      _updateState(
-        _currentTask?.copyWith(
-          status: TaskStatus.failed,
-          messageKey: "taskError",
-          messageArgs: {"error": e.toString()},
-          speed: "",
-        ),
-      );
     } finally {
       BackendService.isDownloading.value = false;
 
@@ -218,6 +224,7 @@ class TaskManager {
         }
       });
 
+      // Murphy-proof: Critical lock release to prevent deadlocks
       if (!currentMutex.isCompleted) currentMutex.complete();
     }
 
@@ -309,43 +316,56 @@ class TaskManager {
     }
   }
 
+  /// Murphy-proof: Hardened cancellation logic that ensures absolute resource
+  /// cleanup even if individual steps fail.
   Future<void> cancelTask() async {
-    // 1. Cancel all active subscriptions
-    for (var sub in _subscriptions) {
-      sub.cancel();
-    }
-    _subscriptions.clear();
+    try {
+      // 1. Cancel all active subscriptions to stop UI updates and stream processing
+      final subs = List<StreamSubscription>.from(_subscriptions);
+      _subscriptions.clear();
+      for (final sub in subs) {
+        try {
+          await sub.cancel();
+        } catch (e) {
+          debugPrint("Murphy-proof Warning: Failed to cancel subscription: $e");
+        }
+      }
 
-    if (kIsWeb) {
-      _updateState(
-        _currentTask?.copyWith(
+      if (kIsWeb) {
+        _updateState(_currentTask?.copyWith(
           status: TaskStatus.failed,
           messageKey: "taskCancelledByUser",
           speed: "",
-        ),
-      );
-      Future.delayed(const Duration(seconds: 3), () {
-        _updateState(null);
-      });
-      return;
-    }
+        ));
+        Future.delayed(const Duration(seconds: 3), () => _updateState(null));
+        return;
+      }
 
-    // 2. Murphy-proof: Use unified cancellation through BackendService
-    await BackendService.cancelCurrentTask();
+      // 2. Deep Reaping: Signal BackendService to kill the underlying process
+      try {
+        await BackendService.cancelCurrentTask().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => debugPrint("BackendService.cancelCurrentTask timed out"),
+        );
+      } catch (e) {
+        debugPrint("Murphy-proof Error: Process cancellation failed: $e");
+      }
 
-    _updateState(
-      _currentTask?.copyWith(
+      _updateState(_currentTask?.copyWith(
         status: TaskStatus.failed,
         messageKey: "taskCancelledByUser",
         speed: "",
-      ),
-    );
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (_currentTask?.status == TaskStatus.failed) {
-        _updateState(null);
-      }
-    });
+      ));
+    } catch (e) {
+      debugPrint("TaskManager.cancelTask Fatal Exception: $e");
+    } finally {
+      // Ensure the UI state eventually resets
+      Future.delayed(const Duration(seconds: 3), () {
+        if (_currentTask?.status == TaskStatus.failed) {
+          _updateState(null);
+        }
+      });
+    }
   }
 
   void clearTask() {

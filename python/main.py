@@ -82,36 +82,50 @@ from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 
 async def handle_daemon_client(backend, reader, writer):
+    """
+    Murphy-proof daemon client handler.
+    Ensures per-client isolation, payload limits, and robust error recovery.
+    """
     import io
     from contextlib import redirect_stdout
+    client_addr = writer.get_extra_info('peername')
+    logging.debug(f"New daemon client connected: {client_addr}")
+
     try:
         while True:
-            line_bytes = await reader.readline()
-            if not line_bytes:
-                break
-            line = line_bytes.decode('utf-8').strip()
-            if not line:
-                continue
-            
+            # 1. Read request with strict line-length limit to prevent OOM
             try:
-                # 入参极端校验：限制单行 JSON 大小，防止 OOM
+                line_bytes = await asyncio.wait_for(reader.readline(), timeout=300)
+                if not line_bytes:
+                    break
+                line = line_bytes.decode('utf-8', errors='replace').strip()
+                if not line:
+                    continue
+
+                # 2. Extreme parameter validation: limit payload size to 1MB
                 if len(line) > 1024 * 1024:
-                    raise ValueError("Payload too large")
+                    raise ValueError("Daemon Payload exceeds 1MB safety limit")
                 cmd_data = json.loads(line)
+            except asyncio.TimeoutError:
+                logging.warning(f"Daemon client {client_addr} timed out")
+                break
             except Exception as ex:
-                writer.write(json.dumps({"status": "error", "error": f"Invalid request: {ex}"}).encode('utf-8') + b'\n')
-                await writer.drain()
+                logging.error(f"Invalid daemon request from {client_addr}: {ex}")
+                try:
+                    writer.write(json.dumps({"status": "error", "error": f"Malformed Request: {ex}"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                except: pass
                 continue
             
+            # 3. Execution isolation: redirect stdout and catch all per-action errors
             captured_stdout = io.StringIO()
-            # 故障隔离：使用 context manager 确保 stdout 在任何情况下都能正确恢复
             with redirect_stdout(captured_stdout):
                 try:
                     action = cmd_data.get("action")
                     args = cmd_data.get("args", [])
                     kwargs = cmd_data.get("kwargs", {})
 
-                    # 防呆机制：严格白名单校验
+                    # Foolproof: Strict action whitelist
                     ALLOWED_ACTIONS = {
                         "run_search", "run_install", "run_uninstall", "run_update",
                         "run_check_updates", "run_recommendations", "run_app_details",
@@ -123,52 +137,54 @@ async def handle_daemon_client(backend, reader, writer):
                     }
 
                     if action not in ALLOWED_ACTIONS:
-                        writer.write(json.dumps({"status": "error", "error": f"Forbidden action: {action}"}).encode('utf-8') + b'\n')
+                        writer.write(json.dumps({"status": "error", "error": f"Forbidden Action: {action}"}).encode('utf-8') + b'\n')
                         await writer.drain()
                         continue
 
-                    # 入参校验：确保 args 是 list，kwargs 是 dict
                     if not isinstance(args, list) or not isinstance(kwargs, dict):
-                        writer.write(json.dumps({"status": "error", "error": "Invalid arguments format"}).encode('utf-8') + b'\n')
+                        writer.write(json.dumps({"status": "error", "error": "Invalid arguments format (list/dict required)"}).encode('utf-8') + b'\n')
                         await writer.drain()
                         continue
 
-                    # Resolve nested attributes recursively, e.g. "config.data"
+                    # Dynamic attribute resolution
                     obj = backend
                     parts = action.split('.')
                     for part in parts:
                         obj = getattr(obj, part, None)
-                        if obj is None:
-                            break
+                        if obj is None: break
 
                     if obj is not None:
-                        # If it's a callable (method or function), call it
+                        # 4. Async execution with hard 120s timeout to prevent zombie tasks
                         if callable(obj):
                             if inspect.iscoroutinefunction(obj):
-                                # 严禁雪崩：加装 120s 强制超时
                                 res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
                             else:
                                 res = obj(*args, **kwargs)
                         else:
-                            # Otherwise it's an attribute/property
                             res = obj
 
                         stdout_content = captured_stdout.getvalue()
-                        writer.write(json.dumps({
+                        response_payload = json.dumps({
                             "status": "success",
                             "response": res,
                             "stdout": stdout_content
-                        }, ensure_ascii=False).encode('utf-8') + b'\n')
+                        }, ensure_ascii=False).encode('utf-8') + b'\n'
+                        writer.write(response_payload)
                     else:
-                        writer.write(json.dumps({"status": "error", "error": f"Unknown action: {action}"}).encode('utf-8') + b'\n')
+                        writer.write(json.dumps({"status": "error", "error": f"Method not found: {action}"}).encode('utf-8') + b'\n')
                 except asyncio.TimeoutError:
-                    writer.write(json.dumps({"status": "error", "error": "Action timed out"}).encode('utf-8') + b'\n')
+                    writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
                 except Exception as e:
                     import traceback
-                    error_trace = traceback.format_exc()
-                    logging.error(f"Daemon action error: {e}\n{error_trace}")
-                    writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
-            await writer.drain()
+                    logging.error(f"Daemon Action Error [{action}]: {e}\n{traceback.format_exc()}")
+                    try:
+                        writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
+                    except: pass
+
+            try:
+                await writer.drain()
+            except ConnectionError:
+                break
     except asyncio.CancelledError:
         pass
     except Exception as e:
@@ -281,17 +297,32 @@ class OmnistoreBackend:
         return await self.initialize()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Guaranteed cleanup of all persistent resources."""
+        """
+        Murphy-proof cleanup: ensures all sessions and background executors
+        are explicitly destroyed to prevent memory leaks and zombie processes.
+        """
         try:
-            if self.session:
-                await self.session.close()
+            # 1. Close aiohttp session
+            if self.session and not self.session.closed:
+                try:
+                    await self.session.close()
+                except: pass
                 self.session = None
 
-            # Ensure executor is stopped if active
+            # 2. Stop the installation executor if it exists
             if self._executor:
-                self._executor.stop()
+                try:
+                    self._executor.stop()
+                except: pass
+
+            # 3. Invalidate large caches to free memory if this was a heavy session
+            if self.manager:
+                self.manager = None
+            if self.recommender:
+                self.recommender = None
+
         except Exception as e:
-            logging.error(f"Error during OmnistoreBackend cleanup: {e}")
+            logging.error(f"Murphy-proof Error during OmnistoreBackend cleanup: {e}")
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
@@ -515,6 +546,8 @@ class OmnistoreBackend:
 
             async def scan_flatpak():
                 res = []
+                if shutil.which("flatpak") is None:
+                    return res
                 try:
                     async with safe_subprocess("flatpak", "list", "--app", "--columns=name,application,version,description",
                                              stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
@@ -534,6 +567,8 @@ class OmnistoreBackend:
 
             async def scan_native():
                 res = []
+                if shutil.which("pacman") is None:
+                    return res
                 try:
                     async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                         stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
@@ -547,6 +582,8 @@ class OmnistoreBackend:
 
             async def scan_aur():
                 res = []
+                if shutil.which("pacman") is None:
+                    return res
                 try:
                     async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                         stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
