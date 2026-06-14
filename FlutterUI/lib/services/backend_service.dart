@@ -240,6 +240,8 @@ class BackendService {
     _healthCheckTimer = null;
 
     // 2. Close daemon socket
+    _daemonSub?.cancel();
+    _daemonSub = null;
     _daemonSocket?.destroy();
     _daemonSocket = null;
 
@@ -261,6 +263,8 @@ class BackendService {
 
   Process? _daemonProcess;
   Socket? _daemonSocket;
+  StreamSubscription<String>? _daemonSub;
+  Completer<DaemonResult>? _responseCompleter;
   Timer? _healthCheckTimer;
   final int _daemonPort = 9081;
   Completer<void> _daemonMutex = Completer<void>()..complete();
@@ -279,6 +283,8 @@ class BackendService {
 
     // Cleanup stale state before restart
     if (_daemonSocket != null) {
+      _daemonSub?.cancel();
+      _daemonSub = null;
       _daemonSocket!.destroy();
       _daemonSocket = null;
     }
@@ -320,14 +326,69 @@ class BackendService {
           );
           debugPrint("Connected to Python backend daemon on port $_daemonPort");
 
+          // Set up single socket listener
+          _daemonSub = _daemonSocket!
+              .cast<List<int>>()
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(
+            (line) {
+              try {
+                final res = jsonDecode(line);
+                if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
+                  final completer = _responseCompleter;
+                  if (completer != null && !completer.isCompleted) {
+                    if (res['status'] == 'success') {
+                      completer.complete(DaemonResult(
+                        status: 'success',
+                        response: res['response'],
+                        stdout: res['stdout'] ?? '',
+                      ));
+                    } else {
+                      completer.complete(DaemonResult(
+                        status: 'error',
+                        error: res['error'] ?? 'Daemon error',
+                        stdout: res['stdout'] ?? '',
+                      ));
+                    }
+                  }
+                }
+              } catch (e) {
+                debugPrint("Murphy-proof Warning: Failed to parse daemon response line: $e");
+              }
+            },
+            onError: (err) {
+              final completer = _responseCompleter;
+              if (completer != null && !completer.isCompleted) completer.completeError(err);
+              _daemonSub?.cancel();
+              _daemonSub = null;
+              _daemonSocket?.destroy();
+              _daemonSocket = null;
+            },
+            onDone: () {
+              final completer = _responseCompleter;
+              if (completer != null && !completer.isCompleted) {
+                completer.completeError(Exception("Daemon socket closed unexpectedly"));
+              }
+              _daemonSub?.cancel();
+              _daemonSub = null;
+              _daemonSocket = null;
+            },
+            cancelOnError: false,
+          );
+
           // Detect unexpected socket closure
           _daemonSocket!.done
               .then((_) {
                 debugPrint("Daemon socket closed.");
+                _daemonSub?.cancel();
+                _daemonSub = null;
                 _daemonSocket = null;
               })
               .catchError((e) {
                 debugPrint("Daemon socket error: $e");
+                _daemonSub?.cancel();
+                _daemonSub = null;
                 _daemonSocket = null;
               });
 
@@ -397,67 +458,31 @@ class BackendService {
         await _daemonSocket!.flush();
       } catch (e) {
         debugPrint("Socket write error: $e");
+        _daemonSub?.cancel();
+        _daemonSub = null;
         _daemonSocket?.destroy();
         _daemonSocket = null;
         return null;
       }
 
-      // 4. Read response with robust stream management
+      // 4. Wait for response via the active completer
       final completer = Completer<DaemonResult>();
-      StreamSubscription? sub;
+      _responseCompleter = completer;
 
       try {
-        sub = _daemonSocket!
-            .cast<List<int>>()
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .listen(
-          (line) {
-            try {
-              final res = jsonDecode(line);
-              if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
-                if (!completer.isCompleted) {
-                  if (res['status'] == 'success') {
-                    completer.complete(DaemonResult(
-                      status: 'success',
-                      response: res['response'],
-                      stdout: res['stdout'] ?? '',
-                    ));
-                  } else {
-                    completer.complete(DaemonResult(
-                      status: 'error',
-                      error: res['error'] ?? 'Daemon error',
-                      stdout: res['stdout'] ?? '',
-                    ));
-                  }
-                }
-              }
-            } catch (e) {
-              debugPrint("Murphy-proof Warning: Failed to parse daemon response line: $e");
-            }
-          },
-          onError: (err) {
-            if (!completer.isCompleted) completer.completeError(err);
-          },
-          onDone: () {
-            if (!completer.isCompleted) {
-              completer.completeError(Exception("Daemon socket closed unexpectedly"));
-            }
-          },
-          cancelOnError: true,
-        );
-
         final result = await completer.future.timeout(
           const Duration(seconds: 60),
           onTimeout: () => throw TimeoutException("Daemon communication timed out for action: $action"),
         );
         return result;
       } finally {
-        await sub?.cancel();
+        _responseCompleter = null;
       }
     } catch (e) {
       debugPrint("Daemon transaction error [$action]: $e");
       // If we have a socket error, it might be dead
+      _daemonSub?.cancel();
+      _daemonSub = null;
       _daemonSocket?.destroy();
       _daemonSocket = null;
       return null;

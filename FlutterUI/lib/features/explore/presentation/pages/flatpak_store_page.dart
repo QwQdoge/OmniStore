@@ -7,6 +7,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class FlatpakStorePage extends StatefulWidget {
   const FlatpakStorePage({super.key});
@@ -90,27 +91,36 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
         itemBuilder: (context, index) {
           final app = _apps[index];
           final isSelected = _selectedApp?.id == app.id;
-          return Card.filled(
-            margin: const EdgeInsets.only(bottom: 12),
-            color: isSelected && isDesktop
-                ? Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer.withValues(alpha: 0.3)
-                : Theme.of(context).colorScheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: Theme.of(
-                  context,
-                ).colorScheme.outlineVariant.withValues(alpha: 0.15),
-              ),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              leading: app.icon != null
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Semantics(
+              label: 'App: ${app.name}',
+              button: true,
+              child: AppCard(
+                borderRadius: 16,
+                color: isSelected && isDesktop
+                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                    : Theme.of(context).colorScheme.surfaceContainerLow,
+                onTap: () {
+                  if (isDesktop) {
+                    setState(() {
+                      _selectedApp = app;
+                    });
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AppDetailsPage(app: app),
+                      ),
+                    );
+                  }
+                },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  leading: app.icon != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
@@ -137,22 +147,8 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
                 source: app.primarySource,
                 mode: AppSourceTagMode.source,
               ),
-              onTap: () {
-                if (isDesktop) {
-                  setState(() {
-                    _selectedApp = app;
-                  });
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AppDetailsPage(app: app),
-                    ),
-                  );
-                }
-              },
             ),
-          );
+          )));
         },
       );
     }

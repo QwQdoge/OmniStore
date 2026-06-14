@@ -394,11 +394,13 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
-    final taskController = context.watch<TaskController>();
-    final isCurrentTask =
-        taskController.isBusy &&
-        (taskController.packageName == app.name ||
-            taskController.packageName == app.id);
+
+    // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
+    final isCurrentTask = context.select<TaskController, bool>((taskController) {
+      return taskController.isBusy &&
+          (taskController.packageName == app.name ||
+              taskController.packageName == app.id);
+    });
 
     return Semantics(
       label: 'Search result: ${app.name} from ${app.primarySource}',
@@ -433,27 +435,27 @@ class SearchResultTile extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.apps, size: 40),
-                  if (isCurrentTask)
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: isCurrentTask
+                        ? Container(
+                            key: const ValueKey('task_active'),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
+                            child: const Center(
+                              child: Skeleton(
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_idle')),
+                  ),
                 ],
               ),
             ),
@@ -461,26 +463,36 @@ class SearchResultTile extends StatelessWidget {
               app.name,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              isCurrentTask
-                  ? "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}"
-                  : app.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: isCurrentTask
-                  ? TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    )
-                  : null,
-            ),
+            subtitle: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  )
+                : Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
             trailing: isCurrentTask
-                ? Text(
-                    taskController.speed,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        taskController.speed,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      );
+                    },
                   )
                 : AppSourceTag(
                     source: app.primarySource,
