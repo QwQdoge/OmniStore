@@ -7,6 +7,7 @@ import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -688,13 +689,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
                     onPressed: _isTestingAI ? null : _testAIConnection,
-                    icon: _isTestingAI
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.network_check_rounded),
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _isTestingAI
+                          ? const Skeleton(
+                              key: ValueKey('testing_ai'),
+                              width: 16,
+                              height: 16,
+                              borderRadius: 8,
+                            )
+                          : const Icon(
+                              key: ValueKey('idle_ai'),
+                              Icons.network_check_rounded,
+                              // size: 16,
+                              // Keep the default icon size but we need to ensure the skeletons and icon are centered appropriately in the animated switcher.
+                              // No explicit size needed for icon.
+                            ),
+                    ),
                     label: const Text("Test Connection"),
                   ),
                 ),

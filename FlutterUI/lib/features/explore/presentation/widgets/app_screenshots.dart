@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class AppScreenshots extends StatelessWidget {
   final List<dynamic> screenshots;
@@ -33,32 +34,28 @@ class AppScreenshots extends StatelessWidget {
             final imageUrl = screenshots[index];
             return Hero(
               tag: 'screenshot-$imageUrl',
-              child: Card(
-                elevation: 0,
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
-                  side: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
+              child: SizedBox(
+                width: 360,
+                child: AppCard(
                   onTap: () => onShowScreenshotViewer(imageUrl),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    width: 360,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 720,
-                    placeholder: (context, url) => const Skeleton(
+                  borderRadius: 16.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
                       width: 360,
-                      height: 220,
-                      borderRadius: 16.0,
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 360,
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Icon(Icons.broken_image_rounded),
+                      fit: BoxFit.cover,
+                      memCacheWidth: 720,
+                      placeholder: (context, url) => const Skeleton(
+                        width: 360,
+                        height: 220,
+                        borderRadius: 16.0,
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 360,
+                        color: colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.broken_image_rounded),
+                      ),
                     ),
                   ),
                 ),

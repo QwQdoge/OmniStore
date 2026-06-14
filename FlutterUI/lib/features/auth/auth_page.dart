@@ -20,20 +20,26 @@ class _AuthPageState extends State<AuthPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPat());
   }
 
+  @override
+  void dispose() {
+    _patController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadPat() async {
     final configRepo = context.read<ConfigRepository>();
     final config = await configRepo.loadConfig();
-    if (mounted) {
-      setState(() {
-        _patController.text = config['github']?['pat'] ?? '';
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _patController.text = config['github']?['pat'] ?? '';
+    });
   }
 
   Future<void> _savePat() async {
     setState(() => _isSaving = true);
     final configRepo = context.read<ConfigRepository>();
     final config = await configRepo.loadConfig();
+    if (!mounted) return;
     config['github'] ??= {};
     config['github']['pat'] = _patController.text.trim();
     await configRepo.saveConfig(config);
