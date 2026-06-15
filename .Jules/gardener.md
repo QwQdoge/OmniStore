@@ -23,20 +23,12 @@
 **Learning:** Extracted action confirmation and AUR security warning dialogs from `details_page.dart` into a new `action_dialogs.dart` widget to reduce file size and simplify `details_page.dart` UI logic.
 
 **Action:** Continue identifying oversized widgets and inline widget building logic, extracting them into dedicated component files where logical.
-\n## 2024-03-22 - Extracted Dialog Implementation in Action Area\n\n**Learning:** When extracting dialogs using  out of a parent component (like  into ), the state returned by  must be properly captured by the awaiting function ().  definition inline in the parent component can simply be replaced with the widget, removing large unreadable sections of code and leaving clean declarative logic.\n\n**Action:** Replaced inline  logic for confirm install/uninstall in  with the already existing  widget from .
 
 ## 2024-03-22 - Extracted Dialog Implementation in Action Area
 
 **Learning:** When extracting dialogs using `StatefulBuilder` out of a parent component (like `details_page.dart` into `ActionConfirmDialog`), the state returned by `Navigator.pop(context, result)` must be properly captured by the awaiting function (`_handleAction`). `showDialog` definition inline in the parent component can simply be replaced with the widget, removing large unreadable sections of code and leaving clean declarative logic.
 
 **Action:** Replaced inline `AlertDialog` logic for confirm install/uninstall in `details_page.dart` with the already existing `ActionConfirmDialog` widget from `action_dialogs.dart`.
-## 2026-06-12 - [Extract Widgets in AppDetailsPage]
-
-Learning:
-Extracting large UI building blocks into separate  classes significantly improves maintainability and readability of long files like . By passing down minimal state and callbacks, we can decouple the UI layout from the complex business logic residing in the .
-
-Action:
-Extracted , , , , and shared row components from  into the  directory.
 ## 2024-05-24 - [Extract Widgets in AppDetailsPage]
 
 Learning:
@@ -52,13 +44,6 @@ Extracting inline dialog definitions (`TerminalDialog`, `AIUpdateSummaryDialog`)
 
 Action:
 Extracted `TerminalDialog`, `AIUpdateSummaryDialog`, `TasksTab`, and `UpdatesTab` from `download_page.dart` into the `lib/features/task_manager/presentation/widgets/` directory. Passed down minimal callbacks (e.g. `onUpdateStarted`) to handle state interactions cleanly.
-## 2026-06-14 - Settings Page Widget Extraction
-
-Learning:
-Oversized Flutter UI files that try to manage multiple disparate state domains (AI settings, sources list, storage cleaning progress dialogs) become very difficult to read. By pulling discrete functional blocks into their own 'Stateless' or local 'Stateful' widgets and passing down only what's necessary (like the SettingsController), the main page file is reduced significantly in length, complexity and git-conflict surface.
-
-Action:
-Extracted , , and  out of  into the  subdirectory to drastically improve readability and separation of concerns.
 ## 2024-05-18 - Settings Page Widget Extraction
 
 Learning:

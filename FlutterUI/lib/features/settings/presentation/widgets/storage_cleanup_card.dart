@@ -101,6 +101,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
     );
 
     await taskController.runCleanSystem(l10n);
+    if (!mounted) return;
     await _fetchStorageInfo();
   }
 

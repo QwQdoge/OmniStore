@@ -1,10 +1,3 @@
-## YYYY-MM-DD - [Async Subprocess Process Leaks]
-
-Learning:
-When `asyncio.wait_for` timeouts, the `communicate()` coroutine is cancelled, but the underlying process continues running. Without a `finally` block to `kill()` and `wait()` for the process, it becomes a zombie.
-
-Action:
-Always use a `finally` block or context manager to ensure subprocesses are explicitly killed and awaited if their enclosing coroutines are cancelled or raise exceptions.
 ## 2026-06-09 - [Async Subprocess Process Leaks]
 
 Learning:
@@ -67,3 +60,11 @@ Missing `mounted` checks after `await` gaps can lead to real-world crashes when 
 
 Action:
 Added strict `if (!mounted) return;` statements after async operations in `_refresh` and `_triggerCleanup` to safely terminate the execution paths and prevent unsafe `BuildContext` usage. Automated static analysis scripts should continue to monitor these async gaps.
+
+## 2026-06-15 - [Async Lifecycle Context and State Safety Hardening]
+
+Learning:
+Unmounted widgets are highly vulnerable to crashes when context.read or setState is called after an await gap. During settings refactoring and homepage updates, missing checks on widgets' mounting status could trigger unhandled exceptions if the view was disposed while a cleanup task or background AI pick fetch was pending.
+
+Action:
+Added strict `if (!mounted) return;` checks to `HomePage._fetchAIPick` in `home_page.dart` (before reading context) and to `_StorageCleanupCardState._triggerCleanup` in `storage_cleanup_card.dart` (after awaiting the cleanup system task) to prevent asynchronous state operation crashes.

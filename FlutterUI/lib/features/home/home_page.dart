@@ -64,6 +64,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchAIPick() async {
+    if (!mounted) return;
     final settings = context.read<SettingsController>();
     if (!settings.isAIEnabled) return;
 

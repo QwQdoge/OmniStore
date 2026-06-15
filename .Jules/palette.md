@@ -26,13 +26,6 @@
 **Learning:** Horizontal scrolling lists on desktop and web lack discoverability if they don't have visible scrollbars. In MD3, using `Scrollbar` with `thumbVisibility: true` and a dedicated `ScrollController` is the standard for improving mouse-based navigation. Additionally, aligning container radii to MD3 tokens (e.g., 28dp for Extra Large, 16dp for Medium/Cards) ensures visual consistency and prevents artifacts during Hero transitions.
 
 **Action:** Wrap all horizontal `ListView` and `SingleChildScrollView` widgets in a `Scrollbar` with `thumbVisibility: true`. Use a `Map<String, ScrollController>` to manage dynamic shelf controllers. Standardize radii to 16dp for cards/icons and 28dp for large hero banners.
-## YYYY-MM-DD - [Refined Metadata Layout]
-
-Learning:
-[Improved layout clarity and visual hierarchy by wrapping details metadata rows in an MD3 Card with surfaceContainerLow color and 16dp border radius]
-
-Action:
-[Continue exploring similar flat lists and group them intelligently without adding visual noise]
 
 ## 2026-06-13 - Metadata Grouping and Visual Hierarchy
 
@@ -45,10 +38,3 @@ Action:
 
 **Action:** Ensure all interactive elements, particularly icon-only buttons like the 'Copy' button in app details, are wrapped in a `Semantics` widget with `button: true` and a localized, descriptive `label`.
 
-## YYYY-MM-DD - [Enforcing MD3 Consistency with AppCard and Semantics]
-
-Learning:
-[Consistent usage of AppCard instead of generic Card widgets combined with InkWell/ListTile provides standardized MD3 hover and scale-down animations. Wrapping interactive tiles with Semantics improves accessibility for screen readers.]
-
-Action:
-[Ensure list tiles and grid items throughout the app use `AppCard` and explicitly wrap them in a `Semantics` widget for screen reader accessibility.]
