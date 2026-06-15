@@ -221,7 +221,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 ],
               ),
               backgroundColor: Colors.green.shade700,
-              behavior: SnackBarBehavior.floating,
             ),
           );
         } else {
