@@ -52,9 +52,14 @@ class TerminalDialog extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, size: 18),
+                  Semantics(
+                    label: AppLocalizations.of(context)!.windowClose,
+                    button: true,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: AppLocalizations.of(context)!.windowClose,
+                    ),
                   ),
                 ],
               ),
