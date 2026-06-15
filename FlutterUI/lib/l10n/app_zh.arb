@@ -91,7 +91,7 @@
     "description": "Label for AI API endpoint"
   },
   "aiEndpointHelper": "Ollama 默认为 http://localhost:11434",
-  "aiExplainUpdate": "解释此更新",
+  "aiExplainUpdate": "解析此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
@@ -126,7 +126,7 @@
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },
-  "aiPromptExplain": "使用 AI 解释",
+  "aiPromptExplain": "使用 AI 解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -138,8 +138,8 @@
   "@aiProvider": {
     "description": "Label for AI provider selection"
   },
-  "aiProviderDesc": "选择您的 AI 模型来源 （本地或云端）",
-  "aiProxy": "网络代理 （可选）",
+  "aiProviderDesc": "选择您的 AI 模型来源（本地或云端）",
+  "aiProxy": "网络代理（可选）",
   "@aiProxy": {
     "description": "Label for optional AI proxy setting"
   },
@@ -155,7 +155,7 @@
   "@aiSettings": {
     "description": "Title for AI assistant settings"
   },
-  "aiTemperature": "温度 （创意度）",
+  "aiTemperature": "温度（创意度）",
   "@aiTemperature": {
     "description": "Label for AI temperature setting"
   },
@@ -198,12 +198,12 @@
     "description": "AppImage source type option"
   },
   "appearance": "界面外观",
-  "aurFull": "AUR （Arch 用户软件仓库）",
+  "aurFull": "AUR（Arch 用户软件仓库）",
   "@aurFull": {
     "description": "Full name for AUR"
   },
-  "aurSecurityDesc": "AUR （Arch User Repository） 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。",
-  "aurUser": "AUR （用户库）",
+  "aurSecurityDesc": "AUR（Arch User Repository） 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。",
+  "aurUser": "AUR（用户库）",
   "aurWarning": "安全警告：AUR 包由用户上传，请确保您信任包的来源。",
   "autoDetect": "自动检测",
   "@autoDetect": {
@@ -246,7 +246,7 @@
   "@backupAndExportSubtitle": {
     "description": "Subtitle for backup and export feature"
   },
-  "bituRepoType": "Bitu / Bitbucket （工作区/仓库）",
+  "bituRepoType": "Bitu / Bitbucket（工作区/仓库）",
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
@@ -302,7 +302,7 @@
       }
     }
   },
-  "checkInterval": "自动检查更新间隔 （小时）",
+  "checkInterval": "自动检查更新间隔（小时）",
   "checkIntervalSubtitle": "每隔 {hours} 小时检查一次",
   "@checkIntervalSubtitle": {
     "placeholders": {
@@ -324,7 +324,7 @@
     }
   },
   "checkUpdates": "检查更新",
-  "cleanOrphans": "同时清理无用依赖 （孤儿软件包）",
+  "cleanOrphans": "同时清理无用依赖（孤儿软件包）",
   "clear": "清除",
   "clearHistory": "清空历史记录",
   "clearSearch": "清除搜索",
@@ -355,7 +355,7 @@
   },
   "darkMode": "深色模式",
   "delete": "删除",
-  "dependenciesCount": "依赖软件包 （{count}）",
+  "dependenciesCount": "依赖软件包（{count}）",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -378,7 +378,7 @@
   },
   "downloadSize": "下载大小",
   "downloads": "下载",
-  "enableAur": "启用 AUR （Arch User Repository）",
+  "enableAur": "启用 AUR（Arch User Repository）",
   "enableDaemon": "启用后台更新守护进程",
   "@enableDaemon": {
     "description": "Label for background daemon"
@@ -486,7 +486,7 @@
   "fixProblems": "一键修复/配置",
   "flatpak": "Flatpak",
   "flatpakBetterDesc": "发现此应用有 Flatpak 源，通常更稳定。",
-  "flatpakFull": "Flatpak （Flathub）",
+  "flatpakFull": "Flatpak（Flathub）",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
   },
@@ -529,7 +529,7 @@
   "@githubPatSaved": {
     "description": "Success message for saving GitHub PAT"
   },
-  "githubRepoType": "GitHub 仓库 （owner/repo）",
+  "githubRepoType": "GitHub 仓库（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
@@ -563,7 +563,7 @@
     }
   },
   "howToGetApiKey": "如何获取 API 密钥？",
-  "howToGetApiKeyDesc": "1. Ollama （本地）： 下载并运行 Ollama，无需密钥。2. 云端 （OpenAI）： 前往服务商官网创建 API Key，然后填入此处。",
+  "howToGetApiKeyDesc": "1. Ollama（本地）： 下载并运行 Ollama，无需密钥。2. 云端（OpenAI）： 前往服务商官网创建 API Key，然后填入此处。",
   "import": "导入",
   "@import": {
     "description": "Import action label"
@@ -617,10 +617,10 @@
       }
     }
   },
-  "langEnglish": "英语 （English）",
-  "langJapanese": "日语 （日本語）",
+  "langEnglish": "英语（English）",
+  "langJapanese": "日语（日本語）",
   "langSimplifiedChinese": "简体中文",
-  "langSpanish": "西班牙语 （Español）",
+  "langSpanish": "西班牙语（Español）",
   "langTraditionalChinese": "繁體中文",
   "language": "界面语言",
   "@language": {
@@ -639,10 +639,10 @@
   "@locateInstallation": {
     "description": "Tooltip for locating the app installation folder"
   },
-  "logDebug": "调试 （DEBUG）",
-  "logError": "错误 （ERROR）",
-  "logInfo": "信息 （INFO）",
-  "logWarning": "警告 （WARNING）",
+  "logDebug": "调试（DEBUG）",
+  "logError": "错误（ERROR）",
+  "logInfo": "信息（INFO）",
+  "logWarning": "警告（WARNING）",
   "loggingLevel": "日志详细程度",
   "magicSearch": "智能搜索",
   "@magicSearch": {
@@ -676,7 +676,7 @@
   "notificationTitle": "发现可用更新",
   "notifications": "通知设置",
   "official": "官方",
-  "ollamaLocal": "Ollama （本地）",
+  "ollamaLocal": "Ollama（本地）",
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
@@ -688,7 +688,7 @@
   "@pacmanMirrorManagement": {
     "description": "Section title for Pacman mirror management"
   },
-  "pacmanOfficial": "Pacman （官方库）",
+  "pacmanOfficial": "Pacman（官方库）",
   "personalAccessToken": "个人访问令牌",
   "@personalAccessToken": {
     "description": "Label for personal access token"
@@ -703,7 +703,7 @@
   },
   "relatedApps": "相关应用",
   "remindMeOfUpdates": "提醒我有可用更新",
-  "repoOwnerRepo": "仓库地址 （owner/repo）",
+  "repoOwnerRepo": "仓库地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -784,7 +784,7 @@
   "@sourceName": {
     "description": "Label for source name"
   },
-  "sourcePriority": "应用源优先级 （拖动排序）",
+  "sourcePriority": "应用源优先级（拖动排序）",
   "sourceType": "来源类型",
   "@sourceType": {
     "description": "Label for source type"
@@ -838,7 +838,7 @@
       }
     }
   },
-  "taskFailedWithCode": "任务失败 （错误码： {code}）",
+  "taskFailedWithCode": "任务失败（错误码： {code}）",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {
