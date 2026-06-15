@@ -131,7 +131,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -181,11 +181,11 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Consumer2<BrowseController, SettingsController>(
-                    builder: (context, browse, settings, _) {
+                : Consumer<BrowseController>(
+                    builder: (context, browse, _) {
                       final resultsContent = browse.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(browse, l10n, settings);
+                          : _buildResults(browse, l10n);
 
                       if (isDesktop) {
                         return Row(
@@ -322,9 +322,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildResults(
     BrowseController browse,
     AppLocalizations l10n,
-    SettingsController settings,
   ) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = browse.searchResults.where((app) {

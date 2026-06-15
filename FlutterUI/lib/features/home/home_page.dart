@@ -168,17 +168,19 @@ class _HomePageState extends State<HomePage> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final featured = browse.recommendations['featured'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['featured'] ?? [],
+                builder: (context, featured, _) {
                   return _buildHeroSection(featured);
                 },
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<SettingsController>(
-                builder: (context, settings, _) {
-                  if (!settings.isAIEnabled) return const SizedBox.shrink();
+              child: Selector<SettingsController, bool>(
+                selector: (context, settings) => settings.isAIEnabled,
+                builder: (context, isAIEnabled, _) {
+                  if (!isAIEnabled) return const SizedBox.shrink();
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _isAILoading
@@ -216,17 +218,19 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final trending = browse.recommendations['trending'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['trending'] ?? [],
+                builder: (context, trending, _) {
                   return _buildCategoryShelf(l10n.hotApps, trending);
                 },
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final forYou = browse.recommendations['for_you'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['for_you'] ?? [],
+                builder: (context, forYou, _) {
                   if (forYou.isEmpty) return const SizedBox.shrink();
                   return _buildCategoryShelf(l10n.forYou, forYou);
                 },
