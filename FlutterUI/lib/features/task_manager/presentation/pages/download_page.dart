@@ -31,6 +31,7 @@ class _DownloadPageState extends State<DownloadPage>
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _installedFilterScrollController = ScrollController();
 
   @override
   void initState() {
@@ -88,6 +89,7 @@ class _DownloadPageState extends State<DownloadPage>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _installedFilterScrollController.dispose();
     super.dispose();
   }
 
@@ -581,31 +583,44 @@ class _DownloadPageState extends State<DownloadPage>
           : Column(
               key: const ValueKey('loaded'),
               children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                        .map(
-                          (s) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(
-                                s == "all" ? AppLocalizations.of(context)!.explore : s,
+                SizedBox(
+                  height: 66,
+                  child: Scrollbar(
+                    controller: _installedFilterScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _installedFilterScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                            .map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    s == "all"
+                                        ? AppLocalizations.of(context)!.explore
+                                        : s,
+                                  ),
+                                  selected: _selectedSourceFilter == s,
+                                  onSelected: (v) {
+                                    if (v) {
+                                      setState(() {
+                                        _selectedSourceFilter = s;
+                                        _applyFilters();
+                                      });
+                                    }
+                                  },
+                                ),
                               ),
-                              selected: _selectedSourceFilter == s,
-                              onSelected: (v) {
-                                if (v) {
-                                  setState(() {
-                                    _selectedSourceFilter = s;
-                                    _applyFilters();
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                        )
-                        .toList(),
+                            )
+                            .toList(),
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(child: _buildInstalledList()),

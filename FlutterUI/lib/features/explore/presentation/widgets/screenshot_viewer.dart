@@ -17,7 +17,11 @@ class ScreenshotViewer extends StatelessWidget {
               tag: 'screenshot-$url',
               child: InteractiveViewer(
                 maxScale: 4.0,
-                child: CachedNetworkImage(imageUrl: url, fit: BoxFit.contain),
+                child: CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.contain,
+                  memCacheWidth: 1080,
+                ),
               ),
             ),
           ),

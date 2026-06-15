@@ -1,4 +1,6 @@
-import "package:frontend/data/repositories/task_repository.dart";
+import sys
+
+content = r"""import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
@@ -563,3 +565,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+"""
+
+with open('FlutterUI/lib/features/home/home_page.dart', 'w') as f:
+    f.write(content)

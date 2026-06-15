@@ -21,8 +21,17 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _sourceFilterScrollController = ScrollController();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    _sourceFilterScrollController.dispose();
+    super.dispose();
+  }
 
   String _displayName(String key) {
     final mapping = {
@@ -128,7 +137,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildSourceFilters(SettingsController settings) {
-    final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+    final sourcesMap =
+        settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key.toString())
@@ -137,46 +147,52 @@ class _SearchPageState extends State<SearchPage> {
     if (enabledSources.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      height: 50,
+      height: 66,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FilterChip(
-              label: Text(AppLocalizations.of(context)!.all),
-              selected: _selectedSources.isEmpty,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedSources.clear();
-                  });
-                }
-              },
-            ),
-          ),
-          ...enabledSources.map((src) {
-            final name = _displayName(src);
-            final isSelected = _selectedSources.contains(name.toLowerCase());
-            return Padding(
+      child: Scrollbar(
+        controller: _sourceFilterScrollController,
+        thumbVisibility: true,
+        child: ListView(
+          controller: _sourceFilterScrollController,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(bottom: 8),
+          children: [
+            Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: FilterChip(
-                label: Text(name),
-                selected: isSelected,
+                label: Text(AppLocalizations.of(context)!.all),
+                selected: _selectedSources.isEmpty,
                 onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedSources.add(name.toLowerCase());
-                    } else {
-                      _selectedSources.remove(name.toLowerCase());
-                    }
-                  });
+                  if (selected) {
+                    setState(() {
+                      _selectedSources.clear();
+                    });
+                  }
                 },
               ),
-            );
-          }),
-        ],
+            ),
+            ...enabledSources.map((src) {
+              final name = _displayName(src);
+              final isSelected = _selectedSources.contains(name.toLowerCase());
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilterChip(
+                  label: Text(name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedSources.add(name.toLowerCase());
+                      } else {
+                        _selectedSources.remove(name.toLowerCase());
+                      }
+                    });
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }

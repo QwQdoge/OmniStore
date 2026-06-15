@@ -89,9 +89,6 @@ abstract final class OmnistoreTheme {
       focusColor: scheme.onSurface.withValues(alpha: 0.12),
       splashColor: scheme.onSurface.withValues(alpha: 0.1),
       highlightColor: Colors.transparent,
-      snackBarTheme: const SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-      ),
     );
   }
 }
