@@ -17,7 +17,6 @@ class UpdatesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final packageRepo = context.read<PackageRepository>();
     return ListenableBuilder(
       listenable: UpdateService().availableUpdates,
       builder: (context, _) {
@@ -85,6 +84,7 @@ class UpdatesTab extends StatelessWidget {
                       child: AppCard(
                         borderRadius: 16,
                         onTap: () async {
+                          final packageRepo = context.read<PackageRepository>();
                           final results = await packageRepo.searchPackages(
                             update['name'],
                           );
