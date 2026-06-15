@@ -6,7 +6,7 @@ import 'package:frontend/data/repositories/ai_repository.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 
-class AIUpdateSummaryDialog extends StatelessWidget {
+class AIUpdateSummaryDialog extends StatefulWidget {
   final String name;
   final String currentVersion;
   final String nextVersion;
@@ -19,9 +19,25 @@ class AIUpdateSummaryDialog extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final aiRepo = context.read<AIRepository>();
+  State<AIUpdateSummaryDialog> createState() => _AIUpdateSummaryDialogState();
+}
 
+class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
+  late final Future<String> _summaryFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final aiRepo = context.read<AIRepository>();
+    _summaryFuture = aiRepo.aiSummarizeUpdate(
+      widget.name,
+      widget.currentVersion,
+      widget.nextVersion,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       title: Row(
         children: [
@@ -33,7 +49,7 @@ class AIUpdateSummaryDialog extends StatelessWidget {
       content: SizedBox(
         width: 500,
         child: FutureBuilder<String>(
-          future: aiRepo.aiSummarizeUpdate(name, currentVersion, nextVersion),
+          future: _summaryFuture,
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
