@@ -66,3 +66,8 @@ Oversized Flutter UI files that try to manage multiple disparate state domains (
 
 Action:
 Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out of `settings_page.dart` into the `widgets/` subdirectory to drastically improve readability and separation of concerns.
+## 2026-06-15 - Extract Widgets in SearchPage
+
+**Learning:** Extracting large inline UI building blocks into separate `StatelessWidget` and `StatefulWidget` classes significantly improves maintainability and readability of long files like `search_page.dart`. This decoupling makes the core page class focus on search state rather than UI composition, and the extracted widgets can be reused or modified more easily in isolation.
+
+**Action:** Extracted `SearchResultTile`, `DiscoveryContent`, and `EmptyResults` from `search_page.dart` into the `lib/features/explore/presentation/widgets/` directory. Passed down minimal state and callbacks.
