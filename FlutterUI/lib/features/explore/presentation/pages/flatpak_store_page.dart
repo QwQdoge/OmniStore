@@ -45,7 +45,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     Widget buildListContent() {
       if (_apps.isEmpty) {
