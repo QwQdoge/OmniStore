@@ -59,3 +59,11 @@ Like other parts of the backend, the resident daemon in `python/daemon_main.py` 
 
 Action:
 Refactored `python/daemon_main.py` to use the centralized `safe_subprocess` context manager from `core.subprocess_utils` for all asynchronous process executions. This guarantees that auto-update and update-check subprocesses are gracefully terminated and awaited if their coroutine fails or is cancelled, preventing process leaks.
+
+## 2025-02-28 - [Async Lifecycle Safety]
+
+Learning:
+Missing `mounted` checks after `await` gaps can lead to real-world crashes when `context.read` or `setState` is called on an unmounted widget. Found violations in `home_page.dart` (`_fetchAIPick` invocation inside `_refresh`) and `settings_page.dart` (`_fetchStorageInfo` invocation after system cleanup).
+
+Action:
+Added strict `if (!mounted) return;` statements after async operations in `_refresh` and `_triggerCleanup` to safely terminate the execution paths and prevent unsafe `BuildContext` usage. Automated static analysis scripts should continue to monitor these async gaps.
