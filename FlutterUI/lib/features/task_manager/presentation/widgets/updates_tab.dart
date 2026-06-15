@@ -5,6 +5,7 @@ import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'ai_update_summary_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
@@ -16,7 +17,6 @@ class UpdatesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final packageRepo = context.read<PackageRepository>();
     return ListenableBuilder(
       listenable: UpdateService().availableUpdates,
       builder: (context, _) {
@@ -53,14 +53,15 @@ class UpdatesTab extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
-                      for (final update in updates) {
-                        UpdateService().startUpdate(
-                          update['id'] ?? update['name'],
-                          update['source'] == 'Pacman'
-                              ? 'Native'
-                              : update['source'],
+                      final taskController = context.read<TaskController>();
+                      final l10n = AppLocalizations.of(context)!;
+                      if (taskController.isBusy) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.taskInProgress)),
                         );
+                        return;
                       }
+                      taskController.updateAll('all', l10n);
                       onUpdateStarted();
                     },
                     icon: const Icon(Icons.system_update_alt, size: 18),
@@ -83,6 +84,7 @@ class UpdatesTab extends StatelessWidget {
                       child: AppCard(
                         borderRadius: 16,
                         onTap: () async {
+                          final packageRepo = context.read<PackageRepository>();
                           final results = await packageRepo.searchPackages(
                             update['name'],
                           );
@@ -137,6 +139,14 @@ class UpdatesTab extends StatelessWidget {
                             ),
                             ElevatedButton(
                               onPressed: () {
+                                final taskController = context.read<TaskController>();
+                                final l10n = AppLocalizations.of(context)!;
+                                if (taskController.isBusy) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.taskInProgress)),
+                                  );
+                                  return;
+                                }
                                 UpdateService().startUpdate(
                                   update['id'] ?? update['name'],
                                   update['source'] == 'Pacman'

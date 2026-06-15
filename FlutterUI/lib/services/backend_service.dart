@@ -136,23 +136,32 @@ class BackendService {
   static Process? activeSearchProcess;
 
   // Murphy-proof: Strict validation helpers to prevent shell injection and malformed input
+  /// Murphy-proof: Strict validation using a restrictive whitelist to prevent shell injection.
+  /// Only allows alphanumeric characters, dots, underscores, slashes, hyphens, and spaces.
   void _validateString(String? val, String name) {
     if (val == null || val.trim().isEmpty) {
       throw ArgumentError("$name cannot be null or empty");
     }
-    // Refuse characters that could be used for shell injection or argument breaking
-    if (RegExp(r'[;&|`$<>!]').hasMatch(val)) {
-      throw ArgumentError("Invalid characters in $name");
+    final trimmed = val.trim();
+    // Whitelist approach: only allow known safe characters for OmniStore commands
+    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
     }
   }
 
+  /// Murphy-proof: Specialized path validation ensuring no hidden shell metas or relative navigation escapes.
   void _validatePath(String? path) {
     if (path == null || path.trim().isEmpty) {
       throw ArgumentError("Path cannot be null or empty");
     }
-    // Basic protection against obvious malicious shell injections in paths
-    if (RegExp(r'[;&|`$<>!]').hasMatch(path)) {
-      throw ArgumentError("Invalid characters in path");
+    final trimmed = path.trim();
+    // Stricter whitelist for paths, allowing more common path characters but excluding shells
+    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
+    }
+    // Prevent directory traversal attempts if they are not explicitly expected
+    if (trimmed.contains('..')) {
+      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
     }
   }
 
@@ -181,41 +190,43 @@ class BackendService {
   /// Murphy-proof: Guaranteed to attempt both TERM and KILL to prevent zombies.
   /// Murphy-proof: Absolutely ensure process reaping by attempting group-kill,
   /// waiting for termination, and escalating to SIGKILL.
+  /// Murphy-proof: Deep process reaping that targets the entire process group.
+  /// Ensures no orphaned children are left behind by escalating signals.
   Future<void> _killProcess(Process? process) async {
     if (kIsWeb || process == null) return;
     _allProcesses.remove(process);
+    final pid = process.pid;
+
     try {
-      if (Platform.isLinux) {
-        // 1. Attempt SIGTERM on the entire process group to allow children to clean up.
-        // We use a negative PID to target the group.
+      if (Platform.isLinux || Platform.isMacOS) {
+        // 1. Attempt SIGTERM on the entire process group (negative PID).
+        // This allows children to perform their own cleanup (e.g. closing sessions).
         try {
-          await Process.run('kill', ['-TERM', '--', '-${process.pid}']).timeout(
+          await Process.run('kill', ['-TERM', '--', '-$pid']).timeout(
             const Duration(seconds: 2),
           );
         } catch (_) {}
 
-        // Brief delay to allow graceful shutdown
+        // Wait for processes to settle
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // 2. Escalation: SIGKILL the group if still alive
+        // 2. Escalation: Check if parent or any group members are still alive.
         if (_isProcessAlive(process)) {
           try {
-            await Process.run('kill', ['-KILL', '--', '-${process.pid}']).timeout(
+            await Process.run('kill', ['-KILL', '--', '-$pid']).timeout(
               const Duration(seconds: 2),
             );
           } catch (_) {}
         }
       }
     } catch (e) {
-      debugPrint("Murphy-proof Kill Warning: Error during group reap [PID ${process.pid}]: $e");
+      debugPrint("Murphy-proof Kill Warning: Group reap failed for PID $pid: $e");
     } finally {
-      // 3. Absolute Fallback: Kill the specific PID directly.
-      // This is the 'fail-safe' that ensures we don't leave zombie parents.
+      // 3. Final Fail-safe: Direct SIGKILL to the known parent process.
+      // This ensures that even if group killing failed, the main handle is closed.
       try {
         process.kill(ProcessSignal.sigkill);
-      } catch (_) {
-        // Ignore errors if the process is already dead
-      }
+      } catch (_) {}
     }
   }
 
@@ -231,34 +242,40 @@ class BackendService {
     return true;
   }
 
-  /// Emergency cleanup of all tracked processes to prevent memory leaks and zombies.
+  /// Murphy-proof: Guaranteed resource cleanup to prevent memory leaks and zombies.
+  /// Idempotent and safe to call multiple times during app shutdown.
   Future<void> dispose() async {
     if (kIsWeb) return;
 
-    // 1. Cancel health check timer
+    // 1. Terminate health check loop
     _healthCheckTimer?.cancel();
     _healthCheckTimer = null;
 
-    // 2. Close daemon socket
-    _daemonSub?.cancel();
-    _daemonSub = null;
-    _daemonSocket?.destroy();
-    _daemonSocket = null;
+    // 2. Tear down daemon communication
+    _cleanupDaemonSocket();
 
-    // 3. Clear mutex
+    // 3. Reset Mutex chain
     if (!_daemonMutex.isCompleted) {
       _daemonMutex.complete();
     }
+    // Re-initialize for safety if dispose is called before actual exit
+    _daemonMutex = Completer<void>()..complete();
 
-    // 4. Reap all tracked processes
+    // 4. Atomic process reaping
     final processes = List<Process>.from(_allProcesses);
     _allProcesses.clear();
     for (final p in processes) {
       await _killProcess(p);
     }
+
     _daemonProcess = null;
     activeProcess = null;
     activeSearchProcess = null;
+
+    if (_globalLock != null && !_globalLock!.isCompleted) {
+      _globalLock!.complete();
+    }
+    _globalLock = null;
   }
 
   Process? _daemonProcess;
@@ -283,10 +300,7 @@ class BackendService {
 
     // Cleanup stale state before restart
     if (_daemonSocket != null) {
-      _daemonSub?.cancel();
-      _daemonSub = null;
-      _daemonSocket!.destroy();
-      _daemonSocket = null;
+      _cleanupDaemonSocket();
     }
 
     final home = Platform.environment['HOME'] ?? '/home/user';
@@ -358,39 +372,22 @@ class BackendService {
               }
             },
             onError: (err) {
-              final completer = _responseCompleter;
-              if (completer != null && !completer.isCompleted) completer.completeError(err);
-              _daemonSub?.cancel();
-              _daemonSub = null;
-              _daemonSocket?.destroy();
-              _daemonSocket = null;
+              debugPrint("Daemon socket error: $err");
+              _cleanupDaemonSocket();
             },
             onDone: () {
-              final completer = _responseCompleter;
-              if (completer != null && !completer.isCompleted) {
-                completer.completeError(Exception("Daemon socket closed unexpectedly"));
-              }
-              _daemonSub?.cancel();
-              _daemonSub = null;
-              _daemonSocket = null;
+              debugPrint("Daemon socket onDone triggered.");
+              _cleanupDaemonSocket();
             },
             cancelOnError: false,
           );
 
           // Detect unexpected socket closure
-          _daemonSocket!.done
-              .then((_) {
-                debugPrint("Daemon socket closed.");
-                _daemonSub?.cancel();
-                _daemonSub = null;
-                _daemonSocket = null;
-              })
-              .catchError((e) {
-                debugPrint("Daemon socket error: $e");
-                _daemonSub?.cancel();
-                _daemonSub = null;
-                _daemonSocket = null;
-              });
+          _daemonSocket!.done.then((_) {
+            _cleanupDaemonSocket();
+          }).catchError((e) {
+            _cleanupDaemonSocket();
+          });
 
           break;
         } catch (_) {
@@ -420,32 +417,29 @@ class BackendService {
     });
   }
 
-  /// Murphy-proof: Thread-safe daemon communication with strict timeout and mutex
+  /// Murphy-proof: Thread-safe daemon communication with strict timeout and mutex.
+  /// Isolates communication failures and ensures the socket state is cleaned up on error.
   Future<DaemonResult?> _sendToDaemon(
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    // 状态互斥：使用 Completer 链确保一次只有一个 daemon 通信，防止消息乱序
+    // Prevent avalanche: use a mutex chain to ensure serialized access to the daemon socket
     final previousMutex = _daemonMutex;
     final currentMutex = Completer<void>();
     _daemonMutex = currentMutex;
 
     try {
-      // 严禁雪崩：确保即使前一个任务由于某种原因卡死，我们也能最终释放锁或超时
       await previousMutex.future.timeout(
         const Duration(seconds: 65),
-        onTimeout: () =>
-            debugPrint("Warning: Previous daemon mutex timed out."),
+        onTimeout: () => debugPrint("Murphy-proof Warning: Daemon mutex chain bottlenecked."),
       );
     } catch (_) {}
 
     try {
       await _startDaemonIfNeeded();
-      if (_daemonSocket == null) {
-        debugPrint("Daemon socket is null, communication failed.");
-        return null;
-      }
+      final socket = _daemonSocket;
+      if (socket == null) return null;
 
       final payload = jsonEncode({
         "action": action,
@@ -453,42 +447,51 @@ class BackendService {
         "kwargs": kwargs ?? {},
       });
 
+      // Murphy-proof: Capture and handle socket write failures immediately
       try {
-        _daemonSocket!.write('$payload\n');
-        await _daemonSocket!.flush();
+        socket.write('$payload\n');
+        await socket.flush().timeout(const Duration(seconds: 5));
       } catch (e) {
-        debugPrint("Socket write error: $e");
-        _daemonSub?.cancel();
-        _daemonSub = null;
-        _daemonSocket?.destroy();
-        _daemonSocket = null;
+        debugPrint("Daemon socket write error: $e");
+        _cleanupDaemonSocket();
         return null;
       }
 
-      // 4. Wait for response via the active completer
+      // Wait for response via the response completer
       final completer = Completer<DaemonResult>();
       _responseCompleter = completer;
 
       try {
-        final result = await completer.future.timeout(
+        return await completer.future.timeout(
           const Duration(seconds: 60),
-          onTimeout: () => throw TimeoutException("Daemon communication timed out for action: $action"),
+          onTimeout: () => throw TimeoutException("Daemon response timed out for $action"),
         );
-        return result;
       } finally {
-        _responseCompleter = null;
+        // Clear completer even on timeout/success to allow next message
+        if (_responseCompleter == completer) _responseCompleter = null;
       }
     } catch (e) {
-      debugPrint("Daemon transaction error [$action]: $e");
-      // If we have a socket error, it might be dead
-      _daemonSub?.cancel();
-      _daemonSub = null;
-      _daemonSocket?.destroy();
-      _daemonSocket = null;
+      debugPrint("Daemon transaction fatal error [$action]: $e");
+      _cleanupDaemonSocket();
       return null;
     } finally {
       if (!currentMutex.isCompleted) currentMutex.complete();
     }
+  }
+
+  /// Murphy-proof: Internal helper to aggressively clean up a failed daemon socket state.
+  void _cleanupDaemonSocket() {
+    _daemonSub?.cancel();
+    _daemonSub = null;
+    _daemonSocket?.destroy();
+    _daemonSocket = null;
+
+    // Fail any pending response completer to prevent hanging callers
+    final completer = _responseCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.completeError(Exception("Daemon connection lost during transaction"));
+    }
+    _responseCompleter = null;
   }
 
   /// Safe wrapper for Process.run with mandatory timeout and exception handling.
