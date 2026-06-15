@@ -122,22 +122,30 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 centerTitle: false,
                 actions: [
                   if (showSearch && selectedIndex != 2)
-                    IconButton(
-                      onPressed: onSearch,
-                      tooltip: l10n.search,
-                      icon: const Icon(Icons.search_rounded),
+                    Semantics(
+                      label: l10n.search,
+                      button: true,
+                      child: IconButton(
+                        onPressed: onSearch,
+                        tooltip: l10n.search,
+                        icon: const Icon(Icons.search_rounded),
+                      ),
                     ),
-                  IconButton(
-                    icon: const Icon(Icons.account_circle_outlined),
-                    tooltip: l10n.githubAuthTitle,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AuthPage(),
-                        ),
-                      );
-                    },
+                  Semantics(
+                    label: l10n.githubAuthTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.account_circle_outlined),
+                      tooltip: l10n.githubAuthTitle,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AuthPage(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   _DownloadAction(compact: true),
                 ],
@@ -279,19 +287,23 @@ class _HamburgerButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: IconButton(
-        onPressed: onToggle,
-        tooltip: isExpanded ? l10n.collapse : l10n.expand,
-        icon: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          transitionBuilder: (child, anim) => RotationTransition(
-            turns: Tween(begin: 0.5, end: 1.0).animate(anim),
-            child: child,
-          ),
-          child: Icon(
-            isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
-            key: ValueKey(isExpanded),
-            color: scheme.onSurfaceVariant,
+      child: Semantics(
+        label: isExpanded ? l10n.collapse : l10n.expand,
+        button: true,
+        child: IconButton(
+          onPressed: onToggle,
+          tooltip: isExpanded ? l10n.collapse : l10n.expand,
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, anim) => RotationTransition(
+              turns: Tween(begin: 0.5, end: 1.0).animate(anim),
+              child: child,
+            ),
+            child: Icon(
+              isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
+              key: ValueKey(isExpanded),
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -372,12 +384,16 @@ class _CompactActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+    return Semantics(
+      label: tooltip,
+      button: true,
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onTap,
+        icon: Icon(
+          icon,
+          color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -550,15 +566,19 @@ class _DesktopTopBar extends StatelessWidget {
               label: Text(l10n.search),
             ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            tooltip: l10n.githubAuthTitle,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AuthPage()),
-              );
-            },
+          Semantics(
+            label: l10n.githubAuthTitle,
+            button: true,
+            child: IconButton(
+              icon: const Icon(Icons.account_circle_outlined),
+              tooltip: l10n.githubAuthTitle,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthPage()),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -654,18 +674,22 @@ class _DownloadAction extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            IconButton(
-              tooltip: l10n.downloads,
-              onPressed: () => context.read<NavigationController>().setIndex(4),
-              icon: Selector<TaskController, bool>(
-                selector: (context, task) => task.isBusy,
-                builder: (context, isBusy, child) => Icon(
-                  isBusy
-                      ? Icons.downloading_rounded
-                      : Icons.download_for_offline_rounded,
-                  color: selectedIndex == 4
-                      ? scheme.primary
-                      : scheme.onSurfaceVariant,
+            Semantics(
+              label: l10n.downloads,
+              button: true,
+              child: IconButton(
+                tooltip: l10n.downloads,
+                onPressed: () => context.read<NavigationController>().setIndex(4),
+                icon: Selector<TaskController, bool>(
+                  selector: (context, task) => task.isBusy,
+                  builder: (context, isBusy, child) => Icon(
+                    isBusy
+                        ? Icons.downloading_rounded
+                        : Icons.download_for_offline_rounded,
+                    color: selectedIndex == 4
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

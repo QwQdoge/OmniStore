@@ -187,24 +187,34 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                       Row(
                         children: [
                           if (!showMiddleSearch && widget.showSearch)
-                            IconButton(
-                              icon: const Icon(Icons.search_rounded),
-                              tooltip: AppLocalizations.of(context)!.search,
-                              onPressed: widget.onSearchPressed,
+                            Semantics(
+                              label: AppLocalizations.of(context)!.search,
+                              button: true,
+                              child: IconButton(
+                                icon: const Icon(Icons.search_rounded),
+                                tooltip: AppLocalizations.of(context)!.search,
+                                onPressed: widget.onSearchPressed,
+                              ),
                             ),
-                          IconButton(
-                            icon: const Icon(Icons.account_circle_outlined),
-                            tooltip: AppLocalizations.of(
+                          Semantics(
+                            label: AppLocalizations.of(
                               context,
                             )!.githubAuthTitle,
-                            onPressed: () {
-                              Navigator.push(
+                            button: true,
+                            child: IconButton(
+                              icon: const Icon(Icons.account_circle_outlined),
+                              tooltip: AppLocalizations.of(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AuthPage(),
-                                ),
-                              );
-                            },
+                              )!.githubAuthTitle,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AuthPage(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           if (!useSystemTitleBar) ...[
                             _buildWindowButton(
@@ -268,20 +278,24 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
     return SizedBox(
       width: 46,
       height: 38,
-      child: IconButton(
-        onPressed: onPressed,
-        tooltip: tooltip,
-        iconSize: 16,
-        style: IconButton.styleFrom(
-          shape: const RoundedRectangleBorder(),
-          hoverColor: isClose
-              ? colorScheme.error.withValues(alpha: 0.8)
-              : colorScheme.onSurface.withValues(alpha: 0.1),
-          foregroundColor: isClose
-              ? null
-              : colorScheme.onSurface.withValues(alpha: 0.7),
+      child: Semantics(
+        label: tooltip,
+        button: true,
+        child: IconButton(
+          onPressed: onPressed,
+          tooltip: tooltip,
+          iconSize: 16,
+          style: IconButton.styleFrom(
+            shape: const RoundedRectangleBorder(),
+            hoverColor: isClose
+                ? colorScheme.error.withValues(alpha: 0.8)
+                : colorScheme.onSurface.withValues(alpha: 0.1),
+            foregroundColor: isClose
+                ? null
+                : colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
+          icon: Icon(icon),
         ),
-        icon: Icon(icon),
       ),
     );
   }
