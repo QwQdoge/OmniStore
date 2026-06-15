@@ -214,13 +214,16 @@ class _AppsPageState extends State<AppsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 12,
+            child: ListTile(
+              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(width: double.infinity, height: 12),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+            ),
           ),
         );
       },
