@@ -159,6 +159,7 @@ class UpdateService {
 
   /// Murphy-proof: Initializes the system tray with isolation, dependency checks,
   /// and crash-loop guards. Returns true on success or if disabled by user.
+  /// Uses a guard file to detect and skip if the tray library caused a crash.
   Future<bool> _initSystemTray() async {
     if (kIsWeb) return true;
     if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
@@ -191,7 +192,8 @@ class UpdateService {
       try {
         if (Platform.isLinux) {
           if (!configDir.existsSync()) configDir.createSync(recursive: true);
-          guardFile.createSync();
+          // Atomic creation of guard file
+          guardFile.writeAsStringSync(DateTime.now().toIso8601String());
         }
 
         String iconPath = 'assets/app_icon.png';
@@ -317,10 +319,7 @@ class UpdateService {
 
     // Murphy-proof: Explicitly cancel and nullify existing timer before reallocation
     // to prevent memory leaks and duplicate background check loops.
-    if (_updateTimer != null) {
-      _updateTimer!.cancel();
-      _updateTimer = null;
-    }
+    _cancelUpdateTimer();
 
     try {
       _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
@@ -329,6 +328,14 @@ class UpdateService {
     } catch (e) {
       debugPrint("Murphy-proof Warning: Failed to start update timer: $e");
     }
+  }
+
+  /// Murphy-proof: Safely cancel and nullify the update timer.
+  void _cancelUpdateTimer() {
+    try {
+      _updateTimer?.cancel();
+    } catch (_) {}
+    _updateTimer = null;
   }
 
   /// Writes a systemd user-level service + timer that runs OmniStore in
@@ -460,6 +467,8 @@ WantedBy=timers.target
     }
   }
 
+  /// Murphy-proof: Isolated notification trigger.
+  /// Ensures notification failures (e.g. missing daemon) do not crash the app.
   Future<void> _showNotification({
     required int id,
     required String title,
@@ -468,14 +477,19 @@ WantedBy=timers.target
   }) async {
     if (kIsWeb) return;
     try {
+      // Isolate native plugin call within a strict try-catch boundary
       await _notificationsPlugin.show(
         id: id,
         title: title,
         body: body,
         notificationDetails: notificationDetails,
+      ).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => throw TimeoutException("Notification service unresponsive"),
       );
     } catch (e) {
-      debugPrint("Failed to show notification: $e");
+      // Silently log and skip to ensure core logic (like update checking) continues
+      debugPrint("Murphy-proof Warning: Notification suppressed: $e");
     }
   }
 
