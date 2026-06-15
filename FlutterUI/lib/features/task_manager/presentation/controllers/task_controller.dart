@@ -110,6 +110,53 @@ class TaskController with ChangeNotifier {
     return !hasError;
   }
 
+  Future<bool> updateAll(String source, AppLocalizations l10n) async {
+    _isBusy = true;
+    _packageName = "All Packages";
+    _flag = "-U";
+    _progress = null;
+    _status = l10n.taskStarting;
+    _logs.clear();
+    bool hasError = false;
+    notifyListeners();
+
+    final stream = _taskRepository.updateAll(source);
+
+    await for (final line in stream) {
+      if (line.contains("errorFatalStream") ||
+          line.contains("errorProcessStart") ||
+          line.contains("errorStartFailed") ||
+          line.contains("errorUpdateFailed") ||
+          line.contains("[ERROR]")) {
+        hasError = true;
+      }
+      _parseLine(line, l10n);
+      notifyListeners();
+    }
+
+    _isBusy = false;
+    _progress = null;
+
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: "Update All Packages",
+        source: source,
+        status: !hasError ? TaskStatus.success : TaskStatus.failed,
+        progress: !hasError ? 1.0 : 0.0,
+        stage: "Update",
+        message: !hasError ? "Success" : _status,
+      ),
+    );
+
+    _packageName = null;
+    _flag = null;
+    _status = !hasError ? l10n.taskSuccess : l10n.taskError("Failed");
+    notifyListeners();
+    return !hasError;
+  }
+
   Future<void> runCleanSystem(AppLocalizations l10n) async {
     _isBusy = true;
     _progress = null;

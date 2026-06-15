@@ -21,3 +21,9 @@
 - In `FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart`, explicitly prevented parallel background task execution via checking `isBusy` on "Update All" and single "Update" actions, throwing consistent `taskInProgress` localized errors via `ScaffoldMessenger`.
 ## 2026-06-14 - Global SnackBar Consistency: Details Page
 - Removed a hardcoded `behavior: SnackBarBehavior.floating` assignment from the `SnackBar` widget shown upon application installation or uninstallation in `FlutterUI/lib/features/explore/presentation/pages/details_page.dart`. This ensures the application consistently uses the default `SnackBarBehavior.floating` defined in the global `SnackBarThemeData` of `omnistore_theme.dart`.
+
+## 2026-06-14 - Consistency in "Update All" task handling
+- Replaced the flawed loop in the `UpdatesTab` "Update All" button which fired multiple updates concurrently.
+- Exposed a dedicated `updateAll` method in `TaskController` utilizing the existing `TaskRepository.updateAll`.
+- Added `TaskController.isBusy` checks to both individual "Update" buttons and the "Update All" button.
+- Re-used the standardized localized `taskInProgress` SnackBar feedback to alert the user when attempting updates while the task manager is already busy, ensuring UX consistency with package installation/uninstallation scenarios.
