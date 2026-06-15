@@ -134,7 +134,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -305,17 +305,20 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(
-              width: double.infinity,
-              height: 12,
-              borderRadius: 4,
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 12,
+            child: ListTile(
+              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(
+                width: double.infinity,
+                height: 12,
+                borderRadius: 4,
+              ),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
             ),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
         );
       },
@@ -327,7 +330,7 @@ class _SearchPageState extends State<SearchPage> {
     AppLocalizations l10n,
     SettingsController settings,
   ) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = browse.searchResults.where((app) {
