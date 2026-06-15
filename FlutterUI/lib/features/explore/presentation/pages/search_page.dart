@@ -567,34 +567,24 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                   final cat = categories[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Card(
+                    child: AppCard(
                       elevation: 0,
                       margin: EdgeInsets.zero,
-                      color: colorScheme.surfaceContainerLow,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: colorScheme.outlineVariant.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ),
+                      borderRadius: 20,
+                      onTap: () {
+                        widget.searchController.text =
+                            '/${cat.id.toLowerCase()}';
+                        widget.performSearch(widget.searchController.text);
+                      },
                       child: Semantics(
                         label: AppLocalizations.of(
                           context,
                         )!.categorySemantics(cat.name),
                         button: true,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            widget.searchController.text =
-                                '/${cat.id.toLowerCase()}';
-                            widget.performSearch(widget.searchController.text);
-                          },
-                          child: SizedBox(
-                            width: 100,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                        child: SizedBox(
+                          width: 100,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(12),
@@ -622,7 +612,6 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                           ),
                         ),
                       ),
-                    ),
                   );
                 },
               ),
@@ -664,19 +653,18 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                           return Container(
                             width: 150,
                             margin: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Card(
+                            child: AppCard(
                               clipBehavior: Clip.antiAlias,
-                              child: InkWell(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AppDetailsPage(
-                                      app: app,
-                                      heroTag: trendingHeroTag,
-                                    ),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AppDetailsPage(
+                                    app: app,
+                                    heroTag: trendingHeroTag,
                                   ),
                                 ),
-                                child: Column(
+                              ),
+                              child: Column(
                                   children: [
                                     Expanded(
                                       child: Hero(
@@ -703,7 +691,6 @@ class _DiscoveryContentState extends State<_DiscoveryContent> {
                                     ),
                                   ],
                                 ),
-                              ),
                             ),
                           );
                         },
