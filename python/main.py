@@ -131,8 +131,9 @@ async def handle_daemon_client(backend, reader, writer):
             # 3. Execution isolation: redirect stdout and catch all per-action errors
             captured_stdout = io.StringIO()
             with redirect_stdout(captured_stdout):
+                action = "unknown"
                 try:
-                    action = cmd_data.get("action")
+                    action = cmd_data.get("action", "unknown")
                     args = cmd_data.get("args", [])
                     kwargs = cmd_data.get("kwargs", {})
 
@@ -187,9 +188,15 @@ async def handle_daemon_client(backend, reader, writer):
                     writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
                 except Exception as e:
                     import traceback
-                    logging.error(f"Daemon Action Error [{action}]: {e}\n{traceback.format_exc()}")
+                    err_trace = traceback.format_exc()
+                    logging.error(f"Daemon Action Error [{action}]: {e}\n{err_trace}")
                     try:
-                        writer.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8') + b'\n')
+                        # Fault Isolation: return structured error but keep daemon alive
+                        writer.write(json.dumps({
+                            "status": "error",
+                            "error": str(e),
+                            "traceback": err_trace if backend.config.get("logging.level") == "DEBUG" else None
+                        }).encode('utf-8') + b'\n')
                     except: pass
 
             try:
@@ -224,15 +231,24 @@ def safe_command(func):
             raise
         except Exception as e:
             import traceback
+            err_trace = traceback.format_exc()
             # Divert full traceback to stderr for diagnostics, isolated from UI stdout
             # This is critical for Murphy-proof debugging without polluting the JSON stream.
             error_msg = f"Murphy-proof Error in {func.__name__}: {str(e)}"
-            logging.error(error_msg)
-            traceback.print_exc(file=sys.stderr)
+            logging.error(f"{error_msg}\n{err_trace}")
 
             # Attempt to notify the frontend via callback or structured JSON
             json_mode = getattr(self, "json_mode", False)
-            await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+            if json_mode:
+                sys.stdout.write(json.dumps({
+                    "status": "error",
+                    "error": error_msg,
+                    "traceback": err_trace,
+                    "context": func.__name__
+                }, ensure_ascii=False) + "\n")
+                sys.stdout.flush()
+            else:
+                await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
             return False
     return wrapper
 
