@@ -44,3 +44,12 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Moved `context.read<PackageRepository>()` in `UpdatesTab` out of the `build()` method and directly into the async `onTap` callback where it is actually needed.
 - Refactored `AIUpdateSummaryDialog` from a `StatelessWidget` to a `StatefulWidget`. Retrieved `context.read<AIRepository>()` inside `initState()` and cached the resulting Future to ensure it is only executed once, significantly improving efficiency and safety.
+
+## 2026-06-16 - State Management: Proper Use of `context.read` and Futures in Builders
+
+**Learning:**
+Instantiating `Future` objects or evaluating `context.read<T>()` directly inside `builder` callbacks (such as those used by `showDialog` or `MaterialPageRoute`) violates Provider constraints and Flutter best practices. Because builders can be called multiple times during the widget lifecycle, inline instantiations cause redundant API calls and UI jank.
+
+**Action:**
+- For dialogs triggered by events (e.g., `_showAIExplainDialog`), evaluated `context.read<AIRepository>()` and instantiated the necessary `Future` *before* the `showDialog` call, passing the cached future to the `builder`.
+- For route generation (e.g., in `omnistore_app.dart`), refactored inline `FutureBuilder` logic into dedicated `StatefulWidget` components (e.g., `_AppDetailsLoader`), safely caching the `Future` inside `initState()`.
