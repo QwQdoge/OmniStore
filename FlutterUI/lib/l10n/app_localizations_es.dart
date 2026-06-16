@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Variante';
+  String get variant => 'Versiones';
 
   @override
   String get version => 'Versión';
@@ -73,7 +73,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count resultados encontrados';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados encontrados',
+      one: '1 resultado encontrado',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -95,7 +101,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pacmanOfficial => 'Pacman (Oficial)';
 
   @override
-  String get aurUser => 'AUR (Repositorio de usuario)';
+  String get aurUser => 'AUR (Repositorio de usuarios)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -212,14 +218,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updates => 'Actualizaciones';
 
   @override
-  String get upToDate => 'Todas las aplicaciones están actualizadas';
+  String get upToDate => 'Todas las aplicaciones están al día';
 
   @override
   String get checkUpdates => 'Buscar actualizaciones';
 
   @override
   String foundUpdates(int count) {
-    return 'Se encontraron $count actualizaciones';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se encontraron $count actualizaciones',
+      one: 'Se encontró 1 actualización',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -251,7 +263,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: Se encontraron $count actualizaciones';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'OmniStore: Se encontraron $count actualizaciones',
+      one: 'OmniStore: Se encontró 1 actualización',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -363,7 +381,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return 'Exportación exitosa: $count paquetes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exportación exitosa: $count paquetes',
+      one: 'Exportación exitosa: 1 paquete',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -376,7 +400,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return 'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?',
+      one: 'Se leyó 1 paquete de la copia. ¿Iniciar recuperación?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -669,7 +700,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String importPackagesConfirm(int count) {
-    return 'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?',
+      one: 'Se leyó 1 paquete del archivo. ¿Iniciar descarga?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -718,7 +756,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Como cualquiera puede subir paquetes, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
+      'AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.';
 
   @override
   String get continueInstall => 'Continuar instalación';
@@ -734,7 +772,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return 'Dependencias ($count)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dependencias ($count)',
+      one: 'Dependencia (1)',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -780,7 +824,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return 'Hay $count aplicaciones disponibles para actualizar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count aplicaciones disponibles para actualizar',
+      one: 'Hay 1 aplicación disponible para actualizar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -850,8 +900,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get flatpakFull => 'Flatpak (Flathub)';
 
   @override
-  String get errorPackageNameRequired =>
-      'Error: El nombre del paquete no puede estar vacío';
+  String get errorPackageNameRequired => 'El nombre del paquete es obligatorio';
 
   @override
   String errorStartFailed(String error) {
@@ -861,6 +910,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String errorUpdateFailed(String error) {
     return 'Error al actualizar: $error';
+  }
+
+  @override
+  String checkUpdateFailed(String error) {
+    return 'Error al buscar actualizaciones: $error';
   }
 
   @override
@@ -937,7 +991,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get githubRepoType => 'Repositorio de GitHub (owner/repo)';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket (workspace/repo)';
+  String get bituRepoType =>
+      'Bitu / Bitbucket (espacio de trabajo/repositorio)';
 
   @override
   String get flatpakRemoteType => 'Remoto de Flatpak';
@@ -995,4 +1050,125 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nameCopied => 'Nombre copiado al portapapeles';
+
+  @override
+  String get language => 'Idioma de la interfaz';
+
+  @override
+  String get languageSubtitle => 'Requiere reiniciar para aplicarse';
+
+  @override
+  String get restartTitleBar =>
+      'Reinicie la aplicación para aplicar los cambios en la barra de título';
+
+  @override
+  String get enableDaemon => 'Activar demonio de actualización';
+
+  @override
+  String get enableDaemonDesc =>
+      'Buscar actualizaciones periódicamente en segundo plano';
+
+  @override
+  String get autoUpdate => 'Actualización automática silenciosa';
+
+  @override
+  String get autoUpdateDesc =>
+      'Descargar e instalar actualizaciones automáticamente en segundo plano';
+
+  @override
+  String get checkIntervalTitle => 'Frecuencia de comprobación';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Comprobar cada $hours horas',
+      one: 'Comprobar cada hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get typography => 'Tipografía';
+
+  @override
+  String get fontFamily => 'Familia de fuentes';
+
+  @override
+  String get fontScale => 'Escala de fuente';
+
+  @override
+  String get systemDefault => 'Predeterminado del sistema';
+
+  @override
+  String hourValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get langSimplifiedChinese => 'Chino simplificado';
+
+  @override
+  String get langTraditionalChinese => 'Chino tradicional';
+
+  @override
+  String get langEnglish => 'Inglés';
+
+  @override
+  String get langJapanese => 'Japonés';
+
+  @override
+  String get langSpanish => 'Español';
+
+  @override
+  String get taskInProgress => 'Otra tarea ya está en progreso';
+
+  @override
+  String get trayInitFailedExiting =>
+      'Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get appDetailsNotFound =>
+      'No se encontraron detalles de la aplicación';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'Espacio en disco: $free GB libres / $total GB en total';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | Personalizado: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => 'Atrás';
+
+  @override
+  String get backSemanticsHint => 'Volver a la pantalla anterior';
+
+  @override
+  String categorySemantics(String name) {
+    return 'Categoría: $name';
+  }
+
+  @override
+  String get temperatureRangeError => 'El valor debe estar entre 0.0 y 2.0';
+
+  @override
+  String get enableSystemdService => 'Habilitar servicio de fondo systemd';
+
+  @override
+  String get enableSystemdServiceDesc =>
+      'Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada';
 }

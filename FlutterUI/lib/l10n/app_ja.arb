@@ -1,645 +1,54 @@
 {
   "@@locale": "ja",
-  "searchHint": "アプリ、ゲーム、ツールを検索...",
-  "@searchHint": {
-    "description": "Description for searchHint"
-  },
-  "featured": "おすすめ",
-  "@featured": {
-    "description": "Description for featured"
-  },
-  "forYou": "あなたへのおすすめ",
-  "@forYou": {
-    "description": "Description for forYou"
-  },
-  "essentialTools": "必須ツール",
-  "@essentialTools": {
-    "description": "Description for essentialTools"
-  },
-  "hotApps": "注目のアプリ",
-  "@hotApps": {
-    "description": "Description for hotApps"
-  },
-  "explore": "探索",
-  "@explore": {
-    "description": "Description for explore"
-  },
-  "search": "検索",
-  "@search": {
-    "description": "Description for search"
-  },
-  "settings": "設定",
-  "@settings": {
-    "description": "Description for settings"
-  },
-  "downloads": "ダウンロード",
-  "@downloads": {
-    "description": "Description for downloads"
-  },
-  "help": "ヘルプ",
-  "@help": {
-    "description": "Description for help"
-  },
-  "userAccount": "ユーザーアカウント",
-  "@userAccount": {
-    "description": "Description for userAccount"
-  },
-  "install": "インストール",
-  "@install": {
-    "description": "Description for install"
-  },
-  "open": "開く",
-  "@open": {
-    "description": "Description for open"
-  },
-  "uninstall": "アンインストール",
-  "@uninstall": {
-    "description": "Description for uninstall"
-  },
-  "launch": "起動",
-  "@launch": {
-    "description": "Description for launch"
-  },
   "about": "このアプリについて",
-  "@about": {
-    "description": "Description for about"
-  },
-  "details": "詳細",
-  "@details": {
-    "description": "Description for details"
-  },
-  "source": "ソース",
-  "@source": {
-    "description": "Description for source"
-  },
-  "variant": "バリアント",
-  "@variant": {
-    "description": "Description for variant"
-  },
-  "version": "バージョン",
-  "@version": {
-    "description": "Description for version"
-  },
-  "ready": "インストール済み",
-  "@ready": {
-    "description": "Description for ready"
-  },
-  "resultsFound": "{count} 件の結果が見つかりました",
-  "@resultsFound": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "noResults": "検索結果が見つかりませんでした",
-  "@noResults": {
-    "description": "Description for noResults"
-  },
-  "searching": "検索中...",
-  "@searching": {
-    "description": "Description for searching"
+  "activeSources": "有効なソース",
+  "@activeSources": {
+    "description": "Label for active software sources"
   },
   "activity": "タスク履歴",
   "@activity": {
     "description": "Activity tab label"
   },
-  "category": "カテゴリー",
-  "@category": {
-    "description": "Category label"
-  },
-  "packageManager": "パッケージマネージャー",
-  "@packageManager": {
-    "description": "Description for packageManager"
-  },
-  "pacmanOfficial": "Pacman (公式リポジトリ)",
-  "@pacmanOfficial": {
-    "description": "Description for pacmanOfficial"
-  },
-  "aurUser": "AUR (ユーザーリポジトリ)",
-  "@aurUser": {
-    "description": "Description for aurUser"
-  },
-  "flatpak": "Flatpak",
-  "@flatpak": {
-    "description": "Description for flatpak"
-  },
-  "appImage": "AppImage",
-  "@appImage": {
-    "description": "Description for appImage"
-  },
-  "sourcePriority": "ソースの優先順位 (ドラッグして並べ替え)",
-  "@sourcePriority": {
-    "description": "Description for sourcePriority"
-  },
-  "maxResults": "最大結果数",
-  "@maxResults": {
-    "description": "Description for maxResults"
-  },
-  "appearance": "外観",
-  "@appearance": {
-    "description": "Description for appearance"
-  },
-  "themeColor": "テーマカラー",
-  "@themeColor": {
-    "description": "Description for themeColor"
-  },
-  "followSystem": "システムに従う",
-  "@followSystem": {
-    "description": "Description for followSystem"
-  },
-  "lightMode": "ライトモード",
-  "@lightMode": {
-    "description": "Description for lightMode"
-  },
-  "darkMode": "ダークモード",
-  "@darkMode": {
-    "description": "Description for darkMode"
-  },
-  "loggingLevel": "ログレベル",
-  "@loggingLevel": {
-    "description": "Description for loggingLevel"
-  },
-  "saveAndApply": "保存して適用",
-  "@saveAndApply": {
-    "description": "Description for saveAndApply"
-  },
-  "configSaved": "設定を保存しました。一部の変更は再起動後に有効になります",
-  "@configSaved": {
-    "description": "Description for configSaved"
-  },
-  "configSaveFailed": "設定の保存に失敗しました",
-  "@configSaveFailed": {
-    "description": "Description for configSaveFailed"
-  },
-  "confirmUninstall": "アンインストールの確認",
-  "@confirmUninstall": {
-    "description": "Description for confirmUninstall"
-  },
-  "confirmInstall": "インストールの確認",
-  "@confirmInstall": {
-    "description": "Description for confirmInstall"
-  },
-  "confirmActionMsg": "{name} に対してこの操作を実行してもよろしいですか？",
-  "@confirmActionMsg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "cancel": "キャンセル",
-  "@cancel": {
-    "description": "Description for cancel"
-  },
-  "confirm": "確認",
-  "@confirm": {
-    "description": "Description for confirm"
-  },
-  "terminalOutput": "ターミナル出力",
-  "@terminalOutput": {
-    "description": "Description for terminalOutput"
-  },
-  "waitingForOutput": "出力を待機中...",
-  "@waitingForOutput": {
-    "description": "Description for waitingForOutput"
-  },
-  "screenshots": "スクリーンショット",
-  "@screenshots": {
-    "description": "Description for screenshots"
-  },
-  "developer": "開発者",
-  "@developer": {
-    "description": "Description for developer"
-  },
-  "license": "ライセンス",
-  "@license": {
-    "description": "Description for license"
-  },
-  "success": "成功",
-  "@success": {
-    "description": "Description for success"
-  },
-  "failed": "失敗",
-  "@failed": {
-    "description": "Description for failed"
-  },
-  "taskCancelled": "タスクがキャンセルされました",
-  "@taskCancelled": {
-    "description": "Description for taskCancelled"
-  },
-  "catDevelopment": "開発",
-  "@catDevelopment": {
-    "description": "Description for catDevelopment"
-  },
-  "catMedia": "メディア",
-  "@catMedia": {
-    "description": "Description for catMedia"
-  },
-  "catInternet": "インターネット",
-  "@catInternet": {
-    "description": "Description for catInternet"
-  },
-  "catSystem": "システム",
-  "@catSystem": {
-    "description": "Description for catSystem"
-  },
-  "catOffice": "オフィス",
-  "@catOffice": {
-    "description": "Description for catOffice"
-  },
-  "catGames": "ゲーム",
-  "@catGames": {
-    "description": "Description for catGames"
-  },
-  "catGraphics": "グラフィックス",
-  "@catGraphics": {
-    "description": "Category for Graphics"
-  },
-  "catUtility": "ユーティリティ",
-  "@catUtility": {
-    "description": "Category for Utility"
-  },
-  "systemAndWindow": "システムとウィンドウ",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "visitWebsite": "ウェブサイトにアクセス",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
-  },
-  "updates": "更新",
-  "@updates": {
-    "description": "Description for updates"
-  },
-  "upToDate": "すべてのアプリは最新です",
-  "@upToDate": {
-    "description": "Description for upToDate"
-  },
-  "checkUpdates": "更新を確認",
-  "@checkUpdates": {
-    "description": "Description for checkUpdates"
-  },
-  "foundUpdates": "合計 {count} 件の更新が利用可能です",
-  "@foundUpdates": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "updateAll": "すべて更新",
-  "@updateAll": {
-    "description": "Description for updateAll"
-  },
-  "notifications": "通知",
-  "@notifications": {
-    "description": "Description for notifications"
-  },
-  "enableNotifications": "通知を有効にする",
-  "@enableNotifications": {
-    "description": "Description for enableNotifications"
-  },
-  "progressNotifications": "進行状況の通知",
-  "@progressNotifications": {
-    "description": "Description for progressNotifications"
-  },
-  "completionNotifications": "完了通知",
-  "@completionNotifications": {
-    "description": "Description for completionNotifications"
-  },
-  "closeToTray": "システムトレイに閉じる",
-  "@closeToTray": {
-    "description": "Description for closeToTray"
-  },
-  "useSystemTitleBar": "システムのタイトルバーを使用",
-  "@useSystemTitleBar": {
-    "description": "Description for useSystemTitleBar"
-  },
-  "showWindow": "ウィンドウを表示",
-  "@showWindow": {
-    "description": "Description for showWindow"
-  },
-  "exit": "終了",
-  "@exit": {
-    "description": "Description for exit"
-  },
-  "trayTooltipUpdates": "OmniStore: {count} 件の更新があります",
-  "@trayTooltipUpdates": {
-    "description": "Description for trayTooltipUpdates",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "trayTooltipUpToDate": "OmniStore: 最新の状態です",
-  "@trayTooltipUpToDate": {
-    "description": "Description for trayTooltipUpToDate"
-  },
-  "updateReminders": "更新のリマインダー",
-  "@updateReminders": {
-    "description": "Description for updateReminders"
-  },
-  "maintenance": "メンテナンス",
-  "@maintenance": {
-    "description": "Description for maintenance"
-  },
-  "updateAllPackages": "すべてのパッケージを更新",
-  "@updateAllPackages": {
-    "description": "Description for updateAllPackages"
-  },
-  "includeAurUpdates": "「すべて更新」に AUR を含める",
-  "@includeAurUpdates": {
-    "description": "Description for includeAurUpdates"
-  },
-  "resetOnboarding": "オンボーディングをリセット (ウェルカムページ)",
-  "@resetOnboarding": {
-    "description": "Description for resetOnboarding"
-  },
-  "resetOnboardingConfirm": "オンボーディングをリセットしてもよろしいですか？次回起動時にウェルカムページが表示されます。",
-  "@resetOnboardingConfirm": {
-    "description": "Description for resetOnboardingConfirm"
-  },
-  "checkInterval": "更新確認の間隔 (時間)",
-  "@checkInterval": {
-    "description": "Description for checkInterval"
-  },
-  "remindMeOfUpdates": "更新を通知する",
-  "@remindMeOfUpdates": {
-    "description": "Description for remindMeOfUpdates"
-  },
-  "installingApp": "{name} をインストール中",
-  "@installingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "uninstallingApp": "{name} をアンインストール中",
-  "@uninstallingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "installSuccessTitle": "インストールが成功しました",
-  "@installSuccessTitle": {
-    "description": "Description for installSuccessTitle"
-  },
-  "uninstallSuccessTitle": "アンインストールが成功しました",
-  "@uninstallSuccessTitle": {
-    "description": "Description for uninstallSuccessTitle"
-  },
-  "installFailedTitle": "インストールに失敗しました",
-  "@installFailedTitle": {
-    "description": "Description for installFailedTitle"
-  },
-  "uninstallFailedTitle": "アンインストールに失敗しました",
-  "@uninstallFailedTitle": {
-    "description": "Description for uninstallFailedTitle"
-  },
-  "taskCompleted": "タスクが完了しました",
-  "@taskCompleted": {
-    "description": "Description for taskCompleted"
-  },
-  "searchInstalledHint": "インストール済みのアプリを検索...",
-  "@searchInstalledHint": {
-    "description": "searchInstalledHint"
-  },
-  "refresh": "更新",
-  "@refresh": {
-    "description": "refresh"
-  },
-  "noActiveTasks": "アクティブなタスクはありません",
-  "@noActiveTasks": {
-    "description": "noActiveTasks"
-  },
-  "currentTask": "現在のタスク",
-  "@currentTask": {
-    "description": "currentTask"
-  },
-  "viewLogs": "ログを表示",
-  "@viewLogs": {
-    "description": "viewLogs"
-  },
-  "allUpdated": "すべてのアプリは最新です",
-  "@allUpdated": {
-    "description": "allUpdated"
-  },
-  "update": "更新",
-  "@update": {
-    "description": "update"
-  },
-  "enableSystemTray": "システムトレイを有効にする",
-  "@enableSystemTray": {
-    "description": "enableSystemTray"
-  },
-  "systemCleaning": "システムクリーニング",
-  "@systemCleaning": {
-    "description": "systemCleaning"
-  },
-  "systemCleaningDesc": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
-  },
-  "systemCleaningSubtitle": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
-  "@systemCleaningSubtitle": {
-    "description": "systemCleaningSubtitle"
-  },
-  "systemCleaningStarted": "システムクリーニングタスクが開始されました",
-  "@systemCleaningStarted": {
-    "description": "systemCleaningStarted"
-  },
-  "backupAndExport": "バックアップとエクスポート",
-  "@backupAndExport": {
-    "description": "backupAndExport"
-  },
-  "backupAndExportSubtitle": "現在のインストール済みアプリリストをエクスポート、またはバックアップからインポート",
-  "@backupAndExportSubtitle": {
-    "description": "backupAndExportSubtitle"
-  },
-  "export": "エクスポート",
-  "@export": {
-    "description": "export"
-  },
-  "import": "インポート",
-  "@import": {
-    "description": "import"
-  },
-  "selectExportLocation": "エクスポート先を選択",
-  "@selectExportLocation": {
-    "description": "selectExportLocation"
-  },
-  "exportSuccess": "エクスポート成功: {count} 個のパッケージ",
-  "@exportSuccess": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "exportFailed": "エクスポート失敗: {message}",
-  "@exportFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "importBackup": "バックアップをインポート",
-  "@importBackup": {
-    "description": "importBackup"
-  },
-  "importBackupConfirm": "バックアップから {count} 個のパッケージを読み込みました。一括復元を開始しますか？",
-  "@importBackupConfirm": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "startRecovery": "復元を開始",
-  "@startRecovery": {
-    "description": "startRecovery"
-  },
-  "mirrorListSaved": "ミラーリストを保存しました",
-  "@mirrorListSaved": {
-    "description": "mirrorListSaved"
-  },
-  "addMirror": "ミラーを追加",
-  "@addMirror": {
-    "description": "addMirror"
-  },
-  "serverUrl": "サーバー URL",
-  "@serverUrl": {
-    "description": "serverUrl"
-  },
-  "pacmanMirrorManagement": "Pacman ミラー管理",
-  "@pacmanMirrorManagement": {
-    "description": "pacmanMirrorManagement"
-  },
-  "save": "保存",
-  "@save": {
-    "description": "save"
-  },
   "add": "追加",
   "@add": {
     "description": "add"
   },
-  "general": "全般",
-  "@general": {
-    "description": "Section title for general settings"
+  "addCustomSource": "カスタムソースを追加",
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
+  },
+  "addCustomSourceDesc": "カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します",
+  "addMirror": "ミラーを追加",
+  "@addMirror": {
+    "description": "addMirror"
+  },
+  "addingCustomSource": "カスタムソースを追加中...",
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
   },
   "advanced": "詳細設定",
   "@advanced": {
     "description": "Label for advanced settings toggle"
   },
-  "repositories": "リポジトリ",
-  "@repositories": {
-    "description": "Section title for software repositories"
+  "aiAnalysisFailed": "AI による分析に失敗しました。",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
   },
-  "aiSettings": "AI アシスタント設定",
-  "@aiSettings": {
-    "description": "aiSettings"
-  },
-  "aiEnabled": "AI アシスタントを有効にする",
-  "@aiEnabled": {
-    "description": "aiEnabled"
-  },
-  "aiEnabledDesc": "AI を活用した検索、アプリの説明、エラー診断を有効にします。",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
-  },
-  "aiProvider": "AI プロバイダー",
-  "@aiProvider": {
-    "description": "aiProvider"
-  },
-  "aiEndpoint": "API エンドポイント",
-  "@aiEndpoint": {
-    "description": "aiEndpoint"
-  },
-  "aiModel": "モデル名",
-  "@aiModel": {
-    "description": "aiModel"
-  },
+  "aiAnalysisPrompt": "エラーログが見つかりました。AI で分析しますか？",
   "aiApiKey": "API キー",
   "@aiApiKey": {
     "description": "aiApiKey"
   },
-  "aiProxy": "ネットワークプロキシ (オプション)",
-  "@aiProxy": {
-    "description": "aiProxy"
-  },
-  "aiTemperature": "温度 (創造性)",
-  "@aiTemperature": {
-    "description": "aiTemperature"
-  },
-  "aiMaxTokens": "最大トークン数",
-  "@aiMaxTokens": {
-    "description": "aiMaxTokens"
-  },
-  "aiTestButton": "AI 接続をテスト",
-  "@aiTestButton": {
-    "description": "aiTestButton"
-  },
-  "aiTestSuccess": "AI 接続に成功しました！",
-  "@aiTestSuccess": {
-    "description": "aiTestSuccess"
-  },
-  "aiTestFailed": "AI 接続に失敗しました: {error}",
-  "@aiTestFailed": {
+  "aiApiKeyHelper": "Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください",
+  "aiAssistant": "AI アシスタント",
+  "aiAssistantDesc": "AI による検索補助、アプリの説明、エラー診断を有効にします。",
+  "aiCallFailed": "AI サービスの呼び出しに失敗しました：{error}",
+  "@aiCallFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
-  },
-  "aiPromptExplain": "AI で説明",
-  "@aiPromptExplain": {
-    "description": "aiPromptExplain"
-  },
-  "aiPromptRecommend": "AI にアドバイスを求める",
-  "@aiPromptRecommend": {
-    "description": "aiPromptRecommend"
-  },
-  "aiPromptError": "AI でエラーを分析",
-  "@aiPromptError": {
-    "description": "aiPromptError"
-  },
-  "aiPickDay": "本日の一押し (AI)",
-  "@aiPickDay": {
-    "description": "aiPickDay"
-  },
-  "aiPickDaySubtitle": "OmniStore AI による提供",
-  "@aiPickDaySubtitle": {
-    "description": "aiPickDaySubtitle"
-  },
-  "aiCompareTitle": "AI バリアント比較",
-  "@aiCompareTitle": {
-    "description": "aiCompareTitle"
-  },
-  "aiHealthTitle": "AI システム健康診断レポート",
-  "@aiHealthTitle": {
-    "description": "aiHealthTitle"
-  },
-  "aiHealthSubtitle": "Arch Linux のためのインテリジェント診断",
-  "@aiHealthSubtitle": {
-    "description": "aiHealthSubtitle"
-  },
-  "aiCorrection": "もしかして：",
-  "@aiCorrection": {
-    "description": "aiCorrection"
-  },
-  "aiThinking": "AI が考え中...",
-  "@aiThinking": {
-    "description": "aiThinking"
-  },
-  "magicSearch": "スマート検索",
-  "@magicSearch": {
-    "description": "magicSearch"
   },
   "aiChangelogTitle": "AI 更新サマリー",
   "@aiChangelogTitle": {
@@ -649,6 +58,14 @@
   "@aiCliTitle": {
     "description": "aiCliTitle"
   },
+  "aiCommandCopied": "クリップボードにコピーしました",
+  "@aiCommandCopied": {
+    "description": "aiCommandCopied"
+  },
+  "aiCompareTitle": "AI バリアント比較",
+  "@aiCompareTitle": {
+    "description": "aiCompareTitle"
+  },
   "aiConflictTitle": "AI 競合検出",
   "@aiConflictTitle": {
     "description": "aiConflictTitle"
@@ -657,395 +74,197 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiCommandCopied": "クリップボードにコピーしました",
-  "@aiCommandCopied": {
-    "description": "aiCommandCopied"
+  "aiCorrection": "もしかして：",
+  "@aiCorrection": {
+    "description": "aiCorrection"
+  },
+  "aiEnabled": "AI アシスタントを有効にする",
+  "@aiEnabled": {
+    "description": "aiEnabled"
+  },
+  "aiEnabledDesc": "AI を活用した検索、アプリの説明、エラー診断を有効にします。",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
+  },
+  "aiEndpoint": "API エンドポイント",
+  "@aiEndpoint": {
+    "description": "aiEndpoint"
+  },
+  "aiEndpointHelper": "Ollama のデフォルトは http://localhost:11434 です",
+  "aiExplainUpdate": "この更新を説明",
+  "@aiExplainUpdate": {
+    "description": "aiExplainUpdate"
+  },
+  "aiHealthSubtitle": "Arch Linux のためのインテリジェント診断",
+  "@aiHealthSubtitle": {
+    "description": "aiHealthSubtitle"
+  },
+  "aiHealthTitle": "AI システム健康診断レポート",
+  "@aiHealthTitle": {
+    "description": "aiHealthTitle"
+  },
+  "aiMaxTokens": "最大トークン数",
+  "@aiMaxTokens": {
+    "description": "aiMaxTokens"
+  },
+  "aiModel": "モデル名",
+  "@aiModel": {
+    "description": "aiModel"
+  },
+  "aiNoResponse": "AI が有効な応答を返せませんでした。",
+  "aiOllamaNote": "注意： Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。",
+  "aiParseFailed": "AI 応答の解析に失敗しました：形式が正しくありません。",
+  "aiPickDay": "本日の一押し （AI）",
+  "@aiPickDay": {
+    "description": "aiPickDay"
+  },
+  "aiPickDaySubtitle": "OmniStore AI による提供",
+  "@aiPickDaySubtitle": {
+    "description": "aiPickDaySubtitle"
+  },
+  "aiPromptError": "AI でエラーを分析",
+  "@aiPromptError": {
+    "description": "aiPromptError"
+  },
+  "aiPromptExplain": "AI で説明",
+  "@aiPromptExplain": {
+    "description": "aiPromptExplain"
+  },
+  "aiPromptRecommend": "AI にアドバイスを求める",
+  "@aiPromptRecommend": {
+    "description": "aiPromptRecommend"
+  },
+  "aiProvider": "AI プロバイダー",
+  "@aiProvider": {
+    "description": "aiProvider"
+  },
+  "aiProviderDesc": "AI モデルのソースを選択してください （ローカルまたはクラウド）",
+  "aiProxy": "ネットワークプロキシ （オプション）",
+  "@aiProxy": {
+    "description": "aiProxy"
   },
   "aiRefineSearch": "AI で検索を絞り込む",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "この更新を説明",
-  "@aiExplainUpdate": {
-    "description": "aiExplainUpdate"
+  "aiResponseFailed": "AI の応答に失敗しました。",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
   },
-  "windowMinimize": "最小化",
-  "@windowMinimize": {
-    "description": "Tooltip for window minimize button"
+  "aiSettings": "AI アシスタント設定",
+  "@aiSettings": {
+    "description": "aiSettings"
   },
-  "windowMaximize": "最大化",
-  "@windowMaximize": {
-    "description": "Tooltip for window maximize button"
+  "aiTemperature": "温度 （創造性）",
+  "@aiTemperature": {
+    "description": "aiTemperature"
   },
-  "windowRestore": "元に戻す",
-  "@windowRestore": {
-    "description": "Tooltip for window restore button"
+  "aiTestButton": "AI 接続をテスト",
+  "@aiTestButton": {
+    "description": "aiTestButton"
   },
-  "windowClose": "閉じる",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
-  "omnistore": "OmniStore",
-  "@omnistore": {
-    "description": "App Name"
-  },
-  "installedApps": "インストール済みアプリ",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
-  },
-  "githubStore": "GitHub ストア",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
-  },
-  "flatpakStore": "Flatpak ストア",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "locateInstallation": "インストール先を表示",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
-  "delete": "削除",
-  "@delete": {
-    "description": "Description for delete"
-  },
-  "welcomeTitle": "OmniStore へようこそ",
-  "@welcomeTitle": {
-    "description": "Description for welcomeTitle"
-  },
-  "welcomeSubtitle": "Arch Linux のためのシンプルでエレガントなアプリ管理体験を提供します",
-  "@welcomeSubtitle": {
-    "description": "Description for welcomeSubtitle"
-  },
-  "getStarted": "始める",
-  "@getStarted": {
-    "description": "Description for getStarted"
-  },
-  "skip": "スキップ",
-  "@skip": {
-    "description": "Description for skip"
-  },
-  "envCheckTitle": "環境チェック",
-  "@envCheckTitle": {
-    "description": "Description for envCheckTitle"
-  },
-  "envCheckSubtitle": "システムの準備が整っていることを確認します",
-  "@envCheckSubtitle": {
-    "description": "Description for envCheckSubtitle"
-  },
-  "envFatalDesc": "お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。",
-  "@envFatalDesc": {
-    "description": "Description for envFatalDesc"
-  },
-  "envWarningDesc": "いくつかの必要なコンポーネントが不足しています。自動的に設定できます。",
-  "@envWarningDesc": {
-    "description": "Description for envWarningDesc"
-  },
-  "envOkDesc": "準備完了です！お使いのシステムは完璧です。",
-  "@envOkDesc": {
-    "description": "Description for envOkDesc"
-  },
-  "fixProblems": "すべて修正 / 設定",
-  "@fixProblems": {
-    "description": "Description for fixProblems"
-  },
-  "continueAnyway": "とにかく続行",
-  "@continueAnyway": {
-    "description": "Description for continueAnyway"
-  },
-  "sourceConfigTitle": "ソフトウェアソース",
-  "@sourceConfigTitle": {
-    "description": "Description for sourceConfigTitle"
-  },
-  "sourceConfigSubtitle": "有効にするソースを選択してください",
-  "@sourceConfigSubtitle": {
-    "description": "Description for sourceConfigSubtitle"
-  },
-  "enableAur": "AUR (Arch User Repository) を有効にする",
-  "@enableAur": {
-    "description": "Description for enableAur"
-  },
-  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
-  "@yayDesc": {
-    "description": "Description for yayDesc"
-  },
-  "aurWarning": "セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
-  "@aurWarning": {
-    "description": "Description for aurWarning"
-  },
-  "bootstrapNote": "注意: セットアップにはパスワードの入力が数回必要な場合があります。",
-  "@bootstrapNote": {
-    "description": "Description for bootstrapNote"
-  },
-  "feedbackDesc": "問題が発生した場合は、GitHub で報告してください。",
-  "@feedbackDesc": {
-    "description": "Description for feedbackDesc"
-  },
-  "aiAssistant": "AI アシスタント",
-  "@aiAssistant": {
-    "description": "Description for aiAssistant"
-  },
-  "aiAssistantDesc": "AI による検索補助、アプリの説明、エラー診断を有効にします。",
-  "@aiAssistantDesc": {
-    "description": "Description for aiAssistantDesc"
-  },
-  "aiProviderDesc": "AI モデルのソースを選択してください (ローカルまたはクラウド)",
-  "@aiProviderDesc": {
-    "description": "Description for aiProviderDesc"
-  },
-  "aiEndpointHelper": "Ollama のデフォルトは http://localhost:11434 です",
-  "@aiEndpointHelper": {
-    "description": "Description for aiEndpointHelper"
-  },
-  "aiApiKeyHelper": "Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください",
-  "@aiApiKeyHelper": {
-    "description": "Description for aiApiKeyHelper"
-  },
-  "howToGetApiKey": "API キーを取得するには？",
-  "@howToGetApiKey": {
-    "description": "Description for howToGetApiKey"
-  },
-  "howToGetApiKeyDesc": "1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。",
-  "@howToGetApiKeyDesc": {
-    "description": "Description for howToGetApiKeyDesc"
-  },
-  "gotIt": "了解",
-  "@gotIt": {
-    "description": "Description for gotIt"
-  },
-  "aiOllamaNote": "注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。",
-  "@aiOllamaNote": {
-    "description": "Description for aiOllamaNote"
-  },
-  "enterStore": "ストアに入る",
-  "@enterStore": {
-    "description": "Description for enterStore"
-  },
-  "nextStep": "次へ",
-  "@nextStep": {
-    "description": "Description for nextStep"
-  },
-  "resetCache": "キャッシュと履歴をリセット",
-  "@resetCache": {
-    "description": "Description for resetCache"
-  },
-  "resetCacheDesc": "検索履歴とローカルのおすすめキャッシュをクリアします",
-  "@resetCacheDesc": {
-    "description": "Description for resetCacheDesc"
-  },
-  "resetCacheConfirm": "検索履歴とおすすめキャッシュがクリアされます。続行しますか？",
-  "@resetCacheConfirm": {
-    "description": "Description for resetCacheConfirm"
-  },
-  "resetting": "リセット中...",
-  "@resetting": {
-    "description": "Description for resetting"
-  },
-  "resetSuccess": "キャッシュと履歴が正常にクリアされました",
-  "@resetSuccess": {
-    "description": "Description for resetSuccess"
-  },
-  "resetFailed": "リセットに失敗しました: {error}",
-  "@resetFailed": {
+  "aiTestFailed": "AI 接続に失敗しました： {error}",
+  "@aiTestFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
   },
-  "ollamaLocal": "Ollama (ローカル)",
-  "@ollamaLocal": {
-    "description": "Description for ollamaLocal"
+  "aiTestSuccess": "AI 接続に成功しました！",
+  "@aiTestSuccess": {
+    "description": "aiTestSuccess"
   },
-  "openaiCompatible": "OpenAI 互換",
-  "@openaiCompatible": {
-    "description": "Description for openaiCompatible"
+  "aiThinking": "AI が考え中...",
+  "@aiThinking": {
+    "description": "aiThinking"
   },
-  "googleGemini": "Google Gemini",
-  "@googleGemini": {
-    "description": "Description for googleGemini"
-  },
-  "importPackages": "パッケージをインポート",
-  "@importPackages": {
-    "description": "Description for importPackages"
-  },
-  "importPackagesConfirm": "ファイルから {count} 個のパッケージを読み込みました。一括ダウンロードを開始しますか？",
-  "@importPackagesConfirm": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "aiTimeout": "AI 接続がタイムアウトしました。後で再試行してください。",
+  "all": "すべて",
   "allDownloads": "すべてダウンロード",
-  "@allDownloads": {
-    "description": "Description for allDownloads"
+  "allUpdated": "すべてのアプリは最新です",
+  "@allUpdated": {
+    "description": "allUpdated"
   },
-  "importList": "リストをインポート",
-  "@importList": {
-    "description": "Description for importList"
+  "analyzeNow": "今すぐ分析",
+  "appDetailsNotFound": "アプリの詳細が見つかりませんでした",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
   },
-  "loadError": "推奨コンテンツの読み込みに失敗しました。バックエンドの状態を確認してください",
-  "@loadError": {
-    "description": "Description for loadError"
+  "appImage": "AppImage",
+  "appImageFeedType": "AppImage フィード URL",
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
   },
-  "community": "コミュニティ",
-  "@community": {
-    "description": "Description for community"
+  "appearance": "外観",
+  "aurFull": "AUR （Arch User Repository）",
+  "@aurFull": {
+    "description": "Full name for AUR"
   },
-  "official": "公式",
-  "@official": {
-    "description": "Description for official"
+  "aurSecurityDesc": "AUR （Arch User Repository） はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。",
+  "aurUser": "AUR （ユーザーリポジトリ）",
+  "aurWarning": "セキュリティ警告： AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
+  "autoDetect": "自動検出",
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
   },
-  "verified": "検証済み",
-  "@verified": {
-    "description": "Description for verified"
+  "autoDetectFailed": "自動検出設定の保存に失敗しました。",
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
   },
-  "installingPkg": "{name} をインストール中...",
-  "@installingPkg": {
+  "autoDetectSuccess": "自動検出が完了し、設定が保存されました！",
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
+  },
+  "autoDetectingSources": "システムで利用可能なソースを自動検出中...",
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
+  },
+  "autoUpdate": "サイレント自動更新",
+  "@autoUpdate": {},
+  "autoUpdateDesc": "バックグラウンドでパッケージを自動的に更新します",
+  "@autoUpdateDesc": {},
+  "back": "戻る",
+  "@back": {
+    "description": "Back button label"
+  },
+  "backSemanticsHint": "前の画面に戻る",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "backSemanticsLabel": "戻る",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backupAndExport": "バックアップとエクスポート",
+  "@backupAndExport": {
+    "description": "backupAndExport"
+  },
+  "backupAndExportSubtitle": "現在のインストール済みアプリリストをエクスポート、またはバックアップからインポート",
+  "@backupAndExportSubtitle": {
+    "description": "backupAndExportSubtitle"
+  },
+  "bituRepoType": "Bitu / Bitbucket （ワークスペース/リポジトリ）",
+  "@bituRepoType": {
+    "description": "Bitu source type option"
+  },
+  "bootstrapNote": "注意： セットアップにはパスワードの入力が数回必要な場合があります。",
+  "cacheTypeInfo": "Pacman： {pacman} MB | Flatpak： {flatpak} MB | カスタム： {custom} MB",
+  "@cacheTypeInfo": {
     "placeholders": {
-      "name": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
         "type": "String"
       }
     }
   },
-  "switchSource": "切り替え",
-  "@switchSource": {
-    "description": "Description for switchSource"
-  },
-  "flatpakBetterDesc": "このアプリの Flatpak ソースが見つかりました。通常、こちらの方が安定しています。",
-  "@flatpakBetterDesc": {
-    "description": "Description for flatpakBetterDesc"
-  },
-  "aiAnalysisPrompt": "エラーログが見つかりました。AI で分析しますか？",
-  "@aiAnalysisPrompt": {
-    "description": "Description for aiAnalysisPrompt"
-  },
-  "analyzeNow": "今すぐ分析",
-  "@analyzeNow": {
-    "description": "Description for analyzeNow"
-  },
-  "cleanOrphans": "未使用の依存関係を削除する (孤立したパッケージ)",
-  "@cleanOrphans": {
-    "description": "Description for cleanOrphans"
-  },
-  "securityWarning": "セキュリティ警告",
-  "@securityWarning": {
-    "description": "Description for securityWarning"
-  },
-  "aurSecurityDesc": "AUR (Arch User Repository) はコミュニティによって維持されているリポジトリです。誰でもパッケージをアップロードできるため、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。",
-  "@aurSecurityDesc": {
-    "description": "Description for aurSecurityDesc"
-  },
-  "continueInstall": "インストールを続行",
-  "@continueInstall": {
-    "description": "Description for continueInstall"
-  },
-  "installInfo": "インストール情報",
-  "@installInfo": {
-    "description": "Description for installInfo"
-  },
-  "downloadSize": "ダウンロードサイズ",
-  "@downloadSize": {
-    "description": "Description for downloadSize"
-  },
-  "installedSize": "インストール後のサイズ",
-  "@installedSize": {
-    "description": "Description for installedSize"
-  },
-  "dependenciesCount": "依存関係 ({count})",
-  "@dependenciesCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "runningInBackground": "OmniStore はバックグラウンドで実行中です。トレイアイコンから開くことができます。",
-  "@runningInBackground": {
-    "description": "Description for runningInBackground"
-  },
-  "clearSearch": "検索をクリア",
-  "@clearSearch": {
-    "description": "Description for clearSearch"
-  },
-  "listView": "リスト表示",
-  "@listView": {
-    "description": "Description for listView"
-  },
-  "gridView": "グリッド表示",
-  "@gridView": {
-    "description": "Description for gridView"
-  },
-  "categories": "カテゴリー",
-  "@categories": {
-    "description": "Description for categories"
-  },
-  "clearHistory": "履歴をクリア",
-  "@clearHistory": {
-    "description": "Description for clearHistory"
-  },
-  "confirmClearHistory": "すべての履歴を消去してもよろしいですか？",
-  "@confirmClearHistory": {
-    "description": "Description for confirmClearHistory"
-  },
-  "viewMore": "もっと見る",
-  "@viewMore": {
-    "description": "Description for viewMore"
-  },
-  "logDebug": "デバッグ (DEBUG)",
-  "@logDebug": {
-    "description": "Description for logDebug"
-  },
-  "logInfo": "情報 (INFO)",
-  "@logInfo": {
-    "description": "Description for logInfo"
-  },
-  "logWarning": "警告 (WARNING)",
-  "@logWarning": {
-    "description": "Description for logWarning"
-  },
-  "logError": "エラー (ERROR)",
-  "@logError": {
-    "description": "Description for logError"
-  },
-  "notificationTitle": "アップデートが利用可能です",
-  "@notificationTitle": {
-    "description": "Description for notificationTitle"
-  },
-  "notificationBody": "{count} 件のアプリが更新可能です",
-  "@notificationBody": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "preparingUpdate": "更新を準備中...",
-  "@preparingUpdate": {
-    "description": "Description for preparingUpdate"
-  },
-  "processing": "処理中",
-  "@processing": {
-    "description": "Description for processing"
-  },
-  "clear": "クリア",
-  "@clear": {
-    "description": "Description for clear"
-  },
-  "retry": "再試行",
-  "@retry": {
-    "description": "Description for retry"
-  },
-  "aiResponseFailed": "AI の応答に失敗しました。",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiAnalysisFailed": "AI による分析に失敗しました。",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "cannotConnectToBackend": "バックエンドサービスに接続できません: {error}",
+  "cancel": "キャンセル",
+  "cannotConnectToBackend": "バックエンドサービスに接続できません： {error}",
   "@cannotConnectToBackend": {
     "description": "Error message when backend is unreachable",
     "placeholders": {
@@ -1054,85 +273,125 @@
       }
     }
   },
-  "taskInitializing": "タスクを初期化中...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
+  "catDevelopment": "開発",
+  "catGames": "ゲーム",
+  "catGraphics": "グラフィックス",
+  "@catGraphics": {
+    "description": "Category for Graphics"
   },
-  "taskStarting": "起動中...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
+  "catInternet": "インターネット",
+  "catMedia": "メディア",
+  "catOffice": "オフィス",
+  "catSystem": "システム",
+  "catUtility": "ユーティリティ",
+  "@catUtility": {
+    "description": "Category for Utility"
   },
-  "taskSuccess": "タスクが正常に完了しました",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
+  "categories": "カテゴリー",
+  "category": "カテゴリー",
+  "@category": {
+    "description": "Category label"
   },
-  "taskFailedWithCode": "タスクが終了コード {code} で失敗しました",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
+  "categorySemantics": "カテゴリー：{name}",
+  "@categorySemantics": {
     "placeholders": {
-      "code": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInterval": "更新確認の間隔 （時間）",
+  "checkIntervalSubtitle": "{hours} 時間ごとに確認",
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
         "type": "int"
       }
     }
   },
-  "taskCancelledByUser": "タスクがユーザーによってキャンセルされました",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskError": "エラー: {error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
+  "checkIntervalTitle": "更新確認の間隔",
+  "@checkIntervalTitle": {},
+  "checkUpdateFailed": "更新の確認に失敗しました：{error}",
+  "@checkUpdateFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
   },
-  "githubAuthTitle": "GitHub 認証",
-  "githubPatSaved": "GitHub PAT が正常に保存されました",
-  "saveToken": "トークンを保存",
-  "back": "戻る",
-  "next": "次へ",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
-  },
-  "@saveToken": {
-    "description": "Button label to save token"
-  },
-  "@back": {
-    "description": "Back button label"
-  },
-  "@next": {
-    "description": "Next button label"
-  },
-  "aurFull": "AUR (Arch User Repository)",
-  "@aurFull": {
-    "description": "Full name for AUR"
-  },
-  "flatpakFull": "Flatpak (Flathub)",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
-  },
-  "errorPackageNameRequired": "エラー：パッケージ名は空にできません",
-  "errorStartFailed": "起動に失敗しました：{error}",
-  "@errorStartFailed": {
+  "checkUpdates": "更新を確認",
+  "cleanOrphans": "未使用の依存関係を削除する （孤立したパッケージ）",
+  "clear": "クリア",
+  "clearHistory": "履歴をクリア",
+  "clearSearch": "検索をクリア",
+  "closeToTray": "システムトレイに閉じる",
+  "collapse": "折りたたむ",
+  "community": "コミュニティ",
+  "completionNotifications": "完了通知",
+  "configSaveFailed": "設定の保存に失敗しました",
+  "configSaved": "設定を保存しました。一部の変更は再起動後に有効になります",
+  "confirm": "確認",
+  "confirmActionMsg": "{name} に対してこの操作を実行してもよろしいですか？",
+  "@confirmActionMsg": {
     "placeholders": {
-      "error": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "errorUpdateFailed": "更新に失敗しました：{error}",
-  "@errorUpdateFailed": {
+  "confirmClearHistory": "すべての履歴を消去してもよろしいですか？",
+  "confirmInstall": "インストールの確認",
+  "confirmUninstall": "アンインストールの確認",
+  "continueAnyway": "とにかく続行",
+  "continueInstall": "インストールを続行",
+  "copyName": "名前をコピー",
+  "currentTask": "現在のタスク",
+  "@currentTask": {
+    "description": "currentTask"
+  },
+  "darkMode": "ダークモード",
+  "delete": "削除",
+  "dependenciesCount": "依存関係 （{count}）",
+  "@dependenciesCount": {
     "placeholders": {
-      "error": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "details": "詳細",
+  "developer": "開発者",
+  "diskSpaceInfo": "ディスク空間： {free} GB 空き / {total} GB 合計",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
         "type": "String"
       }
     }
   },
+  "downloadSize": "ダウンロードサイズ",
+  "downloads": "ダウンロード",
+  "enableAur": "AUR （Arch User Repository） を有効にする",
+  "enableDaemon": "バックグラウンド更新を有効にする",
+  "@enableDaemon": {},
+  "enableDaemonDesc": "バックグラウンドで定期的に更新を確認します",
+  "@enableDaemonDesc": {},
+  "enableNotifications": "通知を有効にする",
+  "enableSystemTray": "システムトレイを有効にする",
+  "@enableSystemTray": {
+    "description": "enableSystemTray"
+  },
+  "enableSystemdService": "systemd バックグラウンド更新サービスを有効にする",
+  "enableSystemdServiceDesc": "アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します",
+  "enterStore": "ストアに入る",
+  "envCheckSubtitle": "システムの準備が整っていることを確認します",
+  "envCheckTitle": "環境チェック",
+  "envFatalDesc": "お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。",
+  "envOkDesc": "準備完了です！お使いのシステムは完璧です。",
+  "envWarningDesc": "いくつかの必要なコンポーネントが不足しています。自動的に設定できます。",
   "errorCleanFailed": "クリーンアップに失敗しました：{error}",
   "@errorCleanFailed": {
     "placeholders": {
@@ -1149,6 +408,11 @@
       }
     }
   },
+  "errorNameUrlRequired": "名前と URL/リポジトリは空にできません",
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
+  },
+  "errorPackageNameRequired": "エラー：パッケージ名は空にできません",
   "errorProcessStart": "プロセスの起動に失敗しました。環境設定を確認してください：{error}",
   "@errorProcessStart": {
     "placeholders": {
@@ -1157,17 +421,17 @@
       }
     }
   },
-  "taskForcedTerminated": "タスクが強制終了されました",
-  "aiTimeout": "AI 接続がタイムアウトしました。後で再試行してください。",
-  "aiNoResponse": "AI が有効な応答を返せませんでした。",
-  "aiParseFailed": "AI 応答の解析に失敗しました：形式が正しくありません。",
-  "aiCallFailed": "AI サービスの呼び出しに失敗しました：{error}",
-  "@aiCallFailed": {
+  "errorStartFailed": "起動に失敗しました：{error}",
+  "@errorStartFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
+  },
+  "errorTitle": "エラー",
+  "@errorTitle": {
+    "description": "General error title"
   },
   "errorUpdateAll": "一括更新エラー：{error}",
   "@errorUpdateAll": {
@@ -1177,115 +441,480 @@
       }
     }
   },
-  "taskProcessing": "処理中",
-  "collapse": "折りたたむ",
-  "@collapse": {
-    "description": "Description for collapse"
+  "errorUpdateFailed": "更新に失敗しました：{error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
+  "essentialTools": "必須ツール",
+  "exit": "終了",
   "expand": "展開",
-  "@expand": {
-    "description": "Description for expand"
+  "explore": "探索",
+  "export": "エクスポート",
+  "@export": {
+    "description": "export"
   },
-  "all": "すべて",
-  "@all": {
-    "description": "Description for all"
+  "exportFailed": "エクスポート失敗： {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-  "relatedApps": "関連アプリ",
-  "@relatedApps": {
-    "description": "Description for relatedApps"
+  "exportSuccess": "エクスポート成功： {count} 個のパッケージ",
+  "@exportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-  "activeSources": "有効なソース",
-  "autoDetect": "自動検出",
-  "addCustomSource": "カスタムソースを追加",
-  "addCustomSourceDesc": "カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します",
-  "sourceType": "ソースの種類",
-  "githubRepoType": "GitHub リポジトリ (owner/repo)",
-  "bituRepoType": "Bitu / Bitbucket (workspace/repo)",
+  "failed": "失敗",
+  "featured": "おすすめ",
+  "feedbackDesc": "問題が発生した場合は、GitHub で報告してください。",
+  "fixProblems": "すべて修正 / 設定",
+  "flatpak": "Flatpak",
+  "flatpakBetterDesc": "このアプリの Flatpak ソースが見つかりました。通常、こちらの方が安定しています。",
+  "flatpakFull": "Flatpak （Flathub）",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
+  },
   "flatpakRemoteType": "Flatpak リモート",
-  "appImageFeedType": "AppImage フィード URL",
-  "sourceName": "ソース名",
-  "hintCustomAppName": "例: my-custom-app",
-  "repoOwnerRepo": "リポジトリ (owner/repo)",
-  "sourceUrl": "URL",
-  "hintRepoFormat": "例: flutter/flutter",
-  "hintFeedUrl": "例: https://example.com/feed.json",
-  "errorNameUrlRequired": "名前と URL/リポジトリは空にできません",
-  "addingCustomSource": "カスタムソースを追加中...",
-  "sourceAddSuccess": "ソースが正常に追加されました！",
-  "sourceAddFailed": "ソースの追加に失敗しました。",
-  "autoDetectingSources": "システムで利用可能なソースを自動検出中...",
-  "autoDetectSuccess": "自動検出が完了し、設定が保存されました！",
-  "autoDetectFailed": "自動検出設定の保存に失敗しました。",
-  "personalAccessToken": "個人用アクセストークン",
-  "copyName": "名前をコピー",
-  "nameCopied": "名前をクリップボードにコピーしました",
-  "@activeSources": {
-    "description": "Label for active software sources"
-  },
-  "@autoDetect": {
-    "description": "Button to auto detect available sources"
-  },
-  "@addCustomSource": {
-    "description": "Button to add a custom source"
-  },
-  "@addCustomSourceDesc": {
-    "description": "Description for adding custom sources"
-  },
-  "@sourceType": {
-    "description": "Label for source type"
-  },
-  "@githubRepoType": {
-    "description": "GitHub source type option"
-  },
-  "@bituRepoType": {
-    "description": "Bitu source type option"
-  },
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
-  "@appImageFeedType": {
-    "description": "AppImage source type option"
+  "flatpakStore": "Flatpak ストア",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
   },
-  "@sourceName": {
-    "description": "Label for source name"
+  "followSystem": "システムに従う",
+  "fontFamily": "フォントファミリー",
+  "@fontFamily": {},
+  "fontScale": "フォントの拡大率",
+  "@fontScale": {},
+  "forYou": "あなたへのおすすめ",
+  "foundUpdates": "{count} 件の更新が見つかりました",
+  "@foundUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
+  "general": "全般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "getStarted": "始める",
+  "githubAuthTitle": "GitHub 認証",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "githubPatSaved": "GitHub PAT が正常に保存されました",
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "githubRepoType": "GitHub リポジトリ （owner/repo）",
+  "@githubRepoType": {
+    "description": "GitHub source type option"
+  },
+  "githubStore": "GitHub ストア",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "googleGemini": "Google Gemini",
+  "gotIt": "了解",
+  "gridView": "グリッド表示",
+  "help": "ヘルプ",
+  "hintCustomAppName": "例： my-custom-app",
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "@repoOwnerRepo": {
-    "description": "Label for repository owner and name"
-  },
-  "@sourceUrl": {
-    "description": "Label for source URL"
-  },
-  "@hintRepoFormat": {
-    "description": "Hint for repository format"
-  },
+  "hintFeedUrl": "例： https://example.com/feed.json",
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "@errorNameUrlRequired": {
-    "description": "Error message when name or URL is missing"
+  "hintRepoFormat": "例： flutter/flutter",
+  "@hintRepoFormat": {
+    "description": "Hint for repository format"
   },
-  "@addingCustomSource": {
-    "description": "Message while adding custom source"
+  "hotApps": "注目のアプリ",
+  "hourValue": "{count} 時間",
+  "@hourValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-  "@sourceAddSuccess": {
-    "description": "Success message after adding source"
+  "howToGetApiKey": "API キーを取得するには？",
+  "howToGetApiKeyDesc": "1. Ollama （ローカル）： Ollama をダウンロードして実行します。キーは不要です。2. クラウド （OpenAI）： プロバイダーのウェブサイトで API キーを作成し、ここに入力します。",
+  "import": "インポート",
+  "@import": {
+    "description": "import"
   },
+  "importBackup": "バックアップをインポート",
+  "@importBackup": {
+    "description": "importBackup"
+  },
+  "importBackupConfirm": "バックアップから {count} 個のパッケージを読み込みました。一括復元を開始しますか？",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importList": "リストをインポート",
+  "importPackages": "パッケージをインポート",
+  "importPackagesConfirm": "ファイルから {count} 個のパッケージを読み込みました。一括ダウンロードを開始しますか？",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "includeAurUpdates": "「すべて更新」に AUR を含める",
+  "install": "インストール",
+  "installFailedTitle": "インストールに失敗しました",
+  "installInfo": "インストール情報",
+  "installSuccessTitle": "インストールが成功しました",
+  "installedApps": "インストール済みアプリ",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "installedSize": "インストール後のサイズ",
+  "installingApp": "{name} をインストール中",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installingPkg": "{name} をインストール中...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "langEnglish": "英語",
+  "langJapanese": "日本語",
+  "langSimplifiedChinese": "中国語 （簡体字）",
+  "langSpanish": "スペイン語",
+  "langTraditionalChinese": "中国語 （繁体字）",
+  "language": "表示言語",
+  "@language": {},
+  "languageSubtitle": "再起動後に有効になります",
+  "@languageSubtitle": {},
+  "launch": "起動",
+  "license": "ライセンス",
+  "lightMode": "ライトモード",
+  "listView": "リスト表示",
+  "loadError": "推奨コンテンツの読み込みに失敗しました。バックエンドの状態を確認してください",
+  "locateInstallation": "インストール先を表示",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
+  "logDebug": "デバッグ （DEBUG）",
+  "logError": "エラー （ERROR）",
+  "logInfo": "情報 （INFO）",
+  "logWarning": "警告 （WARNING）",
+  "loggingLevel": "ログレベル",
+  "magicSearch": "スマート検索",
+  "@magicSearch": {
+    "description": "magicSearch"
+  },
+  "maintenance": "メンテナンス",
+  "maxResults": "最大結果数",
+  "mirrorListSaved": "ミラーリストを保存しました",
+  "@mirrorListSaved": {
+    "description": "mirrorListSaved"
+  },
+  "nameCopied": "名前をクリップボードにコピーしました",
+  "next": "次へ",
+  "@next": {
+    "description": "Next button label"
+  },
+  "nextStep": "次へ",
+  "noActiveTasks": "アクティブなタスクはありません",
+  "@noActiveTasks": {
+    "description": "noActiveTasks"
+  },
+  "noResults": "検索結果が見つかりませんでした",
+  "notificationBody": "{count} 件のアプリが更新可能です",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationTitle": "アップデートが利用可能です",
+  "notifications": "通知",
+  "official": "公式",
+  "ollamaLocal": "Ollama （ローカル）",
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
+  "open": "開く",
+  "openaiCompatible": "OpenAI 互換",
+  "packageManager": "パッケージマネージャー",
+  "pacmanMirrorManagement": "Pacman ミラー管理",
+  "@pacmanMirrorManagement": {
+    "description": "pacmanMirrorManagement"
+  },
+  "pacmanOfficial": "Pacman （公式リポジトリ）",
+  "personalAccessToken": "個人用アクセストークン",
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
+  },
+  "preparingUpdate": "更新を準備中...",
+  "processing": "処理中",
+  "progressNotifications": "進行状況の通知",
+  "ready": "インストール済み",
+  "refresh": "更新",
+  "@refresh": {
+    "description": "refresh"
+  },
+  "relatedApps": "関連アプリ",
+  "remindMeOfUpdates": "更新を通知する",
+  "repoOwnerRepo": "リポジトリ （owner/repo）",
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "repositories": "リポジトリ",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "resetCache": "キャッシュと履歴をリセット",
+  "resetCacheConfirm": "検索履歴とおすすめキャッシュがクリアされます。続行しますか？",
+  "resetCacheDesc": "検索履歴とローカルのおすすめキャッシュをクリアします",
+  "resetFailed": "リセットに失敗しました： {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "resetOnboarding": "オンボーディングをリセット （ウェルカムページ）",
+  "resetOnboardingConfirm": "オンボーディングをリセットしてもよろしいですか？次回起動時にウェルカムページが表示されます。",
+  "resetSuccess": "キャッシュと履歴が正常にクリアされました",
+  "resetting": "リセット中...",
+  "restartTitleBar": "タイトルバーの設定を適用するには再起動してください",
+  "@restartTitleBar": {},
+  "resultsFound": "{count} 件の結果が見つかりました",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "retry": "再試行",
+  "runningInBackground": "OmniStore はバックグラウンドで実行中です。トレイアイコンから開くことができます。",
+  "save": "保存",
+  "@save": {
+    "description": "save"
+  },
+  "saveAndApply": "保存して適用",
+  "saveToken": "トークンを保存",
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "screenshots": "スクリーンショット",
+  "search": "検索",
+  "searchHint": "アプリ、ゲーム、ツールを検索...",
+  "searchInstalledHint": "インストール済みのアプリを検索...",
+  "@searchInstalledHint": {
+    "description": "searchInstalledHint"
+  },
+  "searching": "検索中...",
+  "securityWarning": "セキュリティ警告",
+  "selectExportLocation": "エクスポート先を選択",
+  "@selectExportLocation": {
+    "description": "selectExportLocation"
+  },
+  "serverUrl": "サーバー URL",
+  "@serverUrl": {
+    "description": "serverUrl"
+  },
+  "settings": "設定",
+  "showWindow": "ウィンドウを表示",
+  "skip": "スキップ",
+  "source": "ソース",
+  "sourceAddFailed": "ソースの追加に失敗しました。",
   "@sourceAddFailed": {
     "description": "Failure message after adding source"
   },
-  "@autoDetectingSources": {
-    "description": "Message while auto detecting sources"
+  "sourceAddSuccess": "ソースが正常に追加されました！",
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
   },
-  "@autoDetectSuccess": {
-    "description": "Success message after auto detection"
+  "sourceConfigSubtitle": "有効にするソースを選択してください",
+  "sourceConfigTitle": "ソフトウェアソース",
+  "sourceName": "ソース名",
+  "@sourceName": {
+    "description": "Label for source name"
   },
-  "@autoDetectFailed": {
-    "description": "Failure message after auto detection"
+  "sourcePriority": "ソースの優先順位 （ドラッグして並べ替え）",
+  "sourceType": "ソースの種類",
+  "@sourceType": {
+    "description": "Label for source type"
   },
-  "@personalAccessToken": {
-    "description": "Label for personal access token"
-  }
+  "sourceUrl": "URL",
+  "@sourceUrl": {
+    "description": "Label for source URL"
+  },
+  "startRecovery": "復元を開始",
+  "@startRecovery": {
+    "description": "startRecovery"
+  },
+  "success": "成功",
+  "switchSource": "切り替え",
+  "systemAndWindow": "システムとウィンドウ",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
+  },
+  "systemCleaning": "システムクリーニング",
+  "@systemCleaning": {
+    "description": "systemCleaning"
+  },
+  "systemCleaningDesc": "孤立パッケージの削除と pacman キャッシュのクリーンアップ",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
+  },
+  "systemCleaningStarted": "システムクリーニングタスクが開始されました",
+  "@systemCleaningStarted": {
+    "description": "systemCleaningStarted"
+  },
+  "systemCleaningSubtitle": "孤立したパッケージを削除し、pacman キャッシュをクリーンアップします",
+  "@systemCleaningSubtitle": {
+    "description": "systemCleaningSubtitle"
+  },
+  "systemDefault": "システム既定",
+  "@systemDefault": {},
+  "taskCancelled": "タスクがキャンセルされました",
+  "taskCancelledByUser": "タスクがユーザーによってキャンセルされました",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskCompleted": "タスクが完了しました",
+  "taskError": "エラー： {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "taskFailedWithCode": "タスクが終了コード {code} で失敗しました",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "taskForcedTerminated": "タスクが強制終了されました",
+  "taskInProgress": "別のタスクが既に実行中です",
+  "@taskInProgress": {
+    "description": "Error message when trying to start a task while another is running"
+  },
+  "taskInitializing": "タスクを初期化中...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
+  },
+  "taskProcessing": "処理中",
+  "taskStarting": "起動中...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
+  },
+  "taskSuccess": "タスクが正常に完了しました",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
+  },
+  "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります",
+  "terminalOutput": "ターミナル出力",
+  "themeColor": "テーマカラー",
+  "trayInitFailedExiting": "システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。",
+  "@trayInitFailedExiting": {
+    "description": "Error message when system tray fails to initialize"
+  },
+  "trayTooltipUpToDate": "OmniStore： 最新の状態です",
+  "trayTooltipUpdates": "OmniStore： {count} 件の更新があります",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "typography": "フォントとタイポグラフィ",
+  "@typography": {},
+  "uninstall": "アンインストール",
+  "uninstallFailedTitle": "アンインストールに失敗しました",
+  "uninstallSuccessTitle": "アンインストールが成功しました",
+  "uninstallingApp": "{name} をアンインストール中",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "upToDate": "すべてのアプリは最新です",
+  "update": "更新",
+  "@update": {
+    "description": "update"
+  },
+  "updateAll": "すべて更新",
+  "updateAllPackages": "すべてのパッケージを更新",
+  "updateReminders": "更新のリマインダー",
+  "updates": "更新",
+  "useSystemTitleBar": "システムのタイトルバーを使用",
+  "userAccount": "ユーザーアカウント",
+  "variant": "バリアント",
+  "verified": "検証済み",
+  "version": "バージョン",
+  "viewLogs": "ログを表示",
+  "@viewLogs": {
+    "description": "viewLogs"
+  },
+  "viewMore": "もっと見る",
+  "visitWebsite": "ウェブサイトにアクセス",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
+  },
+  "waitingForOutput": "出力を待機中...",
+  "welcomeSubtitle": "Arch Linux のためのシンプルでエレガントなアプリ管理体験を提供します",
+  "welcomeTitle": "OmniStore へようこそ",
+  "windowClose": "閉じる",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
+  "windowMaximize": "最大化",
+  "@windowMaximize": {
+    "description": "Tooltip for window maximize button"
+  },
+  "windowMinimize": "最小化",
+  "@windowMinimize": {
+    "description": "Tooltip for window minimize button"
+  },
+  "windowRestore": "元に戻す",
+  "@windowRestore": {
+    "description": "Tooltip for window restore button"
+  },
+  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。"
 }

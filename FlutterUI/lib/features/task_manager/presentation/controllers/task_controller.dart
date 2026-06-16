@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/models/task_state.dart';
 
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;
@@ -10,7 +11,10 @@ class TaskController with ChangeNotifier {
   double? _progress;
   String _status = "Ready";
   String _speed = "";
+  String? _packageName;
+  String? _flag;
   final List<String> _logs = [];
+  final List<TaskState> _completedTasks = [];
 
   TaskController(this._taskRepository);
 
@@ -18,22 +22,32 @@ class TaskController with ChangeNotifier {
   double? get progress => _progress;
   String get status => _status;
   String get speed => _speed;
+  String? get packageName => _packageName;
+  String? get flag => _flag;
   List<String> get logs => List.unmodifiable(_logs);
+  List<TaskState> get completedTasks => List.unmodifiable(_completedTasks);
 
   void clearLogs() {
     _logs.clear();
     notifyListeners();
   }
 
+  void clearHistory() {
+    _completedTasks.clear();
+    notifyListeners();
+  }
+
   void cancelTask(AppLocalizations l10n) {
     _taskRepository.cancelCurrentTask();
     _isBusy = false;
+    _packageName = null;
+    _flag = null;
     _status = l10n.taskCancelled;
     _progress = null;
     notifyListeners();
   }
 
-  Future<void> runTask(
+  Future<bool> runTask(
     String flag,
     String packageName,
     String source,
@@ -41,8 +55,12 @@ class TaskController with ChangeNotifier {
     String? url,
   }) async {
     _isBusy = true;
+    _packageName = packageName;
+    _flag = flag;
     _progress = null;
     _status = l10n.taskStarting;
+    _logs.clear();
+    bool hasError = false;
     notifyListeners();
 
     final stream = _taskRepository.executeAction(
@@ -53,12 +71,119 @@ class TaskController with ChangeNotifier {
     );
 
     await for (final line in stream) {
+      if (line.contains("errorFatalStream") ||
+          line.contains("errorProcessStart") ||
+          line.contains("errorStartFailed") ||
+          line.contains("errorUpdateFailed") ||
+          line.contains("errorCleanFailed") ||
+          line.contains("errorUpdateAll") ||
+          line.contains("[ERROR]")) {
+        hasError = true;
+      }
       _parseLine(line, l10n);
       notifyListeners();
     }
 
     _isBusy = false;
     _progress = null;
+
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: packageName,
+        source: source,
+        status: !hasError ? TaskStatus.success : TaskStatus.failed,
+        progress: !hasError ? 1.0 : 0.0,
+        stage: flag == "-I"
+            ? "Install"
+            : flag == "-R"
+            ? "Uninstall"
+            : "Update",
+        message: !hasError ? "Success" : _status,
+      ),
+    );
+
+    _packageName = null;
+    _flag = null;
+    notifyListeners();
+    return !hasError;
+  }
+
+  Future<bool> updateAll(String source, AppLocalizations l10n) async {
+    _isBusy = true;
+    _packageName = "All Packages";
+    _flag = "-U";
+    _progress = null;
+    _status = l10n.taskStarting;
+    _logs.clear();
+    bool hasError = false;
+    notifyListeners();
+
+    final stream = _taskRepository.updateAll(source);
+
+    await for (final line in stream) {
+      if (line.contains("errorFatalStream") ||
+          line.contains("errorProcessStart") ||
+          line.contains("errorStartFailed") ||
+          line.contains("errorUpdateFailed") ||
+          line.contains("[ERROR]")) {
+        hasError = true;
+      }
+      _parseLine(line, l10n);
+      notifyListeners();
+    }
+
+    _isBusy = false;
+    _progress = null;
+
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: "Update All Packages",
+        source: source,
+        status: !hasError ? TaskStatus.success : TaskStatus.failed,
+        progress: !hasError ? 1.0 : 0.0,
+        stage: "Update",
+        message: !hasError ? "Success" : _status,
+      ),
+    );
+
+    _packageName = null;
+    _flag = null;
+    _status = !hasError ? l10n.taskSuccess : l10n.taskError("Failed");
+    notifyListeners();
+    return !hasError;
+  }
+
+  Future<void> runCleanSystem(AppLocalizations l10n) async {
+    _isBusy = true;
+    _progress = null;
+    _status = l10n.systemCleaningStarted;
+    notifyListeners();
+
+    final stream = _taskRepository.cleanSystem();
+
+    await for (final line in stream) {
+      _parseLine(line, l10n);
+      notifyListeners();
+    }
+
+    _isBusy = false;
+    _progress = null;
+    _completedTasks.insert(
+      0,
+      TaskState(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        packageName: "System Cleanup",
+        source: "System",
+        status: TaskStatus.success,
+        progress: 1.0,
+        stage: "Clean",
+        message: _status,
+      ),
+    );
     notifyListeners();
   }
 

@@ -78,13 +78,14 @@ class RecommendationManager:
         if not self.cache_path.exists():
             return None
         try:
-            import aiofiles
-            async with aiofiles.open(self.cache_path, "r", encoding="utf-8") as f:
-                content = await f.read()
-                data = json.loads(content)
-                # Cache valid for 1 hour (3600 seconds)
-                if time.time() - data.get("timestamp", 0) < 3600:
-                    return data.get("recommendations")
+            def _read_cache():
+                with open(self.cache_path, "r", encoding="utf-8") as f:
+                    return f.read()
+            content = await asyncio.get_event_loop().run_in_executor(None, _read_cache)
+            data = json.loads(content)
+            # Cache valid for 1 hour (3600 seconds)
+            if time.time() - data.get("timestamp", 0) < 3600:
+                return data.get("recommendations")
         except Exception:
             pass
         return None
@@ -93,13 +94,14 @@ class RecommendationManager:
         """Save recommendations to cache"""
         try:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-            import aiofiles
-            async with aiofiles.open(self.cache_path, "w", encoding="utf-8") as f:
-                content = json.dumps({
-                    "timestamp": time.time(),
-                    "recommendations": recommendations
-                }, ensure_ascii=False)
-                await f.write(content)
+            content = json.dumps({
+                "timestamp": time.time(),
+                "recommendations": recommendations
+            }, ensure_ascii=False)
+            def _write_cache():
+                with open(self.cache_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+            await asyncio.get_event_loop().run_in_executor(None, _write_cache)
         except Exception as e:
             import sys
             sys.stderr.write(f"[RecommendationManager] Cache Save Error: {e}\n")

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OmnistoreConfig",
+  "type": "object",
+  "properties": {
+    "first_run": { "type": "boolean" },
+    "search": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "object",
+          "properties": {
+            "pacman": { "type": "boolean" },
+            "aur": { "type": "boolean" },
+            "flatpak": { "type": "boolean" },
+            "appimage": { "type": "boolean" },
+            "snap": { "type": "boolean" },
+            "github": { "type": "boolean" },
+            "bitu": { "type": "boolean" },
+            "winget": { "type": "boolean" },
+            "scoop": { "type": "boolean" },
+            "brew": { "type": "boolean" },
+            "ai": { "type": "boolean" }
+          },
+          "required": ["pacman", "aur", "flatpak", "appimage", "snap", "github", "bitu"]
+        },
+        "max_results": { "type": "integer", "minimum": 1, "maximum": 500 }
+      },
+      "required": ["sources", "max_results"]
+    },
+    "priority": {
+      "type": "object",
+      "properties": {
+        "pacman": { "type": "integer" },
+        "aur": { "type": "integer" },
+        "flatpak": { "type": "integer" },
+        "appimage": { "type": "integer" },
+        "snap": { "type": "integer" }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "appearance": { "type": "string", "enum": ["system", "light", "dark"] },
+        "color_seed": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "language": { "type": "string" },
+        "enable_system_tray": { "type": "boolean" },
+        "close_to_tray": { "type": "boolean" },
+        "font_family": { "type": "string" },
+        "font_scale": { "type": "number", "minimum": 0.5, "maximum": 2.0 }
+      },
+      "required": ["appearance", "color_seed", "language"]
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "level": { "type": "string", "enum": ["DEBUG", "INFO", "WARNING", "ERROR"] }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "progress": { "type": "boolean" },
+        "completion": { "type": "boolean" }
+      }
+    },
+    "updates": {
+      "type": "object",
+      "properties": {
+        "check_interval_hours": { "type": "integer", "minimum": 1, "maximum": 168 },
+        "remind_updates": { "type": "boolean" },
+        "include_aur_in_update_all": { "type": "boolean" },
+        "enable_systemd_service": { "type": "boolean" }
+      }
+    },
+    "ai": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "provider": { "type": "string", "enum": ["ollama", "openai", "gemini", "custom"] },
+        "endpoint": { "type": "string" },
+        "model": { "type": "string" },
+        "api_key": { "type": "string" },
+        "temperature": { "type": "number", "minimum": 0.0, "maximum": 2.0 },
+        "max_tokens": { "type": "integer", "minimum": 1 },
+        "proxy": { "type": "string" }
+      },
+      "required": ["enabled", "provider", "endpoint", "model"]
+    }
+  },
+  "required": ["first_run", "search", "ui", "ai"]
+}

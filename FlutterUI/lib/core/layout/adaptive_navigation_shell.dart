@@ -5,7 +5,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/update_service.dart';
-import 'package:frontend/widgets/window_title_bar.dart';
+// import 'package:frontend/core/widgets/window_title_bar.dart'; // 自定义标题栏已禁用
 import 'package:provider/provider.dart';
 import 'package:frontend/features/auth/auth_page.dart';
 
@@ -49,9 +49,11 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
-    final settings = context.watch<SettingsController>();
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -62,7 +64,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.fastOutSlowIn,
           child: KeyedSubtree(
-            key: ValueKey<int>(nav.selectedIndex),
+            key: ValueKey<int>(selectedIndex),
             child: pageChild,
           ),
         );
@@ -76,14 +78,17 @@ class AdaptiveNavigationShell extends StatelessWidget {
           child: content,
         );
 
-        final taskBar = Consumer<TaskController>(
-          builder: (context, task, child) {
+        final taskBar = Selector<TaskController, bool>(
+          selector: (context, task) => task.isBusy,
+          builder: (context, isBusy, child) {
             return AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: task.isBusy ? _TaskProgressBar(task: task) : const SizedBox.shrink(),
+                child: isBusy
+                    ? const _TaskProgressBar()
+                    : const SizedBox.shrink(),
               ),
             );
           },
@@ -103,10 +108,12 @@ class AdaptiveNavigationShell extends StatelessWidget {
           ];
 
           return PopScope(
-            canPop: nav.selectedIndex == destinations.first.index,
+            canPop: selectedIndex == destinations.first.index,
             onPopInvokedWithResult: (didPop, result) {
               if (didPop) return;
-              nav.setIndex(destinations.first.index);
+              context.read<NavigationController>().setIndex(
+                destinations.first.index,
+              );
             },
             child: Scaffold(
               backgroundColor: scheme.surface,
@@ -114,23 +121,31 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 title: Text(pageTitle),
                 centerTitle: false,
                 actions: [
-                  if (showSearch && nav.selectedIndex != 2)
-                    IconButton(
-                      onPressed: onSearch,
-                      tooltip: AppLocalizations.of(context)!.search,
-                      icon: const Icon(Icons.search_rounded),
+                  if (showSearch && selectedIndex != 2)
+                    Semantics(
+                      label: l10n.search,
+                      button: true,
+                      child: IconButton(
+                        onPressed: onSearch,
+                        tooltip: l10n.search,
+                        icon: const Icon(Icons.search_rounded),
+                      ),
                     ),
-                  IconButton(
-                    icon: const Icon(Icons.account_circle_outlined),
-                    tooltip: AppLocalizations.of(context)!.githubAuthTitle,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AuthPage(),
-                        ),
-                      );
-                    },
+                  Semantics(
+                    label: l10n.githubAuthTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.account_circle_outlined),
+                      tooltip: l10n.githubAuthTitle,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AuthPage(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   _DownloadAction(compact: true),
                 ],
@@ -144,9 +159,10 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 children: [
                   taskBar,
                   NavigationBar(
-                    selectedIndex: _navBarIndex(compactDests, nav.selectedIndex),
-                    onDestinationSelected: (i) =>
-                        nav.setIndex(compactDests[i].index),
+                    selectedIndex: _navBarIndex(compactDests, selectedIndex),
+                    onDestinationSelected: (i) => context
+                        .read<NavigationController>()
+                        .setIndex(compactDests[i].index),
                     destinations: [
                       for (final d in compactDests)
                         NavigationDestination(
@@ -164,24 +180,27 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
         // ─── Desktop Layout (Navigation Rail) ───
         final railDestinations = [...destinations, ...secondaryDestinations];
-        final isExpanded = settings.isRailExpanded;
+        final isExpanded = context.select<SettingsController, bool>(
+          (s) => s.isRailExpanded,
+        );
 
         return Scaffold(
           backgroundColor: scheme.surface,
           body: Column(
             children: [
-              if (useWindowTitleBar)
-                WindowTitleBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearchPressed: onSearch,
-                )
-              else
-                _DesktopTopBar(
-                  title: pageTitle,
-                  showSearch: showSearch && nav.selectedIndex != 2,
-                  onSearch: onSearch,
-                ),
+              // 自定义标题栏已注释掉，始终使用系统原生标题栏
+              // if (useWindowTitleBar)
+              //   WindowTitleBar(
+              //     title: pageTitle,
+              //     showSearch: showSearch && selectedIndex != 2,
+              //     onSearchPressed: onSearch,
+              //   )
+              // else
+              _DesktopTopBar(
+                title: pageTitle,
+                showSearch: showSearch && selectedIndex != 2,
+                onSearch: onSearch,
+              ),
               taskBar,
               Expanded(
                 child: Row(
@@ -193,15 +212,21 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       child: NavigationRail(
                         extended: isExpanded,
                         minExtendedWidth: 180,
-                        selectedIndex: _railIndex(railDestinations, nav.selectedIndex),
-                        onDestinationSelected: (i) =>
-                            nav.setIndex(railDestinations[i].index),
+                        selectedIndex: _railIndex(
+                          railDestinations,
+                          selectedIndex,
+                        ),
+                        onDestinationSelected: (i) => context
+                            .read<NavigationController>()
+                            .setIndex(railDestinations[i].index),
                         labelType: isExpanded
                             ? NavigationRailLabelType.none
                             : NavigationRailLabelType.all,
                         leading: _HamburgerButton(
                           isExpanded: isExpanded,
-                          onToggle: () => settings.setRailExpanded(!isExpanded),
+                          onToggle: () => context
+                              .read<SettingsController>()
+                              .setRailExpanded(!isExpanded),
                         ),
                         destinations: [
                           for (final d in railDestinations)
@@ -251,10 +276,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
 
 // ─── Hamburger Toggle Button ────────────────────────────
 class _HamburgerButton extends StatelessWidget {
-  const _HamburgerButton({
-    required this.isExpanded,
-    required this.onToggle,
-  });
+  const _HamburgerButton({required this.isExpanded, required this.onToggle});
 
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -265,17 +287,23 @@ class _HamburgerButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: IconButton(
-        onPressed: onToggle,
-        tooltip: isExpanded ? l10n.collapse : l10n.expand,
-        icon: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          transitionBuilder: (child, anim) =>
-              RotationTransition(turns: Tween(begin: 0.5, end: 1.0).animate(anim), child: child),
-          child: Icon(
-            isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
-            key: ValueKey(isExpanded),
-            color: scheme.onSurfaceVariant,
+      child: Semantics(
+        label: isExpanded ? l10n.collapse : l10n.expand,
+        button: true,
+        child: IconButton(
+          onPressed: onToggle,
+          tooltip: isExpanded ? l10n.collapse : l10n.expand,
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, anim) => RotationTransition(
+              turns: Tween(begin: 0.5, end: 1.0).animate(anim),
+              child: child,
+            ),
+            child: Icon(
+              isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
+              key: ValueKey(isExpanded),
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -295,9 +323,11 @@ class _RailBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final l10n = AppLocalizations.of(context)!;
-    final isSettingsSelected = nav.selectedIndex == settingsIndex;
+    final isSettingsSelected = selectedIndex == settingsIndex;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -310,7 +340,9 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 label: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => nav.setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(
+                  settingsIndex,
+                ),
               )
             : _CompactActionButton(
                 icon: isSettingsSelected
@@ -318,7 +350,9 @@ class _RailBottomActions extends StatelessWidget {
                     : Icons.settings_outlined,
                 tooltip: l10n.settings,
                 isSelected: isSettingsSelected,
-                onTap: () => nav.setIndex(settingsIndex),
+                onTap: () => context.read<NavigationController>().setIndex(
+                  settingsIndex,
+                ),
               ),
         const SizedBox(height: 4),
         // Download button
@@ -350,12 +384,16 @@ class _CompactActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+    return Semantics(
+      label: tooltip,
+      button: true,
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onTap,
+        icon: Icon(
+          icon,
+          color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -380,9 +418,7 @@ class _ExpandedActionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Material(
-        color: isSelected
-            ? scheme.secondaryContainer
-            : Colors.transparent,
+        color: isSelected ? scheme.secondaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(28),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -405,8 +441,9 @@ class _ExpandedActionTile extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected
                           ? scheme.onSecondaryContainer
                           : scheme.onSurfaceVariant,
@@ -425,10 +462,12 @@ class _ExpandedActionTile extends StatelessWidget {
 class _ExpandedDownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final isSelected = nav.selectedIndex == 4;
+    final isSelected = selectedIndex == 4;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
@@ -437,22 +476,23 @@ class _ExpandedDownloadTile extends StatelessWidget {
         builder: (context, _) {
           final updates = UpdateService().availableUpdates.value;
           return Material(
-            color: isSelected
-                ? scheme.secondaryContainer
-                : Colors.transparent,
+            color: isSelected ? scheme.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(28),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () => nav.setIndex(4),
+              onTap: () => context.read<NavigationController>().setIndex(4),
               borderRadius: BorderRadius.circular(28),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
-                    Consumer<TaskController>(
-                      builder: (context, task, child) => Icon(
-                        task.isBusy
+                    Selector<TaskController, bool>(
+                      selector: (context, task) => task.isBusy,
+                      builder: (context, isBusy, child) => Icon(
+                        isBusy
                             ? Icons.downloading_rounded
                             : Icons.download_for_offline_rounded,
                         size: 24,
@@ -477,7 +517,7 @@ class _ExpandedDownloadTile extends StatelessWidget {
                       ),
                     ),
                     if (updates.isNotEmpty)
-                      Badge(label: Text('${updates.length}')),
+                      Badge(label: Text(l10n.resultsFound(updates.length))),
                   ],
                 ),
               ),
@@ -504,6 +544,7 @@ class _DesktopTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 72,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
@@ -522,20 +563,22 @@ class _DesktopTopBar extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onSearch,
               icon: const Icon(Icons.search_rounded, size: 20),
-              label: Text(AppLocalizations.of(context)!.search),
+              label: Text(l10n.search),
             ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            tooltip: AppLocalizations.of(context)!.githubAuthTitle,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AuthPage(),
-                ),
-              );
-            },
+          Semantics(
+            label: l10n.githubAuthTitle,
+            button: true,
+            child: IconButton(
+              icon: const Icon(Icons.account_circle_outlined),
+              tooltip: l10n.githubAuthTitle,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthPage()),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -544,9 +587,7 @@ class _DesktopTopBar extends StatelessWidget {
 }
 
 class _TaskProgressBar extends StatelessWidget {
-  const _TaskProgressBar({required this.task});
-
-  final TaskController task;
+  const _TaskProgressBar();
 
   @override
   Widget build(BuildContext context) {
@@ -565,47 +606,49 @@ class _TaskProgressBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.downloading_rounded,
-                  size: 14,
-                  color: scheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${l10n.processing} ${task.status} ${task.speed}',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+      child: Consumer<TaskController>(
+        builder: (context, task, child) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.downloading_rounded,
+                    size: 14,
+                    color: scheme.primary,
                   ),
-                ),
-                if (task.progress != null)
-                  Text(
-                    '${(task.progress! * 100).toInt()}%',
-                    style: textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: scheme.primary,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${l10n.processing} ${task.status} ${task.speed}',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-              ],
+                  if (task.progress != null)
+                    Text(
+                      '${(task.progress! * 100).toInt()}%',
+                      style: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: scheme.primary,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          LinearProgressIndicator(
-            value: task.progress,
-            minHeight: 3,
-            backgroundColor: scheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-          ),
-        ],
+            LinearProgressIndicator(
+              value: task.progress,
+              minHeight: 3,
+              backgroundColor: scheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -618,7 +661,9 @@ class _DownloadAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -629,17 +674,22 @@ class _DownloadAction extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            IconButton(
-              tooltip: l10n.downloads,
-              onPressed: () => nav.setIndex(4),
-              icon: Consumer<TaskController>(
-                builder: (context, task, child) => Icon(
-                  task.isBusy
-                      ? Icons.downloading_rounded
-                      : Icons.download_for_offline_rounded,
-                  color: nav.selectedIndex == 4
-                      ? scheme.primary
-                      : scheme.onSurfaceVariant,
+            Semantics(
+              label: l10n.downloads,
+              button: true,
+              child: IconButton(
+                tooltip: l10n.downloads,
+                onPressed: () => context.read<NavigationController>().setIndex(4),
+                icon: Selector<TaskController, bool>(
+                  selector: (context, task) => task.isBusy,
+                  builder: (context, isBusy, child) => Icon(
+                    isBusy
+                        ? Icons.downloading_rounded
+                        : Icons.download_for_offline_rounded,
+                    color: selectedIndex == 4
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -647,7 +697,7 @@ class _DownloadAction extends StatelessWidget {
               Positioned(
                 top: compact ? 4 : 8,
                 right: compact ? 4 : 8,
-                child: Badge(label: Text('${updates.length}')),
+                child: Badge(label: Text(l10n.resultsFound(updates.length))),
               ),
           ],
         );

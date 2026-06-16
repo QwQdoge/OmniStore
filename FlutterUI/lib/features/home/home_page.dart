@@ -1,5 +1,6 @@
 import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
@@ -12,7 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
-import 'package:frontend/widgets/ai_app_resolver.dart';
+import 'package:frontend/core/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -25,8 +26,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _bannerScrollController = ScrollController();
+  final ScrollController _newArrivalsScrollController = ScrollController();
+  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  final ScrollController _heroScrollController = ScrollController();
+  final ScrollController _quickAccessScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
+
+  @override
+  void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
+    _heroScrollController.dispose();
+    _quickAccessScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   final ScrollController _heroScrollController = ScrollController();
   final ScrollController _quickAccessScrollController = ScrollController();
@@ -51,10 +71,12 @@ class _HomePageState extends State<HomePage> {
   Future<void> _refresh() async {
     final browse = context.read<BrowseController>();
     await browse.fetchRecommendations();
+    if (!mounted) return;
     await _fetchAIPick();
   }
 
   Future<void> _fetchAIPick() async {
+    if (!mounted) return;
     final settings = context.read<SettingsController>();
     if (!settings.isAIEnabled) return;
 
@@ -64,11 +86,28 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          // Hide AI section if the response is an error message
-          final isError = pick.startsWith('⚠') ||
-              pick.startsWith('⏱') ||
-              pick.contains('AI service') ||
-              pick.contains('timed out');
+          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
+          final errorPatterns = [
+            '⚠',
+            '⏱',
+            'AI 服务',
+            'AI service',
+            'timed out',
+            '超时',
+            '无法连接',
+            'Connection',
+            '错误',
+            'error',
+            'Error',
+            '未启用',
+            'not enabled',
+            'failed',
+            'Failed',
+            'Today\'s recommendation: OmniStore',
+          ];
+          final isError = errorPatterns.any(
+            (p) => pick.toLowerCase().contains(p.toLowerCase()),
+          );
           _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });
@@ -142,22 +181,33 @@ class _HomePageState extends State<HomePage> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final featured = browse.recommendations['featured'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['featured'] ?? [],
+                builder: (context, featured, _) {
                   return _buildHeroSection(featured);
                 },
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<SettingsController>(
-                builder: (context, settings, _) {
-                  if (!settings.isAIEnabled) return const SizedBox.shrink();
-                  return _isAILoading
-                      ? _buildAIPickSkeleton()
-                      : (_aiPickBlurb != null
-                          ? _buildAIPickSection()
-                          : const SizedBox.shrink());
+              child: Selector<SettingsController, bool>(
+                selector: (context, settings) => settings.isAIEnabled,
+                builder: (context, isAIEnabled, _) {
+                  if (!isAIEnabled) return const SizedBox.shrink();
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _isAILoading
+                        ? _buildAIPickSkeleton(
+                            key: const ValueKey('ai_skeleton'),
+                          )
+                        : (_aiPickBlurb != null
+                              ? _buildAIPickSection(
+                                  key: const ValueKey('ai_content'),
+                                )
+                              : SizedBox.shrink(
+                                  key: const ValueKey('ai_empty'),
+                                )),
+                  );
                 },
               ),
             ),
@@ -193,9 +243,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final forYou = browse.recommendations['for_you'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['for_you'] ?? [],
+                builder: (context, forYou, _) {
                   if (forYou.isEmpty) return const SizedBox.shrink();
                   return _buildCategoryShelf(
                     l10n.forYou,
@@ -246,20 +297,18 @@ class _HomePageState extends State<HomePage> {
         : null;
     final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
-          ),
-        ),
-        child: Container(
-          width: 440,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHigh,
+    return Semantics(
+      label: 'Featured app: ${app.name}',
+      button: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
+            ),
           ),
           child: Stack(
             children: [
@@ -280,91 +329,93 @@ class _HomePageState extends State<HomePage> {
                     size: 80,
                     color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   ),
-                ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      stops: const [0.5, 1.0],
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                        stops: const [0.5, 1.0],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 20,
-                bottom: 20,
-                right: 20,
-                child: Row(
-                  children: [
-                    Hero(
-                      tag: heroTag,
-                      child: Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                Positioned(
+                  left: 20,
+                  bottom: 20,
+                  right: 20,
+                  child: Row(
+                    children: [
+                      Hero(
+                        tag: heroTag,
+                        child: Container(
+                          width: 54,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: app.icon != null
+                              ? CachedNetworkImage(
+                                  imageUrl: app.icon!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 108,
+                                  memCacheHeight: 108,
+                                  errorWidget: (c, e, s) => const Icon(
+                                    Icons.apps,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Icon(Icons.apps, color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              app.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              app.description,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: app.icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 108,
-                                memCacheHeight: 108,
-                                errorWidget: (c, e, s) =>
-                                    const Icon(Icons.apps, color: Colors.black),
-                              )
-                            : const Icon(Icons.apps, color: Colors.black),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            app.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            app.description,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -377,7 +428,11 @@ class _HomePageState extends State<HomePage> {
     ScrollController controller,
   ) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
+    final controller = _shelfControllers.putIfAbsent(
+      title,
+      () => ScrollController(),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -502,8 +557,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSkeleton() {
+  Widget _buildAIPickSkeleton({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -531,8 +587,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSection() {
+  Widget _buildAIPickSection({Key? key}) {
     return Container(
+      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

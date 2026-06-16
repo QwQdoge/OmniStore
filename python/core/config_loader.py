@@ -1,9 +1,57 @@
 import yaml
 from pathlib import Path
 from typing import Any, Dict, Optional
-
-
 import os
+from pydantic import BaseModel, Field
+
+class SearchSourcesModel(BaseModel):
+    pacman: bool = True
+    aur: bool = True
+    flatpak: bool = True
+    appimage: bool = True
+    snap: bool = True
+    github: bool = True
+    bitu: bool = True
+    winget: bool = True
+    scoop: bool = True
+    brew: bool = True
+    ai: bool = True
+
+class SearchModel(BaseModel):
+    sources: SearchSourcesModel = Field(default_factory=SearchSourcesModel)
+    max_results: int = Field(default=100, ge=1, le=500)
+
+class UIModel(BaseModel):
+    appearance: str = Field(default="system")
+    color_seed: str = Field(default="#4E7EEF")
+    language: str = Field(default="zh-CN")
+    enable_system_tray: bool = True
+    close_to_tray: bool = True
+    font_family: str = "System"
+    font_scale: float = Field(default=1.0, ge=0.5, le=2.0)
+
+class AIModel(BaseModel):
+    enabled: bool = False
+    provider: str = Field(default="ollama")
+    endpoint: str = Field(default="http://localhost:11434")
+    model: str = Field(default="qwen2.5:7b")
+    api_key: str = ""
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=2048, ge=1)
+    proxy: str = ""
+
+class ConfigModel(BaseModel):
+    first_run: bool = True
+    search: SearchModel = Field(default_factory=SearchModel)
+    priority: Dict[str, int] = Field(default_factory=dict)
+    ui: UIModel = Field(default_factory=UIModel)
+    logging: Dict[str, str] = Field(default_factory=dict)
+    notifications: Dict[str, bool] = Field(default_factory=dict)
+    updates: Dict[str, Any] = Field(default_factory=dict)
+    ai: AIModel = Field(default_factory=AIModel)
+    custom_repos: Dict[str, list] = Field(default_factory=dict)
+    mirrors: Dict[str, Any] = Field(default_factory=dict)
+    daemon: Dict[str, Any] = Field(default_factory=dict)
 
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
@@ -55,7 +103,8 @@ class ConfigManager:
             "updates": {
                 "check_interval_hours": 1,
                 "remind_updates": True,
-                "include_aur_in_update_all": True
+                "include_aur_in_update_all": True,
+                "enable_systemd_service": False
             },
             "ai": {
                 "enabled": False,
@@ -115,7 +164,13 @@ class ConfigManager:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 user_cfg = yaml.safe_load(f) or {}
                 # 递归合并，保证用户缺少的配置项由默认值补齐
-                return self._deep_update(self.default_config.copy(), user_cfg)
+                merged = self._deep_update(self.default_config.copy(), user_cfg)
+                try:
+                    validated = ConfigModel(**merged).model_dump()
+                    return validated
+                except Exception as ve:
+                    print(f"[Config] Validation Warning: {ve}")
+                    return merged
         except Exception as e:
             print(f"[Config] Load Error (falling back to default): {e}")
             return self.default_config
@@ -124,6 +179,11 @@ class ConfigManager:
         """保存配置：原子写入 + 实时更新内存内存缓存"""
         cfg = new_config if new_config is not None else self.current_config
         try:
+            try:
+                cfg = ConfigModel(**cfg).model_dump()
+            except Exception as ve:
+                print(f"[Config] Save Validation Warning: {ve}")
+            
             self.config_dir.mkdir(parents=True, exist_ok=True)
             temp_file = self.config_path.with_suffix(".tmp")
 

@@ -1,0 +1,136 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:frontend/models/app_package.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
+
+class SearchResultTile extends StatelessWidget {
+  final AppPackage app;
+  final bool isSelected;
+  final bool isDesktop;
+  final VoidCallback onTap;
+
+  const SearchResultTile({
+    super.key,
+    required this.app,
+    required this.isSelected,
+    required this.isDesktop,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final heroTag = 'search-result-${app.name}-${app.primarySource}';
+
+    // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
+    final isCurrentTask = context.select<TaskController, bool>((taskController) {
+      return taskController.isBusy &&
+          (taskController.packageName == app.name ||
+              taskController.packageName == app.id);
+    });
+
+    return Semantics(
+      label: 'Search result: ${app.name} from ${app.primarySource}',
+      button: true,
+      selected: isSelected,
+      child: AppCard(
+        borderRadius: 12,
+        color: isSelected && isDesktop
+            ? Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : null,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: Hero(
+              tag: heroTag,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  app.icon != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
+                            width: 40,
+                            height: 40,
+                            memCacheWidth: 80,
+                            memCacheHeight: 80,
+                            errorWidget: (c, e, s) => const Icon(Icons.apps),
+                          ),
+                        )
+                      : const Icon(Icons.apps, size: 40),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: isCurrentTask
+                        ? Container(
+                            key: const ValueKey('task_active'),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Skeleton(
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_idle')),
+                  ),
+                ],
+              ),
+            ),
+            title: Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  )
+                : Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            trailing: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        taskController.speed,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      );
+                    },
+                  )
+                : AppSourceTag(
+                    source: app.primarySource,
+                    mode: AppSourceTagMode.source,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}

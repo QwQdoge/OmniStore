@@ -5,12 +5,7 @@ class Skeleton extends StatefulWidget {
   final double? height;
   final double borderRadius;
 
-  const Skeleton({
-    super.key,
-    this.width,
-    this.height,
-    this.borderRadius = 8.0,
-  });
+  const Skeleton({super.key, this.width, this.height, this.borderRadius = 8.0});
 
   @override
   State<Skeleton> createState() => _SkeletonState();
@@ -42,7 +37,9 @@ class _SkeletonState extends State<Skeleton>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final baseColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
+    final baseColor = colorScheme.surfaceContainerHighest.withValues(
+      alpha: 0.5,
+    );
     final highlightColor = colorScheme.surface;
 
     return AnimatedBuilder(

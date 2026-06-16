@@ -25,37 +25,86 @@ def run_command(cmd, cwd, name):
         sys.exit(1)
     print(f"✅ {name} 成功！")
 
-def build_rust():
-    run_command("cargo build --release", RUST_PROJECT_DIR, "Rust Release build")
+def ensure_venv():
+    # Check if .venv already exists in the project
+    venv_dir = PYTHON_PROJECT_DIR / ".venv"
+    if not venv_dir.exists():
+        venv_dir = PYTHON_PROJECT_DIR / "build_venv"
 
-def build_python():
-    # 1. 创建属于沙盒自己的虚拟环境
-    venv_dir = PYTHON_PROJECT_DIR / "build_venv"
     venv_pip = venv_dir / "bin" / "pip"
     venv_pyinstaller = venv_dir / "bin" / "pyinstaller"
 
-    # Windows 下路径不同
     if sys.platform == "win32":
         venv_pip = venv_dir / "Scripts" / "pip.exe"
         venv_pyinstaller = venv_dir / "Scripts" / "pyinstaller.exe"
 
-    subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, cwd=str(PYTHON_PROJECT_DIR))
+    if not venv_dir.exists():
+        print("Creating virtual environment...")
+        try:
+            subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, cwd=str(PYTHON_PROJECT_DIR))
+        except Exception as e:
+            print(f"⚠️ Failed to create virtual environment: {e}")
 
-    # 2. 用虚拟环境隔离的 pip 装东西（绝对不会触发 PEP 668 报错）
-    subprocess.run([str(venv_pip), "install", "--upgrade", "pip"], check=True, cwd=str(PYTHON_PROJECT_DIR))
-    subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=True, cwd=str(PYTHON_PROJECT_DIR))
-    subprocess.run([str(venv_pip), "install", "pyinstaller"], check=True, cwd=str(PYTHON_PROJECT_DIR))
+    if venv_pip.exists():
+        print("Checking/installing dependencies...")
+        try:
+            subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=False, cwd=str(PYTHON_PROJECT_DIR))
+            subprocess.run([str(venv_pip), "install", "pyinstaller"], check=False, cwd=str(PYTHON_PROJECT_DIR))
+        except Exception as e:
+            print(f"⚠️ Dependency installation skipped/failed (possibly offline): {e}")
 
-    # 3. 隔离打包
-    subprocess.run([
-        str(venv_pyinstaller),
+    # Determine PyInstaller path and extra paths for packaging
+    import shutil
+    pyinstaller_path = None
+    extra_args = []
+
+    if venv_pyinstaller.exists():
+        pyinstaller_path = str(venv_pyinstaller)
+    else:
+        system_py = shutil.which("pyinstaller")
+        if system_py:
+            print(f"Using system PyInstaller: {system_py}")
+            pyinstaller_path = system_py
+            site_packages = venv_dir / "lib" / f"python{sys.version_info.major}.{sys.version_info.minor}" / "site-packages"
+            if sys.platform == "win32":
+                site_packages = venv_dir / "Lib" / "site-packages"
+            if site_packages.exists():
+                extra_args = ["--paths", str(site_packages)]
+        else:
+            raise RuntimeError("PyInstaller could not be found in the virtual environment or system PATH.")
+
+    return pyinstaller_path, extra_args
+
+def build_rust():
+    print("\n🚀 [正在执行] Python Daemon Build...")
+    pyinstaller, extra_args = ensure_venv()
+    cmd = [
+        pyinstaller,
+        "--onefile",
+        "--name", "omnistore-daemon",
+        "--clean",
+        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+    ] + extra_args + [str(PYTHON_PROJECT_DIR / "daemon_main.py")]
+    
+    subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
+    print("✅ Python Daemon Build 成功！")
+
+def build_python():
+    print("\n🚀 [正在执行] Python Server Build...")
+    pyinstaller, extra_args = ensure_venv()
+    cmd = [
+        pyinstaller,
         "--onefile",
         "--name", "python_server",
         "--clean",
-        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"), # 👈 缓存 spec 丢这里
-        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"), # 👈 缓存 build 丢这里
-        str(PYTHON_PROJECT_DIR / "main.py"),
-    ], check=True, cwd=str(PYTHON_PROJECT_DIR))
+        "--exclude-module", "PyQt5",
+        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+    ] + extra_args + [str(PYTHON_PROJECT_DIR / "main.py")]
+    
+    subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
+    print("✅ Python Server Build 成功！")
 
 def build_flutter(platform):
     cmd = f"flutter build {platform} --release"
@@ -98,7 +147,7 @@ def assemble(platform, output_dir):
 
     # 复制 Rust 产物
     rust_bin_name = "omnistore-daemon" + binary_ext
-    rust_src = RUST_PROJECT_DIR / "target" / "release" / rust_bin_name
+    rust_src = PYTHON_PROJECT_DIR / "dist" / rust_bin_name
     if rust_src.exists():
         shutil.copy2(rust_src, target_backend_dir / rust_bin_name)
         print(f"✅ copy rust artifacts: {rust_bin_name}")

@@ -10,8 +10,9 @@ abstract final class DesktopWindowService {
   static bool get isSupported {
     if (kIsWeb) return false;
     return switch (defaultTargetPlatform) {
-      TargetPlatform.windows || TargetPlatform.macOS || TargetPlatform.linux =>
-        true,
+      TargetPlatform.windows ||
+      TargetPlatform.macOS ||
+      TargetPlatform.linux => true,
       _ => false,
     };
   }
@@ -27,7 +28,9 @@ abstract final class DesktopWindowService {
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: useSystemTitleBar ? wm.TitleBarStyle.normal : wm.TitleBarStyle.hidden,
+      titleBarStyle: useSystemTitleBar
+          ? wm.TitleBarStyle.normal
+          : wm.TitleBarStyle.hidden,
       title: 'OmniStore',
     );
 

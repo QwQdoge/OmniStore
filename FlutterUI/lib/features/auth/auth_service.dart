@@ -45,16 +45,21 @@ class AuthService extends ChangeNotifier {
   }
 
   void _initDeepLinks() {
-    _linkSubscription = _appLinks.uriLinkStream.listen((uri) async {
-      debugPrint('Deep link received: $uri');
-      if (uri.scheme == 'omnistore' && uri.host == 'auth' && uri.path == '/callback') {
-        // The Supabase SDK automatically intercepts PKCE callbacks if configured correctly.
-        // However, we can manually ensure the session is extracted if needed.
-        // The supabase_flutter plugin intercepts links that match the App/Activity intent.
-      }
-    }, onError: (err) {
-      debugPrint('Deep link error: $err');
-    });
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (uri) async {
+        debugPrint('Deep link received: $uri');
+        if (uri.scheme == 'omnistore' &&
+            uri.host == 'auth' &&
+            uri.path == '/callback') {
+          // The Supabase SDK automatically intercepts PKCE callbacks if configured correctly.
+          // However, we can manually ensure the session is extracted if needed.
+          // The supabase_flutter plugin intercepts links that match the App/Activity intent.
+        }
+      },
+      onError: (err) {
+        debugPrint('Deep link error: $err');
+      },
+    );
   }
 
   /// Initiates the login flow.
@@ -62,7 +67,8 @@ class AuthService extends ChangeNotifier {
   Future<void> signIn() async {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.github, // Configured provider in Supabase linked to account.meoarch.org
+        OAuthProvider
+            .github, // Configured provider in Supabase linked to account.meoarch.org
         redirectTo: 'omnistore://auth/callback',
         authScreenLaunchMode: LaunchMode.externalApplication,
       );

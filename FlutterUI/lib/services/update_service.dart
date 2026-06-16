@@ -5,11 +5,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart' as wm;
-import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'backend_service.dart';
 import 'task_manager.dart';
 
+// Background update scheduling for OmniStore (Linux desktop):
+//
+// Dynamic interval updates: When the user changes `updates.check_interval_hours`
+// in Settings, SettingsController.updateConfig() automatically calls
+// UpdateService().updateConfig(), which triggers _startUpdateTimer().
+// _startUpdateTimer() compares the new interval with _currentInterval and only
+// restarts the Dart Timer when the value has actually changed — so in-app
+// interval changes take effect immediately without restarting the app.
+//
+// Background updates when app is closed: Handled via a systemd user-level timer
+// (omnistore-update.timer) written to ~/.config/systemd/user/ on Linux.
+// Android WorkManager and iOS BackgroundFetch are NOT applicable — OmniStore
+// is a Linux desktop application.
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
   factory UpdateService() => _instance;
@@ -40,9 +52,11 @@ class UpdateService {
   String Function(int) _notificationBody = (count) =>
       "$count applications are available";
 
-  Future<void> init() async {
-    if (kIsWeb) return;
-    
+  /// Returns true if the system tray was successfully initialized (or not required).
+  /// Returns false if tray init failed and background residency is unavailable.
+  Future<bool> init() async {
+    if (kIsWeb) return true;
+
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
     const InitializationSettings initializationSettings =
@@ -50,9 +64,11 @@ class UpdateService {
     await _notificationsPlugin.initialize(settings: initializationSettings);
 
     try {
-      await _initSystemTray();
+      final trayOk = await _initSystemTray();
+      return trayOk;
     } catch (e) {
       debugPrint('System tray init failed: $e');
+      return false;
     }
   }
 
@@ -82,9 +98,41 @@ class UpdateService {
         await _notificationsPlugin.initialize(settings: initializationSettings);
       }
       _startUpdateTimer();
-      await _initSystemTray();
+      // 更新托盘菜单文本（初始化已在 init() 中完成）
+      await _refreshTrayMenu();
     } else {
       _startUpdateTimer();
+    }
+  }
+
+  /// Murphy-proof: Safely refresh the tray menu with strict timeout and error handling.
+  /// Prevents UI hangs if the system tray backend (D-Bus, etc.) is unresponsive.
+  Future<void> _refreshTrayMenu() async {
+    if (kIsWeb) return;
+    try {
+      final Menu menu = Menu();
+      await menu.buildFrom([
+        MenuItemLabel(
+          label: _showWindowLabel,
+          onClicked: (menuItem) => wm.windowManager.show(),
+        ),
+        MenuItemLabel(
+          label: _checkUpdatesLabel,
+          onClicked: (menuItem) => checkNow(),
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: _exitLabel,
+          onClicked: (menuItem) => _handleFullExit(),
+        ),
+      ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
+
+      await _systemTray.setContextMenu(menu).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => throw TimeoutException("Tray context menu update timed out"),
+      );
+    } catch (e) {
+      debugPrint('Murphy-proof Warning: Failed to refresh tray menu: $e');
     }
   }
 
@@ -109,121 +157,258 @@ class UpdateService {
     }
   }
 
-  Future<void> _initSystemTray() async {
-    if (kIsWeb) return;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return;
-
-    final config = await BackendService.instance.loadConfig();
-    final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
-    if (!trayEnabled) {
-      debugPrint("System tray disabled in config.");
-      return;
-    }
-
-    final String home =
-        Platform.environment['HOME'] ??
-        '/home/${Platform.environment['USER'] ?? 'user'}';
-    final configDir = Directory(p.join(home, '.config', 'omnistore'));
-    final guardFile = File(p.join(configDir.path, '.tray_initializing'));
-
-    if (Platform.isLinux) {
-      if (guardFile.existsSync()) {
-        debugPrint("System tray previously crashed. Skipping to prevent loop.");
-        return;
-      }
-
-      final hasDeps = await _checkLinuxTrayDependencies();
-      if (!hasDeps) {
-        debugPrint(
-          "Skipping system tray initialization due to missing dependencies.",
-        );
-        return;
-      }
-    }
+  /// Murphy-proof: Initializes the system tray with isolation, dependency checks,
+  /// and crash-loop guards. Returns true on success or if disabled by user.
+  /// Uses a guard file to detect and skip if the tray library caused a crash.
+  Future<bool> _initSystemTray() async {
+    if (kIsWeb) return true;
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
 
     try {
-      if (Platform.isLinux) {
-        if (!configDir.existsSync()) configDir.createSync(recursive: true);
-        guardFile.createSync();
+      final config = await BackendService.instance.loadConfig();
+      final bool trayEnabled = config['ui']?['enable_system_tray'] ?? true;
+      if (!trayEnabled) {
+        debugPrint("System tray disabled in config.");
+        return true;
       }
 
-      String iconPath = 'assets/app_icon.png';
+      final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+      final configDir = Directory(p.join(home, '.config', 'omnistore'));
+      final guardFile = File(p.join(configDir.path, '.tray_initializing'));
+
       if (Platform.isLinux) {
-        final String executablePath = Platform.resolvedExecutable;
-        final String executableDir = p.dirname(executablePath);
+        if (guardFile.existsSync()) {
+          debugPrint("Murphy-proof Guard: System tray previously crashed. Skipping to prevent crash loop.");
+          return false;
+        }
 
-        final List<String> candidatePaths = [
-          p.join(
-            executableDir,
-            'data',
-            'flutter_assets',
-            'assets',
-            'app_icon.png',
-          ),
-          p.join(executableDir, 'assets', 'app_icon.png'),
-          p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
-          p.join(Directory.current.path, 'assets', 'app_icon.png'),
-        ];
+        final hasDeps = await _checkLinuxTrayDependencies();
+        if (!hasDeps) {
+          debugPrint("Skipping system tray initialization due to missing dependencies (libdbusmenu/libappindicator).");
+          return false;
+        }
+      }
 
-        for (final path in candidatePaths) {
-          if (File(path).existsSync()) {
-            iconPath = path;
-            debugPrint("Found tray icon at: $path");
-            break;
+      try {
+        if (Platform.isLinux) {
+          if (!configDir.existsSync()) configDir.createSync(recursive: true);
+          // Atomic creation of guard file
+          guardFile.writeAsStringSync(DateTime.now().toIso8601String());
+        }
+
+        String iconPath = 'assets/app_icon.png';
+        if (Platform.isLinux) {
+          final String executablePath = Platform.resolvedExecutable;
+          final String executableDir = p.dirname(executablePath);
+
+          final List<String> candidatePaths = [
+            p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
+            p.join(executableDir, 'assets', 'app_icon.png'),
+            p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
+            p.join(Directory.current.path, 'assets', 'app_icon.png'),
+          ];
+
+          for (final path in candidatePaths) {
+            if (File(path).existsSync()) {
+              iconPath = path;
+              break;
+            }
           }
         }
-      }
 
-      await _systemTray
-          .initSystemTray(title: "OmniStore", iconPath: iconPath)
-          .timeout(const Duration(seconds: 3));
+        // Initialize with strict timeout
+        await _systemTray.initSystemTray(title: "OmniStore", iconPath: iconPath).timeout(
+              const Duration(seconds: 4),
+              onTimeout: () => throw TimeoutException("System tray init timed out"),
+            );
 
-      final Menu menu = Menu();
-      await menu
-          .buildFrom([
-            MenuItemLabel(
-              label: _showWindowLabel,
-              onClicked: (menuItem) => wm.windowManager.show(),
-            ),
-            MenuItemLabel(
-              label: _checkUpdatesLabel,
-              onClicked: (menuItem) => checkNow(),
-            ),
-            MenuSeparator(),
-            MenuItemLabel(
-              label: _exitLabel,
-              onClicked: (menuItem) => _handleFullExit(),
-            ),
-          ])
-          .timeout(const Duration(seconds: 2));
+        final Menu menu = Menu();
+        await menu.buildFrom([
+          MenuItemLabel(
+            label: _showWindowLabel,
+            onClicked: (menuItem) => wm.windowManager.show(),
+          ),
+          MenuItemLabel(
+            label: _checkUpdatesLabel,
+            onClicked: (menuItem) => checkNow(),
+          ),
+          MenuSeparator(),
+          MenuItemLabel(
+            label: _exitLabel,
+            onClicked: (menuItem) => _handleFullExit(),
+          ),
+        ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
 
-      await _systemTray
-          .setContextMenu(menu)
-          .timeout(const Duration(seconds: 2));
+        await _systemTray.setContextMenu(menu).timeout(
+              const Duration(seconds: 2),
+              onTimeout: () => throw TimeoutException("Tray context menu setup timed out"),
+            );
 
-      _systemTray.registerSystemTrayEventHandler((eventName) {
-        if (eventName == kSystemTrayEventClick) {
-          wm.windowManager.show();
-        } else if (eventName == kSystemTrayEventRightClick) {
-          _systemTray.popUpContextMenu();
+        _systemTray.registerSystemTrayEventHandler((eventName) {
+          try {
+            if (eventName == kSystemTrayEventClick) {
+              wm.windowManager.show();
+            } else if (eventName == kSystemTrayEventRightClick) {
+              _systemTray.popUpContextMenu();
+            }
+          } catch (e) {
+            debugPrint("Tray event error: $e");
+          }
+        });
+
+        if (Platform.isLinux && guardFile.existsSync()) {
+          guardFile.deleteSync();
         }
-      });
-
-      if (Platform.isLinux && guardFile.existsSync()) {
-        guardFile.deleteSync();
+        return true;
+      } catch (e) {
+        debugPrint("Murphy-proof Error: System tray initialization failed: $e");
+        return false;
+      } finally {
+        // Cleanup guard file if something went wrong but we're still running
+        if (Platform.isLinux && guardFile.existsSync()) {
+          try {
+            guardFile.deleteSync();
+          } catch (_) {}
+        }
       }
-    } catch (e) {
-      debugPrint("System tray initialization failed gracefully: $e");
+    } catch (outerError) {
+      debugPrint("Fatal tray init exception: $outerError");
+      return false;
     }
   }
 
+  int? _currentInterval;
+
+  /// Starts or restarts the in-app periodic timer only when the configured
+  /// interval has actually changed.  Also synchronises the systemd background
+  /// timer so that background checks (when the app is closed) use the same
+  /// cadence.  When the `updates` section is entirely absent from config the
+  /// timer is left running with the previous interval to avoid accidental
+  /// disabling.
   void _startUpdateTimer() {
-    _updateTimer?.cancel();
     final interval = _config['updates']?['check_interval_hours'] ?? 1;
-    _updateTimer = Timer.periodic(Duration(hours: interval), (timer) {
+    final enabled = _config['updates']?['remind_updates'] ?? true;
+    final systemdEnabled =
+        _config['updates']?['enable_systemd_service'] ?? false;
+
+    if (!enabled) {
+      // User disabled background update checks — cancel any running timer
+      // and remove the systemd timer so the app also stops checking in the
+      // background when closed.
+      if (_updateTimer != null) {
+        _updateTimer!.cancel();
+        _updateTimer = null;
+        _currentInterval = null;
+        debugPrint('Update timer disabled by config.');
+        _disableSystemdBackgroundTimer();
+      }
+      return;
+    }
+
+    if (systemdEnabled) {
+      _setupSystemdBackgroundTimer(interval);
+    } else {
+      _disableSystemdBackgroundTimer();
+    }
+
+    if (_updateTimer != null && _currentInterval == interval) {
+      return; // Interval unchanged — nothing to do.
+    }
+
+    _currentInterval = interval;
+
+    // Murphy-proof: Explicitly cancel and nullify existing timer before reallocation
+    // to prevent memory leaks and duplicate background check loops.
+    _cancelUpdateTimer();
+
+    try {
+      _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
+      // Initial trigger
       checkNow();
-    });
-    checkNow();
+    } catch (e) {
+      debugPrint("Murphy-proof Warning: Failed to start update timer: $e");
+    }
+  }
+
+  /// Murphy-proof: Safely cancel and nullify the update timer.
+  void _cancelUpdateTimer() {
+    try {
+      _updateTimer?.cancel();
+    } catch (_) {}
+    _updateTimer = null;
+  }
+
+  /// Writes a systemd user-level service + timer that runs OmniStore in
+  /// headless mode to check for updates even when the GUI is closed.
+  /// Called whenever the check interval changes.
+  Future<void> _setupSystemdBackgroundTimer(int intervalHours) async {
+    if (!Platform.isLinux) return;
+    try {
+      final home = Platform.environment['HOME'] ?? '/home/user';
+      final systemdDir = Directory(p.join(home, '.config', 'systemd', 'user'));
+      if (!systemdDir.existsSync()) {
+        systemdDir.createSync(recursive: true);
+      }
+
+      final serviceFile = File(
+        p.join(systemdDir.path, 'omnistore-update.service'),
+      );
+      final timerFile = File(p.join(systemdDir.path, 'omnistore-update.timer'));
+
+      final exePath = Platform.resolvedExecutable;
+
+      serviceFile.writeAsStringSync('''[Unit]
+Description=OmniStore Background Update Checker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=$exePath --check-updates-background
+Restart=no
+ExecStopPost=/bin/sh -c 'if [ "\$\$SERVICE_RESULT" != "success" ]; then systemctl --user disable --now omnistore-update.timer; fi'
+''');
+
+      timerFile.writeAsStringSync('''[Unit]
+Description=Run OmniStore Background Update Checker
+
+[Timer]
+OnCalendar=*:0/$intervalHours
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+''');
+
+      await Process.run('systemctl', ['--user', 'daemon-reload']);
+      await Process.run('systemctl', [
+        '--user',
+        'enable',
+        '--now',
+        'omnistore-update.timer',
+      ]);
+      debugPrint(
+        'systemd background timer set to every $intervalHours hour(s).',
+      );
+    } catch (e) {
+      debugPrint('Failed to setup systemd background timer: $e');
+    }
+  }
+
+  /// Stops and disables the systemd user-level timer so the app no longer
+  /// checks for updates in the background when the GUI is closed.
+  Future<void> _disableSystemdBackgroundTimer() async {
+    if (!Platform.isLinux) return;
+    try {
+      await Process.run('systemctl', [
+        '--user',
+        'disable',
+        '--now',
+        'omnistore-update.timer',
+      ]);
+      debugPrint('systemd background timer disabled.');
+    } catch (e) {
+      debugPrint('Failed to disable systemd background timer: $e');
+    }
   }
 
   Future<void> checkNow() async {
@@ -282,6 +467,8 @@ class UpdateService {
     }
   }
 
+  /// Murphy-proof: Isolated notification trigger.
+  /// Ensures notification failures (e.g. missing daemon) do not crash the app.
   Future<void> _showNotification({
     required int id,
     required String title,
@@ -290,14 +477,19 @@ class UpdateService {
   }) async {
     if (kIsWeb) return;
     try {
+      // Isolate native plugin call within a strict try-catch boundary
       await _notificationsPlugin.show(
         id: id,
         title: title,
         body: body,
         notificationDetails: notificationDetails,
+      ).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => throw TimeoutException("Notification service unresponsive"),
       );
     } catch (e) {
-      debugPrint("Failed to show notification: $e");
+      // Silently log and skip to ensure core logic (like update checking) continues
+      debugPrint("Murphy-proof Warning: Notification suppressed: $e");
     }
   }
 

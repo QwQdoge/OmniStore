@@ -1,3 +1,4 @@
+import 'dart:async';
 import "package:frontend/data/repositories/package_repository.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
@@ -9,6 +10,7 @@ class BrowseController with ChangeNotifier {
   List<AppPackage> _searchResults = [];
   bool _isSearching = false;
   String? _pendingSearchQuery;
+  Timer? _debounceTimer;
 
   BrowseController(this._packageRepository);
 
@@ -28,15 +30,26 @@ class BrowseController with ChangeNotifier {
   }
 
   Future<void> search(String query) async {
+    _debounceTimer?.cancel();
     _isSearching = true;
     notifyListeners();
 
-    final results = await _packageRepository.searchPackages(query);
-    _searchResults = results
-        .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
-        .toList();
+    final completer = Completer<void>();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        _searchResults = await _packageRepository.searchPackages(query);
+      } finally {
+        _isSearching = false;
+        notifyListeners();
+        completer.complete();
+      }
+    });
+    return completer.future;
+  }
 
-    _isSearching = false;
-    notifyListeners();
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }

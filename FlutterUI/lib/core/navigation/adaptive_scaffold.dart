@@ -19,7 +19,7 @@ class AdaptiveScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 800;
-        
+
         if (isDesktop && useSidebar && sideBar != null) {
           return Scaffold(
             body: Row(
@@ -33,7 +33,9 @@ class AdaptiveScaffold extends StatelessWidget {
 
         return Scaffold(
           body: body,
-          bottomNavigationBar: !isDesktop && bottomNav != null ? bottomNav : null,
+          bottomNavigationBar: !isDesktop && bottomNav != null
+              ? bottomNav
+              : null,
         );
       },
     );

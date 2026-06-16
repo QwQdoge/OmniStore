@@ -29,10 +29,13 @@ Future<void> bootstrapOmniStore() async {
   try {
     // ⚡ Load config first to know window style
     config = await configRepo.loadConfig();
-    final useSystemTitleBar = config['ui']?['use_system_title_bar'] ?? false;
+    // 始终使用系统标题栏，忽略配置中的 use_system_title_bar 选项
+    const useSystemTitleBar = true;
 
     final results = await Future.wait([
-      DesktopWindowService.initialize(useSystemTitleBar: useSystemTitleBar).timeout(const Duration(seconds: 5)),
+      DesktopWindowService.initialize(
+        useSystemTitleBar: useSystemTitleBar,
+      ).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
     ]);
     prefs = results[1] as SharedPreferences;

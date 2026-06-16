@@ -63,7 +63,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get source => 'Source';
 
   @override
-  String get variant => 'Variant';
+  String get variant => 'Versions';
 
   @override
   String get version => 'Version';
@@ -73,7 +73,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count results';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -219,7 +225,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String foundUpdates(int count) {
-    return 'Found $count updates';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count updates',
+      one: 'Found 1 update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -251,7 +263,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore: Found $count updates';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'OmniStore: Found $count updates',
+      one: 'OmniStore: Found 1 update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -363,7 +381,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return 'Export successful: $count packages';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Export successful: $count packages',
+      one: 'Export successful: 1 package',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -376,7 +400,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return 'Read $count packages from backup. Start batch recovery?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count packages from backup. Start batch recovery?',
+      one: 'Read 1 package from backup. Start recovery?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -668,7 +698,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importPackagesConfirm(int count) {
-    return 'Read $count packages from file. Start batch download?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Read $count packages from file. Start batch download?',
+      one: 'Read 1 package from file. Start download?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -733,7 +769,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return 'Dependencies ($count)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dependencies ($count)',
+      one: 'Dependency (1)',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -779,7 +821,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return '$count applications are available for update';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count applications are available for update',
+      one: '1 application is available for update',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -859,6 +907,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String errorUpdateFailed(String error) {
     return 'Update failed: $error';
+  }
+
+  @override
+  String checkUpdateFailed(String error) {
+    return 'Check update failed: $error';
   }
 
   @override
@@ -989,4 +1042,123 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nameCopied => 'Name copied to clipboard';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageSubtitle => 'Requires restart to take effect';
+
+  @override
+  String get restartTitleBar => 'Please restart to apply title bar changes';
+
+  @override
+  String get enableDaemon => 'Enable Background Update Daemon';
+
+  @override
+  String get enableDaemonDesc =>
+      'Regularly check for updates in the background';
+
+  @override
+  String get autoUpdate => 'Silent Auto Update';
+
+  @override
+  String get autoUpdateDesc =>
+      'Automatically download and update all packages in the background';
+
+  @override
+  String get checkIntervalTitle => 'Update Check Frequency';
+
+  @override
+  String checkIntervalSubtitle(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Automatically check every $hours hours',
+      one: 'Automatically check every hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get typography => 'Typography';
+
+  @override
+  String get fontFamily => 'Font Family';
+
+  @override
+  String get fontScale => 'Font Scale';
+
+  @override
+  String get systemDefault => 'System Default';
+
+  @override
+  String hourValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get langSimplifiedChinese => 'Simplified Chinese';
+
+  @override
+  String get langTraditionalChinese => 'Traditional Chinese';
+
+  @override
+  String get langEnglish => 'English';
+
+  @override
+  String get langJapanese => 'Japanese';
+
+  @override
+  String get langSpanish => 'Spanish';
+
+  @override
+  String get taskInProgress => 'Another task is already in progress';
+
+  @override
+  String get trayInitFailedExiting =>
+      'System tray initialization failed. Exiting to prevent background errors.';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get appDetailsNotFound => 'App details not found';
+
+  @override
+  String diskSpaceInfo(String free, String total) {
+    return 'Disk Space: $free GB free / $total GB total';
+  }
+
+  @override
+  String cacheTypeInfo(String pacman, String flatpak, String custom) {
+    return 'Pacman: $pacman MB | Flatpak: $flatpak MB | Custom: $custom MB';
+  }
+
+  @override
+  String get backSemanticsLabel => 'Back';
+
+  @override
+  String get backSemanticsHint => 'Go back to the previous screen';
+
+  @override
+  String categorySemantics(String name) {
+    return 'Category: $name';
+  }
+
+  @override
+  String get temperatureRangeError => 'Value must be between 0.0 and 2.0';
+
+  @override
+  String get enableSystemdService => 'Enable systemd Background Service';
+
+  @override
+  String get enableSystemdServiceDesc =>
+      'Allow registering systemd timer to check for updates when the app is closed';
 }

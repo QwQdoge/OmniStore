@@ -26,19 +26,14 @@ class TerminalDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return Dialog(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       child: SizedBox(
         width: 600,
         height: 400,
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.only(
@@ -57,9 +52,14 @@ class TerminalDialog extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, size: 18),
+                  Semantics(
+                    label: AppLocalizations.of(context)!.windowClose,
+                    button: true,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: AppLocalizations.of(context)!.windowClose,
+                    ),
                   ),
                 ],
               ),

@@ -19,10 +19,7 @@ class RollingNumber extends StatelessWidget {
       duration: duration,
       curve: Curves.easeOutCubic,
       builder: (context, val, child) {
-        return Text(
-          val.toInt().toString(),
-          style: style,
-        );
+        return Text(val.toInt().toString(), style: style);
       },
     );
   }

@@ -63,6 +63,9 @@ class AIAssistant:
         endpoint = str(cfg.get("endpoint", "")).rstrip('/')
         model = str(cfg.get("model", ""))
         api_key = str(cfg.get("api_key", ""))
+        if not api_key or api_key == "******":
+            import os
+            api_key = os.environ.get("OMNISTORE_AI_API_KEY", "")
         proxy = str(cfg.get("proxy", ""))
 
         headers = {"Content-Type": "application/json"}
@@ -85,7 +88,12 @@ class AIAssistant:
                     "generationConfig": {"temperature": cfg.get("temperature", 0.7), "maxOutputTokens": cfg.get("max_tokens", 2048)}
                 }
             else: # OpenAI Compatible
-                url = f"{endpoint}/v1/chat/completions" if endpoint else "https://api.openai.com/v1/chat/completions"
+                if endpoint:
+                    url = endpoint.rstrip('/')
+                    if not url.endswith("/chat/completions"):
+                        url = f"{url}/v1/chat/completions" if not url.endswith("/v1") else f"{url}/chat/completions"
+                else:
+                    url = "https://api.openai.com/v1/chat/completions"
                 if api_key: headers["Authorization"] = f"Bearer {api_key}"
                 payload = {
                     "model": model or "gpt-3.5-turbo",
@@ -180,3 +188,12 @@ class AIAssistant:
         except: readme = ""
         system = "Summarize the OmniStore project in concise markdown."
         return await self._post_request(system, f"README:\n{readme}" if readme else "OmniStore project summary.")
+
+    async def test_connection(self) -> str:
+        """Test the AI connection and configuration."""
+        lang = self._get_language()
+        system = f"You are a connection tester. Reply exactly with 'CONNECTION_OK'. Do not add any other text."
+        response = await self._post_request(system, "Ping")
+        if "CONNECTION_OK" in response or "OK" in response.upper():
+            return "success"
+        return f"failed: {response}"

@@ -1,10 +1,85 @@
 import 'dart:io';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path/path.dart' as p;
 
 /// Resolves paths to `python/main.py` or the packaged `python_server` binary.
 /// Lives in `lib/data/` (Flutter-side bridge), not the `python/` backend tree.
 class PythonBridge {
+  static const _secureStorage = FlutterSecureStorage();
+  static const String apiKeyStorageKey = 'omnistore_ai_api_key';
+
+  static Future<String?> getApiKey() async {
+    try {
+      return await _secureStorage.read(key: apiKeyStorageKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> saveApiKey(String key) async {
+    try {
+      await _secureStorage.write(key: apiKeyStorageKey, value: key);
+    } catch (_) {}
+  }
+
+  static Future<void> deleteApiKey() async {
+    try {
+      await _secureStorage.delete(key: apiKeyStorageKey);
+    } catch (_) {}
+  }
+
+  static Future<ProcessResult> run(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+  }) async {
+    final apiKey = await getApiKey();
+    final env = environment != null
+        ? Map<String, String>.from(environment)
+        : <String, String>{};
+    if (apiKey != null && apiKey.isNotEmpty) {
+      env['OMNISTORE_AI_API_KEY'] = apiKey;
+    }
+    return Process.run(
+      executable,
+      arguments,
+      workingDirectory: workingDirectory,
+      environment: env.isEmpty ? null : env,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+    );
+  }
+
+  static Future<Process> start(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    ProcessStartMode mode = ProcessStartMode.normal,
+  }) async {
+    final apiKey = await getApiKey();
+    final env = environment != null
+        ? Map<String, String>.from(environment)
+        : <String, String>{};
+    if (apiKey != null && apiKey.isNotEmpty) {
+      env['OMNISTORE_AI_API_KEY'] = apiKey;
+    }
+    return Process.start(
+      executable,
+      arguments,
+      workingDirectory: workingDirectory,
+      environment: env.isEmpty ? null : env,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+      mode: mode,
+    );
+  }
+
   static String get projectRoot {
     final searchRoots = <String>{Directory.current.path};
 
@@ -55,7 +130,10 @@ class PythonBridge {
         Platform.isWindows ? 'python_server.exe' : 'python_server',
       );
     }
-    final candidate = p.join(projectRoot, 'python', '.venv', 'bin', 'python');
+    final String binPath = Platform.isWindows
+        ? p.join('Scripts', 'python.exe')
+        : p.join('bin', 'python');
+    final candidate = p.join(projectRoot, 'python', '.venv', binPath);
     return File(candidate).existsSync() ? candidate : 'python';
   }
 

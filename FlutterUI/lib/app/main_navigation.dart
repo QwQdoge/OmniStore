@@ -57,8 +57,38 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   Future<void> _initUpdateService(AppLocalizations l10n) async {
     try {
-      await UpdateService().init().timeout(const Duration(seconds: 10));
-      await UpdateService().updateConfig(l10n).timeout(const Duration(seconds: 5));
+      final trayOk = await UpdateService().init().timeout(
+        const Duration(seconds: 10),
+      );
+      await UpdateService()
+          .updateConfig(l10n)
+          .timeout(const Duration(seconds: 5));
+
+      // 如果后台驻留（系统托盘）初始化失败，给一个提示并关闭该功能，而不是退出
+      if (!trayOk && DesktopWindowService.isSupported) {
+        if (!mounted) return;
+        final settings = context.read<SettingsController>();
+        final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
+        if (closeToTray) {
+          debugPrint(
+            '[UpdateService] System tray init failed while close_to_tray=true. '
+            'Disabling close_to_tray instead of exiting.',
+          );
+
+          await settings.setCloseToTray(false);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  '托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.',
+                ),
+                duration: Duration(seconds: 5),
+              ),
+            );
+          }
+        }
+      }
     } catch (e) {
       debugPrint('UpdateService initialization failed: $e');
     }
@@ -74,6 +104,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   void onWindowClose() async {
+    if (!mounted) return;
     final settings = context.read<SettingsController>();
     final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
@@ -81,6 +112,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       await wm.windowManager.hide();
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.runningInBackground),
@@ -113,7 +145,9 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   @override
   Widget build(BuildContext context) {
-    final nav = context.watch<NavigationController>();
+    final selectedIndex = context.select<NavigationController, int>(
+      (n) => n.selectedIndex,
+    );
     final l10n = AppLocalizations.of(context)!;
 
     final primary = [
@@ -166,10 +200,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     return AdaptiveNavigationShell(
       destinations: primary,
       secondaryDestinations: secondary,
-      pageTitle: titles[nav.selectedIndex] ?? '',
-      pageChild: _pages[nav.selectedIndex],
-      showSearch: nav.selectedIndex != 2,
-      onSearch: () => nav.setIndex(2),
+      pageTitle: titles[selectedIndex] ?? '',
+      pageChild: _pages[selectedIndex],
+      showSearch: selectedIndex != 2,
+      onSearch: () => context.read<NavigationController>().setIndex(2),
       useWindowTitleBar: DesktopWindowService.isSupported,
     );
   }
