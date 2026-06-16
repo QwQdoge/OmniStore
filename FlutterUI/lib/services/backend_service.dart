@@ -312,11 +312,19 @@ class BackendService {
 
     try {
       if (!processAlive) {
+        // Murphy-proof: check both binary existence and execution permissions before start
+        if (!File(_venvPython).existsSync() && _venvPython != 'python') {
+          debugPrint("Backend Error: Python executable not found at $_venvPython");
+          return;
+        }
+
         _daemonProcess = await Process.start(
           _venvPython,
           _buildArgs(['--daemon', '--json']),
           workingDirectory: _workingDir,
-        );
+        ).timeout(const Duration(seconds: 10), onTimeout: () {
+          throw TimeoutException("Failed to start Python daemon within 10s");
+        });
         _allProcesses.add(_daemonProcess!);
 
         // Divert python stderr outputs to a structured local debug log file
@@ -324,7 +332,13 @@ class BackendService {
         _daemonProcess!.stderr
             .transform(utf8.decoder)
             .listen(
-              (data) => logSink.write(data),
+              (data) {
+                try {
+                  logSink.write(data);
+                } catch (e) {
+                  debugPrint("LogSink write error: $e");
+                }
+              },
               onError: (e) => debugPrint("Daemon stderr write error: $e"),
               onDone: () => logSink.close(),
             );
@@ -524,7 +538,9 @@ class BackendService {
         _buildArgs(args),
         workingDirectory: _workingDir,
         environment: env.isEmpty ? null : env,
-      );
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException("Process start timed out for $args");
+      });
       _allProcesses.add(process);
 
       // 3. Wait for termination with mandatory timeout
@@ -583,7 +599,9 @@ class BackendService {
         workingDirectory: _workingDir,
         environment: env.isEmpty ? null : env,
         runInShell: true,
-      );
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException("Streaming process start timed out for $args");
+      });
       _allProcesses.add(process);
 
       activeProcess = process;
@@ -729,7 +747,9 @@ class BackendService {
         _venvPython,
         _buildArgs(["-S", trimmedQuery, "--json"]),
         workingDirectory: _workingDir,
-      );
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException("Search process start timed out");
+      });
       _allProcesses.add(process);
       activeSearchProcess = process;
 
@@ -911,22 +931,51 @@ class BackendService {
     }
   }
 
-  Future<String> aiExplain(String name, String desc) =>
-      _aiCall(["--ai-explain", name, "--ai-desc", desc]);
-  Future<String> aiSummarizeUpdate(String n, String c, String next) =>
-      _aiCall(["--ai-changelog", "$n,$c,$next"]);
-  Future<String> aiGenerateCLI(String n, String s) =>
-      _aiCall(["--ai-cli", "$n,$s"], timeout: const Duration(seconds: 20));
-  Future<String> aiDetectConflicts(String n) => _aiCall(["--ai-conflicts", n]);
+  Future<String> aiExplain(String name, String desc) {
+    _validateString(name, "AI App Name");
+    return _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
+  }
+
+  Future<String> aiSummarizeUpdate(String n, String c, String next) {
+    _validateString(n, "AI Package Name");
+    return _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
+  }
+
+  Future<String> aiGenerateCLI(String n, String s) {
+    _validateString(n, "AI App Name");
+    _validateString(s, "AI Source");
+    return _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
+        timeout: const Duration(seconds: 20));
+  }
+
+  Future<String> aiDetectConflicts(String n) {
+    _validateString(n, "AI Package Name");
+    return _aiCall(["--ai-conflicts", n.trim()]);
+  }
+
   Future<String> aiPickOfTheDay() => _aiCall(["--ai-pick"]);
-  Future<String> aiSuggestCorrection(String q) =>
-      _aiCall(["--ai-correct", q], timeout: const Duration(seconds: 15));
-  Future<String> aiCompareVariants(String n) => _aiCall(["--ai-compare", n]);
+
+  Future<String> aiSuggestCorrection(String q) {
+    _validateString(q, "AI Query");
+    return _aiCall(["--ai-correct", q.trim()],
+        timeout: const Duration(seconds: 15));
+  }
+
+  Future<String> aiCompareVariants(String n) {
+    _validateString(n, "AI App Name");
+    return _aiCall(["--ai-compare", n.trim()]);
+  }
+
   Future<String> aiSystemHealth() => _aiCall(["--ai-health"]);
+
   Future<String> aiAnalyzeError(String log) =>
-      _aiCall(["--ai-analyze-error", log]);
-  Future<String> aiRecommend(String p) =>
-      _aiCall(["--ai-recommend", p], timeout: const Duration(seconds: 90));
+      _aiCall(["--ai-analyze-error", log.trim()]);
+
+  Future<String> aiRecommend(String p) {
+    _validateString(p, "AI Prompt");
+    return _aiCall(["--ai-recommend", p.trim()],
+        timeout: const Duration(seconds: 90));
+  }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     if (kIsWeb) {
@@ -1230,7 +1279,7 @@ class BackendService {
       return TaskRepository().updateAll(s);
     }
     try {
-      _validateString(s, "Source");
+      _validateString(s, "Update Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
     } catch (e) {
       return Stream.value(
@@ -1335,12 +1384,17 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().cleanSystem();
     }
+    // Deep Reaping guaranteed by _safeStream
     return _safeStream(["--clean-system", "--json"]);
   }
 
   Future<bool> addCustomRepo(String type, String name, String url) async {
     if (kIsWeb) return true;
     try {
+      _validateString(type, "Repo Type");
+      _validateString(name, "Repo Name");
+      _validateString(url, "Repo URL");
+
       final daemonRes = await _sendToDaemon("run_add_custom_repo", [
         type.trim(),
         name.trim(),
@@ -1368,6 +1422,9 @@ class BackendService {
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {
+      _validateString(type, "Repo Type");
+      _validateString(name, "Repo Name");
+
       final daemonRes = await _sendToDaemon("run_remove_custom_repo", [
         type.trim(),
         name.trim(),
