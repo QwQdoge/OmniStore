@@ -165,6 +165,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                       success = result;
                     }
 
+                    if (!mounted) return;
+
                     messenger.showSnackBar(
                       SnackBar(
                         content: Text(
