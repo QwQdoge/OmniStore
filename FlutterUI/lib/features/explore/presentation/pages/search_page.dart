@@ -384,3 +384,400 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 }
+
+class SearchResultTile extends StatelessWidget {
+  final AppPackage app;
+  final bool isSelected;
+  final bool isDesktop;
+  final VoidCallback onTap;
+
+  const SearchResultTile({
+    super.key,
+    required this.app,
+    required this.isSelected,
+    required this.isDesktop,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final heroTag = 'search-result-${app.name}-${app.primarySource}';
+
+    // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
+    final isCurrentTask = context.select<TaskController, bool>((taskController) {
+      return taskController.isBusy &&
+          (taskController.packageName == app.name ||
+              taskController.packageName == app.id);
+    });
+
+    return Semantics(
+      label: 'Search result: ${app.name} from ${app.primarySource}',
+      button: true,
+      selected: isSelected,
+      child: AppCard(
+        borderRadius: 12,
+        color: isSelected && isDesktop
+            ? Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : null,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: Hero(
+              tag: heroTag,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  app.icon != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
+                            width: 40,
+                            height: 40,
+                            memCacheWidth: 80,
+                            memCacheHeight: 80,
+                            errorWidget: (c, e, s) => const Icon(Icons.apps),
+                          ),
+                        )
+                      : const Icon(Icons.apps, size: 40),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: isCurrentTask
+                        ? Container(
+                            key: const ValueKey('task_active'),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Skeleton(
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_idle')),
+                  ),
+                ],
+              ),
+            ),
+            title: Text(
+              app.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  )
+                : Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            trailing: isCurrentTask
+                ? Consumer<TaskController>(
+                    builder: (context, taskController, child) {
+                      return Text(
+                        taskController.speed,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      );
+                    },
+                  )
+                : AppSourceTag(
+                    source: app.primarySource,
+                    mode: AppSourceTagMode.source,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DiscoveryContent extends StatefulWidget {
+  final AppLocalizations l10n;
+  final TextEditingController searchController;
+  final Function(String) performSearch;
+
+  const _DiscoveryContent({
+    super.key,
+    required this.l10n,
+    required this.searchController,
+    required this.performSearch,
+  });
+
+  @override
+  State<_DiscoveryContent> createState() => _DiscoveryContentState();
+}
+
+class _DiscoveryContentState extends State<_DiscoveryContent> {
+  final ScrollController _categoryScrollController = ScrollController();
+  final ScrollController _trendingScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _categoryScrollController.dispose();
+    _trendingScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = CategoryService.getCategories(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              widget.l10n.categories,
+              style: OmnistoreTheme.standardHeader(context),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 156,
+            child: Scrollbar(
+              controller: _categoryScrollController,
+              thumbVisibility: true,
+              child: ListView.builder(
+                controller: _categoryScrollController,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: AppCard(
+                      elevation: 0,
+                      margin: EdgeInsets.zero,
+                      borderRadius: 20,
+                      onTap: () {
+                        widget.searchController.text =
+                            '/${cat.id.toLowerCase()}';
+                        widget.performSearch(widget.searchController.text);
+                      },
+                      child: Semantics(
+                        label: AppLocalizations.of(
+                          context,
+                        )!.categorySemantics(cat.name),
+                        button: true,
+                        child: SizedBox(
+                          width: 100,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    cat.icon,
+                                    size: 28,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  cat.name,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Consumer<BrowseController>(
+            builder: (context, browse, _) {
+              final trending = browse.recommendations['trending'] ?? [];
+              if (trending.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      widget.l10n.hotApps,
+                      style: OmnistoreTheme.standardHeader(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 196,
+                    child: Scrollbar(
+                      controller: _trendingScrollController,
+                      thumbVisibility: true,
+                      child: ListView.builder(
+                        controller: _trendingScrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        itemCount: trending.length,
+                        itemBuilder: (context, index) {
+                          final app = trending[index];
+                          final trendingHeroTag =
+                              'trending-shelf-${app.name}-${app.primarySource}';
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            child: AppCard(
+                              clipBehavior: Clip.antiAlias,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AppDetailsPage(
+                                    app: app,
+                                    heroTag: trendingHeroTag,
+                                  ),
+                                ),
+                              ),
+                              child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Hero(
+                                        tag: trendingHeroTag,
+                                        child: app.icon != null
+                                            ? CachedNetworkImage(
+                                                imageUrl: app.icon!,
+                                                fit: BoxFit.cover,
+                                                memCacheWidth: 300,
+                                              )
+                                            : const Icon(Icons.apps, size: 48),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Text(
+                                        app.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyResults extends StatelessWidget {
+  final AppLocalizations l10n;
+  final TextEditingController searchController;
+  final Function(String) performSearch;
+
+  const _EmptyResults({
+    super.key,
+    required this.l10n,
+    required this.searchController,
+    required this.performSearch,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final categories = CategoryService.getCategories(context);
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off_rounded,
+              size: 64,
+              color: theme.colorScheme.outline,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.noResults,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 48),
+            Text(
+              l10n.categories,
+              style: OmnistoreTheme.standardHeader(context),
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: categories
+                  .map(
+                    (cat) => ActionChip(
+                      onPressed: () {
+                        searchController.text = '/${cat.id.toLowerCase()}';
+                        performSearch(searchController.text);
+                      },
+                      label: Text(cat.name),
+                      avatar: Icon(cat.icon, size: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
