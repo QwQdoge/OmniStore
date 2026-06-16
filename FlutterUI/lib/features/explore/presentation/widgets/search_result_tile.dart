@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
@@ -9,14 +10,12 @@ import 'package:frontend/core/widgets/skeleton.dart';
 
 class SearchResultTile extends StatelessWidget {
   final AppPackage app;
-  final bool isSelected;
   final bool isDesktop;
   final VoidCallback onTap;
 
   const SearchResultTile({
     super.key,
     required this.app,
-    required this.isSelected,
     required this.isDesktop,
     required this.onTap,
   });
@@ -24,6 +23,16 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
+
+    // Check if this specific app is currently selected in BrowseController
+    final isSelected = context.select<BrowseController, bool>((b) {
+      final selected = b.selectedApp;
+      if (selected == null) return false;
+      if (selected.id != null && app.id != null) {
+        return selected.id == app.id;
+      }
+      return selected.name == app.name;
+    });
 
     // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
     final isCurrentTask = context.select<TaskController, bool>((taskController) {

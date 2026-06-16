@@ -15,7 +15,7 @@ class AppCard extends StatefulWidget {
     this.onTap,
     this.color,
     this.borderRadius = 16.0,
-    this.clipBehavior = Clip.none,
+    this.clipBehavior = Clip.antiAlias,
     this.elevation,
     this.margin,
   });
@@ -73,20 +73,21 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
           width: 1,
         ),
       ),
-      child: cardChild,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        onTap: widget.onTap,
+        child: widget.child,
+      ),
     );
 
-    if (isInteractive) {
-      return MouseRegion(
+    if (widget.onTap != null) {
+      content = MouseRegion(
         onEnter: (_) => _controller.forward(),
         onExit: (_) => _controller.reverse(),
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: current,
-        ),
+        child: ScaleTransition(scale: _scaleAnimation, child: content),
       );
     }
 
-    return current;
+    return content;
   }
 }

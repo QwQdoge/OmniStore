@@ -9,6 +9,7 @@ import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
 import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -25,7 +26,6 @@ class _SearchPageState extends State<SearchPage> {
   final ScrollController _sourceFilterScrollController = ScrollController();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
-  AppPackage? _selectedApp;
   BrowseController? _browseController;
 
   @override
@@ -110,26 +110,23 @@ class _SearchPageState extends State<SearchPage> {
       }).toList();
     }
 
-    setState(() {
-      if (filteredResults.isNotEmpty) {
-        _selectedApp = filteredResults.first;
-      } else {
-        _selectedApp = null;
-      }
-    });
+    if (filteredResults.isNotEmpty) {
+      browse.selectedApp = filteredResults.first;
+    } else {
+      browse.selectedApp = null;
+    }
   }
 
   void _performSearch(String query) {
     if (query.length < 2) {
       setState(() {
         _showDiscovery = true;
-        _selectedApp = null;
       });
+      context.read<BrowseController>().selectedApp = null;
       return;
     }
     setState(() {
       _showDiscovery = false;
-      _selectedApp = null;
     });
     context.read<BrowseController>().search(query);
   }
@@ -168,8 +165,8 @@ class _SearchPageState extends State<SearchPage> {
                           setState(() {
                             _showDiscovery = true;
                             _selectedSources.clear();
-                            _selectedApp = null;
                           });
+                          context.read<BrowseController>().selectedApp = null;
                         },
                       );
                     }
@@ -189,11 +186,17 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Consumer<BrowseController>(
-                    builder: (context, browse, _) {
-                      final resultsContent = browse.isSearching
+                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, List<String> filters, double width})>(
+                    selector: (context, b) => (
+                      results: b.searchResults,
+                      isSearching: b.isSearching,
+                      filters: List.from(_selectedSources),
+                      width: MediaQuery.sizeOf(context).width,
+                    ),
+                    builder: (context, data, _) {
+                      final resultsContent = data.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(browse, l10n);
+                          : _buildResults(data.results, l10n);
 
                       if (isDesktop) {
                         return Row(
@@ -202,20 +205,26 @@ class _SearchPageState extends State<SearchPage> {
                             const VerticalDivider(width: 1),
                             Expanded(
                               flex: 6,
-                              child: _selectedApp == null
-                                  ? Center(
+                              child: Selector<BrowseController, AppPackage?>(
+                                selector: (context, b) => b.selectedApp,
+                                builder: (context, selectedApp, _) {
+                                  if (selectedApp == null) {
+                                    return Center(
                                       child: Text(
                                         l10n.noResults,
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyLarge,
                                       ),
-                                    )
-                                  : AppDetailsPage(
-                                      app: _selectedApp!,
-                                      isEmbedded: true,
-                                      key: ValueKey(_selectedApp!.id),
-                                    ),
+                                    );
+                                  }
+                                  return AppDetailsPage(
+                                    app: selectedApp,
+                                    isEmbedded: true,
+                                    key: ValueKey(selectedApp.id ?? selectedApp.name),
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         );
@@ -332,13 +341,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildResults(
-    BrowseController browse,
+    List<AppPackage> searchResults,
     AppLocalizations l10n,
   ) {
     final isDesktop = MediaQuery.sizeOf(context).width > 900;
-    var filteredResults = browse.searchResults;
+    var filteredResults = searchResults;
     if (_selectedSources.isNotEmpty) {
-      filteredResults = browse.searchResults.where((app) {
+      filteredResults = searchResults.where((app) {
         return _selectedSources.contains(app.primarySource.toLowerCase());
       }).toList();
     }
@@ -360,13 +369,10 @@ class _SearchPageState extends State<SearchPage> {
         final app = filteredResults[index];
         return SearchResultTile(
           app: app,
-          isSelected: _selectedApp?.id == app.id,
           isDesktop: isDesktop,
           onTap: () {
             if (isDesktop) {
-              setState(() {
-                _selectedApp = app;
-              });
+              context.read<BrowseController>().selectedApp = app;
             } else {
               Navigator.push(
                 context,
