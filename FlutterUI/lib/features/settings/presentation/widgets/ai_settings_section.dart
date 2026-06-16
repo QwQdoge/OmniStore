@@ -122,15 +122,17 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   Future<void> _testAIConnection() async {
     if (!mounted) return;
     setState(() => _isTestingAI = true);
+
+    // Capture l10n before the async gap where context is known to be valid
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       final res = await BackendService.instance.testAiConnection();
       if (!mounted) return;
       setState(() => _isTestingAI = false);
 
       final isSuccess = res["status"] == "success";
-      final msg =
-          res["response"] ??
-          (isSuccess ? "Connection OK" : "Connection failed");
+      final msg = res["response"] ?? "";
 
       showDialog(
         context: context,
@@ -143,11 +145,11 @@ class _AISettingsSectionState extends State<AISettingsSection> {
               ),
               const SizedBox(width: 8),
               Text(
-                isSuccess ? "AI Connection Success" : "AI Connection Failed",
+                isSuccess ? l10n.aiTestSuccess : l10n.failed,
               ),
             ],
           ),
-          content: SelectableText(msg.toString()),
+          content: msg.toString().isNotEmpty ? SelectableText(msg.toString()) : null,
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c),
@@ -161,7 +163,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       setState(() => _isTestingAI = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ).showSnackBar(SnackBar(content: Text(l10n.aiTestFailed(e.toString()))));
     }
   }
 
