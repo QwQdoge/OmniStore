@@ -230,9 +230,7 @@
     "description": "Message while auto detecting sources"
   },
   "autoUpdate": "Actualización automática silenciosa",
-  "@autoUpdate": {},
   "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
-  "@autoUpdateDesc": {},
   "back": "Atrás",
   "@back": {
     "description": "Back button label"
