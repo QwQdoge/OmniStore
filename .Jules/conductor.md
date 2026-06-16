@@ -9,3 +9,4 @@
 - Replaced `CircularProgressIndicator` with `Skeleton` widget in `download_page.dart` to ensure subtle implicit animations between the loading state (skeletons) and the refresh icon.
 - Replaced `CircularProgressIndicator` with `Skeleton` in `settings_page.dart` to ensure subtle implicit animations between the loading state (skeletons) and the final icon text.
 - Replaced `CircularProgressIndicator` with loading skeletons across list views in `search_page.dart`. Wrapped these elements in `AnimatedSwitcher`s using explicit `ValueKey`s to smooth state transitions per Conductor directives.
+- Added `AnimatedSwitcher` and `Skeleton` widget to replace the `CircularProgressIndicator` in the "Test Connection" button within `AISettingsSection` (`ai_settings_section.dart`) to ensure smooth and subtle state transitions, aligning with MD3 guidelines and Conductor directives.
