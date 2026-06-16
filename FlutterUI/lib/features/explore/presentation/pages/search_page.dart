@@ -22,11 +22,19 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-  final ValueNotifier<bool> _hasSearchText = ValueNotifier(false);
+  final ScrollController _sourceFilterScrollController = ScrollController();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
   AppPackage? _selectedApp;
   BrowseController? _browseController;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    _sourceFilterScrollController.dispose();
+    super.dispose();
+  }
 
   String _displayName(String key) {
     final mapping = {
@@ -236,14 +244,15 @@ class _SearchPageState extends State<SearchPage> {
     if (enabledSources.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      height: 50,
+      height: 66,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Scrollbar(
-        controller: _quickFilterScrollController,
+        controller: _sourceFilterScrollController,
         thumbVisibility: true,
         child: ListView(
-          controller: _quickFilterScrollController,
+          controller: _sourceFilterScrollController,
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(bottom: 8),
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
