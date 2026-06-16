@@ -81,7 +81,7 @@ class TasksTab extends StatelessWidget {
                             context: context,
                             builder: (_) => const TerminalDialog(),
                           ),
-                          icon: const Icon(Icons.terminal_outlined),
+                          icon: const Icon(Icons.terminal_rounded),
                           label: Text(l10n.terminalOutput),
                         ),
                       ],

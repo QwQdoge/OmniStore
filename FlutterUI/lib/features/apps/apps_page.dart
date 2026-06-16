@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
@@ -22,6 +24,7 @@ class _AppsPageState extends State<AppsPage> {
   List<AppPackage> _apps = [];
   List<AppPackage> _filteredApps = [];
   bool _isLoading = true;
+  Timer? _searchDebounceTimer;
 
   @override
   void initState() {
@@ -32,12 +35,21 @@ class _AppsPageState extends State<AppsPage> {
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _applyFilter();
+    });
+  }
+
+  void _applyFilter() {
+    if (!mounted) return;
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredApps = _apps.where((app) {
@@ -55,7 +67,7 @@ class _AppsPageState extends State<AppsPage> {
     if (mounted) {
       setState(() {
         _apps = results.map((json) => AppPackage.fromJson(json)).toList();
-        _onSearchChanged();
+        _applyFilter();
         _isLoading = false;
       });
     }
@@ -202,13 +214,16 @@ class _AppsPageState extends State<AppsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 12,
+            child: ListTile(
+              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(width: double.infinity, height: 12),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+            ),
           ),
         );
       },

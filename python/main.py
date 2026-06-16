@@ -8,6 +8,7 @@ import asyncio
 import inspect
 import os
 import re
+import shutil
 import signal
 import contextlib
 from pathlib import Path
@@ -102,20 +103,30 @@ async def handle_daemon_client(backend, reader, writer):
                 if not line:
                     continue
 
-                # 2. Extreme parameter validation: limit payload size to 1MB
+                # 2. Extreme parameter validation: limit payload size to 1MB to prevent OOM attacks
                 if len(line) > 1024 * 1024:
-                    raise ValueError("Daemon Payload exceeds 1MB safety limit")
-                cmd_data = json.loads(line)
+                    logging.error(f"Security Warning: Daemon payload from {client_addr} exceeds 1MB limit.")
+                    writer.write(json.dumps({"status": "error", "error": "Payload too large (Max 1MB)"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                    break
+
+                try:
+                    cmd_data = json.loads(line)
+                except json.JSONDecodeError as je:
+                    logging.error(f"Daemon JSON error from {client_addr}: {je}")
+                    writer.write(json.dumps({"status": "error", "error": "Invalid JSON format"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                    continue
             except asyncio.TimeoutError:
-                logging.warning(f"Daemon client {client_addr} timed out")
+                logging.debug(f"Daemon client {client_addr} connection timed out")
                 break
             except Exception as ex:
-                logging.error(f"Invalid daemon request from {client_addr}: {ex}")
+                logging.error(f"Unexpected daemon request error from {client_addr}: {ex}")
                 try:
-                    writer.write(json.dumps({"status": "error", "error": f"Malformed Request: {ex}"}).encode('utf-8') + b'\n')
+                    writer.write(json.dumps({"status": "error", "error": "Request Handling Failed"}).encode('utf-8') + b'\n')
                     await writer.drain()
                 except: pass
-                continue
+                break
             
             # 3. Execution isolation: redirect stdout and catch all per-action errors
             captured_stdout = io.StringIO()
@@ -199,20 +210,29 @@ async def handle_daemon_client(backend, reader, writer):
 
 
 def safe_command(func):
-    """Decorator to isolate command failures and prevent backend crashes."""
+    """
+    Murphy-proof decorator to isolate command failures and prevent backend crashes.
+    Ensures that any exception within a command is caught, logged to stderr with
+    a full traceback for developers, and returned as a graceful error to the UI.
+    """
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
         try:
             return await func(self, *args, **kwargs)
         except asyncio.CancelledError:
+            # Re-raise to allow proper async task cancellation
             raise
         except Exception as e:
             import traceback
             # Divert full traceback to stderr for diagnostics, isolated from UI stdout
+            # This is critical for Murphy-proof debugging without polluting the JSON stream.
+            error_msg = f"Murphy-proof Error in {func.__name__}: {str(e)}"
+            logging.error(error_msg)
             traceback.print_exc(file=sys.stderr)
 
+            # Attempt to notify the frontend via callback or structured JSON
             json_mode = getattr(self, "json_mode", False)
-            await self._handle_error(f"Internal error in {func.__name__}", e, json_mode)
+            await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
             return False
     return wrapper
 
@@ -300,29 +320,36 @@ class OmnistoreBackend:
         """
         Murphy-proof cleanup: ensures all sessions and background executors
         are explicitly destroyed to prevent memory leaks and zombie processes.
+        Idempotent and resilient to partial initialization.
         """
         try:
-            # 1. Close aiohttp session
-            if self.session and not self.session.closed:
-                try:
-                    await self.session.close()
-                except: pass
-                self.session = None
-
-            # 2. Stop the installation executor if it exists
+            # 1. Stop background executors first to halt new activity
             if self._executor:
                 try:
                     self._executor.stop()
-                except: pass
+                except Exception as e:
+                    logging.debug(f"Cleanup: Executor stop error: {e}")
+                self._executor = None
 
-            # 3. Invalidate large caches to free memory if this was a heavy session
-            if self.manager:
-                self.manager = None
-            if self.recommender:
-                self.recommender = None
+            # 2. Close network sessions with timeout to prevent hanging on close
+            if self.session and not self.session.closed:
+                try:
+                    await asyncio.wait_for(self.session.close(), timeout=2.0)
+                except Exception as e:
+                    logging.debug(f"Cleanup: Session close error: {e}")
+                self.session = None
+
+            # 3. Explicitly nullify large manager objects to assist GC in long-running daemon mode
+            self.manager = None
+            self.recommender = None
+            self._ai = None
+            self._updater = None
+            self._repo_manager = None
+            self._essentials = None
 
         except Exception as e:
-            logging.error(f"Murphy-proof Error during OmnistoreBackend cleanup: {e}")
+            # Final catch-all for cleanup to ensure we don't crash the exit sequence
+            logging.error(f"Murphy-proof Critical: Cleanup failure: {e}")
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
@@ -495,10 +522,15 @@ class OmnistoreBackend:
             # ⚡ Optimization: Parallelize extra info fetching for variants
             # Murphy-proof: Use safe_subprocess to prevent zombies
             async def _fetch_variant_info(variant):
-                if variant['source'] in ("Native", "Pacman", "AUR"):
+                source = variant['source']
+                if source in ("Native", "Pacman", "AUR"):
                     try:
-                        flag = "-Si" if variant['source'] in ("Native", "Pacman") else "-Sii"
-                        cmd = ["pacman" if variant['source'] in ("Native", "Pacman") else "yay", flag, variant.get('name', search_name)]
+                        binary = "pacman" if source in ("Native", "Pacman") else "yay"
+                        if not shutil.which(binary):
+                            return
+
+                        flag = "-Si" if source in ("Native", "Pacman") else "-Sii"
+                        cmd = [binary, flag, variant.get('name', search_name)]
                         async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                             stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
                             if stdout:
@@ -696,15 +728,22 @@ class OmnistoreBackend:
     @safe_command
     async def run_export_packages(self, filepath: str):
         installed = []
-        for cmd, src in [(["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR")]:
+        commands = [
+            (["pacman", "-Qqne"], "Native"),
+            (["flatpak", "list", "--app", "--columns=application"], "Flatpak"),
+            (["yay", "-Qm"], "AUR")
+        ]
+        for cmd, src in commands:
+            if not shutil.which(cmd[0]):
+                continue
             try:
                 async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     if stdout:
                         for line in stdout.decode().strip().splitlines():
                             if line: installed.append({"name": line.split()[0], "source": src})
-            except Exception:
-                pass
+            except Exception as e:
+                logging.debug(f"Export {src} failed: {e}")
 
         export_dir = os.path.dirname(os.path.abspath(filepath))
         if export_dir: os.makedirs(export_dir, exist_ok=True)
@@ -742,7 +781,6 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_get_storage_info(self, json_mode: bool = False):
-        import shutil
         async with self:
             home_path = os.path.expanduser("~")
             total, used, free = shutil.disk_usage(home_path)
@@ -805,7 +843,6 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_clean_system(self, json_mode: bool = False) -> bool:
-        import shutil
         async def cb(m): await self._flutter_callback(m, json_mode)
         try:
             if not json_mode: console.print(Panel("Starting System Cleanup", border_style="blue"))
@@ -1246,11 +1283,13 @@ async def main():
 
             elif validated_args.ai_health:
                 status = await backend.env.check_env()
-                try:
-                    async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                        status["orphaned_count"] = len(stdout.decode().splitlines())
-                except: status["orphaned_count"] = 0
+                status["orphaned_count"] = 0
+                if shutil.which("pacman"):
+                    try:
+                        async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                            status["orphaned_count"] = len(stdout.decode().splitlines())
+                    except: pass
                 res = await backend.ai.generate_health_report(status)
                 sys.stdout.write(json.dumps({"response": res}) + "\n")
 
@@ -1279,12 +1318,15 @@ async def main():
 
             elif validated_args.ai_conflicts:
                 p = validated_args.ai_conflicts
-                try:
-                    async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                        res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
-                        sys.stdout.write(json.dumps({"response": res}) + "\n")
-                except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+                if shutil.which("pacman"):
+                    try:
+                        async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
+                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                            res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                            sys.stdout.write(json.dumps({"response": res}) + "\n")
+                    except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+                else:
+                    sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
 
             elif validated_args.essentials:
                 async with backend: await backend.run_get_essentials()

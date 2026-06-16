@@ -101,6 +101,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
     );
 
     await taskController.runCleanSystem(l10n);
+    if (!mounted) return;
     await _fetchStorageInfo();
   }
 
@@ -131,10 +132,14 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _fetchStorageInfo,
-                  tooltip: l10n.refresh,
+                Semantics(
+                  label: l10n.refresh,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh_rounded),
+                    onPressed: _fetchStorageInfo,
+                    tooltip: l10n.refresh,
+                  ),
                 ),
               ],
             ),

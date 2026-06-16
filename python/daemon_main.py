@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from datetime import datetime, timezone
 
+from core.subprocess_utils import safe_subprocess
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -86,12 +88,12 @@ async def run_auto_updates(updates):
     if has_flatpaks:
         logging.info("Auto-updating Flatpak applications...")
         try:
-            proc = await asyncio.create_subprocess_exec(
+            async with safe_subprocess(
                 "flatpak", "update", "-y", "--user",
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
-            )
-            await proc.wait()
+            ) as proc:
+                await proc.wait()
         except Exception as e:
             logging.error(f"Flatpak auto-update failed: {e}")
 
@@ -106,12 +108,12 @@ async def run_auto_updates(updates):
         if has_natives:
             logging.info("Running as root. Auto-updating native packages...")
             try:
-                proc = await asyncio.create_subprocess_exec(
+                async with safe_subprocess(
                     "pacman", "-Syu", "--noconfirm",
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
-                )
-                await proc.wait()
+                ) as proc:
+                    await proc.wait()
             except Exception as e:
                 logging.error(f"Pacman auto-update failed: {e}")
     else:
@@ -123,12 +125,12 @@ async def run_update_check(config):
     cmd_args = cmd + ["-C", "--json"]
     
     try:
-        proc = await asyncio.create_subprocess_exec(
+        async with safe_subprocess(
             *cmd_args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        ) as proc:
+            stdout, stderr = await proc.communicate()
         
         if proc.returncode == 0:
             try:

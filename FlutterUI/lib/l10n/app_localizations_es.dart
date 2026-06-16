@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Variante';
+  String get variant => 'Versiones';
 
   @override
   String get version => 'Versión';
@@ -101,7 +101,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pacmanOfficial => 'Pacman (Oficial)';
 
   @override
-  String get aurUser => 'AUR (Repositorio de usuario)';
+  String get aurUser => 'AUR (Repositorio de usuarios)';
 
   @override
   String get flatpak => 'Flatpak';
@@ -218,7 +218,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updates => 'Actualizaciones';
 
   @override
-  String get upToDate => 'Todas las aplicaciones están actualizadas';
+  String get upToDate => 'Todas las aplicaciones están al día';
 
   @override
   String get checkUpdates => 'Buscar actualizaciones';
@@ -900,8 +900,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get flatpakFull => 'Flatpak (Flathub)';
 
   @override
-  String get errorPackageNameRequired =>
-      'Error: El nombre del paquete no puede estar vacío';
+  String get errorPackageNameRequired => 'El nombre del paquete es obligatorio';
 
   @override
   String errorStartFailed(String error) {

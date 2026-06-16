@@ -36,3 +36,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Extracted boolean/structural checks into targeted `context.select<TaskController, bool>((tc) => ...)` statements.
 - Confined high-frequency reads (progress, status strings, download speeds) exclusively to small inner `Consumer<TaskController>` widgets to surgically update just the relevant text or progress bar UI without dirtying the parent element.
+
+## 2026-06-15 - State Management: Proper Use of `context.read` in Widget Lifecycle
+
+**Learning:** Calling `context.read<T>()` directly inside a `build()` method violates Provider contracts and causes errors in newer Provider versions. Additionally, instantiating Futures directly inside `build()` (e.g., for a `FutureBuilder`) causes the Future to re-execute every time the widget rebuilds, leading to redundant API calls and janky UI.
+
+**Action:**
+- Moved `context.read<PackageRepository>()` in `UpdatesTab` out of the `build()` method and directly into the async `onTap` callback where it is actually needed.
+- Refactored `AIUpdateSummaryDialog` from a `StatelessWidget` to a `StatefulWidget`. Retrieved `context.read<AIRepository>()` inside `initState()` and cached the resulting Future to ensure it is only executed once, significantly improving efficiency and safety.

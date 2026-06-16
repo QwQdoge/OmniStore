@@ -45,7 +45,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     Widget buildListContent() {
       if (_apps.isEmpty) {
@@ -195,27 +195,22 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
   }
 
   Widget _buildSkeletonList({Key? key}) {
-    final scheme = Theme.of(context).colorScheme;
     return ListView.builder(
       key: key,
       padding: const EdgeInsets.all(16),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return Card.filled(
-          margin: const EdgeInsets.only(bottom: 12),
-          color: scheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.15),
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 16,
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Skeleton(width: 44, height: 44, borderRadius: 12),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(width: double.infinity, height: 12),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
             ),
-          ),
-          child: const ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: Skeleton(width: 44, height: 44, borderRadius: 12),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
         );
       },

@@ -1,17 +1,14 @@
-import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:frontend/services/category_service.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
+import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
+import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -25,11 +22,19 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-  final ValueNotifier<bool> _hasSearchText = ValueNotifier(false);
+  final ScrollController _sourceFilterScrollController = ScrollController();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
   AppPackage? _selectedApp;
   BrowseController? _browseController;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    _sourceFilterScrollController.dispose();
+    super.dispose();
+  }
 
   String _displayName(String key) {
     final mapping = {
@@ -134,7 +139,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -184,11 +189,11 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Consumer2<BrowseController, SettingsController>(
-                    builder: (context, browse, settings, _) {
+                : Consumer<BrowseController>(
+                    builder: (context, browse, _) {
                       final resultsContent = browse.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(browse, l10n, settings);
+                          : _buildResults(browse, l10n);
 
                       if (isDesktop) {
                         return Row(
@@ -239,14 +244,15 @@ class _SearchPageState extends State<SearchPage> {
     if (enabledSources.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      height: 50,
+      height: 66,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Scrollbar(
-        controller: _quickFilterScrollController,
+        controller: _sourceFilterScrollController,
         thumbVisibility: true,
         child: ListView(
-          controller: _quickFilterScrollController,
+          controller: _sourceFilterScrollController,
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(bottom: 8),
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
@@ -291,7 +297,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildDiscovery(AppLocalizations l10n) {
-    return _DiscoveryContent(
+    return DiscoveryContent(
       key: const ValueKey('discovery'),
       l10n: l10n,
       searchController: _searchController,
@@ -305,17 +311,20 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(
-              width: double.infinity,
-              height: 12,
-              borderRadius: 4,
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 12,
+            child: ListTile(
+              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(
+                width: double.infinity,
+                height: 12,
+                borderRadius: 4,
+              ),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
             ),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
           ),
         );
       },
@@ -325,9 +334,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildResults(
     BrowseController browse,
     AppLocalizations l10n,
-    SettingsController settings,
   ) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = browse.searchResults.where((app) {
@@ -336,7 +344,7 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     if (filteredResults.isEmpty) {
-      return _EmptyResults(
+      return EmptyResults(
         key: const ValueKey('empty'),
         l10n: l10n,
         searchController: _searchController,
