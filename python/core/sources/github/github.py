@@ -172,19 +172,21 @@ class GitHubSource(UnifiedSource):
         repo_id = package.get("id")
         repo_safe_name = repo_id.replace("/", "_")
         install_dir = Path.home() / ".local/share/omnistore/github" / repo_safe_name
+        from core.subprocess_utils import safe_subprocess
         # Find the executable (usually the biggest file that isn't a zip/tar)
         executables = [f for f in install_dir.iterdir() if f.is_file() and os.access(f, os.X_OK)]
         if executables:
             # Sort by size, assuming the main binary is larger
             executables.sort(key=lambda x: x.stat().st_size, reverse=True)
-            subprocess.Popen([str(executables[0])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess(str(executables[0]), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         repo_id = package.get("id")
         if not repo_id: return False
         repo_safe_name = repo_id.replace("/", "_")
+        from core.subprocess_utils import safe_subprocess
 
         # Cross-platform data directory
         if sys.platform == "win32":
@@ -199,8 +201,8 @@ class GitHubSource(UnifiedSource):
 
         install_dir = base_dir / repo_safe_name
         if install_dir.exists():
-            subprocess.Popen([open_cmd, str(install_dir)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess(open_cmd, str(install_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         return False
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:

@@ -181,8 +181,8 @@ class FlatpakSource(UnifiedSource):
         if not app_id:
             return False
         try:
-            subprocess.Popen(["flatpak", "run", app_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess("flatpak", "run", app_id, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         except Exception:
             return False
 
@@ -193,12 +193,12 @@ class FlatpakSource(UnifiedSource):
         try:
             user_path = os.path.expanduser(f"~/.local/share/flatpak/app/{app_id}")
             if os.path.exists(user_path):
-                subprocess.Popen(["xdg-open", user_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
+                async with safe_subprocess("xdg-open", user_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                    return True
             system_path = f"/var/lib/flatpak/app/{app_id}"
             if os.path.exists(system_path):
-                subprocess.Popen(["xdg-open", system_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
+                async with safe_subprocess("xdg-open", system_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                    return True
         except Exception:
             pass
         return False

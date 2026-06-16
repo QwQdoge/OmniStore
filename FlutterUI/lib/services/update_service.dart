@@ -573,16 +573,31 @@ WantedBy=timers.target
   Future<void> _handleFullExit() async {
     if (kIsWeb) return;
     try {
-      // Murphy-proof: Use BackendService.dispose for systematic cleanup first
+      // 1. Attempt coordinated shutdown of the Python backend
+      try {
+        await BackendService.instance.shutdownBackend().timeout(
+              const Duration(seconds: 2),
+            );
+      } catch (e) {
+        debugPrint("Coordinated backend shutdown failed: $e");
+      }
+
+      // 2. Systematic cleanup of Flutter-side resources and processes
       await BackendService.instance.dispose().timeout(
             const Duration(seconds: 5),
             onTimeout: () => debugPrint("BackendService dispose timed out during exit"),
           );
 
-      await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 2));
-      await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 2));
-      await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 2));
-    } catch (_) {}
-    exit(0);
+      // 3. Last-resort reaping of any lingering components
+      try {
+        await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 1));
+        await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 1));
+        await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 1));
+      } catch (_) {}
+    } catch (_) {
+      // Final catch-all to ensure we definitely exit
+    } finally {
+      exit(0);
+    }
   }
 }

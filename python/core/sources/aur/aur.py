@@ -176,8 +176,9 @@ class AurSource(UnifiedSource):
         if not name:
             return False
         try:
-            subprocess.Popen([name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess(name, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) as proc:
+                # We don't wait for completion here as we want to just fire and forget the app
+                return True
         except Exception:
             return False
 
@@ -190,8 +191,8 @@ class AurSource(UnifiedSource):
                 stdout, _ = await proc.communicate()
                 if proc.returncode == 0:
                     binary_dir = os.path.dirname(stdout.decode().strip())
-                    subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    return True
+                    async with safe_subprocess("xdg-open", binary_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                        return True
         except Exception: pass
         return False
 

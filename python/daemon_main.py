@@ -51,16 +51,16 @@ def load_config():
         logging.error(f"Failed to load/parse config, falling back to defaults: {e}")
         return defaults
 
-def send_notification(summary: str, body: str):
+async def send_notification(summary: str, body: str):
     logging.info(f"Sending notification: {summary} - {body}")
     try:
         # Use notify-send which is standard on Linux desktops
-        subprocess.run(
-            ["notify-send", "-a", "OmniStore", "-t", "5000", summary, body],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        async with safe_subprocess(
+            "notify-send", "-a", "OmniStore", "-t", "5000", summary, body,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL
+        ) as proc:
+            await proc.wait()
     except Exception as e:
         logging.error(f"Failed to send notification via notify-send: {e}")
 
@@ -151,7 +151,7 @@ async def run_update_check(config):
 
                 if count > 0 and config.get("notifications"):
                     msg = f"您有 {count} 个可用的软件更新项目，点击进入商店查看并更新。"
-                    send_notification("OmniStore 软件更新提示", msg)
+                    await send_notification("OmniStore 软件更新提示", msg)
 
                 if count > 0 and config.get("auto_update"):
                     await run_auto_updates(updates)
