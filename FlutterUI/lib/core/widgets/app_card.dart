@@ -50,12 +50,22 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isInteractive = widget.onTap != null;
 
-    Widget content = Card(
+    Widget cardChild = widget.child;
+    if (isInteractive) {
+      cardChild = InkWell(
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        onTap: widget.onTap,
+        child: cardChild,
+      );
+    }
+
+    Widget current = Card(
       color: widget.color ?? theme.colorScheme.surfaceContainerLow,
-      clipBehavior: widget.clipBehavior,
       elevation: widget.elevation,
       margin: widget.margin,
+      clipBehavior: widget.clipBehavior,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(widget.borderRadius),
         side: BorderSide(

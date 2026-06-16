@@ -1,6 +1,7 @@
-import "package:frontend/data/repositories/task_repository.dart";
+import sys
+
+content = r"""import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
-import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
@@ -13,7 +14,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
-import 'package:frontend/core/widgets/ai_app_resolver.dart';
+import 'package:frontend/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -26,27 +27,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ScrollController _bannerScrollController = ScrollController();
-  final ScrollController _newArrivalsScrollController = ScrollController();
-  final ScrollController _categoriesScrollController = ScrollController();
   String? _aiPickBlurb;
   bool _isAILoading = false;
-  final ScrollController _heroScrollController = ScrollController();
-  final ScrollController _quickAccessScrollController = ScrollController();
-  final Map<String, ScrollController> _shelfControllers = {};
-
-  @override
-  void dispose() {
-    _bannerScrollController.dispose();
-    _newArrivalsScrollController.dispose();
-    _categoriesScrollController.dispose();
-    _heroScrollController.dispose();
-    _quickAccessScrollController.dispose();
-    for (var controller in _shelfControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
 
   final ScrollController _heroScrollController = ScrollController();
   final ScrollController _quickAccessScrollController = ScrollController();
@@ -71,12 +53,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _refresh() async {
     final browse = context.read<BrowseController>();
     await browse.fetchRecommendations();
-    if (!mounted) return;
     await _fetchAIPick();
   }
 
   Future<void> _fetchAIPick() async {
-    if (!mounted) return;
     final settings = context.read<SettingsController>();
     if (!settings.isAIEnabled) return;
 
@@ -86,28 +66,11 @@ class _HomePageState extends State<HomePage> {
       final pick = await aiRepo.aiPickOfTheDay();
       if (mounted) {
         setState(() {
-          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
-          final errorPatterns = [
-            '⚠',
-            '⏱',
-            'AI 服务',
-            'AI service',
-            'timed out',
-            '超时',
-            '无法连接',
-            'Connection',
-            '错误',
-            'error',
-            'Error',
-            '未启用',
-            'not enabled',
-            'failed',
-            'Failed',
-            'Today\'s recommendation: OmniStore',
-          ];
-          final isError = errorPatterns.any(
-            (p) => pick.toLowerCase().contains(p.toLowerCase()),
-          );
+          // Hide AI section if the response is an error message
+          final isError = pick.startsWith('⚠') ||
+              pick.startsWith('⏱') ||
+              pick.contains('AI service') ||
+              pick.contains('timed out');
           _aiPickBlurb = isError ? null : pick;
           _isAILoading = false;
         });
@@ -181,33 +144,22 @@ class _HomePageState extends State<HomePage> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: Selector<BrowseController, List<AppPackage>>(
-                selector: (context, browse) =>
-                    browse.recommendations['featured'] ?? [],
-                builder: (context, featured, _) {
+              child: Consumer<BrowseController>(
+                builder: (context, browse, _) {
+                  final featured = browse.recommendations['featured'] ?? [];
                   return _buildHeroSection(featured);
                 },
               ),
             ),
             SliverToBoxAdapter(
-              child: Selector<SettingsController, bool>(
-                selector: (context, settings) => settings.isAIEnabled,
-                builder: (context, isAIEnabled, _) {
-                  if (!isAIEnabled) return const SizedBox.shrink();
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: _isAILoading
-                        ? _buildAIPickSkeleton(
-                            key: const ValueKey('ai_skeleton'),
-                          )
-                        : (_aiPickBlurb != null
-                              ? _buildAIPickSection(
-                                  key: const ValueKey('ai_content'),
-                                )
-                              : SizedBox.shrink(
-                                  key: const ValueKey('ai_empty'),
-                                )),
-                  );
+              child: Consumer<SettingsController>(
+                builder: (context, settings, _) {
+                  if (!settings.isAIEnabled) return const SizedBox.shrink();
+                  return _isAILoading
+                      ? _buildAIPickSkeleton()
+                      : (_aiPickBlurb != null
+                          ? _buildAIPickSection()
+                          : const SizedBox.shrink());
                 },
               ),
             ),
@@ -243,10 +195,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Selector<BrowseController, List<AppPackage>>(
-                selector: (context, browse) =>
-                    browse.recommendations['for_you'] ?? [],
-                builder: (context, forYou, _) {
+              child: Consumer<BrowseController>(
+                builder: (context, browse, _) {
+                  final forYou = browse.recommendations['for_you'] ?? [];
                   if (forYou.isEmpty) return const SizedBox.shrink();
                   return _buildCategoryShelf(
                     l10n.forYou,
@@ -297,12 +248,10 @@ class _HomePageState extends State<HomePage> {
         : null;
     final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
-    return Semantics(
-      label: 'Featured app: ${app.name}',
-      button: true,
-      child: AppCard(
-        borderRadius: 28,
-        clipBehavior: Clip.antiAlias,
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: InkWell(
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -311,9 +260,9 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Container(
           width: 440,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHigh,
-        ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHigh,
+          ),
           child: Stack(
             children: [
               if (screenshot != null)
@@ -322,8 +271,8 @@ class _HomePageState extends State<HomePage> {
                     imageUrl: screenshot,
                     fit: BoxFit.cover,
                     memCacheWidth: 880,
-                    errorWidget: (c, e, s) =>
-                        const Icon(Icons.image, size: 48),
+                    memCacheHeight: 520,
+                    errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
                   ),
                 )
               else
@@ -378,10 +327,8 @@ class _HomePageState extends State<HomePage> {
                                 fit: BoxFit.cover,
                                 memCacheWidth: 108,
                                 memCacheHeight: 108,
-                                errorWidget: (c, e, s) => const Icon(
-                                  Icons.apps,
-                                  color: Colors.black,
-                                ),
+                                errorWidget: (c, e, s) =>
+                                    const Icon(Icons.apps, color: Colors.black),
                               )
                             : const Icon(Icons.apps, color: Colors.black),
                       ),
@@ -422,7 +369,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        ),
+      ),
     );
   }
 
@@ -432,11 +379,7 @@ class _HomePageState extends State<HomePage> {
     ScrollController controller,
   ) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final controller = _shelfControllers.putIfAbsent(
-      title,
-      () => ScrollController(),
-    );
-
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -561,9 +504,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSkeleton({Key? key}) {
+  Widget _buildAIPickSkeleton() {
     return Container(
-      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -591,9 +533,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAIPickSection({Key? key}) {
+  Widget _buildAIPickSection() {
     return Container(
-      key: key,
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -624,3 +565,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+"""
+
+with open('FlutterUI/lib/features/home/home_page.dart', 'w') as f:
+    f.write(content)

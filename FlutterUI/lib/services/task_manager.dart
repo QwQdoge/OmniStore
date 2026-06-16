@@ -264,10 +264,13 @@ class TaskManager {
         ));
       }
 
+      // Murphy-proof: Capture task ID to ensure we only clear the specific task that finished
+      final finishedTaskId = _currentTask?.id;
       // Auto-clear success/failed status after a delay to revert UI to neutral state
       Future.delayed(const Duration(seconds: 5), () {
-        if (_currentTask?.status == TaskStatus.success ||
-            _currentTask?.status == TaskStatus.failed) {
+        if (_currentTask?.id == finishedTaskId &&
+            (_currentTask?.status == TaskStatus.success ||
+                _currentTask?.status == TaskStatus.failed)) {
           _updateState(null);
         }
       });
@@ -365,6 +368,9 @@ class TaskManager {
   /// cleanup even if individual steps fail.
   Future<void> cancelTask() async {
     try {
+      // Murphy-proof: Capture current task ID for idempotent clearing
+      final cancelledTaskId = _currentTask?.id;
+
       // 1. Cancel all active subscriptions to stop UI updates and stream processing
       final subs = List<StreamSubscription>.from(_subscriptions);
       _subscriptions.clear();
@@ -382,7 +388,9 @@ class TaskManager {
           messageKey: "taskCancelledByUser",
           speed: "",
         ));
-        Future.delayed(const Duration(seconds: 3), () => _updateState(null));
+        Future.delayed(const Duration(seconds: 3), () {
+          if (_currentTask?.id == cancelledTaskId) _updateState(null);
+        });
         return;
       }
 
@@ -390,23 +398,28 @@ class TaskManager {
       try {
         await BackendService.cancelCurrentTask().timeout(
           const Duration(seconds: 5),
-          onTimeout: () => debugPrint("BackendService.cancelCurrentTask timed out"),
+          onTimeout: () =>
+              debugPrint("BackendService.cancelCurrentTask timed out"),
         );
       } catch (e) {
         debugPrint("Murphy-proof Error: Process cancellation failed: $e");
       }
 
-      _updateState(_currentTask?.copyWith(
-        status: TaskStatus.failed,
-        messageKey: "taskCancelledByUser",
-        speed: "",
-      ));
+      if (_currentTask?.id == cancelledTaskId) {
+        _updateState(_currentTask?.copyWith(
+          status: TaskStatus.failed,
+          messageKey: "taskCancelledByUser",
+          speed: "",
+        ));
+      }
     } catch (e) {
       debugPrint("TaskManager.cancelTask Fatal Exception: $e");
     } finally {
+      final cancelledTaskId = _currentTask?.id;
       // Ensure the UI state eventually resets
       Future.delayed(const Duration(seconds: 3), () {
-        if (_currentTask?.status == TaskStatus.failed) {
+        if (_currentTask?.id == cancelledTaskId &&
+            _currentTask?.status == TaskStatus.failed) {
           _updateState(null);
         }
       });
