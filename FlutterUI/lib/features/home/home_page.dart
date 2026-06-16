@@ -423,7 +423,7 @@ class _HomePageState extends State<HomePage> {
         _buildSectionHeader(title),
         const SizedBox(height: 16),
         SizedBox(
-          height: 160,
+          height: 186,
           child: Scrollbar(
             controller: controller,
             thumbVisibility: true,
@@ -508,7 +508,7 @@ class _HomePageState extends State<HomePage> {
     final categories = CategoryService.getCategories(context);
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 64,
+        height: 66,
         child: Scrollbar(
           controller: _quickAccessScrollController,
           thumbVisibility: true,

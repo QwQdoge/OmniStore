@@ -53,7 +53,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 156,
+            height: 186,
             child: Scrollbar(
               controller: _categoryScrollController,
               thumbVisibility: true,
