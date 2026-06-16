@@ -9,6 +9,7 @@ import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
 import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
+import "package:frontend/core/widgets/app_card.dart";
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -302,8 +303,8 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
           child: AppCard(
             borderRadius: 12,
             child: ListTile(

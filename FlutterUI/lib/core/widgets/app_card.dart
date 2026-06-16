@@ -5,6 +5,9 @@ class AppCard extends StatefulWidget {
   final VoidCallback? onTap;
   final Color? color;
   final double borderRadius;
+  final bool showBorder;
+  final EdgeInsetsGeometry? margin;
+  final Clip clipBehavior;
 
   const AppCard({
     super.key,
@@ -12,6 +15,9 @@ class AppCard extends StatefulWidget {
     this.onTap,
     this.color,
     this.borderRadius = 16.0,
+    this.showBorder = true,
+    this.margin,
+    this.clipBehavior = Clip.none,
   });
 
   @override
@@ -41,22 +47,36 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  void _handleHover(bool isHovering) {
+    if (widget.onTap != null) {
+      if (isHovering) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
+      onEnter: (_) => _handleHover(true),
+      onExit: (_) => _handleHover(false),
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Card(
           color: widget.color ?? theme.colorScheme.surfaceContainerLow,
+          margin: widget.margin,
+          clipBehavior: widget.clipBehavior,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(widget.borderRadius),
-            side: BorderSide(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-              width: 1,
-            ),
+            side: widget.showBorder
+                ? BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    width: 1,
+                  )
+                : BorderSide.none,
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(widget.borderRadius),

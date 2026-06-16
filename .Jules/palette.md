@@ -38,3 +38,9 @@
 
 **Action:** Ensure all interactive elements, particularly icon-only buttons like the 'Copy' button in app details, are wrapped in a `Semantics` widget with `button: true` and a localized, descriptive `label`.
 
+
+## 2026-06-16 - Standardized AppCard Interaction and Accessibility
+
+**Learning:** Standardizing the `AppCard` widget to only trigger scale animations (1.0 to 0.98) when an `onTap` callback is present significantly improves the perceived quality and interaction clarity of the app. It prevents misleading affordances for static or loading content. Additionally, wrapping icon-only buttons (like the copy button in detail headers) in `Semantics` widgets with localized labels is a non-negotiable standard for maintaining accessibility.
+
+**Action:** Ensure all interactive tiles, including large hero banners, use the refined `AppCard` for unified interaction feedback. Always explicitly define semantics for interactive elements that lack text labels.
