@@ -140,7 +140,8 @@ class UpdateService {
     if (kIsWeb) return false;
     if (!Platform.isLinux) return true;
     try {
-      final result = await Process.run('ldconfig', ['-p']);
+      final result = await Process.run('ldconfig', ['-p'])
+          .timeout(const Duration(seconds: 5));
       if (result.exitCode != 0) return true;
 
       final output = result.stdout.toString();
@@ -379,13 +380,14 @@ Persistent=true
 WantedBy=timers.target
 ''');
 
-      await Process.run('systemctl', ['--user', 'daemon-reload']);
+      await Process.run('systemctl', ['--user', 'daemon-reload'])
+          .timeout(const Duration(seconds: 5));
       await Process.run('systemctl', [
         '--user',
         'enable',
         '--now',
         'omnistore-update.timer',
-      ]);
+      ]).timeout(const Duration(seconds: 5));
       debugPrint(
         'systemd background timer set to every $intervalHours hour(s).',
       );
@@ -404,7 +406,7 @@ WantedBy=timers.target
         'disable',
         '--now',
         'omnistore-update.timer',
-      ]);
+      ]).timeout(const Duration(seconds: 5));
       debugPrint('systemd background timer disabled.');
     } catch (e) {
       debugPrint('Failed to disable systemd background timer: $e');
@@ -571,9 +573,15 @@ WantedBy=timers.target
   Future<void> _handleFullExit() async {
     if (kIsWeb) return;
     try {
-      await Process.run('pkill', ['omnistore-daemon']);
-      await Process.run('pkill', ['-f', 'python/main.py']);
-      await Process.run('pkill', ['python_server']);
+      // Murphy-proof: Use BackendService.dispose for systematic cleanup first
+      await BackendService.instance.dispose().timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => debugPrint("BackendService dispose timed out during exit"),
+          );
+
+      await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 2));
+      await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 2));
+      await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 2));
     } catch (_) {}
     exit(0);
   }

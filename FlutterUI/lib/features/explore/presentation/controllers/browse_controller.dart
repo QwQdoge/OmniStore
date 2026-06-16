@@ -11,6 +11,7 @@ class BrowseController with ChangeNotifier {
   bool _isSearching = false;
   String? _pendingSearchQuery;
   Timer? _debounceTimer;
+  AppPackage? _selectedApp;
 
   BrowseController(this._packageRepository);
 
@@ -18,9 +19,16 @@ class BrowseController with ChangeNotifier {
   List<AppPackage> get searchResults => _searchResults;
   bool get isSearching => _isSearching;
   String? get pendingSearchQuery => _pendingSearchQuery;
+  AppPackage? get selectedApp => _selectedApp;
 
   set pendingSearchQuery(String? query) {
     _pendingSearchQuery = query;
+    notifyListeners();
+  }
+
+  set selectedApp(AppPackage? app) {
+    if (_selectedApp?.id == app?.id && _selectedApp?.name == app?.name) return;
+    _selectedApp = app;
     notifyListeners();
   }
 
@@ -32,6 +40,7 @@ class BrowseController with ChangeNotifier {
   Future<void> search(String query) async {
     _debounceTimer?.cancel();
     _isSearching = true;
+    _selectedApp = null;
     notifyListeners();
 
     final completer = Completer<void>();

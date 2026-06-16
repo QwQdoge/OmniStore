@@ -19,11 +19,11 @@
 - Added unified UX feedback for `taskInProgress` scenario during app updates and uninstalls.
 - In `FlutterUI/lib/features/explore/presentation/pages/details_page.dart`, added the `ScaffoldMessenger` displaying `AppLocalizations.of(context)!.taskInProgress` when the `taskController` is busy, similar to `settings_page.dart`.
 - In `FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart`, explicitly prevented parallel background task execution via checking `isBusy` on "Update All" and single "Update" actions, throwing consistent `taskInProgress` localized errors via `ScaffoldMessenger`.
-## 2026-06-14 - Global SnackBar Consistency: Details Page
-- Removed a hardcoded `behavior: SnackBarBehavior.floating` assignment from the `SnackBar` widget shown upon application installation or uninstallation in `FlutterUI/lib/features/explore/presentation/pages/details_page.dart`. This ensures the application consistently uses the default `SnackBarBehavior.floating` defined in the global `SnackBarThemeData` of `omnistore_theme.dart`.
 
-## 2026-06-14 - Consistency in "Update All" task handling
-- Replaced the flawed loop in the `UpdatesTab` "Update All" button which fired multiple updates concurrently.
-- Exposed a dedicated `updateAll` method in `TaskController` utilizing the existing `TaskRepository.updateAll`.
-- Added `TaskController.isBusy` checks to both individual "Update" buttons and the "Update All" button.
-- Re-used the standardized localized `taskInProgress` SnackBar feedback to alert the user when attempting updates while the task manager is already busy, ensuring UX consistency with package installation/uninstallation scenarios.
+## 2026-06-15 - Standardized App Item Presentation
+
+**Learning:** Using raw `Card` widgets for app items leads to visual inconsistency. Standardizing on `AppCard` ensures that all app lists and grid items share the same MD3 surface container styling and standardized hover/tap scale animations (0.98 scale).
+
+**Action:** Replaced raw `Card` with `AppCard` in `download_page.dart` and updated skeleton loaders in `download_page.dart`, `search_page.dart`, `apps_page.dart`, and `flatpak_store_page.dart` to use `AppCard`.
+## 2026-06-16 - AI Connection Feedback Consistency
+- Replaced hardcoded connection success/failure and error strings in `ai_settings_section.dart` with localized keys (`aiTestSuccess`, `failed`, `aiTestFailed`) to ensure terminology and SnackBar/Dialog consistency across the app.

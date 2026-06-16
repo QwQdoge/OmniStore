@@ -91,7 +91,7 @@
     "description": "Label for AI API endpoint"
   },
   "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiExplainUpdate": "說明此更新",
+  "aiExplainUpdate": "解析此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
@@ -126,7 +126,7 @@
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },
-  "aiPromptExplain": "使用 AI 說明",
+  "aiPromptExplain": "使用 AI 解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -138,7 +138,7 @@
   "@aiProvider": {
     "description": "Label for AI provider selection"
   },
-  "aiProviderDesc": "選擇您的 AI 模型來源 （本地或雲端）",
+  "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
   "aiProxy": "網路代理（可選）",
   "@aiProxy": {
     "description": "Label for optional AI proxy setting"
@@ -197,12 +197,12 @@
     "description": "AppImage source type option"
   },
   "appearance": "介面外觀",
-  "aurFull": "AUR （Arch 使用者軟體存放庫）",
+  "aurFull": "AUR（Arch 使用者軟體存放庫）",
   "@aurFull": {
     "description": "Full name for AUR"
   },
-  "aurSecurityDesc": "AUR （Arch User Repository） 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
-  "aurUser": "AUR （使用者庫）",
+  "aurSecurityDesc": "AUR（Arch User Repository） 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
+  "aurUser": "AUR（使用者庫）",
   "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
   "autoDetect": "自動偵測",
   "@autoDetect": {
@@ -245,7 +245,7 @@
   "@backupAndExportSubtitle": {
     "description": "Subtitle for backup and export feature"
   },
-  "bituRepoType": "Bitu / Bitbucket （工作區/存放庫）",
+  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
@@ -323,7 +323,7 @@
     }
   },
   "checkUpdates": "檢查更新",
-  "cleanOrphans": "同時清理無用依賴 （孤兒套件）",
+  "cleanOrphans": "同時清理無用依賴（孤兒套件）",
   "clear": "清除",
   "clearHistory": "清除歷史記錄",
   "clearSearch": "清除搜尋",
@@ -354,7 +354,7 @@
   },
   "darkMode": "深色模式",
   "delete": "刪除",
-  "dependenciesCount": "依賴套件 （{count}）",
+  "dependenciesCount": "依賴套件（{count}）",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -377,7 +377,7 @@
   },
   "downloadSize": "下載大小",
   "downloads": "下載",
-  "enableAur": "啟用 AUR （Arch User Repository）",
+  "enableAur": "啟用 AUR（Arch User Repository）",
   "enableDaemon": "啟用背景更新守護程序",
   "@enableDaemon": {
     "description": "Label for background daemon"
@@ -437,7 +437,7 @@
   "@errorTitle": {
     "description": "General error title"
   },
-  "errorUpdateAll": "批量更新失敗：{error}",
+  "errorUpdateAll": "批次更新失敗：{error}",
   "@errorUpdateAll": {
     "placeholders": {
       "error": {
@@ -485,7 +485,7 @@
   "fixProblems": "一鍵修復/設定",
   "flatpak": "Flatpak",
   "flatpakBetterDesc": "發現此應用程式有 Flatpak 來源，通常更穩定。",
-  "flatpakFull": "Flatpak （Flathub）",
+  "flatpakFull": "Flatpak（Flathub）",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
   },
@@ -528,7 +528,7 @@
   "@githubPatSaved": {
     "description": "Success message for saving GitHub PAT"
   },
-  "githubRepoType": "GitHub 存放庫 （owner/repo）",
+  "githubRepoType": "GitHub 存放庫（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
@@ -562,7 +562,7 @@
     }
   },
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama （本地）： 下載並執行 Ollama，無需金鑰。2. 雲端 （OpenAI）： 前往服務商官網建立 API Key，然後填入此處。",
+  "howToGetApiKeyDesc": "1. Ollama（本地）： 下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）： 前往服務商官網建立 API Key，然後填入此處。",
   "import": "匯入",
   "@import": {
     "description": "Import action label"
@@ -616,10 +616,10 @@
       }
     }
   },
-  "langEnglish": "英語 （English）",
-  "langJapanese": "日語 （日本語）",
+  "langEnglish": "英語（English）",
+  "langJapanese": "日語（日本語）",
   "langSimplifiedChinese": "簡體中文",
-  "langSpanish": "西班牙語 （Español）",
+  "langSpanish": "西班牙語（Español）",
   "langTraditionalChinese": "繁體中文",
   "language": "介面語言",
   "@language": {
@@ -638,10 +638,10 @@
   "@locateInstallation": {
     "description": "Tooltip for locating the app installation folder"
   },
-  "logDebug": "除錯 （DEBUG）",
-  "logError": "錯誤 （ERROR）",
-  "logInfo": "資訊 （INFO）",
-  "logWarning": "警告 （WARNING）",
+  "logDebug": "除錯（DEBUG）",
+  "logError": "錯誤（ERROR）",
+  "logInfo": "資訊（INFO）",
+  "logWarning": "警告（WARNING）",
   "loggingLevel": "日誌詳細程度",
   "magicSearch": "智慧搜尋",
   "@magicSearch": {
@@ -675,7 +675,7 @@
   "notificationTitle": "發現可用更新",
   "notifications": "通知",
   "official": "官方",
-  "ollamaLocal": "Ollama （本地）",
+  "ollamaLocal": "Ollama（本地）",
   "omnistore": "OmniStore",
   "@omnistore": {
     "description": "App Name"
@@ -687,7 +687,7 @@
   "@pacmanMirrorManagement": {
     "description": "Section title for Pacman mirror management"
   },
-  "pacmanOfficial": "Pacman （官方庫）",
+  "pacmanOfficial": "Pacman（官方庫）",
   "personalAccessToken": "個人存取權杖",
   "@personalAccessToken": {
     "description": "Label for personal access token"
@@ -702,7 +702,7 @@
   },
   "relatedApps": "相關應用",
   "remindMeOfUpdates": "有更新時提醒我",
-  "repoOwnerRepo": "存放庫地址 （owner/repo）",
+  "repoOwnerRepo": "存放庫地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -837,7 +837,7 @@
       }
     }
   },
-  "taskFailedWithCode": "任務失敗 （錯誤碼： {code}）",
+  "taskFailedWithCode": "任務失敗（錯誤碼： {code}）",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {

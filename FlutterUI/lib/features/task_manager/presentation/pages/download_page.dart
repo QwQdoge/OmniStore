@@ -12,6 +12,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -31,6 +32,7 @@ class _DownloadPageState extends State<DownloadPage>
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _installedFilterScrollController = ScrollController();
 
   @override
   void initState() {
@@ -136,6 +138,7 @@ class _DownloadPageState extends State<DownloadPage>
     _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
+    _installedFilterScrollController.dispose();
     super.dispose();
   }
 
@@ -286,37 +289,43 @@ class _DownloadPageState extends State<DownloadPage>
           : Column(
               key: const ValueKey('loaded'),
               children: [
-                Scrollbar(
-                  controller: _filterScrollController,
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
-                    controller: _filterScrollController,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                    child: Row(
-                      children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                          .map(
-                            (s) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                label: Text(
-                                  s == "all"
-                                      ? AppLocalizations.of(context)!.explore
-                                      : s,
+                SizedBox(
+                  height: 66,
+                  child: Scrollbar(
+                    controller: _installedFilterScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _installedFilterScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                            .map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    s == "all"
+                                        ? AppLocalizations.of(context)!.explore
+                                        : s,
+                                  ),
+                                  selected: _selectedSourceFilter == s,
+                                  onSelected: (v) {
+                                    if (v) {
+                                      setState(() {
+                                        _selectedSourceFilter = s;
+                                        _applyFilters();
+                                      });
+                                    }
+                                  },
                                 ),
-                                selected: _selectedSourceFilter == s,
-                                onSelected: (v) {
-                                  if (v) {
-                                    setState(() {
-                                      _selectedSourceFilter = s;
-                                      _applyFilters();
-                                    });
-                                  }
-                                },
                               ),
-                            ),
-                          )
-                          .toList(),
+                            )
+                            .toList(),
+                      ),
                     ),
                   ),
                 ),
@@ -332,13 +341,16 @@ class _DownloadPageState extends State<DownloadPage>
       padding: const EdgeInsets.all(16),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return const Card(
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+        return const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 16,
+            child: ListTile(
+              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              title: Skeleton(width: 120, height: 16),
+              subtitle: Skeleton(width: double.infinity, height: 12),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+            ),
           ),
         );
       },
@@ -366,65 +378,65 @@ class _DownloadPageState extends State<DownloadPage>
       itemCount: _filteredApps.length,
       itemBuilder: (context, index) {
         final app = _filteredApps[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
           child: Semantics(
             label: 'Installed app: ${app.name}',
             button: true,
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              leading: app.icon != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        width: 40,
-                        height: 40,
-                        memCacheWidth: 80,
-                        memCacheHeight: 80,
-                        placeholder: (context, url) => const Skeleton(
-                          width: 40,
-                          height: 40,
-                          borderRadius: 0,
-                        ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.apps),
-                      ),
-                    )
-                  : const Icon(Icons.apps, size: 40),
-              title: Text(
-                app.name,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Row(
-                children: [
-                  Text(
-                    app.primarySource,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      app.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
+            child: AppCard(
+              borderRadius: 16,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AppDetailsPage(app: app),
+                ),
+              ),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                leading: app.icon != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: app.icon!,
+                          width: 40,
+                          height: 40,
+                          memCacheWidth: 80,
+                          memCacheHeight: 80,
+                          placeholder: (context, url) => const Skeleton(
+                            width: 40,
+                            height: 40,
+                            borderRadius: 0,
+                          ),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.apps),
+                        ),
+                      )
+                    : const Icon(Icons.apps, size: 40),
+                title: Text(
+                  app.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Row(
+                  children: [
+                    Text(
+                      app.primarySource,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        app.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
