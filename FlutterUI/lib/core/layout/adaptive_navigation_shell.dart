@@ -4,10 +4,14 @@ import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/services/update_service.dart';
-// import 'package:frontend/core/widgets/window_title_bar.dart'; // 自定义标题栏已禁用
-import 'package:provider/provider.dart';
 import 'package:frontend/features/auth/auth_page.dart';
+import 'package:provider/provider.dart';
+
+import 'widgets/task_progress_bar.dart';
+import 'widgets/download_action.dart';
+import 'widgets/desktop_top_bar.dart';
+import 'widgets/hamburger_button.dart';
+import 'widgets/rail_bottom_actions.dart';
 
 class NavDestination {
   const NavDestination({
@@ -87,7 +91,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: isBusy
-                    ? const _TaskProgressBar()
+                    ? const TaskProgressBar()
                     : const SizedBox.shrink(),
               ),
             );
@@ -147,7 +151,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       },
                     ),
                   ),
-                  _DownloadAction(compact: true),
+                  const DownloadAction(compact: true),
                 ],
               ),
               body: Padding(
@@ -188,15 +192,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
           backgroundColor: scheme.surface,
           body: Column(
             children: [
-              // 自定义标题栏已注释掉，始终使用系统原生标题栏
-              // if (useWindowTitleBar)
-              //   WindowTitleBar(
-              //     title: pageTitle,
-              //     showSearch: showSearch && selectedIndex != 2,
-              //     onSearchPressed: onSearch,
-              //   )
-              // else
-              _DesktopTopBar(
+              DesktopTopBar(
                 title: pageTitle,
                 showSearch: showSearch && selectedIndex != 2,
                 onSearch: onSearch,
@@ -222,7 +218,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                         labelType: isExpanded
                             ? NavigationRailLabelType.none
                             : NavigationRailLabelType.all,
-                        leading: _HamburgerButton(
+                        leading: HamburgerButton(
                           isExpanded: isExpanded,
                           onToggle: () => context
                               .read<SettingsController>()
@@ -240,7 +236,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                             ),
                         ],
                         trailing: Expanded(
-                          child: _RailBottomActions(
+                          child: RailBottomActions(
                             isExpanded: isExpanded,
                             settingsIndex: settingsIndex,
                           ),
@@ -271,437 +267,5 @@ class AdaptiveNavigationShell extends StatelessWidget {
   int _railIndex(List<NavDestination> items, int selected) {
     final i = items.indexWhere((d) => d.index == selected);
     return i >= 0 ? i : 0;
-  }
-}
-
-// ─── Hamburger Toggle Button ────────────────────────────
-class _HamburgerButton extends StatelessWidget {
-  const _HamburgerButton({required this.isExpanded, required this.onToggle});
-
-  final bool isExpanded;
-  final VoidCallback onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Semantics(
-        label: isExpanded ? l10n.collapse : l10n.expand,
-        button: true,
-        child: IconButton(
-          onPressed: onToggle,
-          tooltip: isExpanded ? l10n.collapse : l10n.expand,
-          icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, anim) => RotationTransition(
-              turns: Tween(begin: 0.5, end: 1.0).animate(anim),
-              child: child,
-            ),
-            child: Icon(
-              isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
-              key: ValueKey(isExpanded),
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Bottom Actions: Settings + Download ────────────────
-class _RailBottomActions extends StatelessWidget {
-  const _RailBottomActions({
-    required this.isExpanded,
-    required this.settingsIndex,
-  });
-
-  final bool isExpanded;
-  final int settingsIndex;
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>(
-      (n) => n.selectedIndex,
-    );
-    final l10n = AppLocalizations.of(context)!;
-    final isSettingsSelected = selectedIndex == settingsIndex;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        // Settings button
-        isExpanded
-            ? _ExpandedActionTile(
-                icon: isSettingsSelected
-                    ? Icons.settings_rounded
-                    : Icons.settings_outlined,
-                label: l10n.settings,
-                isSelected: isSettingsSelected,
-                onTap: () => context.read<NavigationController>().setIndex(
-                  settingsIndex,
-                ),
-              )
-            : _CompactActionButton(
-                icon: isSettingsSelected
-                    ? Icons.settings_rounded
-                    : Icons.settings_outlined,
-                tooltip: l10n.settings,
-                isSelected: isSettingsSelected,
-                onTap: () => context.read<NavigationController>().setIndex(
-                  settingsIndex,
-                ),
-              ),
-        const SizedBox(height: 4),
-        // Download button
-        isExpanded
-            ? _ExpandedDownloadTile()
-            : Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _DownloadAction(compact: false),
-              ),
-        if (!isExpanded) const SizedBox(height: 0),
-      ],
-    );
-  }
-}
-
-class _CompactActionButton extends StatelessWidget {
-  const _CompactActionButton({
-    required this.icon,
-    required this.tooltip,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      label: tooltip,
-      button: true,
-      child: IconButton(
-        tooltip: tooltip,
-        onPressed: onTap,
-        icon: Icon(
-          icon,
-          color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpandedActionTile extends StatelessWidget {
-  const _ExpandedActionTile({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Material(
-        color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(28),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 24,
-                  color: isSelected
-                      ? scheme.onSecondaryContainer
-                      : scheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                      color: isSelected
-                          ? scheme.onSecondaryContainer
-                          : scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpandedDownloadTile extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>(
-      (n) => n.selectedIndex,
-    );
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    final isSelected = selectedIndex == 4;
-
-    return Padding(
-      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
-      child: ListenableBuilder(
-        listenable: UpdateService().availableUpdates,
-        builder: (context, _) {
-          final updates = UpdateService().availableUpdates.value;
-          return Material(
-            color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-            borderRadius: BorderRadius.circular(28),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => context.read<NavigationController>().setIndex(4),
-              borderRadius: BorderRadius.circular(28),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                child: Row(
-                  children: [
-                    Selector<TaskController, bool>(
-                      selector: (context, task) => task.isBusy,
-                      builder: (context, isBusy, child) => Icon(
-                        isBusy
-                            ? Icons.downloading_rounded
-                            : Icons.download_for_offline_rounded,
-                        size: 24,
-                        color: isSelected
-                            ? scheme.onSecondaryContainer
-                            : scheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n.downloads,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? scheme.onSecondaryContainer
-                              : scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    if (updates.isNotEmpty)
-                      Badge(label: Text(l10n.resultsFound(updates.length))),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ─── Existing widgets, kept intact ──────────────────────
-class _DesktopTopBar extends StatelessWidget {
-  const _DesktopTopBar({
-    required this.title,
-    required this.showSearch,
-    required this.onSearch,
-  });
-
-  final String title;
-  final bool showSearch;
-  final VoidCallback onSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-      color: scheme.surface,
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const Spacer(),
-          if (showSearch)
-            FilledButton.tonalIcon(
-              onPressed: onSearch,
-              icon: const Icon(Icons.search_rounded, size: 20),
-              label: Text(l10n.search),
-            ),
-          const SizedBox(width: 8),
-          Semantics(
-            label: l10n.githubAuthTitle,
-            button: true,
-            child: IconButton(
-              icon: const Icon(Icons.account_circle_outlined),
-              tooltip: l10n.githubAuthTitle,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthPage()),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TaskProgressBar extends StatelessWidget {
-  const _TaskProgressBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHigh,
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Consumer<TaskController>(
-        builder: (context, task, child) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.downloading_rounded,
-                    size: 14,
-                    color: scheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${l10n.processing} ${task.status} ${task.speed}',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (task.progress != null)
-                    Text(
-                      '${(task.progress! * 100).toInt()}%',
-                      style: textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: scheme.primary,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            LinearProgressIndicator(
-              value: task.progress,
-              minHeight: 3,
-              backgroundColor: scheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DownloadAction extends StatelessWidget {
-  const _DownloadAction({required this.compact});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedIndex = context.select<NavigationController, int>(
-      (n) => n.selectedIndex,
-    );
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return ListenableBuilder(
-      listenable: UpdateService().availableUpdates,
-      builder: (context, _) {
-        final updates = UpdateService().availableUpdates.value;
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Semantics(
-              label: l10n.downloads,
-              button: true,
-              child: IconButton(
-                tooltip: l10n.downloads,
-                onPressed: () => context.read<NavigationController>().setIndex(4),
-                icon: Selector<TaskController, bool>(
-                  selector: (context, task) => task.isBusy,
-                  builder: (context, isBusy, child) => Icon(
-                    isBusy
-                        ? Icons.downloading_rounded
-                        : Icons.download_for_offline_rounded,
-                    color: selectedIndex == 4
-                        ? scheme.primary
-                        : scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ),
-            if (updates.isNotEmpty)
-              Positioned(
-                top: compact ? 4 : 8,
-                right: compact ? 4 : 8,
-                child: Badge(label: Text(l10n.resultsFound(updates.length))),
-              ),
-          ],
-        );
-      },
-    );
   }
 }
