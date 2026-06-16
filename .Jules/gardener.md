@@ -56,3 +56,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** Extracting large inline UI building blocks into separate `StatelessWidget` and `StatefulWidget` classes significantly improves maintainability and readability of long files like `search_page.dart`. This decoupling makes the core page class focus on search state rather than UI composition, and the extracted widgets can be reused or modified more easily in isolation.
 
 **Action:** Extracted `SearchResultTile`, `DiscoveryContent`, and `EmptyResults` from `search_page.dart` into the `lib/features/explore/presentation/widgets/` directory. Passed down minimal state and callbacks.
+## 2024-06-16 - Extract Widgets in AdaptiveNavigationShell
+
+**Learning:** Extracted oversized private UI components (e.g., `_DesktopTopBar`, `_TaskProgressBar`, `_HamburgerButton`, `_DownloadAction`, `_RailBottomActions`) from `adaptive_navigation_shell.dart` into cleanly segregated files within `lib/core/layout/widgets/`. This decouples the UI composition logic of the adaptive layout, making the main file significantly shorter, easier to read, and less prone to merge conflicts during navigation-related updates.
+
+**Action:** Continue to break down complex layout shells that attempt to define all their platform-specific UI fragments inline. Move these fragments into dedicated `StatelessWidget` files in a `widgets/` subdirectory, passing down necessary state via simple callbacks or reading it directly via Provider/Selector if appropriate.
