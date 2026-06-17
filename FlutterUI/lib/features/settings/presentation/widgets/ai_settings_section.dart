@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import '../controllers/settings_controller.dart';
@@ -280,13 +281,20 @@ class _AISettingsSectionState extends State<AISettingsSection> {
           alignment: Alignment.centerLeft,
           child: FilledButton.icon(
             onPressed: _isTestingAI ? null : _testAIConnection,
-            icon: _isTestingAI
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.network_check_rounded),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isTestingAI
+                  ? const Skeleton(
+                      key: ValueKey('loading'),
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8.0,
+                    )
+                  : const Icon(
+                      Icons.network_check_rounded,
+                      key: ValueKey('idle'),
+                    ),
+            ),
             label: const Text("Test Connection"),
           ),
         ),
