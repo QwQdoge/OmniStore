@@ -26,32 +26,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ScrollController _bannerScrollController = ScrollController();
-  final ScrollController _newArrivalsScrollController = ScrollController();
-  final ScrollController _categoriesScrollController = ScrollController();
-  String? _aiPickBlurb;
-  bool _isAILoading = false;
-  final ScrollController _heroScrollController = ScrollController();
-  final ScrollController _quickAccessScrollController = ScrollController();
-  final Map<String, ScrollController> _shelfControllers = {};
-
-  @override
-  void dispose() {
-    _bannerScrollController.dispose();
-    _newArrivalsScrollController.dispose();
-    _categoriesScrollController.dispose();
-    _heroScrollController.dispose();
-    _quickAccessScrollController.dispose();
-    for (var controller in _shelfControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
   final ScrollController _heroScrollController = ScrollController();
   final ScrollController _quickAccessScrollController = ScrollController();
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
+
+  String? _aiPickBlurb;
+  bool _isAILoading = false;
 
   @override
   void initState() {
@@ -65,6 +47,9 @@ class _HomePageState extends State<HomePage> {
     _quickAccessScrollController.dispose();
     _hotAppsScrollController.dispose();
     _forYouScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -432,10 +417,7 @@ class _HomePageState extends State<HomePage> {
     ScrollController controller,
   ) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final controller = _shelfControllers.putIfAbsent(
-      title,
-      () => ScrollController(),
-    );
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -459,7 +441,8 @@ class _HomePageState extends State<HomePage> {
                 final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
                 return SizedBox(
                   width: 130,
-                  child: InkWell(
+                  child: AppCard(
+                    borderRadius: 20,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -467,9 +450,9 @@ class _HomePageState extends State<HomePage> {
                             AppDetailsPage(app: app, heroTag: heroTag),
                       ),
                     ),
-                    borderRadius: BorderRadius.circular(20),
                     child: Column(
                       children: [
+                        const SizedBox(height: 12),
                         Hero(
                           tag: heroTag,
                           child: Container(
