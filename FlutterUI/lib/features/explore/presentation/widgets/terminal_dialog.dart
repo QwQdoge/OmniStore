@@ -10,11 +10,13 @@ class TerminalDialog extends StatelessWidget {
   const TerminalDialog({super.key});
 
   Future<void> _showAIErrorAnalysis(BuildContext context, String logs) async {
+    final aiRepo = context.read<AIRepository>();
+    final future = aiRepo.aiAnalyzeError(logs);
     showDialog(
       context: context,
       builder: (ctx) => AIMarkdownDialog(
         title: AppLocalizations.of(context)!.aiPromptError,
-        future: context.read<AIRepository>().aiAnalyzeError(logs),
+        future: future,
         width: 600,
         height: 450,
       ),

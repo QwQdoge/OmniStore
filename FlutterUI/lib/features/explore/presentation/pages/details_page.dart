@@ -546,24 +546,28 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _showAIExplainDialog() async {
+    final aiRepo = context.read<AIRepository>();
+    final future = aiRepo.aiExplain(
+      widget.app.name,
+      widget.app.description,
+    );
     showDialog(
       context: context,
       builder: (ctx) => AIMarkdownDialog(
         title: AppLocalizations.of(context)!.aiPromptExplain,
-        future: context.read<AIRepository>().aiExplain(
-          widget.app.name,
-          widget.app.description,
-        ),
+        future: future,
       ),
     );
   }
 
   Future<void> _showAICompareDialog() async {
+    final aiRepo = context.read<AIRepository>();
+    final future = aiRepo.aiCompareVariants(widget.app.name);
     showDialog(
       context: context,
       builder: (ctx) => AIMarkdownDialog(
         title: AppLocalizations.of(context)!.aiCompareTitle,
-        future: context.read<AIRepository>().aiCompareVariants(widget.app.name),
+        future: future,
         width: 600,
         height: 450,
       ),
@@ -571,23 +575,27 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _showAICliDialog() async {
+    final aiRepo = context.read<AIRepository>();
+    final future = aiRepo.aiGenerateCLI(
+      widget.app.name,
+      _selectedSource,
+    );
     showDialog(
       context: context,
       builder: (ctx) => AICliDialog(
-        future: context.read<AIRepository>().aiGenerateCLI(
-          widget.app.name,
-          _selectedSource,
-        ),
+        future: future,
       ),
     );
   }
 
   Future<void> _showAIConflictDialog() async {
+    final aiRepo = context.read<AIRepository>();
+    final future = aiRepo.aiDetectConflicts(widget.app.name);
     showDialog(
       context: context,
       builder: (ctx) => AIMarkdownDialog(
         title: AppLocalizations.of(context)!.aiConflictTitle,
-        future: context.read<AIRepository>().aiDetectConflicts(widget.app.name),
+        future: future,
       ),
     );
   }
