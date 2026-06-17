@@ -231,9 +231,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final trending = browse.recommendations['trending'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['trending'] ?? [],
+                builder: (context, trending, _) {
                   return _buildCategoryShelf(
                     l10n.hotApps,
                     trending,
