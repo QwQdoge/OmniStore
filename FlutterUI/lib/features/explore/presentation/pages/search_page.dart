@@ -10,6 +10,7 @@ import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
 import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
+import 'package:frontend/core/widgets/app_card.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;

@@ -68,3 +68,11 @@ Unmounted widgets are highly vulnerable to crashes when context.read or setState
 
 Action:
 Added strict `if (!mounted) return;` checks to `HomePage._fetchAIPick` in `home_page.dart` (before reading context) and to `_StorageCleanupCardState._triggerCleanup` in `storage_cleanup_card.dart` (after awaiting the cleanup system task) to prevent asynchronous state operation crashes.
+
+## 2024-06-16 - [Async Lifecycle State Safety in Dialogs]
+
+Learning:
+When launching asynchronous operations inside dialog or bottom sheet callbacks (such as `_showAddSourceDialog` in `sources_config_card.dart`), it is critical to verify if the underlying widget is still mounted before attempting to show a `SnackBar` or modify state. Caching `ScaffoldMessenger.of(context)` prior to an `await` does not guarantee the view remains intact by the time the operation completes. Accessing unmounted views this way can lead to crashes if the app transitions or exits during the async gap.
+
+Action:
+Added an explicit `if (!mounted) return;` check immediately before `messenger.showSnackBar` in the `_showAddSourceDialog` callback within `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` to prevent lifecycle crashes.
