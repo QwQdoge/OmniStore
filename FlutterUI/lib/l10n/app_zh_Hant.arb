@@ -867,8 +867,8 @@
   "temperatureRangeError": "值必須在 0.0 到 2.0 之間",
   "terminalOutput": "終端輸出",
   "themeColor": "主題色",
-  "trayInitFailedExiting": "系統匣初始化失敗。正在退出以防止背景執行錯誤。",
-  "@trayInitFailedExiting": {
+  "trayInitFailedDisabled": "系統匣初始化失敗。已自動關閉背景駐留。",
+  "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
   "trayTooltipUpToDate": "OmniStore： 已是最新",

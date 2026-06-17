@@ -882,8 +882,8 @@
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
   },
-  "trayInitFailedExiting": "System tray initialization failed. Exiting to prevent background errors.",
-  "@trayInitFailedExiting": {
+  "trayInitFailedDisabled": "System tray initialization failed. Close to tray disabled.",
+  "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
   "errorTitle": "Error",

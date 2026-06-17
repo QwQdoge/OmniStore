@@ -870,8 +870,8 @@
   "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0",
   "terminalOutput": "Salida de terminal",
   "themeColor": "Color del tema",
-  "trayInitFailedExiting": "Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.",
-  "@trayInitFailedExiting": {
+  "trayInitFailedDisabled": "Error al inicializar la bandeja del sistema. Cerrar a la bandeja desactivado.",
+  "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
   "trayTooltipUpToDate": "OmniStore: Actualizado",
