@@ -150,29 +150,38 @@ async def handle_daemon_client(backend, reader, writer):
 
                     if obj is not None:
                         # 4. Async execution with hard 120s timeout to prevent zombie tasks
-                        if callable(obj):
-                            if inspect.iscoroutinefunction(obj):
-                                res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                        # Murphy-proof: Action-level isolation to prevent crashing the daemon
+                        try:
+                            if callable(obj):
+                                if inspect.iscoroutinefunction(obj):
+                                    res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                                else:
+                                    res = obj(*args, **kwargs)
                             else:
-                                res = obj(*args, **kwargs)
-                        else:
-                            res = obj
+                                res = obj
 
-                        stdout_content = captured_stdout.getvalue()
-                        response_payload = json.dumps({
-                            "status": "success",
-                            "response": res,
-                            "stdout": stdout_content
-                        }, ensure_ascii=False).encode('utf-8') + b'\n'
-                        writer.write(response_payload)
+                            stdout_content = captured_stdout.getvalue()
+                            response_payload = json.dumps({
+                                "status": "success",
+                                "response": res,
+                                "stdout": stdout_content
+                            }, ensure_ascii=False).encode('utf-8') + b'\n'
+                            writer.write(response_payload)
+                        except asyncio.TimeoutError:
+                             writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
+                        except Exception as action_e:
+                            logging.error(f"Murphy-proof Action Exception [{action}]: {action_e}")
+                            writer.write(json.dumps({
+                                "status": "error",
+                                "error": str(action_e),
+                                "stdout": captured_stdout.getvalue()
+                            }).encode('utf-8') + b'\n')
                     else:
                         writer.write(json.dumps({"status": "error", "error": f"Method not found: {action}"}).encode('utf-8') + b'\n')
-                except asyncio.TimeoutError:
-                    writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
                 except Exception as e:
                     import traceback
                     err_trace = traceback.format_exc()
-                    logging.error(f"Daemon Action Error [{action}]: {e}\n{err_trace}")
+                    logging.error(f"Daemon Action Logic Error [{action}]: {e}\n{err_trace}")
                     try:
                         # Fault Isolation: return structured error but keep daemon alive
                         writer.write(json.dumps({

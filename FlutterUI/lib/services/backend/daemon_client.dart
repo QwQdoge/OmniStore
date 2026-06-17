@@ -96,28 +96,46 @@ class DaemonClient {
   Future<void> _ensureConnected() async {
     if (_socket != null) return;
 
+    // Murphy-proof: Trigger daemon start/liveness check before connection
     await onDemandStart();
 
     int retryDelay = 200;
-    for (int i = 0; i < 6; i++) {
+    final int maxRetries = 10; // Increased retries for slow startup
+    for (int i = 0; i < maxRetries; i++) {
       try {
-        _socket = await Socket.connect(host, port, timeout: const Duration(seconds: 2));
+        // Murphy-proof: Strict connection timeout
+        _socket = await Socket.connect(host, port, timeout: const Duration(seconds: 3));
+
         _socketSub = _socket!
             .cast<List<int>>()
             .transform(utf8.decoder)
             .transform(const LineSplitter())
-            .listen(_handleLine, onError: (_) => _cleanupSocket(), onDone: _cleanupSocket);
+            .listen(
+              _handleLine,
+              onError: (e) {
+                debugPrint("DaemonClient: Socket Error: $e");
+                _cleanupSocket();
+              },
+              onDone: () {
+                debugPrint("DaemonClient: Socket Done (Closed)");
+                _cleanupSocket();
+              }
+            );
 
         _startHeartbeat();
         debugPrint("DaemonClient: Connected to daemon on $host:$port");
         return;
-      } catch (_) {
-        if (i == 5) break;
+      } catch (e) {
+        if (i == maxRetries - 1) {
+          debugPrint("DaemonClient: Exhausted connection retries ($i): $e");
+          break;
+        }
+        // Exponential backoff to avoid hammering while daemon is starting
         await Future.delayed(Duration(milliseconds: retryDelay));
-        retryDelay *= 2; // Exponential backoff
+        retryDelay = (retryDelay * 1.5).toInt().clamp(200, 2000);
       }
     }
-    throw Exception("DaemonClient: Failed to connect to daemon at $host:$port");
+    throw Exception("DaemonClient: Failed to connect to daemon at $host:$port after $maxRetries attempts");
   }
 
   void _handleLine(String line) {

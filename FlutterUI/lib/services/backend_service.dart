@@ -207,19 +207,38 @@ class BackendService {
 
   Process? _daemonProcess;
   Timer? _healthCheckTimer;
+  int _daemonRestartCount = 0;
+  DateTime? _lastDaemonStartTime;
 
   Future<Process?> _startDaemonIfNeeded() async {
     if (kIsWeb) return null;
 
     if (_daemonProcess != null) {
-      // Basic liveness check
+      // Murphy-proof: Strict liveness check using kill -0
       try {
         if (Platform.isLinux || Platform.isMacOS) {
           final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
           if (res.exitCode == 0) return _daemonProcess;
+        } else {
+          // Fallback for non-Unix: check if exitCode is already available
+          // (which would mean it finished)
         }
       } catch (_) {}
     }
+
+    // Guard: Prevent rapid restart-loop "storm"
+    final now = DateTime.now();
+    if (_lastDaemonStartTime != null &&
+        now.difference(_lastDaemonStartTime!) < const Duration(seconds: 5)) {
+      _daemonRestartCount++;
+      if (_daemonRestartCount > 3) {
+        debugPrint("Murphy-proof Warning: Daemon restart loop detected. Throttling.");
+        return null;
+      }
+    } else {
+      _daemonRestartCount = 0;
+    }
+    _lastDaemonStartTime = now;
 
     final home = Platform.environment['HOME'] ?? '/home/user';
     final logDir = Directory(p.join(home, '.config', 'omnistore'));
@@ -242,6 +261,7 @@ class BackendService {
         throw TimeoutException("Failed to start Python daemon within 10s");
       });
 
+      // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);
 
       // Divert python stderr outputs to a structured local debug log file
@@ -270,19 +290,36 @@ class BackendService {
 
   void _startHealthCheckLoop() {
     _healthCheckTimer?.cancel();
-    _healthCheckTimer = Timer.periodic(const Duration(seconds: 20), (timer) async {
+    int backoffSeconds = 20;
+
+    _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (timer) async {
+      bool needsRestart = false;
       if (_daemonProcess == null) {
-        await _startDaemonIfNeeded();
+        needsRestart = true;
       } else {
          try {
            final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
            if (res.exitCode != 0) {
-             debugPrint("Daemon dead! Restarting...");
-             await _startDaemonIfNeeded();
+             debugPrint("Daemon dead detected by health check.");
+             needsRestart = true;
            }
          } catch (_) {
-           await _startDaemonIfNeeded();
+           needsRestart = true;
          }
+      }
+
+      if (needsRestart) {
+        final success = await _startDaemonIfNeeded() != null;
+        if (!success) {
+          // Increase backoff on repeated failures (max 5 minutes)
+          backoffSeconds = (backoffSeconds * 1.5).toInt().clamp(20, 300);
+          _startHealthCheckLoop(); // Restart loop with new interval
+        } else {
+          if (backoffSeconds != 20) {
+            backoffSeconds = 20;
+            _startHealthCheckLoop();
+          }
+        }
       }
     });
   }
@@ -685,50 +722,104 @@ class BackendService {
     }
   }
 
-  Future<String> aiExplain(String name, String desc) {
-    _validateString(name, "AI App Name");
-    return _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
+  // Fail-safe AI counter to prevent infinite retry loops in UI
+  int _aiFailureCount = 0;
+
+  Future<String> aiExplain(String name, String desc) async {
+    try {
+      _validateString(name, "AI App Name");
+      return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
+    } catch (e) {
+      return "AI Explanation unavailable: $e";
+    }
   }
 
-  Future<String> aiSummarizeUpdate(String n, String c, String next) {
-    _validateString(n, "AI Package Name");
-    return _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
+  Future<String> aiSummarizeUpdate(String n, String c, String next) async {
+    try {
+      _validateString(n, "AI Package Name");
+      return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
+    } catch (e) {
+      return "Update summary unavailable.";
+    }
   }
 
-  Future<String> aiGenerateCLI(String n, String s) {
-    _validateString(n, "AI App Name");
-    _validateString(s, "AI Source");
-    return _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
-        timeout: const Duration(seconds: 20));
+  Future<String> aiGenerateCLI(String n, String s) async {
+    try {
+      _validateString(n, "AI App Name");
+      _validateString(s, "AI Source");
+      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
+          timeout: const Duration(seconds: 20));
+    } catch (e) {
+      return "CLI generation failed.";
+    }
   }
 
-  Future<String> aiDetectConflicts(String n) {
-    _validateString(n, "AI Package Name");
-    return _aiCall(["--ai-conflicts", n.trim()]);
+  Future<String> aiDetectConflicts(String n) async {
+    try {
+      _validateString(n, "AI Package Name");
+      return await _aiCall(["--ai-conflicts", n.trim()]);
+    } catch (e) {
+      return "Conflict detection failed.";
+    }
   }
 
-  Future<String> aiPickOfTheDay() => _aiCall(["--ai-pick"]);
-
-  Future<String> aiSuggestCorrection(String q) {
-    _validateString(q, "AI Query");
-    return _aiCall(["--ai-correct", q.trim()],
-        timeout: const Duration(seconds: 15));
+  Future<String> aiPickOfTheDay() async {
+    try {
+      return await _aiCall(["--ai-pick"]);
+    } catch (e) {
+       return "Pick of the day unavailable.";
+    }
   }
 
-  Future<String> aiCompareVariants(String n) {
-    _validateString(n, "AI App Name");
-    return _aiCall(["--ai-compare", n.trim()]);
+  Future<String> aiSuggestCorrection(String q) async {
+    try {
+      _validateString(q, "AI Query");
+      return await _aiCall(["--ai-correct", q.trim()],
+          timeout: const Duration(seconds: 15));
+    } catch (e) {
+      return q; // Graceful degradation: return original query
+    }
   }
 
-  Future<String> aiSystemHealth() => _aiCall(["--ai-health"]);
+  Future<String> aiCompareVariants(String n) async {
+    try {
+      _validateString(n, "AI App Name");
+      return await _aiCall(["--ai-compare", n.trim()]);
+    } catch (e) {
+      return "Variant comparison unavailable.";
+    }
+  }
 
-  Future<String> aiAnalyzeError(String log) =>
-      _aiCall(["--ai-analyze-error", log.trim()]);
+  Future<String> aiSystemHealth() async {
+    try {
+      return await _aiCall(["--ai-health"]);
+    } catch (e) {
+      return "System health report unavailable.";
+    }
+  }
 
-  Future<String> aiRecommend(String p) {
-    _validateString(p, "AI Prompt");
-    return _aiCall(["--ai-recommend", p.trim()],
-        timeout: const Duration(seconds: 90));
+  Future<String> aiAnalyzeError(String log) async {
+    try {
+      return await _aiCall(["--ai-analyze-error", log.trim()]);
+    } catch (e) {
+      return "Error analysis unavailable.";
+    }
+  }
+
+  Future<String> aiRecommend(String p) async {
+    try {
+      _validateString(p, "AI Prompt");
+      final res = await _aiCall(["--ai-recommend", p.trim()],
+          timeout: const Duration(seconds: 90));
+      _aiFailureCount = 0;
+      return res;
+    } catch (e) {
+      _aiFailureCount++;
+      if (_aiFailureCount > 3) {
+        return "AI recommendations are currently offline. Please try again later.";
+      }
+      return "Recommendation service error.";
+    }
   }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {

@@ -29,11 +29,18 @@ class ProcessRegistry {
     try {
       if (Platform.isLinux || Platform.isMacOS) {
         // 1. Attempt SIGTERM on the entire process group (negative PID).
+        // Murphy-proof: Use setsid/pgid awareness if possible, but kill -TERM -$pid
+        // is the standard way to hit the group.
         try {
           await Process.run('kill', ['-TERM', '--', '-$pid']).timeout(
             const Duration(seconds: 2),
           );
-        } catch (_) {}
+        } catch (_) {
+          // Fallback: Individual SIGTERM if group kill fails (e.g. not a group leader)
+          try {
+            process.kill(ProcessSignal.sigterm);
+          } catch (_) {}
+        }
 
         await Future.delayed(const Duration(milliseconds: 500));
 
@@ -43,7 +50,11 @@ class ProcessRegistry {
             await Process.run('kill', ['-KILL', '--', '-$pid']).timeout(
               const Duration(seconds: 2),
             );
-          } catch (_) {}
+          } catch (_) {
+             try {
+              process.kill(ProcessSignal.sigkill);
+            } catch (_) {}
+          }
         }
       }
     } catch (e) {

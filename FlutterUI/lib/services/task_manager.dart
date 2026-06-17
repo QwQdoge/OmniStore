@@ -100,12 +100,22 @@ class TaskManager {
     );
 
     try {
-      return await _runTaskInternal(
+      final success = await _runTaskInternal(
         packageName: packageName,
         source: source,
         actionFlag: actionFlag,
         url: url,
       );
+      return success;
+    } catch (e) {
+      debugPrint("TaskManager.startTask Fatal: $e");
+      _updateState(
+        _currentTask?.copyWith(
+          status: TaskStatus.failed,
+          message: "Critical task failure: $e",
+        ),
+      );
+      return false;
     } finally {
       // Murphy-proof: Critical lock release to ensure the next task can start
       if (!currentMutex.isCompleted) currentMutex.complete();
@@ -285,17 +295,22 @@ class TaskManager {
     String cleanLine = line.trim();
     String? logMessage;
 
-    if (cleanLine.startsWith("[CALLBACK]")) {
-      try {
-        final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-        logMessage = data['message'] ?? data['log'] ?? "";
-      } catch (_) {}
-    } else if (cleanLine.startsWith("{")) {
-      try {
-        final data = jsonDecode(cleanLine);
-        logMessage = data['message'] ?? data['log'] ?? "";
-      } catch (_) {}
-    } else {
+    try {
+      if (cleanLine.startsWith("[CALLBACK]")) {
+        try {
+          final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
+          logMessage = data['message'] ?? data['log'] ?? "";
+        } catch (_) {}
+      } else if (cleanLine.startsWith("{")) {
+        try {
+          final data = jsonDecode(cleanLine);
+          logMessage = data['message'] ?? data['log'] ?? "";
+        } catch (_) {}
+      } else {
+        logMessage = cleanLine;
+      }
+    } catch (e) {
+      debugPrint("Murphy-proof: Output parsing failed: $e");
       logMessage = cleanLine;
     }
 
