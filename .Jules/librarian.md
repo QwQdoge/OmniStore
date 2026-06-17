@@ -44,3 +44,10 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Moved `context.read<PackageRepository>()` in `UpdatesTab` out of the `build()` method and directly into the async `onTap` callback where it is actually needed.
 - Refactored `AIUpdateSummaryDialog` from a `StatelessWidget` to a `StatefulWidget`. Retrieved `context.read<AIRepository>()` inside `initState()` and cached the resulting Future to ensure it is only executed once, significantly improving efficiency and safety.
+## 2026-06-16 - State Management: Scoping Future Instantiations for Dialogs
+
+**Learning:** Instantiating `Future` objects directly inside the `builder` callback of methods like `showDialog` (e.g., `future: context.read<AIRepository>().aiExplain(...)`) causes the `Future` to re-execute unnecessarily if the dialog's `Builder` is rebuilt by the framework (e.g., during window resizes, keyboard toggles, or theme changes). This leads to redundant network requests and unintended state duplication.
+
+**Action:**
+- Refactored `_showAIExplainDialog`, `_showAICompareDialog`, `_showAICliDialog`, and `_showAIConflictDialog` in `details_page.dart` to instantiate their respective `Future` variables *before* invoking `showDialog`.
+- Refactored `_showAIErrorAnalysis` in `terminal_dialog.dart` similarly, ensuring `context.read<AIRepository>()` is evaluated and the `Future` is cached locally before the dialog is built.
