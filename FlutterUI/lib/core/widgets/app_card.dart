@@ -52,19 +52,10 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     final isInteractive = widget.onTap != null;
 
-    Widget cardChild = widget.child;
-    if (isInteractive) {
-      cardChild = InkWell(
-        borderRadius: BorderRadius.circular(widget.borderRadius),
-        onTap: widget.onTap,
-        child: cardChild,
-      );
-    }
-
-    Widget current = Card(
+    Widget content = Card(
       color: widget.color ?? theme.colorScheme.surfaceContainerLow,
-      elevation: widget.elevation,
-      margin: widget.margin,
+      elevation: widget.elevation ?? 0,
+      margin: widget.margin ?? EdgeInsets.zero,
       clipBehavior: widget.clipBehavior,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -73,14 +64,16 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
           width: 1,
         ),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(widget.borderRadius),
-        onTap: widget.onTap,
-        child: widget.child,
-      ),
+      child: isInteractive
+          ? InkWell(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              onTap: widget.onTap,
+              child: widget.child,
+            )
+          : widget.child,
     );
 
-    if (widget.onTap != null) {
+    if (isInteractive) {
       content = MouseRegion(
         onEnter: (_) => _controller.forward(),
         onExit: (_) => _controller.reverse(),
