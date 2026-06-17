@@ -846,8 +846,8 @@
   "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります",
   "terminalOutput": "ターミナル出力",
   "themeColor": "テーマカラー",
-  "trayInitFailedExiting": "システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。",
-  "@trayInitFailedExiting": {
+  "trayInitFailedDisabled": "システムトレイの初期化に失敗しました。トレイに閉じる機能は無効になりました。",
+  "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
   "trayTooltipUpToDate": "OmniStore： 最新の状態です",

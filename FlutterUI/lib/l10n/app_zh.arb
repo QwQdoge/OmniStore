@@ -868,8 +868,8 @@
   "temperatureRangeError": "值必须在 0.0 到 2.0 之间",
   "terminalOutput": "终端输出",
   "themeColor": "主题色",
-  "trayInitFailedExiting": "系统托盘初始化失败。正在退出以防止后台运行错误。",
-  "@trayInitFailedExiting": {
+  "trayInitFailedDisabled": "系统托盘初始化失败。已自动关闭后台驻留。",
+  "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
   "trayTooltipUpToDate": "OmniStore： 应用已是最新",

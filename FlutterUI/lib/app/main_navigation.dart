@@ -79,11 +79,11 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  '托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.',
+                  l10n.trayInitFailedDisabled,
                 ),
-                duration: Duration(seconds: 5),
+                duration: const Duration(seconds: 5),
               ),
             );
           }
