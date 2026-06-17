@@ -84,7 +84,7 @@ class AppDetailsHeader extends StatelessWidget {
                       placeholder: (context, url) => const Skeleton(
                         width: 100,
                         height: 100,
-                        borderRadius: 24.0,
+                        borderRadius: 16.0,
                       ),
                     ),
                   )
