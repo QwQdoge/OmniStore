@@ -33,25 +33,9 @@ class _HomePageState extends State<HomePage> {
   bool _isAILoading = false;
   final ScrollController _heroScrollController = ScrollController();
   final ScrollController _quickAccessScrollController = ScrollController();
-  final Map<String, ScrollController> _shelfControllers = {};
-
-  @override
-  void dispose() {
-    _bannerScrollController.dispose();
-    _newArrivalsScrollController.dispose();
-    _categoriesScrollController.dispose();
-    _heroScrollController.dispose();
-    _quickAccessScrollController.dispose();
-    for (var controller in _shelfControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  final ScrollController _heroScrollController = ScrollController();
-  final ScrollController _quickAccessScrollController = ScrollController();
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
+  final Map<String, ScrollController> _shelfControllers = {};
 
   @override
   void initState() {
@@ -61,10 +45,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _bannerScrollController.dispose();
+    _newArrivalsScrollController.dispose();
+    _categoriesScrollController.dispose();
     _heroScrollController.dispose();
     _quickAccessScrollController.dispose();
     _hotAppsScrollController.dispose();
     _forYouScrollController.dispose();
+    for (var controller in _shelfControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -231,9 +221,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer<BrowseController>(
-                builder: (context, browse, _) {
-                  final trending = browse.recommendations['trending'] ?? [];
+              child: Selector<BrowseController, List<AppPackage>>(
+                selector: (context, browse) =>
+                    browse.recommendations['trending'] ?? [],
+                builder: (context, trending, _) {
                   return _buildCategoryShelf(
                     l10n.hotApps,
                     trending,
@@ -432,10 +423,7 @@ class _HomePageState extends State<HomePage> {
     ScrollController controller,
   ) {
     if (apps.isEmpty) return const SizedBox.shrink();
-    final controller = _shelfControllers.putIfAbsent(
-      title,
-      () => ScrollController(),
-    );
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
