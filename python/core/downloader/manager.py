@@ -102,6 +102,9 @@ class InstallExecutor:
 
     def _check_environment(self, source_name: str) -> bool:
         """Verify that the required system tools exist and are executable for the given source."""
+        import sys
+        is_linux = sys.platform.startswith("linux")
+
         def is_exe(name):
             path = shutil.which(name)
             if path is None:
@@ -111,6 +114,11 @@ class InstallExecutor:
                 logging.warning(f"Murphy-proof Check: Binary '{path}' found but not executable.")
                 return False
             return True
+
+        # Foolproof: Block Linux-specific sources on other platforms
+        if not is_linux and source_name in ("native", "pacman", "aur", "flatpak"):
+            logging.error(f"Foolproof: Source '{source_name}' is Linux-only. Current platform: {sys.platform}")
+            return False
 
         if source_name in ("native", "pacman"):
             return is_exe("pacman")

@@ -118,8 +118,9 @@ class BituSource(UnifiedSource):
         
         if install_dir.exists():
             open_cmd = "explorer" if sys.platform == "win32" else ("open" if sys.platform == "darwin" else "xdg-open")
-            subprocess.Popen([open_cmd, str(install_dir)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            from core.subprocess_utils import safe_subprocess
+            async with safe_subprocess(open_cmd, str(install_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         return False
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:

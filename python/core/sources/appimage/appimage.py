@@ -249,16 +249,18 @@ Categories=Utility;Application;
     async def launch(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
         apps_dir = Path.home() / "Applications"
+        from core.subprocess_utils import safe_subprocess
         found = list(apps_dir.glob(f"*{name}*.AppImage"))
         if found:
-            subprocess.Popen([str(found[0])], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess(str(found[0]), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         apps_dir = Path.home() / "Applications"
-        subprocess.Popen(["xdg-open", str(apps_dir)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return True
+        from core.subprocess_utils import safe_subprocess
+        async with safe_subprocess("xdg-open", str(apps_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+            return True
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
         return {"name": package_id, "source": "AppImage"}

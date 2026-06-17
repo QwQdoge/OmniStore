@@ -24,8 +24,8 @@ class PacmanSource(UnifiedSource):
     async def launch(self, package: Dict[str, Any]) -> bool:
         name = package.get("name")
         try:
-            subprocess.Popen([name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            async with safe_subprocess(name, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
         except Exception:
             return False
 
@@ -41,8 +41,8 @@ class PacmanSource(UnifiedSource):
                 if proc.returncode == 0:
                     binary_path = stdout.decode().strip()
                     binary_dir = os.path.dirname(binary_path)
-                    subprocess.Popen(["xdg-open", binary_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    return True
+                    async with safe_subprocess("xdg-open", binary_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                        return True
         except Exception:
             pass
         return False

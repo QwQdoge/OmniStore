@@ -111,7 +111,12 @@ async def handle_daemon_client(backend, reader, writer):
                     break
 
                 try:
-                    cmd_data = json.loads(line)
+                    cmd_data = DaemonRequest.model_validate_json(line)
+                except ValidationError as ve:
+                    logging.error(f"Daemon Validation error from {client_addr}: {ve}")
+                    writer.write(json.dumps({"status": "error", "error": f"Validation Failed: {ve.errors()[0]['msg']}"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                    continue
                 except json.JSONDecodeError as je:
                     logging.error(f"Daemon JSON error from {client_addr}: {je}")
                     writer.write(json.dumps({"status": "error", "error": "Invalid JSON format"}).encode('utf-8') + b'\n')
@@ -131,32 +136,10 @@ async def handle_daemon_client(backend, reader, writer):
             # 3. Execution isolation: redirect stdout and catch all per-action errors
             captured_stdout = io.StringIO()
             with redirect_stdout(captured_stdout):
-                action = "unknown"
+                action = cmd_data.action
                 try:
-                    action = cmd_data.get("action", "unknown")
-                    args = cmd_data.get("args", [])
-                    kwargs = cmd_data.get("kwargs", {})
-
-                    # Foolproof: Strict action whitelist
-                    ALLOWED_ACTIONS = {
-                        "run_search", "run_install", "run_uninstall", "run_update",
-                        "run_check_updates", "run_recommendations", "run_app_details",
-                        "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
-                        "run_remove_custom_repo", "run_launch", "run_locate",
-                        "run_get_storage_info", "run_clean_system", "run_get_essentials",
-                        "run_import_packages", "run_export_packages", "run_ai_test",
-                        "run_update_env", "config.data", "env.check_env"
-                    }
-
-                    if action not in ALLOWED_ACTIONS:
-                        writer.write(json.dumps({"status": "error", "error": f"Forbidden Action: {action}"}).encode('utf-8') + b'\n')
-                        await writer.drain()
-                        continue
-
-                    if not isinstance(args, list) or not isinstance(kwargs, dict):
-                        writer.write(json.dumps({"status": "error", "error": "Invalid arguments format (list/dict required)"}).encode('utf-8') + b'\n')
-                        await writer.drain()
-                        continue
+                    args = cmd_data.args
+                    kwargs = cmd_data.kwargs
 
                     # Dynamic attribute resolution
                     obj = backend
@@ -355,7 +338,14 @@ class OmnistoreBackend:
                     logging.debug(f"Cleanup: Session close error: {e}")
                 self.session = None
 
-            # 3. Explicitly nullify large manager objects to assist GC in long-running daemon mode
+            # 3. Close AI Assistant session if initialized
+            if self._ai:
+                try:
+                    await self._ai.close()
+                except Exception as e:
+                    logging.debug(f"Cleanup: AI Assistant close error: {e}")
+
+            # 4. Explicitly nullify large manager objects to assist GC in long-running daemon mode
             self.manager = None
             self.recommender = None
             self._ai = None
@@ -938,6 +928,15 @@ class OmnistoreBackend:
         if json_mode: sys.stdout.write(json.dumps({"status": "success"}, ensure_ascii=False) + "\n"); sys.stdout.flush()
         return True
 
+    async def shutdown(self):
+        """Coordinated shutdown of the backend daemon."""
+        logging.info("Coordinated shutdown requested via IPC.")
+        # Trigger the main stop event if we are in daemon mode
+        # This will be handled in the main() dispatch loop
+        if hasattr(main, "stop_event"):
+            main.stop_event.set()
+        return True
+
     @safe_command
     async def run_ai_test(self, json_mode: bool = False):
         self.config.current_config = self.config.load()
@@ -1017,6 +1016,27 @@ class OmnistoreBackend:
                           (app.get('description', '')[:50] + "...") if len(app.get('description', '')) > 50 else app.get('description', ''))
         console.print(table); console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
 
+
+class DaemonRequest(BaseModel):
+    action: str
+    args: list = Field(default_factory=list)
+    kwargs: dict = Field(default_factory=dict)
+
+    @field_validator("action")
+    @classmethod
+    def validate_action(cls, v):
+        ALLOWED_ACTIONS = {
+            "run_search", "run_install", "run_uninstall", "run_update",
+            "run_check_updates", "run_recommendations", "run_app_details",
+            "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
+            "run_remove_custom_repo", "run_launch", "run_locate",
+            "run_get_storage_info", "run_clean_system", "run_get_essentials",
+            "run_import_packages", "run_export_packages", "run_ai_test",
+                        "run_update_env", "config.data", "env.check_env", "shutdown"
+        }
+        if v not in ALLOWED_ACTIONS:
+            raise ValueError(f"Forbidden Action: {v}")
+        return v
 
 class CLIArguments(BaseModel):
     search: Optional[str] = None
@@ -1120,6 +1140,7 @@ async def main():
     # Murphy-proof: Register signal handlers for graceful shutdown
     loop = asyncio.get_running_loop()
     stop_event = asyncio.Event()
+    setattr(main, "stop_event", stop_event)
 
     # Registry for all active OmnistoreBackend instances to ensure cleanup
     active_backends = []

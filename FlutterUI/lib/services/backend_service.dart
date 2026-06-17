@@ -8,33 +8,27 @@ import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
 import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
+import 'backend/process_registry.dart';
+import 'backend/daemon_client.dart';
 
-class DaemonResult {
-  final String status;
-  final dynamic response;
-  final String stdout;
-  final String? error;
-
-  DaemonResult({
-    required this.status,
-    this.response,
-    required this.stdout,
-    this.error,
-  });
-}
+export 'backend/daemon_client.dart' show DaemonResult;
 
 class BackendService {
   static final BackendService instance = BackendService._internal();
   factory BackendService() => instance;
-  BackendService._internal();
 
-  // Feature: Implement Unix Domain Sockets (UDS) or Localhost TCP IPC to run Python backend as a single persistent service.
-  // Feature: Add auto-recovery and health-check loops to restart the Python backend daemon if it terminates unexpectedly.
-  // Feature: Divert Python stderr outputs to a structured local debug log file rather than console print.
-  // Registry for tracking all active subprocesses to prevent leaks
-  final Set<Process> _allProcesses = {};
+  late final ProcessRegistry _processRegistry;
+  late final DaemonClient _daemonClient;
 
-  // Murphy-proof: Global lock to prevent race conditions in I/O operations
+  BackendService._internal() {
+    _processRegistry = ProcessRegistry();
+    _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
+  }
+
+  final Completer<void> _initCompleter = Completer<void>();
+
+  // Registry for tracking active subprocesses (migrated to _processRegistry)
+  // Murphy-proof: Global lock for local IO operations
   Completer<void>? _globalLock;
 
   static String get _projectRoot {
@@ -135,37 +129,29 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
-  // Murphy-proof: Strict validation helpers to prevent shell injection and malformed input
-  /// Murphy-proof: Strict validation using a restrictive whitelist to prevent shell injection.
-  /// Only allows alphanumeric characters, dots, underscores, slashes, hyphens, and spaces.
   void _validateString(String? val, String name) {
     if (val == null || val.trim().isEmpty) {
       throw ArgumentError("$name cannot be null or empty");
     }
     final trimmed = val.trim();
-    // Whitelist approach: only allow known safe characters for OmniStore commands
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
       throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
     }
   }
 
-  /// Murphy-proof: Specialized path validation ensuring no hidden shell metas or relative navigation escapes.
   void _validatePath(String? path) {
     if (path == null || path.trim().isEmpty) {
       throw ArgumentError("Path cannot be null or empty");
     }
     final trimmed = path.trim();
-    // Stricter whitelist for paths, allowing more common path characters but excluding shells
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
       throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
     }
-    // Prevent directory traversal attempts if they are not explicitly expected
     if (trimmed.contains('..')) {
       throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
     }
   }
 
-  /// Murphy-proof: Acquire global lock with timeout to prevent deadlocks
   Future<bool> _acquireLock({
     Duration timeout = const Duration(seconds: 10),
   }) async {
@@ -186,91 +172,32 @@ class BackendService {
     if (lock != null && !lock.isCompleted) lock.complete();
   }
 
-  /// Kill a process and its children using process groups on Linux.
-  /// Murphy-proof: Guaranteed to attempt both TERM and KILL to prevent zombies.
-  /// Murphy-proof: Absolutely ensure process reaping by attempting group-kill,
-  /// waiting for termination, and escalating to SIGKILL.
-  /// Murphy-proof: Deep process reaping that targets the entire process group.
-  /// Ensures no orphaned children are left behind by escalating signals.
   Future<void> _killProcess(Process? process) async {
-    if (kIsWeb || process == null) return;
-    _allProcesses.remove(process);
-    final pid = process.pid;
-
-    try {
-      if (Platform.isLinux || Platform.isMacOS) {
-        // 1. Attempt SIGTERM on the entire process group (negative PID).
-        // This allows children to perform their own cleanup (e.g. closing sessions).
-        try {
-          await Process.run('kill', ['-TERM', '--', '-$pid']).timeout(
-            const Duration(seconds: 2),
-          );
-        } catch (_) {}
-
-        // Wait for processes to settle
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        // 2. Escalation: Check if parent or any group members are still alive.
-        if (_isProcessAlive(process)) {
-          try {
-            await Process.run('kill', ['-KILL', '--', '-$pid']).timeout(
-              const Duration(seconds: 2),
-            );
-          } catch (_) {}
-        }
-      }
-    } catch (e) {
-      debugPrint("Murphy-proof Kill Warning: Group reap failed for PID $pid: $e");
-    } finally {
-      // 3. Final Fail-safe: Direct SIGKILL to the known parent process.
-      // This ensures that even if group killing failed, the main handle is closed.
-      try {
-        process.kill(ProcessSignal.sigkill);
-      } catch (_) {}
-    }
+    await _processRegistry.kill(process);
   }
 
   bool _isProcessAlive(Process p) {
     if (kIsWeb) return false;
     try {
       if (Platform.isLinux || Platform.isMacOS) {
-        // Signal 0 is the standard way to check for process existence
         return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
       }
     } catch (_) {}
-    // If check fails or on Windows, we assume it's alive if we're calling this
     return true;
   }
 
-  /// Murphy-proof: Guaranteed resource cleanup to prevent memory leaks and zombies.
-  /// Idempotent and safe to call multiple times during app shutdown.
   Future<void> dispose() async {
     if (kIsWeb) return;
 
-    // 1. Terminate health check loop
     _healthCheckTimer?.cancel();
     _healthCheckTimer = null;
 
-    // 2. Tear down daemon communication
-    _cleanupDaemonSocket();
+    await _daemonClient.dispose();
+    await _processRegistry.dispose();
 
-    // 3. Reset Mutex chain
-    if (!_daemonMutex.isCompleted) {
-      _daemonMutex.complete();
-    }
-    // Re-initialize for safety if dispose is called before actual exit
-    _daemonMutex = Completer<void>()..complete();
-
-    // 4. Atomic process reaping
-    final processes = List<Process>.from(_allProcesses);
-    _allProcesses.clear();
-    for (final p in processes) {
-      await _killProcess(p);
-    }
-
-    _daemonProcess = null;
     activeProcess = null;
     activeSearchProcess = null;
+    _daemonProcess = null;
 
     if (_globalLock != null && !_globalLock!.isCompleted) {
       _globalLock!.complete();
@@ -279,28 +206,19 @@ class BackendService {
   }
 
   Process? _daemonProcess;
-  Socket? _daemonSocket;
-  StreamSubscription<String>? _daemonSub;
-  Completer<DaemonResult>? _responseCompleter;
   Timer? _healthCheckTimer;
-  final int _daemonPort = 9081;
-  Completer<void> _daemonMutex = Completer<void>()..complete();
 
-  Future<void> _startDaemonIfNeeded() async {
-    if (kIsWeb) return;
+  Future<Process?> _startDaemonIfNeeded() async {
+    if (kIsWeb) return null;
 
-    // Murphy-proof: check both process and socket health
-    bool processAlive =
-        _daemonProcess != null && _isProcessAlive(_daemonProcess!);
-    bool socketHealthy = _daemonSocket != null;
-
-    if (processAlive && socketHealthy) {
-      return;
-    }
-
-    // Cleanup stale state before restart
-    if (_daemonSocket != null) {
-      _cleanupDaemonSocket();
+    if (_daemonProcess != null) {
+      // Basic liveness check
+      try {
+        if (Platform.isLinux || Platform.isMacOS) {
+          final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
+          if (res.exitCode == 0) return _daemonProcess;
+        }
+      } catch (_) {}
     }
 
     final home = Platform.environment['HOME'] ?? '/home/user';
@@ -311,205 +229,72 @@ class BackendService {
     final logFile = File(p.join(logDir.path, 'daemon_stderr.log'));
 
     try {
-      if (!processAlive) {
-        // Murphy-proof: check both binary existence and execution permissions before start
-        if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-          debugPrint("Backend Error: Python executable not found at $_venvPython");
-          return;
-        }
-
-        _daemonProcess = await Process.start(
-          _venvPython,
-          _buildArgs(['--daemon', '--json']),
-          workingDirectory: _workingDir,
-        ).timeout(const Duration(seconds: 10), onTimeout: () {
-          throw TimeoutException("Failed to start Python daemon within 10s");
-        });
-        _allProcesses.add(_daemonProcess!);
-
-        // Divert python stderr outputs to a structured local debug log file
-        final logSink = logFile.openWrite(mode: FileMode.append);
-        _daemonProcess!.stderr
-            .transform(utf8.decoder)
-            .listen(
-              (data) {
-                try {
-                  logSink.write(data);
-                } catch (e) {
-                  debugPrint("LogSink write error: $e");
-                }
-              },
-              onError: (e) => debugPrint("Daemon stderr write error: $e"),
-              onDone: () => logSink.close(),
-            );
+      if (!File(_venvPython).existsSync() && _venvPython != 'python') {
+        debugPrint("Backend Error: Python executable not found at $_venvPython");
+        return null;
       }
 
-      // Connect to socket with exponential backoff retry
-      for (int i = 0; i < 6; i++) {
-        try {
-          _daemonSocket = await Socket.connect(
-            '127.0.0.1',
-            _daemonPort,
-            timeout: const Duration(seconds: 2),
-          );
-          debugPrint("Connected to Python backend daemon on port $_daemonPort");
+      _daemonProcess = await Process.start(
+        _venvPython,
+        _buildArgs(['--daemon', '--json']),
+        workingDirectory: _workingDir,
+      ).timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException("Failed to start Python daemon within 10s");
+      });
 
-          // Set up single socket listener
-          _daemonSub = _daemonSocket!
-              .cast<List<int>>()
-              .transform(utf8.decoder)
-              .transform(const LineSplitter())
-              .listen(
-            (line) {
+      _processRegistry.add(_daemonProcess!);
+
+      // Divert python stderr outputs to a structured local debug log file
+      final logSink = logFile.openWrite(mode: FileMode.append);
+      _daemonProcess!.stderr
+          .transform(utf8.decoder)
+          .listen(
+            (data) {
               try {
-                final res = jsonDecode(line);
-                if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
-                  final completer = _responseCompleter;
-                  if (completer != null && !completer.isCompleted) {
-                    if (res['status'] == 'success') {
-                      completer.complete(DaemonResult(
-                        status: 'success',
-                        response: res['response'],
-                        stdout: res['stdout'] ?? '',
-                      ));
-                    } else {
-                      completer.complete(DaemonResult(
-                        status: 'error',
-                        error: res['error'] ?? 'Daemon error',
-                        stdout: res['stdout'] ?? '',
-                      ));
-                    }
-                  }
-                }
+                logSink.write(data);
               } catch (e) {
-                debugPrint("Murphy-proof Warning: Failed to parse daemon response line: $e");
+                debugPrint("LogSink write error: $e");
               }
             },
-            onError: (err) {
-              debugPrint("Daemon socket error: $err");
-              _cleanupDaemonSocket();
-            },
-            onDone: () {
-              debugPrint("Daemon socket onDone triggered.");
-              _cleanupDaemonSocket();
-            },
-            cancelOnError: false,
+            onError: (e) => debugPrint("Daemon stderr write error: $e"),
+            onDone: () => logSink.close(),
           );
 
-          // Detect unexpected socket closure
-          _daemonSocket!.done.then((_) {
-            _cleanupDaemonSocket();
-          }).catchError((e) {
-            _cleanupDaemonSocket();
-          });
-
-          break;
-        } catch (_) {
-          if (i == 5) {
-            debugPrint("Failed to connect to daemon socket after 6 attempts.");
-            break;
-          }
-          await Future.delayed(Duration(milliseconds: 200 * (i + 1)));
-        }
-      }
-
       _startHealthCheckLoop();
+      return _daemonProcess;
     } catch (e) {
-      debugPrint("Failed to start/connect Python daemon: $e");
+      debugPrint("Failed to start Python daemon: $e");
+      return null;
     }
   }
 
   void _startHealthCheckLoop() {
     _healthCheckTimer?.cancel();
-    _healthCheckTimer = Timer.periodic(const Duration(seconds: 10), (
-      timer,
-    ) async {
-      if (_daemonProcess == null || !_isProcessAlive(_daemonProcess!)) {
-        debugPrint("Daemon dead! Restarting daemon...");
+    _healthCheckTimer = Timer.periodic(const Duration(seconds: 20), (timer) async {
+      if (_daemonProcess == null) {
         await _startDaemonIfNeeded();
+      } else {
+         try {
+           final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
+           if (res.exitCode != 0) {
+             debugPrint("Daemon dead! Restarting...");
+             await _startDaemonIfNeeded();
+           }
+         } catch (_) {
+           await _startDaemonIfNeeded();
+         }
       }
     });
   }
 
-  /// Murphy-proof: Thread-safe daemon communication with strict timeout and mutex.
-  /// Isolates communication failures and ensures the socket state is cleaned up on error.
   Future<DaemonResult?> _sendToDaemon(
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    // Prevent avalanche: use a mutex chain to ensure serialized access to the daemon socket
-    final previousMutex = _daemonMutex;
-    final currentMutex = Completer<void>();
-    _daemonMutex = currentMutex;
-
-    try {
-      await previousMutex.future.timeout(
-        const Duration(seconds: 65),
-        onTimeout: () => debugPrint("Murphy-proof Warning: Daemon mutex chain bottlenecked."),
-      );
-    } catch (_) {}
-
-    try {
-      await _startDaemonIfNeeded();
-      final socket = _daemonSocket;
-      if (socket == null) return null;
-
-      final payload = jsonEncode({
-        "action": action,
-        "args": args,
-        "kwargs": kwargs ?? {},
-      });
-
-      // Murphy-proof: Capture and handle socket write failures immediately
-      try {
-        socket.write('$payload\n');
-        await socket.flush().timeout(const Duration(seconds: 5));
-      } catch (e) {
-        debugPrint("Daemon socket write error: $e");
-        _cleanupDaemonSocket();
-        return null;
-      }
-
-      // Wait for response via the response completer
-      final completer = Completer<DaemonResult>();
-      _responseCompleter = completer;
-
-      try {
-        return await completer.future.timeout(
-          const Duration(seconds: 60),
-          onTimeout: () => throw TimeoutException("Daemon response timed out for $action"),
-        );
-      } finally {
-        // Clear completer even on timeout/success to allow next message
-        if (_responseCompleter == completer) _responseCompleter = null;
-      }
-    } catch (e) {
-      debugPrint("Daemon transaction fatal error [$action]: $e");
-      _cleanupDaemonSocket();
-      return null;
-    } finally {
-      if (!currentMutex.isCompleted) currentMutex.complete();
-    }
+    return await _daemonClient.send(action, args, kwargs: kwargs);
   }
 
-  /// Murphy-proof: Internal helper to aggressively clean up a failed daemon socket state.
-  void _cleanupDaemonSocket() {
-    _daemonSub?.cancel();
-    _daemonSub = null;
-    _daemonSocket?.destroy();
-    _daemonSocket = null;
-
-    // Fail any pending response completer to prevent hanging callers
-    final completer = _responseCompleter;
-    if (completer != null && !completer.isCompleted) {
-      completer.completeError(Exception("Daemon connection lost during transaction"));
-    }
-    _responseCompleter = null;
-  }
-
-  /// Safe wrapper for Process.run with mandatory timeout and exception handling.
-  /// Murphy-proof: Ensures absolute process reaping and avoids deadlocks.
   Future<ProcessResult?> _safeRun(
     List<String> args, {
     Duration timeout = const Duration(seconds: 30),
@@ -517,7 +302,6 @@ class BackendService {
   }) async {
     if (kIsWeb) return null;
 
-    // Boundary Defense: Environment Check
     if (!File(_venvPython).existsSync() && _venvPython != 'python') {
       debugPrint("Backend Error: Python executable not found at $_venvPython");
       return null;
@@ -541,18 +325,16 @@ class BackendService {
       ).timeout(const Duration(seconds: 10), onTimeout: () {
         throw TimeoutException("Process start timed out for $args");
       });
-      _allProcesses.add(process);
 
-      // 3. Wait for termination with mandatory timeout
+      _processRegistry.add(process);
+
       final exitCode = await process.exitCode.timeout(
         timeout,
         onTimeout: () {
-          debugPrint("BackendService._safeRun: Execution timed out for $args");
           throw TimeoutException("Process execution timed out after ${timeout.inSeconds}s");
         },
       );
 
-      // 4. Capture output with additional safety timeout to prevent hanging on pipes
       final stdout = await process.stdout
           .transform(utf8.decoder)
           .join()
@@ -568,13 +350,11 @@ class BackendService {
       if (process != null) await _killProcess(process);
       return null;
     } finally {
-      if (process != null) _allProcesses.remove(process);
+      if (process != null) _processRegistry.remove(process);
       if (useLock) _releaseLock();
     }
   }
 
-  /// Safe wrapper for Process.start returns a stream and handles process lifecycle.
-  /// Murphy-proof: Active process tracking and guaranteed cleanup on cancellation.
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
     if (kIsWeb) {
       yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
@@ -583,7 +363,6 @@ class BackendService {
     if (useLock) await _acquireLock();
 
     Process? process;
-    // Murphy-proof: Use a broadcast-capable or well-managed controller
     final controller = StreamController<String>();
 
     try {
@@ -602,11 +381,10 @@ class BackendService {
       ).timeout(const Duration(seconds: 10), onTimeout: () {
         throw TimeoutException("Streaming process start timed out for $args");
       });
-      _allProcesses.add(process);
 
+      _processRegistry.add(process);
       activeProcess = process;
 
-      // Ensure we listen with safe error handling
       final stdoutSub = process.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter())
@@ -623,7 +401,7 @@ class BackendService {
               }
             },
             onDone: () {
-              if (process != null) _allProcesses.remove(process);
+              if (process != null) _processRegistry.remove(process);
               if (!controller.isClosed) controller.close();
               if (activeProcess == process) activeProcess = null;
             },
@@ -686,8 +464,7 @@ class BackendService {
       await BackendService.instance._killProcess(activeProcess);
       activeProcess = null;
       isDownloading.value = false;
-      globalStatus.value =
-          ""; // Localized via TaskController/TaskManager // Key-like marker
+      globalStatus.value = "";
       globalProgress.value = null;
       activeApp.value = null;
       activeFlag.value = null;
@@ -705,10 +482,9 @@ class BackendService {
       );
     }
 
-    // 边界防御：入参校验与防呆
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return [];
-    if (trimmedQuery.length > 500) return []; // 防止超长字符串导致后端崩溃
+    if (trimmedQuery.length > 500) return [];
 
     try {
       _validateString(trimmedQuery, "Search Query");
@@ -736,8 +512,9 @@ class BackendService {
     } catch (e) {
       debugPrint("Daemon searchPackages error: $e. Falling back.");
     }
+
+    // Legacy fallback
     try {
-      // 状态互斥：取消先前的搜索任务
       if (cancelOngoing && activeSearchProcess != null) {
         await _killProcess(activeSearchProcess);
         activeSearchProcess = null;
@@ -750,7 +527,8 @@ class BackendService {
       ).timeout(const Duration(seconds: 10), onTimeout: () {
         throw TimeoutException("Search process start timed out");
       });
-      _allProcesses.add(process);
+
+      _processRegistry.add(process);
       activeSearchProcess = process;
 
       final results = <AppPackage>[];
@@ -779,37 +557,25 @@ class BackendService {
       return [];
     } finally {
       if (activeSearchProcess != null) {
-        _allProcesses.remove(activeSearchProcess);
-        // Murphy-proof: Ensure process is reaped if still alive after join/timeout
-        if (_isProcessAlive(activeSearchProcess!)) {
-          await _killProcess(activeSearchProcess);
-        }
+        _processRegistry.remove(activeSearchProcess!);
+        await _killProcess(activeSearchProcess);
       }
       activeSearchProcess = null;
     }
   }
 
-  /// Murphy-proof JSON parser with aggressive heuristic recovery.
-  /// Designed to extract valid JSON from noisy, mangled, or interleaved backend streams.
   dynamic _tryParseJson(String input) {
-    // 1. Initial sanitization
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
-
-    // Security Boundary: Refuse to process excessively large strings to prevent OOM
     if (rawInput.length > 5 * 1024 * 1024) return null;
 
-    // 2. Fast-path: Standard decoding
     try {
       return jsonDecode(rawInput);
     } catch (_) {}
 
-    // 3. Heuristic Recovery: Strip noise like ANSI escape codes or leading/trailing garbage
     final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
 
     try {
-      // 4. Pattern-based extraction: Find all potential JSON blocks (objects or arrays)
-      // We use a non-greedy approach followed by verification to find the most likely valid block.
       final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
       final match = jsonPattern.firstMatch(cleaned);
 
@@ -818,11 +584,8 @@ class BackendService {
         try {
           return jsonDecode(candidate);
         } catch (_) {
-          // 5. Deep Recovery: Scan from the end of the string to find the largest valid JSON tail.
-          // This handles cases where the beginning of the stream is corrupted but the end is valid.
           final lines = cleaned.split('\n');
           if (lines.length <= 150) {
-            // Limit depth to preserve performance
             for (int i = 0; i < lines.length; i++) {
               try {
                 final tailCandidate = lines.sublist(i).join('\n').trim();
@@ -846,10 +609,7 @@ class BackendService {
       return PackageRepository().listInstalled();
     }
     try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [
-        true,
-        false,
-      ]);
+      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return data is List ? data : [];
@@ -858,10 +618,7 @@ class BackendService {
       debugPrint("Daemon listInstalled error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "-L",
-        "--json",
-      ], timeout: const Duration(seconds: 45));
+      final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
       final data = _tryParseJson(res.stdout.toString());
       return data is List ? data : [];
@@ -890,10 +647,7 @@ class BackendService {
       debugPrint("Daemon loadConfig error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--get-config",
-        "--json",
-      ], timeout: const Duration(seconds: 15));
+      final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
       if (res == null) return {};
       final data = _tryParseJson(res.stdout.toString());
       if (data is Map<String, dynamic>) {
@@ -991,9 +745,8 @@ class BackendService {
         _buildArgs(["--set-config", "stdin", "--json"]),
         workingDirectory: _workingDir,
       );
-      _allProcesses.add(process);
+      _processRegistry.add(process);
 
-      // Murphy-proof: Handle stdin writes with error catching
       try {
         process.stdin.write(jsonEncode(config));
         await process.stdin.close();
@@ -1004,7 +757,6 @@ class BackendService {
       final code = await process.exitCode.timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          debugPrint("saveConfig timed out");
           throw TimeoutException("Save config timed out");
         },
       );
@@ -1014,7 +766,7 @@ class BackendService {
       if (process != null) await _killProcess(process);
       return false;
     } finally {
-      if (process != null) _allProcesses.remove(process);
+      if (process != null) _processRegistry.remove(process);
       _releaseLock();
     }
   }
@@ -1034,10 +786,7 @@ class BackendService {
       debugPrint("Daemon checkEnv error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--check-env",
-        "--json",
-      ], timeout: const Duration(seconds: 15));
+      final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1083,10 +832,7 @@ class BackendService {
       debugPrint("Daemon getRecommendations error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--recommend",
-        "--json",
-      ], timeout: const Duration(seconds: 30));
+      final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
       if (res == null) return {};
       final data = _tryParseJson(res.stdout.toString());
       final Map<String, List<AppPackage>> result = {};
@@ -1117,11 +863,7 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_launch", [
-        n.trim(),
-        s.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1152,11 +894,7 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_locate", [
-        n.trim(),
-        s.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1186,10 +924,7 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [
-        id.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
@@ -1199,11 +934,7 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final res = await _safeRun([
-        "--details",
-        id.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 25));
+      final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1218,15 +949,11 @@ class BackendService {
     }
 
     try {
-      // 边界校验与防呆
       _validateString(n, "App Name");
       _validateString(s, "Source");
-
-      // 入参防御：防止非法指令
       if (!["-I", "-R", "-U"].contains(f)) {
         throw ArgumentError("Invalid action flag: $f");
       }
-
       if (url != null && url.trim().isNotEmpty) {
         _validateString(url, "URL");
       }
@@ -1262,10 +989,7 @@ class BackendService {
       debugPrint("Daemon checkUpdates error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "-C",
-        "--json",
-      ], timeout: const Duration(seconds: 60));
+      final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
@@ -1328,9 +1052,7 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_import_packages", [
-        path.trim(),
-      ]);
+      final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return data is List ? data : [];
@@ -1355,9 +1077,7 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_export_packages", [
-        path.trim(),
-      ]);
+      final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _tryParseJson(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
@@ -1367,11 +1087,7 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final res = await _safeRun([
-        "--export-packages",
-        path.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 30));
+      final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {"status": "error"};
     } catch (e) {
@@ -1384,7 +1100,6 @@ class BackendService {
     if (kIsWeb) {
       return TaskRepository().cleanSystem();
     }
-    // Deep Reaping guaranteed by _safeStream
     return _safeStream(["--clean-system", "--json"]);
   }
 
@@ -1395,12 +1110,7 @@ class BackendService {
       _validateString(name, "Repo Name");
       _validateString(url, "Repo URL");
 
-      final daemonRes = await _sendToDaemon("run_add_custom_repo", [
-        type.trim(),
-        name.trim(),
-        url.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1408,11 +1118,7 @@ class BackendService {
       debugPrint("Daemon addCustomRepo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--add-custom-repo",
-        "$type,$name,$url",
-        "--json",
-      ], timeout: const Duration(seconds: 20));
+      final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
       return res?.exitCode == 0;
     } catch (_) {
       return false;
@@ -1425,11 +1131,7 @@ class BackendService {
       _validateString(type, "Repo Type");
       _validateString(name, "Repo Name");
 
-      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [
-        type.trim(),
-        name.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [type.trim(), name.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1437,11 +1139,7 @@ class BackendService {
       debugPrint("Daemon removeCustomRepo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--remove-custom-repo",
-        "$type,$name",
-        "--json",
-      ], timeout: const Duration(seconds: 20));
+      final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
       return res?.exitCode == 0;
     } catch (_) {
       return false;
@@ -1460,16 +1158,20 @@ class BackendService {
       debugPrint("Daemon getStorageInfo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--storage-info",
-        "--json",
-      ], timeout: const Duration(seconds: 15));
+      final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
       debugPrint("getStorageInfo Error: $e");
       return {};
     }
+  }
+
+  Future<void> shutdownBackend() async {
+    if (kIsWeb) return;
+    try {
+      await _sendToDaemon("shutdown", []);
+    } catch (_) {}
   }
 
   Future<Map<String, dynamic>> testAiConnection() async {
@@ -1486,10 +1188,7 @@ class BackendService {
       debugPrint("Daemon testAiConnection error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--ai-test",
-        "--json",
-      ], timeout: const Duration(seconds: 60));
+      final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
       final data = _tryParseJson(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>)
           ? data
