@@ -34,11 +34,19 @@ class _HomePageState extends State<HomePage> {
 
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  List<CategoryItem> _categories = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Memoize localized categories to avoid re-generating them on every build
+    _categories = CategoryService.getCategories(context);
   }
 
   @override
@@ -503,7 +511,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategoryQuickAccess() {
-    final categories = CategoryService.getCategories(context);
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 66,
@@ -514,19 +521,19 @@ class _HomePageState extends State<HomePage> {
             controller: _quickAccessScrollController,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            itemCount: categories.length,
+            itemCount: _categories.length,
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Semantics(
-                label: 'Category: ${categories[index].name}',
+                label: 'Category: ${_categories[index].name}',
                 child: ActionChip(
-                  avatar: Icon(categories[index].icon, size: 18),
-                  label: Text(categories[index].name),
-                  tooltip: categories[index].name,
+                  avatar: Icon(_categories[index].icon, size: 18),
+                  label: Text(_categories[index].name),
+                  tooltip: _categories[index].name,
                   onPressed: () {
                     final browse = context.read<BrowseController>();
                     browse.pendingSearchQuery =
-                        '/${categories[index].id.toLowerCase()}';
+                        '/${_categories[index].id.toLowerCase()}';
                     context.read<NavigationController>().setIndex(2);
                   },
                 ),
