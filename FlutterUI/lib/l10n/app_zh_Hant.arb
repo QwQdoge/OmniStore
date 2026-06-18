@@ -130,7 +130,7 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "向 AI 尋求建議",
+  "aiPromptRecommend": "諮詢 AI 建議",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
@@ -182,7 +182,7 @@
   "aiTimeout": "AI 連線逾時，請稍後重試。",
   "all": "全部",
   "allDownloads": "全部下載",
-  "allUpdated": "已是最新",
+  "allUpdated": "應用程式已是最新版本",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -250,7 +250,7 @@
     "description": "Bitu source type option"
   },
   "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "cacheTypeInfo": "Pacman： {pacman} MB | Flatpak： {flatpak} MB | 自定義： {custom} MB",
+  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自定義：{custom} MB",
   "@cacheTypeInfo": {
     "placeholders": {
       "pacman": {
@@ -314,7 +314,7 @@
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
   },
-  "checkUpdateFailed": "檢查更新失敗： {error}",
+  "checkUpdateFailed": "檢查更新失敗：{error}",
   "@checkUpdateFailed": {
     "placeholders": {
       "error": {
@@ -364,7 +364,7 @@
   },
   "details": "詳情",
   "developer": "開發者",
-  "diskSpaceInfo": "磁碟空間： {free} GB 可用 / {total} GB 總計",
+  "diskSpaceInfo": "磁碟空間：{free} GB 可用 / {total} GB 總計",
   "@diskSpaceInfo": {
     "placeholders": {
       "free": {
@@ -461,7 +461,7 @@
   "@export": {
     "description": "Export action label"
   },
-  "exportFailed": "匯出失敗： {message}",
+  "exportFailed": "匯出失敗：{message}",
   "@exportFailed": {
     "description": "Failure message when export fails",
     "placeholders": {
@@ -470,7 +470,7 @@
       }
     }
   },
-  "exportSuccess": "匯出成功： {count} 個套件",
+  "exportSuccess": "匯出成功：{count} 個套件",
   "@exportSuccess": {
     "description": "Success message after exporting packages",
     "placeholders": {
@@ -540,15 +540,15 @@
   "gotIt": "知道了",
   "gridView": "網格檢視",
   "help": "幫助",
-  "hintCustomAppName": "例如： my-custom-app",
+  "hintCustomAppName": "例如：my-custom-app",
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "hintFeedUrl": "例如： https://example.com/feed.json",
+  "hintFeedUrl": "例如：https://example.com/feed.json",
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "hintRepoFormat": "例如： flutter/flutter",
+  "hintRepoFormat": "例如：flutter/flutter",
   "@hintRepoFormat": {
     "description": "Hint for repository format"
   },
@@ -562,7 +562,7 @@
     }
   },
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama（本地）： 下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）： 前往服務商官網建立 API Key，然後填入此處。",
+  "howToGetApiKeyDesc": "1. Ollama（本地）：下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）：前往服務商官網建立 API Key，然後填入此處。",
   "import": "匯入",
   "@import": {
     "description": "Import action label"
@@ -713,7 +713,7 @@
   "resetCache": "重置快取與歷史記錄",
   "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
   "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
-  "resetFailed": "重置失敗： {error}",
+  "resetFailed": "重置失敗：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -792,7 +792,7 @@
   "@sourceUrl": {
     "description": "Label for source URL"
   },
-  "startRecovery": "開始恢復",
+  "startRecovery": "開始還原",
   "@startRecovery": {
     "description": "Button label to start recovery"
   },
@@ -837,7 +837,7 @@
       }
     }
   },
-  "taskFailedWithCode": "任務失敗（錯誤碼： {code}）",
+  "taskFailedWithCode": "任務失敗（錯誤碼：{code}）",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {
@@ -871,8 +871,8 @@
   "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
-  "trayTooltipUpToDate": "OmniStore： 已是最新",
-  "trayTooltipUpdates": "OmniStore： 共有 {count} 項可更新",
+  "trayTooltipUpToDate": "OmniStore：應用程式已是最新版本",
+  "trayTooltipUpdates": "OmniStore：共有 {count} 項可更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -895,7 +895,7 @@
       }
     }
   },
-  "upToDate": "已是最新",
+  "upToDate": "應用程式已是最新版本",
   "update": "更新",
   "@update": {
     "description": "Update action label"

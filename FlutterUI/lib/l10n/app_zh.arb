@@ -118,7 +118,7 @@
   "@aiPickDay": {
     "description": "Title for daily AI pick card"
   },
-  "aiPickDaySubtitle": "由 OmniStore AI 驱动",
+  "aiPickDaySubtitle": "由 OmniStore AI 提供支持",
   "@aiPickDaySubtitle": {
     "description": "Subtitle for daily AI pick card"
   },
@@ -130,7 +130,7 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "向 AI 寻求建议",
+  "aiPromptRecommend": "咨询 AI 建议",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
@@ -163,7 +163,7 @@
   "@aiTestButton": {
     "description": "Button label to test AI connectivity"
   },
-  "aiTestFailed": "AI 连接失败： {error}",
+  "aiTestFailed": "AI 连接失败：{error}",
   "@aiTestFailed": {
     "description": "Error message when AI connection test fails",
     "placeholders": {
@@ -183,7 +183,7 @@
   "aiTimeout": "AI 连接超时，请稍后重试。",
   "all": "全部",
   "allDownloads": "全部下载",
-  "allUpdated": "应用已是最新",
+  "allUpdated": "应用程序已是最新版本",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -251,7 +251,7 @@
     "description": "Bitu source type option"
   },
   "bootstrapNote": "提示：配置过程可能需要多次输入管理员密码。",
-  "cacheTypeInfo": "Pacman： {pacman} MB | Flatpak： {flatpak} MB | 自定义： {custom} MB",
+  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自定义：{custom} MB",
   "@cacheTypeInfo": {
     "placeholders": {
       "pacman": {
@@ -266,7 +266,7 @@
     }
   },
   "cancel": "取消",
-  "cannotConnectToBackend": "无法连接到后端服务： {error}",
+  "cannotConnectToBackend": "无法连接到后端服务：{error}",
   "@cannotConnectToBackend": {
     "description": "Error message when backend is unreachable",
     "placeholders": {
@@ -315,7 +315,7 @@
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
   },
-  "checkUpdateFailed": "检查更新失败： {error}",
+  "checkUpdateFailed": "检查更新失败：{error}",
   "@checkUpdateFailed": {
     "placeholders": {
       "error": {
@@ -365,7 +365,7 @@
   },
   "details": "详情",
   "developer": "开发者",
-  "diskSpaceInfo": "磁盘空间： {free} GB 可用 / {total} GB 总计",
+  "diskSpaceInfo": "磁盘空间：{free} GB 可用 / {total} GB 总计",
   "@diskSpaceInfo": {
     "placeholders": {
       "free": {
@@ -462,7 +462,7 @@
   "@export": {
     "description": "Export action label"
   },
-  "exportFailed": "导出失败： {message}",
+  "exportFailed": "导出失败：{message}",
   "@exportFailed": {
     "description": "Failure message when export fails",
     "placeholders": {
@@ -471,7 +471,7 @@
       }
     }
   },
-  "exportSuccess": "导出成功： {count} 个软件包",
+  "exportSuccess": "导出成功：{count} 个软件包",
   "@exportSuccess": {
     "description": "Success message after exporting packages",
     "placeholders": {
@@ -541,15 +541,15 @@
   "gotIt": "知道了",
   "gridView": "网格视图",
   "help": "帮助",
-  "hintCustomAppName": "例如： my-custom-app",
+  "hintCustomAppName": "例如：my-custom-app",
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "hintFeedUrl": "例如： https://example.com/feed.json",
+  "hintFeedUrl": "例如：https://example.com/feed.json",
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "hintRepoFormat": "例如： flutter/flutter",
+  "hintRepoFormat": "例如：flutter/flutter",
   "@hintRepoFormat": {
     "description": "Hint for repository format"
   },
@@ -563,7 +563,7 @@
     }
   },
   "howToGetApiKey": "如何获取 API 密钥？",
-  "howToGetApiKeyDesc": "1. Ollama（本地）： 下载并运行 Ollama，无需密钥。2. 云端（OpenAI）： 前往服务商官网创建 API Key，然后填入此处。",
+  "howToGetApiKeyDesc": "1. Ollama（本地）：下载并运行 Ollama，无需密钥。2. 云端（OpenAI）：前往服务商官网创建 API Key，然后填入此处。",
   "import": "导入",
   "@import": {
     "description": "Import action label"
@@ -714,7 +714,7 @@
   "resetCache": "重置缓存与历史记录",
   "resetCacheConfirm": "这将清空您的搜索历史和推荐缓存。是否继续？",
   "resetCacheDesc": "清空搜索历史与本地推荐缓存",
-  "resetFailed": "重置失败： {error}",
+  "resetFailed": "重置失败：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -793,7 +793,7 @@
   "@sourceUrl": {
     "description": "Label for source URL"
   },
-  "startRecovery": "开始恢复",
+  "startRecovery": "开始还原",
   "@startRecovery": {
     "description": "Button label to start recovery"
   },
@@ -829,7 +829,7 @@
     "description": "Status message when a task is cancelled by the user"
   },
   "taskCompleted": "任务已完成",
-  "taskError": "错误： {error}",
+  "taskError": "错误：{error}",
   "@taskError": {
     "description": "Status message when a task encounters an error",
     "placeholders": {
@@ -838,7 +838,7 @@
       }
     }
   },
-  "taskFailedWithCode": "任务失败（错误码： {code}）",
+  "taskFailedWithCode": "任务失败（错误码：{code}）",
   "@taskFailedWithCode": {
     "description": "Status message when a task fails with an exit code",
     "placeholders": {
@@ -872,8 +872,8 @@
   "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
-  "trayTooltipUpToDate": "OmniStore： 应用已是最新",
-  "trayTooltipUpdates": "OmniStore： 共有 {count} 项可更新",
+  "trayTooltipUpToDate": "OmniStore：应用程序已是最新版本",
+  "trayTooltipUpdates": "OmniStore：共有 {count} 项可更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -896,7 +896,7 @@
       }
     }
   },
-  "upToDate": "应用已是最新",
+  "upToDate": "应用程序已是最新版本",
   "update": "更新",
   "@update": {
     "description": "Update action label"
