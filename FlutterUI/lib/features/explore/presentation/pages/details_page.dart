@@ -134,12 +134,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _handleAction(String flag) async {
-    final localizations = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(localizations.taskInProgress)));
+      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
       return;
     }
 
@@ -163,17 +163,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     cleanOrphans = cleanOrphansResult;
 
-    if (_selectedSource == "AUR" && mounted) {
+    if (_selectedSource == "AUR") {
       final aurConfirmed = await showDialog<bool>(
         context: context,
         builder: (context) => const AurSecurityDialog(),
       );
-      if (aurConfirmed != true) {
+      if (!mounted || aurConfirmed != true) {
         return;
       }
     }
-
-    if (!mounted) return;
 
     final variantMap = _getVariantForSource(_selectedSource);
     String? variantId = variantMap?['id']?.toString();
@@ -194,54 +192,50 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       taskFlag,
       targetIdentifier,
       _selectedSource,
-      localizations,
+      l10n,
       url: widget.app.url,
     );
 
-    if (mounted) {
-      setState(() {
-        if (success) {
-          if (flag == "-I") {
-            _isAppInstalled = true;
-          }
-          if (flag == "-R") {
-            _isAppInstalled = false;
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle_rounded, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Text(
-                    flag == "-I"
-                        ? localizations.success
-                        : localizations.success,
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.green.shade700,
-            ),
-          );
-        } else {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text(localizations.failed),
-              content: Text(
-                "${taskController.status}\n\n${localizations.errorFatalStream("Check task logs for details")}",
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(localizations.cancel),
-                ),
+    if (!mounted) return;
+
+    setState(() {
+      if (success) {
+        if (flag == "-I") {
+          _isAppInstalled = true;
+        }
+        if (flag == "-R") {
+          _isAppInstalled = false;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(l10n.success),
               ],
             ),
-          );
-        }
-      });
-    }
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.failed),
+            content: Text(
+              "${taskController.status}\n\n${l10n.errorFatalStream("Check task logs for details")}",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.cancel),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 
   Widget _buildMainContent(
@@ -460,6 +454,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   Future<void> _launchApp() async {
+    final l10n = AppLocalizations.of(context)!;
     final variant = _getVariantForSource(_selectedSource);
     String target = (variant?['id'] != null && _selectedSource == "Flatpak")
         ? variant!['id']!
@@ -468,12 +463,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.launchApp(target, _selectedSource);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.loadError)),
+        SnackBar(content: Text(l10n.loadError)),
       );
     }
   }
 
   Future<void> _locateApp() async {
+    final l10n = AppLocalizations.of(context)!;
     final variant = _getVariantForSource(_selectedSource);
     String target = (variant?['id'] != null && _selectedSource == "Flatpak")
         ? variant!['id']!
@@ -482,7 +478,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.locateApp(target, _selectedSource);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.loadError)),
+        SnackBar(content: Text(l10n.loadError)),
       );
     }
   }
