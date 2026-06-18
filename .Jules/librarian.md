@@ -51,3 +51,10 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Refactored `_showAIExplainDialog`, `_showAICompareDialog`, `_showAICliDialog`, and `_showAIConflictDialog` in `details_page.dart` to instantiate their respective `Future` variables *before* invoking `showDialog`.
 - Refactored `_showAIErrorAnalysis` in `terminal_dialog.dart` similarly, ensuring `context.read<AIRepository>()` is evaluated and the `Future` is cached locally before the dialog is built.
+## 2026-06-16 - State Management: Scoping Future Instantiations for Routes
+
+**Learning:** Instantiating `Future` objects directly inside the `builder` callback of route structures like `MaterialPageRoute` (e.g., `future: PackageRepository().getAppDetails(...)`) causes the `Future` to re-execute unnecessarily if the route transitions or the navigation tree is rebuilt by the framework. This violates async lifecycle clarity and triggers redundant API calls that can stutter navigation transitions.
+
+**Action:**
+- Refactored `onGenerateRoute` in `omnistore_app.dart` to extract the `FutureBuilder` logic for `AppDetailsPage` into a dedicated `StatefulWidget` (`_AppDetailsRouteLoader`).
+- Ensured `context.read<PackageRepository>().getAppDetails` is evaluated and the `Future` is cached locally within the `initState()` of the new widget before the view is constructed, isolating network requests from Flutter's rebuild cycle.
