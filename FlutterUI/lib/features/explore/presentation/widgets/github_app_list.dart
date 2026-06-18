@@ -34,12 +34,12 @@ class GitHubAppList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget content;
     if (isLoading) {
-      return const GitHubAppListSkeleton();
-    }
-
-    if (apps.isEmpty) {
-      return Center(
+      content = const GitHubAppListSkeleton(key: ValueKey('loading'));
+    } else if (apps.isEmpty) {
+      content = Center(
+        key: const ValueKey('empty'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -76,12 +76,11 @@ class GitHubAppList extends StatelessWidget {
           ],
         ),
       );
-    }
+    } else {
+      final client = context.read<GitHubClient>();
+      final scheme = Theme.of(context).colorScheme;
 
-    final client = context.read<GitHubClient>();
-    final scheme = Theme.of(context).colorScheme;
-
-    return ListView.builder(
+      content = ListView.builder(
       key: PageStorageKey<String>('github_store_$keyPrefix'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: apps.length,
@@ -207,6 +206,12 @@ class GitHubAppList extends StatelessWidget {
           ),
         ));
       },
+    );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: content,
     );
   }
 }

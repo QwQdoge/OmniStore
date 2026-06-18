@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class StorageCleanupCard extends StatefulWidget {
   const StorageCleanupCard({super.key});
@@ -144,77 +145,111 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
               ],
             ),
             const SizedBox(height: 16),
-            if (_loadingStorage)
-              const LinearProgressIndicator()
-            else if (_storageInfo != null) ...[
-              // Disk Space
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.diskSpaceInfo(
-                      ((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
-                      ((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
-                    ),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: ((_storageInfo!['disk_used'] ?? 0) /
-                      ((_storageInfo!['disk_total'] ?? 1) == 0 ? 1 : (_storageInfo!['disk_total'] ?? 1))),
-                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Cache Info
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _loadingStorage
+                  ? const Column(
+                      key: ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.cacheTypeInfo(
-                            ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                            ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                            ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                          ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        Skeleton(width: double.infinity, height: 14),
+                        SizedBox(height: 12),
+                        Skeleton(width: double.infinity, height: 8),
+                        SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Skeleton(width: 150, height: 16),
+                                  SizedBox(height: 8),
+                                  Skeleton(width: 200, height: 12),
+                                ],
                               ),
+                            ),
+                            Skeleton(width: 100, height: 40, borderRadius: 20),
+                          ],
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: () => _triggerCleanup(context, l10n),
-                    icon: const Icon(Icons.delete_sweep_rounded),
-                    label: Text(l10n.systemCleaning),
-                  ),
-                ],
-              ),
-            ] else
-              Text(
-                l10n.systemCleaningSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+                    )
+                  : _storageInfo != null
+                      ? Column(
+                          key: const ValueKey('loaded'),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Disk Space
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  l10n.diskSpaceInfo(
+                                    ((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                                    ((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
+                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: ((_storageInfo!['disk_used'] ?? 0) /
+                                    ((_storageInfo!['disk_total'] ?? 1) == 0 ? 1 : (_storageInfo!['disk_total'] ?? 1))),
+                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // Cache Info
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        l10n.cacheTypeInfo(
+                                          ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                          ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                          ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                                        ),
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                FilledButton.icon(
+                                  onPressed: () => _triggerCleanup(context, l10n),
+                                  icon: const Icon(Icons.delete_sweep_rounded),
+                                  label: Text(l10n.systemCleaning),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : Text(
+                          key: const ValueKey('empty'),
+                          l10n.systemCleaningSubtitle,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+            ),
           ],
         ),
       ),
