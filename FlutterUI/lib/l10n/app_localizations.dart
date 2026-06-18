@@ -2044,8 +2044,8 @@ abstract class AppLocalizations {
   /// Error message when system tray fails to initialize
   ///
   /// In en, this message translates to:
-  /// **'System tray initialization failed. Exiting to prevent background errors.'**
-  String get trayInitFailedExiting;
+  /// **'System tray initialization failed. Close to tray disabled.'**
+  String get trayInitFailedDisabled;
 
   /// General error title
   ///

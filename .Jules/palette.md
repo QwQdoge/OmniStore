@@ -44,3 +44,9 @@
 **Learning:** Decoupling interactivity (InkWell) and motion (ScaleTransition) from the core surface definition (Card) within a reusable widget like `AppCard` ensures that non-interactive surfaces don't carry unnecessary widget overhead or visual state (hover/splash). Standardizing on Material 3 surface container tokens (`surfaceContainerLow`) and explicit border radii (16dp/28dp) creates a rhythmic, predictable UI.
 
 **Action:** Ensure all primary entry points (Discovery, Banners, Search Results) use `AppCard` with localized `Semantics` to unify the app's interactive language.
+
+## 2026-06-18 - Standardize Settings Grouping with AppCard
+
+**Learning:** Grouping settings into specialized containers with MD3 layout features significantly improves hierarchy. Relying strictly on `Card` defaults does not convey MD3 principles sufficiently, thus wrapping such specialized components like `StorageCleanupCard` and `SourcesConfigCard` with `AppCard` paired with `Semantics` achieves UI consistency and accessibility effectively.
+
+**Action:** Refactored `StorageCleanupCard` and `SourcesConfigCard` to leverage `AppCard`. Removed legacy shape overrides and ensured correct `explicitChildNodes` mapping within `Semantics` wrapper to align with core MD3 app tokens.
