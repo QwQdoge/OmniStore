@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class StorageCleanupCard extends StatefulWidget {
   const StorageCleanupCard({super.key});
@@ -109,11 +110,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+    return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

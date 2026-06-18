@@ -1122,8 +1122,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskInProgress => 'Another task is already in progress';
 
   @override
-  String get trayInitFailedExiting =>
-      'System tray initialization failed. Exiting to prevent background errors.';
+  String get trayInitFailedDisabled =>
+      'System tray initialization failed. Close to tray disabled.';
 
   @override
   String get errorTitle => 'Error';

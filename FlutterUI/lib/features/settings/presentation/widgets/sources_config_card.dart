@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 
 class SourcesConfigCard extends StatefulWidget {
@@ -203,10 +204,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     final sourcesMap =
         widget.settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
 
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
