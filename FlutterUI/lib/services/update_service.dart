@@ -54,21 +54,37 @@ class UpdateService {
 
   /// Returns true if the system tray was successfully initialized (or not required).
   /// Returns false if tray init failed and background residency is unavailable.
+  /// Murphy-proof: Isolated initialization of peripheral services (Tray/Notifications).
+  /// Ensures that any failure in these native plugins (which often depend on D-Bus/X11/Wayland)
+  /// does not prevent the core application or update timers from starting.
   Future<bool> init() async {
     if (kIsWeb) return true;
 
-    const LinuxInitializationSettings initializationSettingsLinux =
-        LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(linux: initializationSettingsLinux);
-    await _notificationsPlugin.initialize(settings: initializationSettings);
-
+    // 1. Isolated Notification Init
     try {
-      final trayOk = await _initSystemTray();
+      const LinuxInitializationSettings initializationSettingsLinux =
+          LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
+      const InitializationSettings initializationSettings =
+          InitializationSettings(linux: initializationSettingsLinux);
+      await _notificationsPlugin.initialize(settings: initializationSettings).timeout(
+            const Duration(seconds: 3),
+            onTimeout: () => throw TimeoutException("Notification plugin init timed out"),
+          );
+    } catch (e) {
+      debugPrint('Murphy-proof Warning: Notification service init failed (isolated): $e');
+      // Non-fatal: continue app startup
+    }
+
+    // 2. Isolated System Tray Init
+    try {
+      final trayOk = await _initSystemTray().timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException("System tray init timed out (global)"),
+          );
       return trayOk;
     } catch (e) {
-      debugPrint('System tray init failed: $e');
-      return false;
+      debugPrint('Murphy-proof Warning: System tray init failed (isolated): $e');
+      return false; // App still runs, but tray-specific features are disabled
     }
   }
 

@@ -497,7 +497,7 @@ class BackendService {
       final daemonRes = await _sendToDaemon("run_search", [trimmedQuery, true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final results = <AppPackage>[];
-        final parsed = _tryParseJson(daemonRes.stdout);
+        final parsed = _safeJsonDecode(daemonRes.stdout);
         if (parsed is List) {
           results.addAll(
             parsed.map(
@@ -540,7 +540,7 @@ class BackendService {
             onTimeout: () => throw TimeoutException("Search timed out"),
           );
 
-      final parsed = _tryParseJson(output);
+      final parsed = _safeJsonDecode(output);
       if (parsed is List) {
         results.addAll(
           parsed.map(
@@ -564,43 +564,52 @@ class BackendService {
     }
   }
 
-  dynamic _tryParseJson(String input) {
+  /// Murphy-proof: Strict JSON decoder with size limits, noise filtering,
+  /// and fallback recovery for messy subprocess output.
+  dynamic _safeJsonDecode(String input) {
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
-    if (rawInput.length > 5 * 1024 * 1024) return null;
+
+    // Boundary Defense: Reject payloads > 5MB to prevent OOM
+    if (rawInput.length > 5 * 1024 * 1024) {
+      debugPrint("Security Warning: Rejected JSON payload exceeding 5MB limit");
+      return null;
+    }
 
     try {
       return jsonDecode(rawInput);
-    } catch (_) {}
+    } catch (_) {
+      // Noise Reduction: Strip ANSI escape codes and terminal artifacts
+      final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
 
-    final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
+      try {
+        // Pattern-based extraction: look for the first balanced JSON structure
+        final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
+        final match = jsonPattern.firstMatch(cleaned);
 
-    try {
-      final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
-      final match = jsonPattern.firstMatch(cleaned);
-
-      if (match != null) {
-        final candidate = match.group(0)!;
-        try {
-          return jsonDecode(candidate);
-        } catch (_) {
-          final lines = cleaned.split('\n');
-          if (lines.length <= 150) {
-            for (int i = 0; i < lines.length; i++) {
-              try {
-                final tailCandidate = lines.sublist(i).join('\n').trim();
-                if (tailCandidate.isNotEmpty) {
-                  return jsonDecode(tailCandidate);
-                }
-              } catch (_) {}
+        if (match != null) {
+          final candidate = match.group(0)!;
+          try {
+            return jsonDecode(candidate);
+          } catch (_) {
+            // Last Resort: Line-by-line tail recovery for concatenated logs/JSON
+            final lines = cleaned.split('\n');
+            if (lines.length <= 200) {
+              for (int i = lines.length - 1; i >= 0; i--) {
+                try {
+                  final tailCandidate = lines.sublist(i).join('\n').trim();
+                  if (tailCandidate.startsWith('{') || tailCandidate.startsWith('[')) {
+                    return jsonDecode(tailCandidate);
+                  }
+                } catch (_) {}
+              }
             }
           }
         }
+      } catch (e) {
+        debugPrint("Murphy-proof Error: JSON recovery failed: $e");
       }
-    } catch (e) {
-      debugPrint("Murphy-proof Heuristic JSON Recovery Failed: $e");
     }
-
     return null;
   }
 
@@ -611,7 +620,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -620,7 +629,7 @@ class BackendService {
     try {
       final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
-      final data = _tryParseJson(res.stdout.toString());
+      final data = _safeJsonDecode(res.stdout.toString());
       return data is List ? data : [];
     } catch (e) {
       debugPrint("listInstalled Error: $e");
@@ -649,7 +658,7 @@ class BackendService {
     try {
       final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
       if (res == null) return {};
-      final data = _tryParseJson(res.stdout.toString());
+      final data = _safeJsonDecode(res.stdout.toString());
       if (data is Map<String, dynamic>) {
         isAIEnabled.value = data['ai']?['enabled'] ?? false;
         return data;
@@ -673,7 +682,7 @@ class BackendService {
       if (res == null) {
         return "⏱ AI request timed out. Please check your AI provider configuration in Settings → Advanced.";
       }
-      final data = _tryParseJson(res.stdout.toString());
+      final data = _safeJsonDecode(res.stdout.toString());
       if (data is Map) {
         return data['response']?.toString() ??
             "⚠ No response received from AI provider. Verify your endpoint and API key.";
@@ -787,7 +796,7 @@ class BackendService {
     }
     try {
       final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
       debugPrint("checkEnv Error: $e");
@@ -811,7 +820,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_recommendations", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         final Map<String, List<AppPackage>> result = {};
         if (data is Map) {
           data.forEach((k, v) {
@@ -834,7 +843,7 @@ class BackendService {
     try {
       final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
       if (res == null) return {};
-      final data = _tryParseJson(res.stdout.toString());
+      final data = _safeJsonDecode(res.stdout.toString());
       final Map<String, List<AppPackage>> result = {};
       if (data is Map) {
         data.forEach((k, v) {
@@ -926,7 +935,7 @@ class BackendService {
       _validateString(id, "App ID");
       final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
       }
     } catch (e) {
@@ -935,7 +944,7 @@ class BackendService {
     try {
       _validateString(id, "App ID");
       final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
       debugPrint("getAppDetails [id: $id] Error: $e");
@@ -982,7 +991,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_check_updates", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -990,7 +999,7 @@ class BackendService {
     }
     try {
       final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
       debugPrint("checkUpdates Error: $e");
@@ -1019,7 +1028,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_get_essentials", []);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -1027,7 +1036,7 @@ class BackendService {
     }
     try {
       final res = await _safeRun(["--essentials", "--json"]);
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
       debugPrint("getEssentials Error: $e");
@@ -1054,7 +1063,7 @@ class BackendService {
       _validatePath(path);
       final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -1063,7 +1072,7 @@ class BackendService {
     try {
       _validatePath(path);
       final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
       debugPrint("importPackages [path: $path] Error: $e");
@@ -1079,7 +1088,7 @@ class BackendService {
       _validatePath(path);
       final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
       }
     } catch (e) {
@@ -1088,7 +1097,7 @@ class BackendService {
     try {
       _validatePath(path);
       final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {"status": "error"};
     } catch (e) {
       debugPrint("exportPackages [path: $path] Error: $e");
@@ -1151,7 +1160,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_get_storage_info", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
       }
     } catch (e) {
@@ -1159,7 +1168,7 @@ class BackendService {
     }
     try {
       final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
       debugPrint("getStorageInfo Error: $e");
@@ -1179,7 +1188,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_ai_test", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _tryParseJson(daemonRes.stdout);
+        final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>)
             ? data
             : {"status": "error", "response": "Invalid format"};
@@ -1189,7 +1198,7 @@ class BackendService {
     }
     try {
       final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
-      final data = _tryParseJson(res?.stdout?.toString() ?? "");
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>)
           ? data
           : {"status": "error", "response": "Invalid response"};

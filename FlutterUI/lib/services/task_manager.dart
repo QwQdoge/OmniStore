@@ -279,89 +279,114 @@ class TaskManager {
     return false;
   }
 
+  /// Murphy-proof: Strict state-machine output handler.
+  /// Uses structured JSON callbacks where possible and provides safe fallbacks
+  /// for unstructured log lines to prevent UI state corruption.
   void _handleOutput(String line) {
     if (line.isEmpty) return;
+    final cleanLine = line.trim();
 
-    String cleanLine = line.trim();
-    String? logMessage;
-
-    if (cleanLine.startsWith("[CALLBACK]")) {
-      try {
-        final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-        logMessage = data['message'] ?? data['log'] ?? "";
-      } catch (_) {}
-    } else if (cleanLine.startsWith("{")) {
-      try {
-        final data = jsonDecode(cleanLine);
-        logMessage = data['message'] ?? data['log'] ?? "";
-      } catch (_) {}
-    } else {
-      logMessage = cleanLine;
-    }
-
-    if (logMessage != null && logMessage.isNotEmpty) {
-      if (logMessage.startsWith("[PROGRESS]")) {
-        final parts = logMessage.split(" ");
-        if (parts.length > 1) {
-          final p = double.tryParse(parts[1]);
-          if (p != null) {
-            final progress = p / 100.0;
-            _updateState(
-              _currentTask?.copyWith(
-                progress: progress,
-                status: TaskStatus.downloading,
-              ),
-            );
-
-            UpdateService().showProgressNotification(
-              _currentTask?.packageName ?? "OmniStore",
-              progress,
-            );
-          }
-        }
-      } else if (logMessage.startsWith("[SPEED]")) {
-        final s = logMessage.replaceFirst("[SPEED] ", "");
-        _updateState(_currentTask?.copyWith(speed: s));
-      } else if (logMessage.startsWith("[STAGE]")) {
-        final stage = logMessage.replaceFirst("[STAGE] ", "");
-        _updateState(_currentTask?.copyWith(stage: stage));
-      } else if (logMessage.startsWith("[INFO]")) {
-        final msg = logMessage.replaceFirst("[INFO] ", "");
-        BackendService.addLog(logMessage);
-
-        TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-        double? progress = _currentTask?.progress;
-
-        if (msg.toLowerCase().contains("installing") ||
-            msg.toLowerCase().contains("verifying") ||
-            msg.toLowerCase().contains("building") ||
-            msg.toLowerCase().contains("cleaning")) {
-          status = TaskStatus.installing;
-          progress = -1.0;
-        } else if (msg.toLowerCase().contains("downloading")) {
-          status = TaskStatus.downloading;
-        }
-
-        _updateState(
-          _currentTask?.copyWith(
-            message: msg,
-            status: status,
-            progress: progress,
-          ),
-        );
-        BackendService.globalStatus.value = msg;
-      } else if (logMessage.startsWith("[ERROR]")) {
-        BackendService.addLog(logMessage);
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.failed,
-            message: logMessage.replaceFirst("[ERROR] ", ""),
-          ),
-        );
+    try {
+      if (cleanLine.startsWith("[CALLBACK] ")) {
+        final rawJson = cleanLine.replaceFirst("[CALLBACK] ", "");
+        final Map<String, dynamic> data = jsonDecode(rawJson);
+        _processStructuredCallback(data);
+      } else if (cleanLine.startsWith("[PROGRESS] ")) {
+        _processProgress(cleanLine.replaceFirst("[PROGRESS] ", ""));
+      } else if (cleanLine.startsWith("[SPEED] ")) {
+        _updateState(_currentTask?.copyWith(speed: cleanLine.replaceFirst("[SPEED] ", "")));
+      } else if (cleanLine.startsWith("[STAGE] ")) {
+        _updateState(_currentTask?.copyWith(stage: cleanLine.replaceFirst("[STAGE] ", "")));
+      } else if (cleanLine.startsWith("[INFO] ")) {
+        _processInfo(cleanLine.replaceFirst("[INFO] ", ""));
+      } else if (cleanLine.startsWith("[ERROR] ")) {
+        _processError(cleanLine.replaceFirst("[ERROR] ", ""));
+      } else if (cleanLine.startsWith("{") && cleanLine.endsWith("}")) {
+        // Attempt to parse as raw JSON if it looks like one
+        final Map<String, dynamic> data = jsonDecode(cleanLine);
+        _processStructuredCallback(data);
       } else {
-        BackendService.addLog(logMessage);
+        // Unstructured fallback
+        BackendService.addLog(cleanLine);
+      }
+    } catch (e) {
+      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
+      BackendService.addLog("Raw: $cleanLine");
+    }
+  }
+
+  void _processStructuredCallback(Map<String, dynamic> data) {
+    final String? log = data['log'] ?? data['message'];
+    final String? type = data['type']?.toString().toUpperCase();
+
+    if (log != null) {
+      if (type == 'ERROR') {
+        _processError(log);
+      } else {
+        _processInfo(log);
       }
     }
+
+    if (data.containsKey('progress')) {
+      final p = double.tryParse(data['progress'].toString());
+      if (p != null) _processProgress(p.toString());
+    }
+  }
+
+  void _processProgress(String value) {
+    final p = double.tryParse(value);
+    if (p == null) return;
+
+    final progress = p / 100.0;
+    _updateState(
+      _currentTask?.copyWith(
+        progress: progress,
+        status: TaskStatus.downloading,
+      ),
+    );
+
+    UpdateService().showProgressNotification(
+      _currentTask?.packageName ?? "OmniStore",
+      progress,
+    );
+  }
+
+  void _processInfo(String msg) {
+    BackendService.addLog("[INFO] $msg");
+
+    TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
+    double? progress = _currentTask?.progress;
+
+    final lowerMsg = msg.toLowerCase();
+    if (lowerMsg.contains("installing") ||
+        lowerMsg.contains("verifying") ||
+        lowerMsg.contains("building") ||
+        lowerMsg.contains("cleaning") ||
+        lowerMsg.contains("extracting")) {
+      status = TaskStatus.installing;
+      progress = -1.0;
+    } else if (lowerMsg.contains("downloading")) {
+      status = TaskStatus.downloading;
+    }
+
+    _updateState(
+      _currentTask?.copyWith(
+        message: msg,
+        status: status,
+        progress: progress,
+      ),
+    );
+    BackendService.globalStatus.value = msg;
+  }
+
+  void _processError(String err) {
+    BackendService.addLog("[ERROR] $err");
+    _updateState(
+      _currentTask?.copyWith(
+        status: TaskStatus.failed,
+        message: err,
+      ),
+    );
   }
 
   /// Murphy-proof: Hardened cancellation logic that ensures absolute resource
