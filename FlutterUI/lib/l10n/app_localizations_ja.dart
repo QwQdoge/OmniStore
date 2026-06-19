@@ -92,10 +92,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get packageManager => 'パッケージマネージャー';
 
   @override
-  String get pacmanOfficial => 'Pacman （公式リポジトリ）';
+  String get pacmanOfficial => 'Pacman（公式リポジトリ）';
 
   @override
-  String get aurUser => 'AUR （ユーザーリポジトリ）';
+  String get aurUser => 'AUR（ユーザーリポジトリ）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -104,7 +104,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => 'ソースの優先順位 （ドラッグして並べ替え）';
+  String get sourcePriority => 'ソースの優先順位（ドラッグして並べ替え）';
 
   @override
   String get maxResults => '最大結果数';
@@ -269,14 +269,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get includeAurUpdates => '「すべて更新」に AUR を含める';
 
   @override
-  String get resetOnboarding => 'オンボーディングをリセット （ウェルカムページ）';
+  String get resetOnboarding => 'オンボーディングをリセット（ウェルカムページ）';
 
   @override
   String get resetOnboardingConfirm =>
       'オンボーディングをリセットしてもよろしいですか？次回起動時にウェルカムページが表示されます。';
 
   @override
-  String get checkInterval => '更新確認の間隔 （時間）';
+  String get checkInterval => '更新確認の間隔（時間）';
 
   @override
   String get remindMeOfUpdates => '更新を通知する';
@@ -428,10 +428,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiApiKey => 'API キー';
 
   @override
-  String get aiProxy => 'ネットワークプロキシ （オプション）';
+  String get aiProxy => 'ネットワークプロキシ（オプション）';
 
   @override
-  String get aiTemperature => '温度 （創造性）';
+  String get aiTemperature => '温度（創造性）';
 
   @override
   String get aiMaxTokens => '最大トークン数';
@@ -457,7 +457,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptError => 'AI でエラーを分析';
 
   @override
-  String get aiPickDay => '本日の一押し （AI）';
+  String get aiPickDay => '本日の一押し（AI）';
 
   @override
   String get aiPickDaySubtitle => 'OmniStore AI による提供';
@@ -571,7 +571,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceConfigSubtitle => '有効にするソースを選択してください';
 
   @override
-  String get enableAur => 'AUR （Arch User Repository） を有効にする';
+  String get enableAur => 'AUR（Arch User Repository） を有効にする';
 
   @override
   String get yayDesc => 'AUR を有効にするには yay ヘルパーのインストールが必要です。';
@@ -593,7 +593,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiAssistantDesc => 'AI による検索補助、アプリの説明、エラー診断を有効にします。';
 
   @override
-  String get aiProviderDesc => 'AI モデルのソースを選択してください （ローカルまたはクラウド）';
+  String get aiProviderDesc => 'AI モデルのソースを選択してください（ローカルまたはクラウド）';
 
   @override
   String get aiEndpointHelper => 'Ollama のデフォルトは http://localhost:11434 です';
@@ -606,7 +606,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama （ローカル）： Ollama をダウンロードして実行します。キーは不要です。2. クラウド （OpenAI）： プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
+      '1. Ollama（ローカル）： Ollama をダウンロードして実行します。キーは不要です。2. クラウド（OpenAI）： プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
 
   @override
   String get gotIt => '了解';
@@ -642,7 +642,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get ollamaLocal => 'Ollama （ローカル）';
+  String get ollamaLocal => 'Ollama（ローカル）';
 
   @override
   String get openaiCompatible => 'OpenAI 互換';
@@ -695,14 +695,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get analyzeNow => '今すぐ分析';
 
   @override
-  String get cleanOrphans => '未使用の依存関係を削除する （孤立したパッケージ）';
+  String get cleanOrphans => '未使用の依存関係を削除する（孤立したパッケージ）';
 
   @override
   String get securityWarning => 'セキュリティ警告';
 
   @override
   String get aurSecurityDesc =>
-      'AUR （Arch User Repository） はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
+      'AUR（Arch User Repository） はコミュニティによって維持されているリポジトリです。パッケージはユーザーによって提供されており、安全でないコードが含まれている可能性があります。インストール前に PKGBUILD を確認することをお勧めします。';
 
   @override
   String get continueInstall => 'インストールを続行';
@@ -718,7 +718,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return '依存関係 （$count）';
+    return '依存関係（$count）';
   }
 
   @override
@@ -747,16 +747,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get viewMore => 'もっと見る';
 
   @override
-  String get logDebug => 'デバッグ （DEBUG）';
+  String get logDebug => 'デバッグ（DEBUG）';
 
   @override
-  String get logInfo => '情報 （INFO）';
+  String get logInfo => '情報（INFO）';
 
   @override
-  String get logWarning => '警告 （WARNING）';
+  String get logWarning => '警告（WARNING）';
 
   @override
-  String get logError => 'エラー （ERROR）';
+  String get logError => 'エラー（ERROR）';
 
   @override
   String get notificationTitle => 'アップデートが利用可能です';
@@ -827,10 +827,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get next => '次へ';
 
   @override
-  String get aurFull => 'AUR （Arch User Repository）';
+  String get aurFull => 'AUR（Arch User Repository）';
 
   @override
-  String get flatpakFull => 'Flatpak （Flathub）';
+  String get flatpakFull => 'Flatpak（Flathub）';
 
   @override
   String get errorPackageNameRequired => 'エラー：パッケージ名は空にできません';
@@ -919,10 +919,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceType => 'ソースの種類';
 
   @override
-  String get githubRepoType => 'GitHub リポジトリ （owner/repo）';
+  String get githubRepoType => 'GitHub リポジトリ（owner/repo）';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket （ワークスペース/リポジトリ）';
+  String get bituRepoType => 'Bitu / Bitbucket（ワークスペース/リポジトリ）';
 
   @override
   String get flatpakRemoteType => 'Flatpak リモート';
@@ -937,7 +937,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get hintCustomAppName => '例： my-custom-app';
 
   @override
-  String get repoOwnerRepo => 'リポジトリ （owner/repo）';
+  String get repoOwnerRepo => 'リポジトリ（owner/repo）';
 
   @override
   String get sourceUrl => 'URL';
@@ -977,6 +977,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get nameCopied => '名前をクリップボードにコピーしました';
+
+  @override
+  String get copiedToClipboard => 'クリップボードにコピーしました';
+
+  @override
+  String get tapToCopy => 'タップしてコピー';
 
   @override
   String get language => '表示言語';
@@ -1025,10 +1031,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get langSimplifiedChinese => '中国語 （簡体字）';
+  String get langSimplifiedChinese => '中国語（簡体字）';
 
   @override
-  String get langTraditionalChinese => '中国語 （繁体字）';
+  String get langTraditionalChinese => '中国語（繁体字）';
 
   @override
   String get langEnglish => '英語';
@@ -1043,8 +1049,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskInProgress => '別のタスクが既に実行中です';
 
   @override
-  String get trayInitFailedExiting =>
-      'システムトレイの初期化に失敗しました。バックグラウンドエラーを防ぐため終了します。';
+  String get trayInitFailedDisabled => 'システムトレイの初期化に失敗しました。トレイに閉じる機能は無効になりました。';
 
   @override
   String get errorTitle => 'エラー';

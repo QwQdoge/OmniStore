@@ -44,3 +44,9 @@
 **Learning:** Decoupling interactivity (InkWell) and motion (ScaleTransition) from the core surface definition (Card) within a reusable widget like `AppCard` ensures that non-interactive surfaces don't carry unnecessary widget overhead or visual state (hover/splash). Standardizing on Material 3 surface container tokens (`surfaceContainerLow`) and explicit border radii (16dp/28dp) creates a rhythmic, predictable UI.
 
 **Action:** Ensure all primary entry points (Discovery, Banners, Search Results) use `AppCard` with localized `Semantics` to unify the app's interactive language.
+
+## 2026-06-28 - Interactive Metadata and Page Rhythm
+
+**Learning:** Making technical metadata rows interactive (Tap to Copy) provides significant utility without cluttering the UI. Using `InkWell` for feedback and `Semantics(hint: l10n.tapToCopy, button: true)` ensures the feature is discoverable and accessible. Adding `Divider` widgets between major content blocks (About, Screenshots, Details) establishes a clear visual rhythm and hierarchy in long-form details pages.
+
+**Action:** Implement tap-to-copy for all key-value technical metadata. Use `Divider` + `SizedBox(height: 32)` to separate primary page sections.

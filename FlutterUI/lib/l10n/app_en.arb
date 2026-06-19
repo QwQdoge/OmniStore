@@ -815,6 +815,8 @@
   },
   "copyName": "Copy Name",
   "nameCopied": "Name copied to clipboard",
+  "copiedToClipboard": "Copied to clipboard",
+  "tapToCopy": "Tap to copy",
   "language": "Language",
   "@language": {
     "description": "Label for language setting"

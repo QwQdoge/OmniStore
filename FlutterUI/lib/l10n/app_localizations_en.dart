@@ -1044,6 +1044,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameCopied => 'Name copied to clipboard';
 
   @override
+  String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get tapToCopy => 'Tap to copy';
+
+  @override
   String get language => 'Language';
 
   @override
@@ -1122,8 +1128,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskInProgress => 'Another task is already in progress';
 
   @override
-  String get trayInitFailedExiting =>
-      'System tray initialization failed. Exiting to prevent background errors.';
+  String get trayInitFailedDisabled =>
+      'System tray initialization failed. Close to tray disabled.';
 
   @override
   String get errorTitle => 'Error';
