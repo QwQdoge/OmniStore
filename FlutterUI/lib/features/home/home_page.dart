@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  List<CategoryItem> _categories = [];
 
   @override
   void initState() {
@@ -47,7 +48,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Cache localized categories once and update only when locale changes
     _categories = CategoryService.getCategories(context);
   }
 

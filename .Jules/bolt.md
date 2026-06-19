@@ -24,8 +24,8 @@
 
 **Action:** Replaced `Consumer<BrowseController>` with `Selector<BrowseController, List<AppPackage>>` in `home_page.dart` for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
 
-## 2026-06-18 - Search & HomePage Performance Polish
+## 2026-06-18 - HomePage Category Allocations
 
-**Learning:** `Object.hashAll` is an efficient way to generate a stable hash for list-based dependencies in a `Selector`, preventing rebuilds caused by `List.from` creating new instances. Additionally, localizing and memoizing category lists in `didChangeDependencies` (instead of `build`) significantly reduces allocation overhead in complex views.
+**Learning:** Allocating a new list and performing localization lookups in the `build()` method causes unnecessary allocations on every frame or state change. Caching lists that only change when dependencies (like localization) change reduces garbage collection overhead and makes `build()` faster.
 
-**Action:** Optimized `SearchPage` results `Selector` with `filtersHash` and added a results-change guard to the auto-selection logic. Refactored `DiscoveryContent` to use a targeted `Selector` for trending apps. Memoized categories in `HomePage`.
+**Action:** Added `_categories` state to `_HomePageState` and initialized it in `didChangeDependencies()` to memoize `CategoryService.getCategories(context)`, avoiding redundant evaluations in `_buildCategoryQuickAccess()`.
