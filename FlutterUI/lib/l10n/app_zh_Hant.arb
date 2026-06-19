@@ -571,7 +571,7 @@
   "@importBackup": {
     "description": "Label for importing a backup file"
   },
-  "importBackupConfirm": "已從備份中讀取 {count} 個套件。是否開始批次恢復？",
+  "importBackupConfirm": "已從備份中讀取 {count} 個套件。是否開始批次還原？",
   "@importBackupConfirm": {
     "description": "Confirmation text for batch recovery from backup",
     "placeholders": {
@@ -873,7 +873,7 @@
   "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
-  "trayTooltipUpToDate": "OmniStore：應用程式已是最新版本",
+  "trayTooltipUpToDate": "OmniStore：已是最新",
   "trayTooltipUpdates": "OmniStore：共有 {count} 項可更新",
   "@trayTooltipUpdates": {
     "placeholders": {

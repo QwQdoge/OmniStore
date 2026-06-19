@@ -211,7 +211,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updates => '更新';
 
   @override
-  String get upToDate => '应用已是最新';
+  String get upToDate => '应用已是最新版本';
 
   @override
   String get checkUpdates => '检查更新';
@@ -250,11 +250,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore： 共有 $count 项可更新';
+    return 'OmniStore：共有 $count 项可更新';
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 应用已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：应用已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -321,7 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '应用已是最新';
+  String get allUpdated => '应用已是最新版本';
 
   @override
   String get update => '更新';
@@ -358,12 +358,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return '导出成功： $count 个软件包';
+    return '导出成功：$count 个软件包';
   }
 
   @override
   String exportFailed(String message) {
-    return '导出失败： $message';
+    return '导出失败：$message';
   }
 
   @override
@@ -371,11 +371,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return '已从备份中读取 $count 个软件包。是否开始批量恢复？';
+    return '已从备份中读取 $count 个软件包。是否开始批量还原？';
   }
 
   @override
-  String get startRecovery => '开始恢复';
+  String get startRecovery => '开始还原';
 
   @override
   String get mirrorListSaved => '镜像列表已保存';
@@ -442,14 +442,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String aiTestFailed(String error) {
-    return 'AI 连接失败： $error';
+    return 'AI 连接失败：$error';
   }
 
   @override
   String get aiPromptExplain => '使用 AI 解析';
 
   @override
-  String get aiPromptRecommend => '向 AI 寻求建议';
+  String get aiPromptRecommend => '咨询 AI 建议';
 
   @override
   String get aiPromptError => 'AI 分析错误';
@@ -458,16 +458,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPickDay => 'AI 今日精选';
 
   @override
-  String get aiPickDaySubtitle => '由 OmniStore AI 驱动';
+  String get aiPickDaySubtitle => '由 OmniStore AI 提供支持';
 
   @override
   String get aiCompareTitle => 'AI 版本对比';
 
   @override
-  String get aiHealthTitle => 'AI 系统健康诊断';
+  String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => '为你的 Arch Linux 进行智能诊断';
+  String get aiHealthSubtitle => '为您的 Arch Linux 提供智能诊断报告';
 
   @override
   String get aiCorrection => '您是指：';
@@ -479,7 +479,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get magicSearch => '智能搜索';
 
   @override
-  String get aiChangelogTitle => 'AI 更新总结';
+  String get aiChangelogTitle => 'AI 更新摘要';
 
   @override
   String get aiCliTitle => 'AI 命令生成器';
@@ -603,7 +603,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（本地）： 下载并运行 Ollama，无需密钥。2. 云端（OpenAI）： 前往服务商官网创建 API Key，然后填入此处。';
+      '1. Ollama（本地）：下载并运行 Ollama，无需密钥。2. 云端（OpenAI）：前往服务商官网创建 API Key，然后填入此处。';
 
   @override
   String get gotIt => '知道了';
@@ -635,7 +635,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return '重置失败： $error';
+    return '重置失败：$error';
   }
 
   @override
@@ -781,7 +781,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String cannotConnectToBackend(String error) {
-    return '无法连接到后端服务： $error';
+    return '无法连接到后端服务：$error';
   }
 
   @override
@@ -795,7 +795,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String taskFailedWithCode(int code) {
-    return '任务失败（错误码： $code）';
+    return '任务失败（错误码：$code）';
   }
 
   @override
@@ -803,7 +803,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String taskError(String error) {
-    return '错误： $error';
+    return '错误：$error';
   }
 
   @override
@@ -842,7 +842,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String checkUpdateFailed(String error) {
-    return '检查更新失败： $error';
+    return '检查更新失败：$error';
   }
 
   @override
@@ -929,7 +929,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceName => '来源名称';
 
   @override
-  String get hintCustomAppName => '例如： my-custom-app';
+  String get hintCustomAppName => '例如：my-custom-app';
 
   @override
   String get repoOwnerRepo => '仓库地址（owner/repo）';
@@ -938,10 +938,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceUrl => '链接';
 
   @override
-  String get hintRepoFormat => '例如： flutter/flutter';
+  String get hintRepoFormat => '例如：flutter/flutter';
 
   @override
-  String get hintFeedUrl => '例如： https://example.com/feed.json';
+  String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
   String get errorNameUrlRequired => '名称和链接/仓库地址不能为空';
@@ -1054,12 +1054,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String diskSpaceInfo(String free, String total) {
-    return '磁盘空间： $free GB 可用 / $total GB 总计';
+    return '磁盘空间：$free GB 可用 / $total GB 总计';
   }
 
   @override
   String cacheTypeInfo(String pacman, String flatpak, String custom) {
-    return 'Pacman： $pacman MB | Flatpak： $flatpak MB | 自定义： $custom MB';
+    return 'Pacman：$pacman MB | Flatpak：$flatpak MB | 自定义：$custom MB';
   }
 
   @override
@@ -1290,7 +1290,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get updates => '更新';
 
   @override
-  String get upToDate => '已是最新';
+  String get upToDate => '應用程式已是最新版本';
 
   @override
   String get checkUpdates => '檢查更新';
@@ -1329,11 +1329,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore： 共有 $count 項可更新';
+    return 'OmniStore：共有 $count 項可更新';
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -1400,7 +1400,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get viewLogs => '查看日誌';
 
   @override
-  String get allUpdated => '已是最新';
+  String get allUpdated => '應用程式已是最新版本';
 
   @override
   String get update => '更新';
@@ -1437,12 +1437,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String exportSuccess(int count) {
-    return '匯出成功： $count 個套件';
+    return '匯出成功：$count 個套件';
   }
 
   @override
   String exportFailed(String message) {
-    return '匯出失敗： $message';
+    return '匯出失敗：$message';
   }
 
   @override
@@ -1450,11 +1450,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String importBackupConfirm(int count) {
-    return '已從備份中讀取 $count 個套件。是否開始批次恢復？';
+    return '已從備份中讀取 $count 個套件。是否開始批次還原？';
   }
 
   @override
-  String get startRecovery => '開始恢復';
+  String get startRecovery => '開始還原';
 
   @override
   String get mirrorListSaved => '鏡像列表已儲存';
@@ -1682,7 +1682,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（本地）： 下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）： 前往服務商官網建立 API Key，然後填入此處。';
+      '1. Ollama（本地）：下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）：前往服務商官網建立 API Key，然後填入此處。';
 
   @override
   String get gotIt => '知道了';
@@ -1714,7 +1714,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resetFailed(String error) {
-    return '重置失敗： $error';
+    return '重置失敗：$error';
   }
 
   @override
@@ -1874,7 +1874,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String taskFailedWithCode(int code) {
-    return '任務失敗（錯誤碼： $code）';
+    return '任務失敗（錯誤碼：$code）';
   }
 
   @override
@@ -1921,7 +1921,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String checkUpdateFailed(String error) {
-    return '檢查更新失敗： $error';
+    return '檢查更新失敗：$error';
   }
 
   @override
@@ -2008,7 +2008,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceName => '來源名稱';
 
   @override
-  String get hintCustomAppName => '例如： my-custom-app';
+  String get hintCustomAppName => '例如：my-custom-app';
 
   @override
   String get repoOwnerRepo => '存放庫地址（owner/repo）';
@@ -2017,10 +2017,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceUrl => '連結';
 
   @override
-  String get hintRepoFormat => '例如： flutter/flutter';
+  String get hintRepoFormat => '例如：flutter/flutter';
 
   @override
-  String get hintFeedUrl => '例如： https://example.com/feed.json';
+  String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
   String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
@@ -2133,12 +2133,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String diskSpaceInfo(String free, String total) {
-    return '磁碟空間： $free GB 可用 / $total GB 總計';
+    return '磁碟空間：$free GB 可用 / $total GB 總計';
   }
 
   @override
   String cacheTypeInfo(String pacman, String flatpak, String custom) {
-    return 'Pacman： $pacman MB | Flatpak： $flatpak MB | 自定義： $custom MB';
+    return 'Pacman：$pacman MB | Flatpak：$flatpak MB | 自定義：$custom MB';
   }
 
   @override
