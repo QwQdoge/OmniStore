@@ -6,6 +6,7 @@ import 'package:frontend/services/category_service.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
 class DiscoveryContent extends StatefulWidget {
@@ -118,9 +119,10 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
               ),
             ),
           ),
-          Consumer<BrowseController>(
-            builder: (context, browse, _) {
-              final trending = browse.recommendations['trending'] ?? [];
+          Selector<BrowseController, List<AppPackage>>(
+            selector: (context, browse) =>
+                browse.recommendations['trending'] ?? [],
+            builder: (context, trending, _) {
               if (trending.isEmpty) return const SizedBox.shrink();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
