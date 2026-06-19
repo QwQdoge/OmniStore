@@ -83,69 +83,92 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
               } else {
                 return MaterialPageRoute(
                   settings: routeSettings,
-                  builder: (context) => FutureBuilder<Map<String, dynamic>>(
-                    future: PackageRepository().getAppDetails(appId),
-                    builder: (context, snapshot) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child:
-                            snapshot.connectionState == ConnectionState.waiting
-                            ? const Scaffold(
-                                key: ValueKey('loading'),
-                                body: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Skeleton(
-                                        width: 80,
-                                        height: 80,
-                                        borderRadius: 16,
-                                      ),
-                                      SizedBox(height: 16),
-                                      Skeleton(width: 200, height: 24),
-                                      SizedBox(height: 8),
-                                      Skeleton(
-                                        width: double.infinity,
-                                        height: 16,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Skeleton(width: 150, height: 16),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : snapshot.hasError ||
-                                  !snapshot.hasData ||
-                                  snapshot.data!.isEmpty
-                            ? Scaffold(
-                                key: const ValueKey('error'),
-                                appBar: AppBar(
-                                  title: Text(
-                                    AppLocalizations.of(context)!.errorTitle,
-                                  ),
-                                ),
-                                body: Center(
-                                  child: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.appDetailsNotFound,
-                                  ),
-                                ),
-                              )
-                            : AppDetailsPage(
-                                key: const ValueKey('loaded'),
-                                app: AppPackage.fromJson(snapshot.data!),
-                              ),
-                      );
-                    },
-                  ),
+                  builder: (context) => _AppDetailsRouteLoader(appId: appId),
                 );
               }
             }
             return null;
           },
+        );
+      },
+    );
+  }
+}
+
+class _AppDetailsRouteLoader extends StatefulWidget {
+  final String appId;
+  const _AppDetailsRouteLoader({required this.appId});
+
+  @override
+  State<_AppDetailsRouteLoader> createState() => _AppDetailsRouteLoaderState();
+}
+
+class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
+  late final Future<Map<String, dynamic>> _appDetailsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _appDetailsFuture = PackageRepository().getAppDetails(widget.appId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _appDetailsFuture,
+      builder: (context, snapshot) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child:
+              snapshot.connectionState == ConnectionState.waiting
+              ? const Scaffold(
+                  key: ValueKey('loading'),
+                  body: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        Skeleton(
+                          width: 80,
+                          height: 80,
+                          borderRadius: 16,
+                        ),
+                        SizedBox(height: 16),
+                        Skeleton(width: 200, height: 24),
+                        SizedBox(height: 8),
+                        Skeleton(
+                          width: double.infinity,
+                          height: 16,
+                        ),
+                        SizedBox(height: 8),
+                        Skeleton(width: 150, height: 16),
+                      ],
+                    ),
+                  ),
+                )
+              : snapshot.hasError ||
+                    !snapshot.hasData ||
+                    snapshot.data!.isEmpty
+              ? Scaffold(
+                  key: const ValueKey('error'),
+                  appBar: AppBar(
+                    title: Text(
+                      AppLocalizations.of(context)!.errorTitle,
+                    ),
+                  ),
+                  body: Center(
+                    child: Text(
+                      AppLocalizations.of(
+                        context,
+                      )!.appDetailsNotFound,
+                    ),
+                  ),
+                )
+              : AppDetailsPage(
+                  key: const ValueKey('loaded'),
+                  app: AppPackage.fromJson(snapshot.data!),
+                ),
         );
       },
     );
