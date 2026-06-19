@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Memoize localized categories to avoid re-generating them on every build
     _categories = CategoryService.getCategories(context);
   }
 

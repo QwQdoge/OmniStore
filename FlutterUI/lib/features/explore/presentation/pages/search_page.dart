@@ -10,7 +10,6 @@ import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
 import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
-import 'package:frontend/core/widgets/app_card.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -76,13 +75,13 @@ class _SearchPageState extends State<SearchPage> {
   void _onBrowseChanged() {
     if (!mounted) return;
     if (_browseController == null) return;
-    if (!_browseController!.isSearching) {
-      // Only trigger auto-selection if results have actually changed
-      // to avoid redundant filtering on every notifyListeners()
-      if (_lastResults != _browseController!.searchResults) {
-        _lastResults = _browseController!.searchResults;
-        _autoSelectFirstApp();
-      }
+
+    // Only trigger auto-selection when a search completes and results have changed.
+    // This prevents redundant filtering logic when selecting an app in the sidebar.
+    if (!_browseController!.isSearching &&
+        _lastResults != _browseController!.searchResults) {
+      _lastResults = _browseController!.searchResults;
+      _autoSelectFirstApp();
     }
   }
 
