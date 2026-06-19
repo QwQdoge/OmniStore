@@ -106,24 +106,22 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
   void onWindowClose() async {
     if (!mounted) return;
     final settings = context.read<SettingsController>();
+    final l10n = AppLocalizations.of(context)!;
     final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
 
     if (closeToTray) {
       await wm.windowManager.hide();
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.runningInBackground),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        UpdateService().showSimpleNotification(
-          l10n.omnistore,
-          l10n.runningInBackground,
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.runningInBackground),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      UpdateService().showSimpleNotification(
+        l10n.omnistore,
+        l10n.runningInBackground,
+      );
     } else {
       await _handleFullExit();
     }
