@@ -211,7 +211,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get updates => '更新';
 
   @override
-  String get upToDate => 'すべてのアプリは最新です';
+  String get upToDate => 'すべてのアプリは最新バージョンです';
 
   @override
   String get checkUpdates => '更新を確認';
@@ -250,11 +250,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore： $count 件の更新があります';
+    return 'OmniStore：$count 件の更新があります';
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 最新の状態です';
+  String get trayTooltipUpToDate => 'OmniStore：最新の状態です';
 
   @override
   String get updateReminders => '更新のリマインダー';
@@ -322,7 +322,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get viewLogs => 'ログを表示';
 
   @override
-  String get allUpdated => 'すべてのアプリは最新です';
+  String get allUpdated => 'すべてのアプリは最新バージョンです';
 
   @override
   String get update => '更新';
@@ -360,12 +360,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String exportSuccess(int count) {
-    return 'エクスポート成功： $count 個のパッケージ';
+    return 'エクスポート成功：$count 個のパッケージ';
   }
 
   @override
   String exportFailed(String message) {
-    return 'エクスポート失敗： $message';
+    return 'エクスポート失敗：$message';
   }
 
   @override
@@ -444,7 +444,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String aiTestFailed(String error) {
-    return 'AI 接続に失敗しました： $error';
+    return 'AI 接続に失敗しました：$error';
   }
 
   @override
@@ -469,7 +469,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiHealthTitle => 'AI システム健康診断レポート';
 
   @override
-  String get aiHealthSubtitle => 'Arch Linux のためのインテリジェント診断';
+  String get aiHealthSubtitle => 'Arch Linux 向けインテリジェント診断';
 
   @override
   String get aiCorrection => 'もしかして：';
@@ -578,10 +578,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aurWarning =>
-      'セキュリティ警告： AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
+      'セキュリティ警告：AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
 
   @override
-  String get bootstrapNote => '注意： セットアップにはパスワードの入力が数回必要な場合があります。';
+  String get bootstrapNote => '注意：セットアップにはパスワードの入力が数回必要な場合があります。';
 
   @override
   String get feedbackDesc => '問題が発生した場合は、GitHub で報告してください。';
@@ -606,14 +606,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（ローカル）： Ollama をダウンロードして実行します。キーは不要です。2. クラウド（OpenAI）： プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
+      '1. Ollama（ローカル）：Ollama をダウンロードして実行します。キーは不要です。2. クラウド（OpenAI）：プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
 
   @override
   String get gotIt => '了解';
 
   @override
   String get aiOllamaNote =>
-      '注意： Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
+      '注意：Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
 
   @override
   String get enterStore => 'ストアに入る';
@@ -638,7 +638,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return 'リセットに失敗しました： $error';
+    return 'リセットに失敗しました：$error';
   }
 
   @override
@@ -786,7 +786,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String cannotConnectToBackend(String error) {
-    return 'バックエンドサービスに接続できません： $error';
+    return 'バックエンドサービスに接続できません：$error';
   }
 
   @override
@@ -808,7 +808,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String taskError(String error) {
-    return 'エラー： $error';
+    return 'エラー：$error';
   }
 
   @override
@@ -934,7 +934,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceName => 'ソース名';
 
   @override
-  String get hintCustomAppName => '例： my-custom-app';
+  String get hintCustomAppName => '例：my-custom-app';
 
   @override
   String get repoOwnerRepo => 'リポジトリ（owner/repo）';
@@ -943,10 +943,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceUrl => 'URL';
 
   @override
-  String get hintRepoFormat => '例： flutter/flutter';
+  String get hintRepoFormat => '例：flutter/flutter';
 
   @override
-  String get hintFeedUrl => '例： https://example.com/feed.json';
+  String get hintFeedUrl => '例：https://example.com/feed.json';
 
   @override
   String get errorNameUrlRequired => '名前と URL/リポジトリは空にできません';
@@ -1059,12 +1059,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String diskSpaceInfo(String free, String total) {
-    return 'ディスク空間： $free GB 空き / $total GB 合計';
+    return 'ディスク空間：$free GB 空き / $total GB 合計';
   }
 
   @override
   String cacheTypeInfo(String pacman, String flatpak, String custom) {
-    return 'Pacman： $pacman MB | Flatpak： $flatpak MB | カスタム： $custom MB';
+    return 'Pacman：$pacman MB | Flatpak：$flatpak MB | カスタム：$custom MB';
   }
 
   @override
