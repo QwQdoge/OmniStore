@@ -17,6 +17,7 @@ import 'package:frontend/core/widgets/ai_app_resolver.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/features/home/widgets/app_shelf.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -220,10 +221,10 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
                 builder: (context, trending, _) {
-                  return _buildCategoryShelf(
-                    l10n.hotApps,
-                    trending,
-                    _hotAppsScrollController,
+                  return AppShelf(
+                    title: l10n.hotApps,
+                    apps: trending,
+                    scrollController: _hotAppsScrollController,
                   );
                 },
               ),
@@ -234,10 +235,10 @@ class _HomePageState extends State<HomePage> {
                     browse.recommendations['for_you'] ?? [],
                 builder: (context, forYou, _) {
                   if (forYou.isEmpty) return const SizedBox.shrink();
-                  return _buildCategoryShelf(
-                    l10n.forYou,
-                    forYou,
-                    _forYouScrollController,
+                  return AppShelf(
+                    title: l10n.forYou,
+                    apps: forYou,
+                    scrollController: _forYouScrollController,
                   );
                 },
               ),
@@ -409,96 +410,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         ),
-    );
-  }
-
-  Widget _buildCategoryShelf(
-    String title,
-    List<AppPackage> apps,
-    ScrollController controller,
-  ) {
-    if (apps.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 32),
-        _buildSectionHeader(title),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 186,
-          child: Scrollbar(
-            controller: controller,
-            thumbVisibility: true,
-            child: ListView.separated(
-              controller: controller,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: apps.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final app = apps[index];
-                final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
-                return SizedBox(
-                  width: 130,
-                  child: AppCard(
-                    borderRadius: 20,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AppDetailsPage(app: app, heroTag: heroTag),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 12),
-                        Hero(
-                          tag: heroTag,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: app.icon != null
-                                ? CachedNetworkImage(
-                                    imageUrl: app.icon!,
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 200,
-                                    memCacheHeight: 200,
-                                    errorWidget: (c, e, s) =>
-                                        const Icon(Icons.apps),
-                                  )
-                                : const Icon(Icons.apps, size: 40),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            app.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
     );
   }
 
