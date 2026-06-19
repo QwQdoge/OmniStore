@@ -67,3 +67,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** Extracted oversized and repetitive list view and skeleton UI components (`_buildAppListView` and `_buildSkeletonList`) from `github_store_page.dart` into a clean `GitHubAppList` widget within `lib/features/explore/presentation/widgets/`. This decouples the UI composition and significantly simplifies the main file. Ensuring exact preservation of edge cases (like custom empty states in search) is critical when extracting generalized widgets.
 
 **Action:** Replaced inline list building logic with the extracted `GitHubAppList` and `GitHubAppListSkeleton` components, passing down minimal necessary state and callbacks, and supporting customizable empty state visualizations.
+## 2026-06-20 - Extract Widgets in HomePage
+
+**Learning:** `home_page.dart` contained a large inline `_buildCategoryShelf` function for rendering horizontal lists of apps. Extracting this UI component out into its own `StatelessWidget` improves maintainability, readability, and modularity of the `HomePage` logic.
+
+**Action:** Extracted the `_buildCategoryShelf` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `AppShelf` widget located at `FlutterUI/lib/features/home/widgets/app_shelf.dart`. Replaced its usages in `HomePage` with the new standalone widget.
