@@ -1044,10 +1044,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameCopied => 'Name copied to clipboard';
 
   @override
-  String get tapToCopy => 'Tap to copy';
+  String get copiedToClipboard => 'Copied to clipboard';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get tapToCopy => 'Tap to copy';
 
   @override
   String get language => 'Language';

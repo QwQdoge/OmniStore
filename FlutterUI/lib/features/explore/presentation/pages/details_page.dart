@@ -282,6 +282,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ),
         const SizedBox(height: 32),
         const Divider(),
+        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -308,15 +309,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
                 ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+          const Divider(),
+          const SizedBox(height: 8),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
           ),
-          const SizedBox(height: 12),
           AppScreenshots(
             screenshots: _extraDetails!['screenshots'] as List,
             scrollController: _screenshotScrollController,
@@ -324,6 +326,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
           const SizedBox(height: 32),
         ],
+        const Divider(),
+        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
           child: Padding(

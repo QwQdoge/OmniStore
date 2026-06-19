@@ -974,10 +974,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameCopied => '名称已复制到剪贴板';
 
   @override
-  String get tapToCopy => '点击复制';
+  String get copiedToClipboard => '已复制到剪贴板';
 
   @override
-  String get copiedToClipboard => '已复制到剪贴板';
+  String get tapToCopy => '点击复制';
 
   @override
   String get language => '界面语言';
@@ -2053,10 +2053,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get nameCopied => '名稱已複製到剪貼簿';
 
   @override
-  String get tapToCopy => '點擊複製';
+  String get copiedToClipboard => '已複製到剪貼簿';
 
   @override
-  String get copiedToClipboard => '已複製到剪貼簿';
+  String get tapToCopy => '點擊複製';
 
   @override
   String get language => '介面語言';

@@ -1921,17 +1921,17 @@ abstract class AppLocalizations {
   /// **'Name copied to clipboard'**
   String get nameCopied;
 
-  /// No description provided for @tapToCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap to copy'**
-  String get tapToCopy;
-
   /// No description provided for @copiedToClipboard.
   ///
   /// In en, this message translates to:
   /// **'Copied to clipboard'**
   String get copiedToClipboard;
+
+  /// No description provided for @tapToCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to copy'**
+  String get tapToCopy;
 
   /// Label for language setting
   ///
