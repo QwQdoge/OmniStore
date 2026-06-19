@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 /// A premium progress bar that supports smooth transitions, customizable theme styling,
 /// and color seed mapping. Includes micro-animations/transitions for state changes.
@@ -238,26 +239,32 @@ class _ProgressIndicatorStack extends StatelessWidget {
           height: height,
           child: ClipRRect(
             borderRadius: borderRadius,
-            child: isIndeterminate && !isFailed
-                ? LinearProgressIndicator(
-                    backgroundColor: backgroundColor,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                  )
-                : TweenAnimationBuilder<double>(
-                    tween: Tween<double>(
-                      begin: 0,
-                      end: isFailed ? 1.0 : taskState.progress,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: isIndeterminate && !isFailed
+                  ? Skeleton(
+                      key: const ValueKey('indeterminate'),
+                      height: height,
+                      width: double.infinity,
+                      borderRadius: borderRadius.bottomLeft.x, // Extract double value
+                    )
+                  : TweenAnimationBuilder<double>(
+                      key: const ValueKey('determinate'),
+                      tween: Tween<double>(
+                        begin: 0,
+                        end: isFailed ? 1.0 : taskState.progress,
+                      ),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, _) {
+                        return LinearProgressIndicator(
+                          value: value,
+                          backgroundColor: backgroundColor,
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                        );
+                      },
                     ),
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, _) {
-                      return LinearProgressIndicator(
-                        value: value,
-                        backgroundColor: backgroundColor,
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
-                      );
-                    },
-                  ),
+            ),
           ),
         ),
         if (onCancel != null &&
