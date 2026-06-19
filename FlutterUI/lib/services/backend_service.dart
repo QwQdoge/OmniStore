@@ -737,6 +737,13 @@ class BackendService {
   Future<String> aiExplain(String name, String desc) async {
     try {
       _validateString(name, "AI App Name");
+      final daemonRes = await _sendToDaemon("run_ai_explain", [name.trim(), desc.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
     } catch (e) {
       return "AI Explanation unavailable: $e";
@@ -746,6 +753,13 @@ class BackendService {
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     try {
       _validateString(n, "AI Package Name");
+      final daemonRes = await _sendToDaemon("run_ai_changelog", [n.trim(), c.trim(), next.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
     } catch (e) {
       return "Update summary unavailable.";
@@ -756,6 +770,13 @@ class BackendService {
     try {
       _validateString(n, "AI App Name");
       _validateString(s, "AI Source");
+      final daemonRes = await _sendToDaemon("run_ai_cli", [n.trim(), s.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
           timeout: const Duration(seconds: 20));
     } catch (e) {
@@ -766,6 +787,13 @@ class BackendService {
   Future<String> aiDetectConflicts(String n) async {
     try {
       _validateString(n, "AI Package Name");
+      final daemonRes = await _sendToDaemon("run_ai_conflicts", [n.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-conflicts", n.trim()]);
     } catch (e) {
       return "Conflict detection failed.";
@@ -774,6 +802,13 @@ class BackendService {
 
   Future<String> aiPickOfTheDay() async {
     try {
+      final daemonRes = await _sendToDaemon("run_ai_pick", []);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-pick"]);
     } catch (e) {
        return "Pick of the day unavailable.";
@@ -783,6 +818,13 @@ class BackendService {
   Future<String> aiSuggestCorrection(String q) async {
     try {
       _validateString(q, "AI Query");
+      final daemonRes = await _sendToDaemon("run_ai_correct", [q.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-correct", q.trim()],
           timeout: const Duration(seconds: 15));
     } catch (e) {
@@ -793,6 +835,13 @@ class BackendService {
   Future<String> aiCompareVariants(String n) async {
     try {
       _validateString(n, "AI App Name");
+      final daemonRes = await _sendToDaemon("run_ai_compare", [n.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-compare", n.trim()]);
     } catch (e) {
       return "Variant comparison unavailable.";
@@ -801,6 +850,13 @@ class BackendService {
 
   Future<String> aiSystemHealth() async {
     try {
+      final daemonRes = await _sendToDaemon("run_ai_health", []);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-health"]);
     } catch (e) {
       return "System health report unavailable.";
@@ -809,6 +865,13 @@ class BackendService {
 
   Future<String> aiAnalyzeError(String log) async {
     try {
+      final daemonRes = await _sendToDaemon("run_ai_analyze_error", [log.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          return data['response'].toString();
+        }
+      }
       return await _aiCall(["--ai-analyze-error", log.trim()]);
     } catch (e) {
       return "Error analysis unavailable.";
@@ -818,6 +881,14 @@ class BackendService {
   Future<String> aiRecommend(String p) async {
     try {
       _validateString(p, "AI Prompt");
+      final daemonRes = await _sendToDaemon("run_ai_recommend", [p.trim()]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is Map && data.containsKey('response')) {
+          _aiFailureCount = 0;
+          return data['response'].toString();
+        }
+      }
       final res = await _aiCall(["--ai-recommend", p.trim()],
           timeout: const Duration(seconds: 90));
       _aiFailureCount = 0;
@@ -836,6 +907,15 @@ class BackendService {
       isAIEnabled.value = config['ai']?['enabled'] ?? false;
       return ConfigRepository().saveConfig(config);
     }
+    try {
+      final daemonRes = await _sendToDaemon("run_save_config", [config]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        return daemonRes.response == true;
+      }
+    } catch (e) {
+      debugPrint("Daemon saveConfig error: $e. Falling back.");
+    }
+
     Process? process;
     await _acquireLock();
     try {

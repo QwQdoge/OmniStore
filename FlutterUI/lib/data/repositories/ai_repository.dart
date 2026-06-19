@@ -1,46 +1,94 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../python_bridge.dart';
+import '../../services/backend_service.dart';
 
+/// Murphy-proof: AI repository that delegates all calls to BackendService.
+/// This ensures consistent process management, locking, and daemon usage.
 class AIRepository {
-  Future<String> aiExplain(String appName, String description) async =>
-      _aiCall(["--ai-explain", appName, "--ai-desc", description]);
+  Future<String> aiExplain(String appName, String description) async {
+    try {
+      return await BackendService.instance.aiExplain(appName, description);
+    } catch (e) {
+      return "⚠ AI Explanation failed: $e";
+    }
+  }
+
   Future<String> aiSummarizeUpdate(
     String name,
     String current,
     String next,
-  ) async => _aiCall(["--ai-changelog", "$name,$current,$next"]);
-  Future<String> aiGenerateCLI(String name, String source) async =>
-      _aiCall(["--ai-cli", "$name,$source"], timeout: 20);
-  Future<String> aiDetectConflicts(String name) async =>
-      _aiCall(["--ai-conflicts", name]);
-  Future<String> aiPickOfTheDay() async => _aiCall(["--ai-pick"], timeout: 30);
-  Future<String> aiSuggestCorrection(String query) async =>
-      _aiCall(["--ai-correct", query], timeout: 15);
-  Future<String> aiCompareVariants(String appName) async =>
-      _aiCall(["--ai-compare", appName]);
-  Future<String> aiSystemHealth() async => _aiCall(["--ai-health"]);
-  Future<String> aiAnalyzeError(String errorLog) async =>
-      _aiCall(["--ai-analyze-error", errorLog]);
-  Future<String> aiRecommend(String prompt) async =>
-      _aiCall(["--ai-recommend", prompt], timeout: 60);
-
-  Future<String> _aiCall(List<String> args, {int timeout = 45}) async {
-    if (kIsWeb) {
-      return "This is a simulated AI analysis for Web/Chrome. Direct python backend execution is skipped in browser sandbox mode.";
-    }
+  ) async {
     try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs([...args, "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(Duration(seconds: timeout));
-
-      final data = jsonDecode(result.stdout);
-      return data['response'] ?? "⚠ No response received from AI provider.";
+      return await BackendService.instance.aiSummarizeUpdate(
+        name,
+        current,
+        next,
+      );
     } catch (e) {
-      return "⚠ AI service unavailable: ${e.toString().replaceAll(RegExp(r'Exception: '), '')}";
+      return "⚠ AI Changelog summary failed: $e";
+    }
+  }
+
+  Future<String> aiGenerateCLI(String name, String source) async {
+    try {
+      return await BackendService.instance.aiGenerateCLI(name, source);
+    } catch (e) {
+      return "⚠ AI CLI generation failed: $e";
+    }
+  }
+
+  Future<String> aiDetectConflicts(String name) async {
+    try {
+      return await BackendService.instance.aiDetectConflicts(name);
+    } catch (e) {
+      return "⚠ AI Conflict detection failed: $e";
+    }
+  }
+
+  Future<String> aiPickOfTheDay() async {
+    try {
+      return await BackendService.instance.aiPickOfTheDay();
+    } catch (e) {
+      return "⚠ AI Pick of the day failed: $e";
+    }
+  }
+
+  Future<String> aiSuggestCorrection(String query) async {
+    try {
+      return await BackendService.instance.aiSuggestCorrection(query);
+    } catch (e) {
+      return query; // Graceful fallback
+    }
+  }
+
+  Future<String> aiCompareVariants(String appName) async {
+    try {
+      return await BackendService.instance.aiCompareVariants(appName);
+    } catch (e) {
+      return "⚠ AI Variant comparison failed: $e";
+    }
+  }
+
+  Future<String> aiSystemHealth() async {
+    try {
+      return await BackendService.instance.aiSystemHealth();
+    } catch (e) {
+      return "⚠ AI System health check failed: $e";
+    }
+  }
+
+  Future<String> aiAnalyzeError(String errorLog) async {
+    try {
+      return await BackendService.instance.aiAnalyzeError(errorLog);
+    } catch (e) {
+      return "⚠ AI Error analysis failed: $e";
+    }
+  }
+
+  Future<String> aiRecommend(String prompt) async {
+    try {
+      return await BackendService.instance.aiRecommend(prompt);
+    } catch (e) {
+      return "⚠ AI Recommendation failed: $e";
     }
   }
 }

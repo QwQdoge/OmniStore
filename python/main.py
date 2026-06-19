@@ -750,6 +750,63 @@ class OmnistoreBackend:
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
+    async def run_ai_changelog(self, name: str, current: str, next_v: str):
+        res = await self.ai.summarize_changelog(name, current, next_v)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_cli(self, name: str, summary: str):
+        res = await self.ai.generate_cli_command(name, summary)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_conflicts(self, name: str):
+        if shutil.which("pacman"):
+            try:
+                async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    res = await self.ai.detect_conflicts(name, stdout.decode().splitlines())
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+            except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+        else:
+            sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
+        sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_correct(self, query: str):
+        res = await self.ai.suggest_correction(query)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_compare(self, name: str):
+        async with self:
+            if self.manager:
+                candidates = await self.manager.search_all(name)
+                target = next((c for c in candidates if c['name'].lower() == name.lower()), candidates[0] if candidates else None)
+                if target:
+                    res = await self.ai.compare_variants(name, target.get('variants', []))
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+                else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
+            else:
+                sys.stdout.write(json.dumps({"response": "Search manager not initialized."}) + "\n")
+        sys.stdout.flush()
+
+    @safe_command
+    async def run_ai_health(self):
+        sys.stdout.flush() # Ensure clear buffer
+        status = await self.env.check_env()
+        status["orphaned_count"] = 0
+        if shutil.which("pacman"):
+            try:
+                async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    status["orphaned_count"] = len(stdout.decode().splitlines())
+            except: pass
+        res = await self.ai.generate_health_report(status)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+    @safe_command
     async def run_get_essentials(self):
         res = self.essentials.get_essentials()
         sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
@@ -945,6 +1002,11 @@ class OmnistoreBackend:
         else: print(f"AI Summary:\n{res}")
 
     @safe_command
+    async def run_save_config(self, config_data: dict):
+        success = self.config.save(config_data)
+        return success
+
+    @safe_command
     async def run_update_env(self, env_vars: dict, json_mode: bool = False):
         import os
         for k, v in env_vars.items():
@@ -1060,7 +1122,10 @@ class DaemonRequest(BaseModel):
             "run_remove_custom_repo", "run_launch", "run_locate",
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
             "run_import_packages", "run_export_packages", "run_ai_test",
-                        "run_update_env", "config.data", "env.check_env", "shutdown"
+            "run_ai_explain", "run_ai_recommend", "run_ai_analyze_error", "run_ai_pick",
+            "run_ai_changelog", "run_ai_cli", "run_ai_conflicts", "run_ai_correct",
+            "run_ai_compare", "run_ai_health",
+            "run_update_env", "run_save_config", "config.data", "env.check_env", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:
             raise ValueError(f"Forbidden Action: {v}")
