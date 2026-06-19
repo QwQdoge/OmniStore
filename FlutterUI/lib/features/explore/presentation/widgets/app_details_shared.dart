@@ -45,27 +45,26 @@ class AppDetailsInfoRow extends StatelessWidget {
     required this.value,
   });
 
+  void _copyToClipboard(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: value));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.copiedToClipboard),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-
-    return Semantics(
-      label: "$label: $value",
-      hint: l10n.tapToCopy,
-      button: true,
-      child: InkWell(
-        onTap: () async {
-          await Clipboard.setData(ClipboardData(text: value));
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.copiedToClipboard),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(8),
+    return InkWell(
+      onTap: () => _copyToClipboard(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Semantics(
+        label: "$label: $value",
+        button: true,
+        hint: AppLocalizations.of(context)!.tapToCopy,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
           child: Row(

@@ -1052,10 +1052,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nameCopied => 'Nombre copiado al portapapeles';
 
   @override
-  String get tapToCopy => 'Toca para copiar';
+  String get copiedToClipboard => 'Copiado al portapapeles';
 
   @override
-  String get copiedToClipboard => 'Copiado al portapapeles';
+  String get tapToCopy => 'Toca para copiar';
 
   @override
   String get language => 'Idioma de la interfaz';
