@@ -82,7 +82,28 @@ from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 
-async def handle_daemon_client(backend, reader, writer):
+async def daemon_watchdog(stop_event: asyncio.Event):
+    """
+    Murphy-proof watchdog that monitors the parent process.
+    If the parent process (Flutter UI) vanishes, the daemon will self-terminate.
+    """
+    import os
+    import time
+    parent_pid = os.getppid()
+    if parent_pid == 1: # Already orphaned or running as init?
+        return
+
+    while not stop_event.is_set():
+        try:
+            # kill -0 check for parent process liveness
+            os.kill(parent_pid, 0)
+        except OSError:
+            logging.error(f"Murphy-proof Watchdog: Parent process {parent_pid} vanished. Self-terminating...")
+            stop_event.set()
+            break
+        await asyncio.sleep(10)
+
+async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     """
     Murphy-proof daemon client handler.
     Ensures per-client isolation, payload limits, and robust error recovery.
@@ -96,19 +117,17 @@ async def handle_daemon_client(backend, reader, writer):
         while True:
             # 1. Read request with strict line-length limit to prevent OOM
             try:
+                # Limit read size to 1MB + some buffer to avoid memory explosion
                 line_bytes = await asyncio.wait_for(reader.readline(), timeout=300)
                 if not line_bytes:
                     break
+
+                if len(line_bytes) > 1024 * 1024 + 1024:
+                    raise ValueError("Payload size limit exceeded")
+
                 line = line_bytes.decode('utf-8', errors='replace').strip()
                 if not line:
                     continue
-
-                # 2. Extreme parameter validation: limit payload size to 1MB to prevent OOM attacks
-                if len(line) > 1024 * 1024:
-                    logging.error(f"Security Warning: Daemon payload from {client_addr} exceeds 1MB limit.")
-                    writer.write(json.dumps({"status": "error", "error": "Payload too large (Max 1MB)"}).encode('utf-8') + b'\n')
-                    await writer.drain()
-                    break
 
                 try:
                     cmd_data = DaemonRequest.model_validate_json(line)
@@ -128,12 +147,12 @@ async def handle_daemon_client(backend, reader, writer):
             except Exception as ex:
                 logging.error(f"Unexpected daemon request error from {client_addr}: {ex}")
                 try:
-                    writer.write(json.dumps({"status": "error", "error": "Request Handling Failed"}).encode('utf-8') + b'\n')
+                    writer.write(json.dumps({"status": "error", "error": f"Protocol Violation: {str(ex)}"}).encode('utf-8') + b'\n')
                     await writer.drain()
                 except: pass
                 break
             
-            # 3. Execution isolation: redirect stdout and catch all per-action errors
+            # 2. Execution isolation: redirect stdout and catch all per-action errors
             captured_stdout = io.StringIO()
             with redirect_stdout(captured_stdout):
                 action = cmd_data.action
@@ -149,7 +168,7 @@ async def handle_daemon_client(backend, reader, writer):
                         if obj is None: break
 
                     if obj is not None:
-                        # 4. Async execution with hard 120s timeout to prevent zombie tasks
+                        # 3. Async execution with hard 120s timeout to prevent zombie tasks
                         if callable(obj):
                             if inspect.iscoroutinefunction(obj):
                                 res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
@@ -1392,12 +1411,13 @@ async def main():
                     )
                     logging.info("Python daemon started on 127.0.0.1:9081")
                     async with server:
-                        # Murphy-proof: Wait for stop event or server close
+                        # Murphy-proof: Watchdog and Serve in parallel
+                        watchdog_task = asyncio.create_task(daemon_watchdog(stop_event))
                         serve_task = asyncio.create_task(server.serve_forever())
                         wait_task = asyncio.create_task(stop_event.wait())
 
                         done, pending = await asyncio.wait(
-                            [serve_task, wait_task],
+                            [serve_task, wait_task, watchdog_task],
                             return_when=asyncio.FIRST_COMPLETED
                         )
 
