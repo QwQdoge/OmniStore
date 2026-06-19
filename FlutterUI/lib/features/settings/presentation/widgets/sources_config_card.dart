@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
@@ -204,15 +205,12 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     final sourcesMap =
         widget.settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
 
-    return Semantics(
-      label: l10n.activeSources,
-      explicitChildNodes: true,
-      child: AppCard(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
