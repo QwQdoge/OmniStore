@@ -23,3 +23,9 @@
 **Learning:** `Consumer` widgets rebuild their child tree every time the provided controller's `notifyListeners` is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to `Selector`, we narrow the rebuild trigger to only fire when the specific property changes.
 
 **Action:** Replaced `Consumer<BrowseController>` with `Selector<BrowseController, List<AppPackage>>` in `home_page.dart` for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
+
+## 2026-06-18 - HomePage Categories Rebuild Optimization
+
+**Learning:** Allocating lists and looking up localizations on every `build` cycle creates unnecessary overhead, especially for static content like categories that only change when the app's dependencies (e.g., locale) change.
+
+**Action:** Added a `_categories` state variable to `_HomePageState`, populated it in `didChangeDependencies`, and used the cached list in `_buildCategoryQuickAccess` in `home_page.dart` to avoid redundant list allocations and localization lookups during rebuilds.
