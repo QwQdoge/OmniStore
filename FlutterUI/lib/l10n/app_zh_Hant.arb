@@ -654,6 +654,8 @@
     "description": "Message shown after saving mirror list"
   },
   "nameCopied": "名稱已複製到剪貼簿",
+  "tapToCopy": "點擊複製",
+  "copiedToClipboard": "已複製到剪貼簿",
   "next": "下一步",
   "@next": {
     "description": "Next button label"

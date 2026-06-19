@@ -655,6 +655,8 @@
   "@nameCopied": {
     "description": "Snackbar message indicating name was copied to clipboard"
   },
+  "tapToCopy": "Toca para copiar",
+  "copiedToClipboard": "Copiado al portapapeles",
   "next": "Siguiente",
   "@next": {
     "description": "Next button label"
