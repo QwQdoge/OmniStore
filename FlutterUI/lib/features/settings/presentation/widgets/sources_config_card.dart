@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import '../controllers/settings_controller.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class SourcesConfigCard extends StatefulWidget {
   final SettingsController settings;
@@ -203,15 +204,15 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     final sourcesMap =
         widget.settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
 
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Semantics(
+      label: l10n.activeSources,
+      explicitChildNodes: true,
+      child: AppCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -244,25 +245,26 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.addCustomSource),
-              subtitle: Text(l10n.addCustomSourceDesc),
-              trailing: Semantics(
-                label: l10n.addCustomSource,
-                button: true,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.add_circle_outline_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 28,
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.addCustomSource),
+                subtitle: Text(l10n.addCustomSourceDesc),
+                trailing: Semantics(
+                  label: l10n.addCustomSource,
+                  button: true,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 28,
+                    ),
+                    tooltip: l10n.addCustomSource,
+                    onPressed: () => _showAddSourceDialog(l10n),
                   ),
-                  tooltip: l10n.addCustomSource,
-                  onPressed: () => _showAddSourceDialog(l10n),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

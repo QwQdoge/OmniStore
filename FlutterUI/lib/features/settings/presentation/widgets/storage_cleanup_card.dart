@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class StorageCleanupCard extends StatefulWidget {
   const StorageCleanupCard({super.key});
@@ -119,16 +119,17 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Semantics(
+        label: l10n.systemCleaning,
+        explicitChildNodes: true,
+        child: AppCard(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             Row(
               children: [
                 Icon(
@@ -237,8 +238,36 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                           key: const ValueKey('empty'),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.cacheTypeInfo(
+                            ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                            ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                            ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: () => _triggerCleanup(context, l10n),
+                    icon: const Icon(Icons.delete_sweep_rounded),
+                    label: Text(l10n.systemCleaning),
+                      ),
+                    ],
+                  ),
+                ] else
+                  Text(
+                    l10n.systemCleaningSubtitle,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
