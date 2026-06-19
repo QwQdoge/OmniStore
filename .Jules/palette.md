@@ -45,8 +45,8 @@
 
 **Action:** Ensure all primary entry points (Discovery, Banners, Search Results) use `AppCard` with localized `Semantics` to unify the app's interactive language.
 
-## 2026-06-28 - Interactive Metadata and Page Rhythm
+## 2026-06-18 - Standardize Settings Grouping with AppCard
 
-**Learning:** Making technical metadata rows interactive (Tap to Copy) provides significant utility without cluttering the UI. Using `InkWell` for feedback and `Semantics(hint: l10n.tapToCopy, button: true)` ensures the feature is discoverable and accessible. Adding `Divider` widgets between major content blocks (About, Screenshots, Details) establishes a clear visual rhythm and hierarchy in long-form details pages.
+**Learning:** Grouping settings into specialized containers with MD3 layout features significantly improves hierarchy. Relying strictly on `Card` defaults does not convey MD3 principles sufficiently, thus wrapping such specialized components like `StorageCleanupCard` and `SourcesConfigCard` with `AppCard` paired with `Semantics` achieves UI consistency and accessibility effectively.
 
-**Action:** Implement tap-to-copy for all key-value technical metadata. Use `Divider` + `SizedBox(height: 32)` to separate primary page sections.
+**Action:** Refactored `StorageCleanupCard` and `SourcesConfigCard` to leverage `AppCard`. Removed legacy shape overrides and ensured correct `explicitChildNodes` mapping within `Semantics` wrapper to align with core MD3 app tokens.
