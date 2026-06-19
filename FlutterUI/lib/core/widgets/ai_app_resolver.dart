@@ -72,15 +72,15 @@ class _AIAppResolverState extends State<AIAppResolver> {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: _isLoading
-          ? const Skeleton(
+          ? const SizedBox(
               key: ValueKey('loading'),
-              height: 48, // Approximate height of the chips + label
-              width: double.infinity,
+              height: 32,
+              child: Skeleton(width: double.infinity, height: 32, borderRadius: 16),
             )
           : _resolvedApps.isEmpty
               ? const SizedBox.shrink(key: ValueKey('empty'))
               : Column(
-                  key: const ValueKey('content'),
+                  key: const ValueKey('loaded'),
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
