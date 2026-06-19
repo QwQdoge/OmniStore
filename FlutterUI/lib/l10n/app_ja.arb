@@ -885,7 +885,7 @@
   "updates": "更新",
   "useSystemTitleBar": "システムのタイトルバーを使用",
   "userAccount": "ユーザーアカウント",
-  "variant": "バリアント",
+  "variant": "利用可能なバージョン",
   "verified": "検証済み",
   "version": "バージョン",
   "viewLogs": "ログを表示",
@@ -916,5 +916,16 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。"
+  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
+  "taskHistory": "タスク履歴",
+  "clearHistoryShort": "履歴をクリア",
+  "unknownApp": "不明なアプリ",
+  "taskFailedReason": "失敗：{message}",
+  "@taskFailedReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -63,7 +63,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => 'バリアント';
+  String get variant => '利用可能なバージョン';
 
   @override
   String get version => 'バージョン';
@@ -1087,4 +1087,18 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get enableSystemdServiceDesc =>
       'アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します';
+
+  @override
+  String get taskHistory => 'タスク履歴';
+
+  @override
+  String get clearHistoryShort => '履歴をクリア';
+
+  @override
+  String get unknownApp => '不明なアプリ';
+
+  @override
+  String taskFailedReason(String message) {
+    return '失敗：$message';
+  }
 }

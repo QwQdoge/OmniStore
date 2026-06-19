@@ -779,14 +779,14 @@
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
-  "sourceConfigSubtitle": "選擇您想要啟用的應用程式來源",
-  "sourceConfigTitle": "應用程式來源設定",
+  "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
+  "sourceConfigTitle": "軟體存放庫設定",
   "sourceName": "來源名稱",
   "@sourceName": {
     "description": "Label for source name"
   },
   "sourcePriority": "來源優先級（拖曳排序）",
-  "sourceType": "來源類型",
+  "sourceType": "存放庫類型",
   "@sourceType": {
     "description": "Label for source type"
   },
@@ -939,5 +939,16 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "啟用 AUR 需要安裝 yay 助手。"
+  "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
+  "taskHistory": "任務歷史記錄",
+  "clearHistoryShort": "清空歷史",
+  "unknownApp": "未知應用",
+  "taskFailedReason": "失敗原因：{message}",
+  "@taskFailedReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

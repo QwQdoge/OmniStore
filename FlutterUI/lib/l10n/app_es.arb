@@ -940,5 +940,16 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "Activar AUR requiere instalar el asistente yay."
+  "yayDesc": "Activar AUR requiere instalar el asistente yay.",
+  "taskHistory": "Historial de tareas",
+  "clearHistoryShort": "Limpiar historial",
+  "unknownApp": "Aplicación desconocida",
+  "taskFailedReason": "Error: {message}",
+  "@taskFailedReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }
