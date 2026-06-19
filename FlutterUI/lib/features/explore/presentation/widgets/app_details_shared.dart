@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class AppDetailsSectionTitle extends StatelessWidget {
   final String title;
@@ -46,30 +48,51 @@ class AppDetailsInfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Semantics(
       label: "$label: $value",
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-              ),
+      hint: l10n.tapToCopy,
+      button: true,
+      child: InkWell(
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: value));
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.copiedToClipboard),
+              duration: const Duration(seconds: 2),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                value,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-                textAlign: TextAlign.end,
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

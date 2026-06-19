@@ -1052,6 +1052,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nameCopied => 'Nombre copiado al portapapeles';
 
   @override
+  String get tapToCopy => 'Toca para copiar';
+
+  @override
+  String get copiedToClipboard => 'Copiado al portapapeles';
+
+  @override
   String get language => 'Idioma de la interfaz';
 
   @override
@@ -1131,8 +1137,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get taskInProgress => 'Otra tarea ya está en progreso';
 
   @override
-  String get trayInitFailedExiting =>
-      'Error al inicializar la bandeja del sistema. Saliendo para evitar errores en segundo plano.';
+  String get trayInitFailedDisabled =>
+      'Error al inicializar la bandeja del sistema. Cerrar a la bandeja desactivado.';
 
   @override
   String get errorTitle => 'Error';

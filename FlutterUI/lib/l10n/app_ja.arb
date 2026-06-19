@@ -637,6 +637,8 @@
     "description": "mirrorListSaved"
   },
   "nameCopied": "名前をクリップボードにコピーしました",
+  "tapToCopy": "タップしてコピー",
+  "copiedToClipboard": "クリップボードにコピーしました",
   "next": "次へ",
   "@next": {
     "description": "Next button label"
