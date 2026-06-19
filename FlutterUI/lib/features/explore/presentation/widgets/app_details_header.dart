@@ -116,8 +116,8 @@ class AppDetailsHeader extends StatelessWidget {
                     ),
                   ),
                   Semantics(
-                    button: true,
                     label: AppLocalizations.of(context)!.copyName,
+                    button: true,
                     child: IconButton(
                       icon: const Icon(Icons.copy_rounded, size: 18),
                       tooltip: AppLocalizations.of(context)!.copyName,
