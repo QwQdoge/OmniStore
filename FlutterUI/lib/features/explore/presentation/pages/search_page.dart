@@ -29,6 +29,7 @@ class _SearchPageState extends State<SearchPage> {
   final List<String> _selectedSources = [];
   final ValueNotifier<bool> _hasSearchText = ValueNotifier<bool>(false);
   BrowseController? _browseController;
+  List<AppPackage>? _lastResults;
 
   @override
   void initState() {
@@ -76,7 +77,12 @@ class _SearchPageState extends State<SearchPage> {
     if (!mounted) return;
     if (_browseController == null) return;
     if (!_browseController!.isSearching) {
-      _autoSelectFirstApp();
+      // Only trigger auto-selection if results have actually changed
+      // to avoid redundant filtering on every notifyListeners()
+      if (_lastResults != _browseController!.searchResults) {
+        _lastResults = _browseController!.searchResults;
+        _autoSelectFirstApp();
+      }
     }
   }
 
@@ -180,11 +186,11 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, List<String> filters, double width})>(
+                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, int filtersHash, double width})>(
                     selector: (context, b) => (
                       results: b.searchResults,
                       isSearching: b.isSearching,
-                      filters: List.from(_selectedSources),
+                      filtersHash: Object.hashAll(_selectedSources),
                       width: MediaQuery.sizeOf(context).width,
                     ),
                     builder: (context, data, _) {

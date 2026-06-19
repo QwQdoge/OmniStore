@@ -32,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
   final Map<String, ScrollController> _shelfControllers = {};
+  List<CategoryItem> _categories = [];
 
   List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
@@ -46,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Cache localized categories once and update only when locale changes
     _categories = CategoryService.getCategories(context);
   }
 
