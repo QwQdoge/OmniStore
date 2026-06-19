@@ -444,21 +444,41 @@ WantedBy=timers.target
         final currentHash = updates
             .map((e) => "${e['name']}-${e['new_version']}")
             .join(",");
+
+        // Murphy-proof: Separate notification and tray logic to prevent one's failure
+        // from affecting the other.
         if (remindEnabled &&
             notificationsEnabled &&
             currentHash != _lastNotifiedUpdateHash) {
-          _showUpdateNotification(updates.length);
-          _lastNotifiedUpdateHash = currentHash;
+          try {
+            await _showUpdateNotification(updates.length);
+            _lastNotifiedUpdateHash = currentHash;
+          } catch (e) {
+            debugPrint("Notification failed: $e");
+          }
         }
+
         if (!kIsWeb) {
-          await _systemTray.setToolTip(_trayTooltipUpdates(updates.length));
+          try {
+            await _systemTray.setToolTip(_trayTooltipUpdates(updates.length)).timeout(
+              const Duration(seconds: 2),
+              onTimeout: () => throw TimeoutException("Tray tooltip update timed out"),
+            );
+          } catch (e) {
+            debugPrint("Tray tooltip update failed: $e");
+          }
         }
       } else {
         _lastNotifiedUpdateHash = null;
         if (!kIsWeb) {
           try {
-            await _systemTray.setToolTip(_trayTooltipUpToDate);
-          } catch (_) {}
+            await _systemTray.setToolTip(_trayTooltipUpToDate).timeout(
+              const Duration(seconds: 2),
+              onTimeout: () => throw TimeoutException("Tray tooltip update timed out"),
+            );
+          } catch (e) {
+            debugPrint("Tray tooltip update failed: $e");
+          }
         }
       }
     } catch (e) {
@@ -513,17 +533,21 @@ WantedBy=timers.target
 
   Future<void> _showUpdateNotification(int count) async {
     if (kIsWeb) return;
-    const LinuxNotificationDetails linuxPlatformChannelSpecifics =
-        LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      linux: linuxPlatformChannelSpecifics,
-    );
-    await _showNotification(
-      id: 0,
-      title: _notificationTitle,
-      body: _notificationBody(count),
-      notificationDetails: platformChannelSpecifics,
-    );
+    try {
+      const LinuxNotificationDetails linuxPlatformChannelSpecifics =
+          LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
+      const NotificationDetails platformChannelSpecifics = NotificationDetails(
+        linux: linuxPlatformChannelSpecifics,
+      );
+      await _showNotification(
+        id: 0,
+        title: _notificationTitle,
+        body: _notificationBody(count),
+        notificationDetails: platformChannelSpecifics,
+      );
+    } catch (e) {
+      debugPrint("Murphy-proof: Update notification failed: $e");
+    }
   }
 
   Future<void> showProgressNotification(String title, double progress) async {
@@ -599,19 +623,25 @@ WantedBy=timers.target
       }
 
       // 2. Systematic cleanup of Flutter-side resources and processes
-      await BackendService.instance.dispose().timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => debugPrint("BackendService dispose timed out during exit"),
-          );
+      try {
+        await BackendService.instance.dispose().timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => debugPrint("BackendService dispose timed out during exit"),
+            );
+      } catch (e) {
+        debugPrint("BackendService dispose failed: $e");
+      }
 
       // 3. Last-resort reaping of any lingering components
       try {
-        await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 1));
-        await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 1));
-        await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 1));
+        if (Platform.isLinux || Platform.isMacOS) {
+          await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 1));
+          await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 1));
+          await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 1));
+        }
       } catch (_) {}
-    } catch (_) {
-      // Final catch-all to ensure we definitely exit
+    } catch (e) {
+      debugPrint("Murphy-proof: Fatal error during full exit: $e");
     } finally {
       exit(0);
     }
