@@ -1,13 +1,3 @@
-## 2026-06-08 - [AnimatedSwitcher for MD3 interaction smoothing]
-- Used `AnimatedSwitcher` in `FlutterUI/lib/features/explore/presentation/pages/details_page.dart` to ensure subtle implicit animations between the loading state (skeletons) and the final markdown text.
-- Also utilized `AnimatedSwitcher` to smooth out transitions in the `_buildActionArea` (install, uninstall, busy/progress tasks) to prevent abrupt visual jumps.
-- Keep animation durations reasonably short (e.g., 300ms) to preserve UI responsiveness while adding clarity.
-- Replaced `CircularProgressIndicator` with loading skeletons across list views and dialogs in `github_store_page.dart`, `flatpak_store_page.dart`, `download_page.dart`, and `ai_dialogs.dart`. Wrapped these elements in `AnimatedSwitcher`s using explicit `ValueKey`s to smooth state transitions per Conductor directives.
-- Used `AnimatedSwitcher` in `FlutterUI/lib/features/home/home_page.dart` to animate transitions in the AI Pick section (`_isAILoading`, `_aiPickBlurb`, and empty state). Ensured `ValueKey`s were explicitly added to the children so the switcher can detect changes.
-- Replaced `CircularProgressIndicator` with `AnimatedSwitcher` + `Skeleton` UI for the loading state of `OmnistoreApp` (in `FlutterUI/lib/app/omnistore_app.dart`) during `ConnectionState.waiting`, improving clarity and avoiding abrupt transitions for initial routing to app details.
-- Wrapped the refresh action (`CircularProgressIndicator` and `IconButton`) in an `AnimatedSwitcher` with `ValueKey`s in the `download_page.dart` (`FlutterUI/lib/features/task_manager/presentation/pages/download_page.dart`) AppBar to smooth out the loading state transitions when checking for updates.
-- Replaced `CircularProgressIndicator` with `Skeleton` widget in `download_page.dart` to ensure subtle implicit animations between the loading state (skeletons) and the refresh icon.
-- Replaced `CircularProgressIndicator` with `Skeleton` in `settings_page.dart` to ensure subtle implicit animations between the loading state (skeletons) and the final icon text.
-- Replaced `CircularProgressIndicator` with loading skeletons across list views in `search_page.dart`. Wrapped these elements in `AnimatedSwitcher`s using explicit `ValueKey`s to smooth state transitions per Conductor directives.
-- Replaced `CircularProgressIndicator` with `AnimatedSwitcher` + `Skeleton` inside the "Test Connection" button in `ai_settings_section.dart` to provide subtle implicit animations between the loading and idle states, maintaining consistency with MD3 motion guidelines.
-- Replaced `LinearProgressIndicator` with `AnimatedSwitcher` + `Skeleton` for indeterminate progress states in `smooth_progress_bar.dart`, `ai_app_resolver.dart`, and `storage_cleanup_card.dart` to improve transition clarity and adhere to MD3 subtle motion guidelines.
+- Replaced generic LinearProgressIndicator with Skeleton inside AnimatedSwitcher in ai_app_resolver.dart and storage_cleanup_card.dart.
+- Wrapped content resolution in github_app_list.dart with AnimatedSwitcher to prevent abrupt jumps between loading/empty/list states.
+- Ensured all new and existing AnimatedSwitchers use a standard duration of 300ms.
