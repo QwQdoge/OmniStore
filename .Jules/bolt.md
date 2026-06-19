@@ -23,3 +23,9 @@
 **Learning:** `Consumer` widgets rebuild their child tree every time the provided controller's `notifyListeners` is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to `Selector`, we narrow the rebuild trigger to only fire when the specific property changes.
 
 **Action:** Replaced `Consumer<BrowseController>` with `Selector<BrowseController, List<AppPackage>>` in `home_page.dart` for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
+
+## 2026-06-18 - Search & HomePage Performance Polish
+
+**Learning:** `Object.hashAll` is an efficient way to generate a stable hash for list-based dependencies in a `Selector`, preventing rebuilds caused by `List.from` creating new instances. Additionally, localizing and memoizing category lists in `didChangeDependencies` (instead of `build`) significantly reduces allocation overhead in complex views.
+
+**Action:** Optimized `SearchPage` results `Selector` with `filtersHash` and added a results-change guard to the auto-selection logic. Refactored `DiscoveryContent` to use a targeted `Selector` for trending apps. Memoized categories in `HomePage`.
