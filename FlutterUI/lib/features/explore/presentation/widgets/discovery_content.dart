@@ -77,7 +77,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                       )!.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
-                        borderRadius: 20,
+                        borderRadius: 24,
                         onTap: () {
                           widget.searchController.text =
                               '/${cat.id.toLowerCase()}';
