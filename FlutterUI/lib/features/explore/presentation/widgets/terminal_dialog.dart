@@ -66,12 +66,13 @@ class TerminalDialog extends StatelessWidget {
                 ],
               ),
             ),
-            Consumer2<SettingsController, TaskController>(
-              builder: (context, settings, task, _) {
-                if (!task.logs.any((l) => l.contains("[ERROR]"))) {
-                  return const SizedBox.shrink();
-                }
-                if (!settings.isAIEnabled) {
+            Selector2<SettingsController, TaskController, ({bool isAIEnabled, bool hasError})>(
+              selector: (context, settings, task) => (
+                isAIEnabled: settings.isAIEnabled,
+                hasError: task.logs.any((l) => l.contains("[ERROR]"))
+              ),
+              builder: (context, data, _) {
+                if (!data.hasError || !data.isAIEnabled) {
                   return const SizedBox.shrink();
                 }
 
@@ -102,7 +103,7 @@ class TerminalDialog extends StatelessWidget {
                       const Spacer(),
                       TextButton(
                         onPressed: () =>
-                            _showAIErrorAnalysis(context, task.logs.join("\n")),
+                            _showAIErrorAnalysis(context, context.read<TaskController>().logs.join("\n")),
                         child: Text(
                           AppLocalizations.of(context)!.analyzeNow,
                           style: TextStyle(
@@ -117,10 +118,14 @@ class TerminalDialog extends StatelessWidget {
               },
             ),
             Expanded(
-              child: Consumer<TaskController>(
-                builder: (context, task, _) {
-                  final logs = task.logs;
-                  return logs.isEmpty
+              child: Selector<TaskController, ({int length, List<String> logs})>(
+                selector: (context, task) => (
+                  length: task.logs.length,
+                  logs: task.logs
+                ),
+                builder: (context, data, _) {
+                  final logs = data.logs;
+                  return data.length == 0
                       ? Center(
                           child: Text(
                             AppLocalizations.of(context)!.waitingForOutput,
@@ -133,9 +138,9 @@ class TerminalDialog extends StatelessWidget {
                       : ListView.builder(
                           reverse: true,
                           padding: const EdgeInsets.all(12),
-                          itemCount: logs.length,
+                          itemCount: data.length,
                           itemBuilder: (context, i) {
-                            final log = logs[logs.length - 1 - i];
+                            final log = logs[data.length - 1 - i];
                             Color textColor = theme.colorScheme.onSurface;
                             if (log.contains("[ERROR]")) {
                               textColor = theme.colorScheme.error;
