@@ -25,8 +25,24 @@ class TaskManager {
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
   static const _throttleDuration = Duration(milliseconds: 16); // ~60Hz
 
+  /// Murphy-proof: Validated state transitions.
+  /// Prevents illegal transitions (e.g., from Success back to Pending)
+  /// and resets the Stall Watchdog on every state update.
   void _updateState(TaskState? state) {
+    if (state != null && _currentTask != null) {
+      // Logic Guard: Success/Failed are terminal states.
+      if (_currentTask!.status == TaskStatus.success ||
+          _currentTask!.status == TaskStatus.failed) {
+        if (state.status != TaskStatus.pending) {
+          // Allow transitions only if it's a completely new task id (handled in startTask)
+          // otherwise block regression.
+          return;
+        }
+      }
+    }
+
     _currentTask = state;
+    _resetStallWatchdog();
 
     final now = DateTime.now();
     if (state == null ||
@@ -36,6 +52,26 @@ class TaskManager {
       _taskStateController.add(state);
       _lastUpdateTime = now;
     }
+  }
+
+  Timer? _stallWatchdog;
+
+  /// Murphy-proof: Stall Watchdog.
+  /// Automatically cancels the task if no progress or log is received for 300s.
+  /// This prevents "Ghost Tasks" from hanging the UI indefinitely.
+  void _resetStallWatchdog() {
+    _stallWatchdog?.cancel();
+    if (_currentTask == null ||
+        _currentTask!.status == TaskStatus.success ||
+        _currentTask!.status == TaskStatus.failed) {
+      return;
+    }
+
+    _stallWatchdog = Timer(const Duration(seconds: 300), () {
+      debugPrint(
+          "Murphy-proof: Task ${_currentTask?.id} stalled (no output for 300s). Auto-cancelling.");
+      cancelTask();
+    });
   }
 
   // Murphy-proof: Use a dedicated set to track active subscriptions to prevent leaks
@@ -296,42 +332,50 @@ class TaskManager {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
 
-    String cleanLine = line.trim();
-    String? logMessage;
-
     try {
+      String? logMessage;
+
+      // 1. Try parsing as structured JSON/Protocol
       if (cleanLine.startsWith("[CALLBACK]")) {
         try {
-          final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          logMessage = data['message'] ?? data['log'] ?? "";
+          final String jsonPart = cleanLine.replaceFirst("[CALLBACK] ", "");
+          final data = jsonDecode(jsonPart);
+          if (data is Map<String, dynamic>) {
+            _processStructuredCallback(data);
+            return;
+          }
+          if (data is Map) {
+            logMessage = data['message']?.toString() ?? data['log']?.toString();
+          }
         } catch (_) {}
       } else if (cleanLine.startsWith("{")) {
         try {
           final data = jsonDecode(cleanLine);
-          logMessage = data['message'] ?? data['log'] ?? "";
+          if (data is Map<String, dynamic>) {
+            _processStructuredCallback(data);
+            return;
+          }
+          if (data is Map) {
+            logMessage = data['message']?.toString() ?? data['log']?.toString();
+          }
         } catch (_) {}
-      } else {
-        logMessage = cleanLine;
       }
-    } catch (e) {
-      debugPrint("Murphy-proof: Output parsing failed: $e");
-      logMessage = cleanLine;
-    }
 
-    if (logMessage != null && logMessage.isNotEmpty) {
+      // 2. Fallback to raw line if not handled as JSON
+      logMessage ??= cleanLine;
+      if (logMessage.isEmpty) return;
+
+      // 3. Protocol Token Handling
       if (logMessage.startsWith("[PROGRESS]")) {
         final parts = logMessage.split(" ");
         if (parts.length > 1) {
           final p = double.tryParse(parts[1]);
           if (p != null) {
             final progress = p / 100.0;
-            _updateState(
-              _currentTask?.copyWith(
-                progress: progress,
-                status: TaskStatus.downloading,
-              ),
-            );
-
+            _updateState(_currentTask?.copyWith(
+              progress: progress,
+              status: TaskStatus.downloading,
+            ));
             UpdateService().showProgressNotification(
               _currentTask?.packageName ?? "OmniStore",
               progress,
@@ -339,55 +383,54 @@ class TaskManager {
           }
         }
       } else if (logMessage.startsWith("[SPEED]")) {
-        final s = logMessage.replaceFirst("[SPEED] ", "");
-        _updateState(_currentTask?.copyWith(speed: s));
+        _updateState(_currentTask?.copyWith(
+            speed: logMessage.replaceFirst("[SPEED] ", "")));
       } else if (logMessage.startsWith("[STAGE]")) {
-        final stage = logMessage.replaceFirst("[STAGE] ", "");
-        _updateState(_currentTask?.copyWith(stage: stage));
+        _updateState(_currentTask?.copyWith(
+            stage: logMessage.replaceFirst("[STAGE] ", "")));
       } else if (logMessage.startsWith("[INFO]")) {
         final msg = logMessage.replaceFirst("[INFO] ", "");
         BackendService.addLog(logMessage);
 
         TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
         double? progress = _currentTask?.progress;
+        final lowerMsg = msg.toLowerCase();
 
-        if (msg.toLowerCase().contains("installing") ||
-            msg.toLowerCase().contains("verifying") ||
-            msg.toLowerCase().contains("building") ||
-            msg.toLowerCase().contains("cleaning")) {
+        if (lowerMsg.contains("installing") ||
+            lowerMsg.contains("verifying") ||
+            lowerMsg.contains("building") ||
+            lowerMsg.contains("cleaning")) {
           status = TaskStatus.installing;
           progress = -1.0;
-        } else if (msg.toLowerCase().contains("downloading")) {
+        } else if (lowerMsg.contains("downloading")) {
           status = TaskStatus.downloading;
         }
 
-        _updateState(
-          _currentTask?.copyWith(
-            message: msg,
-            status: status,
-            progress: progress,
-          ),
-        );
+        _updateState(_currentTask?.copyWith(
+          message: msg,
+          status: status,
+          progress: progress,
+        ));
         BackendService.globalStatus.value = msg;
       } else if (logMessage.startsWith("[ERROR]")) {
         BackendService.addLog(logMessage);
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.failed,
-            message: logMessage.replaceFirst("[ERROR] ", ""),
-          ),
-        );
+        _updateState(_currentTask?.copyWith(
+          status: TaskStatus.failed,
+          message: logMessage.replaceFirst("[ERROR] ", ""),
+        ));
       } else {
-        // Unstructured fallback
+        // Unstructured log
         BackendService.addLog(cleanLine);
+        _resetStallWatchdog();
       }
     } catch (e) {
-      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
+      debugPrint("Murphy-proof Warning: _handleOutput failed: $e\nLine: $line");
       BackendService.addLog("Raw: $cleanLine");
     }
   }
 
   void _processStructuredCallback(Map<String, dynamic> data) {
+    _resetStallWatchdog();
     final String? log = data['log'] ?? data['message'];
     final String? type = data['type']?.toString().toUpperCase();
 
@@ -525,6 +568,16 @@ class TaskManager {
 
   void clearTask() {
     _updateState(null);
+  }
+
+  /// Murphy-proof: Resource cleanup for the TaskManager singleton.
+  void dispose() {
+    _stallWatchdog?.cancel();
+    _stallWatchdog = null;
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
   }
 
   void startMockTask() async {

@@ -944,6 +944,19 @@ class OmnistoreBackend:
         if json_mode: sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
         else: print(f"AI Summary:\n{res}")
 
+    async def run_ai_health_report(self):
+        """Murphy-proof: Isolated AI health report logic."""
+        status = await self.env.check_env()
+        status["orphaned_count"] = 0
+        if shutil.which("pacman"):
+            try:
+                async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    status["orphaned_count"] = len(stdout.decode().splitlines())
+            except: pass
+        res = await self.ai.generate_health_report(status)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+
     @safe_command
     async def run_update_env(self, env_vars: dict, json_mode: bool = False):
         import os
@@ -1243,175 +1256,139 @@ async def main():
     if not sys.platform.startswith("linux") and not args.json:
         console.print("[bold yellow]Warning: OmniStore is optimized for Linux (Arch).[/bold yellow]")
 
-    async def dispatch():
-        """Strictly validated CLI command dispatcher."""
+    async def _handle_ai_correct(q):
+        res = await backend.ai.suggest_correction(q)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
 
-        try:
+    async def _handle_check_env():
+        env_res = await backend.env.check_env()
+        sys.stdout.write(json.dumps(env_res, ensure_ascii=False) + "\n")
+
+    async def _handle_bootstrap():
+        await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, args.json))
+        if args.json:
+            sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+
+    async def _handle_ai_changelog(p):
+        parts = p.split(',')
+        res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+
+    async def _handle_ai_cli(p):
+        parts = p.split(',')
+        res = await backend.ai.generate_cli_command(parts[0], parts[1])
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+
+    async def _handle_ai_conflicts(p):
+        if shutil.which("pacman"):
             try:
-                validated_args = CLIArguments(**vars(args))
-            except ValidationError as ve:
-                errors = []
-                for err in ve.errors():
-                    field_name = err["loc"][0]
-                    msg = err["msg"]
-                    if "Value error, " in msg:
-                        msg = msg.replace("Value error, ", "")
-                    errors.append(f"Argument '{field_name}' invalid: {msg}")
-                raise ValueError("; ".join(errors))
+                async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                    res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+            except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
+        else:
+            sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
 
-            if validated_args.get_config:
-                sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n")
+    async def _handle_ai_compare(p):
+        async with backend:
+            if backend.manager:
+                candidates = await backend.manager.search_all(p)
+                target = next((c for c in candidates if c['name'].lower() == p.lower()), candidates[0] if candidates else None)
+                if target:
+                    res = await backend.ai.compare_variants(p, target.get('variants', []))
+                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
+                else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
 
-            elif validated_args.set_config:
-                data = sys.stdin.read().strip() or validated_args.set_config
-                if not data or data == "true": raise ValueError("No configuration data provided")
-                success = backend.config.save(json.loads(data))
-                sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+    async def _handle_add_custom_repo(raw_repo):
+        parts = [p.strip() for p in raw_repo.split(',', 2)]
+        if len(parts) < 3 and parts[0] == "appimage":
+            parts = ["appimage", "", parts[1]]
+        async with backend:
+            await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
 
-            elif validated_args.search:
-                await backend.run_search(validated_args.search, validated_args.json_mode)
+    async def _handle_remove_custom_repo(raw_repo):
+        parts = [p.strip() for p in raw_repo.split(',', 1)]
+        async with backend:
+            await backend.run_remove_custom_repo(parts[0], parts[1], args.json)
 
-            elif validated_args.install:
-                async with backend:
-                    if not await backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode):
-                        sys.exit(1)
+    async def dispatch():
+        """
+        Murphy-proof Registry-based Command Dispatcher.
+        Ensures that every individual command path is isolated, validated,
+        and provides consistent structured output.
+        """
+        try:
+            validated_args = CLIArguments(**vars(args))
+        except ValidationError as ve:
+            errors = [f"Argument '{e['loc'][0]}' invalid: {e['msg']}" for e in ve.errors()]
+            await backend._handle_error("Validation Failure", ValueError("; ".join(errors)), args.json)
+            sys.exit(1)
 
-            elif validated_args.remove:
-                async with backend:
-                    if not await backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove):
-                        sys.exit(1)
+        # 1. Command Registry Definition
+        # Each entry is an async lambda or function providing per-command isolation.
+        async def _save_config_handler():
+            data = sys.stdin.read().strip() or validated_args.set_config
+            success = backend.config.save(json.loads(data))
+            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
-            elif validated_args.update:
-                async with backend:
-                    if not await backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode):
-                        sys.exit(1)
+        async def _ai_correct_handler():
+            res = await backend.ai.suggest_correction(validated_args.ai_correct)
+            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
 
-            elif validated_args.check_updates:
-                async with backend: await backend.run_check_updates(validated_args.json_mode)
+        REGISTRY = {
+            "get_config": lambda: sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n"),
+            "set_config": _save_config_handler,
+            "search": lambda: backend.run_search(validated_args.search, validated_args.json_mode),
+            "install": lambda: backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode),
+            "remove": lambda: backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove),
+            "update": lambda: backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode),
+            "check_updates": lambda: backend.run_check_updates(validated_args.json_mode),
+            "list_installed": lambda: backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh),
+            "details": lambda: backend.run_app_details(validated_args.details, validated_args.json_mode),
+            "recommend": lambda: backend.run_recommendations(validated_args.json_mode),
+            "clean_system": lambda: backend.run_clean_system(validated_args.json_mode),
+            "ai_summary": lambda: backend.run_ai_summary(validated_args.json_mode),
+            "check_env": _handle_check_env,
+            "bootstrap": _handle_bootstrap,
+            "list_custom_repos": lambda: backend.run_list_custom_repos(),
+            "ai_explain": lambda: backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or ""),
+            "ai_recommend": lambda: backend.run_ai_recommend(validated_args.ai_recommend),
+            "ai_analyze_error": lambda: backend.run_ai_analyze_error(validated_args.ai_analyze_error),
+            "ai_health": backend.run_ai_health_report,
+            "ai_test": lambda: backend.run_ai_test(validated_args.json_mode),
+            "ai_pick": lambda: backend.run_ai_pick(validated_args.json_mode),
+            "ai_correct": _ai_correct_handler,
+            "ai_changelog": lambda: _handle_ai_changelog(validated_args.ai_changelog),
+            "ai_cli": lambda: _handle_ai_cli(validated_args.ai_cli),
+            "ai_conflicts": lambda: _handle_ai_conflicts(validated_args.ai_conflicts),
+            "ai_compare": lambda: _handle_ai_compare(validated_args.ai_compare),
+            "add_custom_repo": lambda: _handle_add_custom_repo(validated_args.add_custom_repo),
+            "remove_custom_repo": lambda: _handle_remove_custom_repo(validated_args.remove_custom_repo),
+            "essentials": lambda: backend.run_get_essentials(),
+            "import_packages": lambda: backend.run_import_packages(validated_args.import_packages),
+            "export_packages": lambda: backend.run_export_packages(validated_args.export_packages),
+            "launch": lambda: backend.run_launch(validated_args.launch, validated_args.source, validated_args.json_mode),
+            "locate": lambda: backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode),
+            "storage_info": lambda: backend.run_get_storage_info(validated_args.json_mode),
+        }
 
-            elif validated_args.list_installed:
-                await backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh)
+        # 3. Execution Dispatch
+        executed = False
+        for flag, handler in REGISTRY.items():
+            if getattr(validated_args, flag, None):
+                res = handler()
+                if inspect.isawaitable(res):
+                    await res
+                executed = True
+                break
 
-            elif validated_args.details:
-                await backend.run_app_details(validated_args.details, validated_args.json_mode)
+        if executed:
+            return
 
-            elif validated_args.recommend:
-                await backend.run_recommendations(validated_args.json_mode)
-
-            elif validated_args.clean_system:
-                async with backend: await backend.run_clean_system(validated_args.json_mode)
-
-            elif validated_args.ai_summary:
-                async with backend: await backend.run_ai_summary(validated_args.json_mode)
-
-            elif validated_args.check_env:
-                env_res = await backend.env.check_env()
-                sys.stdout.write(json.dumps(env_res) + "\n")
-
-            elif validated_args.bootstrap:
-                await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, validated_args.json_mode))
-                if validated_args.json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
-
-            elif validated_args.list_custom_repos:
-                async with backend: await backend.run_list_custom_repos()
-
-            elif validated_args.add_custom_repo:
-                raw_repo = validated_args.add_custom_repo
-                parts = [p.strip() for p in raw_repo.split(',', 2)]
-                if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
-                async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json_mode)
-
-            elif validated_args.remove_custom_repo:
-                raw_repo = validated_args.remove_custom_repo
-                parts = [p.strip() for p in raw_repo.split(',', 1)]
-                async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], validated_args.json_mode)
-
-            elif validated_args.ai_explain:
-                await backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or "")
-
-            elif validated_args.ai_recommend:
-                await backend.run_ai_recommend(validated_args.ai_recommend)
-
-            elif validated_args.ai_analyze_error:
-                await backend.run_ai_analyze_error(validated_args.ai_analyze_error)
-
-            elif validated_args.ai_compare:
-                p = validated_args.ai_compare
-                async with backend:
-                    if backend.manager:
-                        candidates = await backend.manager.search_all(p)
-                        target = next((c for c in candidates if c['name'].lower() == p.lower()), candidates[0] if candidates else None)
-                        if target:
-                            res = await backend.ai.compare_variants(p, target.get('variants', []))
-                            sys.stdout.write(json.dumps({"response": res}) + "\n")
-                        else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
-
-            elif validated_args.ai_health:
-                status = await backend.env.check_env()
-                status["orphaned_count"] = 0
-                if shutil.which("pacman"):
-                    try:
-                        async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                            status["orphaned_count"] = len(stdout.decode().splitlines())
-                    except: pass
-                res = await backend.ai.generate_health_report(status)
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
-
-            elif validated_args.ai_test:
-                await backend.run_ai_test(validated_args.json_mode)
-
-            elif validated_args.ai_pick:
-                await backend.run_ai_pick(validated_args.json_mode)
-
-            elif validated_args.ai_correct:
-                p = validated_args.ai_correct
-                res = await backend.ai.suggest_correction(p)
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
-
-            elif validated_args.ai_changelog:
-                p = validated_args.ai_changelog
-                parts = p.split(',')
-                res = await backend.ai.summarize_changelog(parts[0], parts[1], parts[2])
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
-
-            elif validated_args.ai_cli:
-                p = validated_args.ai_cli
-                parts = p.split(',')
-                res = await backend.ai.generate_cli_command(parts[0], parts[1])
-                sys.stdout.write(json.dumps({"response": res}) + "\n")
-
-            elif validated_args.ai_conflicts:
-                p = validated_args.ai_conflicts
-                if shutil.which("pacman"):
-                    try:
-                        async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
-                            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                            res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
-                            sys.stdout.write(json.dumps({"response": res}) + "\n")
-                    except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
-                else:
-                    sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
-
-            elif validated_args.essentials:
-                async with backend: await backend.run_get_essentials()
-
-            elif validated_args.import_packages:
-                async with backend: await backend.run_import_packages(validated_args.import_packages)
-
-            elif validated_args.export_packages:
-                async with backend: await backend.run_export_packages(validated_args.export_packages)
-
-            elif validated_args.launch:
-                await backend.run_launch(validated_args.launch, validated_args.source, validated_args.json_mode)
-
-            elif validated_args.locate:
-                await backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode)
-
-            elif validated_args.storage_info:
-                await backend.run_get_storage_info(validated_args.json_mode)
-
-            elif validated_args.daemon:
+        # 4. Logic for complex commands that require specific context management
+        try:
+            if validated_args.daemon:
                 async with backend:
                     # Start local TCP socket server on port 9081
                     server = await asyncio.start_server(
