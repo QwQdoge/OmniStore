@@ -72,3 +72,4 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** `home_page.dart` contained a large inline `_buildCategoryShelf` function for rendering horizontal lists of apps. Extracting this UI component out into its own `StatelessWidget` improves maintainability, readability, and modularity of the `HomePage` logic.
 
 **Action:** Extracted the `_buildCategoryShelf` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `AppShelf` widget located at `FlutterUI/lib/features/home/widgets/app_shelf.dart`. Replaced its usages in `HomePage` with the new standalone widget.
+- Extracted duplicated loading text indicators consisting of a column of Skeletons into a reusable ParagraphSkeleton widget (FlutterUI/lib/core/widgets/skeleton.dart) to adhere to DRY principles and improve maintainability.
