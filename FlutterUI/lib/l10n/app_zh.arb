@@ -50,7 +50,7 @@
       }
     }
   },
-  "aiChangelogTitle": "AI 更新总结",
+  "aiChangelogTitle": "AI 更新摘要",
   "@aiChangelogTitle": {
     "description": "Title for AI changelog summary"
   },
@@ -95,11 +95,11 @@
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
-  "aiHealthSubtitle": "为你的 Arch Linux 进行智能诊断",
+  "aiHealthSubtitle": "为您的 Arch Linux 提供智能诊断报告",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiHealthTitle": "AI 系统健康诊断",
+  "aiHealthTitle": "AI 系统健康报告",
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
@@ -183,7 +183,7 @@
   "aiTimeout": "AI 连接超时，请稍后重试。",
   "all": "全部",
   "allDownloads": "全部下载",
-  "allUpdated": "应用程序已是最新版本",
+  "allUpdated": "应用已是最新版本",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -572,7 +572,7 @@
   "@importBackup": {
     "description": "Label for importing a backup file"
   },
-  "importBackupConfirm": "已从备份中读取 {count} 个软件包。是否开始批量恢复？",
+  "importBackupConfirm": "已从备份中读取 {count} 个软件包。是否开始批量还原？",
   "@importBackupConfirm": {
     "description": "Confirmation text for batch recovery from backup",
     "placeholders": {
@@ -874,7 +874,7 @@
   "@trayInitFailedDisabled": {
     "description": "Error message when system tray fails to initialize"
   },
-  "trayTooltipUpToDate": "OmniStore：应用程序已是最新版本",
+  "trayTooltipUpToDate": "OmniStore：应用已是最新",
   "trayTooltipUpdates": "OmniStore：共有 {count} 项可更新",
   "@trayTooltipUpdates": {
     "placeholders": {
@@ -898,7 +898,7 @@
       }
     }
   },
-  "upToDate": "应用程序已是最新版本",
+  "upToDate": "应用已是最新版本",
   "update": "更新",
   "@update": {
     "description": "Update action label"

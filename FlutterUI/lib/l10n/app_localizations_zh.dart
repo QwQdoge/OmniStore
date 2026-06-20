@@ -211,7 +211,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updates => '更新';
 
   @override
-  String get upToDate => '应用程序已是最新版本';
+  String get upToDate => '应用已是最新版本';
 
   @override
   String get checkUpdates => '检查更新';
@@ -254,7 +254,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore：应用程序已是最新版本';
+  String get trayTooltipUpToDate => 'OmniStore： 应用已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -321,7 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '应用程序已是最新版本';
+  String get allUpdated => '应用已是最新';
 
   @override
   String get update => '更新';
@@ -371,7 +371,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return '已从备份中读取 $count 个软件包。是否开始批量恢复？';
+    return '已从备份中读取 $count 个软件包。是否开始批量还原？';
   }
 
   @override
@@ -464,10 +464,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiCompareTitle => 'AI 版本对比';
 
   @override
-  String get aiHealthTitle => 'AI 系统健康诊断';
+  String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => '为你的 Arch Linux 进行智能诊断';
+  String get aiHealthSubtitle => '为您的 Arch Linux 提供智能诊断报告';
 
   @override
   String get aiCorrection => '您是指：';
@@ -479,7 +479,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get magicSearch => '智能搜索';
 
   @override
-  String get aiChangelogTitle => 'AI 更新总结';
+  String get aiChangelogTitle => 'AI 更新摘要';
 
   @override
   String get aiCliTitle => 'AI 命令生成器';
@@ -1333,7 +1333,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore：應用程式已是最新版本';
+  String get trayTooltipUpToDate => 'OmniStore： 已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -1450,7 +1450,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String importBackupConfirm(int count) {
-    return '已從備份中讀取 $count 個套件。是否開始批次恢復？';
+    return '已從備份中讀取 $count 個套件。是否開始批次還原？';
   }
 
   @override
