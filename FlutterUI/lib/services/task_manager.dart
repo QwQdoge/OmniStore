@@ -295,8 +295,6 @@ class TaskManager {
   void _handleOutput(String line) {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
-
-    String cleanLine = line.trim();
     String? logMessage;
 
     try {
@@ -319,7 +317,8 @@ class TaskManager {
     }
 
     if (logMessage != null && logMessage.isNotEmpty) {
-      if (logMessage.startsWith("[PROGRESS]")) {
+      try {
+        if (logMessage.startsWith("[PROGRESS]")) {
         final parts = logMessage.split(" ");
         if (parts.length > 1) {
           final p = double.tryParse(parts[1]);
@@ -377,13 +376,15 @@ class TaskManager {
             message: logMessage.replaceFirst("[ERROR] ", ""),
           ),
         );
-      } else {
-        // Unstructured fallback
-        BackendService.addLog(cleanLine);
+        } else {
+          // Unstructured fallback
+          BackendService.addLog(cleanLine);
+        }
+      } catch (e) {
+        debugPrint(
+            "Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
+        BackendService.addLog("Raw: $cleanLine");
       }
-    } catch (e) {
-      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
-      BackendService.addLog("Raw: $cleanLine");
     }
   }
 

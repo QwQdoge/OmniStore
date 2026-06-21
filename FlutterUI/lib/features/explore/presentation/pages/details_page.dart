@@ -274,7 +274,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           onLaunchApp: _launchApp,
           onCancelAction: _cancelAction,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         const Divider(),
         const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
@@ -303,7 +303,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
                 ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
@@ -318,7 +318,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
         ],
         const Divider(),
         const SizedBox(height: 8),
@@ -381,11 +381,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
             pinned: true,
-            title: Text(
-              widget.app.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
+            title: AnimatedOpacity(
+              opacity: innerBoxIsScrolled ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Text(
+                widget.app.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             leading: widget.isEmbedded
@@ -447,10 +451,24 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             ],
           ),
         ],
-        body: SelectionArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: _buildMainContent(context, colorScheme, theme, isAIEnabled),
+        body: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 400),
+          tween: Tween(begin: 0.0, end: 1.0),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, 20 * (1 - value)),
+              child: Opacity(
+                opacity: value,
+                child: child,
+              ),
+            );
+          },
+          child: SelectionArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: _buildMainContent(context, colorScheme, theme, isAIEnabled),
+            ),
           ),
         ),
       ),
