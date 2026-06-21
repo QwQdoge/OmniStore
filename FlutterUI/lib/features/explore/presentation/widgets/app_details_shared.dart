@@ -60,13 +60,13 @@ class AppDetailsInfoRow extends StatelessWidget {
     final theme = Theme.of(context);
     return InkWell(
       onTap: () => _copyToClipboard(context),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: Semantics(
         label: "$label: $value",
         button: true,
         hint: AppLocalizations.of(context)!.tapToCopy,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

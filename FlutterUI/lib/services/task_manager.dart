@@ -296,7 +296,6 @@ class TaskManager {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
 
-    String cleanLine = line.trim();
     String? logMessage;
 
     try {
@@ -381,9 +380,6 @@ class TaskManager {
         // Unstructured fallback
         BackendService.addLog(cleanLine);
       }
-    } catch (e) {
-      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
-      BackendService.addLog("Raw: $cleanLine");
     }
   }
 
