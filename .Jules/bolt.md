@@ -29,3 +29,9 @@
 **Learning:** Allocating a new list and performing localization lookups in the `build()` method causes unnecessary allocations on every frame or state change. Caching lists that only change when dependencies (like localization) change reduces garbage collection overhead and makes `build()` faster.
 
 **Action:** Added `_categories` state to `_HomePageState` and initialized it in `didChangeDependencies()` to memoize `CategoryService.getCategories(context)`, avoiding redundant evaluations in `_buildCategoryQuickAccess()`.
+
+## 2026-06-21 - List Virtualization Optimization
+
+**Learning:** `ListView.builder` by default computes the layout for children incrementally, which can cause significant performance overhead when trying to estimate maximum scroll extent or when quickly scrolling through a long list of similarly-sized elements. By providing a `prototypeItem` (or `itemExtent`), Flutter avoids calculating extents of individual off-screen items.
+
+**Action:** Added `prototypeItem` to multiple key `ListView.builder`s including those in `apps_page.dart`, `updates_tab.dart`, and `download_page.dart`. This ensures consistent layout constraints and optimizes scrolling and layout calculations.

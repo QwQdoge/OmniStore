@@ -339,6 +339,18 @@ class _DownloadPageState extends State<DownloadPage>
     return ListView.builder(
       key: key,
       padding: const EdgeInsets.all(16),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(width: double.infinity, height: 12),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+          ),
+        ),
+      ),
       itemCount: 8,
       itemBuilder: (context, index) {
         return const Padding(
@@ -375,6 +387,18 @@ class _DownloadPageState extends State<DownloadPage>
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
+      prototypeItem: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: ListTile(
+            leading: const SizedBox(width: 40, height: 40),
+            title: const SizedBox(height: 16),
+            subtitle: const SizedBox(height: 12),
+            trailing: const SizedBox(width: 60, height: 24),
+          ),
+        ),
+      ),
       itemCount: _filteredApps.length,
       itemBuilder: (context, index) {
         final app = _filteredApps[index];
