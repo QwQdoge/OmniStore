@@ -1,14 +1,11 @@
 import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
-import 'package:frontend/core/widgets/app_card.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/core/navigation_controller.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
-import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
@@ -18,6 +15,8 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/home/widgets/app_shelf.dart';
+import 'package:frontend/features/home/widgets/banner_card.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,10 +33,8 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   List<CategoryItem> _categories = [];
 
-  List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
   bool _isAILoading = false;
-  List<CategoryItem> _categories = [];
 
   @override
   void initState() {
@@ -279,7 +276,7 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               itemCount: apps.length,
               separatorBuilder: (context, index) => const SizedBox(width: 20),
-              itemBuilder: (context, index) => _buildBannerCard(apps[index]),
+              itemBuilder: (context, index) => BannerCard(app: apps[index]),
             ),
           ),
         ),
@@ -287,141 +284,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBannerCard(AppPackage app) {
-    final theme = Theme.of(context);
-    final screenshot = (app.screenshots != null && app.screenshots!.isNotEmpty)
-        ? app.screenshots!.first
-        : null;
-    final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
-    return Semantics(
-      label: 'Featured app: ${app.name}',
-      button: true,
-      child: AppCard(
-        borderRadius: 28,
-        clipBehavior: Clip.antiAlias,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
-          ),
-        ),
-        child: Container(
-          width: 440,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHigh,
-        ),
-          child: Stack(
-            children: [
-              if (screenshot != null)
-                Positioned.fill(
-                  child: CachedNetworkImage(
-                    imageUrl: screenshot,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 880,
-                    errorWidget: (c, e, s) =>
-                        const Icon(Icons.image, size: 48),
-                  ),
-                )
-              else
-                Center(
-                  child: Icon(
-                    Icons.apps_rounded,
-                    size: 80,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  ),
-                ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      stops: const [0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 20,
-                bottom: 20,
-                right: 20,
-                child: Row(
-                  children: [
-                    Hero(
-                      tag: heroTag,
-                      child: Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: app.icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 108,
-                                memCacheHeight: 108,
-                                errorWidget: (c, e, s) => const Icon(
-                                  Icons.apps,
-                                  color: Colors.black,
-                                ),
-                              )
-                            : const Icon(Icons.apps, color: Colors.black),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            app.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            app.description,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        ),
-    );
-  }
 
   Widget _buildCategoryQuickAccess() {
     return SliverToBoxAdapter(
