@@ -4,6 +4,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class StorageCleanupCard extends StatefulWidget {
   const StorageCleanupCard({super.key});
@@ -69,10 +70,9 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             key: const ValueKey('determinate'),
                             value: taskController.progress,
                           )
-                        : const Skeleton(
+                        : const LinearProgressIndicator(
                             key: ValueKey('indeterminate'),
-                            height: 4.0, // Match typical LinearProgressIndicator height
-                            width: double.infinity,
+                            minHeight: 4.0,
                           ),
                   ),
                   const SizedBox(height: 16),
