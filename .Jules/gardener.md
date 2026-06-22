@@ -72,3 +72,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** `home_page.dart` contained a large inline `_buildCategoryShelf` function for rendering horizontal lists of apps. Extracting this UI component out into its own `StatelessWidget` improves maintainability, readability, and modularity of the `HomePage` logic.
 
 **Action:** Extracted the `_buildCategoryShelf` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `AppShelf` widget located at `FlutterUI/lib/features/home/widgets/app_shelf.dart`. Replaced its usages in `HomePage` with the new standalone widget.
+## 2026-06-22 - Extract Widgets in HomePage
+
+**Learning:** `home_page.dart` contained a large inline `_buildBannerCard` function for rendering the banner cards. Extracting this UI component out into its own `StatelessWidget` improves maintainability, readability, and modularity of the `HomePage` logic.
+
+**Action:** Extracted the `_buildBannerCard` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `BannerCard` widget located at `FlutterUI/lib/features/home/widgets/banner_card.dart`. Replaced its usages in `HomePage` with the new standalone widget.
