@@ -254,7 +254,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 应用已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：应用已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -321,7 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '应用已是最新';
+  String get allUpdated => '应用已是最新版本';
 
   @override
   String get update => '更新';
@@ -1081,6 +1081,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get enableSystemdServiceDesc => '允许在应用关闭时通过注册 systemd 定时器来静默检查更新';
+
+  @override
+  String get taskHistory => '任务历史记录';
+
+  @override
+  String get unknownApp => '未知应用';
+
+  @override
+  String get taskSuccessMsg => '任务执行成功';
+
+  @override
+  String failureReason(String message) {
+    return '失败原因：$message';
+  }
+
+  @override
+  String get noPackagesAvailable => '暂无可用软件包';
+
+  @override
+  String get noDescription => '暂无说明';
+
+  @override
+  String get viewDetails => '查看详情';
+
+  @override
+  String get ok => '确定';
+
+  @override
+  String get checkNetwork => '请检查您的网络连接并重试';
+
+  @override
+  String get githubStoreSubtitle => '直接从 GitHub Releases 发现并下载应用';
+
+  @override
+  String get searchGithubHint => '搜索 GitHub 仓库...';
+
+  @override
+  String get recommended => '推荐';
+
+  @override
+  String get rankings => '排行榜';
+
+  @override
+  String get trending => '热度榜';
+
+  @override
+  String get latestUpdates => '最新更新';
+
+  @override
+  String get searchNoResultsSubtitle => '尝试搜索其他内容';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1333,7 +1383,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -2160,4 +2210,54 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get enableSystemdServiceDesc => '允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新';
+
+  @override
+  String get taskHistory => '任務歷史記錄';
+
+  @override
+  String get unknownApp => '未知應用';
+
+  @override
+  String get taskSuccessMsg => '任務執行成功';
+
+  @override
+  String failureReason(String message) {
+    return '失敗原因：$message';
+  }
+
+  @override
+  String get noPackagesAvailable => '暫無可用套件';
+
+  @override
+  String get noDescription => '暫無說明';
+
+  @override
+  String get viewDetails => '查看詳情';
+
+  @override
+  String get ok => '確定';
+
+  @override
+  String get checkNetwork => '請檢查您的網路連線並重試';
+
+  @override
+  String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用';
+
+  @override
+  String get searchGithubHint => '搜尋 GitHub 存放庫...';
+
+  @override
+  String get recommended => '推薦';
+
+  @override
+  String get rankings => '排行榜';
+
+  @override
+  String get trending => '熱度榜';
+
+  @override
+  String get latestUpdates => '最新更新';
+
+  @override
+  String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
 }

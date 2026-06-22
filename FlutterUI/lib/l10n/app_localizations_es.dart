@@ -1177,4 +1177,56 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get enableSystemdServiceDesc =>
       'Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada';
+
+  @override
+  String get taskHistory => 'Historial de tareas';
+
+  @override
+  String get unknownApp => 'Aplicación desconocida';
+
+  @override
+  String get taskSuccessMsg => 'Tarea ejecutada con éxito';
+
+  @override
+  String failureReason(String message) {
+    return 'Razón del fallo: $message';
+  }
+
+  @override
+  String get noPackagesAvailable => 'No hay paquetes disponibles';
+
+  @override
+  String get noDescription => 'Sin descripción.';
+
+  @override
+  String get viewDetails => 'Ver detalles';
+
+  @override
+  String get ok => 'Aceptar';
+
+  @override
+  String get checkNetwork =>
+      'Compruebe su conexión a la red e inténtelo de nuevo';
+
+  @override
+  String get githubStoreSubtitle =>
+      'Descubre y descarga aplicaciones directamente desde las versiones de GitHub';
+
+  @override
+  String get searchGithubHint => 'Buscar repositorios de GitHub...';
+
+  @override
+  String get recommended => 'Recomendado';
+
+  @override
+  String get rankings => 'Clasificaciones';
+
+  @override
+  String get trending => 'Tendencias';
+
+  @override
+  String get latestUpdates => 'Últimas actualizaciones';
+
+  @override
+  String get searchNoResultsSubtitle => 'Intente buscar otra cosa';
 }

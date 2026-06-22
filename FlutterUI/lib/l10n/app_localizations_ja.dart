@@ -1087,4 +1087,54 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get enableSystemdServiceDesc =>
       'アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します';
+
+  @override
+  String get taskHistory => 'タスク履歴';
+
+  @override
+  String get unknownApp => '不明なアプリ';
+
+  @override
+  String get taskSuccessMsg => 'タスクが正常に実行されました';
+
+  @override
+  String failureReason(String message) {
+    return '失敗理由：$message';
+  }
+
+  @override
+  String get noPackagesAvailable => '利用可能なパッケージがありません';
+
+  @override
+  String get noDescription => '説明はありません';
+
+  @override
+  String get viewDetails => '詳細を表示';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get checkNetwork => 'ネットワーク接続を確認して、もう一度お試しください';
+
+  @override
+  String get githubStoreSubtitle => 'GitHub リリースから直接アプリを見つけてダウンロード';
+
+  @override
+  String get searchGithubHint => 'GitHub リポジトリを検索...';
+
+  @override
+  String get recommended => 'おすすめ';
+
+  @override
+  String get rankings => 'ランキング';
+
+  @override
+  String get trending => 'トレンド';
+
+  @override
+  String get latestUpdates => '最新の更新';
+
+  @override
+  String get searchNoResultsSubtitle => '別のキーワードで検索してみてください';
 }

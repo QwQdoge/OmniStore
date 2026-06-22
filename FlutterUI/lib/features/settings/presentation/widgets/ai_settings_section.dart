@@ -155,7 +155,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c),
-              child: const Text("OK"),
+              child: Text(l10n.ok),
             ),
           ],
         ),

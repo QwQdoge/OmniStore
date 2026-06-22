@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/models/app_package.dart';
@@ -15,7 +16,7 @@ class GitHubAppList extends StatelessWidget {
   final bool isLoading;
   final String keyPrefix;
   final VoidCallback onRetry;
-  final String emptyText;
+  final String? emptyText;
   final IconData emptyIcon;
   final String emptySubtitle;
   final bool showRetry;
@@ -26,7 +27,7 @@ class GitHubAppList extends StatelessWidget {
     required this.isLoading,
     required this.keyPrefix,
     required this.onRetry,
-    this.emptyText = "No packages available",
+    this.emptyText,
     this.emptyIcon = Icons.cloud_off_rounded,
     this.emptySubtitle = "",
     this.showRetry = true,
@@ -34,6 +35,7 @@ class GitHubAppList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget content;
     if (isLoading) {
       content = const GitHubAppListSkeleton(key: ValueKey('loading'));
@@ -52,7 +54,7 @@ class GitHubAppList extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              emptyText,
+              emptyText ?? l10n.noPackagesAvailable,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -71,7 +73,7 @@ class GitHubAppList extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text("Retry"),
+                label: Text(l10n.retry),
               ),
           ],
         ),
@@ -163,7 +165,7 @@ class GitHubAppList extends StatelessWidget {
                         Text(
                           app.description.isNotEmpty
                               ? app.description
-                              : "No description provided.",
+                              : l10n.noDescription,
                           style: TextStyle(
                             fontSize: 14,
                             color: scheme.onSurfaceVariant,
@@ -182,7 +184,7 @@ class GitHubAppList extends StatelessWidget {
                             const Spacer(),
                             // Detail link indication
                             Text(
-                              "View Details",
+                              l10n.viewDetails,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
