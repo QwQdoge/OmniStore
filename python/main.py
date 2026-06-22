@@ -429,7 +429,7 @@ class OmnistoreBackend:
             if not self.manager:
                 raise RuntimeError("SearchManager is not initialized.")
 
-            results = await self.manager.search_all(query)
+            results = await asyncio.wait_for(self.manager.search_all(query), timeout=45)
             if results is None: results = []
 
             if json_mode:
@@ -540,9 +540,12 @@ class OmnistoreBackend:
             if not self.recommender or not self.manager:
                 raise RuntimeError("Managers are not initialized.")
 
-            details = await self.recommender.get_details(app_id) if "." in app_id else await self.recommender.find_metadata(app_id)
+            details = await asyncio.wait_for(
+                self.recommender.get_details(app_id) if "." in app_id else self.recommender.find_metadata(app_id),
+                timeout=30
+            )
             search_name = details.get("name") or app_id.split(".")[-1]
-            variants_results = await self.manager.search_all(search_name)
+            variants_results = await asyncio.wait_for(self.manager.search_all(search_name), timeout=30)
 
             norm_target = self.manager._normalize_app_name(search_name)
             matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
@@ -577,7 +580,7 @@ class OmnistoreBackend:
 
             variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
             if variant_tasks:
-                await asyncio.gather(*variant_tasks)
+                await asyncio.wait_for(asyncio.gather(*variant_tasks), timeout=20)
 
             sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
@@ -1046,7 +1049,7 @@ class OmnistoreBackend:
 
 
 class DaemonRequest(BaseModel):
-    action: str
+    action: str = Field(..., min_length=1, max_length=100)
     args: list = Field(default_factory=list)
     kwargs: dict = Field(default_factory=dict)
 
@@ -1067,10 +1070,10 @@ class DaemonRequest(BaseModel):
         return v
 
 class CLIArguments(BaseModel):
-    search: Optional[str] = None
-    install: Optional[str] = None
-    remove: Optional[str] = None
-    update: Optional[str] = None
+    search: Optional[str] = Field(None, max_length=500)
+    install: Optional[str] = Field(None, max_length=500)
+    remove: Optional[str] = Field(None, max_length=500)
+    update: Optional[str] = Field(None, max_length=500)
     check_updates: bool = False
     list_installed: bool = False
     recommend: bool = False

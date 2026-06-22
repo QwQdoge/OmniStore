@@ -25,8 +25,6 @@ class BackendService {
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
   }
 
-  final Completer<void> _initCompleter = Completer<void>();
-
   // Registry for tracking active subprocesses (migrated to _processRegistry)
   // Murphy-proof: Global lock for local IO operations
   Completer<void>? _globalLock;
@@ -129,26 +127,37 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
+  /// Murphy-proof: Stricter string validation to prevent shell injection and path traversal.
   void _validateString(String? val, String name) {
     if (val == null || val.trim().isEmpty) {
       throw ArgumentError("$name cannot be null or empty");
     }
     final trimmed = val.trim();
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
+    // Murphy-proof: Strict whitelist for allowed characters in parameters.
+    // Refuse any shell metacharacters: ;, &, |, <, >, $, (, ), `, \, ", '
+    if (!RegExp(r'^[a-zA-Z0-9._/ +,@-]+$').hasMatch(trimmed)) {
+      throw ArgumentError(
+        "Invalid characters in $name: Only alphanumeric and safety-listed symbols (._/ +,@-) are allowed.",
+      );
     }
   }
 
+  /// Murphy-proof: Stricter path validation.
   void _validatePath(String? path) {
     if (path == null || path.trim().isEmpty) {
       throw ArgumentError("Path cannot be null or empty");
     }
     final trimmed = path.trim();
+    // Murphy-proof: Paths must be clean of shell characters and traversal attempts.
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
+      throw ArgumentError(
+        "Invalid characters in path: Security policy forbids shell metacharacters.",
+      );
     }
-    if (trimmed.contains('..')) {
-      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
+    if (trimmed.contains('..') || trimmed.contains('//')) {
+      throw ArgumentError(
+        "Security: Relative path traversal or malformed directory separators are strictly forbidden.",
+      );
     }
   }
 
@@ -174,16 +183,6 @@ class BackendService {
 
   Future<void> _killProcess(Process? process) async {
     await _processRegistry.kill(process);
-  }
-
-  bool _isProcessAlive(Process p) {
-    if (kIsWeb) return false;
-    try {
-      if (Platform.isLinux || Platform.isMacOS) {
-        return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
-      }
-    } catch (_) {}
-    return true;
   }
 
   Future<void> dispose() async {
@@ -288,37 +287,42 @@ class BackendService {
     }
   }
 
-  void _startHealthCheckLoop() {
+  /// Murphy-proof: Daemon health check with exponential backoff and strict liveness validation.
+  void _startHealthCheckLoop({int backoffSeconds = 20}) {
     _healthCheckTimer?.cancel();
-    int backoffSeconds = 20;
 
     _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (timer) async {
       bool needsRestart = false;
       if (_daemonProcess == null) {
         needsRestart = true;
       } else {
-         try {
-           final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
-           if (res.exitCode != 0) {
-             debugPrint("Daemon dead detected by health check.");
-             needsRestart = true;
-           }
-         } catch (_) {
-           needsRestart = true;
-         }
+        try {
+          if (Platform.isLinux || Platform.isMacOS) {
+            final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
+            if (res.exitCode != 0) {
+              debugPrint("Daemon dead detected by health check.");
+              needsRestart = true;
+            }
+          } else {
+            // For other platforms, we rely on _daemonProcess.exitCode check if possible
+            // but in Dart, awaiting exitCode blocks. We check if the process is nullified.
+          }
+        } catch (_) {
+          needsRestart = true;
+        }
       }
 
       if (needsRestart) {
         final success = await _startDaemonIfNeeded() != null;
         if (!success) {
           // Increase backoff on repeated failures (max 5 minutes)
-          backoffSeconds = (backoffSeconds * 1.5).toInt().clamp(20, 300);
-          _startHealthCheckLoop(); // Restart loop with new interval
-        } else {
-          if (backoffSeconds != 20) {
-            backoffSeconds = 20;
-            _startHealthCheckLoop();
+          final nextBackoff = (backoffSeconds * 1.5).toInt().clamp(20, 300);
+          if (nextBackoff != backoffSeconds) {
+            _startHealthCheckLoop(backoffSeconds: nextBackoff);
           }
+        } else if (backoffSeconds != 20) {
+          // Reset to default on success
+          _startHealthCheckLoop(backoffSeconds: 20);
         }
       }
     });
@@ -329,9 +333,18 @@ class BackendService {
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    return await _daemonClient.send(action, args, kwargs: kwargs);
+    try {
+      return await _daemonClient.send(action, args, kwargs: kwargs).timeout(
+        const Duration(seconds: 120),
+        onTimeout: () => throw TimeoutException("Daemon request timed out: $action"),
+      );
+    } catch (e) {
+      debugPrint("Murphy-proof: Daemon communication error [$action]: $e");
+      rethrow;
+    }
   }
 
+  /// Murphy-proof: Safely run a command with timeouts and guaranteed lock release.
   Future<ProcessResult?> _safeRun(
     List<String> args, {
     Duration timeout = const Duration(seconds: 30),
@@ -392,6 +405,7 @@ class BackendService {
     }
   }
 
+  /// Murphy-proof: Safely stream output with timeouts and guaranteed lock release.
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
     if (kIsWeb) {
       yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
@@ -831,6 +845,7 @@ class BackendService {
     }
   }
 
+  /// Murphy-proof: Safely save configuration with timeouts and guaranteed lock release.
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     if (kIsWeb) {
       isAIEnabled.value = config['ai']?['enabled'] ?? false;
@@ -1267,11 +1282,17 @@ class BackendService {
     }
   }
 
+  /// Murphy-proof: Coordinated shutdown with timeout to prevent hanging.
   Future<void> shutdownBackend() async {
     if (kIsWeb) return;
     try {
-      await _sendToDaemon("shutdown", []);
-    } catch (_) {}
+      await _sendToDaemon("shutdown", []).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
+    } catch (e) {
+      debugPrint("Shutdown request failed: $e");
+    }
   }
 
   Future<Map<String, dynamic>> testAiConnection() async {

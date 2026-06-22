@@ -302,46 +302,46 @@ class UpdateService {
   /// cadence.  When the `updates` section is entirely absent from config the
   /// timer is left running with the previous interval to avoid accidental
   /// disabling.
+  /// Murphy-proof: Starts or restarts the update timer with strict validation.
   void _startUpdateTimer() {
-    final interval = _config['updates']?['check_interval_hours'] ?? 1;
-    final enabled = _config['updates']?['remind_updates'] ?? true;
-    final systemdEnabled =
-        _config['updates']?['enable_systemd_service'] ?? false;
+    try {
+      final interval = _config['updates']?['check_interval_hours'] ?? 1;
+      final enabled = _config['updates']?['remind_updates'] ?? true;
+      final systemdEnabled =
+          _config['updates']?['enable_systemd_service'] ?? false;
 
-    if (!enabled) {
-      // User disabled background update checks — cancel any running timer
-      // and remove the systemd timer so the app also stops checking in the
-      // background when closed.
-      if (_updateTimer != null) {
-        _updateTimer!.cancel();
-        _updateTimer = null;
-        _currentInterval = null;
-        debugPrint('Update timer disabled by config.');
+      if (!enabled) {
+        // User disabled background update checks — cancel any running timer
+        if (_updateTimer != null) {
+          _updateTimer!.cancel();
+          _updateTimer = null;
+          _currentInterval = null;
+          debugPrint('Update timer disabled by config.');
+          _disableSystemdBackgroundTimer();
+        }
+        return;
+      }
+
+      if (systemdEnabled) {
+        _setupSystemdBackgroundTimer(interval);
+      } else {
         _disableSystemdBackgroundTimer();
       }
-      return;
-    }
 
-    if (systemdEnabled) {
-      _setupSystemdBackgroundTimer(interval);
-    } else {
-      _disableSystemdBackgroundTimer();
-    }
+      if (_updateTimer != null && _currentInterval == interval) {
+        return; // Interval unchanged — nothing to do.
+      }
 
-    if (_updateTimer != null && _currentInterval == interval) {
-      return; // Interval unchanged — nothing to do.
-    }
+      _currentInterval = interval;
 
-    _currentInterval = interval;
+      // Murphy-proof: Explicitly cancel and nullify existing timer before reallocation
+      _cancelUpdateTimer();
 
-    // Murphy-proof: Explicitly cancel and nullify existing timer before reallocation
-    // to prevent memory leaks and duplicate background check loops.
-    _cancelUpdateTimer();
+      final duration = Duration(hours: interval.clamp(1, 168)); // Max 1 week
+      _updateTimer = Timer.periodic(duration, (_) => checkNow());
 
-    try {
-      _updateTimer = Timer.periodic(Duration(hours: interval), (_) => checkNow());
-      // Initial trigger
-      checkNow();
+      // Initial trigger with a small delay to avoid congestion during startup
+      Future.delayed(const Duration(seconds: 5), () => checkNow());
     } catch (e) {
       debugPrint("Murphy-proof Warning: Failed to start update timer: $e");
     }
@@ -610,6 +610,7 @@ WantedBy=timers.target
     );
   }
 
+  /// Murphy-proof: Systematic cleanup and full application exit.
   Future<void> _handleFullExit() async {
     if (kIsWeb) return;
     try {
