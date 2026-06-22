@@ -295,15 +295,14 @@ class TaskManager {
   void _handleOutput(String line) {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
-
-    String cleanLine = line.trim();
     String? logMessage;
 
     try {
       if (cleanLine.startsWith("[CALLBACK]")) {
         try {
           final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          logMessage = data['message'] ?? data['log'] ?? "";
+          _processStructuredCallback(data);
+          return;
         } catch (_) {}
       } else if (cleanLine.startsWith("{")) {
         try {
@@ -318,7 +317,8 @@ class TaskManager {
       logMessage = cleanLine;
     }
 
-    if (logMessage != null && logMessage.isNotEmpty) {
+    try {
+      if (logMessage != null && logMessage.isNotEmpty) {
       if (logMessage.startsWith("[PROGRESS]")) {
         final parts = logMessage.split(" ");
         if (parts.length > 1) {
@@ -381,6 +381,7 @@ class TaskManager {
         // Unstructured fallback
         BackendService.addLog(cleanLine);
       }
+    }
     } catch (e) {
       debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
       BackendService.addLog("Raw: $cleanLine");
