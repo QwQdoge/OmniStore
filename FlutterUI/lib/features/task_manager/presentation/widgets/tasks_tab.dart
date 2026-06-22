@@ -108,9 +108,10 @@ class TasksTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Consumer<TaskController>(
-              builder: (context, taskController, child) {
-                final history = taskController.completedTasks;
+            Selector<TaskController, ({int length, List<TaskState> tasks})>(
+              selector: (context, c) => (length: c.completedTasks.length, tasks: c.completedTasks),
+              builder: (context, data, child) {
+                final history = data.tasks;
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

@@ -50,9 +50,10 @@ class TerminalDialog extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Consumer<TaskController>(
-                builder: (context, controller, _) {
-                  final logs = controller.logs;
+              child: Selector<TaskController, ({int length, List<String> logs})>(
+                selector: (context, c) => (length: c.logs.length, logs: c.logs),
+                builder: (context, data, _) {
+                  final logs = data.logs;
                   return logs.isEmpty
                       ? Center(
                           child: Text(
