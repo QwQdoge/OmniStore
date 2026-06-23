@@ -12,7 +12,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
-import 'package:frontend/features/explore/presentation/widgets/terminal_dialog.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
 import 'package:frontend/core/widgets/app_card.dart';

@@ -30,3 +30,6 @@
 ## 2026-06-17 - Terminology Consistency: Tray Initialization Error Feedback
 - Replaced the hardcoded bilingual string `'托盘初始化失败，已自动关闭后台驻留。 / Tray initialization failed. Close to tray disabled.'` used in `SnackBar` within `FlutterUI/lib/app/main_navigation.dart` with a newly updated localized key `trayInitFailedDisabled`.
 - Updated the key and translation text for `trayInitFailedDisabled` across all ARB files (`app_en.arb`, `app_zh.arb`, `app_zh_Hant.arb`, `app_ja.arb`, `app_es.arb`) to accurately describe the behavior (disabling "close to tray") instead of incorrectly claiming the app is exiting.
+## 2026-06-23 - Terminal Dialog Consistency
+- Unified the duplicated `TerminalDialog` from `explore/presentation/widgets/terminal_dialog.dart` into `task_manager/presentation/widgets/terminal_dialog.dart`.
+- Consolidated AI Markdown capabilities, standardized to Material Design 3 `BorderRadius.circular(28.0)`, and used `theme.colorScheme.error` instead of hardcoded `Colors.redAccent`.
