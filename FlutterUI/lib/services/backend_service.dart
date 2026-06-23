@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart' as p;
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
@@ -10,6 +9,8 @@ import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
+import 'backend/platform_environment.dart';
+import 'backend/execution_queue.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -19,98 +20,14 @@ class BackendService {
 
   late final ProcessRegistry _processRegistry;
   late final DaemonClient _daemonClient;
+  late final PlatformEnvironment _env;
+  late final ExecutionQueue _executionQueue;
 
   BackendService._internal() {
     _processRegistry = ProcessRegistry();
+    _env = PlatformEnvironment.instance;
+    _executionQueue = ExecutionQueue();
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
-  }
-
-  final Completer<void> _initCompleter = Completer<void>();
-
-  // Registry for tracking active subprocesses (migrated to _processRegistry)
-  // Murphy-proof: Global lock for local IO operations
-  Completer<void>? _globalLock;
-
-  static String get _projectRoot {
-    if (kIsWeb) return '';
-    final searchRoots = <String>{Directory.current.path};
-
-    try {
-      final script = Platform.script.toFilePath();
-      if (script.isNotEmpty) searchRoots.add(p.dirname(script));
-    } catch (_) {}
-
-    try {
-      final exec = Platform.resolvedExecutable;
-      if (exec.isNotEmpty) searchRoots.add(p.dirname(exec));
-    } catch (_) {}
-
-    for (final root in searchRoots) {
-      var dir = Directory(root);
-      while (true) {
-        final candidate = p.join(dir.path, 'python', 'main.py');
-        if (File(candidate).existsSync()) return dir.path;
-        if (dir.parent.path == dir.path) break;
-        dir = dir.parent;
-      }
-    }
-
-    if (Directory.current.path.endsWith('FlutterUI')) {
-      final fallback = Directory.current.parent;
-      final candidate = p.join(fallback.path, 'python', 'main.py');
-      if (File(candidate).existsSync()) return fallback.path;
-    }
-
-    return Directory.current.path;
-  }
-
-  static bool get _isPackaged {
-    if (kIsWeb) return false;
-    final exeDir = p.dirname(Platform.resolvedExecutable);
-    final pythonServer = p.join(
-      exeDir,
-      'backends',
-      Platform.isWindows ? 'python_server.exe' : 'python_server',
-    );
-    return File(pythonServer).existsSync();
-  }
-
-  static String get venvPython {
-    if (kIsWeb) return '';
-    if (_isPackaged) {
-      return p.join(
-        p.dirname(Platform.resolvedExecutable),
-        'backends',
-        Platform.isWindows ? 'python_server.exe' : 'python_server',
-      );
-    }
-    final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
-    return File(candidate).existsSync() ? candidate : 'python';
-  }
-
-  static String get scriptPath {
-    if (kIsWeb) return '';
-    if (_isPackaged) return "";
-    return p.join(_projectRoot, 'python', 'main.py');
-  }
-
-  static String get workingDir {
-    if (kIsWeb) return '';
-    if (_isPackaged) return p.dirname(Platform.resolvedExecutable);
-    return p.join(_projectRoot, 'python');
-  }
-
-  String get _venvPython => venvPython;
-  String get _scriptPath => scriptPath;
-  String get _workingDir => workingDir;
-
-  List<String> _buildArgs(List<String> baseArgs) {
-    if (kIsWeb) return [];
-    if (_isPackaged) {
-      return baseArgs;
-    } else {
-      return [_scriptPath, ...baseArgs];
-    }
   }
 
   // Reactive State Notifiers
@@ -126,64 +43,16 @@ class BackendService {
   static final ValueNotifier<List<Map<String, dynamic>>> availableSources =
       ValueNotifier([]);
 
+  // Murphy-proof: Circuit Breaker states for failing components
+  bool _daemonCircuitBroken = false;
+  int _daemonFailureCount = 0;
+  DateTime? _lastDaemonFailureTime;
+
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
-  void _validateString(String? val, String name) {
-    if (val == null || val.trim().isEmpty) {
-      throw ArgumentError("$name cannot be null or empty");
-    }
-    final trimmed = val.trim();
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
-    }
-  }
-
-  void _validatePath(String? path) {
-    if (path == null || path.trim().isEmpty) {
-      throw ArgumentError("Path cannot be null or empty");
-    }
-    final trimmed = path.trim();
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
-    }
-    if (trimmed.contains('..')) {
-      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
-    }
-  }
-
-  Future<bool> _acquireLock({
-    Duration timeout = const Duration(seconds: 10),
-  }) async {
-    while (_globalLock != null) {
-      await _globalLock!.future.timeout(
-        timeout,
-        onTimeout: () =>
-            throw TimeoutException("Could not acquire operation lock"),
-      );
-    }
-    _globalLock = Completer<void>();
-    return true;
-  }
-
-  void _releaseLock() {
-    final lock = _globalLock;
-    _globalLock = null;
-    if (lock != null && !lock.isCompleted) lock.complete();
-  }
-
   Future<void> _killProcess(Process? process) async {
     await _processRegistry.kill(process);
-  }
-
-  bool _isProcessAlive(Process p) {
-    if (kIsWeb) return false;
-    try {
-      if (Platform.isLinux || Platform.isMacOS) {
-        return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
-      }
-    } catch (_) {}
-    return true;
   }
 
   Future<void> dispose() async {
@@ -198,11 +67,7 @@ class BackendService {
     activeProcess = null;
     activeSearchProcess = null;
     _daemonProcess = null;
-
-    if (_globalLock != null && !_globalLock!.isCompleted) {
-      _globalLock!.complete();
-    }
-    _globalLock = null;
+    _executionQueue.reset();
   }
 
   Process? _daemonProcess;
@@ -212,27 +77,33 @@ class BackendService {
 
   Future<Process?> _startDaemonIfNeeded() async {
     if (kIsWeb) return null;
+    if (_daemonCircuitBroken) {
+      if (DateTime.now().difference(_lastDaemonFailureTime!) > const Duration(minutes: 2)) {
+        debugPrint("Circuit Breaker: Attempting to reset daemon after cooldown.");
+        _daemonCircuitBroken = false;
+        _daemonFailureCount = 0;
+      } else {
+        return null;
+      }
+    }
 
     if (_daemonProcess != null) {
-      // Murphy-proof: Strict liveness check using kill -0
       try {
         if (Platform.isLinux || Platform.isMacOS) {
           final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
           if (res.exitCode == 0) return _daemonProcess;
-        } else {
-          // Fallback for non-Unix: check if exitCode is already available
-          // (which would mean it finished)
         }
       } catch (_) {}
     }
 
-    // Guard: Prevent rapid restart-loop "storm"
     final now = DateTime.now();
     if (_lastDaemonStartTime != null &&
         now.difference(_lastDaemonStartTime!) < const Duration(seconds: 5)) {
       _daemonRestartCount++;
       if (_daemonRestartCount > 3) {
-        debugPrint("Murphy-proof Warning: Daemon restart loop detected. Throttling.");
+        debugPrint("Murphy-proof Warning: Daemon restart loop detected. Tripping Circuit Breaker.");
+        _daemonCircuitBroken = true;
+        _lastDaemonFailureTime = now;
         return null;
       }
     } else {
@@ -241,30 +112,28 @@ class BackendService {
     _lastDaemonStartTime = now;
 
     final home = Platform.environment['HOME'] ?? '/home/user';
-    final logDir = Directory(p.join(home, '.config', 'omnistore'));
+    final logDir = Directory('${_env.projectRoot}/.logs');
     if (!logDir.existsSync()) {
       logDir.createSync(recursive: true);
     }
-    final logFile = File(p.join(logDir.path, 'daemon_stderr.log'));
+    final logFile = File('${logDir.path}/daemon_stderr.log');
 
     try {
-      if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-        debugPrint("Backend Error: Python executable not found at $_venvPython");
+      if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
+        debugPrint("Backend Error: Python executable not found at ${_env.venvPython}");
         return null;
       }
 
       _daemonProcess = await Process.start(
-        _venvPython,
-        _buildArgs(['--daemon', '--json']),
-        workingDirectory: _workingDir,
+        _env.venvPython,
+        _env.buildArgs(['--daemon', '--json']),
+        workingDirectory: _env.workingDir,
       ).timeout(const Duration(seconds: 10), onTimeout: () {
         throw TimeoutException("Failed to start Python daemon within 10s");
       });
 
-      // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);
 
-      // Divert python stderr outputs to a structured local debug log file
       final logSink = logFile.openWrite(mode: FileMode.append);
       _daemonProcess!.stderr
           .transform(utf8.decoder)
@@ -284,6 +153,11 @@ class BackendService {
       return _daemonProcess;
     } catch (e) {
       debugPrint("Failed to start Python daemon: $e");
+      _daemonFailureCount++;
+      if (_daemonFailureCount > 5) {
+        _daemonCircuitBroken = true;
+        _lastDaemonFailureTime = DateTime.now();
+      }
       return null;
     }
   }
@@ -293,6 +167,8 @@ class BackendService {
     int backoffSeconds = 20;
 
     _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (timer) async {
+      if (_daemonCircuitBroken) return;
+
       bool needsRestart = false;
       if (_daemonProcess == null) {
         needsRestart = true;
@@ -311,9 +187,8 @@ class BackendService {
       if (needsRestart) {
         final success = await _startDaemonIfNeeded() != null;
         if (!success) {
-          // Increase backoff on repeated failures (max 5 minutes)
           backoffSeconds = (backoffSeconds * 1.5).toInt().clamp(20, 300);
-          _startHealthCheckLoop(); // Restart loop with new interval
+          _startHealthCheckLoop();
         } else {
           if (backoffSeconds != 20) {
             backoffSeconds = 20;
@@ -329,149 +204,160 @@ class BackendService {
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
+    if (_daemonCircuitBroken) return null;
     return await _daemonClient.send(action, args, kwargs: kwargs);
   }
 
   Future<ProcessResult?> _safeRun(
     List<String> args, {
     Duration timeout = const Duration(seconds: 30),
-    bool useLock = false,
+    bool useQueue = false,
   }) async {
     if (kIsWeb) return null;
 
-    if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-      debugPrint("Backend Error: Python executable not found at $_venvPython");
-      return null;
-    }
-
-    if (useLock) await _acquireLock();
-
-    Process? process;
-    try {
-      final apiKey = await PythonBridge.getApiKey();
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
+    final task = () async {
+      if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
+        debugPrint("Backend Error: Python executable not found at ${_env.venvPython}");
+        return null;
       }
 
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(args),
-        workingDirectory: _workingDir,
-        environment: env.isEmpty ? null : env,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Process start timed out for $args");
-      });
+      Process? process;
+      try {
+        final apiKey = await PythonBridge.getApiKey();
+        final env = <String, String>{};
+        if (apiKey != null && apiKey.isNotEmpty) {
+          env['OMNISTORE_AI_API_KEY'] = apiKey;
+        }
 
-      _processRegistry.add(process);
+        process = await Process.start(
+          _env.venvPython,
+          _env.buildArgs(args),
+          workingDirectory: _env.workingDir,
+          environment: env.isEmpty ? null : env,
+        ).timeout(const Duration(seconds: 10), onTimeout: () {
+          throw TimeoutException("Process start timed out for $args");
+        });
 
-      final exitCode = await process.exitCode.timeout(
-        timeout,
-        onTimeout: () {
-          throw TimeoutException("Process execution timed out after ${timeout.inSeconds}s");
-        },
-      );
+        _processRegistry.add(process);
 
-      final stdout = await process.stdout
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
-      final stderr = await process.stderr
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
+        final exitCode = await process.exitCode.timeout(
+          timeout,
+          onTimeout: () {
+            throw TimeoutException("Process execution timed out after ${timeout.inSeconds}s");
+          },
+        );
 
-      return ProcessResult(process.pid, exitCode, stdout, stderr);
-    } catch (e) {
-      debugPrint("BackendService._safeRun Exception [args: $args]: $e");
-      if (process != null) await _killProcess(process);
-      return null;
-    } finally {
-      if (process != null) _processRegistry.remove(process);
-      if (useLock) _releaseLock();
+        final stdout = await process.stdout
+            .transform(utf8.decoder)
+            .join()
+            .timeout(const Duration(seconds: 5), onTimeout: () => "");
+        final stderr = await process.stderr
+            .transform(utf8.decoder)
+            .join()
+            .timeout(const Duration(seconds: 5), onTimeout: () => "");
+
+        return ProcessResult(process.pid, exitCode, stdout, stderr);
+      } catch (e) {
+        debugPrint("BackendService._safeRun Exception [args: $args]: $e");
+        if (process != null) await _killProcess(process);
+        return null;
+      } finally {
+        if (process != null) _processRegistry.remove(process);
+      }
+    };
+
+    if (useQueue) {
+      return await _executionQueue.run(task, label: "_safeRun ${args.first}");
+    } else {
+      return await task();
     }
   }
 
-  Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
+  Stream<String> _safeStream(List<String> args, {bool useQueue = true}) async* {
     if (kIsWeb) {
       yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
       return;
     }
-    if (useLock) await _acquireLock();
 
-    Process? process;
     final controller = StreamController<String>();
 
-    try {
-      final apiKey = await PythonBridge.getApiKey();
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
+    final task = () async {
+      Process? process;
+      try {
+        final apiKey = await PythonBridge.getApiKey();
+        final env = <String, String>{};
+        if (apiKey != null && apiKey.isNotEmpty) {
+          env['OMNISTORE_AI_API_KEY'] = apiKey;
+        }
+
+        process = await Process.start(
+          _env.venvPython,
+          _env.buildArgs(args),
+          workingDirectory: _env.workingDir,
+          environment: env.isEmpty ? null : env,
+          runInShell: true,
+        ).timeout(const Duration(seconds: 10), onTimeout: () {
+          throw TimeoutException("Streaming process start timed out for $args");
+        });
+
+        _processRegistry.add(process);
+        activeProcess = process;
+
+        final stdoutSub = process.stdout
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (data) {
+                if (!controller.isClosed) controller.add(data);
+              },
+              onError: (e) {
+                debugPrint("Process Stdout Error: $e");
+                if (!controller.isClosed) {
+                  controller.add(
+                    "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
+                  );
+                }
+              },
+              onDone: () {
+                if (process != null) _processRegistry.remove(process);
+                if (!controller.isClosed) controller.close();
+                if (activeProcess == process) activeProcess = null;
+              },
+              cancelOnError: false,
+            );
+
+        final stderrSub = process.stderr
+            .transform(utf8.decoder)
+            .listen(
+              (data) => debugPrint("Backend Stderr: $data"),
+              onError: (e) => debugPrint("Stderr Error: $e"),
+            );
+
+        controller.onCancel = () async {
+          debugPrint("Stream cancelled, performing deep cleanup for process ${process?.pid}");
+          stdoutSub.cancel();
+          stderrSub.cancel();
+          await _killProcess(process);
+          if (activeProcess == process) activeProcess = null;
+          if (!controller.isClosed) await controller.close();
+        };
+      } catch (e) {
+        debugPrint("BackendService._safeStream Exception: $e");
+        if (!controller.isClosed) {
+          controller.add("[CALLBACK] {\"key\": \"errorProcessStart\", \"error\": \"$e\"}");
+          await controller.close();
+        }
+        if (process != null) await _killProcess(process);
       }
+    };
 
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(args),
-        workingDirectory: _workingDir,
-        environment: env.isEmpty ? null : env,
-        runInShell: true,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Streaming process start timed out for $args");
-      });
-
-      _processRegistry.add(process);
-      activeProcess = process;
-
-      final stdoutSub = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen(
-            (data) {
-              if (!controller.isClosed) controller.add(data);
-            },
-            onError: (e) {
-              debugPrint("Process Stdout Error: $e");
-              if (!controller.isClosed) {
-                controller.add(
-                  "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
-                );
-              }
-            },
-            onDone: () {
-              if (process != null) _processRegistry.remove(process);
-              if (!controller.isClosed) controller.close();
-              if (activeProcess == process) activeProcess = null;
-            },
-            cancelOnError: false,
-          );
-
-      final stderrSub = process.stderr
-          .transform(utf8.decoder)
-          .listen(
-            (data) => debugPrint("Backend Stderr: $data"),
-            onError: (e) => debugPrint("Stderr Error: $e"),
-          );
-
-      controller.onCancel = () async {
-        debugPrint(
-          "Stream cancelled, performing deep cleanup for process ${process?.pid}",
-        );
-        stdoutSub.cancel();
-        stderrSub.cancel();
-        await _killProcess(process);
-        if (activeProcess == process) activeProcess = null;
-        if (!controller.isClosed) await controller.close();
-      };
-
-      yield* controller.stream;
-    } catch (e) {
-      debugPrint("BackendService._safeStream Exception: $e");
-      yield "[CALLBACK] {\"key\": \"errorProcessStart\", \"error\": \"$e\"}";
-      if (!controller.isClosed) await controller.close();
-      if (process != null) await _killProcess(process);
-    } finally {
-      if (useLock) _releaseLock();
+    if (useQueue) {
+      _executionQueue.run(task, label: "_safeStream ${args.first}");
+    } else {
+      task();
     }
+
+    yield* controller.stream;
   }
 
   static void addLog(String log) {
@@ -520,11 +406,10 @@ class BackendService {
     }
 
     final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty) return [];
-    if (trimmedQuery.length > 500) return [];
+    if (trimmedQuery.isEmpty || trimmedQuery.length > 500) return [];
 
     try {
-      _validateString(trimmedQuery, "Search Query");
+      _env.validateString(trimmedQuery, "Search Query");
     } catch (e) {
       debugPrint("Security: $e");
       return [];
@@ -536,11 +421,7 @@ class BackendService {
         final results = <AppPackage>[];
         final parsed = _safeJsonDecode(daemonRes.stdout);
         if (parsed is List) {
-          results.addAll(
-            parsed.map(
-              (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-            ),
-          );
+          results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
         } else if (parsed is Map<String, dynamic>) {
           results.add(AppPackage.fromJson(parsed));
         }
@@ -550,64 +431,33 @@ class BackendService {
       debugPrint("Daemon searchPackages error: $e. Falling back.");
     }
 
-    // Legacy fallback
     try {
       if (cancelOngoing && activeSearchProcess != null) {
         await _killProcess(activeSearchProcess);
         activeSearchProcess = null;
       }
 
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["-S", trimmedQuery, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Search process start timed out");
-      });
-
-      _processRegistry.add(process);
-      activeSearchProcess = process;
+      final res = await _safeRun(["-S", trimmedQuery, "--json"], timeout: const Duration(seconds: 20));
+      if (res == null) return [];
 
       final results = <AppPackage>[];
-      final output = await process.stdout
-          .transform(utf8.decoder)
-          .join()
-          .timeout(
-            const Duration(seconds: 20),
-            onTimeout: () => throw TimeoutException("Search timed out"),
-          );
-
-      final parsed = _safeJsonDecode(output);
+      final parsed = _safeJsonDecode(res.stdout.toString());
       if (parsed is List) {
-        results.addAll(
-          parsed.map(
-            (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-          ),
-        );
+        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
       } else if (parsed != null) {
         results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
       }
-
       return results;
     } catch (e) {
       debugPrint("searchPackages [query: $query] Error: $e");
       return [];
-    } finally {
-      if (activeSearchProcess != null) {
-        _processRegistry.remove(activeSearchProcess!);
-        await _killProcess(activeSearchProcess);
-      }
-      activeSearchProcess = null;
     }
   }
 
-  /// Murphy-proof: Strict JSON decoder with size limits, noise filtering,
-  /// and fallback recovery for messy subprocess output.
   dynamic _safeJsonDecode(String input) {
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
 
-    // Boundary Defense: Reject payloads > 5MB to prevent OOM
     if (rawInput.length > 5 * 1024 * 1024) {
       debugPrint("Security Warning: Rejected JSON payload exceeding 5MB limit");
       return null;
@@ -616,32 +466,12 @@ class BackendService {
     try {
       return jsonDecode(rawInput);
     } catch (_) {
-      // Noise Reduction: Strip ANSI escape codes and terminal artifacts
       final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
-
       try {
-        // Pattern-based extraction: look for the first balanced JSON structure
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
         final match = jsonPattern.firstMatch(cleaned);
-
         if (match != null) {
-          final candidate = match.group(0)!;
-          try {
-            return jsonDecode(candidate);
-          } catch (_) {
-            // Last Resort: Line-by-line tail recovery for concatenated logs/JSON
-            final lines = cleaned.split('\n');
-            if (lines.length <= 200) {
-              for (int i = lines.length - 1; i >= 0; i--) {
-                try {
-                  final tailCandidate = lines.sublist(i).join('\n').trim();
-                  if (tailCandidate.startsWith('{') || tailCandidate.startsWith('[')) {
-                    return jsonDecode(tailCandidate);
-                  }
-                } catch (_) {}
-              }
-            }
-          }
+          return jsonDecode(match.group(0)!);
         }
       } catch (e) {
         debugPrint("Murphy-proof Error: JSON recovery failed: $e");
@@ -651,27 +481,18 @@ class BackendService {
   }
 
   Future<List<dynamic>> listInstalled() async {
-    if (kIsWeb) {
-      return PackageRepository().listInstalled();
-    }
+    if (kIsWeb) return PackageRepository().listInstalled();
     try {
       final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
-    } catch (e) {
-      debugPrint("Daemon listInstalled error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
-      if (res == null || res.exitCode != 0) return [];
-      final data = _safeJsonDecode(res.stdout.toString());
-      return data is List ? data : [];
-    } catch (e) {
-      debugPrint("listInstalled Error: $e");
-      return [];
-    }
+    } catch (_) {}
+
+    final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
+    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
+    return data is List ? data : [];
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
@@ -682,92 +503,63 @@ class BackendService {
     }
     try {
       final daemonRes = await _sendToDaemon("config.data", []);
-      if (daemonRes != null &&
-          daemonRes.status == 'success' &&
-          daemonRes.response is Map<String, dynamic>) {
+      if (daemonRes != null && daemonRes.status == 'success' && daemonRes.response is Map<String, dynamic>) {
         final configMap = daemonRes.response as Map<String, dynamic>;
         isAIEnabled.value = configMap['ai']?['enabled'] ?? false;
         return configMap;
       }
-    } catch (e) {
-      debugPrint("Daemon loadConfig error: $e. Falling back.");
+    } catch (_) {}
+
+    final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
+    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
+    if (data is Map<String, dynamic>) {
+      isAIEnabled.value = data['ai']?['enabled'] ?? false;
+      return data;
     }
-    try {
-      final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
-      if (res == null) return {};
-      final data = _safeJsonDecode(res.stdout.toString());
-      if (data is Map<String, dynamic>) {
-        isAIEnabled.value = data['ai']?['enabled'] ?? false;
-        return data;
-      }
-      return {};
-    } catch (e) {
-      debugPrint("loadConfig Error: $e");
-      return {};
-    }
+    return {};
   }
 
-  Future<String> _aiCall(
-    List<String> args, {
-    Duration timeout = const Duration(seconds: 60),
-  }) async {
-    if (kIsWeb) {
-      return "This is a simulated AI response on web.";
-    }
-    try {
-      final res = await _safeRun([...args, "--json"], timeout: timeout);
-      if (res == null) {
-        return "⏱ AI request timed out. Please check your AI provider configuration in Settings → Advanced.";
-      }
-      final data = _safeJsonDecode(res.stdout.toString());
-      if (data is Map) {
-        return data['response']?.toString() ??
-            "⚠ No response received from AI provider. Verify your endpoint and API key.";
-      }
-      return "⚠ Failed to parse AI response. The provider may have returned an unexpected format.";
-    } catch (e) {
-      debugPrint("_aiCall Error: $e");
-      return "⚠ AI service error: ${e.toString().replaceAll(RegExp(r'Exception: '), '')}";
-    }
+  Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
+    if (kIsWeb) return "AI not supported on web.";
+    final res = await _safeRun([...args, "--json"], timeout: timeout);
+    if (res == null) return "⏱ AI request timed out.";
+    final data = _safeJsonDecode(res.stdout.toString());
+    return (data is Map) ? (data['response']?.toString() ?? "⚠ No response") : "⚠ Parse error";
   }
-
-  // Fail-safe AI counter to prevent infinite retry loops in UI
-  int _aiFailureCount = 0;
 
   Future<String> aiExplain(String name, String desc) async {
     try {
-      _validateString(name, "AI App Name");
+      _env.validateString(name, "AI App Name");
       return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
     } catch (e) {
-      return "AI Explanation unavailable: $e";
+      return "AI unavailable: $e";
     }
   }
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     try {
-      _validateString(n, "AI Package Name");
+      _env.validateString(n, "AI Package Name");
       return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
-    } catch (e) {
+    } catch (_) {
       return "Update summary unavailable.";
     }
   }
 
   Future<String> aiGenerateCLI(String n, String s) async {
     try {
-      _validateString(n, "AI App Name");
-      _validateString(s, "AI Source");
-      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
-          timeout: const Duration(seconds: 20));
-    } catch (e) {
+      _env.validateString(n, "AI App Name");
+      _env.validateString(s, "AI Source");
+      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"], timeout: const Duration(seconds: 20));
+    } catch (_) {
       return "CLI generation failed.";
     }
   }
 
   Future<String> aiDetectConflicts(String n) async {
     try {
-      _validateString(n, "AI Package Name");
+      _env.validateString(n, "AI Package Name");
       return await _aiCall(["--ai-conflicts", n.trim()]);
-    } catch (e) {
+    } catch (_) {
       return "Conflict detection failed.";
     }
   }
@@ -775,26 +567,25 @@ class BackendService {
   Future<String> aiPickOfTheDay() async {
     try {
       return await _aiCall(["--ai-pick"]);
-    } catch (e) {
+    } catch (_) {
        return "Pick of the day unavailable.";
     }
   }
 
   Future<String> aiSuggestCorrection(String q) async {
     try {
-      _validateString(q, "AI Query");
-      return await _aiCall(["--ai-correct", q.trim()],
-          timeout: const Duration(seconds: 15));
+      _env.validateString(q, "AI Query");
+      return await _aiCall(["--ai-correct", q.trim()], timeout: const Duration(seconds: 15));
     } catch (e) {
-      return q; // Graceful degradation: return original query
+      return q;
     }
   }
 
   Future<String> aiCompareVariants(String n) async {
     try {
-      _validateString(n, "AI App Name");
+      _env.validateString(n, "AI App Name");
       return await _aiCall(["--ai-compare", n.trim()]);
-    } catch (e) {
+    } catch (_) {
       return "Variant comparison unavailable.";
     }
   }
@@ -802,7 +593,7 @@ class BackendService {
   Future<String> aiSystemHealth() async {
     try {
       return await _aiCall(["--ai-health"]);
-    } catch (e) {
+    } catch (_) {
       return "System health report unavailable.";
     }
   }
@@ -810,23 +601,16 @@ class BackendService {
   Future<String> aiAnalyzeError(String log) async {
     try {
       return await _aiCall(["--ai-analyze-error", log.trim()]);
-    } catch (e) {
+    } catch (_) {
       return "Error analysis unavailable.";
     }
   }
 
   Future<String> aiRecommend(String p) async {
     try {
-      _validateString(p, "AI Prompt");
-      final res = await _aiCall(["--ai-recommend", p.trim()],
-          timeout: const Duration(seconds: 90));
-      _aiFailureCount = 0;
-      return res;
-    } catch (e) {
-      _aiFailureCount++;
-      if (_aiFailureCount > 3) {
-        return "AI recommendations are currently offline. Please try again later.";
-      }
+      _env.validateString(p, "AI Prompt");
+      return await _aiCall(["--ai-recommend", p.trim()], timeout: const Duration(seconds: 90));
+    } catch (_) {
       return "Recommendation service error.";
     }
   }
@@ -836,78 +620,47 @@ class BackendService {
       isAIEnabled.value = config['ai']?['enabled'] ?? false;
       return ConfigRepository().saveConfig(config);
     }
-    Process? process;
-    await _acquireLock();
-    try {
-      if (config.isEmpty) return false;
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(["--set-config", "stdin", "--json"]),
-        workingDirectory: _workingDir,
-      );
-      _processRegistry.add(process);
-
+    return await _executionQueue.run(() async {
+      Process? process;
       try {
+        if (config.isEmpty) return false;
+        process = await Process.start(_env.venvPython, _env.buildArgs(["--set-config", "stdin", "--json"]), workingDirectory: _env.workingDir);
+        _processRegistry.add(process);
         process.stdin.write(jsonEncode(config));
         await process.stdin.close();
+        final code = await process.exitCode.timeout(const Duration(seconds: 10));
+        return code == 0;
       } catch (e) {
-        debugPrint("saveConfig Stdin Error: $e");
+        debugPrint("saveConfig Error: $e");
+        if (process != null) await _killProcess(process);
+        return false;
+      } finally {
+        if (process != null) _processRegistry.remove(process);
       }
-
-      final code = await process.exitCode.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("Save config timed out");
-        },
-      );
-      return code == 0;
-    } catch (e) {
-      debugPrint("saveConfig Error: $e");
-      if (process != null) await _killProcess(process);
-      return false;
-    } finally {
-      if (process != null) _processRegistry.remove(process);
-      _releaseLock();
-    }
+    }, label: "saveConfig");
   }
 
   Future<Map<String, dynamic>> checkEnv() async {
-    if (kIsWeb) {
-      return ConfigRepository().checkEnv();
-    }
+    if (kIsWeb) return ConfigRepository().checkEnv();
     try {
       final daemonRes = await _sendToDaemon("env.check_env", []);
-      if (daemonRes != null &&
-          daemonRes.status == 'success' &&
-          daemonRes.response is Map<String, dynamic>) {
+      if (daemonRes != null && daemonRes.status == 'success' && daemonRes.response is Map<String, dynamic>) {
         return daemonRes.response as Map<String, dynamic>;
       }
-    } catch (e) {
-      debugPrint("Daemon checkEnv error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {};
-    } catch (e) {
-      debugPrint("checkEnv Error: $e");
-      return {};
-    }
+    } catch (_) {}
+
+    final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
+    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
+    return (data is Map<String, dynamic>) ? data : {};
   }
 
   Stream<String> bootstrap() {
-    if (kIsWeb) {
-      return Stream.value(
-        "[CALLBACK] {\"log\": \"[INFO] Web environment is already ready!\"}",
-      );
-    }
+    if (kIsWeb) return Stream.value("[CALLBACK] {\"log\": \"Web ready\"}");
     return _safeStream(["--bootstrap", "--json"]);
   }
 
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    if (kIsWeb) {
-      return PackageRepository().getRecommendations();
-    }
+    if (kIsWeb) return PackageRepository().getRecommendations();
     try {
       final daemonRes = await _sendToDaemon("run_recommendations", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
@@ -915,387 +668,184 @@ class BackendService {
         final Map<String, List<AppPackage>> result = {};
         if (data is Map) {
           data.forEach((k, v) {
-            if (v is List) {
-              result[k] = v
-                  .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-                  .toList();
-            }
+            if (v is List) result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
           });
-        } else if (data is List) {
-          result["featured"] = data
-              .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-              .toList();
         }
         return result;
       }
-    } catch (e) {
-      debugPrint("Daemon getRecommendations error: $e. Falling back.");
+    } catch (_) {}
+
+    final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
+    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
+    final Map<String, List<AppPackage>> result = {};
+    if (data is Map) {
+      data.forEach((k, v) {
+        if (v is List) result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
+      });
     }
-    try {
-      final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
-      if (res == null) return {};
-      final data = _safeJsonDecode(res.stdout.toString());
-      final Map<String, List<AppPackage>> result = {};
-      if (data is Map) {
-        data.forEach((k, v) {
-          if (v is List) {
-            result[k] = v
-                .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-                .toList();
-          }
-        });
-      } else if (data is List) {
-        result["featured"] = data
-            .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-            .toList();
-      }
-      return result;
-    } catch (e) {
-      debugPrint("getRecommendations Error: $e");
-      return {};
-    }
+    return result;
   }
 
   Future<bool> launchApp(String n, String s) async {
-    if (kIsWeb) {
-      return PackageRepository().launchApp(n, s);
-    }
+    if (kIsWeb) return PackageRepository().launchApp(n, s);
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
+      _env.validateString(n, "App Name");
+      _env.validateString(s, "Source");
       final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        return daemonRes.response == true;
-      }
-    } catch (e) {
-      debugPrint("Daemon launchApp error: $e. Falling back.");
-    }
-    try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
-      final res = await _safeRun([
-        "--launch",
-        n.trim(),
-        "--source",
-        s.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 15));
-      return res?.exitCode == 0;
-    } catch (e) {
-      debugPrint("launchApp [name: $n] Error: $e");
-      return false;
-    }
+      if (daemonRes != null) return daemonRes.response == true;
+    } catch (_) {}
+
+    final res = await _safeRun(["--launch", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 15));
+    return res?.exitCode == 0;
   }
 
   Future<bool> locateApp(String n, String s) async {
-    if (kIsWeb) {
-      return PackageRepository().locateApp(n, s);
-    }
+    if (kIsWeb) return PackageRepository().locateApp(n, s);
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
+      _env.validateString(n, "App Name");
+      _env.validateString(s, "Source");
       final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        return daemonRes.response == true;
-      }
-    } catch (e) {
-      debugPrint("Daemon locateApp error: $e. Falling back.");
-    }
-    try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
-      final res = await _safeRun([
-        "--locate",
-        n.trim(),
-        "--source",
-        s.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 10));
-      return res?.exitCode == 0;
-    } catch (e) {
-      debugPrint("locateApp [name: $n] Error: $e");
-      return false;
-    }
+      if (daemonRes != null) return daemonRes.response == true;
+    } catch (_) {}
+
+    final res = await _safeRun(["--locate", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 10));
+    return res?.exitCode == 0;
   }
 
   Future<Map<String, dynamic>> getAppDetails(String id) async {
-    if (kIsWeb) {
-      return PackageRepository().getAppDetails(id);
-    }
+    if (kIsWeb) return PackageRepository().getAppDetails(id);
     try {
-      _validateString(id, "App ID");
+      _env.validateString(id, "App ID");
       final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {};
-      }
-    } catch (e) {
-      debugPrint("Daemon getAppDetails error: $e. Falling back.");
-    }
-    try {
-      _validateString(id, "App ID");
-      final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {};
-    } catch (e) {
-      debugPrint("getAppDetails [id: $id] Error: $e");
-      return {};
-    }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
+    } catch (_) {}
+
+    final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {};
   }
 
   Stream<String> executeAction(String f, String n, String s, {String? url}) {
-    if (kIsWeb) {
-      return TaskRepository().executeAction(f, n, s, url: url);
-    }
-
+    if (kIsWeb) return TaskRepository().executeAction(f, n, s, url: url);
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
-      if (!["-I", "-R", "-U"].contains(f)) {
-        throw ArgumentError("Invalid action flag: $f");
-      }
-      if (url != null && url.trim().isNotEmpty) {
-        _validateString(url, "URL");
-      }
+      _env.validateString(n, "App Name");
+      _env.validateString(s, "Source");
+      if (!["-I", "-R", "-U"].contains(f)) throw ArgumentError("Invalid action flag");
     } catch (e) {
-      return Stream.value(
-        "[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] $e\", \"level\": \"ERROR\"}",
-      );
+      return Stream.value("[CALLBACK] {\"message\": \"[ERROR] $e\"}");
     }
 
-    final trimmedName = n.trim();
-    List<String> args = [f, trimmedName, "--source", s.trim(), "--json"];
-    if (url != null && url.trim().isNotEmpty) {
-      final trimmedUrl = url.trim();
-      if (RegExp(r'[;&|]').hasMatch(trimmedUrl)) {
-        return Stream.value("[CALLBACK] {\"log\": \"[ERROR] URL 包含非法字符\"}");
-      }
-      args.addAll(["--url", trimmedUrl]);
-    }
+    final args = [f, n.trim(), "--source", s.trim(), "--json"];
+    if (url != null && url.trim().isNotEmpty) args.addAll(["--url", url.trim()]);
     return _safeStream(args);
   }
 
   Future<List<dynamic>> checkUpdates() async {
-    if (kIsWeb) {
-      return TaskRepository().checkUpdates();
-    }
+    if (kIsWeb) return TaskRepository().checkUpdates();
     try {
       final daemonRes = await _sendToDaemon("run_check_updates", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return data is List ? data : [];
-      }
-    } catch (e) {
-      debugPrint("Daemon checkUpdates error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return data is List ? data : [];
-    } catch (e) {
-      debugPrint("checkUpdates Error: $e");
-      return [];
-    }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
+    } catch (_) {}
+
+    final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
   }
 
   Stream<String> updateAll(String s) {
-    if (kIsWeb) {
-      return TaskRepository().updateAll(s);
-    }
+    if (kIsWeb) return TaskRepository().updateAll(s);
     try {
-      _validateString(s, "Update Source");
+      _env.validateString(s, "Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
     } catch (e) {
-      return Stream.value(
-        "[CALLBACK] {\"key\": \"errorUpdateAll\", \"error\": \"$e\"}",
-      );
+      return Stream.value("[CALLBACK] {\"error\": \"$e\"}");
     }
   }
 
   Future<List<dynamic>> getEssentials() async {
-    if (kIsWeb) {
-      return PackageRepository().getEssentials();
-    }
+    if (kIsWeb) return PackageRepository().getEssentials();
     try {
       final daemonRes = await _sendToDaemon("run_get_essentials", []);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return data is List ? data : [];
-      }
-    } catch (e) {
-      debugPrint("Daemon getEssentials error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--essentials", "--json"]);
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return data is List ? data : [];
-    } catch (e) {
-      debugPrint("getEssentials Error: $e");
-      return [];
-    }
-  }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
+    } catch (_) {}
 
-  Future<bool> updateDaemonEnv(Map<String, String> env) async {
-    if (kIsWeb) return false;
-    try {
-      final daemonRes = await _sendToDaemon("run_update_env", [env, true]);
-      return daemonRes != null && daemonRes.status == 'success';
-    } catch (e) {
-      debugPrint("Daemon updateDaemonEnv error: $e");
-      return false;
-    }
+    final res = await _safeRun(["--essentials", "--json"]);
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
   }
 
   Future<List<dynamic>> importPackages(String path) async {
-    if (kIsWeb) {
-      return PackageRepository().importPackages(path);
-    }
+    if (kIsWeb) return PackageRepository().importPackages(path);
     try {
-      _validatePath(path);
+      _env.validatePath(path);
       final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return data is List ? data : [];
-      }
-    } catch (e) {
-      debugPrint("Daemon importPackages error: $e. Falling back.");
-    }
-    try {
-      _validatePath(path);
-      final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return data is List ? data : [];
-    } catch (e) {
-      debugPrint("importPackages [path: $path] Error: $e");
-      return [];
-    }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
+    } catch (_) {}
+
+    final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
   }
 
   Future<Map<String, dynamic>> exportPackages(String path) async {
-    if (kIsWeb) {
-      return TaskRepository().exportPackages(path);
-    }
+    if (kIsWeb) return TaskRepository().exportPackages(path);
     try {
-      _validatePath(path);
+      _env.validatePath(path);
       final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {"status": "error"};
-      }
-    } catch (e) {
-      debugPrint("Daemon exportPackages error: $e. Falling back.");
-    }
-    try {
-      _validatePath(path);
-      final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {"status": "error"};
-    } catch (e) {
-      debugPrint("exportPackages [path: $path] Error: $e");
-      return {"status": "error", "message": e.toString()};
-    }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
+    } catch (_) {}
+
+    final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {"status": "error"};
   }
 
   Stream<String> cleanSystem() {
-    if (kIsWeb) {
-      return TaskRepository().cleanSystem();
-    }
+    if (kIsWeb) return TaskRepository().cleanSystem();
     return _safeStream(["--clean-system", "--json"]);
   }
 
   Future<bool> addCustomRepo(String type, String name, String url) async {
     if (kIsWeb) return true;
     try {
-      _validateString(type, "Repo Type");
-      _validateString(name, "Repo Name");
-      _validateString(url, "Repo URL");
-
+      _env.validateString(type, "Type");
+      _env.validateString(name, "Name");
+      _env.validateString(url, "URL");
       final daemonRes = await _sendToDaemon("run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        return daemonRes.response == true;
-      }
-    } catch (e) {
-      debugPrint("Daemon addCustomRepo error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
-      return res?.exitCode == 0;
-    } catch (_) {
-      return false;
-    }
+      if (daemonRes != null) return daemonRes.response == true;
+    } catch (_) {}
+
+    final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
+    return res?.exitCode == 0;
   }
 
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {
-      _validateString(type, "Repo Type");
-      _validateString(name, "Repo Name");
-
+      _env.validateString(type, "Type");
+      _env.validateString(name, "Name");
       final daemonRes = await _sendToDaemon("run_remove_custom_repo", [type.trim(), name.trim(), true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        return daemonRes.response == true;
-      }
-    } catch (e) {
-      debugPrint("Daemon removeCustomRepo error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
-      return res?.exitCode == 0;
-    } catch (_) {
-      return false;
-    }
+      if (daemonRes != null) return daemonRes.response == true;
+    } catch (_) {}
+
+    final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
+    return res?.exitCode == 0;
   }
 
   Future<Map<String, dynamic>> getStorageInfo() async {
     if (kIsWeb) return {};
     try {
       final daemonRes = await _sendToDaemon("run_get_storage_info", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {};
-      }
-    } catch (e) {
-      debugPrint("Daemon getStorageInfo error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {};
-    } catch (e) {
-      debugPrint("getStorageInfo Error: $e");
-      return {};
-    }
-  }
-
-  Future<void> shutdownBackend() async {
-    if (kIsWeb) return;
-    try {
-      await _sendToDaemon("shutdown", []);
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
     } catch (_) {}
+
+    final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {};
   }
 
   Future<Map<String, dynamic>> testAiConnection() async {
-    if (kIsWeb) return {"status": "error", "response": "Not supported on web"};
+    if (kIsWeb) return {"status": "error"};
     try {
       final daemonRes = await _sendToDaemon("run_ai_test", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>)
-            ? data
-            : {"status": "error", "response": "Invalid format"};
-      }
-    } catch (e) {
-      debugPrint("Daemon testAiConnection error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>)
-          ? data
-          : {"status": "error", "response": "Invalid response"};
-    } catch (e) {
-      debugPrint("testAiConnection Error: $e");
-      return {"status": "error", "response": e.toString()};
-    }
+      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
+    } catch (_) {}
+
+    final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
+    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {"status": "error"};
   }
 }
