@@ -1,3 +1,6 @@
 - Replaced generic LinearProgressIndicator with Skeleton inside AnimatedSwitcher in ai_app_resolver.dart and storage_cleanup_card.dart.
 - Wrapped content resolution in github_app_list.dart with AnimatedSwitcher to prevent abrupt jumps between loading/empty/list states.
 - Ensured all new and existing AnimatedSwitchers use a standard duration of 300ms.
+- Wrapped SearchPage source filters in AnimatedSize and AnimatedSwitcher for smooth expansion/collapse.
+- Wrapped GitHubStorePage tab navigation and search results in AnimatedSwitcher to prevent jarring layout changes.
+- Wrapped FlatpakStorePage desktop layout detail pane in AnimatedSwitcher for smooth selection transitions.

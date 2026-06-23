@@ -175,10 +175,19 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          if (!_showDiscovery)
-            Consumer<SettingsController>(
-              builder: (context, settings, _) => _buildSourceFilters(settings),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: !_showDiscovery
+                  ? Consumer<SettingsController>(
+                      key: const ValueKey('source_filters'),
+                      builder: (context, settings, _) => _buildSourceFilters(settings),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
+          ),
           Expanded(
             child: _showDiscovery
                 ? AnimatedSwitcher(
