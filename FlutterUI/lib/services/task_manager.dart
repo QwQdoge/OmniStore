@@ -294,21 +294,21 @@ class TaskManager {
   /// for unstructured log lines to prevent UI state corruption.
   void _handleOutput(String line) {
     if (line.isEmpty) return;
-    final cleanLine = line.trim();
-
-    String cleanLine = line.trim();
+    final String cleanLine = line.trim();
     String? logMessage;
 
     try {
       if (cleanLine.startsWith("[CALLBACK]")) {
         try {
           final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          logMessage = data['message'] ?? data['log'] ?? "";
+          _processStructuredCallback(data);
+          return;
         } catch (_) {}
       } else if (cleanLine.startsWith("{")) {
         try {
           final data = jsonDecode(cleanLine);
-          logMessage = data['message'] ?? data['log'] ?? "";
+          _processStructuredCallback(data);
+          return;
         } catch (_) {}
       } else {
         logMessage = cleanLine;
@@ -324,18 +324,7 @@ class TaskManager {
         if (parts.length > 1) {
           final p = double.tryParse(parts[1]);
           if (p != null) {
-            final progress = p / 100.0;
-            _updateState(
-              _currentTask?.copyWith(
-                progress: progress,
-                status: TaskStatus.downloading,
-              ),
-            );
-
-            UpdateService().showProgressNotification(
-              _currentTask?.packageName ?? "OmniStore",
-              progress,
-            );
+            _processProgress(p.toString());
           }
         }
       } else if (logMessage.startsWith("[SPEED]")) {
@@ -346,44 +335,13 @@ class TaskManager {
         _updateState(_currentTask?.copyWith(stage: stage));
       } else if (logMessage.startsWith("[INFO]")) {
         final msg = logMessage.replaceFirst("[INFO] ", "");
-        BackendService.addLog(logMessage);
-
-        TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-        double? progress = _currentTask?.progress;
-
-        if (msg.toLowerCase().contains("installing") ||
-            msg.toLowerCase().contains("verifying") ||
-            msg.toLowerCase().contains("building") ||
-            msg.toLowerCase().contains("cleaning")) {
-          status = TaskStatus.installing;
-          progress = -1.0;
-        } else if (msg.toLowerCase().contains("downloading")) {
-          status = TaskStatus.downloading;
-        }
-
-        _updateState(
-          _currentTask?.copyWith(
-            message: msg,
-            status: status,
-            progress: progress,
-          ),
-        );
-        BackendService.globalStatus.value = msg;
+        _processInfo(msg);
       } else if (logMessage.startsWith("[ERROR]")) {
-        BackendService.addLog(logMessage);
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.failed,
-            message: logMessage.replaceFirst("[ERROR] ", ""),
-          ),
-        );
+        _processError(logMessage.replaceFirst("[ERROR] ", ""));
       } else {
         // Unstructured fallback
         BackendService.addLog(cleanLine);
       }
-    } catch (e) {
-      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
-      BackendService.addLog("Raw: $cleanLine");
     }
   }
 

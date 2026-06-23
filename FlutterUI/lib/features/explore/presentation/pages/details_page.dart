@@ -274,9 +274,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           onLaunchApp: _launchApp,
           onCancelAction: _cancelAction,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         const Divider(),
-        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -309,7 +308,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
           const Divider(),
-          const SizedBox(height: 8),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
           ),
@@ -318,18 +316,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
         ],
         const Divider(),
-        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppDetailsInfoRow(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              AppDetailsInfoRow(
                   icon: Icons.source_rounded,
                   label: AppLocalizations.of(context)!.source,
                   value: widget.app.primarySource,
@@ -360,8 +356,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   variant: _getVariantForSource(_selectedSource),
                   hasCapability: _hasCapability,
                 ),
-              ],
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ],

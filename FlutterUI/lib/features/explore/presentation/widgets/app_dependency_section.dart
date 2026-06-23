@@ -17,6 +17,7 @@ class AppDependencySection extends StatelessWidget {
     if (variant == null) {
       return const SizedBox.shrink();
     }
+    final l10n = AppLocalizations.of(context)!;
     final deps = variant!['depends'] as List?;
     final dlSize = variant!['download_size'];
     final insSize = variant!['installed_size'];
@@ -28,10 +29,12 @@ class AppDependencySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
-        AppDetailsSectionTitle(
-          title: AppLocalizations.of(context)!.installInfo,
-          isSubSection: true,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: AppDetailsSectionTitle(
+            title: l10n.installInfo,
+            isSubSection: true,
+          ),
         ),
         if (hasCapability('has_size') && dlSize != null)
           AppDetailsInfoRow(
@@ -46,18 +49,22 @@ class AppDependencySection extends StatelessWidget {
             value: insSize.toString(),
           ),
         if (deps != null && deps.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.dependenciesCount(deps.length),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: deps
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.dependenciesCount(deps.length),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: deps
                 .map(
                   (d) => Chip(
                     label: Text(
@@ -68,7 +75,10 @@ class AppDependencySection extends StatelessWidget {
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 )
-                .toList(),
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ],
       ],

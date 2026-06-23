@@ -4,7 +4,6 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
-import 'package:frontend/core/widgets/app_card.dart';
 
 class SourcesConfigCard extends StatefulWidget {
   final SettingsController settings;
@@ -264,7 +263,6 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
             ],
           ),
         ),
-      ),
     );
   }
 }
