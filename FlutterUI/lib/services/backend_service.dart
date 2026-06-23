@@ -25,8 +25,6 @@ class BackendService {
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
   }
 
-  final Completer<void> _initCompleter = Completer<void>();
-
   // Registry for tracking active subprocesses (migrated to _processRegistry)
   // Murphy-proof: Global lock for local IO operations
   Completer<void>? _globalLock;
@@ -174,16 +172,6 @@ class BackendService {
 
   Future<void> _killProcess(Process? process) async {
     await _processRegistry.kill(process);
-  }
-
-  bool _isProcessAlive(Process p) {
-    if (kIsWeb) return false;
-    try {
-      if (Platform.isLinux || Platform.isMacOS) {
-        return Process.runSync('kill', ['-0', '${p.pid}']).exitCode == 0;
-      }
-    } catch (_) {}
-    return true;
   }
 
   Future<void> dispose() async {
