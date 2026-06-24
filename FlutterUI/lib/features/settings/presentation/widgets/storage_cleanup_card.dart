@@ -73,7 +73,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             value: taskController.progress,
                           )
                         : Skeleton(
-                            key: ValueKey('indeterminate'),
+                            key: const ValueKey('indeterminate'),
                             height: 4.0, // Match typical LinearProgressIndicator height
                             width: double.infinity,
                           ),
@@ -157,7 +157,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
               duration: const Duration(milliseconds: 300),
               child: _loadingStorage
                   ? Column(
-                      key: ValueKey('loading'),
+                      key: const ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Skeleton(width: double.infinity, height: 14),
