@@ -332,55 +332,67 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           ),
 
           // Navigation / Tabs (Hidden when searching)
-          if (!_isSearching)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: scheme.primaryContainer.withValues(alpha: 0.5),
-                  ),
-                  labelColor: scheme.onPrimaryContainer,
-                  unselectedLabelColor: scheme.onSurfaceVariant,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  tabs: const [
-                    Tab(
-                      text: "推荐",
-                      icon: Icon(Icons.recommend_rounded, size: 20),
-                    ),
-                    Tab(
-                      text: "排行榜",
-                      icon: Icon(Icons.leaderboard_rounded, size: 20),
-                    ),
-                    Tab(
-                      text: "热度榜",
-                      icon: Icon(Icons.local_fire_department_rounded, size: 20),
-                    ),
-                    Tab(
-                      text: "最新更新",
-                      icon: Icon(Icons.update_rounded, size: 20),
-                    ),
-                  ],
-                ),
-              ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: !_isSearching
+                  ? Padding(
+                      key: const ValueKey('tabs'),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: scheme.primaryContainer.withValues(alpha: 0.5),
+                          ),
+                          labelColor: scheme.onPrimaryContainer,
+                          unselectedLabelColor: scheme.onSurfaceVariant,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                          tabs: const [
+                            Tab(
+                              text: "推荐",
+                              icon: Icon(Icons.recommend_rounded, size: 20),
+                            ),
+                            Tab(
+                              text: "排行榜",
+                              icon: Icon(Icons.leaderboard_rounded, size: 20),
+                            ),
+                            Tab(
+                              text: "热度榜",
+                              icon: Icon(Icons.local_fire_department_rounded, size: 20),
+                            ),
+                            Tab(
+                              text: "最新更新",
+                              icon: Icon(Icons.update_rounded, size: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty_tabs')),
             ),
+          ),
 
           // Main Content Area
           Expanded(
             child: RefreshIndicator(
               onRefresh: _handleRefresh,
-              child: _isSearching
-                  ? _buildSearchResultsView()
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _isSearching
+                    ? _buildSearchResultsView()
+                    : TabBarView(
+                        key: const ValueKey('tab_view'),
+                        controller: _tabController,
+                        children: [
                         GitHubAppList(
                           apps: _recommendedApps,
                           isLoading: _isLoadingRecommended,
@@ -407,6 +419,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                         ),
                       ],
                     ),
+              ),
             ),
           ),
         ],
@@ -416,6 +429,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
 
   Widget _buildSearchResultsView() {
     return GitHubAppList(
+      key: const ValueKey('search_results'),
       apps: _searchApps,
       isLoading: _isLoadingSearch,
       keyPrefix: 'search',
