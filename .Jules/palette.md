@@ -51,8 +51,8 @@
 
 **Action:** Refactored `StorageCleanupCard` and `SourcesConfigCard` to leverage `AppCard`. Removed legacy shape overrides and ensured correct `explicitChildNodes` mapping within `Semantics` wrapper to align with core MD3 app tokens.
 
-## 2026-06-29 - AppDetailsPage UX Polish and MD3 Motion
+## 2026-06-20 - Task Progress Layout Consistency
 
-**Learning:** `AppDetailsPage` perceived quality is significantly enhanced by combining MD3 shape tokens (28dp radius for icons) with smooth implicit entrance animations (`TweenAnimationBuilder`). Reducing visual redundancy by making the `SliverAppBar` title scroll-reactive (only showing when the main header scrolls away) creates a more focused, modern experience.
+**Learning:** `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts. Using this around conditionally rendered sections like the active task block and task history lists prevents sudden jumps in the UI.
 
-**Action:** Standardized `AppDetailsHeader` icon tokens and implemented reactive title visibility in `AppDetailsPage`. Added a 600ms fade-and-slide entrance animation for the content body. Enhanced technical metadata rows with copy icons and improved tap target padding (12dp vertical, 16dp horizontal).
+**Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
