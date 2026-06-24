@@ -319,6 +319,7 @@ class TaskManager {
   void _handleOutput(String line) {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
+    String? logMessage;
 
     try {
       String? logMessage;
@@ -349,25 +350,26 @@ class TaskManager {
         } catch (_) {}
       }
 
-      // 2. Fallback to raw line if not handled as JSON
-      logMessage ??= cleanLine;
-      if (logMessage.isEmpty) return;
+    try {
+      if (logMessage != null && logMessage.isNotEmpty) {
+        if (logMessage.startsWith("[PROGRESS]")) {
+          final parts = logMessage.split(" ");
+          if (parts.length > 1) {
+            final p = double.tryParse(parts[1]);
+            if (p != null) {
+              final progress = p / 100.0;
+              _updateState(
+                _currentTask?.copyWith(
+                  progress: progress,
+                  status: TaskStatus.downloading,
+                ),
+              );
 
-      // 3. Protocol Token Handling
-      if (logMessage.startsWith("[PROGRESS]")) {
-        final parts = logMessage.split(" ");
-        if (parts.length > 1) {
-          final p = double.tryParse(parts[1]);
-          if (p != null) {
-            final progress = p / 100.0;
-            _updateState(_currentTask?.copyWith(
-              progress: progress,
-              status: TaskStatus.downloading,
-            ));
-            UpdateService().showProgressNotification(
-              _currentTask?.packageName ?? "OmniStore",
-              progress,
-            );
+              UpdateService().showProgressNotification(
+                _currentTask?.packageName ?? "OmniStore",
+                progress,
+              );
+            }
           }
         } else if (logMessage.startsWith("[SPEED]")) {
           final s = logMessage.replaceFirst("[SPEED] ", "");
@@ -412,49 +414,11 @@ class TaskManager {
           // Unstructured fallback
           BackendService.addLog(cleanLine);
         }
-      } else if (logMessage.startsWith("[SPEED]")) {
-        _updateState(_currentTask?.copyWith(
-            speed: logMessage.replaceFirst("[SPEED] ", "")));
-      } else if (logMessage.startsWith("[STAGE]")) {
-        _updateState(_currentTask?.copyWith(
-            stage: logMessage.replaceFirst("[STAGE] ", "")));
-      } else if (logMessage.startsWith("[INFO]")) {
-        final msg = logMessage.replaceFirst("[INFO] ", "");
-        BackendService.addLog(logMessage);
-
-        TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-        double? progress = _currentTask?.progress;
-        final lowerMsg = msg.toLowerCase();
-
-        if (lowerMsg.contains("installing") ||
-            lowerMsg.contains("verifying") ||
-            lowerMsg.contains("building") ||
-            lowerMsg.contains("cleaning")) {
-          status = TaskStatus.installing;
-          progress = -1.0;
-        } else if (lowerMsg.contains("downloading")) {
-          status = TaskStatus.downloading;
-        }
-
-        _updateState(_currentTask?.copyWith(
-          message: msg,
-          status: status,
-          progress: progress,
-        ));
-        BackendService.globalStatus.value = msg;
-      } else if (logMessage.startsWith("[ERROR]")) {
-        BackendService.addLog(logMessage);
-        _updateState(_currentTask?.copyWith(
-          status: TaskStatus.failed,
-          message: logMessage.replaceFirst("[ERROR] ", ""),
-        ));
-      } else {
-        // Unstructured log
-        BackendService.addLog(cleanLine);
-        _resetStallWatchdog();
       }
     } catch (e) {
-      debugPrint("Murphy-proof Warning: _handleOutput failed: $e\nLine: $line");
+      debugPrint(
+        "Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line",
+      );
       BackendService.addLog("Raw: $cleanLine");
     }
   }

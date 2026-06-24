@@ -402,38 +402,58 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   },
                 ),
               if (isAIEnabled) ...[
-                IconButton(
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiPromptExplain,
-                  onPressed: _showAIExplainDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiPromptExplain,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.auto_awesome_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                    onPressed: _showAIExplainDialog,
+                  ),
                 ),
                 if (widget.app.variants.length > 1)
-                  IconButton(
-                    icon: const Icon(Icons.compare_arrows_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiCompareTitle,
-                    onPressed: _showAICompareDialog,
+                  Semantics(
+                    label: AppLocalizations.of(context)!.aiCompareTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.compare_arrows_rounded),
+                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                      onPressed: _showAICompareDialog,
+                    ),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.terminal_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiCliTitle,
-                  onPressed: _showAICliDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiCliTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.terminal_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                    onPressed: _showAICliDialog,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.report_problem_rounded),
-                  tooltip: AppLocalizations.of(context)!.aiConflictTitle,
-                  onPressed: _showAIConflictDialog,
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiConflictTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.report_problem_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                    onPressed: _showAIConflictDialog,
+                  ),
                 ),
               ],
-              IconButton(
-                icon: Selector<TaskController, bool>(
-                  selector: (context, tc) => tc.isBusy,
-                  builder: (context, isBusy, child) => Badge(
-                    isLabelVisible: isBusy,
-                    child: const Icon(Icons.terminal_rounded),
+              Semantics(
+                label: AppLocalizations.of(context)!.terminalOutput,
+                button: true,
+                child: IconButton(
+                  icon: Selector<TaskController, bool>(
+                    selector: (context, tc) => tc.isBusy,
+                    builder: (context, isBusy, child) => Badge(
+                      isLabelVisible: isBusy,
+                      child: const Icon(Icons.terminal_rounded),
+                    ),
                   ),
+                  tooltip: AppLocalizations.of(context)!.terminalOutput,
+                  onPressed: _showTerminalDialog,
                 ),
-                tooltip: AppLocalizations.of(context)!.terminalOutput,
-                onPressed: _showTerminalDialog,
               ),
               const SizedBox(width: 8),
             ],

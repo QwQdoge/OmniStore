@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class CategoryPage extends StatelessWidget {
   const CategoryPage({super.key});
@@ -74,53 +75,42 @@ class _CategoryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24.0),
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Semantics(
-        label: AppLocalizations.of(context)!.categorySemantics(category.name),
-        button: true,
-        child: InkWell(
-          onTap: () {
-            final browse = context.read<BrowseController>();
-            final nav = context.read<NavigationController>();
-            browse.pendingSearchQuery = '/${category.id.toLowerCase()}';
-            nav.setIndex(2); // Search page
-          },
-          borderRadius: BorderRadius.circular(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  category.icon,
-                  size: 32,
-                  color: colorScheme.onPrimaryContainer,
-                ),
+    return Semantics(
+      label: AppLocalizations.of(context)!.categorySemantics(category.name),
+      button: true,
+      child: AppCard(
+        borderRadius: 24.0,
+        onTap: () {
+          final browse = context.read<BrowseController>();
+          final nav = context.read<NavigationController>();
+          browse.pendingSearchQuery = '/${category.id.toLowerCase()}';
+          nav.setIndex(2); // Search page
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 12),
-              Text(
-                category.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-                textAlign: TextAlign.center,
+              child: Icon(
+                category.icon,
+                size: 32,
+                color: colorScheme.onPrimaryContainer,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              category.name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
