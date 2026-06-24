@@ -65,8 +65,14 @@ class TaskProgressBar extends StatelessWidget {
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: task.progress != null
-                  ? TweenAnimationBuilder<double>(
+              child: task.progress == null
+                  ? LinearProgressIndicator(
+                      key: const ValueKey('indeterminate'),
+                      minHeight: 3,
+                      backgroundColor: scheme.surfaceContainerHighest,
+                      valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+                    )
+                  : TweenAnimationBuilder<double>(
                       key: const ValueKey('determinate'),
                       tween: Tween<double>(begin: 0, end: task.progress!),
                       duration: const Duration(milliseconds: 300),
@@ -79,12 +85,6 @@ class TaskProgressBar extends StatelessWidget {
                           valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
                         );
                       },
-                    )
-                  : LinearProgressIndicator(
-                      key: const ValueKey('indeterminate'),
-                      minHeight: 3,
-                      backgroundColor: scheme.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
                     ),
             ),
           ],
