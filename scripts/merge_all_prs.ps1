@@ -1,10 +1,11 @@
 # PowerShell script to merge all open GitHub pull requests and delete their source branches
 # Requires GitHub CLI (gh) installed and authenticated
 
-# Retrieve open PRs with number and head branch name, output as "<number> <branch>"
-$prLines = gh pr list --state open --json number,headRefName -q '.[] | "\(.number) \(.headRefName)"'
+# Retrieve open PRs with number and head branch name.
+$prsJson = gh pr list --state open --json number,headRefName --limit 100
+$prs = @(($prsJson | ConvertFrom-Json).ForEach({ $_ }))
 
-if (-not $prLines) {
+if (-not $prs -or $prs.Count -eq 0) {
     Write-Host "No open pull requests found. Exiting."
     exit 0
 }
@@ -23,10 +24,10 @@ try {
     Write-Host "Warning: Failed to fetch GitHub user info for noreply email. Falling back to default git config."
 }
 
-foreach ($line in $prLines) {
-    $parts = $line -split "\s+", 2
-    $number = $parts[0]
-    $branch = $parts[1]
+foreach ($pr in $prs) {
+    $number = $pr.number
+    $branch = $pr.headRefName
+    if (-not $number -or -not $branch) { continue }
     Write-Host "Merging PR #$number from branch $branch..."
     # Attempt merge using admin mode to bypass review requirements
     gh pr merge $number --merge --admin
