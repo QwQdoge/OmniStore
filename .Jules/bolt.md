@@ -30,8 +30,8 @@
 
 **Action:** Added `_categories` state to `_HomePageState` and initialized it in `didChangeDependencies()` to memoize `CategoryService.getCategories(context)`, avoiding redundant evaluations in `_buildCategoryQuickAccess()`.
 
-## 2026-06-19 - Python Backend Lifecycle Persistence
+## 2026-06-19 - TaskController & Terminal Rebuild Optimization
 
-**Learning:** Recreating `aiohttp.ClientSession` and backend manager objects (which load multi-megabyte JSON metadata caches) on every IPC request in daemon mode adds significant latency (~100-300ms) and CPU spikes. Implementing a reference-counting mechanism in the backend context manager allows these resources to persist across requests while ensuring safe cleanup when the process exits.
+**Learning:** Returning `List.unmodifiable(...)` from a getter creates an O(N) allocation on every read. When used with a Dart Record in a `Selector` (e.g., `(length: c.logs.length, logs: c.logs)`), the list instance changes on every `notifyListeners()`, causing the `Selector` to always rebuild the widget due to object inequality. Caching an `UnmodifiableListView` in the controller solves both the memory allocation and the false-positive rebuilds.
 
-**Action:** Refactored `OmnistoreBackend` in `python/main.py` to use a `_ref_count` and idempotent `initialize()` logic. Reusing these resources across search and metadata enrichment requests significantly improves responsiveness for sequential operations.
+**Action:** Refactored `TaskController` to cache `UnmodifiableListView` instances for `logs` and `completedTasks`. Updated `Consumer<TaskController>` to `Selector<TaskController, ...>` in `tasks_tab.dart` and `terminal_dialog.dart` (both places) to scope rebuilds specifically to when the list length changes, drastically reducing UI rebuilds during long-running tasks.

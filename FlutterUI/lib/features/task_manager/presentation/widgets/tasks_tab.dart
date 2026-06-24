@@ -58,11 +58,56 @@ class TasksTab extends StatelessWidget {
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
-                        const SizedBox(height: 12),
-                        Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+          if (historyLength > 0) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "任务历史记录 (History)",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                TextButton.icon(
+                  onPressed: () => context.read<TaskController>().clearHistory(),
+                  icon: const Icon(Icons.delete_sweep_rounded, size: 18),
+                  label: const Text("清空历史"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Selector<TaskController, ({int length, List<TaskState> tasks})>(
+              selector: (context, c) => (length: c.completedTasks.length, tasks: c.completedTasks),
+              builder: (context, data, child) {
+                final history = data.tasks;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: history.length,
+                  itemBuilder: (context, index) {
+                    final task = history[index];
+                    final isSuccess = task.status == TaskStatus.success;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isSuccess
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
+                          child: Icon(
+                            isSuccess
+                                ? Icons.check_circle_rounded
+                                : Icons.error_rounded,
+                            color: isSuccess ? Colors.green : Colors.red,
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),

@@ -17,10 +17,13 @@ class TaskController with ChangeNotifier {
   final List<String> _logs = [];
   final List<TaskState> _completedTasks = [];
 
-  late final UnmodifiableListView<String> _logsView = UnmodifiableListView(_logs);
-  late final UnmodifiableListView<TaskState> _completedTasksView = UnmodifiableListView(_completedTasks);
+  late UnmodifiableListView<String> _logsView;
+  late UnmodifiableListView<TaskState> _completedTasksView;
 
-  TaskController(this._taskRepository);
+  TaskController(this._taskRepository) {
+    _logsView = UnmodifiableListView(_logs);
+    _completedTasksView = UnmodifiableListView(_completedTasks);
+  }
 
   bool get isBusy => _isBusy;
   double? get progress => _progress;
@@ -28,15 +31,8 @@ class TaskController with ChangeNotifier {
   String get speed => _speed;
   String? get packageName => _packageName;
   String? get flag => _flag;
-
-  late final UnmodifiableListView<String> _logsView = UnmodifiableListView(
-    _logs,
-  );
-  UnmodifiableListView<String> get logs => _logsView;
-
-  late final UnmodifiableListView<TaskState> _completedTasksView =
-      UnmodifiableListView(_completedTasks);
-  UnmodifiableListView<TaskState> get completedTasks => _completedTasksView;
+  List<String> get logs => _logsView;
+  List<TaskState> get completedTasks => _completedTasksView;
 
   void clearLogs() {
     _logs.clear();
