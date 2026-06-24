@@ -50,46 +50,48 @@ class TerminalDialog extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Selector<TaskController, ({int length, List<String> logs})>(
-                selector: (context, c) => (length: c.logs.length, logs: c.logs),
-                builder: (context, data, _) {
-                  final logs = data.logs;
-                  return logs.isEmpty
-                      ? Center(
-                          child: Text(
-                            AppLocalizations.of(context)!.waitingForOutput,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          reverse: true,
-                          padding: const EdgeInsets.all(12),
-                          itemCount: logs.length,
-                          itemBuilder: (context, i) {
-                            final log = logs[logs.length - 1 - i];
-                            Color textColor = theme.colorScheme.onSurface;
-                            if (log.contains("[ERROR]")) {
-                              textColor = Colors.redAccent;
-                            }
-                            if (log.contains("[INFO]")) {
-                              textColor = Colors.greenAccent.shade400;
-                            }
-                            return Text(
-                              log,
-                              style: TextStyle(
-                                color: textColor,
-                                fontFamily: 'monospace',
-                                fontSize: 12,
-                                height: 1.5,
+              child:
+                  Selector<TaskController, ({int length, List<String> logs})>(
+                    selector: (context, c) =>
+                        (length: c.logs.length, logs: c.logs),
+                    builder: (context, data, _) {
+                      final logs = data.logs;
+                      return logs.isEmpty
+                          ? Center(
+                              child: Text(
+                                AppLocalizations.of(context)!.waitingForOutput,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: 'monospace',
+                                ),
                               ),
+                            )
+                          : ListView.builder(
+                              reverse: true,
+                              padding: const EdgeInsets.all(12),
+                              itemCount: logs.length,
+                              itemBuilder: (context, i) {
+                                final log = logs[logs.length - 1 - i];
+                                Color textColor = theme.colorScheme.onSurface;
+                                if (log.contains("[ERROR]")) {
+                                  textColor = Colors.redAccent;
+                                }
+                                if (log.contains("[INFO]")) {
+                                  textColor = Colors.greenAccent.shade400;
+                                }
+                                return Text(
+                                  log,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontFamily: 'monospace',
+                                    fontSize: 12,
+                                    height: 1.5,
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                },
-              ),
+                    },
+                  ),
             ),
           ],
         ),

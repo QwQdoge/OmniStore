@@ -12,7 +12,9 @@ class TasksTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isBusy = context.select<TaskController, bool>((c) => c.isBusy);
-    final historyLength = context.select<TaskController, int>((c) => c.completedTasks.length);
+    final historyLength = context.select<TaskController, int>(
+      (c) => c.completedTasks.length,
+    );
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -56,7 +58,15 @@ class TasksTab extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    Selector<TaskController, ({String? packageName, double? progress, String status, String speed})>(
+                    Selector<
+                      TaskController,
+                      ({
+                        String? packageName,
+                        double? progress,
+                        String status,
+                        String speed,
+                      })
+                    >(
                       selector: (context, c) => (
                         packageName: c.packageName,
                         progress: c.progress,
@@ -74,7 +84,8 @@ class TasksTab extends StatelessWidget {
                             stage: data.status,
                             speed: data.speed,
                           ),
-                          onCancel: () => context.read<TaskController>().cancelTask(l10n),
+                          onCancel: () =>
+                              context.read<TaskController>().cancelTask(l10n),
                         );
                       },
                     ),
@@ -107,20 +118,24 @@ class TasksTab extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 TextButton.icon(
-                  onPressed: () => context.read<TaskController>().clearHistory(),
+                  onPressed: () =>
+                      context.read<TaskController>().clearHistory(),
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
                   label: Text(l10n.clearHistoryShort),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Selector<TaskController, ({int length, List<TaskState> history})>(
+            Selector<
+              TaskController,
+              ({int length, List<TaskState> completedTasks})
+            >(
               selector: (context, c) => (
                 length: c.completedTasks.length,
-                history: c.completedTasks,
+                completedTasks: c.completedTasks,
               ),
               builder: (context, data, child) {
-                final history = data.history;
+                final history = data.completedTasks;
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -148,8 +163,10 @@ class TasksTab extends StatelessWidget {
                         title: Row(
                           children: [
                             Text(
-                              task.packageName ?? l10n.unknownApp,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              task.packageName ?? "Unknown App",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -177,7 +194,9 @@ class TasksTab extends StatelessWidget {
                               ? l10n.taskSuccess
                               : l10n.taskFailedReason(task.message),
                           style: TextStyle(
-                            color: isSuccess ? Colors.grey : Colors.red.shade900,
+                            color: isSuccess
+                                ? Colors.grey
+                                : Colors.red.shade900,
                             fontSize: 12,
                           ),
                         ),
