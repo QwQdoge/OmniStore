@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
   final Map<String, ScrollController> _shelfControllers = {};
+  List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
   bool _isAILoading = false;
 

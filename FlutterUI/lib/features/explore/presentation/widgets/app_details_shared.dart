@@ -27,7 +27,9 @@ class AppDetailsSectionTitle extends StatelessWidget {
           );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, top: 16),
+      padding: isSubSection
+          ? EdgeInsets.zero
+          : const EdgeInsets.only(bottom: 12.0, top: 16),
       child: Text(title, style: style),
     );
   }
@@ -59,12 +61,11 @@ class AppDetailsInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-
     return InkWell(
       onTap: () => _copyToClipboard(context),
       borderRadius: BorderRadius.circular(12),
       child: Semantics(
-        label: '${l10n.tapToCopy} $label: $value',
+        label: "${l10n.tapToCopy} $label: $value",
         button: true,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
@@ -95,9 +96,7 @@ class AppDetailsInfoRow extends StatelessWidget {
               Icon(
                 Icons.copy_all_rounded,
                 size: 14,
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.5,
-                ),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
             ],
           ),
