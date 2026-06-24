@@ -17,6 +17,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/home/widgets/app_shelf.dart';
 import 'package:frontend/features/home/widgets/banner_card.dart';
 
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _forYouScrollController = ScrollController();
   final Map<String, ScrollController> _shelfControllers = {};
   List<CategoryItem> _categories = [];
+
   String? _aiPickBlurb;
   bool _isAILoading = false;
 
@@ -278,6 +280,8 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+
 
   Widget _buildCategoryQuickAccess() {
     return SliverToBoxAdapter(
