@@ -280,17 +280,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: _isLoadingDetails
-              ? const Column(
-                  key: ValueKey('loading'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Skeleton(width: double.infinity, height: 14),
-                    SizedBox(height: 8),
-                    Skeleton(width: double.infinity, height: 14),
-                    SizedBox(height: 8),
-                    Skeleton(width: 200, height: 14),
-                  ],
-                )
+              ? const ParagraphSkeleton(key: ValueKey('loading'))
               : MarkdownBody(
                   key: const ValueKey('loaded'),
                   data:
