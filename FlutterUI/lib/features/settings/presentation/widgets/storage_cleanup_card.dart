@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -158,9 +159,9 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                       key: const ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Skeleton(width: double.infinity, height: 14),
+                        Skeleton(width: double.infinity, height: 14),
                         const SizedBox(height: 12),
-                        const Skeleton(width: double.infinity, height: 8),
+                        Skeleton(width: double.infinity, height: 8),
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

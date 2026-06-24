@@ -30,6 +30,92 @@ class BackendService {
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
   }
 
+  // Registry for tracking active subprocesses (migrated to _processRegistry)
+  // Murphy-proof: Global lock for local IO operations
+  Completer<void>? _globalLock;
+
+  static String get _projectRoot {
+    if (kIsWeb) return '';
+    final searchRoots = <String>{Directory.current.path};
+
+    try {
+      final script = Platform.script.toFilePath();
+      if (script.isNotEmpty) searchRoots.add(p.dirname(script));
+    } catch (_) {}
+
+    try {
+      final exec = Platform.resolvedExecutable;
+      if (exec.isNotEmpty) searchRoots.add(p.dirname(exec));
+    } catch (_) {}
+
+    for (final root in searchRoots) {
+      var dir = Directory(root);
+      while (true) {
+        final candidate = p.join(dir.path, 'python', 'main.py');
+        if (File(candidate).existsSync()) return dir.path;
+        if (dir.parent.path == dir.path) break;
+        dir = dir.parent;
+      }
+    }
+
+    if (Directory.current.path.endsWith('FlutterUI')) {
+      final fallback = Directory.current.parent;
+      final candidate = p.join(fallback.path, 'python', 'main.py');
+      if (File(candidate).existsSync()) return fallback.path;
+    }
+
+    return Directory.current.path;
+  }
+
+  static bool get _isPackaged {
+    if (kIsWeb) return false;
+    final exeDir = p.dirname(Platform.resolvedExecutable);
+    final pythonServer = p.join(
+      exeDir,
+      'backends',
+      Platform.isWindows ? 'python_server.exe' : 'python_server',
+    );
+    return File(pythonServer).existsSync();
+  }
+
+  static String get venvPython {
+    if (kIsWeb) return '';
+    if (_isPackaged) {
+      return p.join(
+        p.dirname(Platform.resolvedExecutable),
+        'backends',
+        Platform.isWindows ? 'python_server.exe' : 'python_server',
+      );
+    }
+    final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
+    return File(candidate).existsSync() ? candidate : 'python';
+  }
+
+  static String get scriptPath {
+    if (kIsWeb) return '';
+    if (_isPackaged) return "";
+    return p.join(_projectRoot, 'python', 'main.py');
+  }
+
+  static String get workingDir {
+    if (kIsWeb) return '';
+    if (_isPackaged) return p.dirname(Platform.resolvedExecutable);
+    return p.join(_projectRoot, 'python');
+  }
+
+  String get _venvPython => venvPython;
+  String get _scriptPath => scriptPath;
+  String get _workingDir => workingDir;
+
+  List<String> _buildArgs(List<String> baseArgs) {
+    if (kIsWeb) return [];
+    if (_isPackaged) {
+      return baseArgs;
+    } else {
+      return [_scriptPath, ...baseArgs];
+    }
+  }
+
   // Reactive State Notifiers
   static final ValueNotifier<double?> globalProgress = ValueNotifier(null);
   static final ValueNotifier<String> globalStatus = ValueNotifier("Ready");
