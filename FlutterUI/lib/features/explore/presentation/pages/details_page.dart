@@ -302,6 +302,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
                 ),
         ),
+        const SizedBox(height: 24),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
@@ -380,7 +381,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             pinned: true,
             title: AnimatedOpacity(
               opacity: innerBoxIsScrolled ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 250),
               child: Text(
                 widget.app.name,
                 style: const TextStyle(
@@ -450,7 +451,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ],
         body: SelectionArea(
           child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: 1.0),
+            tween: Tween(begin: 0.0, end: 1.0),
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
             builder: (context, value, child) {
