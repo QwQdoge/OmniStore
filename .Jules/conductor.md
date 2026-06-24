@@ -1,3 +1,5 @@
 - Replaced generic LinearProgressIndicator with Skeleton inside AnimatedSwitcher in ai_app_resolver.dart and storage_cleanup_card.dart.
 - Wrapped content resolution in github_app_list.dart with AnimatedSwitcher to prevent abrupt jumps between loading/empty/list states.
 - Ensured all new and existing AnimatedSwitchers use a standard duration of 300ms.
+- Standardized `AnimatedSwitcher` and related animation durations (e.g., `TweenAnimationBuilder`) to 300ms across multiple components (`github_star_badge.dart`, `adaptive_navigation_shell.dart`, `smooth_progress_bar.dart`) to ensure concise and uniform MD3 motion.
+- Refactored `TaskProgressBar` to use an `AnimatedSwitcher` wrapping a `TweenAnimationBuilder<double>` for `LinearProgressIndicator`, providing smooth transition states and interpolations for determinate progress, avoiding abrupt UI changes.
