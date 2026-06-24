@@ -64,7 +64,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
         final compact = Breakpoints.isCompact(constraints.maxWidth);
 
         final content = AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.fastOutSlowIn,
           child: KeyedSubtree(

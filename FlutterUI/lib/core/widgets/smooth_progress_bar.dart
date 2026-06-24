@@ -81,7 +81,7 @@ class SmoothProgressBar extends StatelessWidget {
     // Transition colors smoothly when state changes
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: targetColor),
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       builder: (context, animatedColor, _) {
         final currentColor = animatedColor ?? targetColor;

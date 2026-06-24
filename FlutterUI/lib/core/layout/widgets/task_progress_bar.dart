@@ -63,11 +63,32 @@ class TaskProgressBar extends StatelessWidget {
                 ],
               ),
             ),
-            LinearProgressIndicator(
-              value: data.progress,
-              minHeight: 3,
-              backgroundColor: scheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: task.progress != null && task.progress! >= 0
+                  ? TweenAnimationBuilder<double>(
+                      key: const ValueKey('determinate'),
+                      tween: Tween<double>(
+                        begin: 0,
+                        end: task.progress!,
+                      ),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, _) {
+                        return LinearProgressIndicator(
+                          value: value,
+                          minHeight: 3,
+                          backgroundColor: scheme.surfaceContainerHighest,
+                          valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+                        );
+                      },
+                    )
+                  : LinearProgressIndicator(
+                      key: const ValueKey('indeterminate'),
+                      minHeight: 3,
+                      backgroundColor: scheme.surfaceContainerHighest,
+                      valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+                    ),
             ),
           ],
         ),

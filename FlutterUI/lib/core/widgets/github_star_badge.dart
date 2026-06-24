@@ -113,7 +113,7 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
           ),
           const SizedBox(width: 4),
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 420),
+            duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.fastOutSlowIn,
             transitionBuilder: (child, animation) =>
