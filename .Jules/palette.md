@@ -50,3 +50,9 @@
 **Learning:** Grouping settings into specialized containers with MD3 layout features significantly improves hierarchy. Relying strictly on `Card` defaults does not convey MD3 principles sufficiently, thus wrapping such specialized components like `StorageCleanupCard` and `SourcesConfigCard` with `AppCard` paired with `Semantics` achieves UI consistency and accessibility effectively.
 
 **Action:** Refactored `StorageCleanupCard` and `SourcesConfigCard` to leverage `AppCard`. Removed legacy shape overrides and ensured correct `explicitChildNodes` mapping within `Semantics` wrapper to align with core MD3 app tokens.
+
+## 2026-06-29 - AppDetailsPage UX Polish and MD3 Motion
+
+**Learning:** `AppDetailsPage` perceived quality is significantly enhanced by combining MD3 shape tokens (28dp radius for icons) with smooth implicit entrance animations (`TweenAnimationBuilder`). Reducing visual redundancy by making the `SliverAppBar` title scroll-reactive (only showing when the main header scrolls away) creates a more focused, modern experience.
+
+**Action:** Standardized `AppDetailsHeader` icon tokens and implemented reactive title visibility in `AppDetailsPage`. Added a 600ms fade-and-slide entrance animation for the content body. Enhanced technical metadata rows with copy icons and improved tap target padding (12dp vertical, 16dp horizontal).
