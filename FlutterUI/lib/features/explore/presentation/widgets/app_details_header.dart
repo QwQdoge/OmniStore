@@ -91,7 +91,7 @@ class AppDetailsHeader extends StatelessWidget {
                 : Text(
                     app.name[0].toUpperCase(),
                     style: TextStyle(
-                      fontSize: 48,
+                      fontSize: 56,
                       color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w900,
                     ),

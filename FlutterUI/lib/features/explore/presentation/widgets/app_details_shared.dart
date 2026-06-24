@@ -58,20 +58,21 @@ class AppDetailsInfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return InkWell(
       onTap: () => _copyToClipboard(context),
       borderRadius: BorderRadius.circular(12),
       child: Semantics(
-        label: "$label: $value",
+        label: '${l10n.tapToCopy} $label: $value',
         button: true,
-        hint: AppLocalizations.of(context)!.tapToCopy,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Flexible(
                 child: Text(
                   label,
@@ -88,6 +89,14 @@ class AppDetailsInfoRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.end,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.copy_all_rounded,
+                size: 14,
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
                 ),
               ),
             ],
