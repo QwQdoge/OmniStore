@@ -56,19 +56,25 @@ class TasksTab extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    Consumer<TaskController>(
-                      builder: (context, taskController, child) {
+                    Selector<TaskController, ({String? packageName, double? progress, String status, String speed})>(
+                      selector: (context, c) => (
+                        packageName: c.packageName,
+                        progress: c.progress,
+                        status: c.status,
+                        speed: c.speed,
+                      ),
+                      builder: (context, data, child) {
                         return SmoothProgressBar(
                           taskState: TaskState(
                             id: "active",
                             packageName:
-                                taskController.packageName ?? l10n.taskProcessing,
+                                data.packageName ?? l10n.taskProcessing,
                             status: TaskStatus.downloading,
-                            progress: taskController.progress ?? 0.0,
-                            stage: taskController.status,
-                            speed: taskController.speed,
+                            progress: data.progress ?? 0.0,
+                            stage: data.status,
+                            speed: data.speed,
                           ),
-                          onCancel: () => taskController.cancelTask(l10n),
+                          onCancel: () => context.read<TaskController>().cancelTask(l10n),
                         );
                       },
                     ),
@@ -108,13 +114,17 @@ class TasksTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Consumer<TaskController>(
-              builder: (context, taskController, child) {
-                final history = taskController.completedTasks;
+            Selector<TaskController, ({int length, List<TaskState> history})>(
+              selector: (context, c) => (
+                length: c.completedTasks.length,
+                history: c.completedTasks,
+              ),
+              builder: (context, data, child) {
+                final history = data.history;
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: history.length,
+                  itemCount: data.length,
                   itemBuilder: (context, index) {
                     final task = history[index];
                     final isSuccess = task.status == TaskStatus.success;

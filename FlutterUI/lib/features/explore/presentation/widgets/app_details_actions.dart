@@ -40,15 +40,20 @@ class AppDetailsActions extends StatelessWidget {
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        child: Consumer<TaskController>(
-          builder: (context, task, _) => SmoothProgressBar(
+        child: Selector<TaskController, ({double? progress, String status, String speed})>(
+          selector: (context, c) => (
+            progress: c.progress,
+            status: c.status,
+            speed: c.speed,
+          ),
+          builder: (context, data, _) => SmoothProgressBar(
             taskState: TaskState(
               id: "active",
               packageName: appName,
               status: TaskStatus.downloading,
-              progress: task.progress ?? 0.0,
-              stage: task.status,
-              speed: task.speed,
+              progress: data.progress ?? 0.0,
+              stage: data.status,
+              speed: data.speed,
             ),
             onCancel: onCancelAction,
           ),

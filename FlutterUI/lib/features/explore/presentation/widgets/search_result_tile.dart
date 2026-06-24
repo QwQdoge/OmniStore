@@ -103,10 +103,11 @@ class SearchResultTile extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: isCurrentTask
-                ? Consumer<TaskController>(
-                    builder: (context, taskController, child) {
+                ? Selector<TaskController, ({String status, double? progress})>(
+                    selector: (context, c) => (status: c.status, progress: c.progress),
+                    builder: (context, data, child) {
                       return Text(
-                        "${taskController.status} ${taskController.progress != null ? '(${(taskController.progress! * 100).toInt()}%)' : ''}",
+                        "${data.status} ${data.progress != null ? '(${(data.progress! * 100).toInt()}%)' : ''}",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -122,10 +123,11 @@ class SearchResultTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
             trailing: isCurrentTask
-                ? Consumer<TaskController>(
-                    builder: (context, taskController, child) {
+                ? Selector<TaskController, String>(
+                    selector: (context, c) => c.speed,
+                    builder: (context, speed, child) {
                       return Text(
-                        taskController.speed,
+                        speed,
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context).colorScheme.outline,
