@@ -27,16 +27,7 @@ class AIMarkdownDialog extends StatelessWidget {
       return const SizedBox(
         key: ValueKey('loading'),
         height: 200,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Skeleton(width: double.infinity, height: 14),
-            SizedBox(height: 8),
-            Skeleton(width: double.infinity, height: 14),
-            SizedBox(height: 8),
-            Skeleton(width: 200, height: 14),
-          ],
-        ),
+        child: ParagraphSkeleton(),
       );
     }
     String data = snapshot.data ?? l10n.aiResponseFailed;

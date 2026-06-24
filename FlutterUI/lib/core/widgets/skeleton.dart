@@ -74,3 +74,40 @@ class _SkeletonState extends State<Skeleton>
     );
   }
 }
+
+class ParagraphSkeleton extends StatelessWidget {
+  final int lines;
+  final double lineHeight;
+  final double spacing;
+  final double lastLineWidth;
+
+  const ParagraphSkeleton({
+    super.key,
+    this.lines = 3,
+    this.lineHeight = 14.0,
+    this.spacing = 8.0,
+    this.lastLineWidth = 200.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+    for (int i = 0; i < lines; i++) {
+      final isLast = i == lines - 1;
+      children.add(
+        Skeleton(
+          width: isLast ? lastLineWidth : double.infinity,
+          height: lineHeight,
+        ),
+      );
+      if (!isLast) {
+        children.add(SizedBox(height: spacing));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: children,
+    );
+  }
+}

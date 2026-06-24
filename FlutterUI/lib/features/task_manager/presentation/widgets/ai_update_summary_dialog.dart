@@ -87,7 +87,17 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+              child: snapshot.connectionState == ConnectionState.waiting
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      height: 200,
+                      child: ParagraphSkeleton(),
+                    )
+                  : MarkdownBody(
+                      key: const ValueKey('loaded'),
+                      data: snapshot.data ?? "AI failed to summarize.",
+                      selectable: true,
+                    ),
             );
           },
         ),
