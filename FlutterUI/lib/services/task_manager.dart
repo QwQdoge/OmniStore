@@ -50,6 +50,10 @@ class TaskManager {
     required String actionFlag, // "-I", "-R", "-U"
     String? url,
   }) async {
+    // Murphy-proof: Input validation
+    if (id.isEmpty || packageName.isEmpty || source.isEmpty) return false;
+    if (!["-I", "-R", "-U"].contains(actionFlag)) return false;
+
     // Fail-safe check: Do not even attempt to acquire lock if already busy
     if (isBusy) return false;
 
@@ -294,77 +298,43 @@ class TaskManager {
   /// for unstructured log lines to prevent UI state corruption.
   void _handleOutput(String line) {
     if (line.isEmpty) return;
-    final String cleanLine = line.trim();
-    String? logMessage;
+    final cleanLine = line.trim();
 
     try {
       if (cleanLine.startsWith("[CALLBACK]")) {
         try {
-          final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-          _processStructuredCallback(data);
-          return;
+          final jsonStr = cleanLine.replaceFirst("[CALLBACK] ", "");
+          final data = jsonDecode(jsonStr);
+          if (data is Map<String, dynamic>) {
+            _processStructuredCallback(data);
+            return;
+          }
         } catch (_) {}
       } else if (cleanLine.startsWith("{")) {
         try {
           final data = jsonDecode(cleanLine);
-          _processStructuredCallback(data);
-          return;
+          if (data is Map<String, dynamic>) {
+            _processStructuredCallback(data);
+            return;
+          }
         } catch (_) {}
-      } else {
-        logMessage = cleanLine;
       }
+    } catch (e) {
+      debugPrint("Murphy-proof: Output parsing failed: $e");
+    }
+
+    // Process as raw log line if not structured
+    _processRawLog(cleanLine);
+  }
+
+  void _processRawLog(String logMessage) {
+    if (logMessage.isEmpty) return;
 
     try {
-      if (logMessage != null && logMessage.isNotEmpty) {
-        if (logMessage.startsWith("[PROGRESS]")) {
+      if (logMessage.startsWith("[PROGRESS]")) {
         final parts = logMessage.split(" ");
         if (parts.length > 1) {
-          final p = double.tryParse(parts[1]);
-          if (p != null) {
-            _processProgress(p.toString());
-          }
-        } else if (logMessage.startsWith("[SPEED]")) {
-          final s = logMessage.replaceFirst("[SPEED] ", "");
-          _updateState(_currentTask?.copyWith(speed: s));
-        } else if (logMessage.startsWith("[STAGE]")) {
-          final stage = logMessage.replaceFirst("[STAGE] ", "");
-          _updateState(_currentTask?.copyWith(stage: stage));
-        } else if (logMessage.startsWith("[INFO]")) {
-          final msg = logMessage.replaceFirst("[INFO] ", "");
-          BackendService.addLog(logMessage);
-
-          TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-          double? progress = _currentTask?.progress;
-
-          if (msg.toLowerCase().contains("installing") ||
-              msg.toLowerCase().contains("verifying") ||
-              msg.toLowerCase().contains("building") ||
-              msg.toLowerCase().contains("cleaning")) {
-            status = TaskStatus.installing;
-            progress = -1.0;
-          } else if (msg.toLowerCase().contains("downloading")) {
-            status = TaskStatus.downloading;
-          }
-
-          _updateState(
-            _currentTask?.copyWith(
-              message: msg,
-              status: status,
-              progress: progress,
-            ),
-          );
-          BackendService.globalStatus.value = msg;
-        } else if (logMessage.startsWith("[ERROR]")) {
-          BackendService.addLog(logMessage);
-          _updateState(
-            _currentTask?.copyWith(
-              status: TaskStatus.failed,
-              message: logMessage.replaceFirst("[ERROR] ", ""),
-            ),
-          );
-        } else {
-          // Unstructured fallback
-          BackendService.addLog(cleanLine);
+          _processProgress(parts[1]);
         }
       } else if (logMessage.startsWith("[SPEED]")) {
         final s = logMessage.replaceFirst("[SPEED] ", "");
@@ -376,16 +346,30 @@ class TaskManager {
         final msg = logMessage.replaceFirst("[INFO] ", "");
         _processInfo(msg);
       } else if (logMessage.startsWith("[ERROR]")) {
-        _processError(logMessage.replaceFirst("[ERROR] ", ""));
+        final err = logMessage.replaceFirst("[ERROR] ", "");
+        _processError(err);
       } else {
         // Unstructured fallback
-        BackendService.addLog(cleanLine);
+        BackendService.addLog(logMessage);
       }
+    } catch (e) {
+      debugPrint("Murphy-proof Warning: Failed to parse raw log: $e\nLog: $logMessage");
+      BackendService.addLog("Raw: $logMessage");
     }
   }
 
   /// Murphy-proof: Hardened cancellation logic that ensures absolute resource
   /// cleanup even if individual steps fail.
+  /// Murphy-proof: Resource cleanup.
+  Future<void> dispose() async {
+    final subs = List<StreamSubscription>.from(_subscriptions);
+    _subscriptions.clear();
+    for (final sub in subs) {
+      await sub.cancel();
+    }
+    await _taskStateController.close();
+  }
+
   Future<void> cancelTask() async {
     try {
       // Murphy-proof: Capture current task ID for idempotent clearing
