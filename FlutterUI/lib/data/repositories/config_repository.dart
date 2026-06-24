@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
+import '../../services/backend_service.dart';
 
 class ConfigRepository {
   static const String _webConfigKey = 'omnistore_config';
@@ -72,23 +73,11 @@ class ConfigRepository {
     }
 
     try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--get-config", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 5));
-
-      if (result.exitCode != 0) {
-        debugPrint(
-          "loadConfig failed with exit code ${result.exitCode}: ${result.stderr}",
-        );
-        return {};
+      final configMap = await BackendService.instance.loadConfig();
+      if (configMap.isNotEmpty) {
+        _cachedConfig = configMap;
+        return _cachedConfig!;
       }
-
-      final output = result.stdout.toString().trim();
-      if (output.isEmpty) return {};
-      _cachedConfig = jsonDecode(output) as Map<String, dynamic>;
-      return _cachedConfig!;
     } catch (e) {
       debugPrint("loadConfig Exception: $e");
       // Fallback to SharedPreferences on desktop if python is broken
@@ -136,19 +125,8 @@ class ConfigRepository {
       }
 
       try {
-        final process = await PythonBridge.start(
-          PythonBridge.venvPython,
-          PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
-          workingDirectory: PythonBridge.workingDir,
-        ).timeout(const Duration(seconds: 5));
-
-        process.stdin.write(jsonEncode(configToSave));
-        await process.stdin.close();
-
-        final exitCode = await process.exitCode.timeout(
-          const Duration(seconds: 5),
-        );
-        completer?.complete(exitCode == 0);
+        final success = await BackendService.instance.saveConfig(configToSave);
+        completer?.complete(success);
       } catch (e) {
         debugPrint("saveConfig Exception: $e");
         completer?.complete(false);
@@ -174,13 +152,11 @@ class ConfigRepository {
     }
 
     try {
-      final result = await PythonBridge.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--check-env", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 10));
-      _cachedEnv = jsonDecode(result.stdout) as Map<String, dynamic>;
-      return _cachedEnv!;
+      final envRes = await BackendService.instance.checkEnv();
+      if (envRes.isNotEmpty) {
+        _cachedEnv = envRes;
+        return _cachedEnv!;
+      }
     } catch (e) {
       debugPrint("checkEnv Exception: $e");
       _cachedEnv = {
