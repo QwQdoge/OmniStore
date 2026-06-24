@@ -72,8 +72,13 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** `home_page.dart` contained a large inline `_buildCategoryShelf` function for rendering horizontal lists of apps. Extracting this UI component out into its own `StatelessWidget` improves maintainability, readability, and modularity of the `HomePage` logic.
 
 **Action:** Extracted the `_buildCategoryShelf` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `AppShelf` widget located at `FlutterUI/lib/features/home/widgets/app_shelf.dart`. Replaced its usages in `HomePage` with the new standalone widget.
-## 2024-10-24 - Extract Widgets in HomePage
+## 2026-06-23 - Extract Widgets in HomePage
 
-**Learning:** Extracting large inline UI building blocks like banner cards into separate `StatelessWidget` files significantly improves maintainability and readability of long files like `home_page.dart`.
+**Learning:**  contained a large inline  function for rendering horizontal lists of apps. Extracting this UI component out into its own  improves maintainability, readability, and modularity of the  logic. Furthermore, when refactoring state files, it's important to audit the class for duplicated properties, such as multiple declarations of  that cause analyzer errors.
 
-**Action:** Extracted the `_buildBannerCard` inline widget builder from `FlutterUI/lib/features/home/home_page.dart` into a reusable `BannerCard` stateless widget (`FlutterUI/lib/features/home/widgets/banner_card.dart`) to clean up complex logic, reduce file size, and improve readability without altering behavior.
+**Action:** Extracted the  logic from  into a new  widget located at . Replaced its usages in  with the new standalone widget and removed duplicate  definitions.
+## 2026-06-23 - Extract Widgets in HomePage
+
+**Learning:** home_page.dart contained a large inline _buildBannerCard function for rendering horizontal lists of apps. Extracting this UI component out into its own StatelessWidget improves maintainability, readability, and modularity of the HomePage logic. Furthermore, when refactoring state files, it's important to audit the class for duplicated properties, such as multiple declarations of _categories that cause analyzer errors.
+
+**Action:** Extracted the _buildBannerCard logic from FlutterUI/lib/features/home/home_page.dart into a new BannerCard widget located at FlutterUI/lib/features/home/widgets/banner_card.dart. Replaced its usages in HomePage with the new standalone widget and removed duplicate _categories definitions.
