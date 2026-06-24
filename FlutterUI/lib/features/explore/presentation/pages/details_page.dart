@@ -316,17 +316,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
           ),
+          const SizedBox(height: 24),
         ],
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppDetailsInfoRow(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              AppDetailsInfoRow(
                   icon: Icons.source_rounded,
                   label: AppLocalizations.of(context)!.source,
                   value: widget.app.primarySource,
@@ -357,8 +357,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   variant: _getVariantForSource(_selectedSource),
                   hasCapability: _hasCapability,
                 ),
-              ],
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ],

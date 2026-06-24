@@ -263,7 +263,6 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
             ),
           ],
         ),
-      ),
     );
   }
 }
