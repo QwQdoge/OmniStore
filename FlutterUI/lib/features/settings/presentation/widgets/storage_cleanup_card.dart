@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
@@ -72,9 +70,10 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             key: const ValueKey('determinate'),
                             value: taskController.progress,
                           )
-                        : const LinearProgressIndicator(
+                        : const Skeleton(
                             key: ValueKey('indeterminate'),
-                            minHeight: 4.0,
+                            height: 4.0, // Match typical LinearProgressIndicator height
+                            width: double.infinity,
                           ),
                   ),
                   const SizedBox(height: 16),
@@ -155,32 +154,28 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: _loadingStorage
-                  ? Column(
-                      key: const ValueKey('loading'),
+                  ? const Column(
+                      key: ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Skeleton(width: double.infinity, height: 14),
-                        const SizedBox(height: 12),
-                        const Skeleton(width: double.infinity, height: 8),
-                        const SizedBox(height: 24),
+                        Skeleton(width: double.infinity, height: 14),
+                        SizedBox(height: 12),
+                        Skeleton(width: double.infinity, height: 8),
+                        SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   Skeleton(width: 150, height: 16),
-                                  const SizedBox(height: 8),
-                                  const Skeleton(width: 200, height: 12),
+                                  SizedBox(height: 8),
+                                  Skeleton(width: 200, height: 12),
                                 ],
                               ),
                             ),
-                            const Skeleton(
-                              width: 100,
-                              height: 40,
-                              borderRadius: 20,
-                            ),
+                            Skeleton(width: 100, height: 40, borderRadius: 20),
                           ],
                         ),
                       ],

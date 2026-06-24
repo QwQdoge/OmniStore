@@ -36,6 +36,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildAIMarkdown(
     AsyncSnapshot<String> snapshot,
     AppLocalizations l10n,

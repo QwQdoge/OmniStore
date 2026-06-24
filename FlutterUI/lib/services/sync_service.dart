@@ -29,7 +29,15 @@ class SyncService {
   Future<void> syncInstalledApps() async {
     if (_isSyncing) return;
 
-    final user = Supabase.instance.client.auth.currentUser;
+    final SupabaseClient client;
+    try {
+      client = Supabase.instance.client;
+    } catch (_) {
+      debugPrint('Sync aborted: Supabase is not initialized.');
+      return;
+    }
+
+    final user = client.auth.currentUser;
     if (user == null) {
       debugPrint('Sync aborted: User not logged in.');
       return;
@@ -43,7 +51,7 @@ class SyncService {
       // Assuming 'installed_apps' table with columns: id, user_id, app_id, installed_at
 
       // 1. Fetch current remote apps
-      final remoteData = await Supabase.instance.client
+      final remoteData = await client
           .from('installed_apps')
           .select('app_id')
           .eq('user_id', user.id);
@@ -67,13 +75,13 @@ class SyncService {
             )
             .toList();
 
-        await Supabase.instance.client
+        await client
             .from('installed_apps')
             .insert(insertPayload);
       }
 
       if (appsToDelete.isNotEmpty) {
-        await Supabase.instance.client
+        await client
             .from('installed_apps')
             .delete()
             .eq('user_id', user.id)
@@ -92,13 +100,20 @@ class SyncService {
 
   /// Fetches apps from the cloud (useful for restoring on a new device)
   Future<List<String>> fetchBackedUpApps() async {
-    final user = Supabase.instance.client.auth.currentUser;
+    final SupabaseClient client;
+    try {
+      client = Supabase.instance.client;
+    } catch (_) {
+      return [];
+    }
+
+    final user = client.auth.currentUser;
     if (user == null) {
       return [];
     }
 
     try {
-      final data = await Supabase.instance.client
+      final data = await client
           .from('installed_apps')
           .select('app_id')
           .eq('user_id', user.id);

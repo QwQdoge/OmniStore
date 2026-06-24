@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 
 class SourcesConfigCard extends StatefulWidget {
@@ -200,9 +201,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       'scoop',
       'brew',
     ];
-    final sourcesMap = widget.settings.config['search']?['sources']
-            as Map<dynamic, dynamic>? ??
-        {};
+    final sourcesMap =
+        widget.settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
 
     return AppCard(
       child: Padding(
@@ -242,25 +242,26 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.addCustomSource),
-              subtitle: Text(l10n.addCustomSourceDesc),
-              trailing: Semantics(
-                label: l10n.addCustomSource,
-                button: true,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.add_circle_outline_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 28,
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.addCustomSource),
+                subtitle: Text(l10n.addCustomSourceDesc),
+                trailing: Semantics(
+                  label: l10n.addCustomSource,
+                  button: true,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 28,
+                    ),
+                    tooltip: l10n.addCustomSource,
+                    onPressed: () => _showAddSourceDialog(l10n),
                   ),
-                  tooltip: l10n.addCustomSource,
-                  onPressed: () => _showAddSourceDialog(l10n),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
     );
   }

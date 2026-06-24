@@ -1,7 +1,6 @@
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
-import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/widgets/github_app_list.dart';
 
@@ -219,8 +218,6 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -286,14 +283,14 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n.githubStore,
+                            "GitHub App Store",
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               letterSpacing: -0.5,
                             ),
                           ),
                           Text(
-                            l10n.githubStoreSubtitle,
+                            "Discover and download apps directly from GitHub releases",
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
@@ -307,7 +304,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                 // Premium Integrated Search Bar
                 SearchBar(
                   controller: _searchController,
-                  hintText: l10n.searchGithubHint,
+                  hintText: "Search GitHub repositories...",
                   leading: const Icon(Icons.search_rounded),
                   trailing: [
                     if (_isSearching)
@@ -353,41 +350,37 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                   labelColor: scheme.onPrimaryContainer,
                   unselectedLabelColor: scheme.onSurfaceVariant,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  tabs: [
+                  tabs: const [
                     Tab(
-                      text: l10n.recommended,
-                      icon: const Icon(Icons.recommend_rounded, size: 20),
+                      text: "推荐",
+                      icon: Icon(Icons.recommend_rounded, size: 20),
                     ),
                     Tab(
-                      text: l10n.rankings,
-                      icon: const Icon(Icons.leaderboard_rounded, size: 20),
+                      text: "排行榜",
+                      icon: Icon(Icons.leaderboard_rounded, size: 20),
                     ),
                     Tab(
-                      text: l10n.trending,
-                      icon: const Icon(Icons.local_fire_department_rounded, size: 20),
+                      text: "热度榜",
+                      icon: Icon(Icons.local_fire_department_rounded, size: 20),
                     ),
                     Tab(
-                      text: l10n.latestUpdates,
-                      icon: const Icon(Icons.update_rounded, size: 20),
+                      text: "最新更新",
+                      icon: Icon(Icons.update_rounded, size: 20),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
 
           // Main Content Area
           Expanded(
             child: RefreshIndicator(
               onRefresh: _handleRefresh,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isSearching
-                    ? _buildSearchResultsView()
-                    : TabBarView(
-                        key: const ValueKey('tab_view'),
-                        controller: _tabController,
-                        children: [
+              child: _isSearching
+                  ? _buildSearchResultsView()
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
                         GitHubAppList(
                           apps: _recommendedApps,
                           isLoading: _isLoadingRecommended,
@@ -414,7 +407,6 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                         ),
                       ],
                     ),
-              ),
             ),
           ),
         ],
@@ -423,16 +415,14 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   }
 
   Widget _buildSearchResultsView() {
-    final l10n = AppLocalizations.of(context)!;
     return GitHubAppList(
-      key: const ValueKey('search_results'),
       apps: _searchApps,
       isLoading: _isLoadingSearch,
       keyPrefix: 'search',
       onRetry: _handleRefresh,
       emptyIcon: Icons.search_off_rounded,
-      emptyText: l10n.noResults,
-      emptySubtitle: l10n.searchNoResultsSubtitle,
+      emptyText: "No results found",
+      emptySubtitle: "Try searching for something else",
       showRetry: false,
     );
   }

@@ -1,4 +1,3 @@
-import asyncio
 import json
 from unittest.mock import MagicMock
 import sys
@@ -9,7 +8,7 @@ sys.path.insert(0, os.path.abspath("python"))
 
 from core.search.manager import SearchManager
 
-async def test_merge_duplicates_preserves_id():
+def test_merge_duplicates_preserves_id():
     # Mock dependencies
     config = MagicMock()
     config.get.return_value = {}
@@ -54,5 +53,9 @@ async def test_merge_duplicates_preserves_id():
         else:
             print("Unexpected result.")
 
+    assert len(merged) == 1
+    assert merged[0].get("primary_source") == "Flatpak"
+    assert merged[0].get("id") == "org.mozilla.firefox"
+
 if __name__ == "__main__":
-    asyncio.run(test_merge_duplicates_preserves_id())
+    test_merge_duplicates_preserves_id()

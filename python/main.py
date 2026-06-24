@@ -388,41 +388,32 @@ class OmnistoreBackend:
                     logging.debug(f"Cleanup: Executor stop error: {e}")
                 self._executor = None
 
-            try:
-                # 1. Stop background executors first to halt new activity
-                if self._executor:
-                    try:
-                        self._executor.stop()
-                    except Exception as e:
-                        logging.debug(f"Cleanup: Executor stop error: {e}")
-                    self._executor = None
+            # 2. Close network sessions with timeout to prevent hanging on close
+            if self.session and not self.session.closed:
+                try:
+                    await asyncio.wait_for(self.session.close(), timeout=2.0)
+                except Exception as e:
+                    logging.debug(f"Cleanup: Session close error: {e}")
+                self.session = None
 
-                # 2. Close network sessions with timeout to prevent hanging on close
-                if self.session and not self.session.closed:
-                    try:
-                        await asyncio.wait_for(self.session.close(), timeout=2.0)
-                    except Exception as e:
-                        logging.debug(f"Cleanup: Session close error: {e}")
-                    self.session = None
+            # 3. Close AI Assistant session if initialized
+            if self._ai:
+                try:
+                    await self._ai.close()
+                except Exception as e:
+                    logging.debug(f"Cleanup: AI Assistant close error: {e}")
 
-                # 3. Close AI Assistant session if initialized
-                if self._ai:
-                    try:
-                        await self._ai.close()
-                    except Exception as e:
-                        logging.debug(f"Cleanup: AI Assistant close error: {e}")
+            # 4. Explicitly nullify large manager objects to assist GC in long-running daemon mode
+            self.manager = None
+            self.recommender = None
+            self._ai = None
+            self._updater = None
+            self._repo_manager = None
+            self._essentials = None
 
-                # 4. Explicitly nullify large manager objects to assist GC in long-running daemon mode
-                self.manager = None
-                self.recommender = None
-                self._ai = None
-                self._updater = None
-                self._repo_manager = None
-                self._essentials = None
-
-            except Exception as e:
-                # Final catch-all for cleanup to ensure we don't crash the exit sequence
-                logging.error(f"Murphy-proof Critical: Cleanup failure: {e}")
+        except Exception as e:
+            # Final catch-all for cleanup to ensure we don't crash the exit sequence
+            logging.error(f"Murphy-proof Critical: Cleanup failure: {e}")
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):

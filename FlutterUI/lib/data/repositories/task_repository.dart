@@ -27,6 +27,7 @@ class TaskRepository {
     // NOTE: Convert stdout parsing to JSON-RPC over Local Sockets (UDS/TCP) to avoid parsing stdout text directly.
     // NOTE: Implement a heartbeat / watchdog system to detect if the Python subprocess hangs indefinitely.
     final controller = StreamController<String>();
+    var sawBackendError = false;
 
     try {
       List<String> baseArgs = [flag, packageName, "--source", source, "--json"];
@@ -49,6 +50,7 @@ class TaskRepository {
                 .transform(const LineSplitter())
                 .listen(
                   (line) {
+                    if (line.contains('[ERROR]')) sawBackendError = true;
                     if (!controller.isClosed) controller.add(line);
                   },
                   onError: (err) {
@@ -78,6 +80,12 @@ class TaskRepository {
                 if (!controller.isClosed) {
                   controller.add(
                     "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Process exited with code $exitCode\"}",
+                  );
+                }
+              } else if (sawBackendError) {
+                if (!controller.isClosed) {
+                  controller.add(
+                    "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Backend reported an error\"}",
                   );
                 }
               } else {

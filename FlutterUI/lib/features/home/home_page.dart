@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _quickAccessScrollController = ScrollController();
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
+  // ignore: unused_field
   final Map<String, ScrollController> _shelfControllers = {};
   List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
