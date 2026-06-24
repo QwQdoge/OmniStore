@@ -14,6 +14,35 @@ import 'backend/execution_queue.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
+/// Murphy-proof: Centralized input validation to prevent injection and malformed args.
+class InputValidator {
+  static void validateString(String? val, String name) {
+    if (val == null || val.trim().isEmpty) {
+      throw ArgumentError("$name cannot be null or empty");
+    }
+    final trimmed = val.trim();
+    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+      throw ArgumentError(
+          "Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
+    }
+  }
+
+  static void validatePath(String? path) {
+    if (path == null || path.trim().isEmpty) {
+      throw ArgumentError("Path cannot be null or empty");
+    }
+    final trimmed = path.trim();
+    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+      throw ArgumentError(
+          "Invalid characters in path: Security policy forbids shell metacharacters.");
+    }
+    if (trimmed.contains('..')) {
+      throw ArgumentError(
+          "Security: Relative path traversal ('..') is strictly forbidden.");
+    }
+  }
+}
+
 class BackendService {
   static final BackendService instance = BackendService._internal();
   factory BackendService() => instance;
@@ -137,39 +166,6 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
-  /// Murphy-proof: Stricter string validation to prevent shell injection and path traversal.
-  void _validateString(String? val, String name) {
-    if (val == null || val.trim().isEmpty) {
-      throw ArgumentError("$name cannot be null or empty");
-    }
-    final trimmed = val.trim();
-    // Murphy-proof: Strict whitelist for allowed characters in parameters.
-    // Refuse any shell metacharacters: ;, &, |, <, >, $, (, ), `, \, ", '
-    if (!RegExp(r'^[a-zA-Z0-9._/ +,@-]+$').hasMatch(trimmed)) {
-      throw ArgumentError(
-        "Invalid characters in $name: Only alphanumeric and safety-listed symbols (._/ +,@-) are allowed.",
-      );
-    }
-  }
-
-  /// Murphy-proof: Stricter path validation.
-  void _validatePath(String? path) {
-    if (path == null || path.trim().isEmpty) {
-      throw ArgumentError("Path cannot be null or empty");
-    }
-    final trimmed = path.trim();
-    // Murphy-proof: Paths must be clean of shell characters and traversal attempts.
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError(
-        "Invalid characters in path: Security policy forbids shell metacharacters.",
-      );
-    }
-    if (trimmed.contains('..') || trimmed.contains('//')) {
-      throw ArgumentError(
-        "Security: Relative path traversal or malformed directory separators are strictly forbidden.",
-      );
-    }
-  }
 
   Future<bool> _acquireLock({
     Duration timeout = const Duration(seconds: 10),
@@ -194,6 +190,7 @@ class BackendService {
   Future<void> _killProcess(Process? process) async {
     await _processRegistry.kill(process);
   }
+
 
   Future<void> dispose() async {
     if (kIsWeb) return;
@@ -349,16 +346,55 @@ class BackendService {
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
+    Duration timeout = const Duration(seconds: 60),
   ]) async {
+    return await _daemonClient.send(action, args,
+        kwargs: kwargs, timeout: timeout);
+  }
+
+  /// Murphy-proof: Unified execution engine with Daemon-first and CLI-fallback.
+  /// Ensures that all backend calls have consistent error handling, timeouts,
+  /// and "Graceful Degradation" to a safe default value.
+  Future<T> _callBackend<T>({
+    required String action,
+    required List<dynamic> args,
+    required T defaultValue,
+    required T Function(dynamic json) mapper,
+    Map<String, dynamic>? kwargs,
+    List<String>? cliArgs,
+    Duration timeout = const Duration(seconds: 30),
+    bool useLock = false,
+  }) async {
+    // 1. Attempt via Resident Daemon (Fast IPC)
     try {
-      return await _daemonClient.send(action, args, kwargs: kwargs).timeout(
-        const Duration(seconds: 120),
-        onTimeout: () => throw TimeoutException("Daemon request timed out: $action"),
-      );
+      final daemonRes = await _sendToDaemon(action, args, kwargs, timeout);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        // Favor structured response if available, fallback to stdout parsing
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
+        if (data != null) {
+          return mapper(data);
+        }
+      }
     } catch (e) {
-      debugPrint("Murphy-proof: Daemon communication error [$action]: $e");
-      rethrow;
+      debugPrint("Murphy-proof: Daemon $action failed: $e. Falling back to CLI.");
     }
+
+    // 2. Graceful Fallback to CLI (Cold Process)
+    if (cliArgs == null) return defaultValue;
+
+    try {
+      final res = await _safeRun(cliArgs, timeout: timeout, useLock: useLock);
+      if (res != null && res.exitCode == 0) {
+        final data = _safeJsonDecode(res.stdout);
+        if (data != null) {
+          return mapper(data);
+        }
+      }
+    } catch (e) {
+      debugPrint("Murphy-proof: CLI fallback for $action failed: $e");
+    }
+
+    return defaultValue;
   }
 
   /// Murphy-proof: Safely run a command with timeouts and guaranteed lock release.
@@ -564,49 +600,35 @@ class BackendService {
     if (trimmedQuery.isEmpty || trimmedQuery.length > 500) return [];
 
     try {
-      _env.validateString(trimmedQuery, "Search Query");
+      InputValidator.validateString(trimmedQuery, "Search Query");
     } catch (e) {
       debugPrint("Security: $e");
       return [];
     }
 
-    try {
-      final daemonRes = await _sendToDaemon("run_search", [trimmedQuery, true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final results = <AppPackage>[];
-        final parsed = _safeJsonDecode(daemonRes.stdout);
-        if (parsed is List) {
-          results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-        } else if (parsed is Map<String, dynamic>) {
-          results.add(AppPackage.fromJson(parsed));
+    // Murphy-proof: Cancel ongoing search before starting new one to prevent race conditions
+    if (cancelOngoing && activeSearchProcess != null) {
+      await _killProcess(activeSearchProcess);
+      activeSearchProcess = null;
+    }
+
+    return await _callBackend<List<AppPackage>>(
+      action: "run_search",
+      args: [trimmedQuery, true],
+      cliArgs: ["-S", trimmedQuery, "--json"],
+      defaultValue: [],
+      timeout: const Duration(seconds: 25),
+      mapper: (data) {
+        if (data is List) {
+          return data
+              .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
+              .toList();
+        } else if (data is Map<String, dynamic>) {
+          return [AppPackage.fromJson(data)];
         }
-        return results;
-      }
-    } catch (e) {
-      debugPrint("Daemon searchPackages error: $e. Falling back.");
-    }
-
-    try {
-      if (cancelOngoing && activeSearchProcess != null) {
-        await _killProcess(activeSearchProcess);
-        activeSearchProcess = null;
-      }
-
-      final res = await _safeRun(["-S", trimmedQuery, "--json"], timeout: const Duration(seconds: 20));
-      if (res == null) return [];
-
-      final results = <AppPackage>[];
-      final parsed = _safeJsonDecode(res.stdout.toString());
-      if (parsed is List) {
-        results.addAll(parsed.map((item) => AppPackage.fromJson(item as Map<String, dynamic>)));
-      } else if (parsed != null) {
-        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
-      }
-      return results;
-    } catch (e) {
-      debugPrint("searchPackages [query: $query] Error: $e");
-      return [];
-    }
+        return [];
+      },
+    );
   }
 
   dynamic _safeJsonDecode(String input) {
@@ -636,18 +658,17 @@ class BackendService {
   }
 
   Future<List<dynamic>> listInstalled() async {
-    if (kIsWeb) return PackageRepository().listInstalled();
-    try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return data is List ? data : [];
-      }
-    } catch (_) {}
-
-    final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
-    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-    return data is List ? data : [];
+    if (kIsWeb) {
+      return PackageRepository().listInstalled();
+    }
+    return await _callBackend<List<dynamic>>(
+      action: "run_list_installed",
+      args: [true, false],
+      cliArgs: ["-L", "--json"],
+      defaultValue: [],
+      timeout: const Duration(seconds: 45),
+      mapper: (data) => data is List ? data : [],
+    );
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
@@ -656,22 +677,16 @@ class BackendService {
       isAIEnabled.value = data['ai']?['enabled'] ?? false;
       return data;
     }
-    try {
-      final daemonRes = await _sendToDaemon("config.data", []);
-      if (daemonRes != null && daemonRes.status == 'success' && daemonRes.response is Map<String, dynamic>) {
-        final configMap = daemonRes.response as Map<String, dynamic>;
-        isAIEnabled.value = configMap['ai']?['enabled'] ?? false;
-        return configMap;
-      }
-    } catch (_) {}
-
-    final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
-    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-    if (data is Map<String, dynamic>) {
-      isAIEnabled.value = data['ai']?['enabled'] ?? false;
-      return data;
-    }
-    return {};
+    final config = await _callBackend<Map<String, dynamic>>(
+      action: "config.data",
+      args: [],
+      cliArgs: ["--get-config", "--json"],
+      defaultValue: {},
+      timeout: const Duration(seconds: 15),
+      mapper: (data) => (data is Map<String, dynamic>) ? data : {},
+    );
+    isAIEnabled.value = config['ai']?['enabled'] ?? false;
+    return config;
   }
 
   Future<String> _aiCall(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
@@ -684,8 +699,9 @@ class BackendService {
 
   Future<String> aiExplain(String name, String desc) async {
     try {
-      _env.validateString(name, "AI App Name");
-      return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
+      InputValidator.validateString(name, "AI App Name");
+      return await _aiCall(
+          ["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
     } catch (e) {
       return "AI unavailable: $e";
     }
@@ -693,26 +709,28 @@ class BackendService {
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     try {
-      _env.validateString(n, "AI Package Name");
-      return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
-    } catch (_) {
+      InputValidator.validateString(n, "AI Package Name");
+      return await _aiCall(
+          ["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
+    } catch (e) {
       return "Update summary unavailable.";
     }
   }
 
   Future<String> aiGenerateCLI(String n, String s) async {
     try {
-      _env.validateString(n, "AI App Name");
-      _env.validateString(s, "AI Source");
-      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"], timeout: const Duration(seconds: 20));
-    } catch (_) {
+      InputValidator.validateString(n, "AI App Name");
+      InputValidator.validateString(s, "AI Source");
+      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
+          timeout: const Duration(seconds: 20));
+    } catch (e) {
       return "CLI generation failed.";
     }
   }
 
   Future<String> aiDetectConflicts(String n) async {
     try {
-      _env.validateString(n, "AI Package Name");
+      InputValidator.validateString(n, "AI Package Name");
       return await _aiCall(["--ai-conflicts", n.trim()]);
     } catch (_) {
       return "Conflict detection failed.";
@@ -722,15 +740,16 @@ class BackendService {
   Future<String> aiPickOfTheDay() async {
     try {
       return await _aiCall(["--ai-pick"]);
-    } catch (_) {
-       return "Pick of the day unavailable.";
+    } catch (e) {
+      return "Pick of the day unavailable.";
     }
   }
 
   Future<String> aiSuggestCorrection(String q) async {
     try {
-      _env.validateString(q, "AI Query");
-      return await _aiCall(["--ai-correct", q.trim()], timeout: const Duration(seconds: 15));
+      InputValidator.validateString(q, "AI Query");
+      return await _aiCall(["--ai-correct", q.trim()],
+          timeout: const Duration(seconds: 15));
     } catch (e) {
       return q;
     }
@@ -738,7 +757,7 @@ class BackendService {
 
   Future<String> aiCompareVariants(String n) async {
     try {
-      _env.validateString(n, "AI App Name");
+      InputValidator.validateString(n, "AI App Name");
       return await _aiCall(["--ai-compare", n.trim()]);
     } catch (_) {
       return "Variant comparison unavailable.";
@@ -763,9 +782,16 @@ class BackendService {
 
   Future<String> aiRecommend(String p) async {
     try {
-      _env.validateString(p, "AI Prompt");
-      return await _aiCall(["--ai-recommend", p.trim()], timeout: const Duration(seconds: 90));
-    } catch (_) {
+      InputValidator.validateString(p, "AI Prompt");
+      final res = await _aiCall(["--ai-recommend", p.trim()],
+          timeout: const Duration(seconds: 90));
+      _aiFailureCount = 0;
+      return res;
+    } catch (e) {
+      _aiFailureCount++;
+      if (_aiFailureCount > 3) {
+        return "AI recommendations are currently offline. Please try again later.";
+      }
       return "Recommendation service error.";
     }
   }
@@ -816,11 +842,16 @@ class BackendService {
   }
 
   Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    if (kIsWeb) return PackageRepository().getRecommendations();
-    try {
-      final daemonRes = await _sendToDaemon("run_recommendations", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+    if (kIsWeb) {
+      return PackageRepository().getRecommendations();
+    }
+    return await _callBackend<Map<String, List<AppPackage>>>(
+      action: "run_recommendations",
+      args: [true],
+      cliArgs: ["--recommend", "--json"],
+      defaultValue: {},
+      timeout: const Duration(seconds: 30),
+      mapper: (data) {
         final Map<String, List<AppPackage>> result = {};
         if (data is Map) {
           data.forEach((k, v) {
@@ -828,64 +859,80 @@ class BackendService {
           });
         }
         return result;
-      }
-    } catch (_) {}
-
-    final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
-    final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-    final Map<String, List<AppPackage>> result = {};
-    if (data is Map) {
-      data.forEach((k, v) {
-        if (v is List) result[k] = v.map((i) => AppPackage.fromJson(i as Map<String, dynamic>)).toList();
-      });
-    }
-    return result;
+      },
+    );
   }
 
   Future<bool> launchApp(String n, String s) async {
     if (kIsWeb) return PackageRepository().launchApp(n, s);
     try {
-      _env.validateString(n, "App Name");
-      _env.validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
-      if (daemonRes != null) return daemonRes.response == true;
-    } catch (_) {}
+      InputValidator.validateString(n, "App Name");
+      InputValidator.validateString(s, "Source");
+    } catch (e) {
+      debugPrint("Security: $e");
+      return false;
+    }
 
-    final res = await _safeRun(["--launch", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 15));
-    return res?.exitCode == 0;
+    return await _callBackend<bool>(
+      action: "run_launch",
+      args: [n.trim(), s.trim(), true],
+      cliArgs: ["--launch", n.trim(), "--source", s.trim(), "--json"],
+      defaultValue: false,
+      timeout: const Duration(seconds: 15),
+      mapper: (data) => data == true || (data is Map && data['status'] == 'success'),
+    );
   }
 
   Future<bool> locateApp(String n, String s) async {
     if (kIsWeb) return PackageRepository().locateApp(n, s);
     try {
-      _env.validateString(n, "App Name");
-      _env.validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
-      if (daemonRes != null) return daemonRes.response == true;
-    } catch (_) {}
+      InputValidator.validateString(n, "App Name");
+      InputValidator.validateString(s, "Source");
+    } catch (e) {
+      debugPrint("Security: $e");
+      return false;
+    }
 
-    final res = await _safeRun(["--locate", n.trim(), "--source", s.trim(), "--json"], timeout: const Duration(seconds: 10));
-    return res?.exitCode == 0;
+    return await _callBackend<bool>(
+      action: "run_locate",
+      args: [n.trim(), s.trim(), true],
+      cliArgs: ["--locate", n.trim(), "--source", s.trim(), "--json"],
+      defaultValue: false,
+      timeout: const Duration(seconds: 10),
+      mapper: (data) => data == true || (data is Map && data['status'] == 'success'),
+    );
   }
 
   Future<Map<String, dynamic>> getAppDetails(String id) async {
     if (kIsWeb) return PackageRepository().getAppDetails(id);
     try {
-      _env.validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
-    } catch (_) {}
+      InputValidator.validateString(id, "App ID");
+    } catch (e) {
+      debugPrint("Security: $e");
+      return {};
+    }
 
-    final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
-    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {};
+    return await _callBackend<Map<String, dynamic>>(
+      action: "run_app_details",
+      args: [id.trim(), true],
+      cliArgs: ["--details", id.trim(), "--json"],
+      defaultValue: {},
+      timeout: const Duration(seconds: 25),
+      mapper: (data) => (data is Map<String, dynamic>) ? data : {},
+    );
   }
 
   Stream<String> executeAction(String f, String n, String s, {String? url}) {
     if (kIsWeb) return TaskRepository().executeAction(f, n, s, url: url);
     try {
-      _env.validateString(n, "App Name");
-      _env.validateString(s, "Source");
-      if (!["-I", "-R", "-U"].contains(f)) throw ArgumentError("Invalid action flag");
+      InputValidator.validateString(n, "App Name");
+      InputValidator.validateString(s, "Source");
+      if (!["-I", "-R", "-U"].contains(f)) {
+        throw ArgumentError("Invalid action flag: $f");
+      }
+      if (url != null && url.trim().isNotEmpty) {
+        InputValidator.validateString(url, "URL");
+      }
     } catch (e) {
       return Stream.value("[CALLBACK] {\"message\": \"[ERROR] $e\"}");
     }
@@ -896,20 +943,23 @@ class BackendService {
   }
 
   Future<List<dynamic>> checkUpdates() async {
-    if (kIsWeb) return TaskRepository().checkUpdates();
-    try {
-      final daemonRes = await _sendToDaemon("run_check_updates", [true]);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
-    } catch (_) {}
-
-    final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
-    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
+    if (kIsWeb) {
+      return TaskRepository().checkUpdates();
+    }
+    return await _callBackend<List<dynamic>>(
+      action: "run_check_updates",
+      args: [true],
+      cliArgs: ["-C", "--json"],
+      defaultValue: [],
+      timeout: const Duration(seconds: 60),
+      mapper: (data) => data is List ? data : [],
+    );
   }
 
   Stream<String> updateAll(String s) {
     if (kIsWeb) return TaskRepository().updateAll(s);
     try {
-      _env.validateString(s, "Source");
+      InputValidator.validateString(s, "Update Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
     } catch (e) {
       return Stream.value("[CALLBACK] {\"error\": \"$e\"}");
@@ -917,11 +967,17 @@ class BackendService {
   }
 
   Future<List<dynamic>> getEssentials() async {
-    if (kIsWeb) return PackageRepository().getEssentials();
-    try {
-      final daemonRes = await _sendToDaemon("run_get_essentials", []);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
-    } catch (_) {}
+    if (kIsWeb) {
+      return PackageRepository().getEssentials();
+    }
+    return await _callBackend<List<dynamic>>(
+      action: "run_get_essentials",
+      args: [],
+      cliArgs: ["--essentials", "--json"],
+      defaultValue: [],
+      mapper: (data) => data is List ? data : [],
+    );
+  }
 
     final res = await _safeRun(["--essentials", "--json"]);
     return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
@@ -930,25 +986,38 @@ class BackendService {
   Future<List<dynamic>> importPackages(String path) async {
     if (kIsWeb) return PackageRepository().importPackages(path);
     try {
-      _env.validatePath(path);
-      final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as List;
-    } catch (_) {}
+      InputValidator.validatePath(path);
+    } catch (e) {
+      debugPrint("Security: $e");
+      return [];
+    }
 
-    final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
-    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as List?) ?? [];
+    return await _callBackend<List<dynamic>>(
+      action: "run_import_packages",
+      args: [path.trim()],
+      cliArgs: ["--import-packages", path.trim(), "--json"],
+      defaultValue: [],
+      mapper: (data) => data is List ? data : [],
+    );
   }
 
   Future<Map<String, dynamic>> exportPackages(String path) async {
     if (kIsWeb) return TaskRepository().exportPackages(path);
     try {
-      _env.validatePath(path);
-      final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
-    } catch (_) {}
+      InputValidator.validatePath(path);
+    } catch (e) {
+      debugPrint("Security: $e");
+      return {"status": "error", "message": e.toString()};
+    }
 
-    final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
-    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {"status": "error"};
+    return await _callBackend<Map<String, dynamic>>(
+      action: "run_export_packages",
+      args: [path.trim()],
+      cliArgs: ["--export-packages", path.trim(), "--json"],
+      defaultValue: {"status": "error"},
+      timeout: const Duration(seconds: 30),
+      mapper: (data) => (data is Map<String, dynamic>) ? data : {"status": "error"},
+    );
   }
 
   Stream<String> cleanSystem() {
@@ -959,49 +1028,54 @@ class BackendService {
   Future<bool> addCustomRepo(String type, String name, String url) async {
     if (kIsWeb) return true;
     try {
-      _env.validateString(type, "Type");
-      _env.validateString(name, "Name");
-      _env.validateString(url, "URL");
-      final daemonRes = await _sendToDaemon("run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
-      if (daemonRes != null) return daemonRes.response == true;
-    } catch (_) {}
+      InputValidator.validateString(type, "Repo Type");
+      InputValidator.validateString(name, "Repo Name");
+      InputValidator.validateString(url, "Repo URL");
+    } catch (e) {
+      debugPrint("Security: $e");
+      return false;
+    }
 
-    final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
-    return res?.exitCode == 0;
+    return await _callBackend<bool>(
+      action: "run_add_custom_repo",
+      args: [type.trim(), name.trim(), url.trim(), true],
+      cliArgs: ["--add-custom-repo", "${type.trim()},${name.trim()},${url.trim()}", "--json"],
+      defaultValue: false,
+      timeout: const Duration(seconds: 20),
+      mapper: (data) => data == true || (data is Map && data['status'] == 'success'),
+    );
   }
 
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {
-      _env.validateString(type, "Type");
-      _env.validateString(name, "Name");
-      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [type.trim(), name.trim(), true]);
-      if (daemonRes != null) return daemonRes.response == true;
-    } catch (_) {}
+      InputValidator.validateString(type, "Repo Type");
+      InputValidator.validateString(name, "Repo Name");
+    } catch (e) {
+      debugPrint("Security: $e");
+      return false;
+    }
 
-    final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
-    return res?.exitCode == 0;
+    return await _callBackend<bool>(
+      action: "run_remove_custom_repo",
+      args: [type.trim(), name.trim(), true],
+      cliArgs: ["--remove-custom-repo", "${type.trim()},${name.trim()}", "--json"],
+      defaultValue: false,
+      timeout: const Duration(seconds: 20),
+      mapper: (data) => data == true || (data is Map && data['status'] == 'success'),
+    );
   }
 
   Future<Map<String, dynamic>> getStorageInfo() async {
     if (kIsWeb) return {};
-    try {
-      final daemonRes = await _sendToDaemon("run_get_storage_info", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {};
-      }
-    } catch (e) {
-      debugPrint("Daemon getStorageInfo error: $e. Falling back.");
-    }
-    try {
-      final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {};
-    } catch (e) {
-      debugPrint("getStorageInfo Error: $e");
-      return {};
-    }
+    return await _callBackend<Map<String, dynamic>>(
+      action: "run_get_storage_info",
+      args: [true],
+      cliArgs: ["--storage-info", "--json"],
+      defaultValue: {},
+      timeout: const Duration(seconds: 15),
+      mapper: (data) => (data is Map<String, dynamic>) ? data : {},
+    );
   }
 
   /// Murphy-proof: Coordinated shutdown with timeout to prevent hanging.
@@ -1018,13 +1092,15 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> testAiConnection() async {
-    if (kIsWeb) return {"status": "error"};
-    try {
-      final daemonRes = await _sendToDaemon("run_ai_test", [true]);
-      if (daemonRes != null) return _safeJsonDecode(daemonRes.stdout) as Map<String, dynamic>;
-    } catch (_) {}
-
-    final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
-    return (_safeJsonDecode(res?.stdout?.toString() ?? "") as Map<String, dynamic>?) ?? {"status": "error"};
+    if (kIsWeb) return {"status": "error", "response": "Not supported on web"};
+    return await _callBackend<Map<String, dynamic>>(
+      action: "run_ai_test",
+      args: [true],
+      cliArgs: ["--ai-test", "--json"],
+      defaultValue: {"status": "error", "response": "Internal Error"},
+      timeout: const Duration(seconds: 60),
+      mapper: (data) =>
+          (data is Map<String, dynamic>) ? data : {"status": "error", "response": "Invalid format"},
+    );
   }
 }
