@@ -254,7 +254,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 应用已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：应用已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -321,7 +321,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '应用已是最新';
+  String get allUpdated => '应用已是最新版本';
 
   @override
   String get update => '更新';
@@ -1333,7 +1333,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore： 已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：已是最新';
 
   @override
   String get updateReminders => '更新提醒';

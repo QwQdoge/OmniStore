@@ -66,32 +66,32 @@ class AppDetailsHeader extends StatelessWidget {
         Hero(
           tag: heroTag ?? 'app-icon-${app.name}-${app.primarySource}',
           child: Container(
-            width: 100,
-            height: 100,
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(16.0),
+              borderRadius: BorderRadius.circular(28.0),
             ),
             alignment: Alignment.center,
             child: iconUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(28.0),
                     child: CachedNetworkImage(
                       imageUrl: iconUrl,
                       fit: BoxFit.cover,
-                      memCacheWidth: 200,
-                      memCacheHeight: 200,
+                      memCacheWidth: 240,
+                      memCacheHeight: 240,
                       placeholder: (context, url) => const Skeleton(
-                        width: 100,
-                        height: 100,
-                        borderRadius: 16.0,
+                        width: 120,
+                        height: 120,
+                        borderRadius: 28.0,
                       ),
                     ),
                   )
                 : Text(
                     app.name[0].toUpperCase(),
                     style: TextStyle(
-                      fontSize: 48,
+                      fontSize: 56,
                       color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w900,
                     ),

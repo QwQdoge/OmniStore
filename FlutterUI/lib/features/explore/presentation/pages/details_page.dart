@@ -274,9 +274,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           onLaunchApp: _launchApp,
           onCancelAction: _cancelAction,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         const Divider(),
-        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -303,13 +302,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
                 ),
         ),
-        const SizedBox(height: 32),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+          const SizedBox(height: 24),
           const Divider(),
-          const SizedBox(height: 8),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
           ),
@@ -318,10 +316,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
           ),
-          const SizedBox(height: 32),
         ],
+        const SizedBox(height: 24),
         const Divider(),
-        const SizedBox(height: 8),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
           child: Padding(
@@ -381,11 +378,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
             pinned: true,
-            title: Text(
-              widget.app.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
+            title: AnimatedOpacity(
+              opacity: innerBoxIsScrolled ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Text(
+                widget.app.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             leading: widget.isEmbedded
@@ -448,9 +449,28 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         ],
         body: SelectionArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: _buildMainContent(context, colorScheme, theme, isAIEnabled),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, 30 * (1 - value)),
+                  child: child,
+                ),
+              );
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: _buildMainContent(
+                context,
+                colorScheme,
+                theme,
+                isAIEnabled,
+              ),
+            ),
           ),
         ),
       ),
