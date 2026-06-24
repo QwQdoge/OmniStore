@@ -36,6 +36,40 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
     );
   }
 
+  Widget _buildAIMarkdown(
+    AsyncSnapshot<String> snapshot,
+    AppLocalizations l10n,
+  ) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const SizedBox(
+        key: ValueKey('loading'),
+        height: 200,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Skeleton(width: double.infinity, height: 14),
+            SizedBox(height: 8),
+            Skeleton(width: double.infinity, height: 14),
+            SizedBox(height: 8),
+            Skeleton(width: 200, height: 14),
+          ],
+        ),
+      );
+    }
+    String data = snapshot.data ?? l10n.aiResponseFailed;
+    if (data == "AI_TIMEOUT") data = l10n.aiTimeout;
+    if (data == "AI_NO_RESPONSE") data = l10n.aiNoResponse;
+    if (data == "AI_PARSE_FAILED") data = l10n.aiParseFailed;
+    if (data.startsWith("AI_CALL_FAILED:")) {
+      data = l10n.aiCallFailed(data.replaceFirst("AI_CALL_FAILED:", ""));
+    }
+
+    return SingleChildScrollView(
+      key: const ValueKey('loaded'),
+      child: MarkdownBody(data: data, selectable: true),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -53,26 +87,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: snapshot.connectionState == ConnectionState.waiting
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
-                      height: 200,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Skeleton(width: double.infinity, height: 14),
-                          SizedBox(height: 8),
-                          Skeleton(width: double.infinity, height: 14),
-                          SizedBox(height: 8),
-                          Skeleton(width: 200, height: 14),
-                        ],
-                      ),
-                    )
-                  : MarkdownBody(
-                      key: const ValueKey('loaded'),
-                      data: snapshot.data ?? "AI failed to summarize.",
-                      selectable: true,
-                    ),
+              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },
         ),
