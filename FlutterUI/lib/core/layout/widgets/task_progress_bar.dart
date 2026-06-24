@@ -65,13 +65,10 @@ class TaskProgressBar extends StatelessWidget {
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: task.progress != null && task.progress! >= 0
+              child: task.progress != null
                   ? TweenAnimationBuilder<double>(
                       key: const ValueKey('determinate'),
-                      tween: Tween<double>(
-                        begin: 0,
-                        end: task.progress!,
-                      ),
+                      tween: Tween<double>(begin: 0, end: task.progress!),
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeOutCubic,
                       builder: (context, value, _) {
