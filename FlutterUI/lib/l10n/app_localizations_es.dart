@@ -1182,13 +1182,51 @@ class AppLocalizationsEs extends AppLocalizations {
   String get taskHistory => 'Historial de tareas';
 
   @override
-  String get clearHistoryShort => 'Limpiar historial';
-
-  @override
   String get unknownApp => 'Aplicación desconocida';
 
   @override
-  String taskFailedReason(String message) {
-    return 'Error: $message';
+  String get taskSuccessMsg => 'Tarea ejecutada con éxito';
+
+  @override
+  String failureReason(String message) {
+    return 'Razón del fallo: $message';
   }
+
+  @override
+  String get noPackagesAvailable => 'No hay paquetes disponibles';
+
+  @override
+  String get noDescription => 'Sin descripción.';
+
+  @override
+  String get viewDetails => 'Ver detalles';
+
+  @override
+  String get ok => 'Aceptar';
+
+  @override
+  String get checkNetwork =>
+      'Compruebe su conexión a la red e inténtelo de nuevo';
+
+  @override
+  String get githubStoreSubtitle =>
+      'Descubre y descarga aplicaciones directamente desde las versiones de GitHub';
+
+  @override
+  String get searchGithubHint => 'Buscar repositorios de GitHub...';
+
+  @override
+  String get recommended => 'Recomendado';
+
+  @override
+  String get rankings => 'Clasificaciones';
+
+  @override
+  String get trending => 'Tendencias';
+
+  @override
+  String get latestUpdates => 'Últimas actualizaciones';
+
+  @override
+  String get searchNoResultsSubtitle => 'Intente buscar otra cosa';
 }

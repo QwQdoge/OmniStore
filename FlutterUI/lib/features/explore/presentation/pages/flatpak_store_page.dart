@@ -69,7 +69,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Check your network connection and try again",
+                AppLocalizations.of(context)!.checkNetwork,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -78,7 +78,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
               FilledButton.icon(
                 onPressed: _refresh,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text("Retry"),
+                label: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),

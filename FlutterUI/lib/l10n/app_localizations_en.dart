@@ -1172,13 +1172,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskHistory => 'Task History';
 
   @override
-  String get clearHistoryShort => 'Clear History';
-
-  @override
   String get unknownApp => 'Unknown App';
 
   @override
-  String taskFailedReason(String message) {
-    return 'Failed: $message';
+  String get taskSuccessMsg => 'Task executed successfully';
+
+  @override
+  String failureReason(String message) {
+    return 'Failure reason: $message';
   }
+
+  @override
+  String get noPackagesAvailable => 'No packages available';
+
+  @override
+  String get noDescription => 'No description provided.';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get checkNetwork => 'Check your network connection and try again';
+
+  @override
+  String get githubStoreSubtitle =>
+      'Discover and download apps directly from GitHub releases';
+
+  @override
+  String get searchGithubHint => 'Search GitHub repositories...';
+
+  @override
+  String get recommended => 'Recommended';
+
+  @override
+  String get rankings => 'Rankings';
+
+  @override
+  String get trending => 'Trending';
+
+  @override
+  String get latestUpdates => 'Latest Updates';
+
+  @override
+  String get searchNoResultsSubtitle => 'Try searching for something else';
 }
