@@ -72,10 +72,9 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             key: const ValueKey('determinate'),
                             value: taskController.progress,
                           )
-                        : Skeleton(
-                            key: const ValueKey('indeterminate'),
-                            height: 4.0, // Match typical LinearProgressIndicator height
-                            width: double.infinity,
+                        : const LinearProgressIndicator(
+                            key: ValueKey('indeterminate'),
+                            minHeight: 4.0,
                           ),
                   ),
                   const SizedBox(height: 16),
