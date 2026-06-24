@@ -190,6 +190,7 @@ class TaskManager {
         StreamSubscription? sub;
 
         try {
+          final completer = Completer<bool>();
           sub = stream.listen(
             (line) {
               _handleOutput(line);
@@ -212,12 +213,15 @@ class TaskManager {
           _subscriptions.add(sub);
           success = await completer.future.timeout(
             const Duration(minutes: 60),
-            onTimeout: () => throw TimeoutException("Task execution exceeded 60m safety limit"),
+            onTimeout: () {
+              debugPrint("Murphy-proof: Task timed out. Forcing cleanup.");
+              return false;
+            },
           );
         } finally {
           if (sub != null) {
-            _subscriptions.remove(sub);
             await sub.cancel();
+            _subscriptions.remove(sub);
           }
         }
 

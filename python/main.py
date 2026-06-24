@@ -11,6 +11,7 @@ import re
 import shutil
 import signal
 import contextlib
+import contextvars
 from pathlib import Path
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ValidationError
@@ -23,11 +24,22 @@ from core.friendly_messages import get_friendly_message
 # Initial rich console
 console = Console(force_terminal=True)
 
+# Murphy-proof: Context-aware output redirection for async daemon concurrency
+# Prevents cross-contamination of stdout when multiple daemon clients are active.
+captured_output_var = contextvars.ContextVar("captured_output", default=None)
+
 # Force all print statements to flush immediately, ensuring real-time output to Flutter.
 _orig_print = print
 
 def print(*args, **kwargs):
     msg = " ".join(map(str, args))
+
+    # Check if we are in a redirected context (Daemon request)
+    buf = captured_output_var.get()
+    if buf is not None:
+        buf.write(msg + "\n")
+        return
+
     # Protocol-prefixed messages are always allowed
     if any(msg.startswith(p) for p in ["[CALLBACK]", "[PROGRESS]", "[SPEED]"]):
         _orig_print(*args, **kwargs, flush=True)
@@ -44,6 +56,32 @@ def print(*args, **kwargs):
         return
 
     _orig_print(*args, **kwargs, flush=True)
+
+class SafeStdout:
+    """Murphy-proof stdout proxy that respects task-local redirection."""
+    def __init__(self, original):
+        self.original = original
+
+    def __getattr__(self, name):
+        return getattr(self.original, name)
+
+    def write(self, data):
+        buf = captured_output_var.get()
+        if buf is not None:
+            buf.write(data)
+        else:
+            self.original.write(data)
+
+    def flush(self):
+        buf = captured_output_var.get()
+        if buf is not None:
+            if hasattr(buf, "flush"):
+                buf.flush()
+        else:
+            self.original.flush()
+
+# Globally hijack sys.stdout to be context-aware
+sys.stdout = SafeStdout(sys.stdout) # type: ignore
 
 # Path handling optimization
 BASE_DIR = Path(__file__).resolve().parent
@@ -109,7 +147,6 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
     Ensures per-client isolation, payload limits, and robust error recovery.
     """
     import io
-    from contextlib import redirect_stdout
     client_addr = writer.get_extra_info('peername')
     logging.debug(f"New daemon client connected: {client_addr}")
 
@@ -152,9 +189,12 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
                 except: pass
                 break
             
-            # 2. Execution isolation: redirect stdout and catch all per-action errors
+            # 2. Execution isolation: Use contextvars for task-local output redirection
+            # This is async-safe and prevents concurrent clients from seeing each other's output.
             captured_stdout = io.StringIO()
-            with redirect_stdout(captured_stdout):
+            token = captured_output_var.set(captured_stdout)
+
+            try:
                 action = cmd_data.action
                 try:
                     # Murphy-proof: Use backend context manager to ensure session liveness
@@ -207,9 +247,12 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
                         writer.write(json.dumps({
                             "status": "error",
                             "error": str(e),
+                            "stdout": captured_stdout.getvalue(),
                             "traceback": err_trace if backend.config.get("logging.level") == "DEBUG" else None
                         }).encode('utf-8') + b'\n')
                     except: pass
+            finally:
+                captured_output_var.reset(token)
 
             try:
                 await writer.drain()
@@ -295,7 +338,6 @@ class OmnistoreBackend:
         self.is_action = False
         self.json_mode = json_mode
         self.session: Optional[aiohttp.ClientSession] = None
-        self._ref_count = 0
 
         # Murphy-proof: Reference count for shared resource management in daemon mode
         self._ref_count = 0
@@ -340,22 +382,29 @@ class OmnistoreBackend:
 
     async def initialize(self):
         """Asynchronous initialization of components requiring a network session."""
-        session_replaced = False
-        if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
-            session_replaced = True
+        async with self._lock:
+            session_replaced = False
+            if self.session is None or self.session.closed:
+                # Murphy-proof: Use a customized connector with connection limits
+                # to prevent file descriptor exhaustion in long-running daemon mode.
+                connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
+                self.session = aiohttp.ClientSession(
+                    connector=connector,
+                    timeout=aiohttp.ClientTimeout(total=60)
+                )
+                session_replaced = True
 
-        # ⚡ Bolt: Idempotent initialization prevents redundant disk I/O and object creation
-        # in persistent daemon mode, saving ~100-300ms per search request.
-        if self.recommender is None or session_replaced:
-            self.recommender = RecommendationManager(self.session, self.habit_tracker)
+            # ⚡ Bolt: Idempotent initialization prevents redundant disk I/O and object creation
+            # in persistent daemon mode, saving ~100-300ms per search request.
+            if self.recommender is None or session_replaced:
+                self.recommender = RecommendationManager(self.session, self.habit_tracker)
 
-        if self.manager is None or session_replaced:
-            self.manager = SearchManager(
-                self.config, self.session, self.habit_tracker,
-                recommender=self.recommender, cache_manager=self.cache,
-                ai_assistant=self.ai
-            )
+            if self.manager is None or session_replaced:
+                self.manager = SearchManager(
+                    self.config, self.session, self.habit_tracker,
+                    recommender=self.recommender, cache_manager=self.cache,
+                    ai_assistant=self.ai
+                )
         return self
 
     async def __aenter__(self):
@@ -363,7 +412,8 @@ class OmnistoreBackend:
         # Ref count is incremented only AFTER successful initialization
         # to prevent stuck state on failure.
         await self.initialize()
-        self._ref_count += 1
+        async with self._lock:
+            self._ref_count += 1
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -371,13 +421,14 @@ class OmnistoreBackend:
         Murphy-proof cleanup: ensures all sessions and background executors
         are explicitly destroyed only when the reference count reaches zero.
         """
-        if self._ref_count > 0:
-            self._ref_count -= 1
+        async with self._lock:
+            if self._ref_count > 0:
+                self._ref_count -= 1
 
-        # ⚡ Bolt: Only perform cleanup if ref count reaches zero, allowing resource
-        # persistence across multiple requests in daemon mode.
-        if self._ref_count > 0:
-            return
+            # ⚡ Bolt: Only perform cleanup if ref count reaches zero, allowing resource
+            # persistence across multiple requests in daemon mode.
+            if self._ref_count > 0:
+                return
 
         try:
             # 1. Stop background executors first to halt new activity
@@ -391,6 +442,7 @@ class OmnistoreBackend:
             # 2. Close network sessions with timeout to prevent hanging on close
             if self.session and not self.session.closed:
                 try:
+                    # Murphy-proof: Aggressive timeout on session close
                     await asyncio.wait_for(self.session.close(), timeout=2.0)
                 except Exception as e:
                     logging.debug(f"Cleanup: Session close error: {e}")

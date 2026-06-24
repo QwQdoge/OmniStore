@@ -191,20 +191,30 @@ class BackendService {
   Future<void> dispose() async {
     if (kIsWeb) return;
 
+    // Murphy-proof: Aggressive and ordered cleanup
     _healthCheckTimer?.cancel();
     _healthCheckTimer = null;
 
+    // 1. Terminate IPC clients
     await _daemonClient.dispose();
+
+    // 2. Kill all registered subprocesses (Daemon, Search, Actions)
     await _processRegistry.dispose();
 
+    // 3. Nullify references to prevent memory leaks or reuse of dead handles
     activeProcess = null;
     activeSearchProcess = null;
     _daemonProcess = null;
 
+    // 4. Force release any hanging global locks
     if (_globalLock != null && !_globalLock!.isCompleted) {
       _globalLock!.complete();
     }
     _globalLock = null;
+
+    // 5. Clean up reactive state to baseline
+    isDownloading.value = false;
+    globalProgress.value = null;
   }
 
   Process? _daemonProcess;
@@ -326,12 +336,29 @@ class BackendService {
     });
   }
 
+  // Murphy-proof: Circuit breaker for persistent daemon failures
+  int _daemonFailureStreak = 0;
+  static const int _daemonFailureThreshold = 5;
+
   Future<DaemonResult?> _sendToDaemon(
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    return await _daemonClient.send(action, args, kwargs: kwargs);
+    if (_daemonFailureStreak >= _daemonFailureThreshold) {
+      debugPrint("Circuit Breaker: Daemon persistent failure. Bypassing to CLI.");
+      return null;
+    }
+
+    try {
+      final res = await _daemonClient.send(action, args, kwargs: kwargs);
+      _daemonFailureStreak = 0; // Reset on success
+      return res;
+    } catch (e) {
+      _daemonFailureStreak++;
+      debugPrint("Daemon IPC Error (Streak: $_daemonFailureStreak): $e");
+      return null;
+    }
   }
 
   Future<ProcessResult?> _safeRun(
@@ -719,17 +746,16 @@ class BackendService {
     try {
       final res = await _safeRun([...args, "--json"], timeout: timeout);
       if (res == null) {
-        return "⏱ AI request timed out. Please check your AI provider configuration in Settings → Advanced.";
+        return "AI_TIMEOUT"; // Standardized internal code for l10n mapping
       }
       final data = _safeJsonDecode(res.stdout.toString());
       if (data is Map) {
-        return data['response']?.toString() ??
-            "⚠ No response received from AI provider. Verify your endpoint and API key.";
+        return data['response']?.toString() ?? "AI_NO_RESPONSE";
       }
-      return "⚠ Failed to parse AI response. The provider may have returned an unexpected format.";
+      return "AI_PARSE_FAILED";
     } catch (e) {
       debugPrint("_aiCall Error: $e");
-      return "⚠ AI service error: ${e.toString().replaceAll(RegExp(r'Exception: '), '')}";
+      return "AI_ERROR: ${e.toString()}";
     }
   }
 
