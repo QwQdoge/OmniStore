@@ -29,4 +29,9 @@
 **Learning:** Allocating a new list and performing localization lookups in the `build()` method causes unnecessary allocations on every frame or state change. Caching lists that only change when dependencies (like localization) change reduces garbage collection overhead and makes `build()` faster.
 
 **Action:** Added `_categories` state to `_HomePageState` and initialized it in `didChangeDependencies()` to memoize `CategoryService.getCategories(context)`, avoiding redundant evaluations in `_buildCategoryQuickAccess()`.
-Bolt Optimization - TaskController & Selectors: Refactored `Consumer<TaskController>` to `Selector` in `tasks_tab.dart` and `terminal_dialog.dart` to reduce rebuilds. To ensure `Selector` equality checks work with Dart Records containing lists, `TaskController` was updated to return cached `UnmodifiableListView` instances (e.g., `_logsView`) instead of recreating `List.unmodifiable` on every getter access, preventing O(N) allocations. Also included the `length` property in the `Selector` Record to guarantee UI updates when items are added or removed.
+
+## 2026-06-19 - Python Backend Lifecycle Persistence
+
+**Learning:** Recreating `aiohttp.ClientSession` and backend manager objects (which load multi-megabyte JSON metadata caches) on every IPC request in daemon mode adds significant latency (~100-300ms) and CPU spikes. Implementing a reference-counting mechanism in the backend context manager allows these resources to persist across requests while ensuring safe cleanup when the process exits.
+
+**Action:** Refactored `OmnistoreBackend` in `python/main.py` to use a `_ref_count` and idempotent `initialize()` logic. Reusing these resources across search and metadata enrichment requests significantly improves responsiveness for sequential operations.
