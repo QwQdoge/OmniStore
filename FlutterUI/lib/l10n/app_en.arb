@@ -944,14 +944,26 @@
   "enableSystemdService": "Enable systemd Background Service",
   "enableSystemdServiceDesc": "Allow registering systemd timer to check for updates when the app is closed",
   "taskHistory": "Task History",
-  "clearHistoryShort": "Clear History",
   "unknownApp": "Unknown App",
-  "taskFailedReason": "Failed: {message}",
-  "@taskFailedReason": {
+  "taskSuccessMsg": "Task executed successfully",
+  "failureReason": "Failure reason: {message}",
+  "@failureReason": {
     "placeholders": {
       "message": {
         "type": "String"
       }
     }
-  }
+  },
+  "noPackagesAvailable": "No packages available",
+  "noDescription": "No description provided.",
+  "viewDetails": "View Details",
+  "ok": "OK",
+  "checkNetwork": "Check your network connection and try again",
+  "githubStoreSubtitle": "Discover and download apps directly from GitHub releases",
+  "searchGithubHint": "Search GitHub repositories...",
+  "recommended": "Recommended",
+  "rankings": "Rankings",
+  "trending": "Trending",
+  "latestUpdates": "Latest Updates",
+  "searchNoResultsSubtitle": "Try searching for something else"
 }

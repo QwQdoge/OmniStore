@@ -121,7 +121,7 @@ class TasksTab extends StatelessWidget {
                   onPressed: () =>
                       context.read<TaskController>().clearHistory(),
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                  label: Text(l10n.clearHistoryShort),
+                  label: Text(l10n.clearHistory),
                 ),
               ],
             ),
@@ -163,10 +163,8 @@ class TasksTab extends StatelessWidget {
                         title: Row(
                           children: [
                             Text(
-                              task.packageName ?? "Unknown App",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              task.packageName ?? l10n.unknownApp,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -191,8 +189,8 @@ class TasksTab extends StatelessWidget {
                         ),
                         subtitle: Text(
                           isSuccess
-                              ? l10n.taskSuccess
-                              : l10n.taskFailedReason(task.message),
+                              ? l10n.taskSuccessMsg
+                              : l10n.failureReason(task.message),
                           style: TextStyle(
                             color: isSuccess
                                 ? Colors.grey

@@ -29,11 +29,9 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _quickAccessScrollController = ScrollController();
   final ScrollController _hotAppsScrollController = ScrollController();
   final ScrollController _forYouScrollController = ScrollController();
-  final Map<String, ScrollController> _shelfControllers = {};
   List<CategoryItem> _categories = [];
   String? _aiPickBlurb;
   bool _isAILoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -53,9 +51,6 @@ class _HomePageState extends State<HomePage> {
     _quickAccessScrollController.dispose();
     _hotAppsScrollController.dispose();
     _forYouScrollController.dispose();
-    for (var controller in _shelfControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 

@@ -2125,23 +2125,95 @@ abstract class AppLocalizations {
   /// **'Task History'**
   String get taskHistory;
 
-  /// No description provided for @clearHistoryShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear History'**
-  String get clearHistoryShort;
-
   /// No description provided for @unknownApp.
   ///
   /// In en, this message translates to:
   /// **'Unknown App'**
   String get unknownApp;
 
-  /// No description provided for @taskFailedReason.
+  /// No description provided for @taskSuccessMsg.
   ///
   /// In en, this message translates to:
-  /// **'Failed: {message}'**
-  String taskFailedReason(String message);
+  /// **'Task executed successfully'**
+  String get taskSuccessMsg;
+
+  /// No description provided for @failureReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Failure reason: {message}'**
+  String failureReason(String message);
+
+  /// No description provided for @noPackagesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No packages available'**
+  String get noPackagesAvailable;
+
+  /// No description provided for @noDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description provided.'**
+  String get noDescription;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @checkNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your network connection and try again'**
+  String get checkNetwork;
+
+  /// No description provided for @githubStoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover and download apps directly from GitHub releases'**
+  String get githubStoreSubtitle;
+
+  /// No description provided for @searchGithubHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search GitHub repositories...'**
+  String get searchGithubHint;
+
+  /// No description provided for @recommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get recommended;
+
+  /// No description provided for @rankings.
+  ///
+  /// In en, this message translates to:
+  /// **'Rankings'**
+  String get rankings;
+
+  /// No description provided for @trending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending'**
+  String get trending;
+
+  /// No description provided for @latestUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Updates'**
+  String get latestUpdates;
+
+  /// No description provided for @searchNoResultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try searching for something else'**
+  String get searchNoResultsSubtitle;
 }
 
 class _AppLocalizationsDelegate

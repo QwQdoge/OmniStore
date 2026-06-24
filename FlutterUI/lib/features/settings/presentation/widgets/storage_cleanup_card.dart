@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
@@ -72,7 +73,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             value: taskController.progress,
                           )
                         : Skeleton(
-                            key: const ValueKey('indeterminate'),
+                            key: ValueKey('indeterminate'),
                             height: 4.0, // Match typical LinearProgressIndicator height
                             width: double.infinity,
                           ),
@@ -156,7 +157,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
               duration: const Duration(milliseconds: 300),
               child: _loadingStorage
                   ? Column(
-                      key: const ValueKey('loading'),
+                      key: ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Skeleton(width: double.infinity, height: 14),
