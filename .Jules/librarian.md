@@ -58,3 +58,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Refactored `onGenerateRoute` in `omnistore_app.dart` to extract the `FutureBuilder` logic for `AppDetailsPage` into a dedicated `StatefulWidget` (`_AppDetailsRouteLoader`).
 - Ensured `context.read<PackageRepository>().getAppDetails` is evaluated and the `Future` is cached locally within the `initState()` of the new widget before the view is constructed, isolating network requests from Flutter's rebuild cycle.
+## 2026-06-17 - State Management: Scoping Rebuilds for High-Frequency Updates (TaskController)
+
+**Learning:** Watching or consuming providers that update frequently at a high tick rate (like `TaskController` emitting download progress and log events) causes excessive UI rebuilds. Using `List.unmodifiable` dynamically inside getters triggers O(N) allocation on every property access, which breaks `Selector` equality checks, resulting in false-positive redraws even when the data hasn't conceptually changed.
+
+**Action:**
+- Replaced dynamic `List.unmodifiable` instantiations in `TaskController` with cached `UnmodifiableListView` fields. This ensures consistent memory references for immutable view exposure, fixing the O(N) penalty and fixing equality checks.
+- Migrated broad `Consumer<TaskController>` implementations to precise `Selector<TaskController, T>` widgets using Dart Records (e.g., `({double? progress, String status})`) across all relevant presentation files (`tasks_tab.dart`, `terminal_dialog.dart`, `task_progress_bar.dart`, `app_details_actions.dart`, `search_result_tile.dart`, `download_page.dart`).
+- This restricts widget rebuilds exactly to the specific fields they depend on (like showing terminal logs only when logs are not empty, or updating an individual app card only if its own `progress` changes).

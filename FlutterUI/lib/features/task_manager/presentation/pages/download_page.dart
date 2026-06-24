@@ -228,12 +228,13 @@ class _DownloadPageState extends State<DownloadPage>
           ),
         ),
         actions: [
-          Consumer<TaskController>(
-            builder: (context, controller, _) {
-              if (controller.logs.isNotEmpty) {
+          Selector<TaskController, ({bool isBusy, bool hasLogs})>(
+            selector: (context, c) => (isBusy: c.isBusy, hasLogs: c.logs.isNotEmpty),
+            builder: (context, data, _) {
+              if (data.hasLogs) {
                 return IconButton(
                   icon: Badge(
-                    isLabelVisible: controller.isBusy,
+                    isLabelVisible: data.isBusy,
                     child: const Icon(Icons.terminal_outlined),
                   ),
                   onPressed: () => showDialog(

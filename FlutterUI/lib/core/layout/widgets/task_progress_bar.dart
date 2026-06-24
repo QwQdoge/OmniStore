@@ -23,8 +23,13 @@ class TaskProgressBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Consumer<TaskController>(
-        builder: (context, task, child) => Column(
+      child: Selector<TaskController, ({double? progress, String status, String speed})>(
+        selector: (context, c) => (
+          progress: c.progress,
+          status: c.status,
+          speed: c.speed,
+        ),
+        builder: (context, data, child) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
@@ -39,7 +44,7 @@ class TaskProgressBar extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${l10n.processing} ${task.status} ${task.speed}',
+                      '${l10n.processing} ${data.status} ${data.speed}',
                       style: textTheme.labelSmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                         fontWeight: FontWeight.bold,
@@ -47,9 +52,9 @@ class TaskProgressBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (task.progress != null)
+                  if (data.progress != null)
                     Text(
-                      '${(task.progress! * 100).toInt()}%',
+                      '${(data.progress! * 100).toInt()}%',
                       style: textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w900,
                         color: scheme.primary,
@@ -59,7 +64,7 @@ class TaskProgressBar extends StatelessWidget {
               ),
             ),
             LinearProgressIndicator(
-              value: task.progress,
+              value: data.progress,
               minHeight: 3,
               backgroundColor: scheme.surfaceContainerHighest,
               valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),

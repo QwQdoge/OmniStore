@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
@@ -16,6 +17,9 @@ class TaskController with ChangeNotifier {
   final List<String> _logs = [];
   final List<TaskState> _completedTasks = [];
 
+  late final UnmodifiableListView<String> _logsView = UnmodifiableListView(_logs);
+  late final UnmodifiableListView<TaskState> _completedTasksView = UnmodifiableListView(_completedTasks);
+
   TaskController(this._taskRepository);
 
   bool get isBusy => _isBusy;
@@ -24,8 +28,8 @@ class TaskController with ChangeNotifier {
   String get speed => _speed;
   String? get packageName => _packageName;
   String? get flag => _flag;
-  List<String> get logs => List.unmodifiable(_logs);
-  List<TaskState> get completedTasks => List.unmodifiable(_completedTasks);
+  List<String> get logs => _logsView;
+  List<TaskState> get completedTasks => _completedTasksView;
 
   void clearLogs() {
     _logs.clear();
