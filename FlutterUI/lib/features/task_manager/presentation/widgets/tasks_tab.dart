@@ -12,7 +12,9 @@ class TasksTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isBusy = context.select<TaskController, bool>((c) => c.isBusy);
-    final historyLength = context.select<TaskController, int>((c) => c.completedTasks.length);
+    final historyLength = context.select<TaskController, int>(
+      (c) => c.completedTasks.length,
+    );
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -56,19 +58,34 @@ class TasksTab extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    Consumer<TaskController>(
-                      builder: (context, taskController, child) {
+                    Selector<
+                      TaskController,
+                      ({
+                        String? packageName,
+                        double? progress,
+                        String status,
+                        String speed,
+                      })
+                    >(
+                      selector: (context, c) => (
+                        packageName: c.packageName,
+                        progress: c.progress,
+                        status: c.status,
+                        speed: c.speed,
+                      ),
+                      builder: (context, data, child) {
                         return SmoothProgressBar(
                           taskState: TaskState(
                             id: "active",
                             packageName:
-                                taskController.packageName ?? l10n.taskProcessing,
+                                data.packageName ?? l10n.taskProcessing,
                             status: TaskStatus.downloading,
-                            progress: taskController.progress ?? 0.0,
-                            stage: taskController.status,
-                            speed: taskController.speed,
+                            progress: data.progress ?? 0.0,
+                            stage: data.status,
+                            speed: data.speed,
                           ),
-                          onCancel: () => taskController.cancelTask(l10n),
+                          onCancel: () =>
+                              context.read<TaskController>().cancelTask(l10n),
                         );
                       },
                     ),
@@ -101,16 +118,24 @@ class TasksTab extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 TextButton.icon(
-                  onPressed: () => context.read<TaskController>().clearHistory(),
+                  onPressed: () =>
+                      context.read<TaskController>().clearHistory(),
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
                   label: const Text("清空历史"),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Consumer<TaskController>(
-              builder: (context, taskController, child) {
-                final history = taskController.completedTasks;
+            Selector<
+              TaskController,
+              ({int length, List<TaskState> completedTasks})
+            >(
+              selector: (context, c) => (
+                length: c.completedTasks.length,
+                completedTasks: c.completedTasks,
+              ),
+              builder: (context, data, child) {
+                final history = data.completedTasks;
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -139,7 +164,9 @@ class TasksTab extends StatelessWidget {
                           children: [
                             Text(
                               task.packageName ?? "Unknown App",
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -165,7 +192,9 @@ class TasksTab extends StatelessWidget {
                         subtitle: Text(
                           isSuccess ? "任务执行成功" : "失败原因: ${task.message}",
                           style: TextStyle(
-                            color: isSuccess ? Colors.grey : Colors.red.shade900,
+                            color: isSuccess
+                                ? Colors.grey
+                                : Colors.red.shade900,
                             fontSize: 12,
                           ),
                         ),
