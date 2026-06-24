@@ -157,46 +157,47 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
             with redirect_stdout(captured_stdout):
                 action = cmd_data.action
                 try:
-                    args = cmd_data.args
-                    kwargs = cmd_data.kwargs
+                    # Murphy-proof: Use backend context manager to ensure session liveness
+                    async with backend:
+                        args = cmd_data.args
+                        kwargs = cmd_data.kwargs
 
-                    # Dynamic attribute resolution
-                    obj = backend
-                    parts = action.split('.')
-                    for part in parts:
-                        obj = getattr(obj, part, None)
-                        if obj is None: break
+                        # Dynamic attribute resolution
+                        obj = backend
+                        parts = action.split('.')
+                        for part in parts:
+                            obj = getattr(obj, part, None)
+                            if obj is None: break
 
-                    if obj is not None:
-                        # 4. Async execution with hard 120s timeout to prevent zombie tasks
-                        # Murphy-proof: Action-level isolation to prevent crashing the daemon
-                        try:
-                            if callable(obj):
-                                if inspect.iscoroutinefunction(obj):
-                                    res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                        if obj is not None:
+                            # 4. Async execution with hard 120s timeout to prevent zombie tasks
+                            try:
+                                if callable(obj):
+                                    if inspect.iscoroutinefunction(obj):
+                                        res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
+                                    else:
+                                        res = obj(*args, **kwargs)
                                 else:
-                                    res = obj(*args, **kwargs)
-                            else:
-                                res = obj
+                                    res = obj
 
-                            stdout_content = captured_stdout.getvalue()
-                            response_payload = json.dumps({
-                                "status": "success",
-                                "response": res,
-                                "stdout": stdout_content
-                            }, ensure_ascii=False).encode('utf-8') + b'\n'
-                            writer.write(response_payload)
-                        except asyncio.TimeoutError:
-                             writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
-                        except Exception as action_e:
-                            logging.error(f"Murphy-proof Action Exception [{action}]: {action_e}")
-                            writer.write(json.dumps({
-                                "status": "error",
-                                "error": str(action_e),
-                                "stdout": captured_stdout.getvalue()
-                            }).encode('utf-8') + b'\n')
-                    else:
-                        writer.write(json.dumps({"status": "error", "error": f"Method not found: {action}"}).encode('utf-8') + b'\n')
+                                stdout_content = captured_stdout.getvalue()
+                                response_payload = json.dumps({
+                                    "status": "success",
+                                    "response": res,
+                                    "stdout": stdout_content
+                                }, ensure_ascii=False).encode('utf-8') + b'\n'
+                                writer.write(response_payload)
+                            except asyncio.TimeoutError:
+                                writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
+                            except Exception as action_e:
+                                logging.error(f"Murphy-proof Action Exception [{action}]: {action_e}")
+                                writer.write(json.dumps({
+                                    "status": "error",
+                                    "error": str(action_e),
+                                    "stdout": captured_stdout.getvalue()
+                                }).encode('utf-8') + b'\n')
+                        else:
+                            writer.write(json.dumps({"status": "error", "error": f"Method not found: {action}"}).encode('utf-8') + b'\n')
                 except Exception as e:
                     import traceback
                     err_trace = traceback.format_exc()
@@ -230,11 +231,12 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
 def safe_command(func):
     """
     Murphy-proof decorator to isolate command failures and prevent backend crashes.
-    Ensures that any exception within a command is caught, logged to stderr with
-    a full traceback for developers, and returned as a graceful error to the UI.
+    Ensures that any exception within a command is caught, logged to stderr,
+    and returned as a graceful error to the UI.
     """
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
+        json_mode = getattr(self, "json_mode", False)
         try:
             return await func(self, *args, **kwargs)
         except asyncio.CancelledError:
@@ -244,22 +246,27 @@ def safe_command(func):
             import traceback
             err_trace = traceback.format_exc()
             # Divert full traceback to stderr for diagnostics, isolated from UI stdout
-            # This is critical for Murphy-proof debugging without polluting the JSON stream.
             error_msg = f"Murphy-proof Error in {func.__name__}: {str(e)}"
             logging.error(f"{error_msg}\n{err_trace}")
 
             # Attempt to notify the frontend via callback or structured JSON
-            json_mode = getattr(self, "json_mode", False)
             if json_mode:
+                # Ensure the error output is the only thing on the line
+                # and clearly marked as an error status.
+                sys.stdout.write("\n") # Break possible partial line
                 sys.stdout.write(json.dumps({
                     "status": "error",
-                    "error": error_msg,
-                    "traceback": err_trace,
-                    "context": func.__name__
+                    "error": str(e),
+                    "context": func.__name__,
+                    "traceback": err_trace if getattr(self, "debug", False) else None
                 }, ensure_ascii=False) + "\n")
                 sys.stdout.flush()
             else:
-                await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                try:
+                    await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                except:
+                    # Final fallback if _handle_error itself fails
+                    print(f"[ERROR] {error_msg}")
             return False
     return wrapper
 
@@ -288,6 +295,10 @@ class OmnistoreBackend:
         self.is_action = False
         self.json_mode = json_mode
         self.session: Optional[aiohttp.ClientSession] = None
+
+        # Murphy-proof: Reference count for shared resource management in daemon mode
+        self._ref_count = 0
+        self._lock = asyncio.Lock()
 
         setup_logging(self.config.get("logging.level", "INFO"), json_mode)
 
@@ -328,17 +339,26 @@ class OmnistoreBackend:
 
     async def initialize(self):
         """Asynchronous initialization of components requiring a network session."""
-        if self.session is None:
-            self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60))
+        async with self._lock:
+            self._ref_count += 1
+            if self.session is not None and not self.session.closed:
+                return self
 
-        # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
-        self.recommender = RecommendationManager(self.session, self.habit_tracker)
-        self.manager = SearchManager(
-            self.config, self.session, self.habit_tracker,
-            recommender=self.recommender, cache_manager=self.cache,
-            ai_assistant=self.ai
-        )
-        return self
+            # Murphy-proof: Use a dedicated TCPConnector with limit to prevent FD exhaustion
+            connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
+            self.session = aiohttp.ClientSession(
+                connector=connector,
+                timeout=aiohttp.ClientTimeout(total=60, connect=10)
+            )
+
+            # ⚡ Optimization: Instantiate recommender first to share it with SearchManager
+            self.recommender = RecommendationManager(self.session, self.habit_tracker)
+            self.manager = SearchManager(
+                self.config, self.session, self.habit_tracker,
+                recommender=self.recommender, cache_manager=self.cache,
+                ai_assistant=self.ai
+            )
+            return self
 
     async def __aenter__(self):
         return await self.initialize()
@@ -346,44 +366,48 @@ class OmnistoreBackend:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
         Murphy-proof cleanup: ensures all sessions and background executors
-        are explicitly destroyed to prevent memory leaks and zombie processes.
-        Idempotent and resilient to partial initialization.
+        are explicitly destroyed only when the reference count reaches zero.
         """
-        try:
-            # 1. Stop background executors first to halt new activity
-            if self._executor:
-                try:
-                    self._executor.stop()
-                except Exception as e:
-                    logging.debug(f"Cleanup: Executor stop error: {e}")
-                self._executor = None
+        async with self._lock:
+            self._ref_count -= 1
+            if self._ref_count > 0:
+                return
 
-            # 2. Close network sessions with timeout to prevent hanging on close
-            if self.session and not self.session.closed:
-                try:
-                    await asyncio.wait_for(self.session.close(), timeout=2.0)
-                except Exception as e:
-                    logging.debug(f"Cleanup: Session close error: {e}")
-                self.session = None
+            try:
+                # 1. Stop background executors first to halt new activity
+                if self._executor:
+                    try:
+                        self._executor.stop()
+                    except Exception as e:
+                        logging.debug(f"Cleanup: Executor stop error: {e}")
+                    self._executor = None
 
-            # 3. Close AI Assistant session if initialized
-            if self._ai:
-                try:
-                    await self._ai.close()
-                except Exception as e:
-                    logging.debug(f"Cleanup: AI Assistant close error: {e}")
+                # 2. Close network sessions with timeout to prevent hanging on close
+                if self.session and not self.session.closed:
+                    try:
+                        await asyncio.wait_for(self.session.close(), timeout=2.0)
+                    except Exception as e:
+                        logging.debug(f"Cleanup: Session close error: {e}")
+                    self.session = None
 
-            # 4. Explicitly nullify large manager objects to assist GC in long-running daemon mode
-            self.manager = None
-            self.recommender = None
-            self._ai = None
-            self._updater = None
-            self._repo_manager = None
-            self._essentials = None
+                # 3. Close AI Assistant session if initialized
+                if self._ai:
+                    try:
+                        await self._ai.close()
+                    except Exception as e:
+                        logging.debug(f"Cleanup: AI Assistant close error: {e}")
 
-        except Exception as e:
-            # Final catch-all for cleanup to ensure we don't crash the exit sequence
-            logging.error(f"Murphy-proof Critical: Cleanup failure: {e}")
+                # 4. Explicitly nullify large manager objects to assist GC in long-running daemon mode
+                self.manager = None
+                self.recommender = None
+                self._ai = None
+                self._updater = None
+                self._repo_manager = None
+                self._essentials = None
+
+            except Exception as e:
+                # Final catch-all for cleanup to ensure we don't crash the exit sequence
+                logging.error(f"Murphy-proof Critical: Cleanup failure: {e}")
 
     # --- Unified Callback Handling ---
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
