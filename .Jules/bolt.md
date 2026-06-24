@@ -29,9 +29,8 @@
 **Learning:** Allocating a new list and performing localization lookups in the `build()` method causes unnecessary allocations on every frame or state change. Caching lists that only change when dependencies (like localization) change reduces garbage collection overhead and makes `build()` faster.
 
 **Action:** Added `_categories` state to `_HomePageState` and initialized it in `didChangeDependencies()` to memoize `CategoryService.getCategories(context)`, avoiding redundant evaluations in `_buildCategoryQuickAccess()`.
-
-## 2026-06-19 - TaskController & Terminal Rebuild Optimization
-
-**Learning:** Returning `List.unmodifiable(...)` from a getter creates an O(N) allocation on every read. When used with a Dart Record in a `Selector` (e.g., `(length: c.logs.length, logs: c.logs)`), the list instance changes on every `notifyListeners()`, causing the `Selector` to always rebuild the widget due to object inequality. Caching an `UnmodifiableListView` in the controller solves both the memory allocation and the false-positive rebuilds.
-
-**Action:** Refactored `TaskController` to cache `UnmodifiableListView` instances for `logs` and `completedTasks`. Updated `Consumer<TaskController>` to `Selector<TaskController, ...>` in `tasks_tab.dart` and `terminal_dialog.dart` (both places) to scope rebuilds specifically to when the list length changes, drastically reducing UI rebuilds during long-running tasks.
+Target: Reduced high-frequency rebuilds triggered by TaskController.
+Files Modified: tasks_tab.dart, download_page.dart, task_manager/presentation/widgets/terminal_dialog.dart, explore/presentation/widgets/terminal_dialog.dart
+Action: Replaced broad Consumer<TaskController> widgets with targeted Selector widgets.
+Details: In TerminalDialog and TasksTab, ListView components were rebuilding on every single progress tick due to the Consumer. Migrated to Selector using Dart 3 records to pass safely referenced lists, ensuring the UI lists only rebuild when the actual log/history counts change. Same for the terminal badge icon in DownloadPage.
+Result: Significantly reduced 60fps widget rebuilds during active downloads. Tests passed.

@@ -118,10 +118,13 @@ class TerminalDialog extends StatelessWidget {
             ),
             Expanded(
               child: Selector<TaskController, ({int length, List<String> logs})>(
-                selector: (context, c) => (length: c.logs.length, logs: c.logs),
+                selector: (context, controller) => (
+                  length: controller.logs.length,
+                  logs: controller.logs
+                ),
                 builder: (context, data, _) {
                   final logs = data.logs;
-                  return logs.isEmpty
+                  return data.length == 0
                       ? Center(
                           child: Text(
                             AppLocalizations.of(context)!.waitingForOutput,
@@ -134,9 +137,9 @@ class TerminalDialog extends StatelessWidget {
                       : ListView.builder(
                           reverse: true,
                           padding: const EdgeInsets.all(12),
-                          itemCount: logs.length,
+                          itemCount: data.length,
                           itemBuilder: (context, i) {
-                            final log = logs[logs.length - 1 - i];
+                            final log = logs[data.length - 1 - i];
                             Color textColor = theme.colorScheme.onSurface;
                             if (log.contains("[ERROR]")) {
                               textColor = theme.colorScheme.error;

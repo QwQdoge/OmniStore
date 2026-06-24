@@ -228,8 +228,11 @@ class _DownloadPageState extends State<DownloadPage>
           ),
         ),
         actions: [
-          Selector<TaskController, ({bool isBusy, bool hasLogs})>(
-            selector: (context, c) => (isBusy: c.isBusy, hasLogs: c.logs.isNotEmpty),
+          Selector<TaskController, ({bool hasLogs, bool isBusy})>(
+            selector: (context, controller) => (
+              hasLogs: controller.logs.isNotEmpty,
+              isBusy: controller.isBusy,
+            ),
             builder: (context, data, _) {
               if (data.hasLogs) {
                 return IconButton(
