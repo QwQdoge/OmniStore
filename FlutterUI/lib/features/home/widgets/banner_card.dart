@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
-import '../../../models/app_package.dart';
-import '../../../core/widgets/app_card.dart';
-import '../../explore/presentation/pages/details_page.dart';
+import 'package:frontend/models/app_package.dart';
+import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 
 class BannerCard extends StatelessWidget {
   final AppPackage app;
