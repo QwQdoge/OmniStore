@@ -780,14 +780,14 @@
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
-  "sourceConfigSubtitle": "选择您想要启用的应用来源",
-  "sourceConfigTitle": "应用源配置",
+  "sourceConfigSubtitle": "选择您想要启用的软件源",
+  "sourceConfigTitle": "软件源配置",
   "sourceName": "来源名称",
   "@sourceName": {
     "description": "Label for source name"
   },
   "sourcePriority": "应用源优先级（拖动排序）",
-  "sourceType": "来源类型",
+  "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"
   },
@@ -940,5 +940,16 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "启用 AUR 需要安装 yay 助手。"
+  "yayDesc": "启用 AUR 需要安装 yay 助手。",
+  "taskHistory": "任务历史记录",
+  "clearHistoryShort": "清空历史",
+  "unknownApp": "未知应用",
+  "taskFailedReason": "失败原因：{message}",
+  "@taskFailedReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -942,5 +942,16 @@
     "description": "Error message for invalid temperature value"
   },
   "enableSystemdService": "Enable systemd Background Service",
-  "enableSystemdServiceDesc": "Allow registering systemd timer to check for updates when the app is closed"
+  "enableSystemdServiceDesc": "Allow registering systemd timer to check for updates when the app is closed",
+  "taskHistory": "Task History",
+  "clearHistoryShort": "Clear History",
+  "unknownApp": "Unknown App",
+  "taskFailedReason": "Failed: {message}",
+  "@taskFailedReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

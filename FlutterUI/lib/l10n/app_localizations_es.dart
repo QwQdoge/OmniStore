@@ -1177,4 +1177,18 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get enableSystemdServiceDesc =>
       'Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada';
+
+  @override
+  String get taskHistory => 'Historial de tareas';
+
+  @override
+  String get clearHistoryShort => 'Limpiar historial';
+
+  @override
+  String get unknownApp => 'Aplicación desconocida';
+
+  @override
+  String taskFailedReason(String message) {
+    return 'Error: $message';
+  }
 }

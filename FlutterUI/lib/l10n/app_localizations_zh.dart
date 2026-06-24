@@ -563,10 +563,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continueAnyway => '仍然继续';
 
   @override
-  String get sourceConfigTitle => '应用源配置';
+  String get sourceConfigTitle => '软件源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
+  String get sourceConfigSubtitle => '选择您想要启用的软件源';
 
   @override
   String get enableAur => '启用 AUR（Arch User Repository）';
@@ -911,7 +911,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库';
 
   @override
-  String get sourceType => '来源类型';
+  String get sourceType => '软件源类型';
 
   @override
   String get githubRepoType => 'GitHub 仓库（owner/repo）';
@@ -1081,6 +1081,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get enableSystemdServiceDesc => '允许在应用关闭时通过注册 systemd 定时器来静默检查更新';
+
+  @override
+  String get taskHistory => '任务历史记录';
+
+  @override
+  String get clearHistoryShort => '清空历史';
+
+  @override
+  String get unknownApp => '未知应用';
+
+  @override
+  String taskFailedReason(String message) {
+    return '失败原因：$message';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1642,10 +1656,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '應用程式來源設定';
+  String get sourceConfigTitle => '軟體存放庫設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
+  String get sourceConfigSubtitle => '選擇您想要啟用的軟體存放庫';
 
   @override
   String get enableAur => '啟用 AUR（Arch User Repository）';
@@ -1990,7 +2004,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
 
   @override
-  String get sourceType => '來源類型';
+  String get sourceType => '存放庫類型';
 
   @override
   String get githubRepoType => 'GitHub 存放庫（owner/repo）';
@@ -2160,4 +2174,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get enableSystemdServiceDesc => '允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新';
+
+  @override
+  String get taskHistory => '任務歷史記錄';
+
+  @override
+  String get clearHistoryShort => '清空歷史';
+
+  @override
+  String get unknownApp => '未知應用';
+
+  @override
+  String taskFailedReason(String message) {
+    return '失敗原因：$message';
+  }
 }

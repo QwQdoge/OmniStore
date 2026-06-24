@@ -2118,6 +2118,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow registering systemd timer to check for updates when the app is closed'**
   String get enableSystemdServiceDesc;
+
+  /// No description provided for @taskHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Task History'**
+  String get taskHistory;
+
+  /// No description provided for @clearHistoryShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear History'**
+  String get clearHistoryShort;
+
+  /// No description provided for @unknownApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown App'**
+  String get unknownApp;
+
+  /// No description provided for @taskFailedReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed: {message}'**
+  String taskFailedReason(String message);
 }
 
 class _AppLocalizationsDelegate

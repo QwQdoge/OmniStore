@@ -1167,4 +1167,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get enableSystemdServiceDesc =>
       'Allow registering systemd timer to check for updates when the app is closed';
+
+  @override
+  String get taskHistory => 'Task History';
+
+  @override
+  String get clearHistoryShort => 'Clear History';
+
+  @override
+  String get unknownApp => 'Unknown App';
+
+  @override
+  String taskFailedReason(String message) {
+    return 'Failed: $message';
+  }
 }
