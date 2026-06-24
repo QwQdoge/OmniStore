@@ -92,11 +92,13 @@ class AppDetailsInfoRow extends StatelessWidget {
                   textAlign: TextAlign.end,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Icon(
-                Icons.copy_all_rounded,
+                Icons.copy_rounded,
                 size: 14,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
             ],
           ),

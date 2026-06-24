@@ -160,9 +160,9 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                       key: const ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Skeleton(width: double.infinity, height: 14),
+                        const Skeleton(width: double.infinity, height: 14),
                         const SizedBox(height: 12),
-                        Skeleton(width: double.infinity, height: 8),
+                        const Skeleton(width: double.infinity, height: 8),
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,14 +170,18 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                children: const [
                                   Skeleton(width: 150, height: 16),
                                   const SizedBox(height: 8),
                                   const Skeleton(width: 200, height: 12),
                                 ],
                               ),
                             ),
-                            const Skeleton(width: 100, height: 40, borderRadius: 20),
+                            const Skeleton(
+                              width: 100,
+                              height: 40,
+                              borderRadius: 20,
+                            ),
                           ],
                         ),
                       ],
