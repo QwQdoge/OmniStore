@@ -7,13 +7,25 @@ import 'package:frontend/services/category_service.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
-class CategoryPage extends StatelessWidget {
+class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
+
+  @override
+  State<CategoryPage> createState() => _CategoryPageState();
+}
+
+class _CategoryPageState extends State<CategoryPage> {
+  List<CategoryItem> _categories = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final categories = CategoryService.getCategories(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -53,9 +65,9 @@ class CategoryPage extends StatelessWidget {
                 mainAxisExtent: 140,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
-                final cat = categories[index];
+                final cat = _categories[index];
                 return _CategoryCard(category: cat);
-              }, childCount: categories.length),
+              }, childCount: _categories.length),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),

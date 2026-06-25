@@ -3,7 +3,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 
-class EmptyResults extends StatelessWidget {
+class EmptyResults extends StatefulWidget {
   final AppLocalizations l10n;
   final TextEditingController searchController;
   final Function(String) performSearch;
@@ -16,9 +16,21 @@ class EmptyResults extends StatelessWidget {
   });
 
   @override
+  State<EmptyResults> createState() => _EmptyResultsState();
+}
+
+class _EmptyResultsState extends State<EmptyResults> {
+  List<CategoryItem> _categories = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final categories = CategoryService.getCategories(context);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 24),
@@ -32,14 +44,14 @@ class EmptyResults extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.noResults,
+              widget.l10n.noResults,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.outline,
               ),
             ),
             const SizedBox(height: 48),
             Text(
-              l10n.categories,
+              widget.l10n.categories,
               style: OmnistoreTheme.standardHeader(context),
             ),
             const SizedBox(height: 24),
@@ -47,12 +59,12 @@ class EmptyResults extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               alignment: WrapAlignment.center,
-              children: categories
+              children: _categories
                   .map(
                     (cat) => ActionChip(
                       onPressed: () {
-                        searchController.text = '/${cat.id.toLowerCase()}';
-                        performSearch(searchController.text);
+                        widget.searchController.text = '/${cat.id.toLowerCase()}';
+                        widget.performSearch(widget.searchController.text);
                       },
                       label: Text(cat.name),
                       avatar: Icon(cat.icon, size: 18),
