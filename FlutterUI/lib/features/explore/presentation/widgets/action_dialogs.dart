@@ -70,7 +70,6 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
           child: Text(localizations.confirm),
         ),
       ],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     );
   }
 }
@@ -99,7 +98,6 @@ class AurSecurityDialog extends StatelessWidget {
           child: Text(localizations.continueInstall),
         ),
       ],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     );
   }
 }
