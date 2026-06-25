@@ -104,14 +104,13 @@ class _DownloadPageState extends State<DownloadPage>
     try {
       final packageRepo = context.read<PackageRepository>();
       final results = await packageRepo.listInstalled();
-      if (mounted) {
-        setState(() {
-          _installedApps = results
-              .map((json) => AppPackage.fromJson(json))
-              .toList();
-          _applyFilters();
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _installedApps = results
+            .map((json) => AppPackage.fromJson(json))
+            .toList();
+        _applyFilters();
+      });
     } catch (e) {
       debugPrint("Error loading installed apps: $e");
     } finally {

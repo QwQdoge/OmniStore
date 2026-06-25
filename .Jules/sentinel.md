@@ -76,3 +76,19 @@ When launching asynchronous operations inside dialog or bottom sheet callbacks (
 
 Action:
 Added an explicit `if (!mounted) return;` check immediately before `messenger.showSnackBar` in the `_showAddSourceDialog` callback within `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` to prevent lifecycle crashes.
+
+## 2026-06-25 - [Async Lifecycle Hardening across Feature Pages]
+
+Learning:
+Extensive audit revealed several asynchronous gaps where  or  was accessed after an `await` without verifying `mounted` status. This is particularly dangerous in high-traffic areas like `MainNavigationEntry`, `AppDetailsPage`, and the various store pages where a user might navigate away while a network request is pending.
+
+Action:
+Implemented strict `if (!mounted) return;` guards immediately following `await` calls in `MainNavigationEntry`, `AppDetailsPage`, `HomePage`, `GitHubStorePage`, `FlatpakStorePage`, and `DownloadPage`. This proactively prevents "setState() called after dispose()" and "use of BuildContext across async gaps" errors, ensuring application stability during rapid navigation or background updates.
+
+## 2026-06-25 - [Async Lifecycle Hardening across Feature Pages]
+
+Learning:
+Extensive audit revealed several asynchronous gaps where `setState` or `BuildContext` was accessed after an `await` without verifying `mounted` status. This is particularly dangerous in high-traffic areas like `MainNavigationEntry`, `AppDetailsPage`, and the various store pages where a user might navigate away while a network request is pending.
+
+Action:
+Implemented strict `if (!mounted) return;` guards immediately following `await` calls in `MainNavigationEntry`, `AppDetailsPage`, `HomePage`, `GitHubStorePage`, `FlatpakStorePage`, and `DownloadPage`. This proactively prevents "setState() called after dispose()" and "use of BuildContext across async gaps" errors, ensuring application stability during rapid navigation or background updates.

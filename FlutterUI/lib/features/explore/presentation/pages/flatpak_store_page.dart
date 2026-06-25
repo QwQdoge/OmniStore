@@ -32,15 +32,14 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     setState(() => _isLoading = true);
     final packageRepo = context.read<PackageRepository>();
     final results = await packageRepo.searchPackages("source:flatpak");
-    if (mounted) {
-      setState(() {
-        _apps = results;
-        _isLoading = false;
-        if (results.isNotEmpty && _selectedApp == null) {
-          _selectedApp = results.first;
-        }
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _apps = results;
+      _isLoading = false;
+      if (results.isNotEmpty && _selectedApp == null) {
+        _selectedApp = results.first;
+      }
+    });
   }
 
   @override

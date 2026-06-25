@@ -168,7 +168,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         context: context,
         builder: (context) => const AurSecurityDialog(),
       );
-      if (!mounted || aurConfirmed != true) {
+      if (!mounted) return;
+      if (aurConfirmed != true) {
         return;
       }
     }
@@ -496,7 +497,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         : widget.app.name.trim();
     final packageRepo = context.read<PackageRepository>();
     final success = await packageRepo.launchApp(target, _selectedSource);
-    if (!success && mounted) {
+    if (!mounted) return;
+    if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.loadError)),
       );
@@ -511,7 +513,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         : widget.app.name.trim();
     final packageRepo = context.read<PackageRepository>();
     final success = await packageRepo.locateApp(target, _selectedSource);
-    if (!success && mounted) {
+    if (!mounted) return;
+    if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.loadError)),
       );
