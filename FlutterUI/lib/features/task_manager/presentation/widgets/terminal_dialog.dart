@@ -11,7 +11,7 @@ class TerminalDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return Dialog(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       child: SizedBox(
         width: 600,
         height: 400,
@@ -22,17 +22,16 @@ class TerminalDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12.0),
-                  topRight: Radius.circular(12.0),
+                  topLeft: Radius.circular(28.0),
+                  topRight: Radius.circular(28.0),
                 ),
               ),
               child: Row(
                 children: [
                   Text(
                     AppLocalizations.of(context)!.terminalOutput,
-                    style: TextStyle(
+                    style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
-                      fontSize: 13,
                       fontFamily: 'monospace',
                     ),
                   ),
@@ -72,10 +71,10 @@ class TerminalDialog extends StatelessWidget {
                             final log = logs[logs.length - 1 - i];
                             Color textColor = theme.colorScheme.onSurface;
                             if (log.contains("[ERROR]")) {
-                              textColor = Colors.redAccent;
+                              textColor = theme.colorScheme.error;
                             }
                             if (log.contains("[INFO]")) {
-                              textColor = Colors.greenAccent.shade400;
+                              textColor = theme.colorScheme.primary;
                             }
                             return Text(
                               log,

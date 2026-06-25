@@ -46,7 +46,7 @@ class SearchResultTile extends StatelessWidget {
       button: true,
       selected: isSelected,
       child: AppCard(
-        borderRadius: 12,
+        borderRadius: 16,
         color: isSelected && isDesktop
             ? Theme.of(
                 context,
@@ -63,7 +63,7 @@ class SearchResultTile extends StatelessWidget {
                 children: [
                   app.icon != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           child: CachedNetworkImage(
                             imageUrl: app.icon!,
                             width: 40,
@@ -83,7 +83,7 @@ class SearchResultTile extends StatelessWidget {
                             height: 40,
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Center(
                               child: Skeleton(

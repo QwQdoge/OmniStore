@@ -56,3 +56,9 @@
 **Learning:** `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts. Using this around conditionally rendered sections like the active task block and task history lists prevents sudden jumps in the UI.
 
 **Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
+
+## 2026-06-25 - Standardized Geometry and Accessibility for MD3
+
+**Learning:** Aligning container radii to MD3 specifications (16dp for Medium, 28dp for Large/Dialogs) and replacing hardcoded accent colors with semantic theme tokens (error, primary) ensures a cohesive, accessible experience. Adding `Tooltip` widgets to technical metadata rows improves the discoverability of interactive features like "tap to copy" on desktop. Standardizing vertical rhythm with consistent gaps (24dp) and dividers creates a predictable content flow.
+
+**Action:** Update all dialogs to 28dp radius. Standardize all `AppCard` and `InkWell` radii to 16dp. Use `theme.colorScheme` for all status-related colors. Ensure `AppDetailsPage` follows a consistent vertical spacing pattern.

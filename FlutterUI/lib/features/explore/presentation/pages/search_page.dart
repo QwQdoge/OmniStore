@@ -331,7 +331,7 @@ class _SearchPageState extends State<SearchPage> {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 12,
+            borderRadius: 16,
             child: ListTile(
               leading: Skeleton(width: 40, height: 40, borderRadius: 8),
               title: Skeleton(width: 120, height: 16),
