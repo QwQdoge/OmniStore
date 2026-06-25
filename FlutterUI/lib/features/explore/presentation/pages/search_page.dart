@@ -5,6 +5,7 @@ import "package:frontend/core/widgets/app_card.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
@@ -181,9 +182,13 @@ class _SearchPageState extends State<SearchPage> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: !_showDiscovery
-                  ? Consumer<SettingsController>(
+                  ? Selector<SettingsController, String>(
                       key: const ValueKey('source_filters'),
-                      builder: (context, settings, _) => _buildSourceFilters(settings),
+                      selector: (context, settings) {
+                        final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+                        return jsonEncode(sourcesMap);
+                      },
+                      builder: (context, sourcesJson, _) => _buildSourceFilters(sourcesJson),
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -250,9 +255,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSourceFilters(SettingsController settings) {
-    final sourcesMap =
-        settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+  Widget _buildSourceFilters(String sourcesJson) {
+    final Map<String, dynamic> sourcesMap = jsonDecode(sourcesJson);
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key.toString())
