@@ -321,6 +321,7 @@
   "cleanOrphans": "未使用の依存関係を削除する（孤立したパッケージ）",
   "clear": "クリア",
   "clearHistory": "履歴をクリア",
+  "clearHistoryShort": "履歴をクリア",
   "clearSearch": "検索をクリア",
   "closeToTray": "システムトレイに閉じる",
   "collapse": "折りたたむ",
@@ -932,16 +933,5 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
-  "taskHistory": "タスク履歴",
-  "clearHistoryShort": "履歴をクリア",
-  "unknownApp": "不明なアプリ",
-  "taskFailedReason": "失敗：{message}",
-  "@taskFailedReason": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  }
+  "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。"
 }

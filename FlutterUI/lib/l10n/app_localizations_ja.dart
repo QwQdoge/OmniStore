@@ -741,6 +741,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get clearHistory => '履歴をクリア';
 
   @override
+  String get clearHistoryShort => '履歴をクリア';
+
+  @override
   String get confirmClearHistory => 'すべての履歴を消去してもよろしいですか？';
 
   @override

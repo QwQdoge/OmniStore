@@ -102,14 +102,14 @@ class TasksTab extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "任务历史记录 (History)",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Text(
+                  l10n.taskHistory,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 TextButton.icon(
                   onPressed: () => context.read<TaskController>().clearHistory(),
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                  label: const Text("清空历史"),
+                  label: Text(l10n.clearHistoryShort),
                 ),
               ],
             ),
@@ -148,7 +148,7 @@ class TasksTab extends StatelessWidget {
                         title: Row(
                           children: [
                             Text(
-                              task.packageName ?? "Unknown App",
+                              task.packageName ?? l10n.unknownApp,
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 8),
@@ -173,7 +173,7 @@ class TasksTab extends StatelessWidget {
                           ],
                         ),
                         subtitle: Text(
-                          isSuccess ? "任务执行成功" : "失败原因: ${task.message}",
+                          isSuccess ? l10n.taskSuccessMsg : l10n.failureReason(task.message ?? ""),
                           style: TextStyle(
                             color: isSuccess ? Colors.grey : Colors.red.shade900,
                             fontSize: 12,

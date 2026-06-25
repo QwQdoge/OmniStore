@@ -330,6 +330,7 @@
   "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
   "clear": "Limpiar",
   "clearHistory": "Limpiar historial",
+  "clearHistoryShort": "Limpiar historial",
   "clearSearch": "Limpiar búsqueda",
   "closeToTray": "Cerrar a la bandeja del sistema",
   "collapse": "Contraer",
@@ -956,16 +957,5 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "Activar AUR requiere instalar el asistente yay.",
-  "taskHistory": "Historial de tareas",
-  "clearHistoryShort": "Limpiar historial",
-  "unknownApp": "Aplicación desconocida",
-  "taskFailedReason": "Error: {message}",
-  "@taskFailedReason": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  }
+  "yayDesc": "Activar AUR requiere instalar el asistente yay."
 }
