@@ -125,9 +125,10 @@ class UpdatesTab extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Consumer<SettingsController>(
-                              builder: (context, settings, _) {
-                                if (!settings.isAIEnabled) {
+                            Selector<SettingsController, bool>(
+                              selector: (context, settings) => settings.isAIEnabled,
+                              builder: (context, isAIEnabled, _) {
+                                if (!isAIEnabled) {
                                   return const SizedBox.shrink();
                                 }
                                 return IconButton(

@@ -31,8 +31,14 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsController>(
-      builder: (context, settings, _) {
+    return Selector<SettingsController, ({ThemeMode themeMode, Locale? locale, String fontFamily, double fontScale})>(
+      selector: (context, settings) => (
+        themeMode: settings.themeMode,
+        locale: settings.locale,
+        fontFamily: settings.fontFamily,
+        fontScale: settings.fontScale,
+      ),
+      builder: (context, data, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Omnistore',
@@ -49,15 +55,15 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
             Locale('es'),
             Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
           ],
-          themeMode: settings.themeMode,
-          locale: settings.locale,
-          theme: OmnistoreTheme.light(fontFamily: settings.fontFamily),
-          darkTheme: OmnistoreTheme.dark(fontFamily: settings.fontFamily),
+          themeMode: data.themeMode,
+          locale: data.locale,
+          theme: OmnistoreTheme.light(fontFamily: data.fontFamily),
+          darkTheme: OmnistoreTheme.dark(fontFamily: data.fontFamily),
           builder: (context, child) {
             return MediaQuery(
               data: MediaQuery.of(
                 context,
-              ).copyWith(textScaler: TextScaler.linear(settings.fontScale)),
+              ).copyWith(textScaler: TextScaler.linear(data.fontScale)),
               child: child!,
             );
           },

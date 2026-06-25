@@ -66,3 +66,10 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 - Replaced dynamic `List.unmodifiable` instantiations in `TaskController` with cached `UnmodifiableListView` fields. This ensures consistent memory references for immutable view exposure, fixing the O(N) penalty and fixing equality checks.
 - Migrated broad `Consumer<TaskController>` implementations to precise `Selector<TaskController, T>` widgets using Dart Records (e.g., `({double? progress, String status})`) across all relevant presentation files (`tasks_tab.dart`, `terminal_dialog.dart`, `task_progress_bar.dart`, `app_details_actions.dart`, `search_result_tile.dart`, `download_page.dart`).
 - This restricts widget rebuilds exactly to the specific fields they depend on (like showing terminal logs only when logs are not empty, or updating an individual app card only if its own `progress` changes).
+## 2026-06-18 - State Management: Deep Collection Equality for Selectors
+
+**Learning:** When using `Selector` in Provider, returning a collection (like a `Map` or `List`) inside the `selector` parameter requires careful consideration of equality. Using `jsonEncode` inside the `selector` to force deep equality string comparisons is a major anti-pattern, as it triggers expensive JSON parsing every time `notifyListeners` is called, leading to performance degradation and potential crashes if the object contains non-encodable types.
+
+**Action:**
+- Replaced dangerous `jsonEncode` logic inside `Selector<SettingsController, String>` with a direct `Map` return type.
+- Leveraged the `shouldRebuild` parameter combined with `mapEquals` from `package:flutter/foundation.dart` (or `DeepCollectionEquality().equals` from `package:collection`) to safely and performantly check for deep equality, ensuring the widget only rebuilds when the actual data inside the map changes.
