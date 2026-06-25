@@ -20,7 +20,7 @@ class HamburgerButton extends StatelessWidget {
           onPressed: onToggle,
           tooltip: isExpanded ? l10n.collapse : l10n.expand,
           icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 300),
             transitionBuilder: (child, anim) => RotationTransition(
               turns: Tween(begin: 0.5, end: 1.0).animate(anim),
               child: child,

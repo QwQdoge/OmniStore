@@ -2,3 +2,9 @@
 - Wrapped content resolution in github_app_list.dart with AnimatedSwitcher to prevent abrupt jumps between loading/empty/list states.
 - Ensured all new and existing AnimatedSwitchers use a standard duration of 300ms.
 - Added TweenAnimationBuilder to animate progress value changes in TaskProgressBar to reduce abrupt transitions.\n- Reverted replacing the indeterminate standard LinearProgressIndicator with a Skeleton to maintain UI clarity.
+-- - Updated HamburgerButton AnimatedSwitcher to 300ms.
+- Updated AppDetailsPage AnimatedOpacity and TweenAnimationBuilder to 300ms.
+- Updated AdaptiveNavigationShell AnimatedContainer to 300ms.
+- Updated SmoothProgressBar AnimatedContainer to 300ms.
+- Wrapped TasksTab conditional empty/list rendering in AnimatedSwitcher (300ms).
+- Wrapped UpdatesTab conditional empty/list rendering in AnimatedSwitcher (300ms).

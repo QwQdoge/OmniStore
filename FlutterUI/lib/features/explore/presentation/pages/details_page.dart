@@ -371,7 +371,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             pinned: true,
             title: AnimatedOpacity(
               opacity: innerBoxIsScrolled ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 300),
               child: Text(
                 widget.app.name,
                 style: const TextStyle(
@@ -462,7 +462,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         body: SelectionArea(
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 600),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutCubic,
             builder: (context, value, child) {
               return Opacity(
