@@ -12,6 +12,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list_skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
 class DownloadPage extends StatefulWidget {
@@ -289,7 +290,7 @@ class _DownloadPageState extends State<DownloadPage>
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: _isLoadingInstalled
-          ? _buildSkeletonList(key: const ValueKey('loading'))
+          ? const InstalledAppListSkeleton(key: ValueKey('loading'))
           : Column(
               key: const ValueKey('loaded'),
               children: [
@@ -336,40 +337,6 @@ class _DownloadPageState extends State<DownloadPage>
                 Expanded(child: _buildInstalledList()),
               ],
             ),
-    );
-  }
-
-  Widget _buildSkeletonList({Key? key}) {
-    return ListView.builder(
-      key: key,
-      padding: const EdgeInsets.all(16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
-          ),
-        ),
-      ),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            borderRadius: 16,
-            child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(width: double.infinity, height: 12),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
-            ),
-          ),
-        );
-      },
     );
   }
 
