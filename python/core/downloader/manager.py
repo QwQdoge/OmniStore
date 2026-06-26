@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import contextlib
+import re
 from typing import Dict, Any, Optional, Callable, Awaitable
 from core.subprocess_utils import safe_subprocess
 from core.sources.utils import PrivilegeManager
@@ -25,15 +26,25 @@ class InstallExecutor:
 
     async def install(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute installation with state lock protection and fail-safe checks."""
-        if self._lock.locked():
-            if callback: await callback("[ERROR] Another system task is already in progress. Concurrent operations are blocked to prevent database corruption.")
+        # Murphy-proof: Use a timeout for lock acquisition to prevent permanent "Busy" state
+        # if a previous task crashed without releasing the lock (though async with handles this usually).
+        try:
+            await asyncio.wait_for(self._lock.acquire(), timeout=5.0)
+        except asyncio.TimeoutError:
+            if callback: await callback("[ERROR] System is busy. A previous task may still be cleaning up. Please wait 30s.")
             return False
 
-        async with self._lock:
+        try:
             # 1. Parameter Validation
-            if not package or not isinstance(package.get("name"), str) or not package["name"].strip():
-                if callback: await callback("[ERROR] Invalid package data. Installation aborted.")
+            pkg_name = package.get("name")
+            if not package or not isinstance(pkg_name, str) or not pkg_name.strip():
+                if callback: await callback("[ERROR] Invalid package data (missing name). Installation aborted.")
                 return False
+
+            # Boundary Defense: Prevent shell injection or malformed paths
+            if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
+                 if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                 return False
 
             # 2. Environment & Dependency Check
             source_name = str(package.get("source", "Native")).lower()
@@ -52,10 +63,13 @@ class InstallExecutor:
             try:
                 self.is_running = True
                 # 3. Execution with Strict Isolation
-                # We wrap the source call in a timeout-aware pattern if appropriate,
-                # though most install tasks are long-running and managed internally by sources.
-                success = await source.install(package, callback=callback)
+                # Murphy-proof: Standard timeout for the entire installation process (60 minutes)
+                # This prevents zombie tasks from hanging the backend indefinitely.
+                success = await asyncio.wait_for(source.install(package, callback=callback), timeout=3600)
                 return bool(success)
+            except asyncio.TimeoutError:
+                if callback: await callback("[ERROR] Installation timed out after 60 minutes. Task terminated for safety.")
+                return False
             except asyncio.CancelledError:
                 if callback: await callback("[INFO] Installation was cancelled by user.")
                 return False
@@ -65,17 +79,27 @@ class InstallExecutor:
                 return False
             finally:
                 self.is_running = False
+        finally:
+            self._lock.release()
 
     async def uninstall(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute uninstallation with state lock protection."""
-        if self._lock.locked():
+        try:
+            await asyncio.wait_for(self._lock.acquire(), timeout=5.0)
+        except asyncio.TimeoutError:
             if callback: await callback("[ERROR] System is busy. Please wait for the current task to finish.")
             return False
 
-        async with self._lock:
-            if not package or not package.get("name"):
+        try:
+            pkg_name = package.get("name")
+            if not package or not pkg_name:
                 if callback: await callback("[ERROR] Package name missing for uninstallation.")
                 return False
+
+            # Sanitization
+            if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
+                 if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                 return False
 
             source_name = str(package.get("source", "Native")).lower()
             if source_name == "native":
@@ -87,14 +111,19 @@ class InstallExecutor:
             source = self.backend.manager.sources[source_name]
             try:
                 self.is_running = True
-                success = await source.uninstall(package, callback=callback)
+                success = await asyncio.wait_for(source.uninstall(package, callback=callback), timeout=1800)
                 return bool(success)
+            except asyncio.TimeoutError:
+                if callback: await callback("[ERROR] Uninstallation timed out after 30 minutes.")
+                return False
             except Exception as e:
                 logging.exception(f"InstallExecutor.uninstall fail: {e}")
                 if callback: await callback(f"[ERROR] Uninstallation failed due to an internal error: {e}")
                 return False
             finally:
                 self.is_running = False
+        finally:
+            self._lock.release()
 
     async def update(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Update logic (often proxies to install)."""
