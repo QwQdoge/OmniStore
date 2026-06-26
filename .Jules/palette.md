@@ -62,3 +62,8 @@
 **Learning:** Aligning container radii to MD3 specifications (16dp for Medium, 28dp for Large/Dialogs) and replacing hardcoded accent colors with semantic theme tokens (error, primary) ensures a cohesive, accessible experience. Adding `Tooltip` widgets to technical metadata rows improves the discoverability of interactive features like "tap to copy" on desktop. Standardizing vertical rhythm with consistent gaps (24dp) and dividers creates a predictable content flow.
 
 **Action:** Update all dialogs to 28dp radius. Standardize all `AppCard` and `InkWell` radii to 16dp. Use `theme.colorScheme` for all status-related colors. Ensure `AppDetailsPage` follows a consistent vertical spacing pattern.
+## 2026-06-29 - details_page Layout Redundancy
+
+**Learning:** When using conditionally rendered blocks (like an `if` statement for screenshots) that appear sequentially between other sections, including leading AND trailing structural spacing widgets (`SizedBox`) inside the block can cause double-spacing when combined with the layout rules of the adjacent sections.
+
+**Action:** Standardized the structural spacing in `details_page.dart` by ensuring only a single `SizedBox(height: 24)` separates any two major sections, preventing visual jumps caused by doubled 24dp gaps.
