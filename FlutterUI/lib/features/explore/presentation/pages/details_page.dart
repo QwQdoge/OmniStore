@@ -298,7 +298,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-          const SizedBox(height: 24),
           const Divider(),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
@@ -310,7 +309,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
           const SizedBox(height: 24),
         ],
-        const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AppCard(
