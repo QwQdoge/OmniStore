@@ -801,6 +801,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get clearHistory => 'Limpiar historial';
 
   @override
+  String get clearHistoryShort => 'Limpiar historial';
+
+  @override
   String get confirmClearHistory =>
       '¿Está seguro de que desea borrar todo el historial?';
 

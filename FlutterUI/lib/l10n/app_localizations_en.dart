@@ -798,6 +798,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearHistory => 'Clear History';
 
   @override
+  String get clearHistoryShort => 'Clear History';
+
+  @override
   String get confirmClearHistory =>
       'Are you sure you want to clear all history?';
 

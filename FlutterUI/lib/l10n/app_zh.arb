@@ -126,7 +126,7 @@
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },
-  "aiPromptExplain": "使用 AI 解析",
+  "aiPromptExplain": "解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -327,6 +327,7 @@
   "cleanOrphans": "同时清理无用依赖（孤儿软件包）",
   "clear": "清除",
   "clearHistory": "清空历史记录",
+  "clearHistoryShort": "清空历史",
   "clearSearch": "清除搜索",
   "closeToTray": "关闭时隐藏到系统托盘",
   "collapse": "收起",
@@ -956,16 +957,5 @@
   "@windowRestore": {
     "description": "Tooltip for window restore button"
   },
-  "yayDesc": "启用 AUR 需要安装 yay 助手。",
-  "taskHistory": "任务历史记录",
-  "clearHistoryShort": "清空历史",
-  "unknownApp": "未知应用",
-  "taskFailedReason": "失败原因：{message}",
-  "@taskFailedReason": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  }
+  "yayDesc": "启用 AUR 需要安装 yay 助手。"
 }

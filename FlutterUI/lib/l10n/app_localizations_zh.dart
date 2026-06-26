@@ -446,7 +446,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => '使用 AI 解析';
+  String get aiPromptExplain => '解析';
 
   @override
   String get aiPromptRecommend => '咨询 AI 建议';
@@ -734,6 +734,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get clearHistory => '清空历史记录';
+
+  @override
+  String get clearHistoryShort => '清空历史';
 
   @override
   String get confirmClearHistory => '确定要删除所有搜索历史吗？';
@@ -1575,7 +1578,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get aiPromptExplain => '使用 AI 解析';
+  String get aiPromptExplain => '解析';
 
   @override
   String get aiPromptRecommend => '諮詢 AI 建議';
@@ -1863,6 +1866,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get clearHistory => '清除歷史記錄';
+
+  @override
+  String get clearHistoryShort => '清空歷史';
 
   @override
   String get confirmClearHistory => '確定要刪除所有搜尋歷史嗎？';

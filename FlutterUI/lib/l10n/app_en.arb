@@ -552,6 +552,7 @@
   "gridView": "Grid View",
   "categories": "Categories",
   "clearHistory": "Clear History",
+  "clearHistoryShort": "Clear History",
   "confirmClearHistory": "Are you sure you want to clear all history?",
   "viewMore": "View More",
   "logDebug": "DEBUG",
