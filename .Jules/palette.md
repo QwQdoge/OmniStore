@@ -56,3 +56,9 @@
 **Learning:** `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts. Using this around conditionally rendered sections like the active task block and task history lists prevents sudden jumps in the UI.
 
 **Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
+
+## 2026-06-26 - Standardized Border Radii and MD3 Dialog Tokens
+
+**Learning:** Standardizing border radii across the application creates a more cohesive and professional feel. In this MD3 environment, 16dp is the standard for cards and list items (Medium token), while 28dp is reserved for large surfaces like Dialogs and Hero icons (Extra Large token). Internal elements (like 40x40 icons inside 16dp cards) benefit from a slightly smaller 12dp radius to maintain visual rhythm. Category-related elements consistently use 24dp for distinctiveness.
+
+**Action:** Enforce 16dp for AppCard defaults, 28dp for Dialog shapes and their headers, and 24dp for Category-related chips or cards. Ensure skeletons match these radii exactly to prevent flickering during state transitions.

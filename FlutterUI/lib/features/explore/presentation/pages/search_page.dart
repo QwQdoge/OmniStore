@@ -331,16 +331,15 @@ class _SearchPageState extends State<SearchPage> {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 12,
             child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 8),
+              leading: Skeleton(width: 40, height: 40, borderRadius: 12),
               title: Skeleton(width: 120, height: 16),
               subtitle: Skeleton(
                 width: double.infinity,
                 height: 12,
-                borderRadius: 4,
+                borderRadius: 8,
               ),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
+              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
             ),
           ),
         );

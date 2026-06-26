@@ -29,7 +29,7 @@ class AppDetailsSectionTitle extends StatelessWidget {
     return Padding(
       padding: isSubSection
           ? EdgeInsets.zero
-          : const EdgeInsets.only(bottom: 12.0, top: 16),
+          : const EdgeInsets.only(bottom: 12.0, top: 8.0),
       child: Text(title, style: style),
     );
   }
@@ -63,7 +63,7 @@ class AppDetailsInfoRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () => _copyToClipboard(context),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Semantics(
         label: "${l10n.tapToCopy} $label: $value",
         button: true,

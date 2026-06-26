@@ -132,7 +132,7 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
                         Skeleton(
                           width: 80,
                           height: 80,
-                          borderRadius: 16,
+                          borderRadius: 28,
                         ),
                         SizedBox(height: 16),
                         Skeleton(width: 200, height: 24),
