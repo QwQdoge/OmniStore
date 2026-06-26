@@ -79,7 +79,7 @@ class GitHubAppList extends StatelessWidget {
         ),
       );
     } else {
-      final client = context.read<GitHubClient>();
+      final client = context.watch<GitHubClient>();
       final scheme = Theme.of(context).colorScheme;
 
       content = ListView.builder(
