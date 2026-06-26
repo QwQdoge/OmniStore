@@ -46,7 +46,6 @@ class SearchResultTile extends StatelessWidget {
       button: true,
       selected: isSelected,
       child: AppCard(
-        borderRadius: 12,
         color: isSelected && isDesktop
             ? Theme.of(
                 context,

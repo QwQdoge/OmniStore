@@ -251,20 +251,20 @@ class GitHubAppListSkeleton extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Skeleton(width: 140, height: 18),
-                          Skeleton(width: 60, height: 20, borderRadius: 6),
+                          Skeleton(width: 140, height: 18, borderRadius: 8),
+                          Skeleton(width: 60, height: 20, borderRadius: 12),
                         ],
                       ),
                       SizedBox(height: 8),
-                      Skeleton(width: double.infinity, height: 14),
+                      Skeleton(width: double.infinity, height: 14, borderRadius: 8),
                       SizedBox(height: 6),
-                      Skeleton(width: 200, height: 14),
+                      Skeleton(width: 200, height: 14, borderRadius: 8),
                       SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Skeleton(width: 80, height: 22, borderRadius: 6),
-                          Skeleton(width: 70, height: 16),
+                          Skeleton(width: 80, height: 22, borderRadius: 12),
+                          Skeleton(width: 70, height: 16, borderRadius: 8),
                         ],
                       ),
                     ],

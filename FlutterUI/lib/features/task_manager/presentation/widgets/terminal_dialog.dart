@@ -11,7 +11,7 @@ class TerminalDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return Dialog(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       child: SizedBox(
         width: 600,
         height: 400,
@@ -22,8 +22,8 @@ class TerminalDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12.0),
-                  topRight: Radius.circular(12.0),
+                  topLeft: Radius.circular(28.0),
+                  topRight: Radius.circular(28.0),
                 ),
               ),
               child: Row(

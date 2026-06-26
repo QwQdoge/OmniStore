@@ -57,7 +57,7 @@ class EmptyResults extends StatelessWidget {
                       label: Text(cat.name),
                       avatar: Icon(cat.icon, size: 18),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                     ),
                   )
