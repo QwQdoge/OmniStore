@@ -60,13 +60,14 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       final trayOk = await UpdateService().init().timeout(
         const Duration(seconds: 10),
       );
+      if (!mounted) return;
       await UpdateService()
           .updateConfig(l10n)
           .timeout(const Duration(seconds: 5));
+      if (!mounted) return;
 
       // 如果后台驻留（系统托盘）初始化失败，给一个提示并关闭该功能，而不是退出
       if (!trayOk && DesktopWindowService.isSupported) {
-        if (!mounted) return;
         final settings = context.read<SettingsController>();
         final closeToTray = settings.config['ui']?['close_to_tray'] ?? true;
         if (closeToTray) {
@@ -76,17 +77,16 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
           );
 
           await settings.setCloseToTray(false);
+          if (!mounted) return;
 
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  l10n.trayInitFailedDisabled,
-                ),
-                duration: const Duration(seconds: 5),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.trayInitFailedDisabled,
               ),
-            );
-          }
+              duration: const Duration(seconds: 5),
+            ),
+          );
         }
       }
     } catch (e) {

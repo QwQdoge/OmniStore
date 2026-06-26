@@ -120,7 +120,9 @@ class _HomePageState extends State<HomePage> {
     if (result != null) {
       final path = result.files.single.path!;
       final packages = await packageRepo.importPackages(path);
-      if (mounted && packages.isNotEmpty) {
+      if (!mounted) return;
+
+      if (packages.isNotEmpty) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(

@@ -80,12 +80,11 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     final packageRepo = context.read<PackageRepository>();
     try {
       final results = await packageRepo.searchPackages("source:github");
-      if (mounted) {
-        setState(() {
-          _recommendedApps = results;
-          _isLoadingRecommended = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _recommendedApps = results;
+        _isLoadingRecommended = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingRecommended = false);
     }
@@ -100,12 +99,11 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         "source:github:stars:>5000 sort:stars",
       );
-      if (mounted) {
-        setState(() {
-          _rankingApps = results;
-          _isLoadingRankings = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _rankingApps = results;
+        _isLoadingRankings = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingRankings = false);
     }
@@ -120,12 +118,11 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         "source:github:stars:>1000 sort:forks",
       );
-      if (mounted) {
-        setState(() {
-          _trendingApps = results;
-          _isLoadingTrending = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _trendingApps = results;
+        _isLoadingTrending = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingTrending = false);
     }
@@ -140,12 +137,11 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         "source:github:stars:>500 sort:updated",
       );
-      if (mounted) {
-        setState(() {
-          _updatedApps = results;
-          _isLoadingUpdated = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _updatedApps = results;
+        _isLoadingUpdated = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingUpdated = false);
     }
@@ -171,12 +167,11 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     try {
       // Direct query search in GitHub source
       final results = await packageRepo.searchPackages("source:github:$query");
-      if (mounted) {
-        setState(() {
-          _searchApps = results;
-          _isLoadingSearch = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _searchApps = results;
+        _isLoadingSearch = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingSearch = false);
     }
