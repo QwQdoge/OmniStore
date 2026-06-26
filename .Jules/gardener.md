@@ -73,3 +73,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 
 **Action:** Extracted the `_buildCategoryShelf` logic from `FlutterUI/lib/features/home/home_page.dart` into a new `AppShelf` widget located at `FlutterUI/lib/features/home/widgets/app_shelf.dart`. Replaced its usages in `HomePage` with the new standalone widget.
 - Extracted duplicated loading text indicators consisting of a column of Skeletons into a reusable ParagraphSkeleton widget (FlutterUI/lib/core/widgets/skeleton.dart) to adhere to DRY principles and improve maintainability.
+## 2026-06-25 - Extract InstalledAppListSkeleton in DownloadPage
+
+**Learning:** Extracting inline skeleton UI components (like `_buildSkeletonList`) into dedicated `StatelessWidget` files reduces the size and complexity of main presentation pages (like `download_page.dart`). Passing the key to the root widget ensures animations (like `AnimatedSwitcher`) continue to work correctly.
+
+**Action:** Extracted `_buildSkeletonList` from `download_page.dart` into `installed_app_list_skeleton.dart` within the `widgets/` subdirectory.
