@@ -34,3 +34,7 @@
 - Identified duplicated `TerminalDialog` implementations in `explore` and `task_manager` features.
 - Consolidated into a single `TerminalDialog` in `FlutterUI/lib/features/task_manager/presentation/widgets/terminal_dialog.dart`, incorporating the rich AI error analysis features from the `explore` version.
 - Replaced hardcoded `12.0` border radius and `Colors.redAccent` with standardized MD3 `28.0` radius and `theme.colorScheme.error` for improved visual consistency.
+## 2026-06-19 - Global Dialog Consistency
+- Added global `DialogTheme` to `omnistore_theme.dart` with `shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))` to standardize the MD3 dialog appearance across the app.
+- Removed hardcoded `shape` assignments (with `28.0` radius) from `ActionConfirmDialog` and `AurSecurityDialog` in `action_dialogs.dart` to enforce reliance on the globally consistent `DialogTheme`.
+- Removed hardcoded `shape` assignment (with `12.0` radius) from `TerminalDialog` in `terminal_dialog.dart` and updated its internal header container's top-left and top-right border radii from `12.0` to `28.0` to perfectly align with the new globally consistent dialog shape.
