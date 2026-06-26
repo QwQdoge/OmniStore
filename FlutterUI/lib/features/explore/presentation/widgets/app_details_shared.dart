@@ -61,46 +61,49 @@ class AppDetailsInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    return InkWell(
-      onTap: () => _copyToClipboard(context),
-      borderRadius: BorderRadius.circular(16),
-      child: Semantics(
-        label: "${l10n.tapToCopy} $label: $value",
-        button: true,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+    return Tooltip(
+      message: "${l10n.tapToCopy} $label: $value",
+      child: InkWell(
+        onTap: () => _copyToClipboard(context),
+        borderRadius: BorderRadius.circular(16),
+        child: Semantics(
+          label: "${l10n.tapToCopy} $label: $value",
+          button: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  value,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    value,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.end,
                   ),
-                  textAlign: TextAlign.end,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Icon(
-                Icons.copy_rounded,
-                size: 14,
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.5,
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.copy_rounded,
+                  size: 14,
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

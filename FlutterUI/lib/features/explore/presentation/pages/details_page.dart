@@ -317,7 +317,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
               AppDetailsInfoRow(
                   icon: Icons.source_rounded,
                   label: AppLocalizations.of(context)!.source,
@@ -349,7 +348,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   variant: _getVariantForSource(_selectedSource),
                   hasCapability: _hasCapability,
                 ),
-              const SizedBox(height: 8),
             ],
           ),
         ),
