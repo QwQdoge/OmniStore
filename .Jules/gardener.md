@@ -78,3 +78,12 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 **Learning:** Extracting inline skeleton UI components (like `_buildSkeletonList`) into dedicated `StatelessWidget` files reduces the size and complexity of main presentation pages (like `download_page.dart`). Passing the key to the root widget ensures animations (like `AnimatedSwitcher`) continue to work correctly.
 
 **Action:** Extracted `_buildSkeletonList` from `download_page.dart` into `installed_app_list_skeleton.dart` within the `widgets/` subdirectory.
+## 2024-06-26 - Extract Widgets in DownloadPage, HomePage, and AppsPage
+
+**Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. In particular, `download_page.dart`, `home_page.dart`, and `apps_page.dart` had monolithic internal widget builders that made the file structures hard to parse and increased the risk of git conflicts.
+
+**Action:**
+- Extracted `_buildInstalledTab` from `download_page.dart` into `installed_tab.dart`.
+- Extracted `_buildHeroSection`, `_buildCategoryQuickAccess`, `_buildAIPickSkeleton`, `_buildAIPickSection`, and `_buildSectionHeader` from `home_page.dart` into dedicated stateless widgets in `FlutterUI/lib/features/home/widgets/`.
+- Extracted `_buildSkeletonList` and `_buildEmptyState` from `apps_page.dart` into `apps_page_skeleton.dart` and `apps_page_empty_state.dart` in `FlutterUI/lib/features/apps/widgets/`.
+This drastically simplified the main page builds while ensuring exact behavioral preservation and better code localization.

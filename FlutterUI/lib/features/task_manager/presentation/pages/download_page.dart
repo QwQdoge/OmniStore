@@ -1,10 +1,8 @@
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/services/update_service.dart';
 
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
@@ -12,8 +10,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
-import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list_skeleton.dart';
-import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/installed_tab.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -279,164 +276,20 @@ class _DownloadPageState extends State<DownloadPage>
         children: [
           const TasksTab(),
           UpdatesTab(onUpdateStarted: () => _tabController.animateTo(0)),
-          _buildInstalledTab(),
+          InstalledTab(
+            isLoading: _isLoadingInstalled,
+            selectedSourceFilter: _selectedSourceFilter,
+            filteredApps: _filteredApps,
+            filterScrollController: _installedFilterScrollController,
+            onSourceFilterSelected: (s) {
+              setState(() {
+                _selectedSourceFilter = s;
+                _applyFilters();
+              });
+            },
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInstalledTab() {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: _isLoadingInstalled
-          ? const InstalledAppListSkeleton(key: ValueKey('loading'))
-          : Column(
-              key: const ValueKey('loaded'),
-              children: [
-                SizedBox(
-                  height: 66,
-                  child: Scrollbar(
-                    controller: _installedFilterScrollController,
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      controller: _installedFilterScrollController,
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(
-                                    s == "all"
-                                        ? AppLocalizations.of(context)!.explore
-                                        : s,
-                                  ),
-                                  selected: _selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      setState(() {
-                                        _selectedSourceFilter = s;
-                                        _applyFilters();
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(child: _buildInstalledList()),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildInstalledList() {
-    if (_filteredApps.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.noResults,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      prototypeItem: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: ListTile(
-            leading: const SizedBox(width: 40, height: 40),
-            title: const SizedBox(height: 16),
-            subtitle: const SizedBox(height: 12),
-            trailing: const SizedBox(width: 60, height: 24),
-          ),
-        ),
-      ),
-      itemCount: _filteredApps.length,
-      itemBuilder: (context, index) {
-        final app = _filteredApps[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Semantics(
-            label: 'Installed app: ${app.name}',
-            button: true,
-            child: AppCard(
-              borderRadius: 16,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AppDetailsPage(app: app),
-                ),
-              ),
-              child: ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                leading: app.icon != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(
-                          imageUrl: app.icon!,
-                          width: 40,
-                          height: 40,
-                          memCacheWidth: 80,
-                          memCacheHeight: 80,
-                          placeholder: (context, url) => const Skeleton(
-                            width: 40,
-                            height: 40,
-                            borderRadius: 0,
-                          ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.apps),
-                        ),
-                      )
-                    : const Icon(Icons.apps, size: 40),
-                title: Text(
-                  app.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Row(
-                  children: [
-                    Text(
-                      app.primarySource,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        app.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

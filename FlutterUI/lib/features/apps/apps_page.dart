@@ -8,9 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/features/apps/widgets/apps_page_skeleton.dart';
+import 'package:frontend/features/apps/widgets/apps_page_empty_state.dart';
 
 class AppsPage extends StatefulWidget {
   const AppsPage({super.key});
@@ -76,7 +77,6 @@ class _AppsPageState extends State<AppsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -110,9 +110,9 @@ class _AppsPageState extends State<AppsPage> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: _isLoading
-                  ? _buildSkeletonList(key: const ValueKey('loading'))
+                  ? const AppsPageSkeleton(key: ValueKey('loading'))
                   : _filteredApps.isEmpty
-                  ? _buildEmptyState(l10n, theme, key: const ValueKey('empty'))
+                  ? const AppsPageEmptyState(key: ValueKey('empty'))
                   : RefreshIndicator(
                       key: const ValueKey('list'),
                       onRefresh: _refresh,
@@ -196,58 +196,4 @@ class _AppsPageState extends State<AppsPage> {
     );
   }
 
-  Widget _buildEmptyState(AppLocalizations l10n, ThemeData theme, {Key? key}) {
-    return Center(
-      key: key,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 64,
-            color: theme.colorScheme.outline.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.noResults,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkeletonList({Key? key}) {
-    return ListView.builder(
-      key: key,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12, borderRadius: 8),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-          ),
-        ),
-      ),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(width: double.infinity, height: 12, borderRadius: 8),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
