@@ -33,8 +33,6 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Memoized category list to avoid redundant allocations and localization
-    // lookups on every build() call during scroll or search animations.
     _categories = CategoryService.getCategories(context);
   }
 

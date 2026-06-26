@@ -20,8 +20,6 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Memoized category list to avoid redundant allocations and localization
-    // lookups on every build() call.
     _categories = CategoryService.getCategories(context);
   }
 
