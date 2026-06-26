@@ -57,8 +57,8 @@
 
 **Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
 
-## 2026-06-26 - Standardized Border Radii and MD3 Dialog Tokens
+## 2026-06-25 - Standardized Geometry and Accessibility for MD3
 
-**Learning:** Standardizing border radii across the application creates a more cohesive and professional feel. In this MD3 environment, 16dp is the standard for cards and list items (Medium token), while 28dp is reserved for large surfaces like Dialogs and Hero icons (Extra Large token). Internal elements (like 40x40 icons inside 16dp cards) benefit from a slightly smaller 12dp radius to maintain visual rhythm. Category-related elements consistently use 24dp for distinctiveness.
+**Learning:** Aligning container radii to MD3 specifications (16dp for Medium, 28dp for Large/Dialogs) and replacing hardcoded accent colors with semantic theme tokens (error, primary) ensures a cohesive, accessible experience. Adding `Tooltip` widgets to technical metadata rows improves the discoverability of interactive features like "tap to copy" on desktop. Standardizing vertical rhythm with consistent gaps (24dp) and dividers creates a predictable content flow.
 
-**Action:** Enforce 16dp for AppCard defaults, 28dp for Dialog shapes and their headers, and 24dp for Category-related chips or cards. Ensure skeletons match these radii exactly to prevent flickering during state transitions.
+**Action:** Update all dialogs to 28dp radius. Standardize all `AppCard` and `InkWell` radii to 16dp. Use `theme.colorScheme` for all status-related colors. Ensure `AppDetailsPage` follows a consistent vertical spacing pattern.
