@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/github_star_badge.dart';
@@ -144,7 +142,6 @@ class AppDetailsHeader extends StatelessWidget {
                   if (githubRepositoryUrl != null &&
                       hasCapability('has_rating'))
                     GitHubStarBadge(
-                      client: context.watch<GitHubClient>(),
                       repositoryUrl: githubRepositoryUrl!,
                     ),
                   if (isAppInstalled)

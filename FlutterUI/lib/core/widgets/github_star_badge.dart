@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:frontend/core/network/github_client.dart';
 
 /// Fetches GitHub stars asynchronously with skeleton + animated count.
 class GitHubStarBadge extends StatefulWidget {
   const GitHubStarBadge({
     super.key,
-    required this.client,
     this.repositoryUrl,
     this.owner,
     this.repo,
     this.compact = false,
   });
 
-  final GitHubClient client;
   final String? repositoryUrl;
   final String? owner;
   final String? repo;
@@ -52,10 +51,11 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
 
     int? count;
     try {
+      final client = context.read<GitHubClient>();
       if (widget.owner != null && widget.repo != null) {
-        count = await widget.client.getStarCount(widget.owner!, widget.repo!);
+        count = await client.getStarCount(widget.owner!, widget.repo!);
       } else {
-        count = await widget.client.getStarCountFromUrl(widget.repositoryUrl);
+        count = await client.getStarCountFromUrl(widget.repositoryUrl);
       }
     } catch (_) {
       count = null;
