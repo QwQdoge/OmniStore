@@ -8,3 +8,6 @@
 - Updated SmoothProgressBar AnimatedContainer to 300ms.
 - Wrapped TasksTab conditional empty/list rendering in AnimatedSwitcher (300ms).
 - Wrapped UpdatesTab conditional empty/list rendering in AnimatedSwitcher (300ms).
+- Wrapped AppShelfs (forYou, hotApps) and _buildHeroSection in HomePage with AnimatedSwitcher (300ms) to ensure smooth transitions from empty to populated states.
+- Wrapped trending AppShelf in DiscoveryContent with AnimatedSwitcher (300ms).
+- Wrapped TabBar and main TabBarView/SearchResults in GitHubStorePage with AnimatedSwitcher (300ms) to prevent abrupt UI changes when toggling search mode.

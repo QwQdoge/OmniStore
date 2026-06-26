@@ -177,7 +177,12 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['featured'] ?? [],
                 builder: (context, featured, _) {
-                  return _buildHeroSection(featured);
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: featured.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_hero'))
+                        : _buildHeroSection(featured, key: const ValueKey('hero_section')),
+                  );
                 },
               ),
             ),
@@ -227,10 +232,16 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
                 builder: (context, trending, _) {
-                  return AppShelf(
-                    title: l10n.hotApps,
-                    apps: trending,
-                    scrollController: _hotAppsScrollController,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: trending.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                        : AppShelf(
+                            key: const ValueKey('trending_shelf'),
+                            title: l10n.hotApps,
+                            apps: trending,
+                            scrollController: _hotAppsScrollController,
+                          ),
                   );
                 },
               ),
@@ -240,11 +251,16 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['for_you'] ?? [],
                 builder: (context, forYou, _) {
-                  if (forYou.isEmpty) return const SizedBox.shrink();
-                  return AppShelf(
-                    title: l10n.forYou,
-                    apps: forYou,
-                    scrollController: _forYouScrollController,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: forYou.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
+                        : AppShelf(
+                            key: const ValueKey('forYou_shelf'),
+                            title: l10n.forYou,
+                            apps: forYou,
+                            scrollController: _forYouScrollController,
+                          ),
                   );
                 },
               ),
@@ -256,9 +272,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeroSection(List<AppPackage> apps) {
-    if (apps.isEmpty) return const SizedBox.shrink();
+  Widget _buildHeroSection(List<AppPackage> apps, {Key? key}) {
     return Column(
+      key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
