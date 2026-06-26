@@ -92,3 +92,11 @@ Extensive audit revealed several asynchronous gaps where `setState` or `BuildCon
 
 Action:
 Implemented strict `if (!mounted) return;` guards immediately following `await` calls in `MainNavigationEntry`, `AppDetailsPage`, `HomePage`, `GitHubStorePage`, `FlatpakStorePage`, and `DownloadPage`. This proactively prevents "setState() called after dispose()" and "use of BuildContext across async gaps" errors, ensuring application stability during rapid navigation or background updates.
+
+## 2026-06-25 - [Atomic File Write Hardening]
+
+Learning:
+Writing directly to JSON configuration or cache files (`daemon_main.py`, `cache_manager.py`, `recommendation_manager.py`, `habit_tracker.py`) using `with open(..., "w")` creates a vulnerability where a crash or power failure mid-write can corrupt the file. This can lead to JSON decoding errors and application instability upon subsequent reads.
+
+Action:
+Replaced direct writes with atomic writes across the Python backend. The data is now written to a temporary `.tmp` file first, which is then swapped with the target file using `os.replace()` (or `.replace()` on `Path` objects). This guarantees that configuration and state files are never left in a partially written, corrupt state.

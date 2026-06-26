@@ -146,8 +146,10 @@ async def run_update_check(config):
 
                 status_path = get_status_path()
                 status_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(status_path, "w", encoding="utf-8") as f:
+                tmp_path = status_path.with_suffix(".tmp")
+                with open(tmp_path, "w", encoding="utf-8") as f:
                     json.dump(status, f, indent=2)
+                tmp_path.replace(status_path)
 
                 if count > 0 and config.get("notifications"):
                     msg = f"您有 {count} 个可用的软件更新项目，点击进入商店查看并更新。"

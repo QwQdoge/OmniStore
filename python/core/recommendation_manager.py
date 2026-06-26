@@ -99,8 +99,10 @@ class RecommendationManager:
                 "recommendations": recommendations
             }, ensure_ascii=False)
             def _write_cache():
-                with open(self.cache_path, "w", encoding="utf-8") as f:
+                tmp_path = self.cache_path.with_suffix(".tmp")
+                with open(tmp_path, "w", encoding="utf-8") as f:
                     f.write(content)
+                tmp_path.replace(self.cache_path)
             await asyncio.get_event_loop().run_in_executor(None, _write_cache)
         except Exception as e:
             import sys
