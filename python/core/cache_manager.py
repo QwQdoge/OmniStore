@@ -33,8 +33,10 @@ class CacheManager:
                 "timestamp": time.time(),
                 "packages": packages
             }
-            with open(self.installed_cache_path, "w", encoding="utf-8") as f:
+            tmp_path = self.installed_cache_path.with_suffix(".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False)
+            tmp_path.replace(self.installed_cache_path)
         except Exception as e:
             print(f"[Cache] Save Error: {e}")
 

@@ -40,8 +40,10 @@ class HabitTracker:
         except RuntimeError:
             # Fallback for synchronous execution (e.g. CLI exit)
             self.data_dir.mkdir(parents=True, exist_ok=True)
-            with open(self.data_path, "w", encoding="utf-8") as f:
+            tmp_path = self.data_path.with_suffix(".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(self.habits, f, ensure_ascii=False, indent=2)
+            tmp_path.replace(self.data_path)
             return
 
         if self._is_saving:
