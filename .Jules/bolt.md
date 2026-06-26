@@ -34,3 +34,9 @@ Files Modified: tasks_tab.dart, download_page.dart, task_manager/presentation/wi
 Action: Replaced broad Consumer<TaskController> widgets with targeted Selector widgets.
 Details: In TerminalDialog and TasksTab, ListView components were rebuilding on every single progress tick due to the Consumer. Migrated to Selector using Dart 3 records to pass safely referenced lists, ensuring the UI lists only rebuild when the actual log/history counts change. Same for the terminal badge icon in DownloadPage.
 Result: Significantly reduced 60fps widget rebuilds during active downloads. Tests passed.
+
+## 2026-06-25 - SettingsController Rebuild Reduction
+
+**Learning:** Using `Consumer<SettingsController>` in root widgets like `MaterialApp` or persistent page components causes the entire subtree to rebuild whenever ANY setting changes (even unrelated ones, like background update checks or daemon toggles). By switching to `Selector`, we narrow the rebuild triggers to specific UI-relevant properties.
+
+**Action:** Replaced `Consumer<SettingsController>` with targeted `Selector` implementations in `omnistore_app.dart` (selecting only themeMode, locale, fontFamily, and fontScale), `search_page.dart` (selecting only the specific 'search sources' JSON), and `updates_tab.dart` (selecting only `isAIEnabled`). This isolates rebuilds and improves rendering performance across the app.
