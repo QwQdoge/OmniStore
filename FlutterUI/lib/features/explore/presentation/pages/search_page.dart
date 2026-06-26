@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
@@ -182,14 +183,13 @@ class _SearchPageState extends State<SearchPage> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: !_showDiscovery
-                  ? Selector<SettingsController, Map<dynamic, dynamic>>(
+                  ? Selector<SettingsController, String>(
                       key: const ValueKey('source_filters'),
-                      selector: (context, settings) =>
-                          settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {},
-                      shouldRebuild: (prev, next) => !mapEquals(prev, next),
-                      builder: (context, sourcesMap, _) {
-                        return _buildSourceFilters(sourcesMap);
+                      selector: (context, settings) {
+                        final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+                        return jsonEncode(sourcesMap);
                       },
+                      builder: (context, sourcesJson, _) => _buildSourceFilters(sourcesJson),
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -256,7 +256,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSourceFilters(Map<dynamic, dynamic> sourcesMap) {
+  Widget _buildSourceFilters(String sourcesJson) {
+    final Map<String, dynamic> sourcesMap = jsonDecode(sourcesJson);
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key.toString())
