@@ -2,7 +2,6 @@ import "package:frontend/features/explore/presentation/controllers/browse_contro
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
 import "package:frontend/core/widgets/app_card.dart";
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';

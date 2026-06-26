@@ -176,7 +176,7 @@ class TasksTab extends StatelessWidget {
                           ],
                         ),
                         subtitle: Text(
-                          isSuccess ? l10n.taskSuccessMsg : l10n.failureReason(task.message ?? ""),
+                          isSuccess ? l10n.taskSuccessMsg : l10n.failureReason(task.message),
                           style: TextStyle(
                             color: isSuccess ? Colors.grey : Colors.red.shade900,
                             fontSize: 12,
