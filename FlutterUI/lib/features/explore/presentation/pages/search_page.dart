@@ -2,6 +2,7 @@ import "package:frontend/features/explore/presentation/controllers/browse_contro
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:frontend/core/widgets/skeleton.dart';
 import "package:frontend/core/widgets/app_card.dart";
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
@@ -181,9 +182,14 @@ class _SearchPageState extends State<SearchPage> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: !_showDiscovery
-                  ? Consumer<SettingsController>(
+                  ? Selector<SettingsController, Map<dynamic, dynamic>>(
                       key: const ValueKey('source_filters'),
-                      builder: (context, settings, _) => _buildSourceFilters(settings),
+                      selector: (context, settings) =>
+                          settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {},
+                      shouldRebuild: (prev, next) => !mapEquals(prev, next),
+                      builder: (context, sourcesMap, _) {
+                        return _buildSourceFilters(sourcesMap);
+                      },
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -250,9 +256,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSourceFilters(SettingsController settings) {
-    final sourcesMap =
-        settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+  Widget _buildSourceFilters(Map<dynamic, dynamic> sourcesMap) {
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key.toString())
