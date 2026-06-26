@@ -21,8 +21,12 @@ class UpdatesTab extends StatelessWidget {
       listenable: UpdateService().availableUpdates,
       builder: (context, _) {
         final updates = UpdateService().availableUpdates.value;
+
+        Widget content;
+
         if (updates.isEmpty) {
-          return Center(
+          content = Center(
+            key: const ValueKey('empty'),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -39,10 +43,11 @@ class UpdatesTab extends StatelessWidget {
               ],
             ),
           );
-        }
-        return Column(
-          children: [
-            Padding(
+        } else {
+          content = Column(
+            key: const ValueKey('list'),
+            children: [
+              Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,9 +180,15 @@ class UpdatesTab extends StatelessWidget {
                     ),
                   ));
                 },
+                ),
               ),
-            ),
-          ],
+            ],
+          );
+        }
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: content,
         );
       },
     );

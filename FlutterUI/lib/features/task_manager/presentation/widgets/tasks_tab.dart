@@ -16,8 +16,11 @@ class TasksTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    Widget content;
+
     if (!isBusy && historyLength == 0) {
-      return Center(
+      content = Center(
+        key: const ValueKey('empty'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -34,13 +37,13 @@ class TasksTab extends StatelessWidget {
           ],
         ),
       );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    } else {
+      content = SingleChildScrollView(
+        key: const ValueKey('list'),
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           if (isBusy) ...[
             Text(
               l10n.currentTask,
@@ -192,9 +195,15 @@ class TasksTab extends StatelessWidget {
                 );
               },
             ),
+            ],
           ],
-        ],
-      ),
+        ),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: content,
     );
   }
 }

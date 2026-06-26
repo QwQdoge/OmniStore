@@ -202,7 +202,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 child: Row(
                   children: [
                     AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOutCubic,
                       width: isExpanded ? 180 : 72,
                       child: NavigationRail(

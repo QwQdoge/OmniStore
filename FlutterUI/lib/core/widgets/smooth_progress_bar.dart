@@ -275,7 +275,7 @@ class _ProgressIndicatorStack extends StatelessWidget {
             child: GestureDetector(
               onTap: onCancel,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
