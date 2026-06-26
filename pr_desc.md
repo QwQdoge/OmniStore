@@ -1,15 +1,15 @@
-⚡ Bolt: Optimize CachedNetworkImage Memory Usage
+## What
+Fixed Provider contract violations where `context.read<GitHubClient>()` was improperly called directly within the `build()` methods of `GitHubAppList` and `AppDetailsHeader`.
 
-🎯 **What**
-Added `memCacheWidth` and `memCacheHeight` properties to various `CachedNetworkImage` usages throughout the app.
-Created the `.Jules/bolt.md` journal file.
+## Why
+Calling `context.read<T>()` inside a widget's `build` method is considered an anti-pattern by the `provider` package and throws assertion errors in debug mode. It prevents widgets from listening for and rebuilding correctly if the provided object (like the GitHub client instance) were to ever update. Using `context.watch<T>()` ensures safe and consistent behavior across the app.
 
-💡 **Why**
-By explicitly specifying memory cache dimensions, we prevent the framework from loading and caching original high-resolution images in memory. This significantly reduces the app's overall memory footprint, particularly when scrolling through lists of applications with large icons or viewing detailed pages with high-res screenshots.
+## Impact
+Improved state management robustness and removed runtime assertion risks without altering the intended UX.
 
-✅ **Verification**
-- Verified using `flutter test` that existing functionality is preserved.
-- Verified using `flutter analyze` that no new issues were introduced.
+## Verification
+- Ran frontend test suite (`cd FlutterUI && flutter test`) — all tests passed.
+- Analyzed and verified through code review.
 
-✨ **Result**
-Reduced application memory consumption, especially on pages displaying numerous images, preventing potential Out-of-Memory (OOM) crashes on low-end devices without modifying the visible UI.
+## Accessibility
+No changes to accessible elements.

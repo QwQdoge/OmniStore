@@ -144,7 +144,7 @@ class AppDetailsHeader extends StatelessWidget {
                   if (githubRepositoryUrl != null &&
                       hasCapability('has_rating'))
                     GitHubStarBadge(
-                      client: context.read<GitHubClient>(),
+                      client: context.watch<GitHubClient>(),
                       repositoryUrl: githubRepositoryUrl!,
                     ),
                   if (isAppInstalled)
