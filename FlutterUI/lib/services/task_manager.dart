@@ -186,7 +186,6 @@ class TaskManager {
         );
 
         bool success = true;
-        final completer = Completer<bool>();
         StreamSubscription? sub;
 
         try {
