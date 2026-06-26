@@ -38,3 +38,6 @@
 - Added global `DialogTheme` to `omnistore_theme.dart` with `shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))` to standardize the MD3 dialog appearance across the app.
 - Removed hardcoded `shape` assignments (with `28.0` radius) from `ActionConfirmDialog` and `AurSecurityDialog` in `action_dialogs.dart` to enforce reliance on the globally consistent `DialogTheme`.
 - Removed hardcoded `shape` assignment (with `12.0` radius) from `TerminalDialog` in `terminal_dialog.dart` and updated its internal header container's top-left and top-right border radii from `12.0` to `28.0` to perfectly align with the new globally consistent dialog shape.
+## 2026-06-20 - Terminology Consistency: AI Error Handling in Update Summary Dialog
+- In `FlutterUI/lib/features/task_manager/presentation/widgets/ai_update_summary_dialog.dart`, replaced the hardcoded UI fallback string (`"AI failed to summarize."`) in `FutureBuilder` with a call to the localized `_buildAIMarkdown` method.
+- This ensures AI error codes (like `AI_TIMEOUT`) are consistently mapped to standardized MD3 dialog terminology across the app, aligning with the `ai_dialogs.dart` implementation.

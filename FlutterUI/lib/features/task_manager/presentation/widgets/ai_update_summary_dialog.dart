@@ -36,7 +36,6 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
     );
   }
 
-  // ignore: unused_element
   Widget _buildAIMarkdown(
     AsyncSnapshot<String> snapshot,
     AppLocalizations l10n,
@@ -45,16 +44,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
       return const SizedBox(
         key: ValueKey('loading'),
         height: 200,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Skeleton(width: double.infinity, height: 14),
-            SizedBox(height: 8),
-            Skeleton(width: double.infinity, height: 14),
-            SizedBox(height: 8),
-            Skeleton(width: 200, height: 14),
-          ],
-        ),
+        child: ParagraphSkeleton(),
       );
     }
     String data = snapshot.data ?? l10n.aiResponseFailed;
@@ -88,17 +78,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: snapshot.connectionState == ConnectionState.waiting
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
-                      height: 200,
-                      child: ParagraphSkeleton(),
-                    )
-                  : MarkdownBody(
-                      key: const ValueKey('loaded'),
-                      data: snapshot.data ?? "AI failed to summarize.",
-                      selectable: true,
-                    ),
+              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },
         ),
