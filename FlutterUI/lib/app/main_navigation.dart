@@ -129,9 +129,25 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
   Future<void> _handleFullExit() async {
     try {
-      await Process.run('pkill', ['omnistore-daemon']);
-      await Process.run('pkill', ['-f', 'python/main.py']);
-      await Process.run('pkill', ['python_server']);
+      // Murphy-proof: Capture service before await gaps
+      final backend = context.read<BackendService>();
+
+      // Murphy-proof: Graceful shutdown sequence
+      await backend.shutdownBackend().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () => debugPrint('Backend shutdown timed out'),
+          );
+      await backend.dispose().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () => debugPrint('Backend dispose timed out'),
+          );
+
+      // Fallback: Force kill remaining processes (Platform specific)
+      if (Platform.isLinux || Platform.isMacOS) {
+        await Process.run('pkill', ['omnistore-daemon']);
+        await Process.run('pkill', ['-f', 'python/main.py']);
+        await Process.run('pkill', ['python_server']);
+      }
     } catch (e) {
       debugPrint('Process cleanup error: $e');
     }

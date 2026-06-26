@@ -154,13 +154,11 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
         while True:
             # 1. Read request with strict line-length limit to prevent OOM
             try:
-                # Limit read size to 1MB + some buffer to avoid memory explosion
+                # Murphy-proof: reader.readline() will raise LimitOverrunError
+                # if buffer exceeds the 'limit' set in start_server.
                 line_bytes = await asyncio.wait_for(reader.readline(), timeout=300)
                 if not line_bytes:
                     break
-
-                if len(line_bytes) > 1024 * 1024 + 1024:
-                    raise ValueError("Payload size limit exceeded")
 
                 line = line_bytes.decode('utf-8', errors='replace').strip()
                 if not line:
@@ -178,6 +176,14 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
                     writer.write(json.dumps({"status": "error", "error": "Invalid JSON format"}).encode('utf-8') + b'\n')
                     await writer.drain()
                     continue
+            except (asyncio.LimitOverrunError, ValueError):
+                logging.error(f"Payload size limit exceeded from {client_addr}")
+                writer.write(json.dumps({
+                    "status": "error",
+                    "error": "Payload size limit exceeded (max 512KB)"
+                }).encode('utf-8') + b'\n')
+                await writer.drain()
+                break
             except asyncio.TimeoutError:
                 logging.debug(f"Daemon client {client_addr} connection timed out")
                 break
@@ -1541,9 +1547,11 @@ async def main():
             if validated_args.daemon:
                 async with backend:
                     # Start local TCP socket server on port 9081
+                    # Murphy-proof: set buffer limit to 512KB to prevent OOM
                     server = await asyncio.start_server(
                         lambda r, w: handle_daemon_client(backend, r, w),
-                        '127.0.0.1', 9081
+                        '127.0.0.1', 9081,
+                        limit=512 * 1024
                     )
                     logging.info("Python daemon started on 127.0.0.1:9081")
                     async with server:

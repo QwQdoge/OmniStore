@@ -26,7 +26,10 @@ async def safe_subprocess(*args, **kwargs):
                     # 1. Attempt graceful group termination (SIGTERM to the process group)
                     if os.name == 'posix':
                         try:
-                            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                            pgid = os.getpgid(proc.pid)
+                            # Murphy-proof: Never kill our own process group
+                            if pgid != os.getpgrp() and pgid > 1:
+                                os.killpg(pgid, signal.SIGTERM)
                         except ProcessLookupError:
                             pass
                     else:
@@ -38,7 +41,9 @@ async def safe_subprocess(*args, **kwargs):
                         # 2. Escalation: Force group kill (SIGKILL to the process group)
                         if os.name == 'posix':
                             try:
-                                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                                pgid = os.getpgid(proc.pid)
+                                if pgid != os.getpgrp() and pgid > 1:
+                                    os.killpg(pgid, signal.SIGKILL)
                             except ProcessLookupError:
                                 pass
                         else:

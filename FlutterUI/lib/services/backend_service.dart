@@ -130,26 +130,68 @@ class BackendService {
   static Process? activeProcess;
   static Process? activeSearchProcess;
 
+  /// Murphy-proof: Strict string validation to prevent shell injection and malformed inputs.
   void _validateString(String? val, String name) {
     if (val == null || val.trim().isEmpty) {
       throw ArgumentError("$name cannot be null or empty");
     }
     final trimmed = val.trim();
+    if (trimmed.length > 1024) {
+      throw ArgumentError("$name is too long (max 1024 characters)");
+    }
+    // Allow alphanumeric, dots, underscores, dashes, slashes, and spaces.
+    // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
+      throw ArgumentError(
+          "Invalid characters in $name: Security policy forbids shell metacharacters.");
     }
   }
 
+  /// Murphy-proof: Strict URL validation.
+  void _validateUrl(String? url) {
+    if (url == null || url.trim().isEmpty) {
+      throw ArgumentError("URL cannot be null or empty");
+    }
+    final trimmed = url.trim();
+    if (trimmed.length > 2048) {
+      throw ArgumentError("URL is too long");
+    }
+    // Allow basic URL characters, but strictly forbid shell metacharacters.
+    // We allow '&' and '?' which are common in URLs, but must be handled with care.
+    if (!RegExp(r'^[a-zA-Z0-9._/:\-?=&%+#]+$').hasMatch(trimmed)) {
+      throw ArgumentError("Invalid characters in URL");
+    }
+    // Explicitly check for dangerous characters even if the regex missed them
+    if (trimmed.contains(';') ||
+        trimmed.contains('|') ||
+        trimmed.contains('`') ||
+        trimmed.contains('\$') ||
+        trimmed.contains('(') ||
+        trimmed.contains(')') ||
+        trimmed.contains('<') ||
+        trimmed.contains('>') ||
+        trimmed.contains('\\')) {
+      throw ArgumentError("Security: Shell metacharacters detected in URL");
+    }
+  }
+
+  /// Murphy-proof: Strict path validation to prevent traversal attacks.
   void _validatePath(String? path) {
     if (path == null || path.trim().isEmpty) {
       throw ArgumentError("Path cannot be null or empty");
     }
     final trimmed = path.trim();
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
+    if (trimmed.length > 1024) {
+      throw ArgumentError("Path is too long");
     }
     if (trimmed.contains('..')) {
-      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
+      throw ArgumentError(
+          "Security: Relative path traversal ('..') is strictly forbidden.");
+    }
+    // Cross-platform support: Allow Windows-style paths (C:\...)
+    if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
+      throw ArgumentError(
+          "Invalid characters in path: Security policy forbids shell metacharacters.");
     }
   }
 
@@ -1083,7 +1125,7 @@ class BackendService {
         throw ArgumentError("Invalid action flag: $f");
       }
       if (url != null && url.trim().isNotEmpty) {
-        _validateString(url, "URL");
+        _validateUrl(url);
       }
     } catch (e) {
       return Stream.value(
@@ -1094,11 +1136,7 @@ class BackendService {
     final trimmedName = n.trim();
     List<String> args = [f, trimmedName, "--source", s.trim(), "--json"];
     if (url != null && url.trim().isNotEmpty) {
-      final trimmedUrl = url.trim();
-      if (RegExp(r'[;&|]').hasMatch(trimmedUrl)) {
-        return Stream.value("[CALLBACK] {\"log\": \"[ERROR] URL 包含非法字符\"}");
-      }
-      args.addAll(["--url", trimmedUrl]);
+      args.addAll(["--url", url.trim()]);
     }
     return _safeStream(args);
   }
@@ -1236,9 +1274,10 @@ class BackendService {
     try {
       _validateString(type, "Repo Type");
       _validateString(name, "Repo Name");
-      _validateString(url, "Repo URL");
+      _validateUrl(url);
 
-      final daemonRes = await _sendToDaemon("run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
+      final daemonRes = await _sendToDaemon(
+          "run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
