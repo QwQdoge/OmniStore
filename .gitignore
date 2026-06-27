@@ -98,6 +98,9 @@ flutter_export_environment.sh
 
 # --- Release Bundles & Packaging ---
 release_bundle/
+release_bundle*/
+*.tar.gz
+*.zip
 dist/
 build/
 bin/
