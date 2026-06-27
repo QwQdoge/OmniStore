@@ -176,28 +176,50 @@ class ConfigManager:
             return self.default_config
 
     def save(self, new_config: Optional[dict] = None) -> bool:
-        """保存配置：原子写入 + 实时更新内存内存缓存"""
+        """
+        Murphy-proof configuration save logic.
+        Ensures strict schema validation, directory existence, and atomic file replacement
+        to prevent configuration corruption during mid-write crashes or power failures.
+        """
         cfg = new_config if new_config is not None else self.current_config
         try:
+            # 1. Rigorous Schema Validation
             try:
                 cfg = ConfigModel(**cfg).model_dump()
             except Exception as ve:
-                print(f"[Config] Save Validation Warning: {ve}")
+                print(f"[Config] Save Validation Error: {ve}")
+                # Fault Isolation: Refuse to save invalid config to protect system stability
+                return False
             
+            # 2. Preparation: Ensure directory exists
             self.config_dir.mkdir(parents=True, exist_ok=True)
+
+            # 3. Atomic Write Pattern: Write to temporary file first
             temp_file = self.config_path.with_suffix(".tmp")
+            try:
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    yaml.dump(cfg, f, allow_unicode=True,
+                              sort_keys=False, default_flow_style=False)
 
-            with open(temp_file, "w", encoding="utf-8") as f:
-                # 不排序 Key，保持 yaml 的易读性
-                yaml.dump(cfg, f, allow_unicode=True,
-                          sort_keys=False, default_flow_style=False)
+                # Force sync to disk if supported to ensure data integrity
+                if hasattr(os, "fdatasync"):
+                    with open(temp_file, "a") as f:
+                        os.fdatasync(f.fileno())
 
-            # 原子重命名，防止保存时断电损坏原始文件
-            temp_file.replace(self.config_path)
-            self.current_config = cfg
-            return True
+                # 4. Atomic Swap: Atomic replace ensures the original file is either
+                # unchanged or completely updated, never in a partial state.
+                temp_file.replace(self.config_path)
+                self.current_config = cfg
+                return True
+            except Exception as write_e:
+                print(f"[Config] File Write Error: {write_e}")
+                if temp_file.exists():
+                    try: temp_file.unlink()
+                    except: pass
+                return False
+
         except Exception as e:
-            print(f"[Config] Save Error: {e}")
+            print(f"[Config] Save Fatal Error: {e}")
             return False
 
     def get(self, key_path: str, default: Any = None) -> Any:
