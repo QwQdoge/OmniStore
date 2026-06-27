@@ -25,39 +25,38 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Consumer<SettingsController>(
-        builder: (context, settings, child) {
-          return ListView(
-            padding: const EdgeInsets.all(24),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.settings,
-                    style: OmnistoreTheme.standardHeader(context),
-                  ),
-                  Tooltip(
-                    message: l10n.advanced,
-                    child: FilterChip(
-                      label: Text(l10n.advanced),
-                      selected: _showAdvanced,
-                      onSelected: (val) => setState(() => _showAdvanced = val),
-                    ),
-                  ),
-                ],
+              Text(
+                l10n.settings,
+                style: OmnistoreTheme.standardHeader(context),
               ),
-              const SizedBox(height: 24),
+              Tooltip(
+                message: l10n.advanced,
+                child: FilterChip(
+                  label: Text(l10n.advanced),
+                  selected: _showAdvanced,
+                  onSelected: (val) => setState(() => _showAdvanced = val),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
 
-              // Primary Settings
-              _buildSection(l10n.general),
-              Semantics(
-                label: l10n.general,
-                explicitChildNodes: true,
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      ListTile(
+          // Primary Settings
+          _buildSection(l10n.general),
+          Semantics(
+            label: l10n.general,
+            explicitChildNodes: true,
+            child: Consumer<SettingsController>(
+              builder: (context, settings, _) => AppCard(
+                child: Column(
+                  children: [
+                    ListTile(
                       title: Text(l10n.language),
                       subtitle: Text(
                         settings.language == 'zh-CN'
@@ -117,58 +116,61 @@ class _SettingsPageState extends State<SettingsPage> {
                       value: settings.useSystemTitleBar,
                       onChanged: (val) {
                         settings.setUseSystemTitleBar(val);
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(l10n.configSaved)),
                         );
                       },
                     ),
-                      SwitchListTile(
-                        title: Text(l10n.aiEnabled),
-                        subtitle: Text(l10n.aiAssistantDesc),
-                        value: settings.isAIEnabled,
-                        onChanged: (val) {
-                          final config = Map<String, dynamic>.from(
-                            settings.config,
-                          );
-                          config['ai'] = Map<String, dynamic>.from(
-                            config['ai'] ?? {},
-                          );
-                          config['ai']['enabled'] = val;
-                          settings.updateConfig(config);
-                        },
-                      ),
-                    ],
-                  ),
+                    SwitchListTile(
+                      title: Text(l10n.aiEnabled),
+                      subtitle: Text(l10n.aiAssistantDesc),
+                      value: settings.isAIEnabled,
+                      onChanged: (val) {
+                        final config = Map<String, dynamic>.from(
+                          settings.config,
+                        );
+                        config['ai'] = Map<String, dynamic>.from(
+                          config['ai'] ?? {},
+                        );
+                        config['ai']['enabled'] = val;
+                        settings.updateConfig(config);
+                      },
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: 24),
-              // Storage & Cleanup Card
-              Semantics(
-                label: l10n.systemCleaning,
-                explicitChildNodes: true,
-                child: const StorageCleanupCard(),
-              ),
+          const SizedBox(height: 24),
+          // Storage & Cleanup Card
+          Semantics(
+            label: l10n.systemCleaning,
+            explicitChildNodes: true,
+            child: const StorageCleanupCard(),
+          ),
 
-              const SizedBox(height: 24),
-              _buildSection(l10n.repositories),
-              Semantics(
-                label: l10n.repositories,
-                explicitChildNodes: true,
-                child: SourcesConfigCard(settings: settings),
-              ),
+          const SizedBox(height: 24),
+          _buildSection(l10n.repositories),
+          Semantics(
+            label: l10n.repositories,
+            explicitChildNodes: true,
+            child: Consumer<SettingsController>(
+              builder: (context, settings, _) =>
+                  SourcesConfigCard(settings: settings),
+            ),
+          ),
 
-              const SizedBox(height: 24),
-              _buildSection(l10n.updates),
-              Semantics(
-                label: l10n.updates,
-                explicitChildNodes: true,
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      SwitchListTile(
+          const SizedBox(height: 24),
+          _buildSection(l10n.updates),
+          Semantics(
+            label: l10n.updates,
+            explicitChildNodes: true,
+            child: Consumer<SettingsController>(
+              builder: (context, settings, _) => AppCard(
+                child: Column(
+                  children: [
+                    SwitchListTile(
                       title: Text(l10n.enableDaemon),
                       subtitle: Text(l10n.enableDaemonDesc),
                       value: settings.daemonEnabled,
@@ -193,44 +195,44 @@ class _SettingsPageState extends State<SettingsPage> {
                           settings.setEnableSystemdService(val);
                         },
                       ),
-                      ListTile(
-                        title: Text(l10n.checkIntervalTitle),
-                        subtitle: Text(
-                          l10n.checkIntervalSubtitle(
-                            settings.checkIntervalHours,
-                          ),
-                        ),
-                        trailing: DropdownButton<int>(
-                          value: settings.checkIntervalHours,
-                          underline: const SizedBox(),
-                          borderRadius: BorderRadius.circular(12),
-                          items: [1, 2, 4, 8, 12, 24].map((h) {
-                            return DropdownMenuItem(
-                              value: h,
-                              child: Text(l10n.hourValue(h)),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              settings.setCheckIntervalHours(val);
-                            }
-                          },
-                        ),
+                    ListTile(
+                      title: Text(l10n.checkIntervalTitle),
+                      subtitle: Text(
+                        l10n.checkIntervalSubtitle(settings.checkIntervalHours),
                       ),
-                    ],
-                  ),
+                      trailing: DropdownButton<int>(
+                        value: settings.checkIntervalHours,
+                        underline: const SizedBox(),
+                        borderRadius: BorderRadius.circular(12),
+                        items: [1, 2, 4, 8, 12, 24].map((h) {
+                          return DropdownMenuItem(
+                            value: h,
+                            child: Text(l10n.hourValue(h)),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            settings.setCheckIntervalHours(val);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: 24),
-              _buildSection(l10n.typography),
-              Semantics(
-                label: l10n.typography,
-                explicitChildNodes: true,
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      ListTile(
+          const SizedBox(height: 24),
+          _buildSection(l10n.typography),
+          Semantics(
+            label: l10n.typography,
+            explicitChildNodes: true,
+            child: Consumer<SettingsController>(
+              builder: (context, settings, _) => AppCard(
+                child: Column(
+                  children: [
+                    ListTile(
                       title: Text(l10n.fontFamily),
                       subtitle: Text(
                         settings.fontFamily == 'System'
@@ -266,44 +268,46 @@ class _SettingsPageState extends State<SettingsPage> {
                         },
                       ),
                     ),
-                      ListTile(
-                        title: Text(l10n.fontScale),
-                        subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
-                        trailing: SizedBox(
-                          width: 150,
-                          child: Slider(
-                            value: settings.fontScale,
-                            min: 0.8,
-                            max: 1.6,
-                            divisions: 8,
-                            label: "${(settings.fontScale * 100).toInt()}%",
-                            onChanged: (val) {
-                              settings.setFontScale(
-                                double.parse(val.toStringAsFixed(2)),
-                              );
-                            },
-                          ),
+                    ListTile(
+                      title: Text(l10n.fontScale),
+                      subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
+                      trailing: SizedBox(
+                        width: 150,
+                        child: Slider(
+                          value: settings.fontScale,
+                          min: 0.8,
+                          max: 1.6,
+                          divisions: 8,
+                          label: "${(settings.fontScale * 100).toInt()}%",
+                          onChanged: (val) {
+                            settings.setFontScale(
+                              double.parse(val.toStringAsFixed(2)),
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ),
 
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _showAdvanced
-                    ? Semantics(
-                        key: const ValueKey('ai_settings'),
-                        label: l10n.aiSettings,
-                        explicitChildNodes: true,
-                        child: AISettingsSection(settings: settings),
-                      )
-                    : const SizedBox.shrink(key: ValueKey('empty_advanced')),
-              ),
-            ],
-          );
-        },
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _showAdvanced
+                ? Semantics(
+                    key: const ValueKey('ai_settings'),
+                    label: l10n.aiSettings,
+                    explicitChildNodes: true,
+                    child: Consumer<SettingsController>(
+                      builder: (context, settings, _) =>
+                          AISettingsSection(settings: settings),
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty_advanced')),
+          ),
+        ],
       ),
     );
   }
@@ -314,9 +318,9 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

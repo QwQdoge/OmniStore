@@ -73,3 +73,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Replaced dangerous `jsonEncode` logic inside `Selector<SettingsController, String>` with a direct `Map` return type.
 - Leveraged the `shouldRebuild` parameter combined with `mapEquals` from `package:flutter/foundation.dart` (or `DeepCollectionEquality().equals` from `package:collection`) to safely and performantly check for deep equality, ensuring the widget only rebuilds when the actual data inside the map changes.
+## 2026-06-25 - State Management: Scoped Consumers for SettingsPage
+
+**Learning:** Wrapping a large structural widget like `ListView` at the top of a page (e.g., `SettingsPage`) in a `Consumer<SettingsController>` violates the "rebuild ownership" rule. It forces the framework to redundantly recreate headers, layout spacers, and independent widgets (like `StorageCleanupCard` which manages its own state) on every minor settings tick.
+
+**Action:**
+- Removed the top-level `Consumer<SettingsController>` from `SettingsPage` to leave the `ListView` static.
+- Wrapped only the exact `AppCard` elements (Primary Settings, Updates, Typography), `SourcesConfigCard`, and `AISettingsSection` that actually require `settings` dependencies in their own localized `Consumer<SettingsController>` blocks.
+- This targeted approach effectively isolates the "blast radius" of state updates, ensuring smooth performance and adhering to the directive for minimal and specific rebuild targets.
