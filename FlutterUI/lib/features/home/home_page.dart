@@ -10,10 +10,11 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/home/widgets/app_shelf.dart';
-import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/section_header.dart';
+import 'package:frontend/features/home/widgets/banner_card.dart';
+import 'package:frontend/core/theme/omnistore_theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -299,108 +300,10 @@ class _HomePageState extends State<HomePage> {
 
 
 
-  Widget _buildCategoryQuickAccess() {
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 66,
-        child: Scrollbar(
-          controller: _quickAccessScrollController,
-          thumbVisibility: true,
-          child: ListView.builder(
-            controller: _quickAccessScrollController,
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            itemCount: _categories.length,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Semantics(
-                label: 'Category: ${_categories[index].name}',
-                child: ActionChip(
-                  avatar: Icon(_categories[index].icon, size: 18),
-                  label: Text(_categories[index].name),
-                  tooltip: _categories[index].name,
-                  onPressed: () {
-                    final browse = context.read<BrowseController>();
-                    browse.pendingSearchQuery =
-                        '/${_categories[index].id.toLowerCase()}';
-                    context.read<NavigationController>().setIndex(2);
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(title, style: OmnistoreTheme.standardHeader(context)),
-    );
-  }
-
-  Widget _buildAIPickSkeleton({Key? key}) {
-    return Container(
-      key: key,
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Skeleton(width: 24, height: 24, borderRadius: 12),
-              SizedBox(width: 8),
-              Skeleton(width: 140, height: 16),
-            ],
-          ),
-          SizedBox(height: 16),
-          Skeleton(width: double.infinity, height: 14),
-          SizedBox(height: 8),
-          Skeleton(width: 240, height: 14),
-          SizedBox(height: 16),
-          Skeleton(width: 120, height: 36, borderRadius: 18),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAIPickSection({Key? key}) {
-    return Container(
-      key: key,
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.tertiaryContainer.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.auto_awesome_rounded),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.aiPickDay,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          MarkdownBody(data: _aiPickBlurb ?? ""),
-          const SizedBox(height: 12),
-          AIAppResolver(aiText: _aiPickBlurb ?? "", jsonPrefix: "PICK_JSON:"),
-        ],
-      ),
     );
   }
 }
