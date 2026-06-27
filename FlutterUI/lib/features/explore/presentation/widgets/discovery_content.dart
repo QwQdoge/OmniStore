@@ -129,10 +129,14 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
             selector: (context, browse) =>
                 browse.recommendations['trending'] ?? [],
             builder: (context, trending, _) {
-              if (trending.isEmpty) return const SizedBox.shrink();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: trending.isEmpty
+                    ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                    : Column(
+                        key: const ValueKey('trending_content'),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                   const SizedBox(height: 40),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -207,7 +211,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                     ),
                   ),
                 ],
-              );
+              ));
             },
           ),
         ],
