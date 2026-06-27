@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 import 'package:frontend/core/network/github_client.dart';
@@ -79,12 +78,18 @@ class GitHubAppList extends StatelessWidget {
         ),
       );
     } else {
-      final client = context.watch<GitHubClient>();
       final scheme = Theme.of(context).colorScheme;
 
       content = ListView.builder(
       key: PageStorageKey<String>('github_store_$keyPrefix'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: SizedBox(height: 120),
+        ),
+      ),
       itemCount: apps.length,
       itemBuilder: (context, index) {
         final app = apps[index];
@@ -155,7 +160,6 @@ class GitHubAppList extends StatelessWidget {
                             // Stars Badge
                             if (GitHubClient.parseUrl(repoUrl) != null)
                               GitHubStarBadge(
-                                client: client,
                                 repositoryUrl: repoUrl,
                                 compact: true,
                               ),
@@ -226,51 +230,59 @@ class GitHubAppListSkeleton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return ListView.builder(
       padding: const EdgeInsets.all(16),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: SizedBox(height: 120),
+        ),
+      ),
       itemCount: 8,
       itemBuilder: (context, index) {
-        return Card.filled(
-          margin: const EdgeInsets.only(bottom: 12),
-          color: scheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.15),
-            ),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Skeleton(width: 56, height: 56, borderRadius: 16),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Skeleton(width: 140, height: 18, borderRadius: 8),
-                          Skeleton(width: 60, height: 20, borderRadius: 12),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Skeleton(width: double.infinity, height: 14, borderRadius: 8),
-                      SizedBox(height: 6),
-                      Skeleton(width: 200, height: 14, borderRadius: 8),
-                      SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Skeleton(width: 80, height: 22, borderRadius: 12),
-                          Skeleton(width: 70, height: 16, borderRadius: 8),
-                        ],
-                      ),
-                    ],
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            borderRadius: 16,
+            color: scheme.surfaceContainerLow,
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Skeleton(width: 56, height: 56, borderRadius: 16),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Skeleton(width: 140, height: 18, borderRadius: 8),
+                            Skeleton(width: 60, height: 20, borderRadius: 12),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Skeleton(
+                          width: double.infinity,
+                          height: 14,
+                          borderRadius: 8,
+                        ),
+                        SizedBox(height: 6),
+                        Skeleton(width: 200, height: 14, borderRadius: 8),
+                        SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Skeleton(width: 80, height: 22, borderRadius: 12),
+                            Skeleton(width: 70, height: 16, borderRadius: 8),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

@@ -15,7 +15,6 @@ import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/section_header.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -72,34 +71,33 @@ class _HomePageState extends State<HomePage> {
     try {
       final aiRepo = context.read<AIRepository>();
       final pick = await aiRepo.aiPickOfTheDay();
-      if (mounted) {
-        setState(() {
-          // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
-          final errorPatterns = [
-            '⚠',
-            '⏱',
-            'AI 服务',
-            'AI service',
-            'timed out',
-            '超时',
-            '无法连接',
-            'Connection',
-            '错误',
-            'error',
-            'Error',
-            '未启用',
-            'not enabled',
-            'failed',
-            'Failed',
-            'Today\'s recommendation: OmniStore',
-          ];
-          final isError = errorPatterns.any(
-            (p) => pick.toLowerCase().contains(p.toLowerCase()),
-          );
-          _aiPickBlurb = isError ? null : pick;
-          _isAILoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        // 过滤掉所有已知错误提示文本，隐藏 AI 推荐区块
+        final errorPatterns = [
+          '⚠',
+          '⏱',
+          'AI 服务',
+          'AI service',
+          'timed out',
+          '超时',
+          '无法连接',
+          'Connection',
+          '错误',
+          'error',
+          'Error',
+          '未启用',
+          'not enabled',
+          'failed',
+          'Failed',
+          'Today\'s recommendation: OmniStore',
+        ];
+        final isError = errorPatterns.any(
+          (p) => pick.toLowerCase().contains(p.toLowerCase()),
+        );
+        _aiPickBlurb = isError ? null : pick;
+        _isAILoading = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isAILoading = false);
     }
@@ -190,9 +188,7 @@ class _HomePageState extends State<HomePage> {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _isAILoading
-                        ? const AIPickSkeleton(
-                            key: ValueKey('ai_skeleton'),
-                          )
+                        ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
                         : (_aiPickBlurb != null
                               ? AIPickSection(
                                   key: const ValueKey('ai_content'),
@@ -214,9 +210,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(top: 40, bottom: 16),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: SectionHeader(title: l10n.essentialTools),
-                    ),
+                    Expanded(child: SectionHeader(title: l10n.essentialTools)),
                     Padding(
                       padding: const EdgeInsets.only(right: 20),
                       child: OutlinedButton.icon(
@@ -262,5 +256,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }

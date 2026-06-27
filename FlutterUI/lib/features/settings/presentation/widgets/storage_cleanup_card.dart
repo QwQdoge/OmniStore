@@ -28,12 +28,11 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
     setState(() => _loadingStorage = true);
     try {
       final info = await BackendService.instance.getStorageInfo();
-      if (mounted) {
-        setState(() {
-          _storageInfo = info;
-          _loadingStorage = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _storageInfo = info;
+        _loadingStorage = false;
+      });
     } catch (_) {
       if (mounted) {
         setState(() => _loadingStorage = false);

@@ -50,12 +50,11 @@ class _AIAppResolverState extends State<AIAppResolver> {
         }
       }
 
-      if (mounted) {
-        setState(() {
-          _resolvedApps = apps;
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _resolvedApps = apps;
+        _isLoading = false;
+      });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
