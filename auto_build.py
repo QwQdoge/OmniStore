@@ -99,6 +99,7 @@ def build_python():
         "--name", "python_server",
         "--clean",
         "--exclude-module", "PyQt5",
+        "--exclude-module", "PySide6",
         "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"),
         "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"),
     ] + extra_args + [str(PYTHON_PROJECT_DIR / "main.py")]
