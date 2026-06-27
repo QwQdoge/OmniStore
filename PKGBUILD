@@ -1,5 +1,5 @@
 pkgname=omnistore-bin
-pkgver=0.1.0.beta
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="OmniStore: A unified software repository search and management tool built with Flutter, Rust, and Python."
 arch=('x86_64')
@@ -9,7 +9,8 @@ license=('MIT')
 depends=('krita' 'libdbusmenu-gtk3' 'libappindicator-gtk3')
 provides=('omnistore')
 conflicts=('omnistore' 'omnistore-git')
-source=("omnistore-v${pkgver}-linux-x64.tar.gz::https://github.com/QwQdoge/OmniStore/releases/download/v${pkgver}/omnistore-v${pkgver}-linux-x64.tar.gz")
+_release_tag="v${pkgver}"
+source=("omnistore-${_release_tag}-linux-x64.tar.gz::https://github.com/QwQdoge/OmniStore/releases/download/${_release_tag}/omnistore-linux-x64.tar.gz")
 sha256sums=('SKIP')
 
 package() {
@@ -20,8 +21,8 @@ package() {
   local _src_dir
   if [ -d "$srcdir/release_bundle" ]; then
     _src_dir="$srcdir/release_bundle"
-  elif [ -d "$srcdir/omnistore-v${pkgver}-linux-x64" ]; then
-    _src_dir="$srcdir/omnistore-v${pkgver}-linux-x64"
+  elif [ -d "$srcdir/omnistore-linux-x64" ]; then
+    _src_dir="$srcdir/omnistore-linux-x64"
   else
     _src_dir="$srcdir"
   fi
