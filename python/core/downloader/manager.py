@@ -43,8 +43,18 @@ class InstallExecutor:
 
             # Boundary Defense: Prevent shell injection or malformed paths
             if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
-                 if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
-                 return False
+                if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                return False
+
+            url = package.get("url")
+            if url:
+                # Murphy-proof URL validation
+                if not re.match(r'^[a-zA-Z0-9._/:\-?=&%+#]+$', url.strip()):
+                    if callback: await callback("[ERROR] Security: URL contains illegal characters.")
+                    return False
+                if any(c in url for c in ";|`$()<>\\"):
+                    if callback: await callback("[ERROR] Security: Shell metacharacters detected in URL.")
+                    return False
 
             # 2. Environment & Dependency Check
             source_name = str(package.get("source", "Native")).lower()

@@ -7,6 +7,25 @@ import 'package:flutter/foundation.dart';
 /// and escalating termination signals.
 class ProcessRegistry {
   final Set<Process> _activeProcesses = {};
+  Timer? _reaperTimer;
+
+  ProcessRegistry() {
+    // Murphy-proof: Periodic reaper to clean up stale process handles
+    _reaperTimer =
+        Timer.periodic(const Duration(minutes: 5), (_) => _reapStale());
+  }
+
+  void _reapStale() async {
+    final toRemove = <Process>[];
+    for (final proc in _activeProcesses) {
+      if (await _isProcessAlive(proc.pid) == false) {
+        toRemove.add(proc);
+      }
+    }
+    for (final proc in toRemove) {
+      _activeProcesses.remove(proc);
+    }
+  }
 
   /// Registers a process for tracking.
   void add(Process process) {
@@ -28,15 +47,25 @@ class ProcessRegistry {
 
     try {
       if (Platform.isLinux || Platform.isMacOS) {
-        // 1. Attempt SIGTERM on the entire process group (negative PID).
-        // Murphy-proof: Use setsid/pgid awareness if possible, but kill -TERM -$pid
-        // is the standard way to hit the group.
+        // Murphy-proof: Verify process group ID before group-killing to avoid hitting self.
+        // On Unix, group-kill uses negative PID or explicit PGID.
+        bool groupKillSuccess = false;
         try {
-          await Process.run('kill', ['-TERM', '--', '-$pid']).timeout(
-            const Duration(seconds: 2),
-          );
-        } catch (_) {
-          // Fallback: Individual SIGTERM if group kill fails (e.g. not a group leader)
+          // Check if we can get the pgid.
+          final pgidRes = await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+          final pgid = int.tryParse(pgidRes.stdout.toString().trim());
+
+          if (pgid != null && pgid > 1) {
+            // 1. Attempt SIGTERM on the entire process group
+            await Process.run('kill', ['-TERM', '--', '-$pgid']).timeout(
+              const Duration(seconds: 2),
+            );
+            groupKillSuccess = true;
+          }
+        } catch (_) {}
+
+        if (!groupKillSuccess) {
+          // Fallback: Individual SIGTERM
           try {
             process.kill(ProcessSignal.sigterm);
           } catch (_) {}
@@ -47,13 +76,18 @@ class ProcessRegistry {
         // 2. Escalation: Check if process is still alive and use SIGKILL if necessary.
         if (await _isProcessAlive(pid)) {
           try {
-            await Process.run('kill', ['-KILL', '--', '-$pid']).timeout(
-              const Duration(seconds: 2),
-            );
-          } catch (_) {
-             try {
+            final pgidRes =
+                await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+            final pgid = int.tryParse(pgidRes.stdout.toString().trim());
+            if (pgid != null && pgid > 1) {
+              await Process.run('kill', ['-KILL', '--', '-$pgid']).timeout(
+                const Duration(seconds: 2),
+              );
+            } else {
               process.kill(ProcessSignal.sigkill);
-            } catch (_) {}
+            }
+          } catch (_) {
+            process.kill(ProcessSignal.sigkill);
           }
         }
       }
@@ -69,6 +103,8 @@ class ProcessRegistry {
 
   /// Murphy-proof: Atomic reaping of all registered processes.
   Future<void> dispose() async {
+    _reaperTimer?.cancel();
+    _reaperTimer = null;
     final processes = List<Process>.from(_activeProcesses);
     _activeProcesses.clear();
     for (final p in processes) {

@@ -24,9 +24,12 @@ class TaskManager {
   // Throttling mechanism
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
   static const _throttleDuration = Duration(milliseconds: 16); // ~60Hz
+  DateTime _lastLogTime = DateTime.now();
+  Timer? _staleTaskTimer;
 
   void _updateState(TaskState? state) {
     _currentTask = state;
+    _lastLogTime = DateTime.now();
 
     final now = DateTime.now();
     if (state == null ||
@@ -36,6 +39,27 @@ class TaskManager {
       _taskStateController.add(state);
       _lastUpdateTime = now;
     }
+
+    if (state != null &&
+        (state.status == TaskStatus.downloading ||
+            state.status == TaskStatus.installing ||
+            state.status == TaskStatus.pending)) {
+      _startStaleCheck();
+    } else {
+      _staleTaskTimer?.cancel();
+    }
+  }
+
+  void _startStaleCheck() {
+    _staleTaskTimer?.cancel();
+    _staleTaskTimer = Timer(const Duration(minutes: 10), () {
+      if (isBusy &&
+          DateTime.now().difference(_lastLogTime) >=
+              const Duration(minutes: 10)) {
+        debugPrint("Murphy-proof: Stale task detected. Forcing reset.");
+        cancelTask();
+      }
+    });
   }
 
   // Murphy-proof: Use a dedicated set to track active subscriptions to prevent leaks
@@ -222,6 +246,7 @@ class TaskManager {
             await sub.cancel();
             _subscriptions.remove(sub);
           }
+          _subscriptions.clear(); // Murphy-proof: Final cleanup
         }
 
         if (success) {
