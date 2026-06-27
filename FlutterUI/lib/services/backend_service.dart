@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart' as p;
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
@@ -10,6 +9,7 @@ import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
+import 'backend/platform_environment.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -32,86 +32,16 @@ class BackendService {
   // Murphy-proof: Global lock for local IO operations
   Completer<void>? _globalLock;
 
-  static String get _projectRoot {
-    if (kIsWeb) return '';
-    final searchRoots = <String>{Directory.current.path};
-
-    try {
-      final script = Platform.script.toFilePath();
-      if (script.isNotEmpty) searchRoots.add(p.dirname(script));
-    } catch (_) {}
-
-    try {
-      final exec = Platform.resolvedExecutable;
-      if (exec.isNotEmpty) searchRoots.add(p.dirname(exec));
-    } catch (_) {}
-
-    for (final root in searchRoots) {
-      var dir = Directory(root);
-      while (true) {
-        final candidate = p.join(dir.path, 'python', 'main.py');
-        if (File(candidate).existsSync()) return dir.path;
-        if (dir.parent.path == dir.path) break;
-        dir = dir.parent;
-      }
-    }
-
-    if (Directory.current.path.endsWith('FlutterUI')) {
-      final fallback = Directory.current.parent;
-      final candidate = p.join(fallback.path, 'python', 'main.py');
-      if (File(candidate).existsSync()) return fallback.path;
-    }
-
-    return Directory.current.path;
-  }
-
-  static bool get _isPackaged {
-    if (kIsWeb) return false;
-    final exeDir = p.dirname(Platform.resolvedExecutable);
-    final pythonServer = p.join(
-      exeDir,
-      'backends',
-      Platform.isWindows ? 'python_server.exe' : 'python_server',
-    );
-    return File(pythonServer).existsSync();
-  }
-
-  static String get venvPython {
-    if (kIsWeb) return '';
-    if (_isPackaged) {
-      return p.join(
-        p.dirname(Platform.resolvedExecutable),
-        'backends',
-        Platform.isWindows ? 'python_server.exe' : 'python_server',
-      );
-    }
-    final candidate = p.join(_projectRoot, 'python', '.venv', 'bin', 'python');
-    return File(candidate).existsSync() ? candidate : 'python';
-  }
-
-  static String get scriptPath {
-    if (kIsWeb) return '';
-    if (_isPackaged) return "";
-    return p.join(_projectRoot, 'python', 'main.py');
-  }
-
-  static String get workingDir {
-    if (kIsWeb) return '';
-    if (_isPackaged) return p.dirname(Platform.resolvedExecutable);
-    return p.join(_projectRoot, 'python');
-  }
+  static PlatformEnvironment get _env => PlatformEnvironment.instance;
+  static String get venvPython => _env.venvPython;
+  static String get scriptPath => _env.scriptPath;
+  static String get workingDir => _env.workingDir;
 
   String get _venvPython => venvPython;
-  String get _scriptPath => scriptPath;
   String get _workingDir => workingDir;
 
   List<String> _buildArgs(List<String> baseArgs) {
-    if (kIsWeb) return [];
-    if (_isPackaged) {
-      return baseArgs;
-    } else {
-      return [_scriptPath, ...baseArgs];
-    }
+    return _env.buildArgs(baseArgs);
   }
 
   // Reactive State Notifiers
@@ -143,7 +73,8 @@ class BackendService {
     // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
       throw ArgumentError(
-          "Invalid characters in $name: Security policy forbids shell metacharacters.");
+        "Invalid characters in $name: Security policy forbids shell metacharacters.",
+      );
     }
   }
 
@@ -186,12 +117,14 @@ class BackendService {
     }
     if (trimmed.contains('..')) {
       throw ArgumentError(
-          "Security: Relative path traversal ('..') is strictly forbidden.");
+        "Security: Relative path traversal ('..') is strictly forbidden.",
+      );
     }
     // Cross-platform support: Allow Windows-style paths (C:\...)
     if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
       throw ArgumentError(
-          "Invalid characters in path: Security policy forbids shell metacharacters.");
+        "Invalid characters in path: Security policy forbids shell metacharacters.",
+      );
     }
   }
 
@@ -271,11 +204,13 @@ class BackendService {
       // Murphy-proof: Strict liveness check using kill -0
       try {
         if (Platform.isLinux || Platform.isMacOS) {
-          final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
+          final res = await Process.run('kill', [
+            '-0',
+            '${_daemonProcess!.pid}',
+          ]);
           if (res.exitCode == 0) return _daemonProcess;
         } else {
-          // Fallback for non-Unix: check if exitCode is already available
-          // (which would mean it finished)
+          return _daemonProcess;
         }
       } catch (_) {}
     }
@@ -286,7 +221,9 @@ class BackendService {
         now.difference(_lastDaemonStartTime!) < const Duration(seconds: 5)) {
       _daemonRestartCount++;
       if (_daemonRestartCount > 3) {
-        debugPrint("Murphy-proof Warning: Daemon restart loop detected. Throttling.");
+        debugPrint(
+          "Murphy-proof Warning: Daemon restart loop detected. Throttling.",
+        );
         return null;
       }
     } else {
@@ -294,26 +231,35 @@ class BackendService {
     }
     _lastDaemonStartTime = now;
 
-    final home = Platform.environment['HOME'] ?? '/home/user';
-    final logDir = Directory(p.join(home, '.config', 'omnistore'));
+    final logDir = Directory(_env.appConfigDir);
     if (!logDir.existsSync()) {
       logDir.createSync(recursive: true);
     }
-    final logFile = File(p.join(logDir.path, 'daemon_stderr.log'));
+    final logFile = File(
+      '${logDir.path}${Platform.pathSeparator}daemon_stderr.log',
+    );
 
     try {
       if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-        debugPrint("Backend Error: Python executable not found at $_venvPython");
+        debugPrint(
+          "Backend Error: Python executable not found at $_venvPython",
+        );
         return null;
       }
 
-      _daemonProcess = await Process.start(
-        _venvPython,
-        _buildArgs(['--daemon', '--json']),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Failed to start Python daemon within 10s");
-      });
+      _daemonProcess =
+          await Process.start(
+            _venvPython,
+            _buildArgs(['--daemon', '--json']),
+            workingDirectory: _workingDir,
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException(
+                "Failed to start Python daemon within 10s",
+              );
+            },
+          );
 
       // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);
@@ -344,22 +290,30 @@ class BackendService {
 
   void _startHealthCheckLoop() {
     _healthCheckTimer?.cancel();
+    if (!Platform.isLinux && !Platform.isMacOS) {
+      return;
+    }
     int backoffSeconds = 20;
 
-    _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (timer) async {
+    _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (
+      timer,
+    ) async {
       bool needsRestart = false;
       if (_daemonProcess == null) {
         needsRestart = true;
       } else {
-         try {
-           final res = await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
-           if (res.exitCode != 0) {
-             debugPrint("Daemon dead detected by health check.");
-             needsRestart = true;
-           }
-         } catch (_) {
-           needsRestart = true;
-         }
+        try {
+          final res = await Process.run('kill', [
+            '-0',
+            '${_daemonProcess!.pid}',
+          ]);
+          if (res.exitCode != 0) {
+            debugPrint("Daemon dead detected by health check.");
+            needsRestart = true;
+          }
+        } catch (_) {
+          needsRestart = true;
+        }
       }
 
       if (needsRestart) {
@@ -388,7 +342,9 @@ class BackendService {
     Map<String, dynamic>? kwargs,
   ]) async {
     if (_daemonFailureStreak >= _daemonFailureThreshold) {
-      debugPrint("Circuit Breaker: Daemon persistent failure. Bypassing to CLI.");
+      debugPrint(
+        "Circuit Breaker: Daemon persistent failure. Bypassing to CLI.",
+      );
       return null;
     }
 
@@ -425,32 +381,39 @@ class BackendService {
         env['OMNISTORE_AI_API_KEY'] = apiKey;
       }
 
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(args),
-        workingDirectory: _workingDir,
-        environment: env.isEmpty ? null : env,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Process start timed out for $args");
-      });
+      process =
+          await Process.start(
+            _venvPython,
+            _buildArgs(args),
+            workingDirectory: _workingDir,
+            environment: env.isEmpty ? null : env,
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("Process start timed out for $args");
+            },
+          );
 
       _processRegistry.add(process);
 
+      final stdoutFuture = process.stdout
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 5), onTimeout: () => "");
+      final stderrFuture = process.stderr
+          .transform(utf8.decoder)
+          .join()
+          .timeout(const Duration(seconds: 5), onTimeout: () => "");
       final exitCode = await process.exitCode.timeout(
         timeout,
         onTimeout: () {
-          throw TimeoutException("Process execution timed out after ${timeout.inSeconds}s");
+          throw TimeoutException(
+            "Process execution timed out after ${timeout.inSeconds}s",
+          );
         },
       );
-
-      final stdout = await process.stdout
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
-      final stderr = await process.stderr
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
+      final stdout = await stdoutFuture;
+      final stderr = await stderrFuture;
 
       return ProcessResult(process.pid, exitCode, stdout, stderr);
     } catch (e) {
@@ -480,15 +443,20 @@ class BackendService {
         env['OMNISTORE_AI_API_KEY'] = apiKey;
       }
 
-      process = await Process.start(
-        _venvPython,
-        _buildArgs(args),
-        workingDirectory: _workingDir,
-        environment: env.isEmpty ? null : env,
-        runInShell: true,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Streaming process start timed out for $args");
-      });
+      process =
+          await Process.start(
+            _venvPython,
+            _buildArgs(args),
+            workingDirectory: _workingDir,
+            environment: env.isEmpty ? null : env,
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException(
+                "Streaming process start timed out for $args",
+              );
+            },
+          );
 
       _processRegistry.add(process);
       activeProcess = process;
@@ -628,13 +596,17 @@ class BackendService {
         activeSearchProcess = null;
       }
 
-      final process = await Process.start(
-        _venvPython,
-        _buildArgs(["-S", trimmedQuery, "--json"]),
-        workingDirectory: _workingDir,
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("Search process start timed out");
-      });
+      final process =
+          await Process.start(
+            _venvPython,
+            _buildArgs(["-S", trimmedQuery, "--json"]),
+            workingDirectory: _workingDir,
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("Search process start timed out");
+            },
+          );
 
       _processRegistry.add(process);
       activeSearchProcess = process;
@@ -688,7 +660,10 @@ class BackendService {
       return jsonDecode(rawInput);
     } catch (_) {
       // Noise Reduction: Strip ANSI escape codes and terminal artifacts
-      final cleaned = rawInput.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
+      final cleaned = rawInput.replaceAll(
+        RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
+        '',
+      );
 
       try {
         // Pattern-based extraction: look for the first balanced JSON structure
@@ -706,7 +681,8 @@ class BackendService {
               for (int i = lines.length - 1; i >= 0; i--) {
                 try {
                   final tailCandidate = lines.sublist(i).join('\n').trim();
-                  if (tailCandidate.startsWith('{') || tailCandidate.startsWith('[')) {
+                  if (tailCandidate.startsWith('{') ||
+                      tailCandidate.startsWith('[')) {
                     return jsonDecode(tailCandidate);
                   }
                 } catch (_) {}
@@ -726,7 +702,10 @@ class BackendService {
       return PackageRepository().listInstalled();
     }
     try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
+      final daemonRes = await _sendToDaemon("run_list_installed", [
+        true,
+        false,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
@@ -735,7 +714,10 @@ class BackendService {
       debugPrint("Daemon listInstalled error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["-L", "--json"], timeout: const Duration(seconds: 45));
+      final res = await _safeRun([
+        "-L",
+        "--json",
+      ], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
       final data = _safeJsonDecode(res.stdout.toString());
       return data is List ? data : [];
@@ -764,7 +746,10 @@ class BackendService {
       debugPrint("Daemon loadConfig error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--get-config", "--json"], timeout: const Duration(seconds: 15));
+      final res = await _safeRun([
+        "--get-config",
+        "--json",
+      ], timeout: const Duration(seconds: 15));
       if (res == null) return {};
       final data = _safeJsonDecode(res.stdout.toString());
       if (data is Map<String, dynamic>) {
@@ -807,7 +792,12 @@ class BackendService {
   Future<String> aiExplain(String name, String desc) async {
     try {
       _validateString(name, "AI App Name");
-      return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
+      return await _aiCall([
+        "--ai-explain",
+        name.trim(),
+        "--ai-desc",
+        desc.trim(),
+      ]);
     } catch (e) {
       return "AI Explanation unavailable: $e";
     }
@@ -816,7 +806,10 @@ class BackendService {
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     try {
       _validateString(n, "AI Package Name");
-      return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
+      return await _aiCall([
+        "--ai-changelog",
+        "${n.trim()},${c.trim()},${next.trim()}",
+      ]);
     } catch (e) {
       return "Update summary unavailable.";
     }
@@ -826,8 +819,10 @@ class BackendService {
     try {
       _validateString(n, "AI App Name");
       _validateString(s, "AI Source");
-      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
-          timeout: const Duration(seconds: 20));
+      return await _aiCall([
+        "--ai-cli",
+        "${n.trim()},${s.trim()}",
+      ], timeout: const Duration(seconds: 20));
     } catch (e) {
       return "CLI generation failed.";
     }
@@ -846,15 +841,17 @@ class BackendService {
     try {
       return await _aiCall(["--ai-pick"]);
     } catch (e) {
-       return "Pick of the day unavailable.";
+      return "Pick of the day unavailable.";
     }
   }
 
   Future<String> aiSuggestCorrection(String q) async {
     try {
       _validateString(q, "AI Query");
-      return await _aiCall(["--ai-correct", q.trim()],
-          timeout: const Duration(seconds: 15));
+      return await _aiCall([
+        "--ai-correct",
+        q.trim(),
+      ], timeout: const Duration(seconds: 15));
     } catch (e) {
       return q; // Graceful degradation: return original query
     }
@@ -888,8 +885,10 @@ class BackendService {
   Future<String> aiRecommend(String p) async {
     try {
       _validateString(p, "AI Prompt");
-      final res = await _aiCall(["--ai-recommend", p.trim()],
-          timeout: const Duration(seconds: 90));
+      final res = await _aiCall([
+        "--ai-recommend",
+        p.trim(),
+      ], timeout: const Duration(seconds: 90));
       _aiFailureCount = 0;
       return res;
     } catch (e) {
@@ -956,7 +955,10 @@ class BackendService {
       debugPrint("Daemon checkEnv error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--check-env", "--json"], timeout: const Duration(seconds: 15));
+      final res = await _safeRun([
+        "--check-env",
+        "--json",
+      ], timeout: const Duration(seconds: 15));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1002,7 +1004,10 @@ class BackendService {
       debugPrint("Daemon getRecommendations error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--recommend", "--json"], timeout: const Duration(seconds: 30));
+      final res = await _safeRun([
+        "--recommend",
+        "--json",
+      ], timeout: const Duration(seconds: 30));
       if (res == null) return {};
       final data = _safeJsonDecode(res.stdout.toString());
       final Map<String, List<AppPackage>> result = {};
@@ -1033,7 +1038,11 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_launch", [
+        n.trim(),
+        s.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1064,7 +1073,11 @@ class BackendService {
     try {
       _validateString(n, "App Name");
       _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_locate", [
+        n.trim(),
+        s.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1094,7 +1107,10 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_app_details", [
+        id.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
@@ -1104,7 +1120,11 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
+      final res = await _safeRun([
+        "--details",
+        id.trim(),
+        "--json",
+      ], timeout: const Duration(seconds: 25));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1155,7 +1175,10 @@ class BackendService {
       debugPrint("Daemon checkUpdates error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["-C", "--json"], timeout: const Duration(seconds: 60));
+      final res = await _safeRun([
+        "-C",
+        "--json",
+      ], timeout: const Duration(seconds: 60));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
@@ -1218,7 +1241,9 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
+      final daemonRes = await _sendToDaemon("run_import_packages", [
+        path.trim(),
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
@@ -1243,7 +1268,9 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
+      final daemonRes = await _sendToDaemon("run_export_packages", [
+        path.trim(),
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
@@ -1253,7 +1280,11 @@ class BackendService {
     }
     try {
       _validatePath(path);
-      final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
+      final res = await _safeRun([
+        "--export-packages",
+        path.trim(),
+        "--json",
+      ], timeout: const Duration(seconds: 30));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {"status": "error"};
     } catch (e) {
@@ -1276,8 +1307,12 @@ class BackendService {
       _validateString(name, "Repo Name");
       _validateUrl(url);
 
-      final daemonRes = await _sendToDaemon(
-          "run_add_custom_repo", [type.trim(), name.trim(), url.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_add_custom_repo", [
+        type.trim(),
+        name.trim(),
+        url.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1285,7 +1320,11 @@ class BackendService {
       debugPrint("Daemon addCustomRepo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--add-custom-repo", "$type,$name,$url", "--json"], timeout: const Duration(seconds: 20));
+      final res = await _safeRun([
+        "--add-custom-repo",
+        "$type,$name,$url",
+        "--json",
+      ], timeout: const Duration(seconds: 20));
       return res?.exitCode == 0;
     } catch (_) {
       return false;
@@ -1298,7 +1337,11 @@ class BackendService {
       _validateString(type, "Repo Type");
       _validateString(name, "Repo Name");
 
-      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [type.trim(), name.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_remove_custom_repo", [
+        type.trim(),
+        name.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1306,7 +1349,11 @@ class BackendService {
       debugPrint("Daemon removeCustomRepo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--remove-custom-repo", "$type,$name", "--json"], timeout: const Duration(seconds: 20));
+      final res = await _safeRun([
+        "--remove-custom-repo",
+        "$type,$name",
+        "--json",
+      ], timeout: const Duration(seconds: 20));
       return res?.exitCode == 0;
     } catch (_) {
       return false;
@@ -1325,7 +1372,10 @@ class BackendService {
       debugPrint("Daemon getStorageInfo error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--storage-info", "--json"], timeout: const Duration(seconds: 15));
+      final res = await _safeRun([
+        "--storage-info",
+        "--json",
+      ], timeout: const Duration(seconds: 15));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1355,7 +1405,10 @@ class BackendService {
       debugPrint("Daemon testAiConnection error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--ai-test", "--json"], timeout: const Duration(seconds: 60));
+      final res = await _safeRun([
+        "--ai-test",
+        "--json",
+      ], timeout: const Duration(seconds: 60));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>)
           ? data

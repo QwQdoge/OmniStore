@@ -62,8 +62,15 @@ class PlatformEnvironment {
         Platform.isWindows ? 'python_server.exe' : 'python_server',
       );
     }
-    final candidate = p.join(projectRoot, 'python', '.venv', 'bin', 'python');
-    return File(candidate).existsSync() ? candidate : 'python';
+    final venvDir = p.join(projectRoot, 'python', '.venv');
+    final candidates = <String>[
+      if (Platform.isWindows) p.join(venvDir, 'Scripts', 'python.exe'),
+      p.join(venvDir, 'bin', 'python'),
+    ];
+    for (final candidate in candidates) {
+      if (File(candidate).existsSync()) return candidate;
+    }
+    return Platform.isWindows ? 'python' : 'python3';
   }
 
   String get scriptPath {
@@ -76,6 +83,24 @@ class PlatformEnvironment {
     if (kIsWeb) return '';
     if (isPackaged) return p.dirname(Platform.resolvedExecutable);
     return p.join(projectRoot, 'python');
+  }
+
+  String get configHome {
+    if (kIsWeb) return '';
+    return Platform.isWindows
+        ? (Platform.environment['APPDATA'] ??
+              Platform.environment['USERPROFILE'] ??
+              Directory.current.path)
+        : (Platform.environment['XDG_CONFIG_HOME'] ??
+              p.join(
+                Platform.environment['HOME'] ?? Directory.current.path,
+                '.config',
+              ));
+  }
+
+  String get appConfigDir {
+    if (kIsWeb) return '';
+    return p.join(configHome, 'omnistore');
   }
 
   List<String> buildArgs(List<String> baseArgs) {
@@ -93,7 +118,9 @@ class PlatformEnvironment {
     }
     final trimmed = val.trim();
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
+      throw ArgumentError(
+        "Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.",
+      );
     }
   }
 
@@ -103,10 +130,14 @@ class PlatformEnvironment {
     }
     final trimmed = path.trim();
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
+      throw ArgumentError(
+        "Invalid characters in path: Security policy forbids shell metacharacters.",
+      );
     }
     if (trimmed.contains('..')) {
-      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
+      throw ArgumentError(
+        "Security: Relative path traversal ('..') is strictly forbidden.",
+      );
     }
   }
 }

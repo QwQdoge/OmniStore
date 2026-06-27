@@ -2,6 +2,7 @@ import yaml
 from pathlib import Path
 from typing import Any, Dict, Optional
 import os
+from copy import deepcopy
 from pydantic import BaseModel, Field
 
 class SearchSourcesModel(BaseModel):
@@ -164,7 +165,7 @@ class ConfigManager:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 user_cfg = yaml.safe_load(f) or {}
                 # 递归合并，保证用户缺少的配置项由默认值补齐
-                merged = self._deep_update(self.default_config.copy(), user_cfg)
+                merged = self._deep_update(deepcopy(self.default_config), user_cfg)
                 try:
                     validated = ConfigModel(**merged).model_dump()
                     return validated

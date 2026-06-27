@@ -84,9 +84,9 @@ class EnvManager:
         # 1. Install base dependencies and libraries
         deps = ["git", "base-devel", "libdbusmenu-gtk3"]
         # Use libayatana-appindicator if libappindicator-gtk3 is not in repos (Arch often uses Ayatana now)
-        if not self._has_pkg("libappindicator-gtk3") and not self._has_pkg("libayatana-appindicator"):
+        if not await self._has_pkg("libappindicator-gtk3") and not await self._has_pkg("libayatana-appindicator"):
             deps.append("libayatana-appindicator")
-        elif self._has_pkg("libappindicator-gtk3"):
+        elif await self._has_pkg("libappindicator-gtk3"):
              # It's fine
              pass
 

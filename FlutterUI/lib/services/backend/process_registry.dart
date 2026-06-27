@@ -11,8 +11,10 @@ class ProcessRegistry {
 
   ProcessRegistry() {
     // Murphy-proof: Periodic reaper to clean up stale process handles
-    _reaperTimer =
-        Timer.periodic(const Duration(minutes: 5), (_) => _reapStale());
+    _reaperTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _reapStale(),
+    );
   }
 
   void _reapStale() async {
@@ -52,14 +54,21 @@ class ProcessRegistry {
         bool groupKillSuccess = false;
         try {
           // Check if we can get the pgid.
-          final pgidRes = await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+          final pgidRes = await Process.run('ps', [
+            '-o',
+            'pgid=',
+            '-p',
+            '$pid',
+          ]);
           final pgid = int.tryParse(pgidRes.stdout.toString().trim());
 
           if (pgid != null && pgid > 1) {
             // 1. Attempt SIGTERM on the entire process group
-            await Process.run('kill', ['-TERM', '--', '-$pgid']).timeout(
-              const Duration(seconds: 2),
-            );
+            await Process.run('kill', [
+              '-TERM',
+              '--',
+              '-$pgid',
+            ]).timeout(const Duration(seconds: 2));
             groupKillSuccess = true;
           }
         } catch (_) {}
@@ -76,19 +85,34 @@ class ProcessRegistry {
         // 2. Escalation: Check if process is still alive and use SIGKILL if necessary.
         if (await _isProcessAlive(pid)) {
           try {
-            final pgidRes =
-                await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+            final pgidRes = await Process.run('ps', [
+              '-o',
+              'pgid=',
+              '-p',
+              '$pid',
+            ]);
             final pgid = int.tryParse(pgidRes.stdout.toString().trim());
             if (pgid != null && pgid > 1) {
-              await Process.run('kill', ['-KILL', '--', '-$pgid']).timeout(
-                const Duration(seconds: 2),
-              );
+              await Process.run('kill', [
+                '-KILL',
+                '--',
+                '-$pgid',
+              ]).timeout(const Duration(seconds: 2));
             } else {
               process.kill(ProcessSignal.sigkill);
             }
           } catch (_) {
             process.kill(ProcessSignal.sigkill);
           }
+        }
+      }
+      if (Platform.isWindows) {
+        try {
+          process.kill(ProcessSignal.sigterm);
+        } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (await _isProcessAlive(pid)) {
+          process.kill(ProcessSignal.sigkill);
         }
       }
     } catch (e) {
@@ -117,6 +141,15 @@ class ProcessRegistry {
       if (Platform.isLinux || Platform.isMacOS) {
         final result = await Process.run('kill', ['-0', '$pid']);
         return result.exitCode == 0;
+      }
+      if (Platform.isWindows) {
+        final result = await Process.run('tasklist', [
+          '/FI',
+          'PID eq $pid',
+          '/NH',
+        ]);
+        return result.exitCode == 0 &&
+            result.stdout.toString().contains('$pid');
       }
     } catch (_) {}
     return false;

@@ -105,7 +105,7 @@ def setup_logging(level="INFO", json_mode=False):
             handlers=[RichHandler(console=console, rich_tracebacks=True)]
         )
 
-if hasattr(sys.stderr, 'reconfigure'):
+if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(  # type: ignore
         line_buffering=True,
         encoding='utf-8',
@@ -202,6 +202,13 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
 
             try:
                 action = cmd_data.action
+                if action == "shutdown":
+                    writer.write(json.dumps({"status": "success", "response": True, "stdout": ""}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                    stop_event = getattr(main, "stop_event", None)
+                    if stop_event is not None:
+                        stop_event.set()
+                    break
                 try:
                     # Murphy-proof: Use backend context manager to ensure session liveness
                     async with backend:
@@ -1298,7 +1305,7 @@ class CLIArguments(BaseModel):
     def validate_add_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             parts = [p.strip() for p in v.split(',', 2)]
-            if len(parts) < 3 and parts[0] == "appimage":
+            if len(parts) == 2 and parts[0] == "appimage":
                 parts = ["appimage", "", parts[1]]
             if len(parts) < 3:
                 raise ValueError("Invalid format: type,name,url")
@@ -1458,7 +1465,7 @@ async def main():
 
     async def _handle_add_custom_repo(raw_repo):
         parts = [p.strip() for p in raw_repo.split(',', 2)]
-        if len(parts) < 3 and parts[0] == "appimage":
+        if len(parts) == 2 and parts[0] == "appimage":
             parts = ["appimage", "", parts[1]]
         async with backend:
             await backend.run_add_custom_repo(parts[0], parts[1], parts[2], args.json)
@@ -1485,7 +1492,15 @@ async def main():
         # Each entry is an async lambda or function providing per-command isolation.
         async def _save_config_handler():
             data = sys.stdin.read().strip() or validated_args.set_config
-            success = backend.config.save(json.loads(data))
+            try:
+                parsed = json.loads(data)
+            except (TypeError, json.JSONDecodeError) as e:
+                sys.stdout.write(json.dumps({"status": "error", "error": f"Invalid config JSON: {e}"}) + "\n")
+                return
+            if not isinstance(parsed, dict):
+                sys.stdout.write(json.dumps({"status": "error", "error": "Config JSON must be an object"}) + "\n")
+                return
+            success = backend.config.save(parsed)
             sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
 
         async def _ai_correct_handler():
@@ -1497,7 +1512,7 @@ async def main():
             "set_config": _save_config_handler,
             "search": lambda: backend.run_search(validated_args.search, validated_args.json_mode),
             "install": lambda: backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode),
-            "remove": lambda: backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove),
+            "remove": lambda: backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode),
             "update": lambda: backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode),
             "check_updates": lambda: backend.run_check_updates(validated_args.json_mode),
             "list_installed": lambda: backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh),

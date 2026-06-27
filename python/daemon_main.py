@@ -68,9 +68,10 @@ def get_python_cmd():
     # If packaged via PyInstaller, sys.executable is the packaged binary (omnistore-daemon)
     # The parent directory of it is the 'backends' folder, containing 'python_server'
     exe_dir = Path(sys.executable).parent
-    python_server = exe_dir / "python_server"
-    if python_server.exists():
-        return [str(python_server)]
+    for binary_name in ("python_server.exe", "python_server"):
+        python_server = exe_dir / binary_name
+        if python_server.exists():
+            return [str(python_server)]
 
     # Development fallback
     current_dir = Path(__file__).resolve().parent
@@ -79,7 +80,20 @@ def get_python_cmd():
     
     if venv_python.exists():
         return [str(venv_python), str(script_path)]
-    return ["python3", str(script_path)]
+    return [sys.executable if sys.executable else "python3", str(script_path)]
+
+def parse_json_output(raw: str):
+    text = raw.strip()
+    if not text:
+        raise ValueError("empty output")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        for line in reversed(text.splitlines()):
+            candidate = line.strip()
+            if candidate.startswith(("{", "[")):
+                return json.loads(candidate)
+        raise
 
 async def run_auto_updates(updates):
     logging.info("Auto-update is enabled. Starting updates...")
@@ -134,7 +148,7 @@ async def run_update_check(config):
         
         if proc.returncode == 0:
             try:
-                updates = json.loads(stdout.decode().strip())
+                updates = parse_json_output(stdout.decode(errors="replace"))
                 count = len(updates)
                 logging.info(f"Found {count} updates")
 
