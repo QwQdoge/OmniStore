@@ -87,3 +87,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 - Extracted `_buildHeroSection`, `_buildCategoryQuickAccess`, `_buildAIPickSkeleton`, `_buildAIPickSection`, and `_buildSectionHeader` from `home_page.dart` into dedicated stateless widgets in `FlutterUI/lib/features/home/widgets/`.
 - Extracted `_buildSkeletonList` and `_buildEmptyState` from `apps_page.dart` into `apps_page_skeleton.dart` and `apps_page_empty_state.dart` in `FlutterUI/lib/features/apps/widgets/`.
 This drastically simplified the main page builds while ensuring exact behavioral preservation and better code localization.
+
+## 2024-05-24 - Extract ImportPackagesDialog in HomePage
+**Learning:** Extracting inline dialogs into standalone widgets improves code structure, but it is easy to miss related cleanup or accidentally break compilation when removing builder methods (`_buildHeroSection`, `_buildAIPickSkeleton`, etc.) without updating their usages.
+
+**Action:** Extracted the inline package import confirmation `AlertDialog` from `home_page.dart` into a new `ImportPackagesDialog` widget located in `FlutterUI/lib/features/home/widgets/import_packages_dialog.dart`.
