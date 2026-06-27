@@ -164,6 +164,13 @@ def assemble(platform, output_dir):
     else:
         print(f"⚠️ can not find python artifacts: {python_src}")
 
+    icon_src = BASE_DIR / "omnistore.svg"
+    if icon_src.exists():
+        shutil.copy2(icon_src, flutter_bundle_dir / "omnistore.svg")
+        print("✅ copy icon artifact: omnistore.svg")
+    else:
+        print(f"⚠️ can not find icon artifact: {icon_src}")
+
     # 最后，将整个 flutter_bundle_dir 复制到 output_dir
     print(f"📦 Copying full bundle to {out_path} ...")
     if flutter_bundle_dir.exists():
