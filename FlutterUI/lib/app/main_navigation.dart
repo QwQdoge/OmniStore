@@ -14,6 +14,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/settings/presentation/pages/settings_page.dart';
 import 'package:frontend/features/task_manager/presentation/pages/download_page.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart' as wm;
