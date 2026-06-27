@@ -23,55 +23,59 @@ class TaskProgressBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Selector<TaskController, ({double? progress, String status, String speed})>(
-        selector: (context, c) => (
-          progress: c.progress,
-          status: c.status,
-          speed: c.speed,
-        ),
-        builder: (context, data, child) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.downloading_rounded,
-                    size: 14,
-                    color: scheme.primary,
+      child:
+          Selector<
+            TaskController,
+            ({double? progress, String status, String speed})
+          >(
+            selector: (context, c) =>
+                (progress: c.progress, status: c.status, speed: c.speed),
+            builder: (context, data, child) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${l10n.processing} ${data.status} ${data.speed}',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (data.progress != null)
-                    Text(
-                      '${(data.progress! * 100).toInt()}%',
-                      style: textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.downloading_rounded,
+                        size: 14,
                         color: scheme.primary,
                       ),
-                    ),
-                ],
-              ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${l10n.processing} ${data.status} ${data.speed}',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (data.progress != null)
+                        Text(
+                          '${(data.progress! * 100).toInt()}%',
+                          style: textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: scheme.primary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                LinearProgressIndicator(
+                  value: data.progress,
+                  minHeight: 3,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+                ),
+              ],
             ),
-            LinearProgressIndicator(
-              value: data.progress,
-              minHeight: 3,
-              backgroundColor: scheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }

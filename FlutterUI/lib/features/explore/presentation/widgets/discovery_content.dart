@@ -131,87 +131,95 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
             builder: (context, trending, _) {
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
                 child: trending.isEmpty
                     ? const SizedBox.shrink(key: ValueKey('empty_trending'))
                     : Column(
                         key: const ValueKey('trending_content'),
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                  const SizedBox(height: 40),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      widget.l10n.hotApps,
-                      style: OmnistoreTheme.standardHeader(context),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 196,
-                    child: Scrollbar(
-                      controller: _trendingScrollController,
-                      thumbVisibility: true,
-                      child: ListView.builder(
-                        controller: _trendingScrollController,
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: trending.length,
-                        itemBuilder: (context, index) {
-                          final app = trending[index];
-                          final trendingHeroTag =
-                              'trending-shelf-${app.name}-${app.primarySource}';
-                          return Container(
-                            width: 150,
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            child: AppCard(
-                              clipBehavior: Clip.antiAlias,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AppDetailsPage(
-                                    app: app,
-                                    heroTag: trendingHeroTag,
-                                  ),
+                          const SizedBox(height: 40),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              widget.l10n.hotApps,
+                              style: OmnistoreTheme.standardHeader(context),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 196,
+                            child: Scrollbar(
+                              controller: _trendingScrollController,
+                              thumbVisibility: true,
+                              child: ListView.builder(
+                                controller: _trendingScrollController,
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
                                 ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: Hero(
-                                      tag: trendingHeroTag,
-                                      child: app.icon != null
-                                          ? CachedNetworkImage(
-                                              imageUrl: app.icon!,
-                                              fit: BoxFit.cover,
-                                              memCacheWidth: 300,
-                                            )
-                                          : const Icon(Icons.apps, size: 48),
+                                itemCount: trending.length,
+                                itemBuilder: (context, index) {
+                                  final app = trending[index];
+                                  final trendingHeroTag =
+                                      'trending-shelf-${app.name}-${app.primarySource}';
+                                  return Container(
+                                    width: 150,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 8,
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Text(
-                                      app.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                    child: AppCard(
+                                      clipBehavior: Clip.antiAlias,
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AppDetailsPage(
+                                            app: app,
+                                            heroTag: trendingHeroTag,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: Hero(
+                                              tag: trendingHeroTag,
+                                              child: app.icon != null
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: app.icon!,
+                                                      fit: BoxFit.cover,
+                                                      memCacheWidth: 300,
+                                                    )
+                                                  : const Icon(
+                                                      Icons.apps,
+                                                      size: 48,
+                                                    ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Text(
+                                              app.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ],
-              ));
+              );
             },
           ),
         ],

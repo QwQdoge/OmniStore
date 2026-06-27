@@ -26,7 +26,9 @@ void main() {
     // But I'll just check if it's there.
 
     // Exact match
-    expect(backend.searchPackages("", cancelOngoing: false), isA<Future<List>>()); // Triggers trimmed empty query early return
-
+    expect(
+      backend.searchPackages("", cancelOngoing: false),
+      isA<Future<List>>(),
+    ); // Triggers trimmed empty query early return
   });
 }

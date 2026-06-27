@@ -98,7 +98,9 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
               child: AppCard(
                 borderRadius: 16,
                 color: isSelected && isDesktop
-                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer.withValues(alpha: 0.3)
                     : Theme.of(context).colorScheme.surfaceContainerLow,
                 onTap: () {
                   if (isDesktop) {
@@ -120,40 +122,44 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
                     vertical: 8,
                   ),
                   leading: app.icon != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        imageUrl: app.icon!,
-                        width: 44,
-                        height: 44,
-                        memCacheWidth: 88,
-                        memCacheHeight: 88,
-                        errorWidget: (c, e, s) =>
-                            const Icon(Icons.shopping_bag_rounded),
-                      ),
-                    )
-                  : const Icon(Icons.shopping_bag_rounded, size: 44),
-              title: Text(
-                app.name,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                app.description,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: AppSourceTag(
-                source: app.primarySource,
-                mode: AppSourceTagMode.source,
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
+                            width: 44,
+                            height: 44,
+                            memCacheWidth: 88,
+                            memCacheHeight: 88,
+                            errorWidget: (c, e, s) =>
+                                const Icon(Icons.shopping_bag_rounded),
+                          ),
+                        )
+                      : const Icon(Icons.shopping_bag_rounded, size: 44),
+                  title: Text(
+                    app.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    app.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: AppSourceTag(
+                    source: app.primarySource,
+                    mode: AppSourceTagMode.source,
+                  ),
+                ),
               ),
             ),
-          )));
+          );
         },
       );
     }
 
     Widget bodyContent = AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.fastOutSlowIn,
       child: _isLoading
           ? _buildSkeletonList(key: const ValueKey('loading'))
           : RefreshIndicator(
@@ -174,6 +180,8 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
               flex: 6,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
                 child: _selectedApp == null
                     ? Center(
                         key: const ValueKey('no_selection'),
@@ -211,7 +219,11 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: Skeleton(width: 44, height: 44, borderRadius: 12),
               title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(width: double.infinity, height: 12, borderRadius: 8),
+              subtitle: Skeleton(
+                width: double.infinity,
+                height: 12,
+                borderRadius: 8,
+              ),
               trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
             ),
           ),

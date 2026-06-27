@@ -31,7 +31,15 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<SettingsController, ({ThemeMode themeMode, Locale? locale, String fontFamily, double fontScale})>(
+    return Selector<
+      SettingsController,
+      ({
+        ThemeMode themeMode,
+        Locale? locale,
+        String fontFamily,
+        double fontScale,
+      })
+    >(
       selector: (context, settings) => (
         themeMode: settings.themeMode,
         locale: settings.locale,
@@ -125,49 +133,36 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
       builder: (context, snapshot) {
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child:
-              snapshot.connectionState == ConnectionState.waiting
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
+          child: snapshot.connectionState == ConnectionState.waiting
               ? const Scaffold(
                   key: ValueKey('loading'),
                   body: Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Skeleton(
-                          width: 80,
-                          height: 80,
-                          borderRadius: 28,
-                        ),
+                        Skeleton(width: 80, height: 80, borderRadius: 28),
                         SizedBox(height: 16),
                         Skeleton(width: 200, height: 24),
                         SizedBox(height: 8),
-                        Skeleton(
-                          width: double.infinity,
-                          height: 16,
-                        ),
+                        Skeleton(width: double.infinity, height: 16),
                         SizedBox(height: 8),
                         Skeleton(width: 150, height: 16),
                       ],
                     ),
                   ),
                 )
-              : snapshot.hasError ||
-                    !snapshot.hasData ||
-                    snapshot.data!.isEmpty
+              : snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty
               ? Scaffold(
                   key: const ValueKey('error'),
                   appBar: AppBar(
-                    title: Text(
-                      AppLocalizations.of(context)!.errorTitle,
-                    ),
+                    title: Text(AppLocalizations.of(context)!.errorTitle),
                   ),
                   body: Center(
                     child: Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.appDetailsNotFound,
+                      AppLocalizations.of(context)!.appDetailsNotFound,
                     ),
                   ),
                 )

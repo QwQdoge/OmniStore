@@ -53,7 +53,8 @@ class DaemonClient {
     try {
       await previousMutex.future.timeout(
         Duration(seconds: timeout.inSeconds + 5),
-        onTimeout: () => debugPrint("DaemonClient: Mutex bottlenecked for $action"),
+        onTimeout: () =>
+            debugPrint("DaemonClient: Mutex bottlenecked for $action"),
       );
     } catch (_) {}
 
@@ -81,7 +82,8 @@ class DaemonClient {
 
       return await _responseCompleter!.future.timeout(
         timeout,
-        onTimeout: () => throw TimeoutException("Daemon response timed out for $action"),
+        onTimeout: () =>
+            throw TimeoutException("Daemon response timed out for $action"),
       );
     } catch (e) {
       debugPrint("DaemonClient: Transaction failed [$action]: $e");
@@ -104,7 +106,11 @@ class DaemonClient {
     for (int i = 0; i < maxRetries; i++) {
       try {
         // Murphy-proof: Strict connection timeout
-        _socket = await Socket.connect(host, port, timeout: const Duration(seconds: 3));
+        _socket = await Socket.connect(
+          host,
+          port,
+          timeout: const Duration(seconds: 3),
+        );
 
         _socketSub = _socket!
             .cast<List<int>>()
@@ -119,7 +125,7 @@ class DaemonClient {
               onDone: () {
                 debugPrint("DaemonClient: Socket Done (Closed)");
                 _cleanupSocket();
-              }
+              },
             );
 
         _startHeartbeat();
@@ -135,27 +141,34 @@ class DaemonClient {
         retryDelay = (retryDelay * 1.5).toInt().clamp(200, 2000);
       }
     }
-    throw Exception("DaemonClient: Failed to connect to daemon at $host:$port after $maxRetries attempts");
+    throw Exception(
+      "DaemonClient: Failed to connect to daemon at $host:$port after $maxRetries attempts",
+    );
   }
 
   void _handleLine(String line) {
     try {
       final res = jsonDecode(line);
-      if (res is Map && (res.containsKey('status') || res.containsKey('error'))) {
+      if (res is Map &&
+          (res.containsKey('status') || res.containsKey('error'))) {
         final completer = _responseCompleter;
         if (completer != null && !completer.isCompleted) {
           if (res['status'] == 'success') {
-            completer.complete(DaemonResult(
-              status: 'success',
-              response: res['response'],
-              stdout: res['stdout'] ?? '',
-            ));
+            completer.complete(
+              DaemonResult(
+                status: 'success',
+                response: res['response'],
+                stdout: res['stdout'] ?? '',
+              ),
+            );
           } else {
-            completer.complete(DaemonResult(
-              status: 'error',
-              error: res['error'] ?? 'Daemon error',
-              stdout: res['stdout'] ?? '',
-            ));
+            completer.complete(
+              DaemonResult(
+                status: 'error',
+                error: res['error'] ?? 'Daemon error',
+                stdout: res['stdout'] ?? '',
+              ),
+            );
           }
         }
       }
@@ -166,7 +179,9 @@ class DaemonClient {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel();
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (
+      timer,
+    ) async {
       try {
         // Send a simple no-op action or check socket state
         if (_socket == null) {

@@ -41,10 +41,7 @@ class AIPickSkeleton extends StatelessWidget {
 class AIPickSection extends StatelessWidget {
   final String aiPickBlurb;
 
-  const AIPickSection({
-    super.key,
-    required this.aiPickBlurb,
-  });
+  const AIPickSection({super.key, required this.aiPickBlurb});
 
   @override
   Widget build(BuildContext context) {

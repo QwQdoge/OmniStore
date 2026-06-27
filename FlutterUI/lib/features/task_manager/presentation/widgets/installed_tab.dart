@@ -27,6 +27,8 @@ class InstalledTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.fastOutSlowIn,
       child: isLoading
           ? const InstalledAppListSkeleton(key: ValueKey('loading'))
           : Column(
@@ -45,26 +47,29 @@ class InstalledTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       child: Row(
-                        children: ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(
-                                    s == "all"
-                                        ? AppLocalizations.of(context)!.explore
-                                        : s,
+                        children:
+                            ["all", "Native", "Flatpak", "AUR", "AppImage"]
+                                .map(
+                                  (s) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: ChoiceChip(
+                                      label: Text(
+                                        s == "all"
+                                            ? AppLocalizations.of(
+                                                context,
+                                              )!.explore
+                                            : s,
+                                      ),
+                                      selected: selectedSourceFilter == s,
+                                      onSelected: (v) {
+                                        if (v) {
+                                          onSourceFilterSelected(s);
+                                        }
+                                      },
+                                    ),
                                   ),
-                                  selected: selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      onSourceFilterSelected(s);
-                                    }
-                                  },
-                                ),
-                              ),
-                            )
-                            .toList(),
+                                )
+                                .toList(),
                       ),
                     ),
                   ),

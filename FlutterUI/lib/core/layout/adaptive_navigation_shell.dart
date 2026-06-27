@@ -90,6 +90,8 @@ class AdaptiveNavigationShell extends StatelessWidget {
               curve: Curves.easeInOut,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
                 child: isBusy
                     ? const TaskProgressBar()
                     : const SizedBox.shrink(),

@@ -66,24 +66,32 @@ class UpdateService {
           LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
       const InitializationSettings initializationSettings =
           InitializationSettings(linux: initializationSettingsLinux);
-      await _notificationsPlugin.initialize(settings: initializationSettings).timeout(
+      await _notificationsPlugin
+          .initialize(settings: initializationSettings)
+          .timeout(
             const Duration(seconds: 3),
-            onTimeout: () => throw TimeoutException("Notification plugin init timed out"),
+            onTimeout: () =>
+                throw TimeoutException("Notification plugin init timed out"),
           );
     } catch (e) {
-      debugPrint('Murphy-proof Warning: Notification service init failed (isolated): $e');
+      debugPrint(
+        'Murphy-proof Warning: Notification service init failed (isolated): $e',
+      );
       // Non-fatal: continue app startup
     }
 
     // 2. Isolated System Tray Init
     try {
       final trayOk = await _initSystemTray().timeout(
-            const Duration(seconds: 10),
-            onTimeout: () => throw TimeoutException("System tray init timed out (global)"),
-          );
+        const Duration(seconds: 10),
+        onTimeout: () =>
+            throw TimeoutException("System tray init timed out (global)"),
+      );
       return trayOk;
     } catch (e) {
-      debugPrint('Murphy-proof Warning: System tray init failed (isolated): $e');
+      debugPrint(
+        'Murphy-proof Warning: System tray init failed (isolated): $e',
+      );
       return false; // App still runs, but tray-specific features are disabled
     }
   }
@@ -127,26 +135,35 @@ class UpdateService {
     if (kIsWeb) return;
     try {
       final Menu menu = Menu();
-      await menu.buildFrom([
-        MenuItemLabel(
-          label: _showWindowLabel,
-          onClicked: (menuItem) => wm.windowManager.show(),
-        ),
-        MenuItemLabel(
-          label: _checkUpdatesLabel,
-          onClicked: (menuItem) => checkNow(),
-        ),
-        MenuSeparator(),
-        MenuItemLabel(
-          label: _exitLabel,
-          onClicked: (menuItem) => _handleFullExit(),
-        ),
-      ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
+      await menu
+          .buildFrom([
+            MenuItemLabel(
+              label: _showWindowLabel,
+              onClicked: (menuItem) => wm.windowManager.show(),
+            ),
+            MenuItemLabel(
+              label: _checkUpdatesLabel,
+              onClicked: (menuItem) => checkNow(),
+            ),
+            MenuSeparator(),
+            MenuItemLabel(
+              label: _exitLabel,
+              onClicked: (menuItem) => _handleFullExit(),
+            ),
+          ])
+          .timeout(
+            const Duration(seconds: 2),
+            onTimeout: () =>
+                throw TimeoutException("Tray menu build timed out"),
+          );
 
-      await _systemTray.setContextMenu(menu).timeout(
-        const Duration(seconds: 2),
-        onTimeout: () => throw TimeoutException("Tray context menu update timed out"),
-      );
+      await _systemTray
+          .setContextMenu(menu)
+          .timeout(
+            const Duration(seconds: 2),
+            onTimeout: () =>
+                throw TimeoutException("Tray context menu update timed out"),
+          );
     } catch (e) {
       debugPrint('Murphy-proof Warning: Failed to refresh tray menu: $e');
     }
@@ -156,8 +173,9 @@ class UpdateService {
     if (kIsWeb) return false;
     if (!Platform.isLinux) return true;
     try {
-      final result = await Process.run('ldconfig', ['-p'])
-          .timeout(const Duration(seconds: 5));
+      final result = await Process.run('ldconfig', [
+        '-p',
+      ]).timeout(const Duration(seconds: 5));
       if (result.exitCode != 0) return true;
 
       final output = result.stdout.toString();
@@ -179,7 +197,9 @@ class UpdateService {
   /// Uses a guard file to detect and skip if the tray library caused a crash.
   Future<bool> _initSystemTray() async {
     if (kIsWeb) return true;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) return true;
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) {
+      return true;
+    }
 
     try {
       final config = await BackendService.instance.loadConfig();
@@ -189,19 +209,25 @@ class UpdateService {
         return true;
       }
 
-      final String home = Platform.environment['HOME'] ?? '/home/${Platform.environment['USER'] ?? 'user'}';
+      final String home =
+          Platform.environment['HOME'] ??
+          '/home/${Platform.environment['USER'] ?? 'user'}';
       final configDir = Directory(p.join(home, '.config', 'omnistore'));
       final guardFile = File(p.join(configDir.path, '.tray_initializing'));
 
       if (Platform.isLinux) {
         if (guardFile.existsSync()) {
-          debugPrint("Murphy-proof Guard: System tray previously crashed. Skipping to prevent crash loop.");
+          debugPrint(
+            "Murphy-proof Guard: System tray previously crashed. Skipping to prevent crash loop.",
+          );
           return false;
         }
 
         final hasDeps = await _checkLinuxTrayDependencies();
         if (!hasDeps) {
-          debugPrint("Skipping system tray initialization due to missing dependencies (libdbusmenu/libappindicator).");
+          debugPrint(
+            "Skipping system tray initialization due to missing dependencies (libdbusmenu/libappindicator).",
+          );
           return false;
         }
       }
@@ -219,9 +245,20 @@ class UpdateService {
           final String executableDir = p.dirname(executablePath);
 
           final List<String> candidatePaths = [
-            p.join(executableDir, 'data', 'flutter_assets', 'assets', 'app_icon.png'),
+            p.join(
+              executableDir,
+              'data',
+              'flutter_assets',
+              'assets',
+              'app_icon.png',
+            ),
             p.join(executableDir, 'assets', 'app_icon.png'),
-            p.join(Directory.current.path, 'FlutterUI', 'assets', 'app_icon.png'),
+            p.join(
+              Directory.current.path,
+              'FlutterUI',
+              'assets',
+              'app_icon.png',
+            ),
             p.join(Directory.current.path, 'assets', 'app_icon.png'),
           ];
 
@@ -234,31 +271,43 @@ class UpdateService {
         }
 
         // Initialize with strict timeout
-        await _systemTray.initSystemTray(title: "OmniStore", iconPath: iconPath).timeout(
+        await _systemTray
+            .initSystemTray(title: "OmniStore", iconPath: iconPath)
+            .timeout(
               const Duration(seconds: 4),
-              onTimeout: () => throw TimeoutException("System tray init timed out"),
+              onTimeout: () =>
+                  throw TimeoutException("System tray init timed out"),
             );
 
         final Menu menu = Menu();
-        await menu.buildFrom([
-          MenuItemLabel(
-            label: _showWindowLabel,
-            onClicked: (menuItem) => wm.windowManager.show(),
-          ),
-          MenuItemLabel(
-            label: _checkUpdatesLabel,
-            onClicked: (menuItem) => checkNow(),
-          ),
-          MenuSeparator(),
-          MenuItemLabel(
-            label: _exitLabel,
-            onClicked: (menuItem) => _handleFullExit(),
-          ),
-        ]).timeout(const Duration(seconds: 2), onTimeout: () => throw TimeoutException("Tray menu build timed out"));
-
-        await _systemTray.setContextMenu(menu).timeout(
+        await menu
+            .buildFrom([
+              MenuItemLabel(
+                label: _showWindowLabel,
+                onClicked: (menuItem) => wm.windowManager.show(),
+              ),
+              MenuItemLabel(
+                label: _checkUpdatesLabel,
+                onClicked: (menuItem) => checkNow(),
+              ),
+              MenuSeparator(),
+              MenuItemLabel(
+                label: _exitLabel,
+                onClicked: (menuItem) => _handleFullExit(),
+              ),
+            ])
+            .timeout(
               const Duration(seconds: 2),
-              onTimeout: () => throw TimeoutException("Tray context menu setup timed out"),
+              onTimeout: () =>
+                  throw TimeoutException("Tray menu build timed out"),
+            );
+
+        await _systemTray
+            .setContextMenu(menu)
+            .timeout(
+              const Duration(seconds: 2),
+              onTimeout: () =>
+                  throw TimeoutException("Tray context menu setup timed out"),
             );
 
         _systemTray.registerSystemTrayEventHandler((eventName) {
@@ -396,8 +445,10 @@ Persistent=true
 WantedBy=timers.target
 ''');
 
-      await Process.run('systemctl', ['--user', 'daemon-reload'])
-          .timeout(const Duration(seconds: 5));
+      await Process.run('systemctl', [
+        '--user',
+        'daemon-reload',
+      ]).timeout(const Duration(seconds: 5));
       await Process.run('systemctl', [
         '--user',
         'enable',
@@ -460,10 +511,13 @@ WantedBy=timers.target
 
         if (!kIsWeb) {
           try {
-            await _systemTray.setToolTip(_trayTooltipUpdates(updates.length)).timeout(
-              const Duration(seconds: 2),
-              onTimeout: () => throw TimeoutException("Tray tooltip update timed out"),
-            );
+            await _systemTray
+                .setToolTip(_trayTooltipUpdates(updates.length))
+                .timeout(
+                  const Duration(seconds: 2),
+                  onTimeout: () =>
+                      throw TimeoutException("Tray tooltip update timed out"),
+                );
           } catch (e) {
             debugPrint("Tray tooltip update failed: $e");
           }
@@ -472,10 +526,13 @@ WantedBy=timers.target
         _lastNotifiedUpdateHash = null;
         if (!kIsWeb) {
           try {
-            await _systemTray.setToolTip(_trayTooltipUpToDate).timeout(
-              const Duration(seconds: 2),
-              onTimeout: () => throw TimeoutException("Tray tooltip update timed out"),
-            );
+            await _systemTray
+                .setToolTip(_trayTooltipUpToDate)
+                .timeout(
+                  const Duration(seconds: 2),
+                  onTimeout: () =>
+                      throw TimeoutException("Tray tooltip update timed out"),
+                );
           } catch (e) {
             debugPrint("Tray tooltip update failed: $e");
           }
@@ -516,15 +573,18 @@ WantedBy=timers.target
     if (kIsWeb) return;
     try {
       // Isolate native plugin call within a strict try-catch boundary
-      await _notificationsPlugin.show(
-        id: id,
-        title: title,
-        body: body,
-        notificationDetails: notificationDetails,
-      ).timeout(
-        const Duration(seconds: 3),
-        onTimeout: () => throw TimeoutException("Notification service unresponsive"),
-      );
+      await _notificationsPlugin
+          .show(
+            id: id,
+            title: title,
+            body: body,
+            notificationDetails: notificationDetails,
+          )
+          .timeout(
+            const Duration(seconds: 3),
+            onTimeout: () =>
+                throw TimeoutException("Notification service unresponsive"),
+          );
     } catch (e) {
       // Silently log and skip to ensure core logic (like update checking) continues
       debugPrint("Murphy-proof Warning: Notification suppressed: $e");
@@ -617,8 +677,8 @@ WantedBy=timers.target
       // 1. Attempt coordinated shutdown of the Python backend
       try {
         await BackendService.instance.shutdownBackend().timeout(
-              const Duration(seconds: 2),
-            );
+          const Duration(seconds: 2),
+        );
       } catch (e) {
         debugPrint("Coordinated backend shutdown failed: $e");
       }
@@ -626,9 +686,10 @@ WantedBy=timers.target
       // 2. Systematic cleanup of Flutter-side resources and processes
       try {
         await BackendService.instance.dispose().timeout(
-              const Duration(seconds: 5),
-              onTimeout: () => debugPrint("BackendService dispose timed out during exit"),
-            );
+          const Duration(seconds: 5),
+          onTimeout: () =>
+              debugPrint("BackendService dispose timed out during exit"),
+        );
       } catch (e) {
         debugPrint("BackendService dispose failed: $e");
       }
@@ -636,9 +697,16 @@ WantedBy=timers.target
       // 3. Last-resort reaping of any lingering components
       try {
         if (Platform.isLinux || Platform.isMacOS) {
-          await Process.run('pkill', ['omnistore-daemon']).timeout(const Duration(seconds: 1));
-          await Process.run('pkill', ['-f', 'python/main.py']).timeout(const Duration(seconds: 1));
-          await Process.run('pkill', ['python_server']).timeout(const Duration(seconds: 1));
+          await Process.run('pkill', [
+            'omnistore-daemon',
+          ]).timeout(const Duration(seconds: 1));
+          await Process.run('pkill', [
+            '-f',
+            'python/main.py',
+          ]).timeout(const Duration(seconds: 1));
+          await Process.run('pkill', [
+            'python_server',
+          ]).timeout(const Duration(seconds: 1));
         }
       } catch (_) {}
     } catch (e) {

@@ -65,16 +65,17 @@ class AppDependencySection extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: deps
-                .map(
-                  (d) => Chip(
-                    label: Text(
-                      d.toString(),
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                )
+                      .map(
+                        (d) => Chip(
+                          label: Text(
+                            d.toString(),
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      )
                       .toList(),
                 ),
               ],

@@ -70,50 +70,56 @@ class _AIAppResolverState extends State<AIAppResolver> {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.fastOutSlowIn,
       child: _isLoading
           ? const SizedBox(
               key: ValueKey('loading'),
               height: 32,
-              child: Skeleton(width: double.infinity, height: 32, borderRadius: 16),
+              child: Skeleton(
+                width: double.infinity,
+                height: 32,
+                borderRadius: 16,
+              ),
             )
           : _resolvedApps.isEmpty
-              ? const SizedBox.shrink(key: ValueKey('empty'))
-              : Column(
-                  key: const ValueKey('loaded'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.relatedApps,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 100,
-                      child: Scrollbar(
-                        controller: _scrollController,
-                        thumbVisibility: true,
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _resolvedApps.length,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ActionChip(
-                              label: Text(_resolvedApps[index].name),
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      AppDetailsPage(app: _resolvedApps[index]),
-                                ),
-                              ),
+          ? const SizedBox.shrink(key: ValueKey('empty'))
+          : Column(
+              key: const ValueKey('loaded'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.relatedApps,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 100,
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _resolvedApps.length,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ActionChip(
+                          label: Text(_resolvedApps[index].name),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AppDetailsPage(app: _resolvedApps[index]),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
+              ],
+            ),
     );
   }
 }
