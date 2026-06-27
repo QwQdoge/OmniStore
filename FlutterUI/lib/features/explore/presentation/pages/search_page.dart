@@ -5,8 +5,8 @@ import "package:frontend/core/widgets/app_card.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
-import 'dart:convert';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
@@ -136,7 +136,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -182,13 +181,14 @@ class _SearchPageState extends State<SearchPage> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: !_showDiscovery
-                  ? Selector<SettingsController, String>(
+                  ? Selector<SettingsController, Map<String, bool>>(
                       key: const ValueKey('source_filters'),
                       selector: (context, settings) {
                         final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
-                        return jsonEncode(sourcesMap);
+                        return Map<String, bool>.from(sourcesMap);
                       },
-                      builder: (context, sourcesJson, _) => _buildSourceFilters(sourcesJson),
+                      shouldRebuild: (prev, next) => !const MapEquality<String, bool>().equals(prev, next),
+                      builder: (context, sourcesMap, _) => _buildSourceFilters(sourcesMap),
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -199,19 +199,19 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, int filtersHash, double width})>(
+                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, int filtersHash, bool isDesktop})>(
                     selector: (context, b) => (
                       results: b.searchResults,
                       isSearching: b.isSearching,
                       filtersHash: Object.hashAll(_selectedSources),
-                      width: MediaQuery.sizeOf(context).width,
+                      isDesktop: MediaQuery.sizeOf(context).width > 900,
                     ),
                     builder: (context, data, _) {
                       final resultsContent = data.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(data.results, l10n);
+                          : _buildResults(data.results, l10n, data.isDesktop);
 
-                      if (isDesktop) {
+                      if (data.isDesktop) {
                         return Row(
                           children: [
                             Expanded(flex: 4, child: resultsContent),
@@ -255,11 +255,10 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildSourceFilters(String sourcesJson) {
-    final Map<String, dynamic> sourcesMap = jsonDecode(sourcesJson);
+  Widget _buildSourceFilters(Map<String, bool> sourcesMap) {
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
-        .map((e) => e.key.toString())
+        .map((e) => e.key)
         .toList();
 
     if (enabledSources.isEmpty) return const SizedBox.shrink();
@@ -355,8 +354,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildResults(
     List<AppPackage> searchResults,
     AppLocalizations l10n,
+    bool isDesktop,
   ) {
-    final isDesktop = MediaQuery.sizeOf(context).width > 900;
     var filteredResults = searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = searchResults.where((app) {
