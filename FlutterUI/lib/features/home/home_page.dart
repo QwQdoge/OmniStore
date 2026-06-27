@@ -173,9 +173,11 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['featured'] ?? [],
                 builder: (context, featured, _) {
-                  return HeroSection(
-                    apps: featured,
-                    scrollController: _heroScrollController,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: featured.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_hero'))
+                        : _buildHeroSection(featured, key: const ValueKey('hero_section')),
                   );
                 },
               ),
@@ -228,10 +230,16 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
                 builder: (context, trending, _) {
-                  return AppShelf(
-                    title: l10n.hotApps,
-                    apps: trending,
-                    scrollController: _hotAppsScrollController,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: trending.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                        : AppShelf(
+                            key: const ValueKey('trending_shelf'),
+                            title: l10n.hotApps,
+                            apps: trending,
+                            scrollController: _hotAppsScrollController,
+                          ),
                   );
                 },
               ),
@@ -241,11 +249,16 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, browse) =>
                     browse.recommendations['for_you'] ?? [],
                 builder: (context, forYou, _) {
-                  if (forYou.isEmpty) return const SizedBox.shrink();
-                  return AppShelf(
-                    title: l10n.forYou,
-                    apps: forYou,
-                    scrollController: _forYouScrollController,
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: forYou.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
+                        : AppShelf(
+                            key: const ValueKey('forYou_shelf'),
+                            title: l10n.forYou,
+                            apps: forYou,
+                            scrollController: _forYouScrollController,
+                          ),
                   );
                 },
               ),
@@ -253,6 +266,140 @@ class _HomePageState extends State<HomePage> {
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(List<AppPackage> apps, {Key? key}) {
+    return Column(
+      key: key,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        _buildSectionHeader(AppLocalizations.of(context)!.featured),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 260,
+          child: Scrollbar(
+            controller: _heroScrollController,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: _heroScrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              scrollDirection: Axis.horizontal,
+              itemCount: apps.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 20),
+              itemBuilder: (context, index) => BannerCard(app: apps[index]),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  Widget _buildCategoryQuickAccess() {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 66,
+        child: Scrollbar(
+          controller: _quickAccessScrollController,
+          thumbVisibility: true,
+          child: ListView.builder(
+            controller: _quickAccessScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            itemCount: _categories.length,
+            itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Semantics(
+                label: 'Category: ${_categories[index].name}',
+                child: ActionChip(
+                  avatar: Icon(_categories[index].icon, size: 18),
+                  label: Text(_categories[index].name),
+                  tooltip: _categories[index].name,
+                  onPressed: () {
+                    final browse = context.read<BrowseController>();
+                    browse.pendingSearchQuery =
+                        '/${_categories[index].id.toLowerCase()}';
+                    context.read<NavigationController>().setIndex(2);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
+    );
+  }
+
+  Widget _buildAIPickSkeleton({Key? key}) {
+    return Container(
+      key: key,
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Skeleton(width: 24, height: 24, borderRadius: 12),
+              SizedBox(width: 8),
+              Skeleton(width: 140, height: 16),
+            ],
+          ),
+          SizedBox(height: 16),
+          Skeleton(width: double.infinity, height: 14),
+          SizedBox(height: 8),
+          Skeleton(width: 240, height: 14),
+          SizedBox(height: 16),
+          Skeleton(width: 120, height: 36, borderRadius: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIPickSection({Key? key}) {
+    return Container(
+      key: key,
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.tertiaryContainer.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome_rounded),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.aiPickDay,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          MarkdownBody(data: _aiPickBlurb ?? ""),
+          const SizedBox(height: 12),
+          AIAppResolver(aiText: _aiPickBlurb ?? "", jsonPrefix: "PICK_JSON:"),
+        ],
       ),
     );
   }
