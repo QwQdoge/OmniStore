@@ -1,247 +1,210 @@
 {
   "@@locale": "es",
+  "searchHint": "Buscar aplicaciones, juegos, herramientas...",
+  "featured": "Destacado",
+  "forYou": "Para ti",
+  "essentialTools": "Herramientas esenciales",
+  "hotApps": "Aplicaciones populares",
+  "explore": "Explorar",
+  "search": "Buscar",
+  "settings": "Ajustes",
+  "downloads": "Descargas",
+  "help": "Ayuda",
+  "userAccount": "Cuenta de usuario",
+  "install": "Instalar",
+  "open": "Abrir",
+  "uninstall": "Desinstalar",
+  "launch": "Iniciar",
   "about": "Acerca de",
-  "activeSources": "Fuentes activas",
-  "@activeSources": {
-    "description": "Label for active software sources"
+  "details": "Detalles",
+  "source": "Fuente",
+  "variant": "Versiones",
+  "@variant": {
+    "description": "Label for app variants/versions"
   },
+  "version": "Versión",
+  "ready": "Instalado",
+  "resultsFound": "{count, plural, =1{1 resultado encontrado} other{{count} resultados encontrados}}",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noResults": "No se encontraron resultados",
+  "searching": "Buscando...",
   "activity": "Historial de tareas",
   "@activity": {
     "description": "Activity tab label"
   },
-  "add": "Añadir",
-  "@add": {
-    "description": "add"
+  "category": "Categoría",
+  "@category": {
+    "description": "Category label"
   },
-  "addCustomSource": "Añadir fuente personalizada",
-  "@addCustomSource": {
-    "description": "Button to add a custom source"
-  },
-  "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
-  "addMirror": "Añadir espejo",
-  "@addMirror": {
-    "description": "addMirror"
-  },
-  "addingCustomSource": "Añadiendo fuente personalizada...",
-  "@addingCustomSource": {
-    "description": "Message while adding custom source"
-  },
-  "advanced": "Avanzado",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "aiAnalysisFailed": "La IA no pudo analizar.",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "aiAnalysisPrompt": "Se encontraron registros de errores, ¿necesita un análisis de IA?",
-  "aiApiKey": "Clave API",
-  "@aiApiKey": {
-    "description": "aiApiKey"
-  },
-  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
-  "aiAssistant": "Asistente de IA",
-  "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
-  "aiCallFailed": "La llamada al servicio de IA falló: {error}",
-  "@aiCallFailed": {
+  "packageManager": "Gestor de paquetes",
+  "pacmanOfficial": "Pacman (Oficial)",
+  "aurUser": "AUR (Repositorio de usuarios)",
+  "flatpak": "Flatpak",
+  "appImage": "AppImage",
+  "sourcePriority": "Prioridad de fuente (Arrastrar para reordenar)",
+  "maxResults": "Resultados máximos",
+  "appearance": "Apariencia",
+  "themeColor": "Color del tema",
+  "followSystem": "Seguir sistema",
+  "lightMode": "Modo claro",
+  "darkMode": "Modo oscuro",
+  "loggingLevel": "Nivel de registro",
+  "saveAndApply": "Guardar y aplicar",
+  "configSaved": "Configuración guardada. Algunos cambios se aplicarán tras reiniciar",
+  "configSaveFailed": "Error al guardar la configuración",
+  "confirmUninstall": "Confirmar desinstalación",
+  "confirmInstall": "Confirmar instalación",
+  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
+  "@confirmActionMsg": {
     "placeholders": {
-      "error": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "aiChangelogTitle": "Resumen de actualizaciones por IA",
-  "@aiChangelogTitle": {
-    "description": "aiChangelogTitle"
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "terminalOutput": "Salida de terminal",
+  "waitingForOutput": "Esperando salida...",
+  "screenshots": "Capturas de pantalla",
+  "developer": "Desarrollador",
+  "license": "Licencia",
+  "success": "Éxito",
+  "failed": "Error",
+  "taskCancelled": "Tarea cancelada",
+  "catDevelopment": "Desarrollo",
+  "catMedia": "Multimedia",
+  "catInternet": "Internet y Redes",
+  "catSystem": "Sistema",
+  "catOffice": "Oficina",
+  "catGames": "Juegos",
+  "catGraphics": "Gráficos",
+  "@catGraphics": {
+    "description": "Category for Graphics"
   },
-  "aiCliTitle": "Generador de comandos por IA",
-  "@aiCliTitle": {
-    "description": "aiCliTitle"
+  "catUtility": "Utilidades",
+  "@catUtility": {
+    "description": "Category for Utility"
   },
-  "aiCommandCopied": "Comando copiado al portapapeles",
-  "@aiCommandCopied": {
-    "description": "aiCommandCopied"
+  "systemAndWindow": "Sistema y Ventana",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
   },
-  "aiCompareTitle": "Comparación de variantes por IA",
-  "@aiCompareTitle": {
-    "description": "aiCompareTitle"
+  "visitWebsite": "Visitar sitio web",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
   },
-  "aiConflictTitle": "Detección de conflictos por IA",
-  "@aiConflictTitle": {
-    "description": "aiConflictTitle"
-  },
-  "aiCopyCommand": "Copiar comando",
-  "@aiCopyCommand": {
-    "description": "aiCopyCommand"
-  },
-  "aiCorrection": "¿Quisiste decir?",
-  "@aiCorrection": {
-    "description": "aiCorrection"
-  },
-  "aiEnabled": "Activar Asistente de IA",
-  "@aiEnabled": {
-    "description": "aiEnabled"
-  },
-  "aiEnabledDesc": "Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
-  },
-  "aiEndpoint": "Punto de acceso API",
-  "@aiEndpoint": {
-    "description": "aiEndpoint"
-  },
-  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
-  "aiExplainUpdate": "Explicar esta actualización",
-  "@aiExplainUpdate": {
-    "description": "aiExplainUpdate"
-  },
-  "aiHealthSubtitle": "Diagnóstico inteligente para su Arch Linux",
-  "@aiHealthSubtitle": {
-    "description": "aiHealthSubtitle"
-  },
-  "aiHealthTitle": "Informe de salud del sistema por IA",
-  "@aiHealthTitle": {
-    "description": "aiHealthTitle"
-  },
-  "aiMaxTokens": "Tokens máximos",
-  "@aiMaxTokens": {
-    "description": "aiMaxTokens"
-  },
-  "aiModel": "Nombre del modelo",
-  "@aiModel": {
-    "description": "aiModel"
-  },
-  "aiNoResponse": "La IA no pudo proporcionar una respuesta válida.",
-  "@aiNoResponse": {
-    "description": "Error message when AI does not respond"
-  },
-  "aiOllamaNote": "Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".",
-  "aiParseFailed": "Error al analizar la respuesta de la IA: formato incorrecto.",
-  "@aiParseFailed": {
-    "description": "Error message when AI response parsing fails"
-  },
-  "aiPickDay": "Selección del día de la IA",
-  "@aiPickDay": {
-    "description": "aiPickDay"
-  },
-  "aiPickDaySubtitle": "Impulsado por OmniStore AI",
-  "@aiPickDaySubtitle": {
-    "description": "aiPickDaySubtitle"
-  },
-  "aiPromptError": "Analizar error con IA",
-  "@aiPromptError": {
-    "description": "aiPromptError"
-  },
-  "aiPromptExplain": "Explicar con IA",
-  "@aiPromptExplain": {
-    "description": "aiPromptExplain"
-  },
-  "aiPromptRecommend": "Pedir sugerencias a la IA",
-  "@aiPromptRecommend": {
-    "description": "aiPromptRecommend"
-  },
-  "aiProvider": "Proveedor de IA",
-  "@aiProvider": {
-    "description": "aiProvider"
-  },
-  "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
-  "aiProxy": "Proxy de red (Opcional)",
-  "@aiProxy": {
-    "description": "aiProxy"
-  },
-  "aiRefineSearch": "Refinar búsqueda con IA",
-  "@aiRefineSearch": {
-    "description": "aiRefineSearch"
-  },
-  "aiResponseFailed": "La IA no pudo responder.",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiSettings": "Ajustes del Asistente de IA",
-  "@aiSettings": {
-    "description": "aiSettings"
-  },
-  "aiTemperature": "Temperatura (Creatividad)",
-  "@aiTemperature": {
-    "description": "aiTemperature"
-  },
-  "aiTestButton": "Probar conexión de IA",
-  "@aiTestButton": {
-    "description": "aiTestButton"
-  },
-  "aiTestFailed": "Conexión de IA fallida: {error}",
-  "@aiTestFailed": {
+  "updates": "Actualizaciones",
+  "upToDate": "Todas las aplicaciones están al día",
+  "checkUpdates": "Buscar actualizaciones",
+  "foundUpdates": "{count, plural, =1{Se encontró 1 actualización} other{Se encontraron {count} actualizaciones}}",
+  "@foundUpdates": {
     "placeholders": {
-      "error": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateAll": "Actualizar todo",
+  "notifications": "Notificaciones",
+  "enableNotifications": "Activar notificaciones",
+  "progressNotifications": "Notificaciones de progreso",
+  "completionNotifications": "Notificaciones de finalización",
+  "closeToTray": "Cerrar a la bandeja del sistema",
+  "useSystemTitleBar": "Usar barra de título del sistema",
+  "showWindow": "Mostrar ventana",
+  "exit": "Salir",
+  "trayTooltipUpdates": "{count, plural, =1{OmniStore: Se encontró 1 actualización} other{OmniStore: Se encontraron {count} actualizaciones}}",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayTooltipUpToDate": "OmniStore: Actualizado",
+  "updateReminders": "Recordatorios de actualización",
+  "maintenance": "Mantenimiento",
+  "updateAllPackages": "Actualizar todos los paquetes",
+  "includeAurUpdates": "Incluir AUR en 'Actualizar todo'",
+  "resetOnboarding": "Restablecer bienvenida",
+  "resetOnboardingConfirm": "¿Estás seguro de que quieres restablecer la bienvenida? Se mostrará en el próximo inicio.",
+  "checkInterval": "Intervalo de comprobación (Horas)",
+  "remindMeOfUpdates": "Recordarme actualizaciones",
+  "installingApp": "Instalando {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "aiTestSuccess": "¡Conexión de IA exitosa!",
-  "@aiTestSuccess": {
-    "description": "aiTestSuccess"
+  "uninstallingApp": "Desinstalando {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
-  "aiThinking": "La IA está pensando...",
-  "@aiThinking": {
-    "description": "aiThinking"
+  "installSuccessTitle": "Instalación exitosa",
+  "uninstallSuccessTitle": "Desinstalación exitosa",
+  "installFailedTitle": "Instalación fallida",
+  "uninstallFailedTitle": "Desinstalación fallida",
+  "taskCompleted": "Tarea completada",
+  "searchInstalledHint": "Buscar aplicaciones instaladas...",
+  "@searchInstalledHint": {
+    "description": "searchInstalledHint"
   },
-  "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
-  "@aiTimeout": {
-    "description": "Error message when AI request times out"
+  "refresh": "Actualizar",
+  "@refresh": {
+    "description": "refresh"
   },
-  "all": "Todo",
-  "allDownloads": "Descargar todo",
+  "noActiveTasks": "No hay tareas activas",
+  "@noActiveTasks": {
+    "description": "noActiveTasks"
+  },
+  "currentTask": "Tarea actual",
+  "@currentTask": {
+    "description": "currentTask"
+  },
+  "viewLogs": "Ver registros",
+  "@viewLogs": {
+    "description": "viewLogs"
+  },
   "allUpdated": "Todas las aplicaciones están al día",
   "@allUpdated": {
     "description": "allUpdated"
   },
-  "analyzeNow": "Analizar ahora",
-  "appDetailsNotFound": "No se encontraron detalles de la aplicación",
-  "@appDetailsNotFound": {
-    "description": "Message shown when app details cannot be loaded"
+  "update": "Actualizar",
+  "@update": {
+    "description": "update"
   },
-  "appImage": "AppImage",
-  "appImageFeedType": "URL de feed de AppImage",
-  "@appImageFeedType": {
-    "description": "AppImage source type option"
+  "enableSystemTray": "Activar bandeja del sistema",
+  "@enableSystemTray": {
+    "description": "enableSystemTray"
   },
-  "appearance": "Apariencia",
-  "aurFull": "AUR (Arch User Repository)",
-  "@aurFull": {
-    "description": "Full name for AUR"
+  "systemCleaning": "Limpieza del sistema",
+  "@systemCleaning": {
+    "description": "systemCleaning"
   },
-  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
-  "aurUser": "AUR (Repositorio de usuarios)",
-  "aurWarning": "Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.",
-  "autoDetect": "Autodetectar",
-  "@autoDetect": {
-    "description": "Button to auto detect available sources"
+  "systemCleaningDesc": "Eliminar paquetes huérfanos y limpiar caché de pacman",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
   },
-  "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
-  "@autoDetectFailed": {
-    "description": "Failure message after auto detection"
+  "systemCleaningSubtitle": "Eliminar paquetes huérfanos y limpiar caché de pacman",
+  "@systemCleaningSubtitle": {
+    "description": "systemCleaningSubtitle"
   },
-  "autoDetectSuccess": "¡Autodetección completada y ajustes guardados!",
-  "@autoDetectSuccess": {
-    "description": "Success message after auto detection"
-  },
-  "autoDetectingSources": "Autodetectando fuentes disponibles para su sistema...",
-  "@autoDetectingSources": {
-    "description": "Message while auto detecting sources"
-  },
-  "autoUpdate": "Actualización automática silenciosa",
-  "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
-  "back": "Atrás",
-  "@back": {
-    "description": "Back button label"
-  },
-  "backSemanticsHint": "Volver a la pantalla anterior",
-  "@backSemanticsHint": {
-    "description": "Accessibility hint for back button"
-  },
-  "backSemanticsLabel": "Atrás",
-  "@backSemanticsLabel": {
-    "description": "Accessibility label for back button"
+  "systemCleaningStarted": "Tarea de limpieza del sistema iniciada",
+  "@systemCleaningStarted": {
+    "description": "systemCleaningStarted"
   },
   "backupAndExport": "Copia de seguridad y exportación",
   "@backupAndExport": {
@@ -251,26 +214,372 @@
   "@backupAndExportSubtitle": {
     "description": "backupAndExportSubtitle"
   },
-  "bituRepoType": "Bitu / Bitbucket (espacio de trabajo/repositorio)",
-  "@bituRepoType": {
-    "description": "Bitu source type option"
+  "export": "Exportar",
+  "@export": {
+    "description": "export"
   },
-  "bootstrapNote": "Nota: La configuración puede requerir introducir su contraseña varias veces.",
-  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | Personalizado: {custom} MB",
-  "@cacheTypeInfo": {
+  "import": "Importar",
+  "@import": {
+    "description": "import"
+  },
+  "selectExportLocation": "Seleccionar ubicación de exportación",
+  "@selectExportLocation": {
+    "description": "selectExportLocation"
+  },
+  "exportSuccess": "{count, plural, =1{Exportación exitosa: 1 paquete} other{Exportación exitosa: {count} paquetes}}",
+  "@exportSuccess": {
     "placeholders": {
-      "pacman": {
-        "type": "String"
-      },
-      "flatpak": {
-        "type": "String"
-      },
-      "custom": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "Exportación fallida: {message}",
+  "@exportFailed": {
+    "placeholders": {
+      "message": {
         "type": "String"
       }
     }
   },
-  "cancel": "Cancelar",
+  "importBackup": "Importar copia de seguridad",
+  "@importBackup": {
+    "description": "importBackup"
+  },
+  "importBackupConfirm": "{count, plural, =1{Se leyó 1 paquete de la copia. ¿Iniciar recuperación?} other{Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?}}",
+  "@importBackupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "Iniciar recuperación",
+  "@startRecovery": {
+    "description": "startRecovery"
+  },
+  "mirrorListSaved": "Lista de espejos guardada",
+  "@mirrorListSaved": {
+    "description": "mirrorListSaved"
+  },
+  "addMirror": "Añadir espejo",
+  "@addMirror": {
+    "description": "addMirror"
+  },
+  "serverUrl": "URL del servidor",
+  "@serverUrl": {
+    "description": "serverUrl"
+  },
+  "pacmanMirrorManagement": "Gestión de espejos de Pacman",
+  "@pacmanMirrorManagement": {
+    "description": "pacmanMirrorManagement"
+  },
+  "save": "Guardar",
+  "@save": {
+    "description": "save"
+  },
+  "add": "Añadir",
+  "@add": {
+    "description": "add"
+  },
+  "general": "General",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "advanced": "Avanzado",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "repositories": "Repositorios",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aiSettings": "Ajustes del Asistente de IA",
+  "@aiSettings": {
+    "description": "aiSettings"
+  },
+  "aiEnabled": "Activar Asistente de IA",
+  "@aiEnabled": {
+    "description": "aiEnabled"
+  },
+  "aiEnabledDesc": "Activar búsqueda impulsada por IA, explicación de aplicaciones y diagnóstico de errores.",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
+  },
+  "aiProvider": "Proveedor de IA",
+  "@aiProvider": {
+    "description": "aiProvider"
+  },
+  "aiEndpoint": "Punto de acceso API",
+  "@aiEndpoint": {
+    "description": "aiEndpoint"
+  },
+  "aiModel": "Nombre del modelo",
+  "@aiModel": {
+    "description": "aiModel"
+  },
+  "aiApiKey": "Clave API",
+  "@aiApiKey": {
+    "description": "aiApiKey"
+  },
+  "aiProxy": "Proxy de red (Opcional)",
+  "@aiProxy": {
+    "description": "aiProxy"
+  },
+  "aiTemperature": "Temperatura (Creatividad)",
+  "@aiTemperature": {
+    "description": "aiTemperature"
+  },
+  "aiMaxTokens": "Tokens máximos",
+  "@aiMaxTokens": {
+    "description": "aiMaxTokens"
+  },
+  "aiTestButton": "Probar conexión de IA",
+  "@aiTestButton": {
+    "description": "aiTestButton"
+  },
+  "aiTestSuccess": "¡Conexión de IA exitosa!",
+  "@aiTestSuccess": {
+    "description": "aiTestSuccess"
+  },
+  "aiTestFailed": "Conexión de IA fallida: {error}",
+  "@aiTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptExplain": "Explicar con IA",
+  "@aiPromptExplain": {
+    "description": "aiPromptExplain"
+  },
+  "aiPromptRecommend": "Pedir sugerencias a la IA",
+  "@aiPromptRecommend": {
+    "description": "aiPromptRecommend"
+  },
+  "aiPromptError": "Analizar error con IA",
+  "@aiPromptError": {
+    "description": "aiPromptError"
+  },
+  "aiPickDay": "Selección del día de la IA",
+  "@aiPickDay": {
+    "description": "aiPickDay"
+  },
+  "aiPickDaySubtitle": "Impulsado por OmniStore AI",
+  "@aiPickDaySubtitle": {
+    "description": "aiPickDaySubtitle"
+  },
+  "aiCompareTitle": "Comparación de variantes por IA",
+  "@aiCompareTitle": {
+    "description": "aiCompareTitle"
+  },
+  "aiHealthTitle": "Informe de salud del sistema por IA",
+  "@aiHealthTitle": {
+    "description": "aiHealthTitle"
+  },
+  "aiHealthSubtitle": "Diagnóstico inteligente para su Arch Linux",
+  "@aiHealthSubtitle": {
+    "description": "aiHealthSubtitle"
+  },
+  "aiCorrection": "¿Quisiste decir?",
+  "@aiCorrection": {
+    "description": "aiCorrection"
+  },
+  "aiThinking": "La IA está pensando...",
+  "@aiThinking": {
+    "description": "aiThinking"
+  },
+  "magicSearch": "Búsqueda inteligente",
+  "@magicSearch": {
+    "description": "magicSearch"
+  },
+  "aiChangelogTitle": "Resumen de actualizaciones por IA",
+  "@aiChangelogTitle": {
+    "description": "aiChangelogTitle"
+  },
+  "aiCliTitle": "Generador de comandos por IA",
+  "@aiCliTitle": {
+    "description": "aiCliTitle"
+  },
+  "aiConflictTitle": "Detección de conflictos por IA",
+  "@aiConflictTitle": {
+    "description": "aiConflictTitle"
+  },
+  "aiCopyCommand": "Copiar comando",
+  "@aiCopyCommand": {
+    "description": "aiCopyCommand"
+  },
+  "aiCommandCopied": "Comando copiado al portapapeles",
+  "@aiCommandCopied": {
+    "description": "aiCommandCopied"
+  },
+  "aiRefineSearch": "Refinar búsqueda con IA",
+  "@aiRefineSearch": {
+    "description": "aiRefineSearch"
+  },
+  "aiExplainUpdate": "Explicar esta actualización",
+  "@aiExplainUpdate": {
+    "description": "aiExplainUpdate"
+  },
+  "windowMinimize": "Minimizar",
+  "@windowMinimize": {
+    "description": "Tooltip for window minimize button"
+  },
+  "windowMaximize": "Maximizar",
+  "@windowMaximize": {
+    "description": "Tooltip for window maximize button"
+  },
+  "windowRestore": "Restaurar",
+  "@windowRestore": {
+    "description": "Tooltip for window restore button"
+  },
+  "windowClose": "Cerrar",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
+  "installedApps": "Aplicaciones instaladas",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "Tienda de GitHub",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Tienda de Flatpak",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "Localizar instalación",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
+  "delete": "Eliminar",
+  "welcomeTitle": "Bienvenido a OmniStore",
+  "welcomeSubtitle": "Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux",
+  "getStarted": "Comenzar",
+  "skip": "Omitir",
+  "envCheckTitle": "Comprobación del entorno",
+  "envCheckSubtitle": "Asegurando que su sistema esté listo",
+  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
+  "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
+  "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
+  "fixProblems": "Corregir / Configurar todo",
+  "continueAnyway": "Continuar de todos modos",
+  "sourceConfigTitle": "Fuentes de software",
+  "sourceConfigSubtitle": "Elija las fuentes que desea habilitar",
+  "enableAur": "Activar AUR (Arch User Repository)",
+  "yayDesc": "Activar AUR requiere instalar el asistente yay.",
+  "aurWarning": "Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.",
+  "bootstrapNote": "Nota: La configuración puede requerir introducir su contraseña varias veces.",
+  "feedbackDesc": "Si encuentra problemas, por favor infórmenos en GitHub.",
+  "aiAssistant": "Asistente de IA",
+  "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
+  "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
+  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
+  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
+  "howToGetApiKey": "¿Cómo obtener una clave API?",
+  "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
+  "gotIt": "Entendido",
+  "aiOllamaNote": "Nota: Si usa Ollama, asegúrese de que se esté ejecutando con OLLAMA_ORIGINS=\"*\".",
+  "enterStore": "Entrar a la tienda",
+  "nextStep": "Siguiente paso",
+  "resetCache": "Restablecer caché e historial",
+  "resetCacheDesc": "Limpiar el historial de búsqueda y el caché de recomendaciones locales",
+  "resetCacheConfirm": "Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?",
+  "resetting": "Restableciendo...",
+  "resetSuccess": "Caché e historial borrados con éxito",
+  "resetFailed": "Error al restablecer: {error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama (Local)",
+  "openaiCompatible": "Compatible con OpenAI",
+  "googleGemini": "Google Gemini",
+  "importPackages": "Importar paquetes",
+  "importPackagesConfirm": "{count, plural, =1{Se leyó 1 paquete del archivo. ¿Iniciar descarga?} other{Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?}}",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "Descargar todo",
+  "importList": "Importar lista",
+  "loadError": "Error al cargar recomendaciones, por favor compruebe el estado del backend",
+  "community": "Comunidad",
+  "official": "Oficial",
+  "verified": "Verificado",
+  "installingPkg": "Instalando {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "Cambiar",
+  "flatpakBetterDesc": "Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.",
+  "aiAnalysisPrompt": "Se encontraron registros de errores, ¿necesita un análisis de IA?",
+  "analyzeNow": "Analizar ahora",
+  "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
+  "securityWarning": "Advertencia de seguridad",
+  "aurSecurityDesc": "AUR (Arch User Repository) es un repositorio mantenido por la comunidad. Dado que los paquetes son contribuciones de los usuarios, podría haber código inseguro. Antes de instalar, se recomienda revisar el PKGBUILD.",
+  "continueInstall": "Continuar instalación",
+  "installInfo": "Información de instalación",
+  "downloadSize": "Tamaño de descarga",
+  "installedSize": "Tamaño instalado",
+  "dependenciesCount": "{count, plural, =1{Dependencia (1)} other{Dependencias ({count})}}",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.",
+  "clearSearch": "Limpiar búsqueda",
+  "listView": "Vista de lista",
+  "gridView": "Vista de cuadrícula",
+  "categories": "Categorías",
+  "clearHistory": "Limpiar historial",
+  "clearHistoryShort": "Limpiar historial",
+  "confirmClearHistory": "¿Está seguro de que desea borrar todo el historial?",
+  "viewMore": "Ver más",
+  "logDebug": "DEPURACIÓN (DEBUG)",
+  "logInfo": "INFORMACIÓN (INFO)",
+  "logWarning": "ADVERTENCIA (WARNING)",
+  "logError": "ERROR (ERROR)",
+  "notificationTitle": "Actualizaciones disponibles",
+  "notificationBody": "{count, plural, =1{Hay 1 aplicación disponible para actualizar} other{Hay {count} aplicaciones disponibles para actualizar}}",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "Preparando actualización...",
+  "processing": "Procesando",
+  "clear": "Limpiar",
+  "retry": "Reintentar",
+  "aiResponseFailed": "La IA no pudo responder.",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "La IA no pudo analizar.",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
   "cannotConnectToBackend": "No se puede conectar al servicio backend: {error}",
   "@cannotConnectToBackend": {
     "description": "Error message when backend is unreachable",
@@ -280,44 +589,85 @@
       }
     }
   },
-  "catDevelopment": "Desarrollo",
-  "catGames": "Juegos",
-  "catGraphics": "Gráficos",
-  "@catGraphics": {
-    "description": "Category for Graphics"
+  "taskInitializing": "Inicializando tarea...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
   },
-  "catInternet": "Internet",
-  "catMedia": "Multimedia",
-  "catOffice": "Oficina",
-  "catSystem": "Sistema",
-  "catUtility": "Utilidades",
-  "@catUtility": {
-    "description": "Category for Utility"
+  "taskStarting": "Iniciando...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
   },
-  "categories": "Categorías",
-  "category": "Categoría",
-  "@category": {
-    "description": "Category label"
+  "taskSuccess": "Tarea completada con éxito",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
   },
-  "categorySemantics": "Categoría: {name}",
-  "@categorySemantics": {
+  "taskFailedWithCode": "La tarea falló con el código de salida {code}",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
     "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "checkInterval": "Intervalo de comprobación (Horas)",
-  "checkIntervalSubtitle": "{hours, plural, =1{Comprobar cada hora} other{Comprobar cada {hours} horas}}",
-  "@checkIntervalSubtitle": {
-    "placeholders": {
-      "hours": {
+      "code": {
         "type": "int"
       }
     }
   },
-  "checkIntervalTitle": "Frecuencia de comprobación",
-  "@checkIntervalTitle": {},
+  "taskCancelledByUser": "Tarea cancelada por el usuario",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "Error: {error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "githubAuthTitle": "Autenticación de GitHub",
+  "githubPatSaved": "GitHub PAT guardado con éxito",
+  "saveToken": "Guardar token",
+  "back": "Atrás",
+  "next": "Siguiente",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
+  },
+  "aurFull": "AUR (Arch User Repository)",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak (Flathub)",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
+  },
+  "errorPackageNameRequired": "El nombre del paquete es obligatorio",
+  "errorStartFailed": "Error al iniciar: {error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "Error al actualizar: {error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "checkUpdateFailed": "Error al buscar actualizaciones: {error}",
   "@checkUpdateFailed": {
     "placeholders": {
@@ -326,83 +676,6 @@
       }
     }
   },
-  "checkUpdates": "Buscar actualizaciones",
-  "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
-  "clear": "Limpiar",
-  "clearHistory": "Limpiar historial",
-  "clearHistoryShort": "Limpiar historial",
-  "clearSearch": "Limpiar búsqueda",
-  "closeToTray": "Cerrar a la bandeja del sistema",
-  "collapse": "Contraer",
-  "community": "Comunidad",
-  "completionNotifications": "Notificaciones de finalización",
-  "configSaveFailed": "Error al guardar la configuración",
-  "configSaved": "Configuración guardada. Algunos cambios se aplicarán tras reiniciar",
-  "confirm": "Confirmar",
-  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
-  "@confirmActionMsg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "confirmClearHistory": "¿Está seguro de que desea borrar todo el historial?",
-  "confirmInstall": "Confirmar instalación",
-  "confirmUninstall": "Confirmar desinstalación",
-  "continueAnyway": "Continuar de todos modos",
-  "continueInstall": "Continuar instalación",
-  "copyName": "Copiar nombre",
-  "@copyName": {
-    "description": "Button to copy the package name"
-  },
-  "currentTask": "Tarea actual",
-  "@currentTask": {
-    "description": "currentTask"
-  },
-  "darkMode": "Modo oscuro",
-  "delete": "Eliminar",
-  "dependenciesCount": "{count, plural, =1{Dependencia (1)} other{Dependencias ({count})}}",
-  "@dependenciesCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "details": "Detalles",
-  "developer": "Desarrollador",
-  "diskSpaceInfo": "Espacio en disco: {free} GB libres / {total} GB en total",
-  "@diskSpaceInfo": {
-    "placeholders": {
-      "free": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "downloadSize": "Tamaño de descarga",
-  "downloads": "Descargas",
-  "enableAur": "Activar AUR (Arch User Repository)",
-  "enableDaemon": "Activar demonio de actualización",
-  "@enableDaemon": {},
-  "enableDaemonDesc": "Buscar actualizaciones periódicamente en segundo plano",
-  "@enableDaemonDesc": {},
-  "enableNotifications": "Activar notificaciones",
-  "enableSystemTray": "Activar bandeja del sistema",
-  "@enableSystemTray": {
-    "description": "enableSystemTray"
-  },
-  "enableSystemdService": "Habilitar servicio de fondo systemd",
-  "enableSystemdServiceDesc": "Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada",
-  "enterStore": "Entrar a la tienda",
-  "envCheckSubtitle": "Asegurando que su sistema esté listo",
-  "envCheckTitle": "Comprobación del entorno",
-  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
-  "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
-  "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
   "errorCleanFailed": "Error al limpiar: {error}",
   "@errorCleanFailed": {
     "placeholders": {
@@ -419,14 +692,6 @@
       }
     }
   },
-  "errorNameUrlRequired": "El nombre y la URL/Repo no pueden estar vacíos",
-  "@errorNameUrlRequired": {
-    "description": "Error message when name or URL is missing"
-  },
-  "errorPackageNameRequired": "El nombre del paquete es obligatorio",
-  "@errorPackageNameRequired": {
-    "description": "Error message when package name is mandatory"
-  },
   "errorProcessStart": "Error al iniciar el proceso, por favor compruebe el entorno: {error}",
   "@errorProcessStart": {
     "placeholders": {
@@ -435,17 +700,29 @@
       }
     }
   },
-  "errorStartFailed": "Error al iniciar: {error}",
-  "@errorStartFailed": {
+  "taskForcedTerminated": "Tarea terminada forzosamente",
+  "@taskForcedTerminated": {
+    "description": "Error message when a task is forcefully terminated"
+  },
+  "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
+  "@aiTimeout": {
+    "description": "Error message when AI request times out"
+  },
+  "aiNoResponse": "La IA no pudo proporcionar una respuesta válida.",
+  "@aiNoResponse": {
+    "description": "Error message when AI does not respond"
+  },
+  "aiParseFailed": "Error al analizar la respuesta de la IA: formato incorrecto.",
+  "@aiParseFailed": {
+    "description": "Error message when AI response parsing fails"
+  },
+  "aiCallFailed": "La llamada al servicio de IA falló: {error}",
+  "@aiCallFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
-  },
-  "errorTitle": "Error",
-  "@errorTitle": {
-    "description": "General error title"
   },
   "errorUpdateAll": "Error al actualizar todo: {error}",
   "@errorUpdateAll": {
@@ -455,108 +732,163 @@
       }
     }
   },
-  "errorUpdateFailed": "Error al actualizar: {error}",
-  "@errorUpdateFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
+  "taskProcessing": "Procesando",
+  "@taskProcessing": {
+    "description": "Task processing status label"
   },
-  "essentialTools": "Herramientas esenciales",
-  "exit": "Salir",
+  "collapse": "Contraer",
   "expand": "Expandir",
-  "explore": "Explorar",
-  "export": "Exportar",
-  "@export": {
-    "description": "export"
+  "all": "Todo",
+  "relatedApps": "Aplicaciones relacionadas",
+  "activeSources": "Fuentes activas",
+  "@activeSources": {
+    "description": "Label for active software sources"
   },
-  "exportFailed": "Exportación fallida: {message}",
-  "@exportFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
+  "autoDetect": "Autodetectar",
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
   },
-  "exportSuccess": "{count, plural, =1{Exportación exitosa: 1 paquete} other{Exportación exitosa: {count} paquetes}}",
-  "@exportSuccess": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+  "addCustomSource": "Añadir fuente personalizada",
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
   },
-  "failed": "Error",
-  "featured": "Destacado",
-  "feedbackDesc": "Si encuentra problemas, por favor infórmenos en GitHub.",
-  "fixProblems": "Corregir / Configurar todo",
-  "flatpak": "Flatpak",
-  "flatpakBetterDesc": "Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.",
-  "flatpakFull": "Flatpak (Flathub)",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
-  },
-  "flatpakRemoteType": "Remoto de Flatpak",
-  "@flatpakRemoteType": {
-    "description": "Flatpak source type option"
-  },
-  "flatpakStore": "Tienda de Flatpak",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "followSystem": "Seguir sistema",
-  "fontFamily": "Familia de fuentes",
-  "@fontFamily": {},
-  "fontScale": "Escala de fuente",
-  "@fontScale": {},
-  "forYou": "Para ti",
-  "foundUpdates": "{count, plural, =1{Se encontró 1 actualización} other{Se encontraron {count} actualizaciones}}",
-  "@foundUpdates": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "general": "General",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "getStarted": "Comenzar",
-  "githubAuthTitle": "Autenticación de GitHub",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "githubPatSaved": "GitHub PAT guardado con éxito",
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
+  "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
+  "sourceType": "Tipo de fuente",
+  "@sourceType": {
+    "description": "Label for source type"
   },
   "githubRepoType": "Repositorio de GitHub (owner/repo)",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
-  "githubStore": "Tienda de GitHub",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
+  "bituRepoType": "Bitu / Bitbucket (espacio de trabajo/repositorio)",
+  "@bituRepoType": {
+    "description": "Bitu source type option"
   },
-  "googleGemini": "Google Gemini",
-  "gotIt": "Entendido",
-  "gridView": "Vista de cuadrícula",
-  "help": "Ayuda",
+  "flatpakRemoteType": "Remoto de Flatpak",
+  "@flatpakRemoteType": {
+    "description": "Flatpak source type option"
+  },
+  "appImageFeedType": "URL de feed de AppImage",
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
+  },
+  "sourceName": "Nombre de la fuente",
+  "@sourceName": {
+    "description": "Label for source name"
+  },
   "hintCustomAppName": "ej. mi-app-personalizada",
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "hintFeedUrl": "ej. https://ejemplo.com/feed.json",
-  "@hintFeedUrl": {
-    "description": "Hint for feed URL"
+  "repoOwnerRepo": "Repositorio (owner/repo)",
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "sourceUrl": "URL",
+  "@sourceUrl": {
+    "description": "Label for source URL"
   },
   "hintRepoFormat": "ej. flutter/flutter",
   "@hintRepoFormat": {
     "description": "Hint for repository format"
   },
-  "hotApps": "Aplicaciones populares",
+  "hintFeedUrl": "ej. https://ejemplo.com/feed.json",
+  "@hintFeedUrl": {
+    "description": "Hint for feed URL"
+  },
+  "errorNameUrlRequired": "El nombre y la URL/Repo no pueden estar vacíos",
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
+  },
+  "addingCustomSource": "Añadiendo fuente personalizada...",
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
+  },
+  "sourceAddSuccess": "¡Fuente añadida con éxito!",
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
+  },
+  "sourceAddFailed": "Error al añadir la fuente.",
+  "@sourceAddFailed": {
+    "description": "Failure message after adding source"
+  },
+  "autoDetectingSources": "Autodetectando fuentes disponibles para su sistema...",
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
+  },
+  "autoDetectSuccess": "¡Autodetección completada y ajustes guardados!",
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
+  },
+  "autoDetectFailed": "Error al guardar los ajustes autodetectados.",
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
+  },
+  "personalAccessToken": "Token de acceso personal",
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
+  },
+  "copyName": "Copiar nombre",
+  "@copyName": {
+    "description": "Button to copy the package name"
+  },
+  "nameCopied": "Nombre copiado al portapapeles",
+  "@nameCopied": {
+    "description": "Snackbar message indicating name was copied to clipboard"
+  },
+  "copiedToClipboard": "Copiado al portapapeles",
+  "tapToCopy": "Toca para copiar",
+  "language": "Idioma de la interfaz",
+  "@language": {
+    "description": "Label for language setting"
+  },
+  "languageSubtitle": "Requiere reiniciar para aplicarse",
+  "@languageSubtitle": {
+    "description": "Subtitle for language setting"
+  },
+  "restartTitleBar": "Reinicie la aplicación para aplicar los cambios en la barra de título",
+  "@restartTitleBar": {
+    "description": "Message to restart for title bar changes"
+  },
+  "enableDaemon": "Activar demonio de actualización",
+  "@enableDaemon": {
+    "description": "Label for background daemon"
+  },
+  "enableDaemonDesc": "Buscar actualizaciones periódicamente en segundo plano",
+  "autoUpdate": "Actualización automática silenciosa",
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
+  "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
+  "checkIntervalTitle": "Frecuencia de comprobación",
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
+  "checkIntervalSubtitle": "{hours, plural, =1{Comprobar cada hora} other{Comprobar cada {hours} horas}}",
+  "@checkIntervalSubtitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "typography": "Tipografía",
+  "@typography": {
+    "description": "Title for typography settings"
+  },
+  "fontFamily": "Familia de fuentes",
+  "@fontFamily": {
+    "description": "Label for font family setting"
+  },
+  "fontScale": "Escala de fuente",
+  "@fontScale": {
+    "description": "Label for font scale setting"
+  },
+  "systemDefault": "Predeterminado del sistema",
+  "@systemDefault": {
+    "description": "Label for system default option"
+  },
   "hourValue": "{count, plural, =1{1 hora} other{{count} horas}}",
   "@hourValue": {
     "placeholders": {
@@ -565,316 +897,85 @@
       }
     }
   },
-  "howToGetApiKey": "¿Cómo obtener una clave API?",
-  "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
-  "import": "Importar",
-  "@import": {
-    "description": "import"
-  },
-  "importBackup": "Importar copia de seguridad",
-  "@importBackup": {
-    "description": "importBackup"
-  },
-  "importBackupConfirm": "{count, plural, =1{Se leyó 1 paquete de la copia. ¿Iniciar recuperación?} other{Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?}}",
-  "@importBackupConfirm": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "importList": "Importar lista",
-  "importPackages": "Importar paquetes",
-  "importPackagesConfirm": "{count, plural, =1{Se leyó 1 paquete del archivo. ¿Iniciar descarga?} other{Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?}}",
-  "@importPackagesConfirm": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "includeAurUpdates": "Incluir AUR en 'Actualizar todo'",
-  "install": "Instalar",
-  "installFailedTitle": "Instalación fallida",
-  "installInfo": "Información de instalación",
-  "installSuccessTitle": "Instalación exitosa",
-  "installedApps": "Aplicaciones instaladas",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
-  },
-  "installedSize": "Tamaño instalado",
-  "installingApp": "Instalando {name}",
-  "@installingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "installingPkg": "Instalando {name}...",
-  "@installingPkg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "langSimplifiedChinese": "Chino simplificado",
+  "langTraditionalChinese": "Chino tradicional",
   "langEnglish": "Inglés",
   "langJapanese": "Japonés",
-  "langSimplifiedChinese": "Chino simplificado",
   "langSpanish": "Español",
-  "langTraditionalChinese": "Chino tradicional",
-  "language": "Idioma de la interfaz",
-  "@language": {},
-  "languageSubtitle": "Requiere reiniciar para aplicarse",
-  "@languageSubtitle": {},
-  "launch": "Iniciar",
-  "license": "Licencia",
-  "lightMode": "Modo claro",
-  "listView": "Vista de lista",
-  "loadError": "Error al cargar recomendaciones, por favor compruebe el estado del backend",
-  "locateInstallation": "Localizar instalación",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
-  "logDebug": "DEPURACIÓN (DEBUG)",
-  "logError": "ERROR (ERROR)",
-  "logInfo": "INFORMACIÓN (INFO)",
-  "logWarning": "ADVERTENCIA (WARNING)",
-  "loggingLevel": "Nivel de registro",
-  "magicSearch": "Búsqueda inteligente",
-  "@magicSearch": {
-    "description": "magicSearch"
-  },
-  "maintenance": "Mantenimiento",
-  "maxResults": "Resultados máximos",
-  "mirrorListSaved": "Lista de espejos guardada",
-  "@mirrorListSaved": {
-    "description": "mirrorListSaved"
-  },
-  "nameCopied": "Nombre copiado al portapapeles",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
-  },
-  "copiedToClipboard": "Copiado al portapapeles",
-  "tapToCopy": "Toca para copiar",
-  "next": "Siguiente",
-  "@next": {
-    "description": "Next button label"
-  },
-  "nextStep": "Siguiente paso",
-  "noActiveTasks": "No hay tareas activas",
-  "@noActiveTasks": {
-    "description": "noActiveTasks"
-  },
-  "noResults": "No se encontraron resultados",
-  "notificationBody": "{count, plural, =1{Hay 1 aplicación disponible para actualizar} other{Hay {count} aplicaciones disponibles para actualizar}}",
-  "@notificationBody": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "notificationTitle": "Actualizaciones disponibles",
-  "notifications": "Notificaciones",
-  "official": "Oficial",
-  "ollamaLocal": "Ollama (Local)",
-  "omnistore": "OmniStore",
-  "@omnistore": {
-    "description": "App Name"
-  },
-  "open": "Abrir",
-  "openaiCompatible": "Compatible con OpenAI",
-  "packageManager": "Gestor de paquetes",
-  "pacmanMirrorManagement": "Gestión de espejos de Pacman",
-  "@pacmanMirrorManagement": {
-    "description": "pacmanMirrorManagement"
-  },
-  "pacmanOfficial": "Pacman (Oficial)",
-  "personalAccessToken": "Token de acceso personal",
-  "@personalAccessToken": {
-    "description": "Label for personal access token"
-  },
-  "preparingUpdate": "Preparando actualización...",
-  "processing": "Procesando",
-  "progressNotifications": "Notificaciones de progreso",
-  "ready": "Instalado",
-  "refresh": "Actualizar",
-  "@refresh": {
-    "description": "refresh"
-  },
-  "relatedApps": "Aplicaciones relacionadas",
-  "remindMeOfUpdates": "Recordarme actualizaciones",
-  "repoOwnerRepo": "Repositorio (owner/repo)",
-  "@repoOwnerRepo": {
-    "description": "Label for repository owner and name"
-  },
-  "repositories": "Repositorios",
-  "@repositories": {
-    "description": "Section title for software repositories"
-  },
-  "resetCache": "Restablecer caché e historial",
-  "resetCacheConfirm": "Esto borrará su historial de búsqueda y el caché de recomendaciones. ¿Continuar?",
-  "resetCacheDesc": "Limpiar el historial de búsqueda y el caché de recomendaciones locales",
-  "resetFailed": "Error al restablecer: {error}",
-  "@resetFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "resetOnboarding": "Restablecer bienvenida",
-  "resetOnboardingConfirm": "¿Estás seguro de que quieres restablecer la bienvenida? Se mostrará en el próximo inicio.",
-  "resetSuccess": "Caché e historial borrados con éxito",
-  "resetting": "Restableciendo...",
-  "restartTitleBar": "Reinicie la aplicación para aplicar los cambios en la barra de título",
-  "@restartTitleBar": {},
-  "resultsFound": "{count, plural, =1{1 resultado encontrado} other{{count} resultados encontrados}}",
-  "@resultsFound": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "retry": "Reintentar",
-  "runningInBackground": "OmniStore se está ejecutando en segundo plano, puede abrirlo mediante el icono de la bandeja.",
-  "save": "Guardar",
-  "@save": {
-    "description": "save"
-  },
-  "saveAndApply": "Guardar y aplicar",
-  "saveToken": "Guardar token",
-  "@saveToken": {
-    "description": "Button label to save token"
-  },
-  "screenshots": "Capturas de pantalla",
-  "search": "Buscar",
-  "searchHint": "Buscar aplicaciones, juegos, herramientas...",
-  "searchInstalledHint": "Buscar aplicaciones instaladas...",
-  "@searchInstalledHint": {
-    "description": "searchInstalledHint"
-  },
-  "searching": "Buscando...",
-  "securityWarning": "Advertencia de seguridad",
-  "selectExportLocation": "Seleccionar ubicación de exportación",
-  "@selectExportLocation": {
-    "description": "selectExportLocation"
-  },
-  "serverUrl": "URL del servidor",
-  "@serverUrl": {
-    "description": "serverUrl"
-  },
-  "settings": "Ajustes",
-  "showWindow": "Mostrar ventana",
-  "skip": "Omitir",
-  "source": "Fuente",
-  "sourceAddFailed": "Error al añadir la fuente.",
-  "@sourceAddFailed": {
-    "description": "Failure message after adding source"
-  },
-  "sourceAddSuccess": "¡Fuente añadida con éxito!",
-  "@sourceAddSuccess": {
-    "description": "Success message after adding source"
-  },
-  "sourceConfigSubtitle": "Elija las fuentes que desea habilitar",
-  "sourceConfigTitle": "Fuentes de software",
-  "sourceName": "Nombre de la fuente",
-  "@sourceName": {
-    "description": "Label for source name"
-  },
-  "sourcePriority": "Prioridad de fuente (Arrastrar para reordenar)",
-  "sourceType": "Tipo de fuente",
-  "@sourceType": {
-    "description": "Label for source type"
-  },
-  "sourceUrl": "URL",
-  "@sourceUrl": {
-    "description": "Label for source URL"
-  },
-  "startRecovery": "Iniciar recuperación",
-  "@startRecovery": {
-    "description": "startRecovery"
-  },
-  "success": "Éxito",
-  "switchSource": "Cambiar",
-  "systemAndWindow": "Sistema y Ventana",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "systemCleaning": "Limpieza del sistema",
-  "@systemCleaning": {
-    "description": "systemCleaning"
-  },
-  "systemCleaningDesc": "Eliminar paquetes huérfanos y limpiar caché de pacman",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
-  },
-  "systemCleaningStarted": "Tarea de limpieza del sistema iniciada",
-  "@systemCleaningStarted": {
-    "description": "systemCleaningStarted"
-  },
-  "systemCleaningSubtitle": "Eliminar paquetes huérfanos y limpiar caché de pacman",
-  "@systemCleaningSubtitle": {
-    "description": "systemCleaningSubtitle"
-  },
-  "systemDefault": "Predeterminado del sistema",
-  "@systemDefault": {},
-  "taskCancelled": "Tarea cancelada",
-  "taskCancelledByUser": "Tarea cancelada por el usuario",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskCompleted": "Tarea completada",
-  "taskError": "Error: {error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "taskFailedWithCode": "La tarea falló con el código de salida {code}",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
-    "placeholders": {
-      "code": {
-        "type": "int"
-      }
-    }
-  },
-  "taskForcedTerminated": "Tarea terminada forzosamente",
-  "@taskForcedTerminated": {
-    "description": "Error message when a task is forcefully terminated"
-  },
   "taskInProgress": "Otra tarea ya está en progreso",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
   },
-  "taskInitializing": "Inicializando tarea...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
+  "trayInitFailedDisabled": "Error al inicializar la bandeja del sistema. Cerrar a la bandeja desactivado.",
+  "@trayInitFailedDisabled": {
+    "description": "Error message when system tray fails to initialize"
   },
-  "taskProcessing": "Procesando",
-  "@taskProcessing": {
-    "description": "Task processing status label"
+  "errorTitle": "Error",
+  "@errorTitle": {
+    "description": "General error title"
   },
-  "taskStarting": "Iniciando...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
+  "appDetailsNotFound": "No se encontraron detalles de la aplicación",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
   },
-  "taskSuccess": "Tarea completada con éxito",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
+  "diskSpaceInfo": "Espacio en disco: {free} GB libres / {total} GB en total",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman: {pacman} MB | Flatpak: {flatpak} MB | Personalizado: {custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "Atrás",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "Volver a la pantalla anterior",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "Categoría: {name}",
+  "@categorySemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
+  "enableSystemdService": "Habilitar servicio de fondo systemd",
+  "enableSystemdServiceDesc": "Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada",
   "taskHistory": "Historial de tareas",
   "unknownApp": "Aplicación desconocida",
   "taskSuccessMsg": "Tarea ejecutada con éxito",
   "failureReason": "Razón del fallo: {message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "No hay paquetes disponibles",
   "noDescription": "Sin descripción.",
   "viewDetails": "Ver detalles",
@@ -886,76 +987,5 @@
   "rankings": "Clasificaciones",
   "trending": "Tendencias",
   "latestUpdates": "Últimas actualizaciones",
-  "searchNoResultsSubtitle": "Intente buscar otra cosa",
-  "terminalOutput": "Salida de terminal",
-  "themeColor": "Color del tema",
-  "trayInitFailedDisabled": "Error al inicializar la bandeja del sistema. Cerrar a la bandeja desactivado.",
-  "@trayInitFailedDisabled": {
-    "description": "Error message when system tray fails to initialize"
-  },
-  "trayTooltipUpToDate": "OmniStore: Actualizado",
-  "trayTooltipUpdates": "{count, plural, =1{OmniStore: Se encontró 1 actualización} other{OmniStore: Se encontraron {count} actualizaciones}}",
-  "@trayTooltipUpdates": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "typography": "Tipografía",
-  "@typography": {},
-  "uninstall": "Desinstalar",
-  "uninstallFailedTitle": "Desinstalación fallida",
-  "uninstallSuccessTitle": "Desinstalación exitosa",
-  "uninstallingApp": "Desinstalando {name}",
-  "@uninstallingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "upToDate": "Todas las aplicaciones están al día",
-  "update": "Actualizar",
-  "@update": {
-    "description": "update"
-  },
-  "updateAll": "Actualizar todo",
-  "updateAllPackages": "Actualizar todos los paquetes",
-  "updateReminders": "Recordatorios de actualización",
-  "updates": "Actualizaciones",
-  "useSystemTitleBar": "Usar barra de título del sistema",
-  "userAccount": "Cuenta de usuario",
-  "variant": "Versiones",
-  "verified": "Verificado",
-  "version": "Versión",
-  "viewLogs": "Ver registros",
-  "@viewLogs": {
-    "description": "viewLogs"
-  },
-  "viewMore": "Ver más",
-  "visitWebsite": "Visitar sitio web",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
-  },
-  "waitingForOutput": "Esperando salida...",
-  "welcomeSubtitle": "Ofreciendo una experiencia de gestión de aplicaciones simple y elegante para Arch Linux",
-  "welcomeTitle": "Bienvenido a OmniStore",
-  "windowClose": "Cerrar",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
-  "windowMaximize": "Maximizar",
-  "@windowMaximize": {
-    "description": "Tooltip for window maximize button"
-  },
-  "windowMinimize": "Minimizar",
-  "@windowMinimize": {
-    "description": "Tooltip for window minimize button"
-  },
-  "windowRestore": "Restaurar",
-  "@windowRestore": {
-    "description": "Tooltip for window restore button"
-  },
-  "yayDesc": "Activar AUR requiere instalar el asistente yay."
+  "searchNoResultsSubtitle": "Intente buscar otra cosa"
 }

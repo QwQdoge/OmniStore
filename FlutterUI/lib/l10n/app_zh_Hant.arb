@@ -1,241 +1,210 @@
 {
   "@@locale": "zh_Hant",
+  "searchHint": "搜尋應用程式、遊戲、工具...",
+  "featured": "精選",
+  "forYou": "為您推薦",
+  "essentialTools": "必備工具",
+  "hotApps": "熱門應用",
+  "explore": "探索",
+  "search": "搜尋",
+  "settings": "設定",
+  "downloads": "下載",
+  "help": "幫助",
+  "userAccount": "使用者帳戶",
+  "install": "安裝",
+  "open": "開啟",
+  "uninstall": "解除安裝",
+  "launch": "啟動",
   "about": "關於",
-  "activeSources": "已啟用軟體源",
-  "@activeSources": {
-    "description": "Label for active software sources"
+  "details": "詳情",
+  "source": "來源",
+  "variant": "可用版本",
+  "@variant": {
+    "description": "Label for app variants/versions"
   },
+  "version": "版本",
+  "ready": "已安裝",
+  "resultsFound": "找到 {count} 個結果",
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noResults": "暫無搜尋結果",
+  "searching": "搜尋中...",
   "activity": "任務記錄",
   "@activity": {
     "description": "Activity tab label"
   },
-  "add": "新增",
-  "@add": {
-    "description": "Add action label"
+  "category": "分類",
+  "@category": {
+    "description": "Category label"
   },
-  "addCustomSource": "新增自訂源",
-  "@addCustomSource": {
-    "description": "Button to add a custom source"
-  },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
-  "addMirror": "新增鏡像",
-  "@addMirror": {
-    "description": "Action label to add a mirror"
-  },
-  "addingCustomSource": "正在新增自訂源...",
-  "@addingCustomSource": {
-    "description": "Message while adding custom source"
-  },
-  "advanced": "進階",
-  "@advanced": {
-    "description": "Label for advanced settings toggle"
-  },
-  "aiAnalysisFailed": "AI 分析失敗。",
-  "@aiAnalysisFailed": {
-    "description": "Message shown when AI fails to analyze error logs"
-  },
-  "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
-  "aiApiKey": "API 金鑰",
-  "@aiApiKey": {
-    "description": "Label for AI API key input"
-  },
-  "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
-  "aiAssistant": "AI 助手",
-  "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
-  "aiCallFailed": "AI 服務呼叫失敗：{error}",
-  "@aiCallFailed": {
+  "packageManager": "套件管理員",
+  "pacmanOfficial": "Pacman（官方庫）",
+  "aurUser": "AUR（使用者庫）",
+  "flatpak": "Flatpak",
+  "appImage": "AppImage",
+  "sourcePriority": "來源優先級（拖曳排序）",
+  "maxResults": "最大結果數",
+  "appearance": "介面外觀",
+  "themeColor": "主題色",
+  "followSystem": "跟隨系統",
+  "lightMode": "淺色模式",
+  "darkMode": "深色模式",
+  "loggingLevel": "日誌詳細程度",
+  "saveAndApply": "儲存並套用",
+  "configSaved": "設定已儲存，部分更改將在重啟後生效",
+  "configSaveFailed": "儲存設定失敗",
+  "confirmUninstall": "確認解除安裝",
+  "confirmInstall": "確認安裝",
+  "confirmActionMsg": "確定要對 {name} 執行此操作嗎？",
+  "@confirmActionMsg": {
     "placeholders": {
-      "error": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "aiChangelogTitle": "AI 更新摘要",
-  "@aiChangelogTitle": {
-    "description": "Title for AI changelog summary"
+  "cancel": "取消",
+  "confirm": "確定",
+  "terminalOutput": "終端輸出",
+  "waitingForOutput": "等待終端輸出...",
+  "screenshots": "應用程式截圖",
+  "developer": "開發者",
+  "license": "授權",
+  "success": "成功",
+  "failed": "失敗",
+  "taskCancelled": "任務已取消",
+  "catDevelopment": "開發工具",
+  "catMedia": "影音娛樂",
+  "catInternet": "網際網路",
+  "catSystem": "系統工具",
+  "catOffice": "辦公",
+  "catGames": "遊戲",
+  "catGraphics": "圖形設計",
+  "@catGraphics": {
+    "description": "Category for Graphics"
   },
-  "aiCliTitle": "AI 命令生成器",
-  "@aiCliTitle": {
-    "description": "Title for AI command generation feature"
+  "catUtility": "實用工具",
+  "@catUtility": {
+    "description": "Category for Utility"
   },
-  "aiCommandCopied": "命令已複製到剪貼簿",
-  "@aiCommandCopied": {
-    "description": "Message shown after copying a command"
+  "systemAndWindow": "系統與視窗",
+  "@systemAndWindow": {
+    "description": "Section title for system and window settings"
   },
-  "aiCompareTitle": "AI 版本比較",
-  "@aiCompareTitle": {
-    "description": "Title for AI package comparison feature"
+  "visitWebsite": "造訪官方網站",
+  "@visitWebsite": {
+    "description": "Tooltip for visiting website"
   },
-  "aiConflictTitle": "AI 衝突偵測",
-  "@aiConflictTitle": {
-    "description": "Title for AI conflict detection feature"
-  },
-  "aiCopyCommand": "複製命令",
-  "@aiCopyCommand": {
-    "description": "Button label to copy generated command"
-  },
-  "aiCorrection": "您是指：",
-  "@aiCorrection": {
-    "description": "Suggestion text for AI correction"
-  },
-  "aiEnabled": "啟用 AI 助手",
-  "@aiEnabled": {
-    "description": "Toggle to enable the AI assistant"
-  },
-  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
-  "@aiEnabledDesc": {
-    "description": "aiEnabledDesc"
-  },
-  "aiEndpoint": "API 端點",
-  "@aiEndpoint": {
-    "description": "Label for AI API endpoint"
-  },
-  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiExplainUpdate": "解析此更新",
-  "@aiExplainUpdate": {
-    "description": "Action to explain an update with AI"
-  },
-  "aiHealthSubtitle": "針對您的 Arch Linux 的智慧診斷",
-  "@aiHealthSubtitle": {
-    "description": "Subtitle for AI system health report"
-  },
-  "aiHealthTitle": "AI 系統健康診斷",
-  "@aiHealthTitle": {
-    "description": "Title for AI system health report"
-  },
-  "aiMaxTokens": "最大回應長度",
-  "@aiMaxTokens": {
-    "description": "Label for AI maximum tokens setting"
-  },
-  "aiModel": "模型名稱",
-  "@aiModel": {
-    "description": "Label for AI model name"
-  },
-  "aiNoResponse": "AI 未能提供有效回應。",
-  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
-  "aiParseFailed": "AI 回應解析失敗：格式不正確。",
-  "aiPickDay": "AI 今日精選",
-  "@aiPickDay": {
-    "description": "Title for daily AI pick card"
-  },
-  "aiPickDaySubtitle": "由 OmniStore AI 提供支援",
-  "@aiPickDaySubtitle": {
-    "description": "Subtitle for daily AI pick card"
-  },
-  "aiPromptError": "使用 AI 分析錯誤",
-  "@aiPromptError": {
-    "description": "Prompt action to analyze an error with AI"
-  },
-  "aiPromptExplain": "解析",
-  "@aiPromptExplain": {
-    "description": "Prompt action to explain content with AI"
-  },
-  "aiPromptRecommend": "諮詢 AI 建議",
-  "@aiPromptRecommend": {
-    "description": "Prompt action to ask AI for recommendations"
-  },
-  "aiProvider": "AI 服務商",
-  "@aiProvider": {
-    "description": "Label for AI provider selection"
-  },
-  "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
-  "aiProxy": "網路代理（可選）",
-  "@aiProxy": {
-    "description": "Label for optional AI proxy setting"
-  },
-  "aiRefineSearch": "使用 AI 精煉搜尋",
-  "@aiRefineSearch": {
-    "description": "Action to refine search using AI"
-  },
-  "aiResponseFailed": "AI 回應失敗。",
-  "@aiResponseFailed": {
-    "description": "Message shown when AI fails to respond"
-  },
-  "aiSettings": "AI 助手設定",
-  "@aiSettings": {
-    "description": "Title for AI assistant settings"
-  },
-  "aiTemperature": "溫度（創意度）",
-  "@aiTemperature": {
-    "description": "Label for AI temperature setting"
-  },
-  "aiTestButton": "測試 AI 連線",
-  "@aiTestButton": {
-    "description": "Button label to test AI connectivity"
-  },
-  "aiTestFailed": "AI 連線失敗：{error}",
-  "@aiTestFailed": {
+  "updates": "更新",
+  "upToDate": "應用程式已是最新版本",
+  "checkUpdates": "檢查更新",
+  "foundUpdates": "發現 {count} 個可用更新",
+  "@foundUpdates": {
     "placeholders": {
-      "error": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateAll": "全部更新",
+  "notifications": "通知",
+  "enableNotifications": "啟用通知",
+  "progressNotifications": "進度通知",
+  "completionNotifications": "完成通知",
+  "closeToTray": "關閉時隱藏至系統匣",
+  "useSystemTitleBar": "使用系統標題列",
+  "showWindow": "顯示視窗",
+  "exit": "退出",
+  "trayTooltipUpdates": "OmniStore：共有 {count} 項可更新",
+  "@trayTooltipUpdates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayTooltipUpToDate": "OmniStore：已是最新",
+  "updateReminders": "更新提醒",
+  "maintenance": "維護",
+  "updateAllPackages": "更新所有套件",
+  "includeAurUpdates": "全部更新時包含 AUR",
+  "resetOnboarding": "重置新手引導",
+  "resetOnboardingConfirm": "確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。",
+  "checkInterval": "更新檢查間隔（小時）",
+  "remindMeOfUpdates": "有更新時提醒我",
+  "installingApp": "正在安裝 {name}",
+  "@installingApp": {
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "aiTestSuccess": "AI 連線成功！",
-  "@aiTestSuccess": {
-    "description": "Success message after testing AI connection"
+  "uninstallingApp": "正在解除安裝 {name}",
+  "@uninstallingApp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
-  "aiThinking": "AI 正在思考...",
-  "@aiThinking": {
-    "description": "Status text while AI is thinking"
+  "installSuccessTitle": "安裝成功",
+  "uninstallSuccessTitle": "解除安裝成功",
+  "installFailedTitle": "安裝失敗",
+  "uninstallFailedTitle": "解除安裝失敗",
+  "taskCompleted": "任務已完成",
+  "searchInstalledHint": "搜尋已安裝的應用程式...",
+  "@searchInstalledHint": {
+    "description": "Hint text for searching within installed applications"
   },
-  "aiTimeout": "AI 連線逾時，請稍後重試。",
-  "all": "全部",
-  "allDownloads": "全部下載",
+  "refresh": "重新整理",
+  "@refresh": {
+    "description": "Label for refresh action"
+  },
+  "noActiveTasks": "無進行中的任務",
+  "@noActiveTasks": {
+    "description": "Message shown when there are no active tasks"
+  },
+  "currentTask": "目前任務",
+  "@currentTask": {
+    "description": "Label for the currently running task"
+  },
+  "viewLogs": "查看日誌",
+  "@viewLogs": {
+    "description": "Button label to open task logs"
+  },
   "allUpdated": "應用程式已是最新版本",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
-  "analyzeNow": "立即分析",
-  "appDetailsNotFound": "未找到應用程式詳情",
-  "@appDetailsNotFound": {
-    "description": "Message shown when app details cannot be loaded"
+  "update": "更新",
+  "@update": {
+    "description": "Update action label"
   },
-  "appImage": "AppImage",
-  "appImageFeedType": "AppImage 訂閱連結",
-  "@appImageFeedType": {
-    "description": "AppImage source type option"
+  "enableSystemTray": "啟用系統匣",
+  "@enableSystemTray": {
+    "description": "Toggle label for system tray support"
   },
-  "appearance": "介面外觀",
-  "aurFull": "AUR（Arch 使用者軟體存放庫）",
-  "@aurFull": {
-    "description": "Full name for AUR"
+  "systemCleaning": "系統清理",
+  "@systemCleaning": {
+    "description": "Section title for system cleanup"
   },
-  "aurSecurityDesc": "AUR（Arch User Repository） 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
-  "aurUser": "AUR（使用者庫）",
-  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
-  "autoDetect": "自動偵測",
-  "@autoDetect": {
-    "description": "Button to auto detect available sources"
+  "systemCleaningDesc": "清理孤兒套件與 pacman 快取",
+  "@systemCleaningDesc": {
+    "description": "systemCleaningDesc"
   },
-  "autoDetectFailed": "儲存自動偵測結果失敗。",
-  "@autoDetectFailed": {
-    "description": "Failure message after auto detection"
+  "systemCleaningSubtitle": "清理孤兒套件與 pacman 快取",
+  "@systemCleaningSubtitle": {
+    "description": "Subtitle for system cleanup feature"
   },
-  "autoDetectSuccess": "自動偵測完成，設定已儲存！",
-  "@autoDetectSuccess": {
-    "description": "Success message after auto detection"
-  },
-  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
-  "@autoDetectingSources": {
-    "description": "Message while auto detecting sources"
-  },
-  "autoUpdate": "靜默自動更新",
-  "@autoUpdate": {
-    "description": "Label for auto update"
-  },
-  "autoUpdateDesc": "在背景自動下載並更新所有可升級的套件",
-  "back": "返回",
-  "@back": {
-    "description": "Back button label"
-  },
-  "backSemanticsHint": "返回上一頁",
-  "@backSemanticsHint": {
-    "description": "Accessibility hint for back button"
-  },
-  "backSemanticsLabel": "返回",
-  "@backSemanticsLabel": {
-    "description": "Accessibility label for back button"
+  "systemCleaningStarted": "系統清理任務已啟動",
+  "@systemCleaningStarted": {
+    "description": "Message shown after starting system cleanup"
   },
   "backupAndExport": "備份與匯出",
   "@backupAndExport": {
@@ -245,26 +214,375 @@
   "@backupAndExportSubtitle": {
     "description": "Subtitle for backup and export feature"
   },
-  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
-  "@bituRepoType": {
-    "description": "Bitu source type option"
+  "export": "匯出",
+  "@export": {
+    "description": "Export action label"
   },
-  "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自定義：{custom} MB",
-  "@cacheTypeInfo": {
+  "import": "匯入",
+  "@import": {
+    "description": "Import action label"
+  },
+  "selectExportLocation": "選擇匯出位置",
+  "@selectExportLocation": {
+    "description": "Prompt to choose an export location"
+  },
+  "exportSuccess": "匯出成功：{count} 個套件",
+  "@exportSuccess": {
+    "description": "Success message after exporting packages",
     "placeholders": {
-      "pacman": {
-        "type": "String"
-      },
-      "flatpak": {
-        "type": "String"
-      },
-      "custom": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportFailed": "匯出失敗：{message}",
+  "@exportFailed": {
+    "description": "Failure message when export fails",
+    "placeholders": {
+      "message": {
         "type": "String"
       }
     }
   },
-  "cancel": "取消",
+  "importBackup": "匯入備份",
+  "@importBackup": {
+    "description": "Label for importing a backup file"
+  },
+  "importBackupConfirm": "已從備份中讀取 {count} 個套件。是否開始批次還原？",
+  "@importBackupConfirm": {
+    "description": "Confirmation text for batch recovery from backup",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "startRecovery": "開始還原",
+  "@startRecovery": {
+    "description": "Button label to start recovery"
+  },
+  "mirrorListSaved": "鏡像列表已儲存",
+  "@mirrorListSaved": {
+    "description": "Message shown after saving mirror list"
+  },
+  "addMirror": "新增鏡像",
+  "@addMirror": {
+    "description": "Action label to add a mirror"
+  },
+  "serverUrl": "伺服器 URL",
+  "@serverUrl": {
+    "description": "Label for server URL input"
+  },
+  "pacmanMirrorManagement": "Pacman 鏡像管理",
+  "@pacmanMirrorManagement": {
+    "description": "Section title for Pacman mirror management"
+  },
+  "save": "儲存",
+  "@save": {
+    "description": "Save action label"
+  },
+  "add": "新增",
+  "@add": {
+    "description": "Add action label"
+  },
+  "general": "一般",
+  "@general": {
+    "description": "Section title for general settings"
+  },
+  "advanced": "進階",
+  "@advanced": {
+    "description": "Label for advanced settings toggle"
+  },
+  "repositories": "軟體存放庫",
+  "@repositories": {
+    "description": "Section title for software repositories"
+  },
+  "aiSettings": "AI 助手設定",
+  "@aiSettings": {
+    "description": "Title for AI assistant settings"
+  },
+  "aiEnabled": "啟用 AI 助手",
+  "@aiEnabled": {
+    "description": "Toggle to enable the AI assistant"
+  },
+  "aiEnabledDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
+  "@aiEnabledDesc": {
+    "description": "aiEnabledDesc"
+  },
+  "aiProvider": "AI 服務商",
+  "@aiProvider": {
+    "description": "Label for AI provider selection"
+  },
+  "aiEndpoint": "API 端點",
+  "@aiEndpoint": {
+    "description": "Label for AI API endpoint"
+  },
+  "aiModel": "模型名稱",
+  "@aiModel": {
+    "description": "Label for AI model name"
+  },
+  "aiApiKey": "API 金鑰",
+  "@aiApiKey": {
+    "description": "Label for AI API key input"
+  },
+  "aiProxy": "網路代理（可選）",
+  "@aiProxy": {
+    "description": "Label for optional AI proxy setting"
+  },
+  "aiTemperature": "溫度（創意度）",
+  "@aiTemperature": {
+    "description": "Label for AI temperature setting"
+  },
+  "aiMaxTokens": "最大回應長度",
+  "@aiMaxTokens": {
+    "description": "Label for AI maximum tokens setting"
+  },
+  "aiTestButton": "測試 AI 連線",
+  "@aiTestButton": {
+    "description": "Button label to test AI connectivity"
+  },
+  "aiTestSuccess": "AI 連線成功！",
+  "@aiTestSuccess": {
+    "description": "Success message after testing AI connection"
+  },
+  "aiTestFailed": "AI 連線失敗：{error}",
+  "@aiTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiPromptExplain": "解析",
+  "@aiPromptExplain": {
+    "description": "Prompt action to explain content with AI"
+  },
+  "aiPromptRecommend": "諮詢 AI 建議",
+  "@aiPromptRecommend": {
+    "description": "Prompt action to ask AI for recommendations"
+  },
+  "aiPromptError": "使用 AI 分析錯誤",
+  "@aiPromptError": {
+    "description": "Prompt action to analyze an error with AI"
+  },
+  "aiPickDay": "AI 今日精選",
+  "@aiPickDay": {
+    "description": "Title for daily AI pick card"
+  },
+  "aiPickDaySubtitle": "由 OmniStore AI 提供支援",
+  "@aiPickDaySubtitle": {
+    "description": "Subtitle for daily AI pick card"
+  },
+  "aiCompareTitle": "AI 版本比較",
+  "@aiCompareTitle": {
+    "description": "Title for AI package comparison feature"
+  },
+  "aiHealthTitle": "AI 系統健康報告",
+  "@aiHealthTitle": {
+    "description": "Title for AI system health report"
+  },
+  "aiHealthSubtitle": "針對您的 Arch Linux 的智慧診斷",
+  "@aiHealthSubtitle": {
+    "description": "Subtitle for AI system health report"
+  },
+  "aiCorrection": "您是指：",
+  "@aiCorrection": {
+    "description": "Suggestion text for AI correction"
+  },
+  "aiThinking": "AI 正在思考...",
+  "@aiThinking": {
+    "description": "Status text while AI is thinking"
+  },
+  "magicSearch": "智慧搜尋",
+  "@magicSearch": {
+    "description": "Title for magic search feature"
+  },
+  "aiChangelogTitle": "AI 更新摘要",
+  "@aiChangelogTitle": {
+    "description": "Title for AI changelog summary"
+  },
+  "aiCliTitle": "AI 命令生成器",
+  "@aiCliTitle": {
+    "description": "Title for AI command generation feature"
+  },
+  "aiConflictTitle": "AI 衝突偵測",
+  "@aiConflictTitle": {
+    "description": "Title for AI conflict detection feature"
+  },
+  "aiCopyCommand": "複製命令",
+  "@aiCopyCommand": {
+    "description": "Button label to copy generated command"
+  },
+  "aiCommandCopied": "命令已複製到剪貼簿",
+  "@aiCommandCopied": {
+    "description": "Message shown after copying a command"
+  },
+  "aiRefineSearch": "使用 AI 精煉搜尋",
+  "@aiRefineSearch": {
+    "description": "Action to refine search using AI"
+  },
+  "aiExplainUpdate": "解析此更新",
+  "@aiExplainUpdate": {
+    "description": "Action to explain an update with AI"
+  },
+  "windowMinimize": "最小化",
+  "@windowMinimize": {
+    "description": "Tooltip for window minimize button"
+  },
+  "windowMaximize": "最大化",
+  "@windowMaximize": {
+    "description": "Tooltip for window maximize button"
+  },
+  "windowRestore": "還原",
+  "@windowRestore": {
+    "description": "Tooltip for window restore button"
+  },
+  "windowClose": "關閉",
+  "@windowClose": {
+    "description": "Tooltip for window close button"
+  },
+  "omnistore": "OmniStore",
+  "@omnistore": {
+    "description": "App Name"
+  },
+  "installedApps": "已安裝應用程式",
+  "@installedApps": {
+    "description": "Title for the installed apps page"
+  },
+  "githubStore": "GitHub 商店",
+  "@githubStore": {
+    "description": "Title for the GitHub store page"
+  },
+  "flatpakStore": "Flatpak 商店",
+  "@flatpakStore": {
+    "description": "Title for the Flatpak store page"
+  },
+  "locateInstallation": "定位安裝位置",
+  "@locateInstallation": {
+    "description": "Tooltip for locating the app installation folder"
+  },
+  "delete": "刪除",
+  "welcomeTitle": "歡迎來到 OmniStore",
+  "welcomeSubtitle": "為您提供簡單、優雅的 Arch Linux 應用程式管理體驗",
+  "getStarted": "開始使用",
+  "skip": "跳過",
+  "envCheckTitle": "環境檢查",
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
+  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動設定。",
+  "envOkDesc": "一切就緒！系統環境已完美配置。",
+  "fixProblems": "一鍵修復/設定",
+  "continueAnyway": "仍然繼續",
+  "sourceConfigTitle": "軟體存放庫設定",
+  "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
+  "enableAur": "啟用 AUR（Arch User Repository）",
+  "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
+  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
+  "aiAssistant": "AI 助手",
+  "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
+  "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
+  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
+  "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
+  "howToGetApiKey": "如何獲取 API 金鑰？",
+  "howToGetApiKeyDesc": "1. Ollama（本地）：下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）：前往服務商官網建立 API Key，然後填入此處。",
+  "gotIt": "知道了",
+  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+  "enterStore": "進入商店",
+  "nextStep": "下一步",
+  "resetCache": "重置快取與歷史記錄",
+  "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
+  "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
+  "resetting": "正在重置...",
+  "resetSuccess": "快取與歷史記錄已成功清空",
+  "resetFailed": "重置失敗：{error}",
+  "@resetFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ollamaLocal": "Ollama（本地）",
+  "openaiCompatible": "OpenAI 相容",
+  "googleGemini": "Google Gemini",
+  "importPackages": "匯入套件",
+  "importPackagesConfirm": "已從檔案中讀取 {count} 個套件。是否開始批次下載？",
+  "@importPackagesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allDownloads": "全部下載",
+  "importList": "匯入列表",
+  "loadError": "無法載入推薦內容，請檢查背景狀態",
+  "community": "社群",
+  "official": "官方",
+  "verified": "官方認證",
+  "installingPkg": "正在安裝 {name}...",
+  "@installingPkg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchSource": "切換",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 來源，通常更穩定。",
+  "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
+  "analyzeNow": "立即分析",
+  "cleanOrphans": "同時清理無用依賴（孤兒套件）",
+  "securityWarning": "安全風險提示",
+  "aurSecurityDesc": "AUR（Arch User Repository） 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
+  "continueInstall": "繼續安裝",
+  "installInfo": "安裝資訊",
+  "downloadSize": "下載大小",
+  "installedSize": "安裝後大小",
+  "dependenciesCount": "依賴套件（{count}）",
+  "@dependenciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "runningInBackground": "OmniStore 正在背景執行，可透過系統匣圖示開啟",
+  "clearSearch": "清除搜尋",
+  "listView": "列表檢視",
+  "gridView": "網格檢視",
+  "categories": "分類",
+  "clearHistory": "清除歷史記錄",
+  "clearHistoryShort": "清空歷史",
+  "confirmClearHistory": "確定要刪除所有搜尋歷史嗎？",
+  "viewMore": "查看更多",
+  "logDebug": "除錯（DEBUG）",
+  "logInfo": "資訊（INFO）",
+  "logWarning": "警告（WARNING）",
+  "logError": "錯誤（ERROR）",
+  "notificationTitle": "發現可用更新",
+  "notificationBody": "您的系統中有 {count} 個應用程式可以更新",
+  "@notificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "preparingUpdate": "正在準備更新...",
+  "processing": "正在處理",
+  "clear": "清除",
+  "retry": "重試",
+  "aiResponseFailed": "AI 回應失敗。",
+  "@aiResponseFailed": {
+    "description": "Message shown when AI fails to respond"
+  },
+  "aiAnalysisFailed": "AI 分析失敗。",
+  "@aiAnalysisFailed": {
+    "description": "Message shown when AI fails to analyze error logs"
+  },
   "cannotConnectToBackend": "無法連線至後端服務：{error}",
   "@cannotConnectToBackend": {
     "description": "Error message when backend is unreachable",
@@ -274,45 +592,84 @@
       }
     }
   },
-  "catDevelopment": "開發工具",
-  "catGames": "遊戲",
-  "catGraphics": "圖形設計",
-  "@catGraphics": {
-    "description": "Category for Graphics"
+  "taskInitializing": "正在初始化任務...",
+  "@taskInitializing": {
+    "description": "Status message when a task is initializing"
   },
-  "catInternet": "網際網路",
-  "catMedia": "影音娛樂",
-  "catOffice": "辦公",
-  "catSystem": "系統工具",
-  "catUtility": "實用工具",
-  "@catUtility": {
-    "description": "Category for Utility"
+  "taskStarting": "正在啟動...",
+  "@taskStarting": {
+    "description": "Status message when a task is starting"
   },
-  "categories": "分類",
-  "category": "分類",
-  "@category": {
-    "description": "Category label"
+  "taskSuccess": "任務成功完成",
+  "@taskSuccess": {
+    "description": "Status message when a task completes successfully"
   },
-  "categorySemantics": "分類：{name}",
-  "@categorySemantics": {
+  "taskFailedWithCode": "任務失敗（錯誤碼：{code}）",
+  "@taskFailedWithCode": {
+    "description": "Status message when a task fails with an exit code",
     "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "checkInterval": "更新檢查間隔（小時）",
-  "checkIntervalSubtitle": "每隔 {hours} 小時檢查一次",
-  "@checkIntervalSubtitle": {
-    "placeholders": {
-      "hours": {
+      "code": {
         "type": "int"
       }
     }
   },
-  "checkIntervalTitle": "檢查更新頻率",
-  "@checkIntervalTitle": {
-    "description": "Title for update check interval"
+  "taskCancelledByUser": "任務已由使用者取消",
+  "@taskCancelledByUser": {
+    "description": "Status message when a task is cancelled by the user"
+  },
+  "taskError": "錯誤：{error}",
+  "@taskError": {
+    "description": "Status message when a task encounters an error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "githubAuthTitle": "GitHub 身份驗證",
+  "githubPatSaved": "GitHub 存取權杖已成功儲存",
+  "saveToken": "儲存權杖",
+  "back": "返回",
+  "next": "下一步",
+  "@githubAuthTitle": {
+    "description": "Title for GitHub auth page"
+  },
+  "@githubPatSaved": {
+    "description": "Success message for saving GitHub PAT"
+  },
+  "@saveToken": {
+    "description": "Button label to save token"
+  },
+  "@back": {
+    "description": "Back button label"
+  },
+  "@next": {
+    "description": "Next button label"
+  },
+  "aurFull": "AUR（Arch 使用者軟體存放庫）",
+  "@aurFull": {
+    "description": "Full name for AUR"
+  },
+  "flatpakFull": "Flatpak（Flathub）",
+  "@flatpakFull": {
+    "description": "Full name for Flatpak"
+  },
+  "errorPackageNameRequired": "錯誤：套件名稱不能為空",
+  "errorStartFailed": "啟動失敗：{error}",
+  "@errorStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdateFailed": "更新失敗：{error}",
+  "@errorUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "checkUpdateFailed": "檢查更新失敗：{error}",
   "@checkUpdateFailed": {
@@ -322,81 +679,6 @@
       }
     }
   },
-  "checkUpdates": "檢查更新",
-  "cleanOrphans": "同時清理無用依賴（孤兒套件）",
-  "clear": "清除",
-  "clearHistory": "清除歷史記錄",
-  "clearHistoryShort": "清空歷史",
-  "clearSearch": "清除搜尋",
-  "closeToTray": "關閉時隱藏至系統匣",
-  "collapse": "收起",
-  "community": "社群",
-  "completionNotifications": "完成通知",
-  "configSaveFailed": "儲存設定失敗",
-  "configSaved": "設定已儲存，部分更改將在重啟後生效",
-  "confirm": "確定",
-  "confirmActionMsg": "確定要對 {name} 執行此操作嗎？",
-  "@confirmActionMsg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "confirmClearHistory": "確定要刪除所有搜尋歷史嗎？",
-  "confirmInstall": "確認安裝",
-  "confirmUninstall": "確認解除安裝",
-  "continueAnyway": "仍然繼續",
-  "continueInstall": "繼續安裝",
-  "copyName": "複製名稱",
-  "currentTask": "目前任務",
-  "@currentTask": {
-    "description": "Label for the currently running task"
-  },
-  "darkMode": "深色模式",
-  "delete": "刪除",
-  "dependenciesCount": "依賴套件（{count}）",
-  "@dependenciesCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "details": "詳情",
-  "developer": "開發者",
-  "diskSpaceInfo": "磁碟空間：{free} GB 可用 / {total} GB 總計",
-  "@diskSpaceInfo": {
-    "placeholders": {
-      "free": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "downloadSize": "下載大小",
-  "downloads": "下載",
-  "enableAur": "啟用 AUR（Arch User Repository）",
-  "enableDaemon": "啟用背景更新守護程序",
-  "@enableDaemon": {
-    "description": "Label for background daemon"
-  },
-  "enableDaemonDesc": "在系統背景定期靜默檢查應用程式更新",
-  "enableNotifications": "啟用通知",
-  "enableSystemTray": "啟用系統匣",
-  "@enableSystemTray": {
-    "description": "Toggle label for system tray support"
-  },
-  "enableSystemdService": "啟用 systemd 後台更新服務",
-  "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新",
-  "enterStore": "進入商店",
-  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
-  "envCheckTitle": "環境檢查",
-  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
-  "envOkDesc": "一切就緒！系統環境已完美配置。",
-  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動設定。",
   "errorCleanFailed": "清理失敗：{error}",
   "@errorCleanFailed": {
     "placeholders": {
@@ -413,11 +695,6 @@
       }
     }
   },
-  "errorNameUrlRequired": "名稱和連結/存放庫地址不能為空",
-  "@errorNameUrlRequired": {
-    "description": "Error message when name or URL is missing"
-  },
-  "errorPackageNameRequired": "錯誤：套件名稱不能為空",
   "errorProcessStart": "程序啟動失敗，請檢查環境設定：{error}",
   "@errorProcessStart": {
     "placeholders": {
@@ -426,17 +703,29 @@
       }
     }
   },
-  "errorStartFailed": "啟動失敗：{error}",
-  "@errorStartFailed": {
+  "taskForcedTerminated": "任務已強制終止",
+  "@taskForcedTerminated": {
+    "description": "Error message when a task is forcefully terminated"
+  },
+  "aiTimeout": "AI 連線逾時，請稍後重試。",
+  "@aiTimeout": {
+    "description": "Error message when AI request times out"
+  },
+  "aiNoResponse": "AI 未能提供有效回應。",
+  "@aiNoResponse": {
+    "description": "Error message when AI does not respond"
+  },
+  "aiParseFailed": "AI 回應解析失敗：格式不正確。",
+  "@aiParseFailed": {
+    "description": "Error message when AI response parsing fails"
+  },
+  "aiCallFailed": "AI 服務呼叫失敗：{error}",
+  "@aiCallFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
     }
-  },
-  "errorTitle": "錯誤",
-  "@errorTitle": {
-    "description": "General error title"
   },
   "errorUpdateAll": "批次更新失敗：{error}",
   "@errorUpdateAll": {
@@ -446,182 +735,113 @@
       }
     }
   },
-  "errorUpdateFailed": "更新失敗：{error}",
-  "@errorUpdateFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
+  "taskProcessing": "正在處理",
+  "@taskProcessing": {
+    "description": "Task processing status label"
   },
-  "essentialTools": "必備工具",
-  "exit": "退出",
+  "collapse": "收起",
   "expand": "展開",
-  "explore": "探索",
-  "export": "匯出",
-  "@export": {
-    "description": "Export action label"
+  "all": "全部",
+  "relatedApps": "相關應用",
+  "activeSources": "已啟用軟體源",
+  "@activeSources": {
+    "description": "Label for active software sources"
   },
-  "exportFailed": "匯出失敗：{message}",
-  "@exportFailed": {
-    "description": "Failure message when export fails",
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
+  "autoDetect": "自動偵測",
+  "@autoDetect": {
+    "description": "Button to auto detect available sources"
   },
-  "exportSuccess": "匯出成功：{count} 個套件",
-  "@exportSuccess": {
-    "description": "Success message after exporting packages",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+  "addCustomSource": "新增自訂源",
+  "@addCustomSource": {
+    "description": "Button to add a custom source"
   },
-  "failed": "失敗",
-  "featured": "精選",
-  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
-  "fixProblems": "一鍵修復/設定",
-  "flatpak": "Flatpak",
-  "flatpakBetterDesc": "發現此應用程式有 Flatpak 來源，通常更穩定。",
-  "flatpakFull": "Flatpak（Flathub）",
-  "@flatpakFull": {
-    "description": "Full name for Flatpak"
-  },
-  "flatpakRemoteType": "Flatpak 遠端庫",
-  "@flatpakRemoteType": {
-    "description": "Flatpak source type option"
-  },
-  "flatpakStore": "Flatpak 商店",
-  "@flatpakStore": {
-    "description": "Title for the Flatpak store page"
-  },
-  "followSystem": "跟隨系統",
-  "fontFamily": "字體系列",
-  "@fontFamily": {
-    "description": "Label for font family setting"
-  },
-  "fontScale": "字體縮放比例",
-  "@fontScale": {
-    "description": "Label for font scale setting"
-  },
-  "forYou": "為您推薦",
-  "foundUpdates": "發現 {count} 個可用更新",
-  "@foundUpdates": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "general": "一般",
-  "@general": {
-    "description": "Section title for general settings"
-  },
-  "getStarted": "開始使用",
-  "githubAuthTitle": "GitHub 身份驗證",
-  "@githubAuthTitle": {
-    "description": "Title for GitHub auth page"
-  },
-  "githubPatSaved": "GitHub 存取權杖已成功儲存",
-  "@githubPatSaved": {
-    "description": "Success message for saving GitHub PAT"
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
+  "sourceType": "存放庫類型",
+  "@sourceType": {
+    "description": "Label for source type"
   },
   "githubRepoType": "GitHub 存放庫（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
-  "githubStore": "GitHub 商店",
-  "@githubStore": {
-    "description": "Title for the GitHub store page"
+  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
+  "@bituRepoType": {
+    "description": "Bitu source type option"
   },
-  "googleGemini": "Google Gemini",
-  "gotIt": "知道了",
-  "gridView": "網格檢視",
-  "help": "幫助",
+  "flatpakRemoteType": "Flatpak 遠端庫",
+  "@flatpakRemoteType": {
+    "description": "Flatpak source type option"
+  },
+  "appImageFeedType": "AppImage 訂閱連結",
+  "@appImageFeedType": {
+    "description": "AppImage source type option"
+  },
+  "sourceName": "來源名稱",
+  "@sourceName": {
+    "description": "Label for source name"
+  },
   "hintCustomAppName": "例如：my-custom-app",
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "hintFeedUrl": "例如：https://example.com/feed.json",
-  "@hintFeedUrl": {
-    "description": "Hint for feed URL"
+  "repoOwnerRepo": "存放庫地址（owner/repo）",
+  "@repoOwnerRepo": {
+    "description": "Label for repository owner and name"
+  },
+  "sourceUrl": "連結",
+  "@sourceUrl": {
+    "description": "Label for source URL"
   },
   "hintRepoFormat": "例如：flutter/flutter",
   "@hintRepoFormat": {
     "description": "Hint for repository format"
   },
-  "hotApps": "熱門應用",
-  "hourValue": "{count} 小時",
-  "@hourValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+  "hintFeedUrl": "例如：https://example.com/feed.json",
+  "@hintFeedUrl": {
+    "description": "Hint for feed URL"
   },
-  "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama（本地）：下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）：前往服務商官網建立 API Key，然後填入此處。",
-  "import": "匯入",
-  "@import": {
-    "description": "Import action label"
+  "errorNameUrlRequired": "名稱和連結/存放庫地址不能為空",
+  "@errorNameUrlRequired": {
+    "description": "Error message when name or URL is missing"
   },
-  "importBackup": "匯入備份",
-  "@importBackup": {
-    "description": "Label for importing a backup file"
+  "addingCustomSource": "正在新增自訂源...",
+  "@addingCustomSource": {
+    "description": "Message while adding custom source"
   },
-  "importBackupConfirm": "已從備份中讀取 {count} 個套件。是否開始批次還原？",
-  "@importBackupConfirm": {
-    "description": "Confirmation text for batch recovery from backup",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+  "sourceAddSuccess": "來源新增成功！",
+  "@sourceAddSuccess": {
+    "description": "Success message after adding source"
   },
-  "importList": "匯入列表",
-  "importPackages": "匯入套件",
-  "importPackagesConfirm": "已從檔案中讀取 {count} 個套件。是否開始批次下載？",
-  "@importPackagesConfirm": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+  "sourceAddFailed": "新增來源失敗。",
+  "@sourceAddFailed": {
+    "description": "Failure message after adding source"
   },
-  "includeAurUpdates": "全部更新時包含 AUR",
-  "install": "安裝",
-  "installFailedTitle": "安裝失敗",
-  "installInfo": "安裝資訊",
-  "installSuccessTitle": "安裝成功",
-  "installedApps": "已安裝應用程式",
-  "@installedApps": {
-    "description": "Title for the installed apps page"
+  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+  "@autoDetectingSources": {
+    "description": "Message while auto detecting sources"
   },
-  "installedSize": "安裝後大小",
-  "installingApp": "正在安裝 {name}",
-  "@installingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+  "autoDetectSuccess": "自動偵測完成，設定已儲存！",
+  "@autoDetectSuccess": {
+    "description": "Success message after auto detection"
   },
-  "installingPkg": "正在安裝 {name}...",
-  "@installingPkg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+  "autoDetectFailed": "儲存自動偵測結果失敗。",
+  "@autoDetectFailed": {
+    "description": "Failure message after auto detection"
   },
-  "langEnglish": "英語（English）",
-  "langJapanese": "日語（日本語）",
-  "langSimplifiedChinese": "簡體中文",
-  "langSpanish": "西班牙語（Español）",
-  "langTraditionalChinese": "繁體中文",
+  "personalAccessToken": "個人存取權杖",
+  "@personalAccessToken": {
+    "description": "Label for personal access token"
+  },
+  "copyName": "複製名稱",
+  "@copyName": {
+    "description": "Button to copy the package name"
+  },
+  "nameCopied": "名稱已複製到剪貼簿",
+  "@nameCopied": {
+    "description": "Snackbar message indicating name was copied to clipboard"
+  },
+  "copiedToClipboard": "已複製到剪貼簿",
+  "tapToCopy": "點擊複製",
   "language": "介面語言",
   "@language": {
     "description": "Label for language setting"
@@ -630,248 +850,135 @@
   "@languageSubtitle": {
     "description": "Subtitle for language setting"
   },
-  "launch": "啟動",
-  "license": "授權",
-  "lightMode": "淺色模式",
-  "listView": "列表檢視",
-  "loadError": "無法載入推薦內容，請檢查背景狀態",
-  "locateInstallation": "定位安裝位置",
-  "@locateInstallation": {
-    "description": "Tooltip for locating the app installation folder"
-  },
-  "logDebug": "除錯（DEBUG）",
-  "logError": "錯誤（ERROR）",
-  "logInfo": "資訊（INFO）",
-  "logWarning": "警告（WARNING）",
-  "loggingLevel": "日誌詳細程度",
-  "magicSearch": "智慧搜尋",
-  "@magicSearch": {
-    "description": "Title for magic search feature"
-  },
-  "maintenance": "維護",
-  "maxResults": "最大結果數",
-  "mirrorListSaved": "鏡像列表已儲存",
-  "@mirrorListSaved": {
-    "description": "Message shown after saving mirror list"
-  },
-  "nameCopied": "名稱已複製到剪貼簿",
-  "copiedToClipboard": "已複製到剪貼簿",
-  "tapToCopy": "點擊複製",
-  "next": "下一步",
-  "@next": {
-    "description": "Next button label"
-  },
-  "nextStep": "下一步",
-  "noActiveTasks": "無進行中的任務",
-  "@noActiveTasks": {
-    "description": "Message shown when there are no active tasks"
-  },
-  "noResults": "暫無搜尋結果",
-  "notificationBody": "您的系統中有 {count} 個應用程式可以更新",
-  "@notificationBody": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "notificationTitle": "發現可用更新",
-  "notifications": "通知",
-  "official": "官方",
-  "ollamaLocal": "Ollama（本地）",
-  "omnistore": "OmniStore",
-  "@omnistore": {
-    "description": "App Name"
-  },
-  "open": "開啟",
-  "openaiCompatible": "OpenAI 相容",
-  "packageManager": "套件管理員",
-  "pacmanMirrorManagement": "Pacman 鏡像管理",
-  "@pacmanMirrorManagement": {
-    "description": "Section title for Pacman mirror management"
-  },
-  "pacmanOfficial": "Pacman（官方庫）",
-  "personalAccessToken": "個人存取權杖",
-  "@personalAccessToken": {
-    "description": "Label for personal access token"
-  },
-  "preparingUpdate": "正在準備更新...",
-  "processing": "正在處理",
-  "progressNotifications": "進度通知",
-  "ready": "已安裝",
-  "refresh": "重新整理",
-  "@refresh": {
-    "description": "Label for refresh action"
-  },
-  "relatedApps": "相關應用",
-  "remindMeOfUpdates": "有更新時提醒我",
-  "repoOwnerRepo": "存放庫地址（owner/repo）",
-  "@repoOwnerRepo": {
-    "description": "Label for repository owner and name"
-  },
-  "repositories": "軟體存放庫",
-  "@repositories": {
-    "description": "Section title for software repositories"
-  },
-  "resetCache": "重置快取與歷史記錄",
-  "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
-  "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
-  "resetFailed": "重置失敗：{error}",
-  "@resetFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "resetOnboarding": "重置新手引導",
-  "resetOnboardingConfirm": "確定要重置新手引導嗎？下次啟動時將重新顯示歡迎頁面。",
-  "resetSuccess": "快取與歷史記錄已成功清空",
-  "resetting": "正在重置...",
   "restartTitleBar": "請重啟應用程式以使標題列設定生效",
   "@restartTitleBar": {
     "description": "Message to restart for title bar changes"
   },
-  "resultsFound": "找到 {count} 個結果",
-  "@resultsFound": {
+  "enableDaemon": "啟用背景更新守護程序",
+  "@enableDaemon": {
+    "description": "Label for background daemon"
+  },
+  "enableDaemonDesc": "在系統背景定期靜默檢查應用程式更新",
+  "autoUpdate": "靜默自動更新",
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
+  "autoUpdateDesc": "在背景自動下載並更新所有可升級的套件",
+  "checkIntervalTitle": "檢查更新頻率",
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
+  "checkIntervalSubtitle": "每隔 {hours} 小時檢查一次",
+  "@checkIntervalSubtitle": {
     "placeholders": {
-      "count": {
+      "hours": {
         "type": "int"
       }
     }
   },
-  "retry": "重試",
-  "runningInBackground": "OmniStore 正在背景執行，可透過系統匣圖示開啟",
-  "save": "儲存",
-  "@save": {
-    "description": "Save action label"
+  "typography": "字體與排版",
+  "@typography": {
+    "description": "Title for typography settings"
   },
-  "saveAndApply": "儲存並套用",
-  "saveToken": "儲存權杖",
-  "@saveToken": {
-    "description": "Button label to save token"
+  "fontFamily": "字體系列",
+  "@fontFamily": {
+    "description": "Label for font family setting"
   },
-  "screenshots": "應用程式截圖",
-  "search": "搜尋",
-  "searchHint": "搜尋應用程式、遊戲、工具...",
-  "searchInstalledHint": "搜尋已安裝的應用程式...",
-  "@searchInstalledHint": {
-    "description": "Hint text for searching within installed applications"
-  },
-  "searching": "搜尋中...",
-  "securityWarning": "安全風險提示",
-  "selectExportLocation": "選擇匯出位置",
-  "@selectExportLocation": {
-    "description": "Prompt to choose an export location"
-  },
-  "serverUrl": "伺服器 URL",
-  "@serverUrl": {
-    "description": "Label for server URL input"
-  },
-  "settings": "設定",
-  "showWindow": "顯示視窗",
-  "skip": "跳過",
-  "source": "來源",
-  "sourceAddFailed": "新增來源失敗。",
-  "@sourceAddFailed": {
-    "description": "Failure message after adding source"
-  },
-  "sourceAddSuccess": "來源新增成功！",
-  "@sourceAddSuccess": {
-    "description": "Success message after adding source"
-  },
-  "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
-  "sourceConfigTitle": "軟體存放庫設定",
-  "sourceName": "來源名稱",
-  "@sourceName": {
-    "description": "Label for source name"
-  },
-  "sourcePriority": "來源優先級（拖曳排序）",
-  "sourceType": "存放庫類型",
-  "@sourceType": {
-    "description": "Label for source type"
-  },
-  "sourceUrl": "連結",
-  "@sourceUrl": {
-    "description": "Label for source URL"
-  },
-  "startRecovery": "開始還原",
-  "@startRecovery": {
-    "description": "Button label to start recovery"
-  },
-  "success": "成功",
-  "switchSource": "切換",
-  "systemAndWindow": "系統與視窗",
-  "@systemAndWindow": {
-    "description": "Section title for system and window settings"
-  },
-  "systemCleaning": "系統清理",
-  "@systemCleaning": {
-    "description": "Section title for system cleanup"
-  },
-  "systemCleaningDesc": "清理孤兒套件與 pacman 快取",
-  "@systemCleaningDesc": {
-    "description": "systemCleaningDesc"
-  },
-  "systemCleaningStarted": "系統清理任務已啟動",
-  "@systemCleaningStarted": {
-    "description": "Message shown after starting system cleanup"
-  },
-  "systemCleaningSubtitle": "清理孤兒套件與 pacman 快取",
-  "@systemCleaningSubtitle": {
-    "description": "Subtitle for system cleanup feature"
+  "fontScale": "字體縮放比例",
+  "@fontScale": {
+    "description": "Label for font scale setting"
   },
   "systemDefault": "系統預設",
   "@systemDefault": {
     "description": "Label for system default option"
   },
-  "taskCancelled": "任務已取消",
-  "taskCancelledByUser": "任務已由使用者取消",
-  "@taskCancelledByUser": {
-    "description": "Status message when a task is cancelled by the user"
-  },
-  "taskCompleted": "任務已完成",
-  "taskError": "錯誤：{error}",
-  "@taskError": {
-    "description": "Status message when a task encounters an error",
+  "hourValue": "{count} 小時",
+  "@hourValue": {
     "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "taskFailedWithCode": "任務失敗（錯誤碼：{code}）",
-  "@taskFailedWithCode": {
-    "description": "Status message when a task fails with an exit code",
-    "placeholders": {
-      "code": {
+      "count": {
         "type": "int"
       }
     }
   },
-  "taskForcedTerminated": "任務已強制終止",
+  "langSimplifiedChinese": "簡體中文",
+  "langTraditionalChinese": "繁體中文",
+  "langEnglish": "英語（English）",
+  "langJapanese": "日語（日本語）",
+  "langSpanish": "西班牙語（Español）",
   "taskInProgress": "另一個任務正在進行中",
   "@taskInProgress": {
     "description": "Error message when trying to start a task while another is running"
   },
-  "taskInitializing": "正在初始化任務...",
-  "@taskInitializing": {
-    "description": "Status message when a task is initializing"
+  "trayInitFailedDisabled": "系統匣初始化失敗。已自動關閉背景駐留。",
+  "@trayInitFailedDisabled": {
+    "description": "Error message when system tray fails to initialize"
   },
-  "taskProcessing": "正在處理",
-  "taskStarting": "正在啟動...",
-  "@taskStarting": {
-    "description": "Status message when a task is starting"
+  "errorTitle": "錯誤",
+  "@errorTitle": {
+    "description": "General error title"
   },
-  "taskSuccess": "任務成功完成",
-  "@taskSuccess": {
-    "description": "Status message when a task completes successfully"
+  "appDetailsNotFound": "未找到應用程式詳情",
+  "@appDetailsNotFound": {
+    "description": "Message shown when app details cannot be loaded"
+  },
+  "diskSpaceInfo": "磁碟空間：{free} GB 可用 / {total} GB 總計",
+  "@diskSpaceInfo": {
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自定義：{custom} MB",
+  "@cacheTypeInfo": {
+    "placeholders": {
+      "pacman": {
+        "type": "String"
+      },
+      "flatpak": {
+        "type": "String"
+      },
+      "custom": {
+        "type": "String"
+      }
+    }
+  },
+  "backSemanticsLabel": "返回",
+  "@backSemanticsLabel": {
+    "description": "Accessibility label for back button"
+  },
+  "backSemanticsHint": "返回上一頁",
+  "@backSemanticsHint": {
+    "description": "Accessibility hint for back button"
+  },
+  "categorySemantics": "分類：{name}",
+  "@categorySemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "temperatureRangeError": "值必須在 0.0 到 2.0 之間",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
+  "enableSystemdService": "啟用 systemd 後台更新服務",
+  "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新",
   "taskHistory": "任務歷史記錄",
   "unknownApp": "未知應用",
   "taskSuccessMsg": "任務執行成功",
   "failureReason": "失敗原因：{message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "暫無可用套件",
   "noDescription": "暫無說明",
   "viewDetails": "查看詳情",
@@ -883,78 +990,5 @@
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "嘗試搜尋其他內容",
-  "terminalOutput": "終端輸出",
-  "themeColor": "主題色",
-  "trayInitFailedDisabled": "系統匣初始化失敗。已自動關閉背景駐留。",
-  "@trayInitFailedDisabled": {
-    "description": "Error message when system tray fails to initialize"
-  },
-  "trayTooltipUpToDate": "OmniStore：已是最新",
-  "trayTooltipUpdates": "OmniStore：共有 {count} 項可更新",
-  "@trayTooltipUpdates": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "typography": "字體與排版",
-  "@typography": {
-    "description": "Title for typography settings"
-  },
-  "uninstall": "解除安裝",
-  "uninstallFailedTitle": "解除安裝失敗",
-  "uninstallSuccessTitle": "解除安裝成功",
-  "uninstallingApp": "正在解除安裝 {name}",
-  "@uninstallingApp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "upToDate": "應用程式已是最新版本",
-  "update": "更新",
-  "@update": {
-    "description": "Update action label"
-  },
-  "updateAll": "全部更新",
-  "updateAllPackages": "更新所有套件",
-  "updateReminders": "更新提醒",
-  "updates": "更新",
-  "useSystemTitleBar": "使用系統標題列",
-  "userAccount": "使用者帳戶",
-  "variant": "可用版本",
-  "verified": "官方認證",
-  "version": "版本",
-  "viewLogs": "查看日誌",
-  "@viewLogs": {
-    "description": "Button label to open task logs"
-  },
-  "viewMore": "查看更多",
-  "visitWebsite": "造訪官方網站",
-  "@visitWebsite": {
-    "description": "Tooltip for visiting website"
-  },
-  "waitingForOutput": "等待終端輸出...",
-  "welcomeSubtitle": "為您提供簡單、優雅的 Arch Linux 應用程式管理體驗",
-  "welcomeTitle": "歡迎來到 OmniStore",
-  "windowClose": "關閉",
-  "@windowClose": {
-    "description": "Tooltip for window close button"
-  },
-  "windowMaximize": "最大化",
-  "@windowMaximize": {
-    "description": "Tooltip for window maximize button"
-  },
-  "windowMinimize": "最小化",
-  "@windowMinimize": {
-    "description": "Tooltip for window minimize button"
-  },
-  "windowRestore": "還原",
-  "@windowRestore": {
-    "description": "Tooltip for window restore button"
-  },
-  "yayDesc": "啟用 AUR 需要安裝 yay 助手。"
+  "searchNoResultsSubtitle": "嘗試搜尋其他內容"
 }
