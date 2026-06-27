@@ -4,24 +4,22 @@ import "package:frontend/services/backend_service.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
-import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
-import 'package:frontend/core/widgets/app_card.dart';
 
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_actions.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_dependency_section.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_about_section.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_technical_details.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
+import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 
 // Feature: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
 // Feature: Implement Split-View layout for desktop/tablet sizes (List on left, Details on right).
@@ -278,26 +276,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _isLoadingDetails
-              ? const ParagraphSkeleton(key: ValueKey('loading'))
-              : MarkdownBody(
-                  key: const ValueKey('loaded'),
-                  data:
-                      _extraDetails?['description'] ??
-                      (widget.app.description.isEmpty
-                          ? AppLocalizations.of(context)!.noResults
-                          : widget.app.description),
-                  selectable: true,
-                  styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
-                ),
+        AppAboutSection(
+          isLoading: _isLoadingDetails,
+          description: _extraDetails?['description'],
+          fallbackDescription: widget.app.description,
         ),
-        const SizedBox(height: 24),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
             _extraDetails!['screenshots'] != null &&
             (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
+          const SizedBox(height: 24),
           const Divider(),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
@@ -307,47 +295,17 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             scrollController: _screenshotScrollController,
             onShowScreenshotViewer: _showScreenshotViewer,
           ),
-          const SizedBox(height: 24),
         ],
+        const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppDetailsInfoRow(
-                  icon: Icons.source_rounded,
-                  label: AppLocalizations.of(context)!.source,
-                  value: widget.app.primarySource,
-                ),
-                AppDetailsInfoRow(
-                  icon: Icons.all_inclusive_rounded,
-                  label: AppLocalizations.of(context)!.variant,
-                  value: widget.app.sources.join(", "),
-                ),
-                AppDetailsInfoRow(
-                  icon: Icons.verified_rounded,
-                  label: AppLocalizations.of(context)!.version,
-                  value: widget.app.version,
-                ),
-                if (_extraDetails?['developer'] != null)
-                  AppDetailsInfoRow(
-                    icon: Icons.person_rounded,
-                    label: AppLocalizations.of(context)!.developer,
-                    value: _extraDetails!['developer'],
-                  ),
-                if (_extraDetails?['license'] != null)
-                  AppDetailsInfoRow(
-                    icon: Icons.description_rounded,
-                    label: AppLocalizations.of(context)!.license,
-                    value: _extraDetails!['license'],
-                  ),
-                AppDependencySection(
-                  variant: _getVariantForSource(_selectedSource),
-                  hasCapability: _hasCapability,
-                ),
-            ],
-          ),
+        AppTechnicalDetails(
+          primarySource: widget.app.primarySource,
+          allSources: widget.app.sources,
+          version: widget.app.version,
+          extraDetails: _extraDetails,
+          currentVariant: _getVariantForSource(_selectedSource),
+          hasCapability: _hasCapability,
         ),
       ],
     );
