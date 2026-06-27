@@ -290,12 +290,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
 
-              if (_showAdvanced)
-                Semantics(
-                  label: l10n.aiSettings,
-                  explicitChildNodes: true,
-                  child: AISettingsSection(settings: settings),
-                ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _showAdvanced
+                    ? Semantics(
+                        key: const ValueKey('ai_settings'),
+                        label: l10n.aiSettings,
+                        explicitChildNodes: true,
+                        child: AISettingsSection(settings: settings),
+                      )
+                    : const SizedBox.shrink(key: ValueKey('empty_advanced')),
+              ),
             ],
           );
         },
@@ -308,11 +313,10 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
       ),
     );
   }
