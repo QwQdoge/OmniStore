@@ -70,7 +70,7 @@ class AIMarkdownDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context)!.confirm),
+          child: Text(AppLocalizations.of(context)!.ok),
         ),
       ],
     );
@@ -153,7 +153,7 @@ class AICliDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context)!.confirm),
+          child: Text(AppLocalizations.of(context)!.ok),
         ),
       ],
     );
