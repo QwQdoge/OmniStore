@@ -72,15 +72,23 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                   horizontal: 16,
                   vertical: 8,
                 ),
+                prototypeItem: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: 100,
+                    child: AppCard(
+                      borderRadius: 24,
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ),
                 itemCount: _categories.length,
                 itemBuilder: (context, index) {
                   final cat = _categories[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Semantics(
-                      label: AppLocalizations.of(
-                        context,
-                      )!.categorySemantics(cat.name),
+                      label: widget.l10n.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
                         borderRadius: 24,
@@ -157,6 +165,11 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
+                        ),
+                        prototypeItem: Container(
+                          width: 150,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: const AppCard(child: SizedBox.expand()),
                         ),
                         itemCount: trending.length,
                         itemBuilder: (context, index) {
