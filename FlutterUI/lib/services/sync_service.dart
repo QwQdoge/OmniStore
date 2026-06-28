@@ -75,9 +75,7 @@ class SyncService {
             )
             .toList();
 
-        await client
-            .from('installed_apps')
-            .insert(insertPayload);
+        await client.from('installed_apps').insert(insertPayload);
       }
 
       if (appsToDelete.isNotEmpty) {

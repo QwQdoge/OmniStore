@@ -82,9 +82,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                l10n.trayInitFailedDisabled,
-              ),
+              content: Text(l10n.trayInitFailedDisabled),
               duration: const Duration(seconds: 5),
             ),
           );
@@ -135,13 +133,13 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
 
       // Murphy-proof: Graceful shutdown sequence
       await backend.shutdownBackend().timeout(
-            const Duration(seconds: 2),
-            onTimeout: () => debugPrint('Backend shutdown timed out'),
-          );
+        const Duration(seconds: 2),
+        onTimeout: () => debugPrint('Backend shutdown timed out'),
+      );
       await backend.dispose().timeout(
-            const Duration(seconds: 2),
-            onTimeout: () => debugPrint('Backend dispose timed out'),
-          );
+        const Duration(seconds: 2),
+        onTimeout: () => debugPrint('Backend dispose timed out'),
+      );
 
       // Fallback: Force kill remaining processes (Platform specific)
       if (Platform.isLinux || Platform.isMacOS) {

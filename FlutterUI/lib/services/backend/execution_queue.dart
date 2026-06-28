@@ -24,7 +24,9 @@ class ExecutionQueue {
       await previousMutex.future.timeout(
         timeout ?? const Duration(minutes: 5),
         onTimeout: () {
-          debugPrint("ExecutionQueue: Safety timeout reached for ${label ?? 'unlabeled task'}. Forcing next task.");
+          debugPrint(
+            "ExecutionQueue: Safety timeout reached for ${label ?? 'unlabeled task'}. Forcing next task.",
+          );
         },
       );
     } catch (e) {

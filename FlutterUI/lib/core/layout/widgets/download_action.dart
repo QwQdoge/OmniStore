@@ -30,7 +30,8 @@ class DownloadAction extends StatelessWidget {
               button: true,
               child: IconButton(
                 tooltip: l10n.downloads,
-                onPressed: () => context.read<NavigationController>().setIndex(4),
+                onPressed: () =>
+                    context.read<NavigationController>().setIndex(4),
                 icon: Selector<TaskController, bool>(
                   selector: (context, task) => task.isBusy,
                   builder: (context, isBusy, child) => Icon(

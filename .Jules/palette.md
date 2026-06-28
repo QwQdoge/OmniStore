@@ -67,3 +67,9 @@
 **Learning:** When using conditionally rendered blocks (like an `if` statement for screenshots) that appear sequentially between other sections, including leading AND trailing structural spacing widgets (`SizedBox`) inside the block can cause double-spacing when combined with the layout rules of the adjacent sections.
 
 **Action:** Standardized the structural spacing in `details_page.dart` by ensuring only a single `SizedBox(height: 24)` separates any two major sections, preventing visual jumps caused by doubled 24dp gaps.
+
+## 2026-06-29 - Global MD3 Animation Curves
+
+**Learning:** To fully embrace Material Design 3 motion guidelines, it is not enough to just standardize transition durations. The correct easing curves must be applied to implicit transition widgets like `AnimatedSwitcher` to avoid linear, unnatural motion. The standard MD3 recommendation for entering elements is `Curves.easeOutCubic` and for exiting elements is `Curves.fastOutSlowIn`.
+
+**Action:** Injected `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` into all `AnimatedSwitcher` components app-wide to ensure uniform and authentic MD3 interaction clarity.
