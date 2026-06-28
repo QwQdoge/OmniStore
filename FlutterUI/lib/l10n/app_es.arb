@@ -185,7 +185,7 @@
   "@aiThinking": {
     "description": "aiThinking"
   },
-  "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
+  "aiTimeout": "Se ha agotado el tiempo de conexión con la IA, por favor inténtelo de nuevo más tarde.",
   "@aiTimeout": {
     "description": "Error message when AI request times out"
   },
@@ -230,6 +230,9 @@
     "description": "Message while auto detecting sources"
   },
   "autoUpdate": "Actualización automática silenciosa",
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
   "autoUpdateDesc": "Descargar e instalar actualizaciones automáticamente en segundo plano",
   "back": "Atrás",
   "@back": {
@@ -286,7 +289,7 @@
   "@catGraphics": {
     "description": "Category for Graphics"
   },
-  "catInternet": "Internet",
+  "catInternet": "Internet y Redes",
   "catMedia": "Multimedia",
   "catOffice": "Oficina",
   "catSystem": "Sistema",
@@ -871,10 +874,20 @@
     "description": "Status message when a task completes successfully"
   },
   "temperatureRangeError": "El valor debe estar entre 0.0 y 2.0",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
   "taskHistory": "Historial de tareas",
   "unknownApp": "Aplicación desconocida",
   "taskSuccessMsg": "Tarea ejecutada con éxito",
   "failureReason": "Razón del fallo: {message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "No hay paquetes disponibles",
   "noDescription": "Sin descripción.",
   "viewDetails": "Ver detalles",
@@ -927,6 +940,9 @@
   "useSystemTitleBar": "Usar barra de título del sistema",
   "userAccount": "Cuenta de usuario",
   "variant": "Versiones",
+  "@variant": {
+    "description": "Label for app variants/versions"
+  },
   "verified": "Verificado",
   "version": "Versión",
   "viewLogs": "Ver registros",
