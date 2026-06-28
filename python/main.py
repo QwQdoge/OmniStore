@@ -151,6 +151,8 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
     logging.debug(f"New daemon client connected: {client_addr}")
 
     try:
+        # Murphy-proof: Global timeout for the entire client session (60 minutes)
+        # and connection idle timeout (300 seconds) per request.
         while True:
             # 1. Read request with strict line-length limit to prevent OOM
             try:
@@ -178,11 +180,13 @@ async def handle_daemon_client(backend, reader: asyncio.StreamReader, writer: as
                     continue
             except (asyncio.LimitOverrunError, ValueError):
                 logging.error(f"Payload size limit exceeded from {client_addr}")
-                writer.write(json.dumps({
-                    "status": "error",
-                    "error": "Payload size limit exceeded (max 512KB)"
-                }).encode('utf-8') + b'\n')
-                await writer.drain()
+                try:
+                    writer.write(json.dumps({
+                        "status": "error",
+                        "error": "Payload size limit exceeded (max 512KB)"
+                    }).encode('utf-8') + b'\n')
+                    await writer.drain()
+                except: pass
                 break
             except asyncio.TimeoutError:
                 logging.debug(f"Daemon client {client_addr} connection timed out")
@@ -285,7 +289,13 @@ def safe_command(func):
     """
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
-        json_mode = getattr(self, "json_mode", False)
+        # Murphy-proof: Always try to detect json_mode, default to False if self is not valid
+        json_mode = False
+        try:
+            json_mode = getattr(self, "json_mode", False)
+        except:
+            pass
+
         try:
             return await func(self, *args, **kwargs)
         except asyncio.CancelledError:
@@ -299,23 +309,28 @@ def safe_command(func):
             logging.error(f"{error_msg}\n{err_trace}")
 
             # Attempt to notify the frontend via callback or structured JSON
-            if json_mode:
-                # Ensure the error output is the only thing on the line
-                # and clearly marked as an error status.
-                sys.stdout.write("\n") # Break possible partial line
-                sys.stdout.write(json.dumps({
-                    "status": "error",
-                    "error": str(e),
-                    "context": func.__name__,
-                    "traceback": err_trace if getattr(self, "debug", False) else None
-                }, ensure_ascii=False) + "\n")
-                sys.stdout.flush()
-            else:
-                try:
-                    await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
-                except:
-                    # Final fallback if _handle_error itself fails
-                    print(f"[ERROR] {error_msg}")
+            try:
+                if json_mode:
+                    # Ensure the error output is the only thing on the line
+                    # and clearly marked as an error status.
+                    sys.stdout.write("\n") # Break possible partial line
+                    sys.stdout.write(json.dumps({
+                        "status": "error",
+                        "error": str(e),
+                        "context": func.__name__,
+                        "traceback": err_trace if getattr(self, "debug", False) else None
+                    }, ensure_ascii=False) + "\n")
+                    sys.stdout.flush()
+                else:
+                    try:
+                        await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                    except:
+                        # Final fallback if _handle_error itself fails
+                        # Using _orig_print to bypass any hijacking during fatal error
+                        _orig_print(f"[ERROR] {error_msg}")
+            except Exception as internal_e:
+                # Absolute last resort: write to stderr if stdout is also compromised
+                logging.critical(f"Murphy-proof Critical: Failure in error handler: {internal_e}")
             return False
     return wrapper
 
@@ -446,10 +461,11 @@ class OmnistoreBackend:
                 self._executor = None
 
             # 2. Close network sessions with timeout to prevent hanging on close
+            # Murphy-proof: Use asyncio.shield to prevent cleanup from being cancelled
             if self.session and not self.session.closed:
                 try:
                     # Murphy-proof: Aggressive timeout on session close
-                    await asyncio.wait_for(self.session.close(), timeout=2.0)
+                    await asyncio.shield(asyncio.wait_for(self.session.close(), timeout=5.0))
                 except Exception as e:
                     logging.debug(f"Cleanup: Session close error: {e}")
                 self.session = None
@@ -457,7 +473,7 @@ class OmnistoreBackend:
             # 3. Close AI Assistant session if initialized
             if self._ai:
                 try:
-                    await self._ai.close()
+                    await asyncio.shield(self._ai.close())
                 except Exception as e:
                     logging.debug(f"Cleanup: AI Assistant close error: {e}")
 
@@ -1212,7 +1228,7 @@ class OmnistoreBackend:
 
 
 class DaemonRequest(BaseModel):
-    action: str = Field(..., min_length=1, max_length=100)
+    action: str = Field(..., min_length=1, max_length=100, pattern=r'^[a-zA-Z0-9._]+$')
     args: list = Field(default_factory=list)
     kwargs: dict = Field(default_factory=dict)
 
@@ -1236,14 +1252,14 @@ class DaemonRequest(BaseModel):
         return v
 
 class CLIArguments(BaseModel):
-    search: Optional[str] = Field(None, max_length=500)
-    install: Optional[str] = Field(None, max_length=500)
-    remove: Optional[str] = Field(None, max_length=500)
-    update: Optional[str] = Field(None, max_length=500)
+    search: Optional[str] = Field(None, max_length=256, pattern=r'^[a-zA-Z0-9._/ -]*$')
+    install: Optional[str] = Field(None, max_length=256, pattern=r'^[a-zA-Z0-9._/+@-]*$')
+    remove: Optional[str] = Field(None, max_length=256, pattern=r'^[a-zA-Z0-9._/+@-]*$')
+    update: Optional[str] = Field(None, max_length=256, pattern=r'^[a-zA-Z0-9._/+@-]*$')
     check_updates: bool = False
     list_installed: bool = False
     recommend: bool = False
-    details: Optional[str] = None
+    details: Optional[str] = Field(None, max_length=256, pattern=r'^[a-zA-Z0-9._/+@-]*$')
     clean_system: bool = False
     ai_summary: bool = False
     get_config: bool = False
@@ -1251,24 +1267,24 @@ class CLIArguments(BaseModel):
     check_env: bool = False
     bootstrap: bool = False
     list_custom_repos: bool = False
-    add_custom_repo: Optional[str] = None
-    remove_custom_repo: Optional[str] = None
-    ai_explain: Optional[str] = None
-    ai_recommend: Optional[str] = None
-    ai_analyze_error: Optional[str] = None
-    ai_compare: Optional[str] = None
+    add_custom_repo: Optional[str] = Field(None, max_length=512)
+    remove_custom_repo: Optional[str] = Field(None, max_length=256)
+    ai_explain: Optional[str] = Field(None, max_length=256)
+    ai_recommend: Optional[str] = Field(None, max_length=256)
+    ai_analyze_error: Optional[str] = Field(None, max_length=1024)
+    ai_compare: Optional[str] = Field(None, max_length=256)
     ai_health: bool = False
     ai_test: bool = False
     ai_pick: bool = False
-    ai_correct: Optional[str] = None
-    ai_changelog: Optional[str] = None
-    ai_cli: Optional[str] = None
-    ai_conflicts: Optional[str] = None
+    ai_correct: Optional[str] = Field(None, max_length=256)
+    ai_changelog: Optional[str] = Field(None, max_length=256)
+    ai_cli: Optional[str] = Field(None, max_length=256)
+    ai_conflicts: Optional[str] = Field(None, max_length=256)
     essentials: bool = False
-    import_packages: Optional[str] = None
-    export_packages: Optional[str] = None
-    launch: Optional[str] = None
-    locate: Optional[str] = None
+    import_packages: Optional[str] = Field(None, max_length=512)
+    export_packages: Optional[str] = Field(None, max_length=512)
+    launch: Optional[str] = Field(None, max_length=256)
+    locate: Optional[str] = Field(None, max_length=256)
     daemon: bool = False
     storage_info: bool = False
     json_mode: bool = Field(default=False, alias="json")

@@ -29,15 +29,21 @@ async def safe_subprocess(*args, **kwargs):
                             pgid = os.getpgid(proc.pid)
                             # Murphy-proof: Never kill our own process group
                             if pgid != os.getpgrp() and pgid > 1:
-                                os.killpg(pgid, signal.SIGTERM)
+                                # Start with SIGTERM, SIGHUP, SIGQUIT for a wider graceful shutdown signal
+                                for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
+                                    try:
+                                        os.killpg(pgid, sig)
+                                    except ProcessLookupError:
+                                        break
                         except ProcessLookupError:
                             pass
                     else:
                         proc.terminate()
 
                     try:
-                        await asyncio.wait_for(proc.wait(), timeout=3)
-                    except asyncio.TimeoutError:
+                        # Murphy-proof: Use wait_for with a strict timeout to avoid hanging the entire event loop
+                        await asyncio.wait_for(proc.wait(), timeout=5)
+                    except (asyncio.TimeoutError, Exception):
                         # 2. Escalation: Force group kill (SIGKILL to the process group)
                         if os.name == 'posix':
                             try:
@@ -48,6 +54,10 @@ async def safe_subprocess(*args, **kwargs):
                                 pass
                         else:
                             proc.kill()
-                        await proc.wait()
+                        # Final wait to reap the zombie
+                        try:
+                            await asyncio.wait_for(proc.wait(), timeout=2)
+                        except:
+                            pass
             except Exception as e:
                 logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid if proc else 'N/A'}): {e}")

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 
+import time
+
 class AIAssistant:
     """
     AI Assistant core for OmniStore.
@@ -16,6 +18,11 @@ class AIAssistant:
     def __init__(self, config_manager):
         self.cm = config_manager
         self._session: Optional[aiohttp.ClientSession] = None
+        # Murphy-proof: Circuit breaker state
+        self._failure_count = 0
+        self._last_failure_time = 0
+        self._circuit_threshold = 3
+        self._cooldown_period = 60 # seconds
 
     async def _get_session(self) -> aiohttp.ClientSession:
         """Lazy session initialization with proper timeout defaults."""
@@ -51,10 +58,24 @@ class AIAssistant:
         if "es" in lang: return "Español"
         return "English"
 
+    def _is_circuit_open(self) -> bool:
+        """Check if the AI circuit breaker is currently open."""
+        if self._failure_count >= self._circuit_threshold:
+            elapsed = time.time() - self._last_failure_time
+            if elapsed < self._cooldown_period:
+                return True
+            else:
+                # Cooldown period passed, reset circuit
+                self._failure_count = 0
+        return False
+
     async def _post_request(self, system_prompt: str, user_prompt: str) -> str:
         """
         Generic POST request handler with circuit-breaker-like resilience.
         """
+        if self._is_circuit_open():
+            return "AI 服务暂时不可用（触发熔断）。请在 60 秒后再试。"
+
         cfg = self._get_ai_config()
         if not cfg.get("enabled", False):
             return "AI 服务当前未启用。请在设置中开启以使用智能功能。"
@@ -105,11 +126,15 @@ class AIAssistant:
             session = await self._get_session()
             async with session.post(url, headers=headers, json=payload, proxy=proxy or None) as resp:
                 if resp.status != 200:
+                    self._failure_count += 1
+                    self._last_failure_time = time.time()
                     err_body = await resp.text()
                     logging.error(f"AI Provider Error ({resp.status}): {err_body}")
                     return f"AI 服务商返回错误 ({resp.status})。请检查 API 密钥或网络连接。"
 
                 data = await resp.json()
+                # Success: reset circuit
+                self._failure_count = 0
                 if provider == "ollama": return data.get("response", "").strip()
                 if provider == "gemini":
                     parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
@@ -117,8 +142,12 @@ class AIAssistant:
                 return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
         except asyncio.TimeoutError:
+            self._failure_count += 1
+            self._last_failure_time = time.time()
             return "AI 请求超时（45秒）。这可能是由于网络不稳定或本地模型加载过慢导致的。"
         except Exception as e:
+            self._failure_count += 1
+            self._last_failure_time = time.time()
             logging.error(f"AI Connection Failed: {e}")
             return f"无法连接到 AI 服务商 ({provider}): {str(e)}"
 

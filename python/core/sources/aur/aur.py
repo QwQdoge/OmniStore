@@ -79,14 +79,18 @@ class AurSource(UnifiedSource):
         except Exception:
             return []
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        if not await self.privilege.ensure_privileged(callback):
-            return False
+        try:
+            if not await self.privilege.ensure_privileged(callback):
+                return False
 
-        name = package.get("name")
-        helper = "yay" if os.path.exists("/usr/bin/yay") else "makepkg"
+            name = package.get("name")
+            if not name:
+                if callback: await callback("[ERROR] AUR package name missing.")
+                return False
 
-        if helper == "yay":
-            try:
+            helper = "yay" if os.path.exists("/usr/bin/yay") else "makepkg"
+
+            if helper == "yay":
                 if callback:
                     await callback(f"[INFO] Running: yay -S --noconfirm {name}")
                 async with safe_subprocess(
@@ -121,22 +125,27 @@ class AurSource(UnifiedSource):
                     if proc.returncode == 0 and callback:
                         await callback("[PROGRESS] 100")
                     return proc.returncode == 0
-            except Exception:
+            else:
+                if callback:
+                    await callback("[ERROR] No AUR helper (like yay) found. Please install one.")
                 return False
-        else:
-            if callback:
-                await callback("[ERROR] No AUR helper (like yay) found. Please install one.")
+        except Exception as e:
+            if callback: await callback(f"[ERROR] AUR installation failed: {e}")
             return False
 
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
-        if not await self.privilege.ensure_privileged(callback):
-            return False
-
-        name = package.get("name")
-        if callback:
-            await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
         try:
+            if not await self.privilege.ensure_privileged(callback):
+                return False
+
+            name = package.get("name")
+            if not name:
+                if callback: await callback("[ERROR] AUR package name missing for uninstall.")
+                return False
+
+            if callback:
+                await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
             async with safe_subprocess(
                 "sudo", "pacman", "-Rs", "--noconfirm", name,
                 stdout=asyncio.subprocess.PIPE,
@@ -168,7 +177,7 @@ class AurSource(UnifiedSource):
                 return proc.returncode == 0
         except Exception as e:
             if callback:
-                await callback(f"[ERROR] Uninstall failed: {e}")
+                await callback(f"[ERROR] AUR uninstall failed: {e}")
             return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
