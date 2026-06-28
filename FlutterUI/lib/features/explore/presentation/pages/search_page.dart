@@ -180,15 +180,22 @@ class _SearchPageState extends State<SearchPage> {
             curve: Curves.easeInOut,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: !_showDiscovery
                   ? Selector<SettingsController, Map<String, bool>>(
                       key: const ValueKey('source_filters'),
                       selector: (context, settings) {
-                        final sourcesMap = settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+                        final sourcesMap =
+                            settings.config['search']?['sources']
+                                as Map<dynamic, dynamic>? ??
+                            {};
                         return Map<String, bool>.from(sourcesMap);
                       },
-                      shouldRebuild: (prev, next) => !const MapEquality<String, bool>().equals(prev, next),
-                      builder: (context, sourcesMap, _) => _buildSourceFilters(sourcesMap),
+                      shouldRebuild: (prev, next) =>
+                          !const MapEquality<String, bool>().equals(prev, next),
+                      builder: (context, sourcesMap, _) =>
+                          _buildSourceFilters(sourcesMap),
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -197,9 +204,19 @@ class _SearchPageState extends State<SearchPage> {
             child: _showDiscovery
                 ? AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, int filtersHash, bool isDesktop})>(
+                : Selector<
+                    BrowseController,
+                    ({
+                      List<AppPackage> results,
+                      bool isSearching,
+                      int filtersHash,
+                      bool isDesktop,
+                    })
+                  >(
                     selector: (context, b) => (
                       results: b.searchResults,
                       isSearching: b.isSearching,
@@ -234,7 +251,9 @@ class _SearchPageState extends State<SearchPage> {
                                   return AppDetailsPage(
                                     app: selectedApp,
                                     isEmbedded: true,
-                                    key: ValueKey(selectedApp.id ?? selectedApp.name),
+                                    key: ValueKey(
+                                      selectedApp.id ?? selectedApp.name,
+                                    ),
                                   );
                                 },
                               ),
@@ -244,6 +263,8 @@ class _SearchPageState extends State<SearchPage> {
                       } else {
                         return AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
                           child: resultsContent,
                         );
                       }

@@ -93,7 +93,9 @@ class PlatformEnvironment {
     }
     final trimmed = val.trim();
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.");
+      throw ArgumentError(
+        "Invalid characters in $name: Only alphanumeric, '.', '_', '/', '-', and spaces are allowed.",
+      );
     }
   }
 
@@ -103,10 +105,14 @@ class PlatformEnvironment {
     }
     final trimmed = path.trim();
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in path: Security policy forbids shell metacharacters.");
+      throw ArgumentError(
+        "Invalid characters in path: Security policy forbids shell metacharacters.",
+      );
     }
     if (trimmed.contains('..')) {
-      throw ArgumentError("Security: Relative path traversal ('..') is strictly forbidden.");
+      throw ArgumentError(
+        "Security: Relative path traversal ('..') is strictly forbidden.",
+      );
     }
   }
 }

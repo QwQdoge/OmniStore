@@ -249,6 +249,8 @@ class _DownloadPageState extends State<DownloadPage>
           ),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             child: _isCheckingUpdates
                 ? const Padding(
                     key: ValueKey('checking_updates'),

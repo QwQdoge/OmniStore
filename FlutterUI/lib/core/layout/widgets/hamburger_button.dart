@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 class HamburgerButton extends StatelessWidget {
-  const HamburgerButton({super.key, required this.isExpanded, required this.onToggle});
+  const HamburgerButton({
+    super.key,
+    required this.isExpanded,
+    required this.onToggle,
+  });
 
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -21,6 +25,8 @@ class HamburgerButton extends StatelessWidget {
           tooltip: isExpanded ? l10n.collapse : l10n.expand,
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             transitionBuilder: (child, anim) => RotationTransition(
               turns: Tween(begin: 0.5, end: 1.0).animate(anim),
               child: child,

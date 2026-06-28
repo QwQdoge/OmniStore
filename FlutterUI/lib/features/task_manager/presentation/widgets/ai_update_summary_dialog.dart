@@ -78,6 +78,8 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },

@@ -85,7 +85,8 @@ class TaskManager {
     try {
       await previousMutex.future.timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException("TaskManager: Could not acquire task lock."),
+        onTimeout: () =>
+            throw TimeoutException("TaskManager: Could not acquire task lock."),
       );
     } catch (e) {
       debugPrint("TaskManager Mutex Error: $e");
@@ -296,10 +297,12 @@ class TaskManager {
       if (_currentTask != null &&
           _currentTask!.status != TaskStatus.success &&
           _currentTask!.status != TaskStatus.failed) {
-        _updateState(_currentTask!.copyWith(
-          status: TaskStatus.failed,
-          messageKey: "taskTerminatedUnexpectedly",
-        ));
+        _updateState(
+          _currentTask!.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskTerminatedUnexpectedly",
+          ),
+        );
       }
 
       // Murphy-proof: Capture task ID to ensure we only clear the specific task that finished
@@ -341,72 +344,74 @@ class TaskManager {
         logMessage = cleanLine;
       }
 
-    if (logMessage != null && logMessage.isNotEmpty) {
-      if (logMessage.startsWith("[PROGRESS]")) {
-        final parts = logMessage.split(" ");
-        if (parts.length > 1) {
-          final p = double.tryParse(parts[1]);
-          if (p != null) {
-            final progress = p / 100.0;
-            _updateState(
-              _currentTask?.copyWith(
-                progress: progress,
-                status: TaskStatus.downloading,
-              ),
-            );
+      if (logMessage != null && logMessage.isNotEmpty) {
+        if (logMessage.startsWith("[PROGRESS]")) {
+          final parts = logMessage.split(" ");
+          if (parts.length > 1) {
+            final p = double.tryParse(parts[1]);
+            if (p != null) {
+              final progress = p / 100.0;
+              _updateState(
+                _currentTask?.copyWith(
+                  progress: progress,
+                  status: TaskStatus.downloading,
+                ),
+              );
 
-            UpdateService().showProgressNotification(
-              _currentTask?.packageName ?? "OmniStore",
-              progress,
-            );
+              UpdateService().showProgressNotification(
+                _currentTask?.packageName ?? "OmniStore",
+                progress,
+              );
+            }
           }
+        } else if (logMessage.startsWith("[SPEED]")) {
+          final s = logMessage.replaceFirst("[SPEED] ", "");
+          _updateState(_currentTask?.copyWith(speed: s));
+        } else if (logMessage.startsWith("[STAGE]")) {
+          final stage = logMessage.replaceFirst("[STAGE] ", "");
+          _updateState(_currentTask?.copyWith(stage: stage));
+        } else if (logMessage.startsWith("[INFO]")) {
+          final msg = logMessage.replaceFirst("[INFO] ", "");
+          BackendService.addLog(logMessage);
+
+          TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
+          double? progress = _currentTask?.progress;
+
+          if (msg.toLowerCase().contains("installing") ||
+              msg.toLowerCase().contains("verifying") ||
+              msg.toLowerCase().contains("building") ||
+              msg.toLowerCase().contains("cleaning")) {
+            status = TaskStatus.installing;
+            progress = -1.0;
+          } else if (msg.toLowerCase().contains("downloading")) {
+            status = TaskStatus.downloading;
+          }
+
+          _updateState(
+            _currentTask?.copyWith(
+              message: msg,
+              status: status,
+              progress: progress,
+            ),
+          );
+          BackendService.globalStatus.value = msg;
+        } else if (logMessage.startsWith("[ERROR]")) {
+          BackendService.addLog(logMessage);
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.failed,
+              message: logMessage.replaceFirst("[ERROR] ", ""),
+            ),
+          );
+        } else {
+          // Unstructured fallback
+          BackendService.addLog(cleanLine);
         }
-      } else if (logMessage.startsWith("[SPEED]")) {
-        final s = logMessage.replaceFirst("[SPEED] ", "");
-        _updateState(_currentTask?.copyWith(speed: s));
-      } else if (logMessage.startsWith("[STAGE]")) {
-        final stage = logMessage.replaceFirst("[STAGE] ", "");
-        _updateState(_currentTask?.copyWith(stage: stage));
-      } else if (logMessage.startsWith("[INFO]")) {
-        final msg = logMessage.replaceFirst("[INFO] ", "");
-        BackendService.addLog(logMessage);
-
-        TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
-        double? progress = _currentTask?.progress;
-
-        if (msg.toLowerCase().contains("installing") ||
-            msg.toLowerCase().contains("verifying") ||
-            msg.toLowerCase().contains("building") ||
-            msg.toLowerCase().contains("cleaning")) {
-          status = TaskStatus.installing;
-          progress = -1.0;
-        } else if (msg.toLowerCase().contains("downloading")) {
-          status = TaskStatus.downloading;
-        }
-
-        _updateState(
-          _currentTask?.copyWith(
-            message: msg,
-            status: status,
-            progress: progress,
-          ),
-        );
-        BackendService.globalStatus.value = msg;
-      } else if (logMessage.startsWith("[ERROR]")) {
-        BackendService.addLog(logMessage);
-        _updateState(
-          _currentTask?.copyWith(
-            status: TaskStatus.failed,
-            message: logMessage.replaceFirst("[ERROR] ", ""),
-          ),
-        );
-      } else {
-        // Unstructured fallback
-        BackendService.addLog(cleanLine);
       }
-    }
     } catch (e) {
-      debugPrint("Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line");
+      debugPrint(
+        "Murphy-proof Warning: TaskManager failed to parse line: $e\nLine: $line",
+      );
       BackendService.addLog("Raw: $cleanLine");
     }
   }
@@ -467,11 +472,7 @@ class TaskManager {
     }
 
     _updateState(
-      _currentTask?.copyWith(
-        message: msg,
-        status: status,
-        progress: progress,
-      ),
+      _currentTask?.copyWith(message: msg, status: status, progress: progress),
     );
     BackendService.globalStatus.value = msg;
   }
@@ -479,10 +480,7 @@ class TaskManager {
   void _processError(String err) {
     BackendService.addLog("[ERROR] $err");
     _updateState(
-      _currentTask?.copyWith(
-        status: TaskStatus.failed,
-        message: err,
-      ),
+      _currentTask?.copyWith(status: TaskStatus.failed, message: err),
     );
   }
 
@@ -505,11 +503,13 @@ class TaskManager {
       }
 
       if (kIsWeb) {
-        _updateState(_currentTask?.copyWith(
-          status: TaskStatus.failed,
-          messageKey: "taskCancelledByUser",
-          speed: "",
-        ));
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskCancelledByUser",
+            speed: "",
+          ),
+        );
         Future.delayed(const Duration(seconds: 3), () {
           if (_currentTask?.id == cancelledTaskId) _updateState(null);
         });
@@ -528,11 +528,13 @@ class TaskManager {
       }
 
       if (_currentTask?.id == cancelledTaskId) {
-        _updateState(_currentTask?.copyWith(
-          status: TaskStatus.failed,
-          messageKey: "taskCancelledByUser",
-          speed: "",
-        ));
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskCancelledByUser",
+            speed: "",
+          ),
+        );
       }
     } catch (e) {
       debugPrint("TaskManager.cancelTask Fatal Exception: $e");

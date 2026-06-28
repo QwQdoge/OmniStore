@@ -35,7 +35,9 @@ class SearchResultTile extends StatelessWidget {
     });
 
     // Select ONLY the boolean value of whether THIS SPECIFIC APP is the current task
-    final isCurrentTask = context.select<TaskController, bool>((taskController) {
+    final isCurrentTask = context.select<TaskController, bool>((
+      taskController,
+    ) {
       return taskController.isBusy &&
           (taskController.packageName == app.name ||
               taskController.packageName == app.id);
@@ -76,6 +78,8 @@ class SearchResultTile extends StatelessWidget {
                       : const Icon(Icons.apps, size: 40),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: isCurrentTask
                         ? Container(
                             key: const ValueKey('task_active'),
@@ -104,7 +108,8 @@ class SearchResultTile extends StatelessWidget {
             ),
             subtitle: isCurrentTask
                 ? Selector<TaskController, ({String status, double? progress})>(
-                    selector: (context, c) => (status: c.status, progress: c.progress),
+                    selector: (context, c) =>
+                        (status: c.status, progress: c.progress),
                     builder: (context, data, child) {
                       return Text(
                         "${data.status} ${data.progress != null ? '(${(data.progress! * 100).toInt()}%)' : ''}",
