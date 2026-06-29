@@ -91,7 +91,7 @@
     "description": "aiEndpoint"
   },
   "aiEndpointHelper": "Ollama のデフォルトは http://localhost:11434 です",
-  "aiExplainUpdate": "この更新を説明",
+  "aiExplainUpdate": "この更新を解析",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },
@@ -126,7 +126,7 @@
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPromptExplain": "AI で説明",
+  "aiPromptExplain": "解析",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
@@ -221,6 +221,9 @@
     "description": "Message while auto detecting sources"
   },
   "autoUpdate": "サイレント自動更新",
+  "@autoUpdate": {
+    "description": "Label for auto update"
+  },
   "autoUpdateDesc": "バックグラウンドでパッケージを自動的に更新します",
   "back": "戻る",
   "@back": {
@@ -847,10 +850,20 @@
     "description": "Status message when a task completes successfully"
   },
   "temperatureRangeError": "値は 0.0 から 2.0 の間である必要があります",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
   "taskHistory": "タスク履歴",
   "unknownApp": "不明なアプリ",
   "taskSuccessMsg": "タスクが正常に実行されました",
   "failureReason": "失敗理由：{message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "利用可能なパッケージがありません",
   "noDescription": "説明はありません",
   "viewDetails": "詳細を表示",
@@ -903,6 +916,9 @@
   "useSystemTitleBar": "システムのタイトルバーを使用",
   "userAccount": "ユーザーアカウント",
   "variant": "利用可能なバージョン",
+  "@variant": {
+    "description": "Label for app variants/versions"
+  },
   "verified": "検証済み",
   "version": "バージョン",
   "viewLogs": "ログを表示",

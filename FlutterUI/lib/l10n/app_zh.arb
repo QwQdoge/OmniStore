@@ -869,10 +869,20 @@
     "description": "Status message when a task completes successfully"
   },
   "temperatureRangeError": "值必须在 0.0 到 2.0 之间",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
   "taskHistory": "任务历史记录",
   "unknownApp": "未知应用",
   "taskSuccessMsg": "任务执行成功",
   "failureReason": "失败原因：{message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "暂无可用软件包",
   "noDescription": "暂无说明",
   "viewDetails": "查看详情",
@@ -927,6 +937,9 @@
   "useSystemTitleBar": "使用系统标题栏",
   "userAccount": "用户账户",
   "variant": "可用版本",
+  "@variant": {
+    "description": "Label for app variants/versions"
+  },
   "verified": "官方认证",
   "version": "版本",
   "viewLogs": "查看日志",

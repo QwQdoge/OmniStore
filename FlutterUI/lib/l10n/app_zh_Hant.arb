@@ -1,7 +1,7 @@
 {
   "@@locale": "zh_Hant",
   "about": "關於",
-  "activeSources": "已啟用軟體源",
+  "activeSources": "已啟用軟體存放庫",
   "@activeSources": {
     "description": "Label for active software sources"
   },
@@ -99,7 +99,7 @@
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiHealthTitle": "AI 系統健康診斷",
+  "aiHealthTitle": "AI 系統健康報告",
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
@@ -216,7 +216,7 @@
   "@autoDetectSuccess": {
     "description": "Success message after auto detection"
   },
-  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+  "autoDetectingSources": "正在自動偵測系統中可用的軟體存放庫...",
   "@autoDetectingSources": {
     "description": "Message while auto detecting sources"
   },
@@ -395,7 +395,7 @@
   "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
   "envCheckTitle": "環境檢查",
   "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
-  "envOkDesc": "一切就緒！系統環境已完美配置。",
+  "envOkDesc": "一切就緒！系統環境已完美設定。",
   "envWarningDesc": "缺少一些必要的組件，我們可以為您自動設定。",
   "errorCleanFailed": "清理失敗：{error}",
   "@errorCleanFailed": {
@@ -553,7 +553,7 @@
   "@hintRepoFormat": {
     "description": "Hint for repository format"
   },
-  "hotApps": "熱門應用",
+  "hotApps": "熱門應用程式",
   "hourValue": "{count} 小時",
   "@hourValue": {
     "placeholders": {
@@ -703,7 +703,7 @@
   "@refresh": {
     "description": "Label for refresh action"
   },
-  "relatedApps": "相關應用",
+  "relatedApps": "相關應用程式",
   "remindMeOfUpdates": "有更新時提醒我",
   "repoOwnerRepo": "存放庫地址（owner/repo）",
   "@repoOwnerRepo": {
@@ -868,10 +868,20 @@
     "description": "Status message when a task completes successfully"
   },
   "temperatureRangeError": "值必須在 0.0 到 2.0 之間",
+  "@temperatureRangeError": {
+    "description": "Error message for invalid temperature value"
+  },
   "taskHistory": "任務歷史記錄",
-  "unknownApp": "未知應用",
+  "unknownApp": "未知應用程式",
   "taskSuccessMsg": "任務執行成功",
   "failureReason": "失敗原因：{message}",
+  "@failureReason": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "noPackagesAvailable": "暫無可用套件",
   "noDescription": "暫無說明",
   "viewDetails": "查看詳情",
@@ -926,6 +936,9 @@
   "useSystemTitleBar": "使用系統標題列",
   "userAccount": "使用者帳戶",
   "variant": "可用版本",
+  "@variant": {
+    "description": "Label for app variants/versions"
+  },
   "verified": "官方認證",
   "version": "版本",
   "viewLogs": "查看日誌",
