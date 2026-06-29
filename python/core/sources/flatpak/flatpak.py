@@ -93,12 +93,16 @@ class FlatpakSource(UnifiedSource):
             pass
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        app_id = package.get("id") or package.get("name")
-        await self._ensure_flathub(callback)
-        if callback:
-            await callback(f"[INFO] Running: flatpak install --user -y flathub {app_id}")
-
         try:
+            app_id = package.get("id") or package.get("name")
+            if not app_id:
+                if callback: await callback("[ERROR] Flatpak ID or name missing.")
+                return False
+
+            await self._ensure_flathub(callback)
+            if callback:
+                await callback(f"[INFO] Running: flatpak install --user -y flathub {app_id}")
+
             async with safe_subprocess(
                 "flatpak", "install", "--user", "-y", "flathub", app_id,
                 stdout=asyncio.subprocess.PIPE,
@@ -142,7 +146,8 @@ class FlatpakSource(UnifiedSource):
                 if proc.returncode == 0 and callback:
                     await callback("[PROGRESS] 100")
                 return proc.returncode == 0
-        except Exception:
+        except Exception as e:
+            if callback: await callback(f"[ERROR] Flatpak installation failed: {e}")
             return False
         finally:
             if 'proc' in locals() and proc and proc.returncode is None:
@@ -153,11 +158,15 @@ class FlatpakSource(UnifiedSource):
                     pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
-        app_id = package.get("id") or package.get("name")
-        if callback:
-            await callback(f"[INFO] Running: flatpak uninstall --user -y {app_id}")
-
         try:
+            app_id = package.get("id") or package.get("name")
+            if not app_id:
+                if callback: await callback("[ERROR] Flatpak ID or name missing for uninstall.")
+                return False
+
+            if callback:
+                await callback(f"[INFO] Running: flatpak uninstall --user -y {app_id}")
+
             async with safe_subprocess(
                 "flatpak", "uninstall", "--user", "-y", app_id,
                 stdout=asyncio.subprocess.PIPE,
@@ -172,9 +181,9 @@ class FlatpakSource(UnifiedSource):
                             await callback(line.decode().strip())
                 await proc.wait()
                 return proc.returncode == 0
-        except Exception:
-            pass
-        return False
+        except Exception as e:
+            if callback: await callback(f"[ERROR] Flatpak uninstallation failed: {e}")
+            return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
         app_id = package.get("id") or package.get("name")
