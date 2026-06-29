@@ -70,24 +70,6 @@ class _SettingsPageState extends State<SettingsPage> {
                             ? l10n.langSpanish
                             : l10n.langEnglish,
                       ),
-                      SwitchListTile(
-                        title: Text(l10n.closeToTray),
-                        value: settings.closeToTray,
-                        onChanged: (val) {
-                          settings.setCloseToTray(val);
-                        },
-                      ),
-                      SwitchListTile(
-                        title: Text(l10n.useSystemTitleBar),
-                        subtitle: Text(l10n.configSaved),
-                        value: settings.useSystemTitleBar,
-                        onChanged: (val) {
-                          settings.setUseSystemTitleBar(val);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.configSaved)),
-                          );
-                        },
-                      ),
                     ),
                     SwitchListTile(
                       title: Text(l10n.closeToTray),

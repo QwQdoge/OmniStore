@@ -5,6 +5,9 @@ import "package:provider/provider.dart";
 import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
@@ -16,8 +19,7 @@ import 'package:frontend/features/explore/presentation/widgets/action_dialogs.da
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_actions.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_about_section.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_technical_details.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_dependency_section.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 

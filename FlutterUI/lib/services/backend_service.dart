@@ -9,6 +9,7 @@ import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
+import 'backend/platform_environment.dart';
 import 'backend/security_validator.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
@@ -75,34 +76,6 @@ class BackendService {
       throw ArgumentError(
         "Invalid characters in $name: Security policy forbids shell metacharacters.",
       );
-    }
-  }
-
-  /// Murphy-proof: Strict URL validation.
-  void _validateUrl(String? url) {
-    if (url == null || url.trim().isEmpty) {
-      throw ArgumentError("URL cannot be null or empty");
-    }
-    final trimmed = url.trim();
-    if (trimmed.length > 2048) {
-      throw ArgumentError("URL is too long");
-    }
-    // Allow basic URL characters, but strictly forbid shell metacharacters.
-    // We allow '&' and '?' which are common in URLs, but must be handled with care.
-    if (!RegExp(r'^[a-zA-Z0-9._/:\-?=&%+#]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in URL");
-    }
-    // Explicitly check for dangerous characters even if the regex missed them
-    if (trimmed.contains(';') ||
-        trimmed.contains('|') ||
-        trimmed.contains('`') ||
-        trimmed.contains('\$') ||
-        trimmed.contains('(') ||
-        trimmed.contains(')') ||
-        trimmed.contains('<') ||
-        trimmed.contains('>') ||
-        trimmed.contains('\\')) {
-      throw ArgumentError("Security: Shell metacharacters detected in URL");
     }
   }
 

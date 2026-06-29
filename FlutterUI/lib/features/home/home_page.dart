@@ -5,7 +5,6 @@ import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
@@ -14,8 +13,8 @@ import 'package:frontend/features/home/widgets/app_shelf.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/section_header.dart';
-import 'package:frontend/features/home/widgets/banner_card.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
+import 'package:frontend/features/home/widgets/hero_section.dart';
+import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -272,16 +271,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-
-
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
     );
   }
 }
