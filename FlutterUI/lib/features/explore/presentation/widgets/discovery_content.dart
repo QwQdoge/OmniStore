@@ -72,15 +72,23 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                   horizontal: 16,
                   vertical: 8,
                 ),
+                prototypeItem: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: 100,
+                    child: AppCard(
+                      borderRadius: 24,
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ),
                 itemCount: _categories.length,
                 itemBuilder: (context, index) {
                   final cat = _categories[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Semantics(
-                      label: AppLocalizations.of(
-                        context,
-                      )!.categorySemantics(cat.name),
+                      label: widget.l10n.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
                         borderRadius: 24,
@@ -139,26 +147,49 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                         key: const ValueKey('trending_content'),
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 40),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              widget.l10n.hotApps,
-                              style: OmnistoreTheme.standardHeader(context),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 196,
-                            child: Scrollbar(
-                              controller: _trendingScrollController,
-                              thumbVisibility: true,
-                              child: ListView.builder(
-                                controller: _trendingScrollController,
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
+                  const SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      widget.l10n.hotApps,
+                      style: OmnistoreTheme.standardHeader(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 196,
+                    child: Scrollbar(
+                      controller: _trendingScrollController,
+                      thumbVisibility: true,
+                      child: ListView.builder(
+                        controller: _trendingScrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        prototypeItem: Container(
+                          width: 150,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: const AppCard(child: SizedBox.expand()),
+                        ),
+                        itemCount: trending.length,
+                        itemBuilder: (context, index) {
+                          final app = trending[index];
+                          final trendingHeroTag =
+                              'trending-shelf-${app.name}-${app.primarySource}';
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            child: AppCard(
+                              clipBehavior: Clip.antiAlias,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AppDetailsPage(
+                                    app: app,
+                                    heroTag: trendingHeroTag,
+                                  ),
                                 ),
                                 itemCount: trending.length,
                                 itemBuilder: (context, index) {

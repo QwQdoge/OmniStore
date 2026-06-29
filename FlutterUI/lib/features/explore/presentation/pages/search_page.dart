@@ -21,6 +21,19 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  static const Map<String, String> _sourceNameMapping = {
+    'pacman': 'Pacman',
+    'aur': 'AUR',
+    'flatpak': 'Flatpak',
+    'appimage': 'AppImage',
+    'snap': 'Snap',
+    'github': 'GitHub',
+    'bitu': 'Bitu',
+    'winget': 'Winget',
+    'scoop': 'Scoop',
+    'brew': 'Homebrew',
+  };
+
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
@@ -118,19 +131,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String _displayName(String key) {
-    final mapping = {
-      'pacman': 'Pacman',
-      'aur': 'AUR',
-      'flatpak': 'Flatpak',
-      'appimage': 'AppImage',
-      'snap': 'Snap',
-      'github': 'GitHub',
-      'bitu': 'Bitu',
-      'winget': 'Winget',
-      'scoop': 'Scoop',
-      'brew': 'Homebrew',
-    };
-    return mapping[key.toLowerCase()] ?? key;
+    return _sourceNameMapping[key.toLowerCase()] ?? key;
   }
 
   @override
@@ -350,6 +351,22 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('loading'),
       padding: const EdgeInsets.all(16),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(
+              width: double.infinity,
+              height: 12,
+              borderRadius: 8,
+            ),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
+          ),
+        ),
+      ),
       itemCount: 6,
       itemBuilder: (context, index) {
         return const Padding(
@@ -396,6 +413,18 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('results'),
       padding: const EdgeInsets.all(16),
+      prototypeItem: SearchResultTile(
+        app: AppPackage(
+          name: 'Prototype',
+          description: 'Prototype Description',
+          installed: false,
+          primarySource: 'Native',
+          version: '1.0.0',
+          variants: [],
+        ),
+        isDesktop: isDesktop,
+        onTap: () {},
+      ),
       itemCount: filteredResults.length,
       itemBuilder: (context, index) {
         final app = filteredResults[index];
