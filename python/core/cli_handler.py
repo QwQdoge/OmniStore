@@ -71,7 +71,8 @@ class CLIArguments(BaseModel):
     def validate_add_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             parts = [p.strip() for p in v.split(',', 2)]
-            if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
+            if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
+                parts = ["appimage", "", parts[1]]
             if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
         return v
 
@@ -153,7 +154,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
 
     async def _handle_add_custom_repo(raw_repo):
         parts = [p.strip() for p in raw_repo.split(',', 2)]
-        if len(parts) < 3 and parts[0] == "appimage": parts = ["appimage", "", parts[1]]
+        if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
+            parts = ["appimage", "", parts[1]]
         async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json_mode)
 
     async def _handle_remove_custom_repo(raw_repo):

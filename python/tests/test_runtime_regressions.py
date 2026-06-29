@@ -3,9 +3,9 @@ import json
 import pytest
 from pydantic import ValidationError
 
+from core.cli_handler import CLIArguments
 from core.config_loader import ConfigManager
 from daemon_main import parse_json_output
-from main import CLIArguments
 
 
 def test_appimage_custom_repo_requires_url():
