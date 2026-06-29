@@ -58,72 +58,70 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     children: [
                       ListTile(
-                      title: Text(l10n.language),
-                      subtitle: Text(
-                        settings.language == 'zh-CN'
-                            ? l10n.langSimplifiedChinese
-                            : settings.language == 'zh-TW'
-                            ? l10n.langTraditionalChinese
-                            : settings.language == 'ja-JP'
-                            ? l10n.langJapanese
-                            : settings.language == 'es-ES' ||
-                                  settings.language == 'es'
-                            ? l10n.langSpanish
-                            : l10n.langEnglish,
+                        title: Text(l10n.language),
+                        subtitle: Text(
+                          settings.language == 'zh-CN'
+                              ? l10n.langSimplifiedChinese
+                              : settings.language == 'zh-TW'
+                              ? l10n.langTraditionalChinese
+                              : settings.language == 'ja-JP'
+                              ? l10n.langJapanese
+                              : settings.language == 'es-ES' ||
+                                    settings.language == 'es'
+                              ? l10n.langSpanish
+                              : l10n.langEnglish,
+                        ),
+                        trailing: DropdownButton<String>(
+                          value: settings.language,
+                          underline: const SizedBox(),
+                          borderRadius: BorderRadius.circular(12),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'zh-CN',
+                              child: Text(l10n.langSimplifiedChinese),
+                            ),
+                            DropdownMenuItem(
+                              value: 'zh-TW',
+                              child: Text(l10n.langTraditionalChinese),
+                            ),
+                            DropdownMenuItem(
+                              value: 'en-US',
+                              child: Text(l10n.langEnglish),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ja-JP',
+                              child: Text(l10n.langJapanese),
+                            ),
+                            DropdownMenuItem(
+                              value: 'es-ES',
+                              child: Text(l10n.langSpanish),
+                            ),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              settings.setLanguage(val);
+                            }
+                          },
+                        ),
                       ),
-                      trailing: DropdownButton<String>(
-                        value: settings.language,
-                        underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'zh-CN',
-                            child: Text(l10n.langSimplifiedChinese),
-                          ),
-                          DropdownMenuItem(
-                            value: 'zh-TW',
-                            child: Text(l10n.langTraditionalChinese),
-                          ),
-                          DropdownMenuItem(
-                            value: 'en-US',
-                            child: Text(l10n.langEnglish),
-                          ),
-                          DropdownMenuItem(
-                            value: 'ja-JP',
-                            child: Text(l10n.langJapanese),
-                          ),
-                          DropdownMenuItem(
-                            value: 'es-ES',
-                            child: Text(l10n.langSpanish),
-                          ),
-                        ],
+                      SwitchListTile(
+                        title: Text(l10n.closeToTray),
+                        value: settings.closeToTray,
                         onChanged: (val) {
-                          if (val != null) {
-                            settings.setLanguage(val);
-                          }
+                          settings.setCloseToTray(val);
                         },
                       ),
-                    ),
-                    SwitchListTile(
-                      title: Text(l10n.closeToTray),
-                      value: settings.closeToTray,
-                      onChanged: (val) {
-                        settings.setCloseToTray(val);
-                      },
-                    ),
-                    SwitchListTile(
-                      title: Text(l10n.useSystemTitleBar),
-                      subtitle: Text(l10n.configSaved),
-                      value: settings.useSystemTitleBar,
-                      onChanged: (val) {
-                        settings.setUseSystemTitleBar(val);
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
-                          SnackBar(content: Text(l10n.configSaved)),
-                        );
-                      },
-                    ),
+                      SwitchListTile(
+                        title: Text(l10n.useSystemTitleBar),
+                        subtitle: Text(l10n.configSaved),
+                        value: settings.useSystemTitleBar,
+                        onChanged: (val) {
+                          settings.setUseSystemTitleBar(val);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.configSaved)),
+                          );
+                        },
+                      ),
                       SwitchListTile(
                         title: Text(l10n.aiEnabled),
                         subtitle: Text(l10n.aiAssistantDesc),
@@ -169,30 +167,30 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     children: [
                       SwitchListTile(
-                      title: Text(l10n.enableDaemon),
-                      subtitle: Text(l10n.enableDaemonDesc),
-                      value: settings.daemonEnabled,
-                      onChanged: (val) {
-                        settings.setDaemonEnabled(val);
-                      },
-                    ),
-                    SwitchListTile(
-                      title: Text(l10n.autoUpdate),
-                      subtitle: Text(l10n.autoUpdateDesc),
-                      value: settings.autoUpdate,
-                      onChanged: (val) {
-                        settings.setAutoUpdate(val);
-                      },
-                    ),
-                    if (Platform.isLinux)
-                      SwitchListTile(
-                        title: Text(l10n.enableSystemdService),
-                        subtitle: Text(l10n.enableSystemdServiceDesc),
-                        value: settings.enableSystemdService,
+                        title: Text(l10n.enableDaemon),
+                        subtitle: Text(l10n.enableDaemonDesc),
+                        value: settings.daemonEnabled,
                         onChanged: (val) {
-                          settings.setEnableSystemdService(val);
+                          settings.setDaemonEnabled(val);
                         },
                       ),
+                      SwitchListTile(
+                        title: Text(l10n.autoUpdate),
+                        subtitle: Text(l10n.autoUpdateDesc),
+                        value: settings.autoUpdate,
+                        onChanged: (val) {
+                          settings.setAutoUpdate(val);
+                        },
+                      ),
+                      if (Platform.isLinux)
+                        SwitchListTile(
+                          title: Text(l10n.enableSystemdService),
+                          subtitle: Text(l10n.enableSystemdServiceDesc),
+                          value: settings.enableSystemdService,
+                          onChanged: (val) {
+                            settings.setEnableSystemdService(val);
+                          },
+                        ),
                       ListTile(
                         title: Text(l10n.checkIntervalTitle),
                         subtitle: Text(
@@ -231,44 +229,46 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     children: [
                       ListTile(
-                      title: Text(l10n.fontFamily),
-                      subtitle: Text(
-                        settings.fontFamily == 'System'
-                            ? l10n.systemDefault
-                            : settings.fontFamily,
+                        title: Text(l10n.fontFamily),
+                        subtitle: Text(
+                          settings.fontFamily == 'System'
+                              ? l10n.systemDefault
+                              : settings.fontFamily,
+                        ),
+                        trailing: DropdownButton<String>(
+                          value: settings.fontFamily,
+                          underline: const SizedBox(),
+                          borderRadius: BorderRadius.circular(12),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'System',
+                              child: Text(l10n.systemDefault),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'Inter',
+                              child: Text('Inter'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'Roboto',
+                              child: Text('Roboto'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'Outfit',
+                              child: Text('Outfit'),
+                            ),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              settings.setFontFamily(val);
+                            }
+                          },
+                        ),
                       ),
-                      trailing: DropdownButton<String>(
-                        value: settings.fontFamily,
-                        underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'System',
-                            child: Text(l10n.systemDefault),
-                          ),
-                          const DropdownMenuItem(
-                            value: 'Inter',
-                            child: Text('Inter'),
-                          ),
-                          const DropdownMenuItem(
-                            value: 'Roboto',
-                            child: Text('Roboto'),
-                          ),
-                          const DropdownMenuItem(
-                            value: 'Outfit',
-                            child: Text('Outfit'),
-                          ),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) {
-                            settings.setFontFamily(val);
-                          }
-                        },
-                      ),
-                    ),
                       ListTile(
                         title: Text(l10n.fontScale),
-                        subtitle: Text("${(settings.fontScale * 100).toInt()}%"),
+                        subtitle: Text(
+                          "${(settings.fontScale * 100).toInt()}%",
+                        ),
                         trailing: SizedBox(
                           width: 150,
                           child: Slider(
@@ -292,6 +292,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
                 child: _showAdvanced
                     ? Semantics(
                         key: const ValueKey('ai_settings'),
@@ -314,9 +316,9 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

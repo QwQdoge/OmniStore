@@ -449,6 +449,7 @@ class BackendService {
             _buildArgs(args),
             workingDirectory: _workingDir,
             environment: env.isEmpty ? null : env,
+            runInShell: true,
           ).timeout(
             const Duration(seconds: 10),
             onTimeout: () {

@@ -141,9 +141,7 @@ class AppDetailsHeader extends StatelessWidget {
                 children: [
                   if (githubRepositoryUrl != null &&
                       hasCapability('has_rating'))
-                    GitHubStarBadge(
-                      repositoryUrl: githubRepositoryUrl!,
-                    ),
+                    GitHubStarBadge(repositoryUrl: githubRepositoryUrl!),
                   if (isAppInstalled)
                     AppSourceTag(
                       source: selectedSource,
