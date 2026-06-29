@@ -100,3 +100,11 @@ Writing directly to JSON configuration or cache files (`daemon_main.py`, `cache_
 
 Action:
 Replaced direct writes with atomic writes across the Python backend. The data is now written to a temporary `.tmp` file first, which is then swapped with the target file using `os.replace()` (or `.replace()` on `Path` objects). This guarantees that configuration and state files are never left in a partially written, corrupt state.
+
+## 2024-06-27 - [Provider Anti-pattern: Missing Imports Fix]
+
+Learning:
+Unused and duplicated methods can lead to hidden warnings or broken code logic. And removing those shouldn't be done arbitrarily without replacing the relevant imports. The lack of standard tools usage can introduce bugs in the codebase.
+
+Action:
+Ensure necessary dependencies and imports are handled correctly before doing cleanup on dead functions and dead UI elements.
