@@ -87,3 +87,8 @@ Extracted `SourcesConfigCard`, `StorageCleanupCard`, and `AISettingsSection` out
 - Extracted `_buildHeroSection`, `_buildCategoryQuickAccess`, `_buildAIPickSkeleton`, `_buildAIPickSection`, and `_buildSectionHeader` from `home_page.dart` into dedicated stateless widgets in `FlutterUI/lib/features/home/widgets/`.
 - Extracted `_buildSkeletonList` and `_buildEmptyState` from `apps_page.dart` into `apps_page_skeleton.dart` and `apps_page_empty_state.dart` in `FlutterUI/lib/features/apps/widgets/`.
 This drastically simplified the main page builds while ensuring exact behavioral preservation and better code localization.
+## 2024-06-27 - Extract Widgets in AppDetailsPage
+
+**Learning:** Extracted oversized inline UI components ('About' and 'Technical Details' sections) from `details_page.dart` into cleanly segregated widget files within `lib/features/explore/presentation/widgets/`. This decouples UI composition from the page logic, reducing complexity and potential for merge conflicts in long files.
+
+**Action:** Extracted the "About" section into `AppAboutSection` and the "Details" section into `AppTechnicalDetails`.
