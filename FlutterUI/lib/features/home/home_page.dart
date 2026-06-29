@@ -15,6 +15,7 @@ import 'package:frontend/features/home/widgets/banner_card.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/section_header.dart';
+import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -122,26 +123,21 @@ class _HomePageState extends State<HomePage> {
       if (packages.isNotEmpty) {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(l10n.importPackages),
-            content: Text(l10n.importPackagesConfirm(packages.length)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  for (var pkg in packages) {
-                    final name = pkg['name'] as String;
-                    final source = pkg['source'] as String? ?? 'Native';
-                    _executeInstall(name, source);
-                  }
-                },
-                child: Text(l10n.allDownloads),
-              ),
-            ],
+          builder: (context) => ImportPackagesDialog(
+            packagesCount: packages.length,
+            titleText: l10n.importPackages,
+            contentText: l10n.importPackagesConfirm(packages.length),
+            cancelText: l10n.cancel,
+            confirmText: l10n.allDownloads,
+            onCancel: () => Navigator.pop(context),
+            onConfirm: () {
+              Navigator.pop(context);
+              for (var pkg in packages) {
+                final name = pkg['name'] as String;
+                final source = pkg['source'] as String? ?? 'Native';
+                _executeInstall(name, source);
+              }
+            },
           ),
         );
       }
@@ -180,10 +176,7 @@ class _HomePageState extends State<HomePage> {
                     switchOutCurve: Curves.fastOutSlowIn,
                     child: featured.isEmpty
                         ? const SizedBox.shrink(key: ValueKey('empty_hero'))
-                        : _buildHeroSection(
-                            featured,
-                            key: const ValueKey('hero_section'),
-                          ),
+                        : HeroSection(apps: featured, scrollController: _heroScrollController, key: const ValueKey('hero_section')),
                   );
                 },
               ),
@@ -282,37 +275,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeroSection(List<AppPackage> apps, {Key? key}) {
-    return Column(
-      key: key,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20),
-        _buildSectionHeader(AppLocalizations.of(context)!.featured),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 260,
-          child: Scrollbar(
-            controller: _heroScrollController,
-            thumbVisibility: true,
-            child: ListView.separated(
-              controller: _heroScrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              scrollDirection: Axis.horizontal,
-              itemCount: apps.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 20),
-              itemBuilder: (context, index) => BannerCard(app: apps[index]),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(title, style: OmnistoreTheme.standardHeader(context)),
-    );
-  }
+
+
 }
