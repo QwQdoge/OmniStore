@@ -701,9 +701,21 @@
     }
   },
   "taskForcedTerminated": "Task forcibly terminated",
+  "@taskForcedTerminated": {
+    "description": "Error message when a task is forcefully terminated"
+  },
   "aiTimeout": "AI connection timed out, please try again later.",
+  "@aiTimeout": {
+    "description": "Error message when AI request times out"
+  },
   "aiNoResponse": "AI failed to provide a valid response.",
+  "@aiNoResponse": {
+    "description": "Error message when AI does not respond"
+  },
   "aiParseFailed": "AI response parsing failed: incorrect format.",
+  "@aiParseFailed": {
+    "description": "Error message when AI response parsing fails"
+  },
   "aiCallFailed": "AI service call failed: {error}",
   "@aiCallFailed": {
     "placeholders": {
@@ -721,6 +733,9 @@
     }
   },
   "taskProcessing": "Processing",
+  "@taskProcessing": {
+    "description": "Task processing status label"
+  },
   "collapse": "Collapse",
   "expand": "Expand",
   "all": "All",
@@ -815,7 +830,13 @@
     "description": "Label for personal access token"
   },
   "copyName": "Copy Name",
+  "@copyName": {
+    "description": "Button to copy the package name"
+  },
   "nameCopied": "Name copied to clipboard",
+  "@nameCopied": {
+    "description": "Snackbar message indicating name was copied to clipboard"
+  },
   "copiedToClipboard": "Copied to clipboard",
   "tapToCopy": "Tap to copy",
   "language": "Language",
