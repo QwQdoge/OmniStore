@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
-import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/app_shelf.dart';
+import 'package:frontend/core/widgets/section_header.dart';
 
 class DiscoveryContent extends StatefulWidget {
   final AppLocalizations l10n;
@@ -52,13 +51,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              widget.l10n.categories,
-              style: OmnistoreTheme.standardHeader(context),
-            ),
-          ),
+          SectionHeader(title: widget.l10n.categories),
           const SizedBox(height: 16),
           SizedBox(
             height: 186,
@@ -83,7 +76,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                       )!.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
-                        borderRadius: 24,
+                        borderRadius: 16,
                         onTap: () {
                           widget.searchController.text =
                               '/${cat.id.toLowerCase()}';
@@ -133,85 +126,13 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                 duration: const Duration(milliseconds: 300),
                 child: trending.isEmpty
                     ? const SizedBox.shrink(key: ValueKey('empty_trending'))
-                    : Column(
+                    : AppShelf(
                         key: const ValueKey('trending_content'),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                  const SizedBox(height: 40),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      widget.l10n.hotApps,
-                      style: OmnistoreTheme.standardHeader(context),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 196,
-                    child: Scrollbar(
-                      controller: _trendingScrollController,
-                      thumbVisibility: true,
-                      child: ListView.builder(
-                        controller: _trendingScrollController,
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: trending.length,
-                        itemBuilder: (context, index) {
-                          final app = trending[index];
-                          final trendingHeroTag =
-                              'trending-shelf-${app.name}-${app.primarySource}';
-                          return Container(
-                            width: 150,
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            child: AppCard(
-                              clipBehavior: Clip.antiAlias,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AppDetailsPage(
-                                    app: app,
-                                    heroTag: trendingHeroTag,
-                                  ),
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: Hero(
-                                      tag: trendingHeroTag,
-                                      child: app.icon != null
-                                          ? CachedNetworkImage(
-                                              imageUrl: app.icon!,
-                                              fit: BoxFit.cover,
-                                              memCacheWidth: 300,
-                                            )
-                                          : const Icon(Icons.apps, size: 48),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Text(
-                                      app.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                        title: widget.l10n.hotApps,
+                        apps: trending,
+                        scrollController: _trendingScrollController,
                       ),
-                    ),
-                  ),
-                ],
-              ));
+              );
             },
           ),
         ],
