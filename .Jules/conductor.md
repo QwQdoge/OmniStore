@@ -14,3 +14,5 @@
 
 ## YYYY-MM-DD
 - Added `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` to all `AnimatedSwitcher` instances in the Flutter UI to make the transition smoother, adhering to subtle MD3 motion rules.
+- Added `TweenAnimationBuilder` to `TaskProgressBar` in `core/layout/widgets/task_progress_bar.dart` for smooth animation of task progress using `Curves.easeOutCubic`.
+- Added `TweenAnimationBuilder` to `StorageCleanupCard` in `features/settings/presentation/widgets/storage_cleanup_card.dart` for smooth animation of storage and task progress indicators using `Curves.easeOutCubic`.

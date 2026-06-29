@@ -72,9 +72,17 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                     switchInCurve: Curves.easeOutCubic,
                     switchOutCurve: Curves.fastOutSlowIn,
                     child: taskController.progress != null
-                        ? LinearProgressIndicator(
+                        ? TweenAnimationBuilder<double>(
                             key: const ValueKey('determinate'),
-                            value: taskController.progress,
+                            tween: Tween<double>(
+                              begin: 0,
+                              end: taskController.progress!,
+                            ),
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, _) {
+                              return LinearProgressIndicator(value: value);
+                            },
                           )
                         : const Skeleton(
                             key: ValueKey('indeterminate'),
@@ -215,18 +223,31 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                         const SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value:
-                                ((_storageInfo!['disk_used'] ?? 0) /
-                                ((_storageInfo!['disk_total'] ?? 1) == 0
-                                    ? 1
-                                    : (_storageInfo!['disk_total'] ?? 1))),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).colorScheme.primary,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(
+                              begin: 0,
+                              end:
+                                  ((_storageInfo!['disk_used'] ?? 0) /
+                                          ((_storageInfo!['disk_total'] ?? 1) ==
+                                                  0
+                                              ? 1
+                                              : (_storageInfo!['disk_total'] ??
+                                                    1)))
+                                      .toDouble(),
                             ),
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, _) {
+                              return LinearProgressIndicator(
+                                value: value,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 16),
