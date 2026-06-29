@@ -6,6 +6,7 @@ import contextlib
 import re
 from typing import Dict, Any, Optional, Callable, Awaitable
 from core.subprocess_utils import safe_subprocess
+from core.security_validator import SecurityValidator
 from core.sources.utils import PrivilegeManager
 
 class InstallExecutor:
@@ -86,19 +87,14 @@ class InstallExecutor:
             try:
                 # 3. Environment & Security Validation
                 # Boundary Defense: Prevent shell injection or malformed paths
-                if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
-                    if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                try:
+                    SecurityValidator.validate_string(pkg_name, "Package Name")
+                    url = package.get("url")
+                    if url:
+                        SecurityValidator.validate_url(url)
+                except ValueError as ve:
+                    if callback: await callback(f"[ERROR] Security: {str(ve)}")
                     return False
-
-                url = package.get("url")
-                if url:
-                    # Murphy-proof URL validation
-                    if not re.match(r'^[a-zA-Z0-9._/:\-?=&%+#]+$', url.strip()):
-                        if callback: await callback("[ERROR] Security: URL contains illegal characters.")
-                        return False
-                    if any(c in url for c in ";|`$()<>\\"):
-                        if callback: await callback("[ERROR] Security: Shell metacharacters detected in URL.")
-                        return False
 
                 # 4. Environment & Dependency Check
                 source_name = str(package.get("source", "Native")).lower()
@@ -160,9 +156,11 @@ class InstallExecutor:
 
             try:
                 # Sanitization
-                if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
-                     if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
-                     return False
+                try:
+                    SecurityValidator.validate_string(pkg_name, "Package Name")
+                except ValueError as ve:
+                    if callback: await callback(f"[ERROR] Security: {str(ve)}")
+                    return False
 
                 source_name = str(package.get("source", "Native")).lower()
                 if source_name == "native":
