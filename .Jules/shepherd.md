@@ -41,3 +41,9 @@
 ## 2026-06-20 - Terminology Consistency: AI Error Handling in Update Summary Dialog
 - In `FlutterUI/lib/features/task_manager/presentation/widgets/ai_update_summary_dialog.dart`, replaced the hardcoded UI fallback string (`"AI failed to summarize."`) in `FutureBuilder` with a call to the localized `_buildAIMarkdown` method.
 - This ensures AI error codes (like `AI_TIMEOUT`) are consistently mapped to standardized MD3 dialog terminology across the app, aligning with the `ai_dialogs.dart` implementation.
+## 2026-06-21 - Dialog Terminology Consistency: Dismissal Actions
+- Standardized the single-action dismissal buttons in informational, alert, and error dialogs to use `l10n.ok`.
+- Updated `FlutterUI/lib/features/explore/presentation/pages/details_page.dart` failure dialog to use `l10n.ok` instead of `l10n.cancel`.
+- Updated `FlutterUI/lib/features/explore/presentation/widgets/ai_dialogs.dart` (`AIMarkdownDialog` and `AICliDialog`) to use `l10n.ok` instead of `l10n.confirm`.
+- Updated `FlutterUI/lib/features/task_manager/presentation/widgets/ai_update_summary_dialog.dart` to use `l10n.ok` instead of `l10n.confirm`.
+- Updated `FlutterUI/lib/features/settings/presentation/widgets/storage_cleanup_card.dart` cleanup dialog to use `l10n.ok` instead of `l10n.confirm`.

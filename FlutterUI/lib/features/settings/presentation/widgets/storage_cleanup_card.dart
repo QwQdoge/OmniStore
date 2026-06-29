@@ -109,7 +109,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                 if (!taskController.isBusy)
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text(l10n.confirm),
+                    child: Text(l10n.ok),
                   ),
               ],
             );

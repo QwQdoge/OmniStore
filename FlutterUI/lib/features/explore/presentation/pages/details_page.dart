@@ -230,7 +230,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.cancel),
+                child: Text(l10n.ok),
               ),
             ],
           ),
