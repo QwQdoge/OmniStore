@@ -276,10 +276,22 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-        AppAboutSection(
-          isLoading: _isLoadingDetails,
-          description: _extraDetails?['description'],
-          fallbackDescription: widget.app.description,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
+          child: _isLoadingDetails
+              ? const ParagraphSkeleton(key: ValueKey('loading'))
+              : MarkdownBody(
+                  key: const ValueKey('loaded'),
+                  data:
+                      _extraDetails?['description'] ??
+                      (widget.app.description.isEmpty
+                          ? AppLocalizations.of(context)!.noResults
+                          : widget.app.description),
+                  selectable: true,
+                  styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
+                ),
         ),
         if (_hasCapability('has_screenshots') &&
             _extraDetails != null &&
@@ -299,13 +311,43 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
-        AppTechnicalDetails(
-          primarySource: widget.app.primarySource,
-          allSources: widget.app.sources,
-          version: widget.app.version,
-          extraDetails: _extraDetails,
-          currentVariant: _getVariantForSource(_selectedSource),
-          hasCapability: _hasCapability,
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppDetailsInfoRow(
+                icon: Icons.source_rounded,
+                label: AppLocalizations.of(context)!.source,
+                value: widget.app.primarySource,
+              ),
+              AppDetailsInfoRow(
+                icon: Icons.all_inclusive_rounded,
+                label: AppLocalizations.of(context)!.variant,
+                value: widget.app.sources.join(", "),
+              ),
+              AppDetailsInfoRow(
+                icon: Icons.verified_rounded,
+                label: AppLocalizations.of(context)!.version,
+                value: widget.app.version,
+              ),
+              if (_extraDetails?['developer'] != null)
+                AppDetailsInfoRow(
+                  icon: Icons.person_rounded,
+                  label: AppLocalizations.of(context)!.developer,
+                  value: _extraDetails!['developer'],
+                ),
+              if (_extraDetails?['license'] != null)
+                AppDetailsInfoRow(
+                  icon: Icons.description_rounded,
+                  label: AppLocalizations.of(context)!.license,
+                  value: _extraDetails!['license'],
+                ),
+              AppDependencySection(
+                variant: _getVariantForSource(_selectedSource),
+                hasCapability: _hasCapability,
+              ),
+            ],
+          ),
         ),
       ],
     );

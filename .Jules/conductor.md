@@ -11,4 +11,6 @@
 - Wrapped AppShelfs (forYou, hotApps) and _buildHeroSection in HomePage with AnimatedSwitcher (300ms) to ensure smooth transitions from empty to populated states.
 - Wrapped trending AppShelf in DiscoveryContent with AnimatedSwitcher (300ms).
 - Wrapped TabBar and main TabBarView/SearchResults in GitHubStorePage with AnimatedSwitcher (300ms) to prevent abrupt UI changes when toggling search mode.
-- Standardized `AnimatedSwitcher` transitions by automatically adding MD3 curves (`switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn`) across all `AnimatedSwitcher` instances in the Flutter codebase to ensure smoother and consistent implicit animations.
+
+## YYYY-MM-DD
+- Added `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` to all `AnimatedSwitcher` instances in the Flutter UI to make the transition smoother, adhering to subtle MD3 motion rules.

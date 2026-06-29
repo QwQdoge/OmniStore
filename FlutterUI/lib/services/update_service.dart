@@ -198,8 +198,9 @@ class UpdateService {
   /// Uses a guard file to detect and skip if the tray library caused a crash.
   Future<bool> _initSystemTray() async {
     if (kIsWeb) return true;
-    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS)
+    if (!Platform.isLinux && !Platform.isWindows && !Platform.isMacOS) {
       return true;
+    }
 
     try {
       final config = await BackendService.instance.loadConfig();
