@@ -43,17 +43,14 @@ class BrowseController with ChangeNotifier {
     _selectedApp = null;
     notifyListeners();
 
-    final completer = Completer<void>();
     _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
       try {
         _searchResults = await _packageRepository.searchPackages(query);
       } finally {
         _isSearching = false;
         notifyListeners();
-        completer.complete();
       }
     });
-    return completer.future;
   }
 
   @override

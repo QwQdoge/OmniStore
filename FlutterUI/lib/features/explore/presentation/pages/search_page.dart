@@ -130,8 +130,30 @@ class _SearchPageState extends State<SearchPage> {
     context.read<BrowseController>().search(query);
   }
 
+  static const Map<String, String> _sourceDisplayNameMap = {
+    'pacman': 'Pacman',
+    'aur': 'AUR',
+    'flatpak': 'Flatpak',
+    'appimage': 'AppImage',
+    'snap': 'Snap',
+    'github': 'GitHub',
+    'bitu': 'Bitu',
+    'winget': 'Winget',
+    'scoop': 'Scoop',
+    'brew': 'Homebrew',
+  };
+
+  static final AppPackage _prototypeApp = AppPackage(
+    name: 'Prototype',
+    description: 'This is a prototype item for performance',
+    installed: false,
+    primarySource: 'Native',
+    version: '1.0.0',
+    variants: [],
+  );
+
   String _displayName(String key) {
-    return _sourceNameMapping[key.toLowerCase()] ?? key;
+    return _sourceDisplayNameMap[key.toLowerCase()] ?? key;
   }
 
   @override
@@ -209,25 +231,32 @@ class _SearchPageState extends State<SearchPage> {
                     switchOutCurve: Curves.fastOutSlowIn,
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<
-                    BrowseController,
-                    ({
-                      List<AppPackage> results,
-                      bool isSearching,
-                      int filtersHash,
-                      bool isDesktop,
-                    })
-                  >(
-                    selector: (context, b) => (
-                      results: b.searchResults,
-                      isSearching: b.isSearching,
-                      filtersHash: Object.hashAll(_selectedSources),
-                      isDesktop: MediaQuery.sizeOf(context).width > 900,
-                    ),
+                : Selector<BrowseController, ({List<AppPackage> filteredResults, bool isSearching, bool isDesktop})>(
+                    selector: (context, b) {
+                      final results = b.searchResults;
+                      final isDesktop = MediaQuery.sizeOf(context).width > 900;
+
+                      final filtered = _selectedSources.isEmpty
+                          ? results
+                          : results.where((app) {
+                              return _selectedSources.contains(app.primarySource.toLowerCase());
+                            }).toList();
+
+                      return (
+                        filteredResults: filtered,
+                        isSearching: b.isSearching,
+                        isDesktop: isDesktop,
+                      );
+                    },
+                    shouldRebuild: (prev, next) {
+                      return prev.isSearching != next.isSearching ||
+                          prev.isDesktop != next.isDesktop ||
+                          !const IterableEquality().equals(prev.filteredResults, next.filteredResults);
+                    },
                     builder: (context, data, _) {
                       final resultsContent = data.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(data.results, l10n, data.isDesktop);
+                          : _buildResults(data.filteredResults, l10n, data.isDesktop);
 
                       if (data.isDesktop) {
                         return Row(
@@ -390,17 +419,10 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildResults(
-    List<AppPackage> searchResults,
+    List<AppPackage> filteredResults,
     AppLocalizations l10n,
     bool isDesktop,
   ) {
-    var filteredResults = searchResults;
-    if (_selectedSources.isNotEmpty) {
-      filteredResults = searchResults.where((app) {
-        return _selectedSources.contains(app.primarySource.toLowerCase());
-      }).toList();
-    }
-
     if (filteredResults.isEmpty) {
       return EmptyResults(
         key: const ValueKey('empty'),
@@ -413,17 +435,13 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('results'),
       padding: const EdgeInsets.all(16),
-      prototypeItem: SearchResultTile(
-        app: AppPackage(
-          name: 'Prototype',
-          description: 'Prototype Description',
-          installed: false,
-          primarySource: 'Native',
-          version: '1.0.0',
-          variants: [],
+      prototypeItem: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: SearchResultTile(
+          app: _prototypeApp,
+          isDesktop: isDesktop,
+          onTap: () {},
         ),
-        isDesktop: isDesktop,
-        onTap: () {},
       ),
       itemCount: filteredResults.length,
       itemBuilder: (context, index) {

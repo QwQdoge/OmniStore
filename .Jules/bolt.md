@@ -46,3 +46,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Using `jsonEncode` for map equality in a `Selector` is a hidden performance trap, causing expensive string allocations and JSON parsing on every notification. Additionally, placing `MediaQuery.sizeOf(context)` at the top of a page's `build` method causes the entire page to rebuild on every single pixel change of the window width, even if the layout only depends on a specific threshold.
 
 **Action:** Optimized `SearchPage` by: 1) Replacing `jsonEncode` in the sources `Selector` with `MapEquality` from `package:collection`. 2) Moving the `MediaQuery` width check into the main `BrowseController` `Selector` and converting it to a boolean (`isDesktop`). This ensures the page only rebuilds when the desktop/mobile threshold (900px) is actually crossed.
+
+## 2026-06-28 - SearchPage ListView & Selector Optimization
+
+**Learning:** Adding `prototypeItem` to `ListView.builder` significantly improves scroll performance and scrollbar accuracy by allowing the framework to pre-calculate dimensions without laying out every child. In `Selector`, when returning a filtered list, the default identity equality will always trigger a rebuild because `.toList()` creates a new instance. Using `shouldRebuild` with `IterableEquality` ensures rebuilds only occur when the actual contents change.
+
+**Action:** Optimized `SearchPage` by adding `prototypeItem` to results and skeleton lists, moving filtering logic into the `Selector`, and implementing `IterableEquality` in `shouldRebuild`.
