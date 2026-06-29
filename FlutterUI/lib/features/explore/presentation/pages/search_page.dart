@@ -21,19 +21,6 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  static const Map<String, String> _sourceNameMapping = {
-    'pacman': 'Pacman',
-    'aur': 'AUR',
-    'flatpak': 'Flatpak',
-    'appimage': 'AppImage',
-    'snap': 'Snap',
-    'github': 'GitHub',
-    'bitu': 'Bitu',
-    'winget': 'Winget',
-    'scoop': 'Scoop',
-    'brew': 'Homebrew',
-  };
-
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _quickFilterScrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
