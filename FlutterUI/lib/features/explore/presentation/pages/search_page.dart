@@ -117,20 +117,30 @@ class _SearchPageState extends State<SearchPage> {
     context.read<BrowseController>().search(query);
   }
 
+  static const Map<String, String> _sourceDisplayNameMap = {
+    'pacman': 'Pacman',
+    'aur': 'AUR',
+    'flatpak': 'Flatpak',
+    'appimage': 'AppImage',
+    'snap': 'Snap',
+    'github': 'GitHub',
+    'bitu': 'Bitu',
+    'winget': 'Winget',
+    'scoop': 'Scoop',
+    'brew': 'Homebrew',
+  };
+
+  static final AppPackage _prototypeApp = AppPackage(
+    name: 'Prototype',
+    description: 'This is a prototype item for performance',
+    installed: false,
+    primarySource: 'Native',
+    version: '1.0.0',
+    variants: [],
+  );
+
   String _displayName(String key) {
-    final mapping = {
-      'pacman': 'Pacman',
-      'aur': 'AUR',
-      'flatpak': 'Flatpak',
-      'appimage': 'AppImage',
-      'snap': 'Snap',
-      'github': 'GitHub',
-      'bitu': 'Bitu',
-      'winget': 'Winget',
-      'scoop': 'Scoop',
-      'brew': 'Homebrew',
-    };
-    return mapping[key.toLowerCase()] ?? key;
+    return _sourceDisplayNameMap[key.toLowerCase()] ?? key;
   }
 
   @override
@@ -199,17 +209,32 @@ class _SearchPageState extends State<SearchPage> {
                     duration: const Duration(milliseconds: 300),
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<BrowseController, ({List<AppPackage> results, bool isSearching, int filtersHash, bool isDesktop})>(
-                    selector: (context, b) => (
-                      results: b.searchResults,
-                      isSearching: b.isSearching,
-                      filtersHash: Object.hashAll(_selectedSources),
-                      isDesktop: MediaQuery.sizeOf(context).width > 900,
-                    ),
+                : Selector<BrowseController, ({List<AppPackage> filteredResults, bool isSearching, bool isDesktop})>(
+                    selector: (context, b) {
+                      final results = b.searchResults;
+                      final isDesktop = MediaQuery.sizeOf(context).width > 900;
+
+                      final filtered = _selectedSources.isEmpty
+                          ? results
+                          : results.where((app) {
+                              return _selectedSources.contains(app.primarySource.toLowerCase());
+                            }).toList();
+
+                      return (
+                        filteredResults: filtered,
+                        isSearching: b.isSearching,
+                        isDesktop: isDesktop,
+                      );
+                    },
+                    shouldRebuild: (prev, next) {
+                      return prev.isSearching != next.isSearching ||
+                          prev.isDesktop != next.isDesktop ||
+                          !const IterableEquality().equals(prev.filteredResults, next.filteredResults);
+                    },
                     builder: (context, data, _) {
                       final resultsContent = data.isSearching
                           ? _buildSkeletonResults()
-                          : _buildResults(data.results, l10n, data.isDesktop);
+                          : _buildResults(data.filteredResults, l10n, data.isDesktop);
 
                       if (data.isDesktop) {
                         return Row(
@@ -329,6 +354,22 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('loading'),
       padding: const EdgeInsets.all(16),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: ListTile(
+            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(
+              width: double.infinity,
+              height: 12,
+              borderRadius: 8,
+            ),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
+          ),
+        ),
+      ),
       itemCount: 6,
       itemBuilder: (context, index) {
         return const Padding(
@@ -352,17 +393,10 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildResults(
-    List<AppPackage> searchResults,
+    List<AppPackage> filteredResults,
     AppLocalizations l10n,
     bool isDesktop,
   ) {
-    var filteredResults = searchResults;
-    if (_selectedSources.isNotEmpty) {
-      filteredResults = searchResults.where((app) {
-        return _selectedSources.contains(app.primarySource.toLowerCase());
-      }).toList();
-    }
-
     if (filteredResults.isEmpty) {
       return EmptyResults(
         key: const ValueKey('empty'),
@@ -375,6 +409,14 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       key: const ValueKey('results'),
       padding: const EdgeInsets.all(16),
+      prototypeItem: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: SearchResultTile(
+          app: _prototypeApp,
+          isDesktop: isDesktop,
+          onTap: () {},
+        ),
+      ),
       itemCount: filteredResults.length,
       itemBuilder: (context, index) {
         final app = filteredResults[index];
