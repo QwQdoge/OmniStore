@@ -9,7 +9,7 @@ import '../data/python_bridge.dart';
 import '../../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
-import 'backend/platform_environment.dart';
+import 'backend/security_validator.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -59,74 +59,6 @@ class BackendService {
 
   static Process? activeProcess;
   static Process? activeSearchProcess;
-
-  /// Murphy-proof: Strict string validation to prevent shell injection and malformed inputs.
-  void _validateString(String? val, String name) {
-    if (val == null || val.trim().isEmpty) {
-      throw ArgumentError("$name cannot be null or empty");
-    }
-    final trimmed = val.trim();
-    if (trimmed.length > 1024) {
-      throw ArgumentError("$name is too long (max 1024 characters)");
-    }
-    // Allow alphanumeric, dots, underscores, dashes, slashes, and spaces.
-    // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
-      throw ArgumentError(
-        "Invalid characters in $name: Security policy forbids shell metacharacters.",
-      );
-    }
-  }
-
-  /// Murphy-proof: Strict URL validation.
-  void _validateUrl(String? url) {
-    if (url == null || url.trim().isEmpty) {
-      throw ArgumentError("URL cannot be null or empty");
-    }
-    final trimmed = url.trim();
-    if (trimmed.length > 2048) {
-      throw ArgumentError("URL is too long");
-    }
-    // Allow basic URL characters, but strictly forbid shell metacharacters.
-    // We allow '&' and '?' which are common in URLs, but must be handled with care.
-    if (!RegExp(r'^[a-zA-Z0-9._/:\-?=&%+#]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in URL");
-    }
-    // Explicitly check for dangerous characters even if the regex missed them
-    if (trimmed.contains(';') ||
-        trimmed.contains('|') ||
-        trimmed.contains('`') ||
-        trimmed.contains('\$') ||
-        trimmed.contains('(') ||
-        trimmed.contains(')') ||
-        trimmed.contains('<') ||
-        trimmed.contains('>') ||
-        trimmed.contains('\\')) {
-      throw ArgumentError("Security: Shell metacharacters detected in URL");
-    }
-  }
-
-  /// Murphy-proof: Strict path validation to prevent traversal attacks.
-  void _validatePath(String? path) {
-    if (path == null || path.trim().isEmpty) {
-      throw ArgumentError("Path cannot be null or empty");
-    }
-    final trimmed = path.trim();
-    if (trimmed.length > 1024) {
-      throw ArgumentError("Path is too long");
-    }
-    if (trimmed.contains('..')) {
-      throw ArgumentError(
-        "Security: Relative path traversal ('..') is strictly forbidden.",
-      );
-    }
-    // Cross-platform support: Allow Windows-style paths (C:\...)
-    if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
-      throw ArgumentError(
-        "Invalid characters in path: Security policy forbids shell metacharacters.",
-      );
-    }
-  }
 
   Future<bool> _acquireLock({
     Duration timeout = const Duration(seconds: 10),
@@ -204,13 +136,9 @@ class BackendService {
       // Murphy-proof: Strict liveness check using kill -0
       try {
         if (Platform.isLinux || Platform.isMacOS) {
-          final res = await Process.run('kill', [
-            '-0',
-            '${_daemonProcess!.pid}',
-          ]);
+          final res =
+              await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
           if (res.exitCode == 0) return _daemonProcess;
-        } else {
-          return _daemonProcess;
         }
       } catch (_) {}
     }
@@ -218,12 +146,11 @@ class BackendService {
     // Guard: Prevent rapid restart-loop "storm"
     final now = DateTime.now();
     if (_lastDaemonStartTime != null &&
-        now.difference(_lastDaemonStartTime!) < const Duration(seconds: 5)) {
+        now.difference(_lastDaemonStartTime!) < const Duration(seconds: 10)) {
       _daemonRestartCount++;
       if (_daemonRestartCount > 3) {
         debugPrint(
-          "Murphy-proof Warning: Daemon restart loop detected. Throttling.",
-        );
+            "Murphy-proof Warning: Daemon restart loop detected. Throttling.");
         return null;
       }
     } else {
@@ -295,21 +222,20 @@ class BackendService {
     }
     int backoffSeconds = 20;
 
-    _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (
-      timer,
-    ) async {
+    _healthCheckTimer =
+        Timer.periodic(Duration(seconds: backoffSeconds), (timer) async {
       bool needsRestart = false;
       if (_daemonProcess == null) {
         needsRestart = true;
       } else {
         try {
-          final res = await Process.run('kill', [
-            '-0',
-            '${_daemonProcess!.pid}',
-          ]);
-          if (res.exitCode != 0) {
-            debugPrint("Daemon dead detected by health check.");
-            needsRestart = true;
+          if (Platform.isLinux || Platform.isMacOS) {
+            final res =
+                await Process.run('kill', ['-0', '${_daemonProcess!.pid}']);
+            if (res.exitCode != 0) {
+              debugPrint("Daemon dead detected by health check.");
+              needsRestart = true;
+            }
           }
         } catch (_) {
           needsRestart = true;
@@ -320,8 +246,11 @@ class BackendService {
         final success = await _startDaemonIfNeeded() != null;
         if (!success) {
           // Increase backoff on repeated failures (max 5 minutes)
-          backoffSeconds = (backoffSeconds * 1.5).toInt().clamp(20, 300);
-          _startHealthCheckLoop(); // Restart loop with new interval
+          final newBackoff = (backoffSeconds * 1.5).toInt().clamp(20, 300);
+          if (newBackoff != backoffSeconds) {
+            backoffSeconds = newBackoff;
+            _startHealthCheckLoop(); // Restart loop with new interval
+          }
         } else {
           if (backoffSeconds != 20) {
             backoffSeconds = 20;
@@ -564,7 +493,7 @@ class BackendService {
     if (trimmedQuery.length > 500) return [];
 
     try {
-      _validateString(trimmedQuery, "Search Query");
+      SecurityValidator.validateString(trimmedQuery, "Search Query");
     } catch (e) {
       debugPrint("Security: $e");
       return [];
@@ -792,13 +721,8 @@ class BackendService {
 
   Future<String> aiExplain(String name, String desc) async {
     try {
-      _validateString(name, "AI App Name");
-      return await _aiCall([
-        "--ai-explain",
-        name.trim(),
-        "--ai-desc",
-        desc.trim(),
-      ]);
+      SecurityValidator.validateString(name, "AI App Name");
+      return await _aiCall(["--ai-explain", name.trim(), "--ai-desc", desc.trim()]);
     } catch (e) {
       return "AI Explanation unavailable: $e";
     }
@@ -806,11 +730,8 @@ class BackendService {
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     try {
-      _validateString(n, "AI Package Name");
-      return await _aiCall([
-        "--ai-changelog",
-        "${n.trim()},${c.trim()},${next.trim()}",
-      ]);
+      SecurityValidator.validateString(n, "AI Package Name");
+      return await _aiCall(["--ai-changelog", "${n.trim()},${c.trim()},${next.trim()}"]);
     } catch (e) {
       return "Update summary unavailable.";
     }
@@ -818,12 +739,10 @@ class BackendService {
 
   Future<String> aiGenerateCLI(String n, String s) async {
     try {
-      _validateString(n, "AI App Name");
-      _validateString(s, "AI Source");
-      return await _aiCall([
-        "--ai-cli",
-        "${n.trim()},${s.trim()}",
-      ], timeout: const Duration(seconds: 20));
+      SecurityValidator.validateString(n, "AI App Name");
+      SecurityValidator.validateString(s, "AI Source");
+      return await _aiCall(["--ai-cli", "${n.trim()},${s.trim()}"],
+          timeout: const Duration(seconds: 20));
     } catch (e) {
       return "CLI generation failed.";
     }
@@ -831,7 +750,7 @@ class BackendService {
 
   Future<String> aiDetectConflicts(String n) async {
     try {
-      _validateString(n, "AI Package Name");
+      SecurityValidator.validateString(n, "AI Package Name");
       return await _aiCall(["--ai-conflicts", n.trim()]);
     } catch (e) {
       return "Conflict detection failed.";
@@ -848,11 +767,9 @@ class BackendService {
 
   Future<String> aiSuggestCorrection(String q) async {
     try {
-      _validateString(q, "AI Query");
-      return await _aiCall([
-        "--ai-correct",
-        q.trim(),
-      ], timeout: const Duration(seconds: 15));
+      SecurityValidator.validateString(q, "AI Query");
+      return await _aiCall(["--ai-correct", q.trim()],
+          timeout: const Duration(seconds: 15));
     } catch (e) {
       return q; // Graceful degradation: return original query
     }
@@ -860,7 +777,7 @@ class BackendService {
 
   Future<String> aiCompareVariants(String n) async {
     try {
-      _validateString(n, "AI App Name");
+      SecurityValidator.validateString(n, "AI App Name");
       return await _aiCall(["--ai-compare", n.trim()]);
     } catch (e) {
       return "Variant comparison unavailable.";
@@ -885,11 +802,9 @@ class BackendService {
 
   Future<String> aiRecommend(String p) async {
     try {
-      _validateString(p, "AI Prompt");
-      final res = await _aiCall([
-        "--ai-recommend",
-        p.trim(),
-      ], timeout: const Duration(seconds: 90));
+      SecurityValidator.validateString(p, "AI Prompt");
+      final res = await _aiCall(["--ai-recommend", p.trim()],
+          timeout: const Duration(seconds: 90));
       _aiFailureCount = 0;
       return res;
     } catch (e) {
@@ -915,6 +830,7 @@ class BackendService {
         _buildArgs(["--set-config", "stdin", "--json"]),
         workingDirectory: _workingDir,
       );
+      // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(process);
 
       try {
@@ -1037,13 +953,9 @@ class BackendService {
       return PackageRepository().launchApp(n, s);
     }
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_launch", [
-        n.trim(),
-        s.trim(),
-        true,
-      ]);
+      SecurityValidator.validateString(n, "App Name");
+      SecurityValidator.validateString(s, "Source");
+      final daemonRes = await _sendToDaemon("run_launch", [n.trim(), s.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1051,8 +963,8 @@ class BackendService {
       debugPrint("Daemon launchApp error: $e. Falling back.");
     }
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
+      SecurityValidator.validateString(n, "App Name");
+      SecurityValidator.validateString(s, "Source");
       final res = await _safeRun([
         "--launch",
         n.trim(),
@@ -1072,13 +984,9 @@ class BackendService {
       return PackageRepository().locateApp(n, s);
     }
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
-      final daemonRes = await _sendToDaemon("run_locate", [
-        n.trim(),
-        s.trim(),
-        true,
-      ]);
+      SecurityValidator.validateString(n, "App Name");
+      SecurityValidator.validateString(s, "Source");
+      final daemonRes = await _sendToDaemon("run_locate", [n.trim(), s.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         return daemonRes.response == true;
       }
@@ -1086,8 +994,8 @@ class BackendService {
       debugPrint("Daemon locateApp error: $e. Falling back.");
     }
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
+      SecurityValidator.validateString(n, "App Name");
+      SecurityValidator.validateString(s, "Source");
       final res = await _safeRun([
         "--locate",
         n.trim(),
@@ -1107,11 +1015,8 @@ class BackendService {
       return PackageRepository().getAppDetails(id);
     }
     try {
-      _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [
-        id.trim(),
-        true,
-      ]);
+      SecurityValidator.validateString(id, "App ID");
+      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
@@ -1120,12 +1025,8 @@ class BackendService {
       debugPrint("Daemon getAppDetails error: $e. Falling back.");
     }
     try {
-      _validateString(id, "App ID");
-      final res = await _safeRun([
-        "--details",
-        id.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 25));
+      SecurityValidator.validateString(id, "App ID");
+      final res = await _safeRun(["--details", id.trim(), "--json"], timeout: const Duration(seconds: 25));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {};
     } catch (e) {
@@ -1140,13 +1041,13 @@ class BackendService {
     }
 
     try {
-      _validateString(n, "App Name");
-      _validateString(s, "Source");
+      SecurityValidator.validateString(n, "App Name");
+      SecurityValidator.validateString(s, "Source");
       if (!["-I", "-R", "-U"].contains(f)) {
         throw ArgumentError("Invalid action flag: $f");
       }
       if (url != null && url.trim().isNotEmpty) {
-        _validateUrl(url);
+        SecurityValidator.validateUrl(url);
       }
     } catch (e) {
       return Stream.value(
@@ -1193,7 +1094,7 @@ class BackendService {
       return TaskRepository().updateAll(s);
     }
     try {
-      _validateString(s, "Update Source");
+      SecurityValidator.validateString(s, "Update Source");
       return _safeStream(["-U", "all", "--source", s.trim(), "--json"]);
     } catch (e) {
       return Stream.value(
@@ -1241,10 +1142,8 @@ class BackendService {
       return PackageRepository().importPackages(path);
     }
     try {
-      _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_import_packages", [
-        path.trim(),
-      ]);
+      SecurityValidator.validatePath(path);
+      final daemonRes = await _sendToDaemon("run_import_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
@@ -1253,7 +1152,7 @@ class BackendService {
       debugPrint("Daemon importPackages error: $e. Falling back.");
     }
     try {
-      _validatePath(path);
+      SecurityValidator.validatePath(path);
       final res = await _safeRun(["--import-packages", path.trim(), "--json"]);
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
@@ -1268,10 +1167,8 @@ class BackendService {
       return TaskRepository().exportPackages(path);
     }
     try {
-      _validatePath(path);
-      final daemonRes = await _sendToDaemon("run_export_packages", [
-        path.trim(),
-      ]);
+      SecurityValidator.validatePath(path);
+      final daemonRes = await _sendToDaemon("run_export_packages", [path.trim()]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
@@ -1280,12 +1177,8 @@ class BackendService {
       debugPrint("Daemon exportPackages error: $e. Falling back.");
     }
     try {
-      _validatePath(path);
-      final res = await _safeRun([
-        "--export-packages",
-        path.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 30));
+      SecurityValidator.validatePath(path);
+      final res = await _safeRun(["--export-packages", path.trim(), "--json"], timeout: const Duration(seconds: 30));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {"status": "error"};
     } catch (e) {
@@ -1304,9 +1197,9 @@ class BackendService {
   Future<bool> addCustomRepo(String type, String name, String url) async {
     if (kIsWeb) return true;
     try {
-      _validateString(type, "Repo Type");
-      _validateString(name, "Repo Name");
-      _validateUrl(url);
+      SecurityValidator.validateString(type, "Repo Type");
+      SecurityValidator.validateString(name, "Repo Name");
+      SecurityValidator.validateUrl(url);
 
       final daemonRes = await _sendToDaemon("run_add_custom_repo", [
         type.trim(),
@@ -1335,8 +1228,8 @@ class BackendService {
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {
-      _validateString(type, "Repo Type");
-      _validateString(name, "Repo Name");
+      SecurityValidator.validateString(type, "Repo Type");
+      SecurityValidator.validateString(name, "Repo Name");
 
       final daemonRes = await _sendToDaemon("run_remove_custom_repo", [
         type.trim(),

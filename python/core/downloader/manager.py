@@ -17,9 +17,7 @@ class InstallExecutor:
     def __init__(self, backend):
         self.backend = backend
         self._global_lock = asyncio.Lock()
-        # Murphy-proof: Granular per-package locks to prevent concurrent operations on the same app
         self._package_locks: Dict[str, asyncio.Lock] = {}
-        self._package_lock_cleanup_task = None
         self.is_running = False
         self.privilege_manager = PrivilegeManager()
         # Start background cleanup for locks
@@ -51,37 +49,47 @@ class InstallExecutor:
             self._package_locks[pkg_name] = asyncio.Lock()
         return self._package_locks[pkg_name]
 
+    def _get_package_lock(self, pkg_name: str) -> asyncio.Lock:
+        """Murphy-proof: Granular per-package locking."""
+        if pkg_name not in self._package_locks:
+            self._package_locks[pkg_name] = asyncio.Lock()
+        return self._package_locks[pkg_name]
+
     async def _ensure_privileged(self, callback) -> bool:
         """Centralized privilege escalation check."""
         return await self.privilege_manager.ensure_privileged(callback)
 
     async def install(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute installation with state lock protection and fail-safe checks."""
-        # 1. Parameter Validation & Sanitization (Pre-lock)
+        # 1. Basic Parameter Validation (pre-lock)
         pkg_name = package.get("name")
         if not package or not isinstance(pkg_name, str) or not pkg_name.strip():
             if callback: await callback("[ERROR] Invalid package data (missing name). Installation aborted.")
             return False
 
-        # Boundary Defense: Prevent shell injection or malformed paths
-        # Murphy-proof: include + and @ which are valid in package names (e.g., g++, @vue/cli)
-        if not re.match(r'^[a-zA-Z0-9._/+@-]+$', pkg_name.strip()):
-            if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+        # Murphy-proof: Global lock acquisition with timeout
+        try:
+            await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+        except asyncio.TimeoutError:
+            if callback: await callback("[ERROR] System is busy. A previous task may still be cleaning up. Please wait 30s.")
             return False
 
-        # Murphy-proof: Acquire granular package lock first
-        pkg_lock = self._get_package_lock(pkg_name.strip())
-        async with pkg_lock:
-            # Murphy-proof: Use a timeout for global lock acquisition to prevent permanent "Busy" state
+        try:
+            # 2. Granular Package Lock: Prevent concurrent actions on the same package
+            pkg_lock = self._get_package_lock(pkg_name.strip())
             try:
-                # We use the global lock to ensure we don't run two heavy operations (like two pacman instances) at once.
-                # However, we only wait 5s to avoid UI feeling stuck if there's a minor contention.
-                await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+                await asyncio.wait_for(pkg_lock.acquire(), timeout=2.0)
             except asyncio.TimeoutError:
-                if callback: await callback(f"[ERROR] System is busy with another task. Please wait for it to complete.")
+                if callback: await callback(f"[ERROR] Package '{pkg_name}' is already being processed by another task.")
                 return False
 
             try:
+                # 3. Environment & Security Validation
+                # Boundary Defense: Prevent shell injection or malformed paths
+                if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
+                    if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                    return False
+
                 url = package.get("url")
                 if url:
                     # Murphy-proof URL validation
@@ -92,7 +100,7 @@ class InstallExecutor:
                         if callback: await callback("[ERROR] Security: Shell metacharacters detected in URL.")
                         return False
 
-                # 2. Environment & Dependency Check
+                # 4. Environment & Dependency Check
                 source_name = str(package.get("source", "Native")).lower()
                 if source_name == "native":
                     source_name = "pacman"
@@ -108,9 +116,8 @@ class InstallExecutor:
 
                 try:
                     self.is_running = True
-                    # 3. Execution with Strict Isolation
+                    # 5. Execution with Strict Isolation
                     # Murphy-proof: Standard timeout for the entire installation process (60 minutes)
-                    # This prevents zombie tasks from hanging the backend indefinitely.
                     success = await asyncio.wait_for(source.install(package, callback=callback), timeout=3600)
                     return bool(success)
                 except asyncio.TimeoutError:
@@ -126,29 +133,37 @@ class InstallExecutor:
                 finally:
                     self.is_running = False
             finally:
-                self._global_lock.release()
+                pkg_lock.release()
+        finally:
+            self._global_lock.release()
 
     async def uninstall(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute uninstallation with state lock protection."""
         pkg_name = package.get("name")
-        if not package or not pkg_name:
+        if not package or not isinstance(pkg_name, str) or not pkg_name.strip():
             if callback: await callback("[ERROR] Package name missing for uninstallation.")
             return False
 
-        # Sanitization
-        if not re.match(r'^[a-zA-Z0-9._/+@-]+$', pkg_name.strip()):
-             if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
-             return False
+        try:
+            await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+        except asyncio.TimeoutError:
+            if callback: await callback("[ERROR] System is busy. Please wait for the current task to finish.")
+            return False
 
-        pkg_lock = self._get_package_lock(pkg_name.strip())
-        async with pkg_lock:
+        try:
+            pkg_lock = self._get_package_lock(pkg_name.strip())
             try:
-                await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+                await asyncio.wait_for(pkg_lock.acquire(), timeout=2.0)
             except asyncio.TimeoutError:
-                if callback: await callback("[ERROR] System is busy. Please wait for the current task to finish.")
+                if callback: await callback(f"[ERROR] Package '{pkg_name}' is currently busy.")
                 return False
 
             try:
+                # Sanitization
+                if not re.match(r'^[a-zA-Z0-9._/-]+$', pkg_name.strip()):
+                     if callback: await callback(f"[ERROR] Security: Package name '{pkg_name}' contains illegal characters.")
+                     return False
+
                 source_name = str(package.get("source", "Native")).lower()
                 if source_name == "native":
                     source_name = "pacman"
@@ -171,7 +186,9 @@ class InstallExecutor:
                 finally:
                     self.is_running = False
             finally:
-                self._global_lock.release()
+                pkg_lock.release()
+        finally:
+            self._global_lock.release()
 
     async def update(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Update logic (often proxies to install)."""
@@ -192,7 +209,6 @@ class InstallExecutor:
                 return False
             return True
 
-        # Foolproof: Block Linux-specific sources on other platforms
         if not is_linux and source_name in ("native", "pacman", "aur", "flatpak"):
             logging.error(f"Foolproof: Source '{source_name}' is Linux-only. Current platform: {sys.platform}")
             return False
@@ -207,10 +223,8 @@ class InstallExecutor:
         elif source_name == "flatpak":
             return is_exe("flatpak")
         elif source_name == "aur":
-            # AUR is special: try yay first, then paru
             return is_exe("yay") or is_exe("paru")
         elif source_name == "appimage":
-            # For AppImage, we need at least basic fuse/mount tools or just check if we can run things
             return True
 
         return True
@@ -218,7 +232,3 @@ class InstallExecutor:
     def stop(self):
         """Emergency stop sequence."""
         self.is_running = False
-        if self._package_lock_cleanup_task:
-            self._package_lock_cleanup_task.cancel()
-        # Note: Actual process termination is handled by the signal handlers in main.py
-        # and the specific source implementations which should check is_running.
