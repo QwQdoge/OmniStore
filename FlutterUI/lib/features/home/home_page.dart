@@ -176,9 +176,14 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, featured, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: featured.isEmpty
                         ? const SizedBox.shrink(key: ValueKey('empty_hero'))
-                        : _buildHeroSection(featured, key: const ValueKey('hero_section')),
+                        : _buildHeroSection(
+                            featured,
+                            key: const ValueKey('hero_section'),
+                          ),
                   );
                 },
               ),
@@ -190,6 +195,8 @@ class _HomePageState extends State<HomePage> {
                   if (!isAIEnabled) return const SizedBox.shrink();
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: _isAILoading
                         ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
                         : (_aiPickBlurb != null
@@ -233,6 +240,8 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, trending, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: trending.isEmpty
                         ? const SizedBox.shrink(key: ValueKey('empty_trending'))
                         : AppShelf(
@@ -252,6 +261,8 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, forYou, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: forYou.isEmpty
                         ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
                         : AppShelf(

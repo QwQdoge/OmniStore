@@ -109,6 +109,8 @@ class _AppsPageState extends State<AppsPage> {
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: _isLoading
                   ? const AppsPageSkeleton(key: ValueKey('loading'))
                   : _filteredApps.isEmpty
@@ -195,5 +197,4 @@ class _AppsPageState extends State<AppsPage> {
       ),
     );
   }
-
 }

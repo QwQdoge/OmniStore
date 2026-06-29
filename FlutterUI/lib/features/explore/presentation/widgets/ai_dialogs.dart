@@ -62,6 +62,8 @@ class AIMarkdownDialog extends StatelessWidget {
           builder: (context, snapshot) {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },
@@ -98,6 +100,8 @@ class AICliDialog extends StatelessWidget {
           final cmd = snapshot.data ?? "";
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             child: snapshot.connectionState == ConnectionState.waiting
                 ? const SizedBox(
                     key: ValueKey('loading'),

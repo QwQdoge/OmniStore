@@ -146,17 +146,14 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                 color: isSuccess ? Colors.green : Colors.red,
               ),
               const SizedBox(width: 8),
-              Text(
-                isSuccess ? l10n.aiTestSuccess : l10n.failed,
-              ),
+              Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
             ],
           ),
-          content: msg.toString().isNotEmpty ? SelectableText(msg.toString()) : null,
+          content: msg.toString().isNotEmpty
+              ? SelectableText(msg.toString())
+              : null,
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(c),
-              child: Text(l10n.ok),
-            ),
+            TextButton(onPressed: () => Navigator.pop(c), child: Text(l10n.ok)),
           ],
         ),
       );
@@ -175,9 +172,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -226,7 +223,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                   contentPadding: EdgeInsets.zero,
                   title: Text(l10n.aiProvider),
                   trailing: DropdownButton<String>(
-                    value: widget.settings.config['ai']?['provider'] ?? 'ollama',
+                    value:
+                        widget.settings.config['ai']?['provider'] ?? 'ollama',
                     underline: const SizedBox(),
                     borderRadius: BorderRadius.circular(12),
                     items: [
@@ -293,6 +291,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                     onPressed: _isTestingAI ? null : _testAIConnection,
                     icon: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
                       child: _isTestingAI
                           ? const Skeleton(
                               key: ValueKey('loading'),

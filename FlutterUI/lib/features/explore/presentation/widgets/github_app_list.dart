@@ -63,8 +63,8 @@ class GitHubAppList extends StatelessWidget {
               Text(
                 emptySubtitle,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
             ],
@@ -81,142 +81,146 @@ class GitHubAppList extends StatelessWidget {
       final scheme = Theme.of(context).colorScheme;
 
       content = ListView.builder(
-      key: PageStorageKey<String>('github_store_$keyPrefix'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: SizedBox(height: 120),
+        key: PageStorageKey<String>('github_store_$keyPrefix'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        prototypeItem: const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(borderRadius: 16, child: SizedBox(height: 120)),
         ),
-      ),
-      itemCount: apps.length,
-      itemBuilder: (context, index) {
-        final app = apps[index];
-        final repoUrl = app.url ?? app.homepage;
+        itemCount: apps.length,
+        itemBuilder: (context, index) {
+          final app = apps[index];
+          final repoUrl = app.url ?? app.homepage;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Semantics(
-            label: 'App: ${app.name}',
-            button: true,
-            child: AppCard(
-              borderRadius: 16,
-              color: scheme.surfaceContainerLow,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AppDetailsPage(app: app)),
-              ),
-              child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // App Icon
-                  Hero(
-                    tag: 'app_icon_${app.id}_$keyPrefix',
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        color: scheme.surfaceContainerHighest,
-                        width: 56,
-                        height: 56,
-                        child: app.icon != null
-                            ? CachedNetworkImage(
-                                imageUrl: app.icon!,
-                                width: 56,
-                                height: 56,
-                                memCacheWidth: 112,
-                                memCacheHeight: 112,
-                                fit: BoxFit.cover,
-                                errorWidget: (c, e, s) =>
-                                    const Icon(Icons.code_rounded, size: 28),
-                              )
-                            : const Icon(Icons.code_rounded, size: 28),
-                      ),
-                    ),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Semantics(
+              label: 'App: ${app.name}',
+              button: true,
+              child: AppCard(
+                borderRadius: 16,
+                color: scheme.surfaceContainerLow,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AppDetailsPage(app: app),
                   ),
-                  const SizedBox(width: 16),
-
-                  // App Info Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                app.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Stars Badge
-                            if (GitHubClient.parseUrl(repoUrl) != null)
-                              GitHubStarBadge(
-                                repositoryUrl: repoUrl,
-                                compact: true,
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          app.description.isNotEmpty
-                              ? app.description
-                              : l10n.noDescription,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: scheme.onSurfaceVariant,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // App Icon
+                      Hero(
+                        tag: 'app_icon_${app.id}_$keyPrefix',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            color: scheme.surfaceContainerHighest,
+                            width: 56,
+                            height: 56,
+                            child: app.icon != null
+                                ? CachedNetworkImage(
+                                    imageUrl: app.icon!,
+                                    width: 56,
+                                    height: 56,
+                                    memCacheWidth: 112,
+                                    memCacheHeight: 112,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (c, e, s) => const Icon(
+                                      Icons.code_rounded,
+                                      size: 28,
+                                    ),
+                                  )
+                                : const Icon(Icons.code_rounded, size: 28),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 12),
-                        Row(
+                      ),
+                      const SizedBox(width: 16),
+
+                      // App Info Details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Show source
-                            AppSourceTag(
-                              source: app.primarySource,
-                              mode: AppSourceTagMode.source,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    app.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Stars Badge
+                                if (GitHubClient.parseUrl(repoUrl) != null)
+                                  GitHubStarBadge(
+                                    repositoryUrl: repoUrl,
+                                    compact: true,
+                                  ),
+                              ],
                             ),
-                            const Spacer(),
-                            // Detail link indication
+                            const SizedBox(height: 4),
                             Text(
-                              l10n.viewDetails,
+                              app.description.isNotEmpty
+                                  ? app.description
+                                  : l10n.noDescription,
                               style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: scheme.primary,
+                                fontSize: 14,
+                                color: scheme.onSurfaceVariant,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 12,
-                              color: scheme.primary,
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                // Show source
+                                AppSourceTag(
+                                  source: app.primarySource,
+                                  mode: AppSourceTagMode.source,
+                                ),
+                                const Spacer(),
+                                // Detail link indication
+                                Text(
+                                  l10n.viewDetails,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: scheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 12,
+                                  color: scheme.primary,
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ));
-      },
-    );
+          );
+        },
+      );
     }
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.fastOutSlowIn,
       child: content,
     );
   }
@@ -232,10 +236,7 @@ class GitHubAppListSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: SizedBox(height: 120),
-        ),
+        child: AppCard(borderRadius: 16, child: SizedBox(height: 120)),
       ),
       itemCount: 8,
       itemBuilder: (context, index) {

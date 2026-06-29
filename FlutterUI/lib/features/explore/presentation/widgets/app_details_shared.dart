@@ -70,7 +70,10 @@ class AppDetailsInfoRow extends StatelessWidget {
           label: "${l10n.tapToCopy} $label: $value",
           button: true,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 12.0,
+              horizontal: 16.0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

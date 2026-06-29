@@ -40,24 +40,25 @@ class AppDetailsActions extends StatelessWidget {
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
-        child: Selector<TaskController, ({double? progress, String status, String speed})>(
-          selector: (context, c) => (
-            progress: c.progress,
-            status: c.status,
-            speed: c.speed,
-          ),
-          builder: (context, data, _) => SmoothProgressBar(
-            taskState: TaskState(
-              id: "active",
-              packageName: appName,
-              status: TaskStatus.downloading,
-              progress: data.progress ?? 0.0,
-              stage: data.status,
-              speed: data.speed,
+        child:
+            Selector<
+              TaskController,
+              ({double? progress, String status, String speed})
+            >(
+              selector: (context, c) =>
+                  (progress: c.progress, status: c.status, speed: c.speed),
+              builder: (context, data, _) => SmoothProgressBar(
+                taskState: TaskState(
+                  id: "active",
+                  packageName: appName,
+                  status: TaskStatus.downloading,
+                  progress: data.progress ?? 0.0,
+                  stage: data.status,
+                  speed: data.speed,
+                ),
+                onCancel: onCancelAction,
+              ),
             ),
-            onCancel: onCancelAction,
-          ),
-        ),
       );
     } else if (isAppInstalled) {
       content = Row(
@@ -162,6 +163,8 @@ class AppDetailsActions extends StatelessWidget {
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.fastOutSlowIn,
       child: content,
     );
   }

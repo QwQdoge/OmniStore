@@ -42,9 +42,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _autoDetectSources(AppLocalizations l10n) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.autoDetectingSources))
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.autoDetectingSources)));
 
     final success = await widget.settings.autoDetectSources();
     if (mounted) {
@@ -148,7 +148,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
 
                     bool success = false;
                     if (kIsWeb) {
-                      final config = Map<String, dynamic>.from(widget.settings.config);
+                      final config = Map<String, dynamic>.from(
+                        widget.settings.config,
+                      );
                       config['custom_repos'] = Map<String, dynamic>.from(
                         config['custom_repos'] ?? {},
                       );
@@ -171,7 +173,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                     messenger.showSnackBar(
                       SnackBar(
                         content: Text(
-                          success ? l10n.sourceAddSuccess : l10n.sourceAddFailed,
+                          success
+                              ? l10n.sourceAddSuccess
+                              : l10n.sourceAddFailed,
                         ),
                       ),
                     );
@@ -202,7 +206,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       'brew',
     ];
     final sourcesMap =
-        widget.settings.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {};
+        widget.settings.config['search']?['sources']
+            as Map<dynamic, dynamic>? ??
+        {};
 
     return AppCard(
       child: Padding(
@@ -242,27 +248,27 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.addCustomSource),
-                subtitle: Text(l10n.addCustomSourceDesc),
-                trailing: Semantics(
-                  label: l10n.addCustomSource,
-                  button: true,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.add_circle_outline_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 28,
-                    ),
-                    tooltip: l10n.addCustomSource,
-                    onPressed: () => _showAddSourceDialog(l10n),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.addCustomSource),
+              subtitle: Text(l10n.addCustomSourceDesc),
+              trailing: Semantics(
+                label: l10n.addCustomSource,
+                button: true,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.add_circle_outline_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28,
                   ),
+                  tooltip: l10n.addCustomSource,
+                  onPressed: () => _showAddSourceDialog(l10n),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

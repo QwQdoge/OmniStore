@@ -280,6 +280,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
           child: _isLoadingDetails
               ? const ParagraphSkeleton(key: ValueKey('loading'))
               : MarkdownBody(
@@ -316,36 +318,36 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppDetailsInfoRow(
-                  icon: Icons.source_rounded,
-                  label: AppLocalizations.of(context)!.source,
-                  value: widget.app.primarySource,
-                ),
+                icon: Icons.source_rounded,
+                label: AppLocalizations.of(context)!.source,
+                value: widget.app.primarySource,
+              ),
+              AppDetailsInfoRow(
+                icon: Icons.all_inclusive_rounded,
+                label: AppLocalizations.of(context)!.variant,
+                value: widget.app.sources.join(", "),
+              ),
+              AppDetailsInfoRow(
+                icon: Icons.verified_rounded,
+                label: AppLocalizations.of(context)!.version,
+                value: widget.app.version,
+              ),
+              if (_extraDetails?['developer'] != null)
                 AppDetailsInfoRow(
-                  icon: Icons.all_inclusive_rounded,
-                  label: AppLocalizations.of(context)!.variant,
-                  value: widget.app.sources.join(", "),
+                  icon: Icons.person_rounded,
+                  label: AppLocalizations.of(context)!.developer,
+                  value: _extraDetails!['developer'],
                 ),
+              if (_extraDetails?['license'] != null)
                 AppDetailsInfoRow(
-                  icon: Icons.verified_rounded,
-                  label: AppLocalizations.of(context)!.version,
-                  value: widget.app.version,
+                  icon: Icons.description_rounded,
+                  label: AppLocalizations.of(context)!.license,
+                  value: _extraDetails!['license'],
                 ),
-                if (_extraDetails?['developer'] != null)
-                  AppDetailsInfoRow(
-                    icon: Icons.person_rounded,
-                    label: AppLocalizations.of(context)!.developer,
-                    value: _extraDetails!['developer'],
-                  ),
-                if (_extraDetails?['license'] != null)
-                  AppDetailsInfoRow(
-                    icon: Icons.description_rounded,
-                    label: AppLocalizations.of(context)!.license,
-                    value: _extraDetails!['license'],
-                  ),
-                AppDependencySection(
-                  variant: _getVariantForSource(_selectedSource),
-                  hasCapability: _hasCapability,
-                ),
+              AppDependencySection(
+                variant: _getVariantForSource(_selectedSource),
+                hasCapability: _hasCapability,
+              ),
             ],
           ),
         ),
@@ -495,9 +497,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.launchApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.loadError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.loadError)));
     }
   }
 
@@ -511,9 +513,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.locateApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.loadError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.loadError)));
     }
   }
 
@@ -577,10 +579,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Future<void> _showAIExplainDialog() async {
     final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiExplain(
-      widget.app.name,
-      widget.app.description,
-    );
+    final future = aiRepo.aiExplain(widget.app.name, widget.app.description);
     showDialog(
       context: context,
       builder: (ctx) => AIMarkdownDialog(
@@ -606,15 +605,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
   Future<void> _showAICliDialog() async {
     final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiGenerateCLI(
-      widget.app.name,
-      _selectedSource,
-    );
+    final future = aiRepo.aiGenerateCLI(widget.app.name, _selectedSource);
     showDialog(
       context: context,
-      builder: (ctx) => AICliDialog(
-        future: future,
-      ),
+      builder: (ctx) => AICliDialog(future: future),
     );
   }
 

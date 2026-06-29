@@ -168,6 +168,8 @@ class _TaskHeaderRow extends StatelessWidget {
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(
                 opacity: animation,
@@ -241,12 +243,15 @@ class _ProgressIndicatorStack extends StatelessWidget {
             borderRadius: borderRadius,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: isIndeterminate && !isFailed
                   ? Skeleton(
                       key: const ValueKey('indeterminate'),
                       height: height,
                       width: double.infinity,
-                      borderRadius: borderRadius.bottomLeft.x, // Extract double value
+                      borderRadius:
+                          borderRadius.bottomLeft.x, // Extract double value
                     )
                   : TweenAnimationBuilder<double>(
                       key: const ValueKey('determinate'),

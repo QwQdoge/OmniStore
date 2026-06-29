@@ -40,10 +40,15 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
     }
   }
 
-  Future<void> _triggerCleanup(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _triggerCleanup(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
       return;
     }
 
@@ -64,6 +69,8 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                   const SizedBox(height: 16),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
                     child: taskController.progress != null
                         ? LinearProgressIndicator(
                             key: const ValueKey('determinate'),
@@ -71,7 +78,8 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                           )
                         : const Skeleton(
                             key: ValueKey('indeterminate'),
-                            height: 4.0, // Match typical LinearProgressIndicator height
+                            height:
+                                4.0, // Match typical LinearProgressIndicator height
                             width: double.infinity,
                           ),
                   ),
@@ -134,8 +142,9 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                 const SizedBox(width: 8),
                 Text(
                   l10n.systemCleaning,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 Semantics(
@@ -152,6 +161,8 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
             const SizedBox(height: 16),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
               child: _loadingStorage
                   ? const Column(
                       key: ValueKey('loading'),
@@ -180,80 +191,98 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                       ],
                     )
                   : _storageInfo != null
-                      ? Column(
-                          key: const ValueKey('loaded'),
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  ? Column(
+                      key: const ValueKey('loaded'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Disk Space
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Disk Space
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.diskSpaceInfo(
-                                    ((_storageInfo!['disk_free'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
-                                    ((_storageInfo!['disk_total'] ?? 0) / (1024 * 1024 * 1024)).toStringAsFixed(1),
-                                  ),
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: ((_storageInfo!['disk_used'] ?? 0) /
-                                    ((_storageInfo!['disk_total'] ?? 1) == 0 ? 1 : (_storageInfo!['disk_total'] ?? 1))),
-                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).colorScheme.primary,
-                                ),
+                            Text(
+                              l10n.diskSpaceInfo(
+                                ((_storageInfo!['disk_free'] ?? 0) /
+                                        (1024 * 1024 * 1024))
+                                    .toStringAsFixed(1),
+                                ((_storageInfo!['disk_total'] ?? 0) /
+                                        (1024 * 1024 * 1024))
+                                    .toStringAsFixed(1),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            // Cache Info
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        l10n.cacheTypeInfo(
-                                          ((_storageInfo!['pacman_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                                          ((_storageInfo!['flatpak_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                                          ((_storageInfo!['omnistore_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1),
-                                        ),
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                FilledButton.icon(
-                                  onPressed: () => _triggerCleanup(context, l10n),
-                                  icon: const Icon(Icons.delete_sweep_rounded),
-                                  label: Text(l10n.systemCleaning),
-                                ),
-                              ],
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
-                        )
-                      : Text(
-                          key: const ValueKey('empty'),
-                          l10n.systemCleaningSubtitle,
-                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value:
+                                ((_storageInfo!['disk_used'] ?? 0) /
+                                ((_storageInfo!['disk_total'] ?? 1) == 0
+                                    ? 1
+                                    : (_storageInfo!['disk_total'] ?? 1))),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Cache Info
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${l10n.systemCleaningSubtitle}: ${((_storageInfo!['total_cache'] ?? 0) / (1024 * 1024)).toStringAsFixed(1)} MB",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    l10n.cacheTypeInfo(
+                                      ((_storageInfo!['pacman_cache'] ?? 0) /
+                                              (1024 * 1024))
+                                          .toStringAsFixed(1),
+                                      ((_storageInfo!['flatpak_cache'] ?? 0) /
+                                              (1024 * 1024))
+                                          .toStringAsFixed(1),
+                                      ((_storageInfo!['omnistore_cache'] ?? 0) /
+                                              (1024 * 1024))
+                                          .toStringAsFixed(1),
+                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton.icon(
+                              onPressed: () => _triggerCleanup(context, l10n),
+                              icon: const Icon(Icons.delete_sweep_rounded),
+                              label: Text(l10n.systemCleaning),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Text(
+                      key: const ValueKey('empty'),
+                      l10n.systemCleaningSubtitle,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
             ),
           ],
         ),

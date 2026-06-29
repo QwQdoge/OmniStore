@@ -329,11 +329,16 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           // Navigation / Tabs (Hidden when searching)
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             child: _isSearching
                 ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
                 : Padding(
                     key: const ValueKey('tabs_padding'),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: TabBar(
@@ -348,7 +353,9 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                         ),
                         labelColor: scheme.onPrimaryContainer,
                         unselectedLabelColor: scheme.onSurfaceVariant,
-                        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                         tabs: const [
                           Tab(
                             text: "推荐",
@@ -360,7 +367,10 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                           ),
                           Tab(
                             text: "热度榜",
-                            icon: Icon(Icons.local_fire_department_rounded, size: 20),
+                            icon: Icon(
+                              Icons.local_fire_department_rounded,
+                              size: 20,
+                            ),
                           ),
                           Tab(
                             text: "最新更新",
@@ -378,8 +388,12 @@ class _GitHubStorePageState extends State<GitHubStorePage>
               onRefresh: _handleRefresh,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
                 child: _isSearching
-                    ? _buildSearchResultsView(key: const ValueKey('search_results'))
+                    ? _buildSearchResultsView(
+                        key: const ValueKey('search_results'),
+                      )
                     : TabBarView(
                         key: const ValueKey('tab_bar_view'),
                         controller: _tabController,
