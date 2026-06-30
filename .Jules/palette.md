@@ -73,3 +73,9 @@
 **Learning:** To fully embrace Material Design 3 motion guidelines, it is not enough to just standardize transition durations. The correct easing curves must be applied to implicit transition widgets like `AnimatedSwitcher` to avoid linear, unnatural motion. The standard MD3 recommendation for entering elements is `Curves.easeOutCubic` and for exiting elements is `Curves.fastOutSlowIn`.
 
 **Action:** Injected `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` into all `AnimatedSwitcher` components app-wide to ensure uniform and authentic MD3 interaction clarity.
+
+## 2026-07-02 - Settings UI Refinement and Standardized Headers
+
+**Learning:** Duplicating private `_buildSection` methods for headers leads to inconsistent spacing and styling. Extracting a shared `SettingsSectionHeader` widget ensures that Material 3 typography (`labelLarge`, primary color, bold) is applied consistently with uniform 8dp vertical padding. Furthermore, adding proper easing curves (`Curves.easeOutCubic`, `Curves.fastOutSlowIn`) to `AnimatedSwitcher` transitions significantly improves the perceived quality of the UI when revealing advanced sections.
+
+**Action:** Use `SettingsSectionHeader` for all settings category headers. Always pair `AnimatedSwitcher` with standard MD3 easing curves and maintain a consistent 24dp gap (`SizedBox`) between layout sections.
