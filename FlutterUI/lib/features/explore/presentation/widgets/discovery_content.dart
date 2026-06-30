@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -136,6 +137,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
           Selector<BrowseController, List<AppPackage>>(
             selector: (context, browse) =>
                 browse.recommendations['trending'] ?? [],
+            shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
             builder: (context, trending, _) {
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
