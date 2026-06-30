@@ -135,6 +135,7 @@ class ConfigManager:
         }
         # 初始化加载
         self.current_config = self.load()
+        self.backend = None
 
     @property
     def data(self) -> Dict:

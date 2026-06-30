@@ -5,13 +5,14 @@ from typing import Dict, Any
 import asyncio
 
 class HabitTracker:
-    def __init__(self):
+    def __init__(self, backend=None):
         self.data_dir = Path.home() / ".config" / "omnistore"
         self.data_path = self.data_dir / "user_habits.json"
         self.habits = self._load_habits()
         # ⚡ Optimization: flags for coalesced saving
         self._is_saving = False
         self._needs_another_save = False
+        self.backend = backend
 
     def _load_habits(self) -> Dict[str, Any]:
         if not self.data_path.exists():
@@ -75,7 +76,10 @@ class HabitTracker:
                 if self._needs_another_save:
                     self._save_habits()
 
-        loop.create_task(_save_task())
+        if self.backend:
+            self.backend.create_task(_save_task())
+        else:
+            loop.create_task(_save_task())
 
     def record_search(self, query: str):
         if not query or len(query) < 2:

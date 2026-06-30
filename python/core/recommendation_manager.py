@@ -7,9 +7,10 @@ from typing import List, Dict, Any, Optional
 from core.habit_tracker import HabitTracker
 
 class RecommendationManager:
-    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None):
+    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, backend=None):
         self.session = session
         self.habit_tracker = habit_tracker or HabitTracker()
+        self.backend = backend
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
         self.cache_dir = Path.home() / ".cache" / "omnistore"
@@ -67,7 +68,10 @@ class RecommendationManager:
             self._is_saving = False
             if self._needs_another_save:
                 # Schedule another save if needed
-                asyncio.create_task(self._save_metadata_cache())
+                if self.backend:
+                    self.backend.create_task(self._save_metadata_cache())
+                else:
+                    asyncio.create_task(self._save_metadata_cache())
 
     async def _safe_print_error(self, msg: str):
         import sys
@@ -304,7 +308,10 @@ class RecommendationManager:
         if app_id in self._pending_tasks:
             return await self._pending_tasks[app_id]
 
-        task = asyncio.create_task(self._get_details_impl(app_id))
+        if self.backend:
+            task = self.backend.create_task(self._get_details_impl(app_id))
+        else:
+            task = asyncio.create_task(self._get_details_impl(app_id))
         self._pending_tasks[app_id] = task
         try:
             return await task
@@ -393,7 +400,10 @@ class RecommendationManager:
         if task_key in self._pending_tasks:
             return await self._pending_tasks[task_key]
 
-        task = asyncio.create_task(self._find_metadata_impl(name))
+        if self.backend:
+            task = self.backend.create_task(self._find_metadata_impl(name))
+        else:
+            task = asyncio.create_task(self._find_metadata_impl(name))
         self._pending_tasks[task_key] = task
         try:
             return await task
