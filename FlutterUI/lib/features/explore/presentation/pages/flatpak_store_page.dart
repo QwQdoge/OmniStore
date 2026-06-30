@@ -86,6 +86,10 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
 
       return ListView.builder(
         padding: const EdgeInsets.all(16),
+        prototypeItem: const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: AppCard(borderRadius: 16, child: SizedBox(height: 100)),
+        ),
         itemCount: _apps.length,
         itemBuilder: (context, index) {
           final app = _apps[index];

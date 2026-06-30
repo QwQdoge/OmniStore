@@ -29,6 +29,20 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
   @override
   void initState() {
     super.initState();
+    // Try to load from cache synchronously to prevent flickers
+    final client = context.read<GitHubClient>();
+    int? cached;
+    if (widget.owner != null && widget.repo != null) {
+      cached = client.getCachedStarCount(widget.owner!, widget.repo!);
+    } else {
+      cached = client.getCachedStarCountFromUrl(widget.repositoryUrl);
+    }
+
+    if (cached != null) {
+      _stars = cached;
+      _loading = false;
+    }
+
     _load();
   }
 
@@ -45,7 +59,8 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
   Future<void> _load() async {
     if (!mounted) return;
     setState(() {
-      _loading = true;
+      // If we already have stars (from cache), don't show loading skeleton
+      _loading = _stars == null;
       _failed = false;
     });
 

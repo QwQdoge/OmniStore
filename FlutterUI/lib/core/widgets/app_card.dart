@@ -25,12 +25,17 @@ class AppCard extends StatefulWidget {
 }
 
 class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  AnimationController? _controller;
+  Animation<double>? _scaleAnimation;
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _ensureControllerInitialized() {
+    if (_controller != null) return;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -38,13 +43,7 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.98,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+    ).animate(CurvedAnimation(parent: _controller!, curve: Curves.easeInOut));
   }
 
   @override
@@ -74,10 +73,11 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
+      _ensureControllerInitialized();
       content = MouseRegion(
-        onEnter: (_) => _controller.forward(),
-        onExit: (_) => _controller.reverse(),
-        child: ScaleTransition(scale: _scaleAnimation, child: content),
+        onEnter: (_) => _controller?.forward(),
+        onExit: (_) => _controller?.reverse(),
+        child: ScaleTransition(scale: _scaleAnimation!, child: content),
       );
     }
 

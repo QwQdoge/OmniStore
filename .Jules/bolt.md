@@ -52,3 +52,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Adding `prototypeItem` to `ListView.builder` significantly improves scroll performance and scrollbar accuracy by allowing the framework to pre-calculate dimensions without laying out every child. In `Selector`, when returning a filtered list, the default identity equality will always trigger a rebuild because `.toList()` creates a new instance. Using `shouldRebuild` with `IterableEquality` ensures rebuilds only occur when the actual contents change.
 
 **Action:** Optimized `SearchPage` by adding `prototypeItem` to results and skeleton lists, moving filtering logic into the `Selector`, and implementing `IterableEquality` in `shouldRebuild`.
+
+## 2026-06-30 - Lazy Animation & Cache-First Badge Optimization
+
+**Learning:** Initializing an `AnimationController` in every instance of a common list item (like `AppCard`) creates significant memory and Ticker overhead, especially for non-interactive skeletons and prototype items. Deferring initialization until `onTap` is confirmed as non-null reduces this waste. Additionally, for high-frequency metadata like star counts, relying solely on `FutureBuilder`-style async patterns causes visual "flicker" even when data is cached; a synchronous cache-check in `initState` provides a much smoother browsing experience.
+
+**Action:** Refactored `AppCard` to lazy-initialize its controller and updated `GitHubStarBadge` to perform synchronous cache lookups in `GitHubClient`.

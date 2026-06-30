@@ -168,6 +168,13 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                                   horizontal: 16,
                                   vertical: 8,
                                 ),
+                                prototypeItem: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: SizedBox(
+                                    width: 150,
+                                    child: AppCard(child: SizedBox.expand()),
+                                  ),
+                                ),
                                 itemCount: trending.length,
                                 itemBuilder: (context, index) {
                                   final app = trending[index];
