@@ -14,3 +14,6 @@
 
 ## YYYY-MM-DD
 - Added `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` to all `AnimatedSwitcher` instances in the Flutter UI to make the transition smoother, adhering to subtle MD3 motion rules.
+
+## YYYY-MM-DD
+- Standardized `AnimatedSwitcher` instances in Flutter UI (specifically `settings_page.dart`) to ensure consistent MD3 motion curves (`Curves.easeOutCubic` and `Curves.fastOutSlowIn`) are used.
