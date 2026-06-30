@@ -5,6 +5,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
+import 'settings_section_header.dart';
 
 class AISettingsSection extends StatefulWidget {
   final SettingsController settings;
@@ -166,19 +167,6 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     }
   }
 
-  Widget _buildSection(String title, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
   Widget _buildTextField(
     String label,
     TextEditingController controller,
@@ -211,8 +199,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 32),
-        _buildSection(l10n.aiSettings, context),
+        const SizedBox(height: 24),
+        SettingsSectionHeader(title: l10n.aiSettings),
         AppCard(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
