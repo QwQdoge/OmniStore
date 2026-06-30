@@ -43,8 +43,8 @@
     "description": "Category label"
   },
   "packageManager": "包管理器",
-  "pacmanOfficial": "Pacman（官方库）",
-  "aurUser": "AUR（用户库）",
+  "pacmanOfficial": "Pacman（官方源）",
+  "aurUser": "AUR（用户源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
   "sourcePriority": "应用源优先级（拖动排序）",
@@ -647,7 +647,7 @@
   "@next": {
     "description": "Next button label"
   },
-  "aurFull": "AUR（Arch 用户软件仓库）",
+  "aurFull": "AUR（Arch 用户软件源）",
   "@aurFull": {
     "description": "Full name for AUR"
   },
@@ -756,7 +756,7 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库",
+  "addCustomSourceDesc": "配置自定义 Flatpak 远程源、AppImage 订阅或 GitHub/Bitu 仓库",
   "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"
@@ -769,7 +769,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 远程库",
+  "flatpakRemoteType": "Flatpak 远程源",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
