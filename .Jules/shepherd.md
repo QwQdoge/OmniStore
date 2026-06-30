@@ -47,3 +47,8 @@
 - Updated `FlutterUI/lib/features/explore/presentation/widgets/ai_dialogs.dart` (`AIMarkdownDialog` and `AICliDialog`) to use `l10n.ok` instead of `l10n.confirm`.
 - Updated `FlutterUI/lib/features/task_manager/presentation/widgets/ai_update_summary_dialog.dart` to use `l10n.ok` instead of `l10n.confirm`.
 - Updated `FlutterUI/lib/features/settings/presentation/widgets/storage_cleanup_card.dart` cleanup dialog to use `l10n.ok` instead of `l10n.confirm`.
+## 2026-06-22 - Dialog Consistency & Install Flow Unification
+- Removed hardcoded `shape` property (`RoundedRectangleBorder` with 28.0 radius) from `TerminalDialog` in `FlutterUI/lib/features/task_manager/presentation/widgets/terminal_dialog.dart`. This ensures the dialog falls back to the globally consistent `DialogTheme` defined in `omnistore_theme.dart`.
+- Refactored `_importPackages` in `FlutterUI/lib/features/home/home_page.dart` to use the standardized `TaskController` flow instead of hitting `TaskRepository` directly.
+- Added `taskController.isBusy` guard in `_importPackages` to prevent overlapping installations, showing a standard `l10n.taskInProgress` SnackBar if busy.
+- Refactored the `packages` iteration in `_importPackages`'s `onConfirm` callback to safely capture `BuildContext` variables (`ScaffoldMessenger` and `AppLocalizations`) and `await taskController.runTask` sequentially. This prevents parallel installation race conditions and unifies the UI experience (e.g. terminal dialog progress) with the rest of the application.
