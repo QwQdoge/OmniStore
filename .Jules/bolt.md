@@ -52,3 +52,16 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Adding `prototypeItem` to `ListView.builder` significantly improves scroll performance and scrollbar accuracy by allowing the framework to pre-calculate dimensions without laying out every child. In `Selector`, when returning a filtered list, the default identity equality will always trigger a rebuild because `.toList()` creates a new instance. Using `shouldRebuild` with `IterableEquality` ensures rebuilds only occur when the actual contents change.
 
 **Action:** Optimized `SearchPage` by adding `prototypeItem` to results and skeleton lists, moving filtering logic into the `Selector`, and implementing `IterableEquality` in `shouldRebuild`.
+
+## 2026-06-30 - CachedNetworkImage Memory Optimization
+
+**Learning:** `CachedNetworkImage` decodes images into memory at their original resolution by default, which can cause severe memory bloat and OOM crashes, especially with high-resolution screenshots. Specifying both `memCacheWidth` and `memCacheHeight` forces the image decoder to downsample the image before it enters memory, drastically reducing the memory footprint. A single property might not cover all image aspect ratio constraints; specifying both provides optimal bounding behavior.
+
+**Action:** Added `memCacheHeight` to instances of `CachedNetworkImage` that were previously only specifying `memCacheWidth`. This includes `banner_card.dart` (440 height for 880 width), `app_screenshots.dart` (440 height for 720 width), `screenshot_viewer.dart` (1920 height for 1080 width), and `discovery_content.dart` (300 height for 300 width).
+
+
+## 2026-06-30 - CachedNetworkImage Distortion Prevention
+
+**Learning:** `CachedNetworkImage` uses Flutter's `ResizeImage` provider by default. Specifying a single dimension like `memCacheWidth` efficiently scales down high-resolution images while preserving their aspect ratio (which relies on `ResizeImagePolicy.fit`). However, specifying *both* `memCacheWidth` and `memCacheHeight` forces the provider to use `ResizeImagePolicy.exact`. This ignores the source aspect ratio entirely, causing the image to distort (stretch or squash) in memory, which becomes visible when rendering. The most efficient and safe optimization is to specify only one dimension (e.g., `memCacheWidth`).
+
+**Action:** Removed `memCacheHeight` constraints from all `CachedNetworkImage` widgets that also specified `memCacheWidth`. This preserves the memory optimization benefits of downsampling while eliminating aspect ratio distortion across the app.

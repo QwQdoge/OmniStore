@@ -138,7 +138,6 @@ class InstalledTab extends StatelessWidget {
                           width: 40,
                           height: 40,
                           memCacheWidth: 80,
-                          memCacheHeight: 80,
                           placeholder: (context, url) => const Skeleton(
                             width: 40,
                             height: 40,
