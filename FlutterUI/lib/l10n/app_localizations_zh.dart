@@ -452,7 +452,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptRecommend => '咨询 AI 建议';
 
   @override
-  String get aiPromptError => 'AI 分析错误';
+  String get aiPromptError => '使用 AI 分析错误';
 
   @override
   String get aiPickDay => 'AI 今日精选';
@@ -1814,7 +1814,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 來源，通常更穩定。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 存放庫，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -1830,7 +1830,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR（Arch User Repository） 是由社群維護的軟體來源。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。';
+      'AUR（Arch User Repository） 是由社群維護的軟體存放庫。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';

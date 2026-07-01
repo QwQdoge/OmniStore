@@ -354,7 +354,7 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "AI にアドバイスを求める",
+  "aiPromptRecommend": "AI におすすめを尋ねる",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
@@ -840,11 +840,17 @@
   "copiedToClipboard": "クリップボードにコピーしました",
   "tapToCopy": "タップしてコピー",
   "language": "表示言語",
-  "@language": {},
+  "@language": {
+    "description": "Label for language setting"
+  },
   "languageSubtitle": "再起動後に有効になります",
-  "@languageSubtitle": {},
+  "@languageSubtitle": {
+    "description": "Subtitle for language setting"
+  },
   "restartTitleBar": "タイトルバーの設定を適用するには再起動してください",
-  "@restartTitleBar": {},
+  "@restartTitleBar": {
+    "description": "Message to restart for title bar changes"
+  },
   "enableDaemon": "バックグラウンド更新を有効にする",
   "@enableDaemon": {
     "description": "Label for background daemon"
@@ -856,7 +862,9 @@
   },
   "autoUpdateDesc": "バックグラウンドでパッケージを自動的に更新します",
   "checkIntervalTitle": "更新確認の間隔",
-  "@checkIntervalTitle": {},
+  "@checkIntervalTitle": {
+    "description": "Title for update check interval"
+  },
   "checkIntervalSubtitle": "{hours} 時間ごとに確認",
   "@checkIntervalSubtitle": {
     "placeholders": {
@@ -866,13 +874,21 @@
     }
   },
   "typography": "フォントとタイポグラフィ",
-  "@typography": {},
+  "@typography": {
+    "description": "Title for typography settings"
+  },
   "fontFamily": "フォントファミリー",
-  "@fontFamily": {},
+  "@fontFamily": {
+    "description": "Label for font family setting"
+  },
   "fontScale": "フォントの拡大率",
-  "@fontScale": {},
+  "@fontScale": {
+    "description": "Label for font scale setting"
+  },
   "systemDefault": "システム既定",
-  "@systemDefault": {},
+  "@systemDefault": {
+    "description": "Label for system default option"
+  },
   "hourValue": "{count} 時間",
   "@hourValue": {
     "placeholders": {
