@@ -29,22 +29,13 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
   Animation<double>? _scaleAnimation;
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.onTap != null) {
-      _initAnimation();
-    }
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
-  @override
-  void didUpdateWidget(AppCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.onTap != null && _controller == null) {
-      _initAnimation();
-    }
-  }
-
-  void _initAnimation() {
+  void _ensureControllerInitialized() {
+    if (_controller != null) return;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -53,12 +44,6 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
       begin: 1.0,
       end: 0.98,
     ).animate(CurvedAnimation(parent: _controller!, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
   }
 
   @override
@@ -88,6 +73,7 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
+      _ensureControllerInitialized();
       content = MouseRegion(
         onEnter: (_) => _controller?.forward(),
         onExit: (_) => _controller?.reverse(),

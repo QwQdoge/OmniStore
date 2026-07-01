@@ -94,19 +94,56 @@ class GitHubClient {
     return stale?.data;
   }
 
+  /// Synchronously check if star count is in memory or disk cache.
+  int? getCachedStarCount(String owner, String repo) {
+    final cacheKey = '${_cachePrefix}repo_${owner}_$repo';
+
+    final mem = _memory[cacheKey];
+    if (mem != null && !mem.isExpired) {
+      return _extractStarCount(mem.data);
+    }
+
+    try {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final decoded = jsonDecode(cachedData) as Map<String, dynamic>;
+        final timestamp = decoded['timestamp'] as int? ?? 0;
+        if (DateTime.now().millisecondsSinceEpoch - timestamp <
+            _cacheTtl.inMilliseconds) {
+          final data = decoded['data'] as Map<String, dynamic>?;
+          if (data != null) {
+            _putMemory(cacheKey, data);
+            return _extractStarCount(data);
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  int? getCachedStarCountFromUrl(String? url) {
+    final parsed = parseUrl(url);
+    if (parsed == null) return null;
+    return getCachedStarCount(parsed['owner']!, parsed['repo']!);
+  }
+
   Future<int?> getStarCount(String owner, String repo) async {
     final details = await getRepoDetails(owner, repo);
-    if (details == null) return null;
-    final count = details['stargazers_count'];
-    if (count is int) return count;
-    if (count is num) return count.toInt();
-    return null;
+    return _extractStarCount(details);
   }
 
   Future<int?> getStarCountFromUrl(String? url) async {
     final parsed = parseUrl(url);
     if (parsed == null) return null;
     return getStarCount(parsed['owner']!, parsed['repo']!);
+  }
+
+  static int? _extractStarCount(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    final count = data['stargazers_count'];
+    if (count is int) return count;
+    if (count is num) return count.toInt();
+    return null;
   }
 
   static Map<String, String>? parseUrl(String? url) {
