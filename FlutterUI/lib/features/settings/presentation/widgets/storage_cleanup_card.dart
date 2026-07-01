@@ -81,9 +81,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeOutCubic,
                             builder: (context, value, _) {
-                              return LinearProgressIndicator(
-                                value: value,
-                              );
+                              return LinearProgressIndicator(value: value);
                             },
                           )
                         : const Skeleton(
@@ -228,10 +226,14 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                           child: TweenAnimationBuilder<double>(
                             tween: Tween<double>(
                               begin: 0,
-                              end: ((_storageInfo!['disk_used'] ?? 0) /
-                                  ((_storageInfo!['disk_total'] ?? 1) == 0
-                                      ? 1
-                                      : (_storageInfo!['disk_total'] ?? 1))),
+                              end:
+                                  ((_storageInfo!['disk_used'] ?? 0) /
+                                          ((_storageInfo!['disk_total'] ?? 1) ==
+                                                  0
+                                              ? 1
+                                              : (_storageInfo!['disk_total'] ??
+                                                    1)))
+                                      .toDouble(),
                             ),
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeOutCubic,
