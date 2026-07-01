@@ -170,10 +170,16 @@ class SearchManager:
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}
         if "flatpak" in active_names:
-            installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(cached_apps))
+            if hasattr(self.cm, "backend") and self.cm.backend:
+                installed_flatpak_task = self.cm.backend.create_task(self._get_installed_flatpak(cached_apps))
+            else:
+                installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(cached_apps))
 
         if "aur" in active_names:
-            installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
+            if hasattr(self.cm, "backend") and self.cm.backend:
+                installed_aur_task = self.cm.backend.create_task(self._get_installed_aur(cached_apps))
+            else:
+                installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
 
         # Record the search query (moved after spawning async tasks to reduce startup latency)
         self.habit_tracker.record_search(query)

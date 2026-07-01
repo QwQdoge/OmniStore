@@ -91,10 +91,29 @@ def safe_command(func):
         # Defensive Logging: Log the start of every command
         logging.debug(f"Command execution started: {func.__name__} (args={args}, kwargs={kwargs})")
 
+        # Murphy-proof: Command-level timeout protection.
+        # Installs/updates get 1 hour, others get 2 minutes by default.
+        is_long_running = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system", "run_bootstrap")
+        timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
+
         try:
-            result = await func(self, *args, **kwargs)
+            result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
             logging.debug(f"Command execution finished successfully: {func.__name__}")
             return result
+        except asyncio.TimeoutError:
+            error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
+            logging.error(error_msg)
+            if json_mode:
+                sys.stdout.write(json.dumps({
+                    "status": "error",
+                    "error": "TimeoutError",
+                    "message": error_msg,
+                    "context": func.__name__
+                }, ensure_ascii=False) + "\n")
+                sys.stdout.flush()
+            else:
+                hijacked_print(f"[ERROR] {error_msg}")
+            return False
         except asyncio.CancelledError:
             logging.warning(f"Command execution cancelled: {func.__name__}")
             raise
@@ -124,9 +143,10 @@ def safe_command(func):
 class OmnistoreBackend:
     def __init__(self, json_mode: bool = False):
         self.config = ConfigManager()
+        self.config.backend = self
         self.cache = CacheManager()
         self.env = EnvManager()
-        self.habit_tracker = HabitTracker()
+        self.habit_tracker = HabitTracker(backend=self)
         self.manager: Optional[SearchManager] = None
         self.recommender: Optional[RecommendationManager] = None
 
@@ -141,6 +161,15 @@ class OmnistoreBackend:
         self.session: Optional[aiohttp.ClientSession] = None
         self._ref_count = 0
         self._lock = asyncio.Lock()
+        # Murphy-proof: Task registry for lifecycle management
+        self._task_registry: set[asyncio.Task] = set()
+
+    def create_task(self, coro) -> asyncio.Task:
+        """Murphy-proof: Create a tracked task that is guaranteed to be reaped on backend exit."""
+        task = asyncio.create_task(coro)
+        self._task_registry.add(task)
+        task.add_done_callback(self._task_registry.discard)
+        return task
 
     @property
     def updater(self):
@@ -189,7 +218,7 @@ class OmnistoreBackend:
                 session_replaced = True
 
             if self.recommender is None or session_replaced:
-                self.recommender = RecommendationManager(self.session, self.habit_tracker)
+                self.recommender = RecommendationManager(self.session, self.habit_tracker, backend=self)
 
             if self.manager is None or session_replaced:
                 self.manager = SearchManager(
@@ -213,13 +242,31 @@ class OmnistoreBackend:
                 return
 
         try:
+            # Murphy-proof: Aggressive task cleanup
+            if self._task_registry:
+                logging.info(f"OmnistoreBackend: Cleaning up {len(self._task_registry)} registered tasks.")
+                for task in list(self._task_registry):
+                    if not task.done():
+                        task.cancel()
+
+                # Await all tasks with a short timeout to prevent shutdown hang
+                try:
+                    await asyncio.wait_for(
+                        asyncio.gather(*self._task_registry, return_exceptions=True),
+                        timeout=5.0
+                    )
+                except (asyncio.TimeoutError, Exception):
+                    logging.warning("OmnistoreBackend: Some tasks failed to terminate gracefully during cleanup.")
+                self._task_registry.clear()
+
             if self._executor:
                 try: self._executor.stop()
                 except: pass
                 self._executor = None
 
             if self.session and not self.session.closed:
-                try: await asyncio.wait_for(self.session.close(), timeout=2.0)
+                # Increased timeout for session closure to ensure all pending requests are finished or dropped
+                try: await asyncio.wait_for(self.session.close(), timeout=5.0)
                 except: pass
                 self.session = None
 

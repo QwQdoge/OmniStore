@@ -5,6 +5,7 @@ import inspect
 import logging
 import shutil
 import os
+import re
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from core.backend import OmnistoreBackend, hijacked_print, safe_subprocess
@@ -53,16 +54,32 @@ class CLIArguments(BaseModel):
 
     @field_validator(
         "search", "install", "remove", "update", "details",
-        "add_custom_repo", "remove_custom_repo", "ai_explain",
-        "ai_recommend", "ai_analyze_error", "ai_compare",
-        "ai_correct", "ai_changelog", "ai_cli", "ai_conflicts",
-        "import_packages", "export_packages", "launch", "locate"
+        "ai_explain", "ai_recommend", "ai_analyze_error", "ai_compare",
+        "ai_correct", "ai_conflicts", "launch", "locate"
     )
     @classmethod
-    def validate_non_empty_str(cls, v: Optional[str]) -> Optional[str]:
+    def validate_safe_input(cls, v: Optional[str]) -> Optional[str]:
+        """Murphy-proof: Strict alphanumeric/symbol check to prevent shell injection."""
         if v is not None:
             v_stripped = v.strip()
             if not v_stripped: raise ValueError("Argument cannot be empty.")
+            # Boundary Defense: Forbid shell metacharacters: ; & | ` $ ( ) < > \ ' "
+            # Allow: letters, numbers, dots, dashes, underscores, slashes, pluses, at-signs, and spaces.
+            if not re.match(r'^[a-zA-Z0-9._/ +\-@]+$', v_stripped):
+                raise ValueError("Security violation: Argument contains forbidden shell metacharacters.")
+            return v_stripped
+        return v
+
+    @field_validator("import_packages", "export_packages")
+    @classmethod
+    def validate_safe_path(cls, v: Optional[str]) -> Optional[str]:
+        """Murphy-proof: Path validation to prevent traversal attacks."""
+        if v is not None:
+            v_stripped = v.strip()
+            if not v_stripped: raise ValueError("Path cannot be empty.")
+            if ".." in v_stripped: raise ValueError("Security violation: Path traversal ('..') is forbidden.")
+            if not re.match(r'^[a-zA-Z0-9._/\\: -]+$', v_stripped):
+                raise ValueError("Security violation: Path contains illegal characters.")
             return v_stripped
         return v
 
@@ -70,7 +87,10 @@ class CLIArguments(BaseModel):
     @classmethod
     def validate_add_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
-            parts = [p.strip() for p in v.split(',', 2)]
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+                raise ValueError("Security violation: Repo string contains forbidden characters.")
+            parts = [p.strip() for p in v_stripped.split(',', 2)]
             if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
                 parts = ["appimage", "", parts[1]]
             if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
@@ -80,7 +100,10 @@ class CLIArguments(BaseModel):
     @classmethod
     def validate_remove_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
-            parts = [p.strip() for p in v.split(',', 1)]
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+                raise ValueError("Security violation: Repo string contains forbidden characters.")
+            parts = [p.strip() for p in v_stripped.split(',', 1)]
             if len(parts) < 2: raise ValueError("Invalid format: type,name")
         return v
 
@@ -88,7 +111,10 @@ class CLIArguments(BaseModel):
     @classmethod
     def validate_ai_changelog(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
-            parts = v.split(',')
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+                raise ValueError("Security violation: Argument contains forbidden characters.")
+            parts = v_stripped.split(',')
             if len(parts) < 3: raise ValueError("Changelog format: name,current,next")
         return v
 
@@ -96,7 +122,10 @@ class CLIArguments(BaseModel):
     @classmethod
     def validate_ai_cli(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
-            parts = v.split(',')
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+                raise ValueError("Security violation: Argument contains forbidden characters.")
+            parts = v_stripped.split(',')
             if len(parts) < 2: raise ValueError("AI CLI format: name,summary")
         return v
 

@@ -4,6 +4,7 @@ import os
 import shutil
 import contextlib
 import re
+import weakref
 from typing import Dict, Any, Optional, Callable, Awaitable
 from core.subprocess_utils import safe_subprocess
 from core.sources.utils import PrivilegeManager
@@ -17,43 +18,44 @@ class InstallExecutor:
     def __init__(self, backend):
         self.backend = backend
         self._global_lock = asyncio.Lock()
-        self._package_locks: Dict[str, asyncio.Lock] = {}
+        # Murphy-proof: Use WeakValueDictionary to prevent memory growth.
+        # Locks will be automatically removed from the dict when no active task is holding a reference.
+        self._package_locks = weakref.WeakValueDictionary()
         self.is_running = False
         self.privilege_manager = PrivilegeManager()
         # Start background cleanup for locks
         try:
             loop = asyncio.get_running_loop()
-            self._package_lock_cleanup_task = loop.create_task(self._periodic_lock_cleanup())
+            if self.backend:
+                self._package_lock_cleanup_task = self.backend.create_task(self._periodic_lock_cleanup())
+            else:
+                self._package_lock_cleanup_task = loop.create_task(self._periodic_lock_cleanup())
         except RuntimeError:
             pass
 
     async def _periodic_lock_cleanup(self):
-        """Murphy-proof: Periodically purge unused package locks to prevent slow memory growth."""
+        """
+        Murphy-proof: Periodically purge unused package locks to prevent slow memory growth.
+        Note: WeakValueDictionary already handles most of this, but we keep this as a
+        double-safety guard and to trigger GC collection of the weak references.
+        """
         while True:
             try:
                 await asyncio.sleep(600)  # Every 10 minutes
-                # Use a copy of keys to avoid 'dict changed size during iteration'
-                for name in list(self._package_locks.keys()):
-                    lock = self._package_locks.get(name)
-                    if lock and not lock.locked():
-                        # Minor optimization: only remove if it seems idle
-                        # (there's a tiny race here, but _get_package_lock will just recreate it)
-                        self._package_locks.pop(name, None)
+                import gc
+                gc.collect()
             except asyncio.CancelledError:
                 break
             except Exception:
                 await asyncio.sleep(60)
 
     def _get_package_lock(self, pkg_name: str) -> asyncio.Lock:
-        if pkg_name not in self._package_locks:
-            self._package_locks[pkg_name] = asyncio.Lock()
-        return self._package_locks[pkg_name]
-
-    def _get_package_lock(self, pkg_name: str) -> asyncio.Lock:
-        """Murphy-proof: Granular per-package locking."""
-        if pkg_name not in self._package_locks:
-            self._package_locks[pkg_name] = asyncio.Lock()
-        return self._package_locks[pkg_name]
+        """Murphy-proof: Granular per-package locking with memory efficiency."""
+        lock = self._package_locks.get(pkg_name)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._package_locks[pkg_name] = lock
+        return lock
 
     async def _ensure_privileged(self, callback) -> bool:
         """Centralized privilege escalation check."""

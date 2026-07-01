@@ -26,19 +26,22 @@ async def safe_subprocess(*args, **kwargs):
                     # 1. Attempt graceful group termination (SIGTERM to the process group)
                     if os.name == 'posix':
                         try:
+                            # Verification: Ensure PID still exists before querying PGID
+                            os.kill(proc.pid, 0)
                             pgid = os.getpgid(proc.pid)
-                            # Murphy-proof: Never kill our own process group
+                            # Murphy-proof: Never kill our own process group or system-critical groups
                             if pgid != os.getpgrp() and pgid > 1:
                                 # Start with SIGTERM, SIGHUP, SIGQUIT for a wider graceful shutdown signal
                                 for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
                                     try:
                                         os.killpg(pgid, sig)
-                                    except ProcessLookupError:
+                                    except (ProcessLookupError, PermissionError):
                                         break
-                        except ProcessLookupError:
+                        except (ProcessLookupError, PermissionError):
                             pass
                     else:
-                        proc.terminate()
+                        try: proc.terminate()
+                        except: pass
 
                     try:
                         # Murphy-proof: Use wait_for with a strict timeout to avoid hanging the entire event loop
@@ -47,13 +50,15 @@ async def safe_subprocess(*args, **kwargs):
                         # 2. Escalation: Force group kill (SIGKILL to the process group)
                         if os.name == 'posix':
                             try:
+                                os.kill(proc.pid, 0)
                                 pgid = os.getpgid(proc.pid)
                                 if pgid != os.getpgrp() and pgid > 1:
                                     os.killpg(pgid, signal.SIGKILL)
-                            except ProcessLookupError:
+                            except (ProcessLookupError, PermissionError):
                                 pass
                         else:
-                            proc.kill()
+                            try: proc.kill()
+                            except: pass
                         # Final wait to reap the zombie
                         try:
                             await asyncio.wait_for(proc.wait(), timeout=2)
