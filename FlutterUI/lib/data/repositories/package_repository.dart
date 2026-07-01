@@ -153,13 +153,19 @@ class PackageRepository {
     }
   }
 
-  Future<List<dynamic>> listInstalled() async {
+  Future<List<AppPackage>> listInstalled() async {
     if (kIsWeb) {
       try {
         final prefs = await SharedPreferences.getInstance();
         final raw = prefs.getString('omnistore_installed_packages_cache');
         if (raw != null) {
-          return jsonDecode(raw) as List<dynamic>;
+          final decoded = jsonDecode(raw);
+          if (decoded is List) {
+            return decoded
+                .whereType<Map<String, dynamic>>()
+                .map((e) => AppPackage.fromJson(e))
+                .toList();
+          }
         }
         return [];
       } catch (_) {
@@ -296,7 +302,7 @@ class PackageRepository {
     });
   }
 
-  Future<Map<String, dynamic>> getAppDetails(String appId) async {
+  Future<AppPackage?> getAppDetails(String appId) async {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {
@@ -317,7 +323,7 @@ class PackageRepository {
                 prefs.getStringList('omnistore_installed_ids') ?? [];
             final isInstalled = installedRaw.contains(appId);
 
-            return {
+            return AppPackage.fromJson({
               "name": repo['name'] ?? '',
               "id": appId,
               "description": repo['description'] ?? '',
@@ -332,19 +338,19 @@ class PackageRepository {
                   "installed": isInstalled,
                 },
               ],
-            };
+            });
           }
         }
-        return {
+        return AppPackage.fromJson({
           "name": appId.split('/').last,
           "id": appId,
           "description":
               "Detailed package information is unavailable in web mode.",
           "variants": [],
-        };
+        });
       } catch (e) {
         debugPrint("getAppDetails Web Exception: $e");
-        return {};
+        return null;
       }
     }
     return BackendService.instance.getAppDetails(appId);

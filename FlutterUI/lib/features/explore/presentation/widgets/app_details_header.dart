@@ -9,7 +9,7 @@ import 'package:frontend/core/widgets/github_star_badge.dart';
 
 class AppDetailsHeader extends StatelessWidget {
   final AppPackage app;
-  final Map<String, dynamic>? extraDetails;
+  final AppPackage? extraDetails;
   final String selectedSource;
   final bool isAppInstalled;
   final String? githubRepositoryUrl;
@@ -56,7 +56,7 @@ class AppDetailsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final iconUrl = app.icon ?? extraDetails?['icon'];
+    final iconUrl = app.icon ?? extraDetails?.icon;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,10 +165,8 @@ class AppDetailsHeader extends StatelessWidget {
                       segments:
                           <String>{
                             for (var v in app.variants) v.source,
-                            if (extraDetails != null &&
-                                extraDetails!['variants'] != null)
-                              for (var v in extraDetails!['variants'])
-                                v['source'].toString(),
+                            if (extraDetails != null)
+                              for (var v in extraDetails!.variants) v.source,
                             selectedSource,
                           }.map((String source) {
                             final version = getVersionForSource(source);

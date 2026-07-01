@@ -104,9 +104,7 @@ class _DownloadPageState extends State<DownloadPage>
       final results = await packageRepo.listInstalled();
       if (!mounted) return;
       setState(() {
-        _installedApps = results
-            .map((json) => AppPackage.fromJson(json))
-            .toList();
+        _installedApps = results;
         _applyFilters();
       });
     } catch (e) {

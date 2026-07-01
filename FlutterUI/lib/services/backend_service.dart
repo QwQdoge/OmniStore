@@ -355,6 +355,7 @@ class BackendService {
   }) async {
     if (kIsWeb) return null;
 
+    // Murphy-proof: Pre-flight check
     if (!File(_venvPython).existsSync() && _venvPython != 'python') {
       debugPrint("Backend Error: Python executable not found at $_venvPython");
       return null;
@@ -420,6 +421,13 @@ class BackendService {
       yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
       return;
     }
+
+    // Murphy-proof: Pre-flight check
+    if (!File(_venvPython).existsSync() && _venvPython != 'python') {
+      yield "[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] Python environment missing at $_venvPython\", \"level\": \"ERROR\"}";
+      return;
+    }
+
     if (useLock) await _acquireLock();
 
     Process? process;
@@ -562,18 +570,13 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_search", [trimmedQuery, true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final results = <AppPackage>[];
         final parsed = _safeJsonDecode(daemonRes.stdout);
         if (parsed is List) {
-          results.addAll(
-            parsed.map(
-              (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-            ),
-          );
-        } else if (parsed is Map<String, dynamic>) {
-          results.add(AppPackage.fromJson(parsed));
+          return parsed
+              .whereType<Map<String, dynamic>>()
+              .map((item) => AppPackage.fromJson(item))
+              .toList();
         }
-        return results;
       }
     } catch (e) {
       debugPrint("Daemon searchPackages error: $e. Falling back.");
@@ -586,50 +589,25 @@ class BackendService {
         activeSearchProcess = null;
       }
 
-      final process =
-          await Process.start(
-            _venvPython,
-            _buildArgs(["-S", trimmedQuery, "--json"]),
-            workingDirectory: _workingDir,
-          ).timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw TimeoutException("Search process start timed out");
-            },
-          );
+      final res = await _safeRun(
+        ["-S", trimmedQuery, "--json"],
+        timeout: const Duration(seconds: 30),
+      );
 
-      _processRegistry.add(process);
-      activeSearchProcess = process;
-
-      final results = <AppPackage>[];
-      final output = await process.stdout
-          .transform(utf8.decoder)
-          .join()
-          .timeout(
-            const Duration(seconds: 20),
-            onTimeout: () => throw TimeoutException("Search timed out"),
-          );
-
-      final parsed = _safeJsonDecode(output);
-      if (parsed is List) {
-        results.addAll(
-          parsed.map(
-            (item) => AppPackage.fromJson(item as Map<String, dynamic>),
-          ),
-        );
-      } else if (parsed != null) {
-        results.add(AppPackage.fromJson(parsed as Map<String, dynamic>));
+      if (res != null && res.exitCode == 0) {
+        final parsed = _safeJsonDecode(res.stdout.toString());
+        if (parsed is List) {
+          return parsed
+              .whereType<Map<String, dynamic>>()
+              .map((item) => AppPackage.fromJson(item))
+              .toList();
+        }
       }
-
-      return results;
+      return [];
     } catch (e) {
       debugPrint("searchPackages [query: $query] Error: $e");
       return [];
     } finally {
-      if (activeSearchProcess != null) {
-        _processRegistry.remove(activeSearchProcess!);
-        await _killProcess(activeSearchProcess);
-      }
       activeSearchProcess = null;
     }
   }
@@ -687,30 +665,40 @@ class BackendService {
     return null;
   }
 
-  Future<List<dynamic>> listInstalled() async {
+  Future<List<AppPackage>> listInstalled() async {
     if (kIsWeb) {
-      return PackageRepository().listInstalled();
+      final results = await PackageRepository().listInstalled();
+      return results
+          .whereType<Map<String, dynamic>>()
+          .map((e) => AppPackage.fromJson(e))
+          .toList();
     }
     try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [
-        true,
-        false,
-      ]);
+      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
-        return data is List ? data : [];
+        if (data is List) {
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map((e) => AppPackage.fromJson(e))
+              .toList();
+        }
       }
     } catch (e) {
       debugPrint("Daemon listInstalled error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "-L",
-        "--json",
-      ], timeout: const Duration(seconds: 45));
+      final res = await _safeRun(["-L", "--json"],
+          timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
       final data = _safeJsonDecode(res.stdout.toString());
-      return data is List ? data : [];
+      if (data is List) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map((e) => AppPackage.fromJson(e))
+            .toList();
+      }
+      return [];
     } catch (e) {
       debugPrint("listInstalled Error: $e");
       return [];
@@ -1072,51 +1060,41 @@ class BackendService {
       final daemonRes = await _sendToDaemon("run_recommendations", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
-        final Map<String, List<AppPackage>> result = {};
-        if (data is Map) {
-          data.forEach((k, v) {
-            if (v is List) {
-              result[k] = v
-                  .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-                  .toList();
-            }
-          });
-        } else if (data is List) {
-          result["featured"] = data
-              .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-              .toList();
-        }
-        return result;
+        return _parseRecommendations(data);
       }
     } catch (e) {
       debugPrint("Daemon getRecommendations error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun([
-        "--recommend",
-        "--json",
-      ], timeout: const Duration(seconds: 30));
+      final res = await _safeRun(["--recommend", "--json"],
+          timeout: const Duration(seconds: 30));
       if (res == null) return {};
       final data = _safeJsonDecode(res.stdout.toString());
-      final Map<String, List<AppPackage>> result = {};
-      if (data is Map) {
-        data.forEach((k, v) {
-          if (v is List) {
-            result[k] = v
-                .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-                .toList();
-          }
-        });
-      } else if (data is List) {
-        result["featured"] = data
-            .map((i) => AppPackage.fromJson(i as Map<String, dynamic>))
-            .toList();
-      }
-      return result;
+      return _parseRecommendations(data);
     } catch (e) {
       debugPrint("getRecommendations Error: $e");
       return {};
     }
+  }
+
+  Map<String, List<AppPackage>> _parseRecommendations(dynamic data) {
+    final Map<String, List<AppPackage>> result = {};
+    if (data is Map) {
+      data.forEach((k, v) {
+        if (v is List) {
+          result[k.toString()] = v
+              .whereType<Map<String, dynamic>>()
+              .map((i) => AppPackage.fromJson(i))
+              .toList();
+        }
+      });
+    } else if (data is List) {
+      result["featured"] = data
+          .whereType<Map<String, dynamic>>()
+          .map((i) => AppPackage.fromJson(i))
+          .toList();
+    }
+    return result;
   }
 
   Future<bool> launchApp(String n, String s) async {
@@ -1189,35 +1167,31 @@ class BackendService {
     }
   }
 
-  Future<Map<String, dynamic>> getAppDetails(String id) async {
+  Future<AppPackage?> getAppDetails(String id) async {
     if (kIsWeb) {
-      return PackageRepository().getAppDetails(id);
+      final data = await PackageRepository().getAppDetails(id);
+      return AppPackage.fromJson(data);
     }
     try {
       _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [
-        id.trim(),
-        true,
-      ]);
+      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>) ? data : {};
+        if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
       }
     } catch (e) {
       debugPrint("Daemon getAppDetails error: $e. Falling back.");
     }
     try {
       _validateString(id, "App ID");
-      final res = await _safeRun([
-        "--details",
-        id.trim(),
-        "--json",
-      ], timeout: const Duration(seconds: 25));
+      final res = await _safeRun(["--details", id.trim(), "--json"],
+          timeout: const Duration(seconds: 25));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>) ? data : {};
+      if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
+      return null;
     } catch (e) {
       debugPrint("getAppDetails [id: $id] Error: $e");
-      return {};
+      return null;
     }
   }
 
