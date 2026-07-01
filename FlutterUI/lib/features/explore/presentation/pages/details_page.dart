@@ -6,6 +6,7 @@ import "package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
@@ -386,13 +387,78 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     ).backButtonTooltip,
                     onPressed: () => Navigator.pop(context),
                   ),
-            actions: AppDetailsAppBarActions.buildActions(
-              context: context,
-              app: widget.app,
-              isAIEnabled: isAIEnabled,
-              selectedSource: _selectedSource,
-              onShowTerminalDialog: _showTerminalDialog,
-            ),
+            actions: [
+              if (widget.app.url != null && widget.app.url!.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.language_rounded),
+                  tooltip: AppLocalizations.of(context)!.visitWebsite,
+                  onPressed: () async {
+                    final uri = Uri.parse(widget.app.url!);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    }
+                  },
+                ),
+              if (isAIEnabled) ...[
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiPromptExplain,
+                  button: true,
+                  child: IconButton(
+                    icon: MagicPulseIcon(
+                      icon: Icons.auto_awesome_rounded,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
+                    onPressed: _showAIExplainDialog,
+                  ),
+                ),
+                if (widget.app.variants.length > 1)
+                  Semantics(
+                    label: AppLocalizations.of(context)!.aiCompareTitle,
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.compare_arrows_rounded),
+                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
+                      onPressed: _showAICompareDialog,
+                    ),
+                  ),
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiCliTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.terminal_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
+                    onPressed: _showAICliDialog,
+                  ),
+                ),
+                Semantics(
+                  label: AppLocalizations.of(context)!.aiConflictTitle,
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(Icons.report_problem_rounded),
+                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
+                    onPressed: _showAIConflictDialog,
+                  ),
+                ),
+              ],
+              Semantics(
+                label: AppLocalizations.of(context)!.terminalOutput,
+                button: true,
+                child: IconButton(
+                  icon: Selector<TaskController, bool>(
+                    selector: (context, tc) => tc.isBusy,
+                    builder: (context, isBusy, child) => Badge(
+                      isLabelVisible: isBusy,
+                      child: const Icon(Icons.terminal_rounded),
+                    ),
+                  ),
+                  tooltip: AppLocalizations.of(context)!.terminalOutput,
+                  onPressed: _showTerminalDialog,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
         ],
         body: SelectionArea(

@@ -3,6 +3,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/ai_app_resolver.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 
 class AIPickSkeleton extends StatelessWidget {
   const AIPickSkeleton({super.key});
@@ -11,10 +12,16 @@ class AIPickSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(
+            alpha: 0.3,
+          ),
+          width: 1,
+        ),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,31 +52,41 @@ class AIPickSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.tertiaryContainer.withValues(alpha: 0.2),
+        color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome_rounded),
-              const SizedBox(width: 8),
+              MagicPulseIcon(
+                icon: Icons.auto_awesome_rounded,
+                color: theme.colorScheme.tertiary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
               Text(
                 AppLocalizations.of(context)!.aiPickDay,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.tertiary,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           MarkdownBody(data: aiPickBlurb),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           AIAppResolver(aiText: aiPickBlurb, jsonPrefix: "PICK_JSON:"),
         ],
       ),
