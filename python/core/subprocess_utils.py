@@ -28,15 +28,20 @@ async def safe_subprocess(*args, **kwargs):
                         try:
                             # Verification: Ensure PID still exists before querying PGID
                             os.kill(proc.pid, 0)
-                            pgid = os.getpgid(proc.pid)
-                            # Murphy-proof: Never kill our own process group or system-critical groups
-                            if pgid != os.getpgrp() and pgid > 1:
-                                # Start with SIGTERM, SIGHUP, SIGQUIT for a wider graceful shutdown signal
-                                for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
-                                    try:
-                                        os.killpg(pgid, sig)
-                                    except (ProcessLookupError, PermissionError):
-                                        break
+                            # Race condition protection: if process dies here, getpgid might raise
+                            try:
+                                pgid = os.getpgid(proc.pid)
+                                # Murphy-proof: Never kill our own process group or system-critical groups
+                                if pgid != os.getpgrp() and pgid > 1:
+                                    # Start with SIGTERM, SIGHUP, SIGQUIT for a wider graceful shutdown signal
+                                    for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
+                                        try:
+                                            os.killpg(pgid, sig)
+                                        except (ProcessLookupError, PermissionError):
+                                            break
+                            except ProcessLookupError:
+                                # Process died between os.kill and os.getpgid
+                                pass
                         except (ProcessLookupError, PermissionError):
                             pass
                     else:

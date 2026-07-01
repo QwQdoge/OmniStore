@@ -67,7 +67,7 @@ class _AppsPageState extends State<AppsPage> {
     final results = await packageRepo.listInstalled();
     if (mounted) {
       setState(() {
-        _apps = results.map((json) => AppPackage.fromJson(json)).toList();
+        _apps = results;
         _applyFilter();
         _isLoading = false;
       });

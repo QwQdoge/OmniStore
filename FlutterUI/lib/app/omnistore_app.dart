@@ -118,7 +118,7 @@ class _AppDetailsRouteLoader extends StatefulWidget {
 }
 
 class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
-  late final Future<Map<String, dynamic>> _appDetailsFuture;
+  late final Future<AppPackage?> _appDetailsFuture;
 
   @override
   void initState() {
@@ -128,7 +128,7 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
+    return FutureBuilder<AppPackage?>(
       future: _appDetailsFuture,
       builder: (context, snapshot) {
         return AnimatedSwitcher(
@@ -154,7 +154,7 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
                     ),
                   ),
                 )
-              : snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty
+              : snapshot.hasError || !snapshot.hasData || snapshot.data == null
               ? Scaffold(
                   key: const ValueKey('error'),
                   appBar: AppBar(
@@ -168,7 +168,7 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
                 )
               : AppDetailsPage(
                   key: const ValueKey('loaded'),
-                  app: AppPackage.fromJson(snapshot.data!),
+                  app: snapshot.data!,
                 ),
         );
       },

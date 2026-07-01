@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
@@ -8,8 +9,8 @@ class AppTechnicalDetails extends StatelessWidget {
   final String primarySource;
   final List<String> allSources;
   final String version;
-  final Map<String, dynamic>? extraDetails;
-  final Map<String, dynamic>? currentVariant;
+  final AppPackage? extraDetails;
+  final AppVariant? currentVariant;
   final bool Function(String) hasCapability;
 
   const AppTechnicalDetails({
@@ -44,20 +45,20 @@ class AppTechnicalDetails extends StatelessWidget {
             label: l10n.version,
             value: version,
           ),
-          if (extraDetails?['developer'] != null)
+          if (extraDetails?.developer != null)
             AppDetailsInfoRow(
               icon: Icons.person_rounded,
               label: l10n.developer,
-              value: extraDetails!['developer'],
+              value: extraDetails!.developer!,
             ),
-          if (extraDetails?['license'] != null)
+          if (extraDetails?.license != null)
             AppDetailsInfoRow(
               icon: Icons.description_rounded,
               label: l10n.license,
-              value: extraDetails!['license'],
+              value: extraDetails!.license!,
             ),
           AppDependencySection(
-            variant: currentVariant,
+            variant: currentVariant?.toJson(),
             hasCapability: hasCapability,
           ),
         ],
