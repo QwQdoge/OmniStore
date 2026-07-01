@@ -199,7 +199,6 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
         SettingsSectionHeader(title: l10n.aiSettings),
         AppCard(
           child: Padding(
