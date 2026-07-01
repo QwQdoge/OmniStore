@@ -1,0 +1,11 @@
+{
+  "id": "builtin.github",
+  "kind": "source",
+  "name": "GitHub",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["windows", "linux", "macos"],
+  "capabilities": ["search", "install", "uninstall", "update", "details", "size", "launch", "locate"],
+  "permissions": ["network", "filesystem", "subprocess"],
+  "builtin": true
+}

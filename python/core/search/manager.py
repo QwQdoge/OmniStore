@@ -23,61 +23,17 @@ class SearchManager:
         self.ai_assistant = ai_assistant
         self.sources: Dict[str, UnifiedSource] = {}
         self.plugin_loader = None
+        self.plugin_registry = None
         self._setup_sources()
         self._norm_cache = {}
 
     def _setup_sources(self):
-        self.sources = {}
-        import sys
-        from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource, BituSource
-        from core.sources.external import WingetSource, ScoopSource, BrewSource
-
-        is_linux = sys.platform.startswith("linux")
-        is_windows = (sys.platform == "win32")
-        is_macos = (sys.platform == "darwin")
-
-        # 1. Cloud sources (available on all platforms)
-        self.sources["github"] = GitHubSource(self.session, self.cm)
-        self.sources["bitu"] = BituSource(self.session, self.cm)
-
-        # 2. Linux specific sources
-        if is_linux:
-            if self.cm.get("search.sources.pacman", True):
-                self.sources["pacman"] = PacmanSource()
-            if self.cm.get("search.sources.aur", True):
-                self.sources["aur"] = AurSource(self.session)
-            if self.cm.get("search.sources.flatpak", True):
-                self.sources["flatpak"] = FlatpakSource()
-            if self.cm.get("search.sources.appimage", True):
-                self.sources["appimage"] = AppImageSource(self.session, self.cm)
-
-        # 3. Windows specific sources
-        if is_windows:
-            if self.cm.get("search.sources.winget", True):
-                winget = WingetSource()
-                if winget.enabled: self.sources["winget"] = winget
-            if self.cm.get("search.sources.scoop", True):
-                scoop = ScoopSource()
-                if scoop.enabled: self.sources["scoop"] = scoop
-
-        # 4. macOS / Linux Brew
-        if is_macos or is_linux:
-            if self.cm.get("search.sources.brew", True):
-                brew = BrewSource()
-                if brew.enabled: self.sources["brew"] = brew
-
-        # Load external plugins - only if enabled
-        if self.cm.get("search.sources.plugins", True):
-            from core.sources.manager import PluginLoader
-            try:
-                self.plugin_loader = PluginLoader(self)
-                self.plugin_loader.load_plugins()
-            except Exception as e:
-                import logging
-                logging.getLogger("omnistore").error(f"Failed to load plugins: {e}")
+        from core.sources.plugin_registry import PluginRegistry
+        self.plugin_registry = PluginRegistry(self.cm, self.session)
+        self.sources = self.plugin_registry.load_sources()
 
         # Load custom weights from config (using the "priority" key from config.yaml)
-        weights = self.cm.get("priority", {})
+        weights = self.cm.get("sources.priority", {}) or self.cm.get("priority", {})
         for name, weight in weights.items():
             if name in self.sources:
                 self.sources[name].weight = weight
@@ -163,6 +119,7 @@ class SearchManager:
         # ⚡ Optimization: Pre-fetch installed packages as tasks to be awaited in parallel by individual sources
         installed_flatpak_task = None
         installed_aur_task = None
+        installed_winget_task = None
 
         # ⚡ Bolt: Use cached installed packages if available to avoid redundant subprocesses (~150-400ms saved)
         cached_apps = self.cache.get_installed_packages() if self.cache else None
@@ -181,6 +138,12 @@ class SearchManager:
             else:
                 installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
 
+        if "winget" in active_names:
+            if hasattr(self.cm, "backend") and self.cm.backend:
+                installed_winget_task = self.cm.backend.create_task(self._get_installed_winget(cached_apps))
+            else:
+                installed_winget_task = asyncio.create_task(self._get_installed_winget(cached_apps))
+
         # Record the search query (moved after spawning async tasks to reduce startup latency)
         self.habit_tracker.record_search(query)
 
@@ -195,7 +158,7 @@ class SearchManager:
                 logging.error(f"Search failed for source {source.name}: {e}")
                 return []
 
-        tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task) for src in active_sources]
+        tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task, installed_winget_task=installed_winget_task) for src in active_sources]
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
         except Exception as e:
@@ -312,6 +275,21 @@ class SearchManager:
                     await p.wait()
                 except: pass
 
+    async def _get_installed_winget(self, cached_apps: Optional[List[Dict]]):
+        if cached_apps:
+            return {
+                str(app.get('id') or app.get('name')).strip().lower().replace(" ", "")
+                for app in cached_apps
+                if app.get('primary_source') == 'Winget' and (app.get('id') or app.get('name'))
+            }
+        source = self.sources.get("winget")
+        if source and hasattr(source, "_get_installed_ids"):
+            try:
+                return await source._get_installed_ids()
+            except Exception:
+                return set()
+        return set()
+
     async def _search_single_source(self, source: UnifiedSource, query: str) -> List[Dict]:
         """Defensive source execution: failures in one source shouldn't crash everything."""
         try:
@@ -411,7 +389,7 @@ class SearchManager:
                     seen[norm_key]['installed'] = True
 
                 # Priority mapping
-                prio = {"Flatpak": 3, "Pacman": 2, "AUR": 1}
+                prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
                 if prio.get(source, 0) > prio.get(seen[norm_key]['primary_source'], 0):
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source

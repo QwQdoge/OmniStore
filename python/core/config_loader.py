@@ -41,6 +41,14 @@ class AIModel(BaseModel):
     max_tokens: int = Field(default=2048, ge=1)
     proxy: str = ""
 
+class PluginsModel(BaseModel):
+    enabled: Dict[str, bool] = Field(default_factory=dict)
+    config: Dict[str, Any] = Field(default_factory=dict)
+
+class SourcesModel(BaseModel):
+    order: list = Field(default_factory=list)
+    priority: Dict[str, int] = Field(default_factory=dict)
+
 class ConfigModel(BaseModel):
     first_run: bool = True
     search: SearchModel = Field(default_factory=SearchModel)
@@ -53,6 +61,8 @@ class ConfigModel(BaseModel):
     custom_repos: Dict[str, list] = Field(default_factory=dict)
     mirrors: Dict[str, Any] = Field(default_factory=dict)
     daemon: Dict[str, Any] = Field(default_factory=dict)
+    plugins: PluginsModel = Field(default_factory=PluginsModel)
+    sources: SourcesModel = Field(default_factory=SourcesModel)
 
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
@@ -131,6 +141,17 @@ class ConfigManager:
                 "check_interval_hours": 4,
                 "auto_update": False,
                 "notifications": True
+            },
+            "plugins": {
+                "enabled": {},
+                "config": {}
+            },
+            "sources": {
+                "order": ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "winget", "scoop", "brew"],
+                "priority": {
+                    "pacman": 100, "aur": 80, "flatpak": 60, "appimage": 40,
+                    "winget": 90, "scoop": 70, "brew": 70, "github": 30, "bitu": 30
+                }
             }
         }
         # 初始化加载

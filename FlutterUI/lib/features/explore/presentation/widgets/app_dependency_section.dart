@@ -21,7 +21,12 @@ class AppDependencySection extends StatelessWidget {
     final deps = variant!['depends'] as List?;
     final dlSize = variant!['download_size'];
     final insSize = variant!['installed_size'];
-    if ((deps == null || deps.isEmpty) && dlSize == null && insSize == null) {
+    final diskSize = variant!['disk_size'];
+    final confidence = variant!['size_confidence'];
+    if ((deps == null || deps.isEmpty) &&
+        dlSize == null &&
+        insSize == null &&
+        diskSize == null) {
       return const SizedBox.shrink();
     }
 
@@ -47,6 +52,14 @@ class AppDependencySection extends StatelessWidget {
             icon: Icons.storage_rounded,
             label: AppLocalizations.of(context)!.installedSize,
             value: insSize.toString(),
+          ),
+        if (hasCapability('has_size') && diskSize != null)
+          AppDetailsInfoRow(
+            icon: Icons.folder_copy_rounded,
+            label: confidence == null
+                ? 'Disk size'
+                : 'Disk size (${confidence.toString()})',
+            value: _formatBytes(diskSize),
           ),
         if (deps != null && deps.isNotEmpty) ...[
           Padding(
@@ -84,5 +97,18 @@ class AppDependencySection extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  String _formatBytes(dynamic value) {
+    final bytes = value is num ? value.toDouble() : double.tryParse('$value');
+    if (bytes == null) return value.toString();
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var size = bytes;
+    var unit = 0;
+    while (size >= 1024 && unit < units.length - 1) {
+      size /= 1024;
+      unit++;
+    }
+    return '${size.toStringAsFixed(unit == 0 ? 0 : 1)} ${units[unit]}';
   }
 }

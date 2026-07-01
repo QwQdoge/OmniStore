@@ -1,0 +1,11 @@
+{
+  "id": "builtin.aur",
+  "kind": "source",
+  "name": "AUR",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["linux"],
+  "capabilities": ["search", "install", "uninstall", "update", "details", "list_installed", "size", "launch", "locate"],
+  "permissions": ["subprocess", "network", "filesystem", "system_package_manager"],
+  "builtin": true
+}

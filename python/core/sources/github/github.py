@@ -224,6 +224,69 @@ class GitHubSource(UnifiedSource):
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None
 
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        base_dir = self._managed_base_dir()
+        if not base_dir.exists():
+            return []
+        results: List[Dict[str, Any]] = []
+        for install_dir in sorted(p for p in base_dir.iterdir() if p.is_dir()):
+            repo_id = install_dir.name.replace("_", "/")
+            size = await self.get_size({"id": repo_id})
+            results.append({
+                "name": repo_id.split("/")[-1],
+                "id": repo_id,
+                "primary_source": "GitHub",
+                "source": "GitHub",
+                "managed": True,
+                "installed": True,
+                "description": f"GitHub package {repo_id}",
+                "version": "Local",
+                **size,
+                "variants": [{"source": "GitHub", "id": repo_id, "installed": True, "managed": True, **size}],
+            })
+        return results
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        repo_id = package.get("id") or package.get("name")
+        if not repo_id:
+            return await super().get_size(package)
+        install_dir = self._managed_base_dir() / str(repo_id).replace("/", "_")
+        total = self._directory_size(install_dir)
+        return {
+            "download_size": package.get("download_size"),
+            "installed_size": self._format_bytes(total) if total else None,
+            "disk_size": total or None,
+            "size_confidence": "estimated" if total else "unknown",
+            "size_source": "filesystem scan",
+        }
+
+    def _managed_base_dir(self) -> Path:
+        if sys.platform == "win32":
+            return Path(os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))) / "OmniStore" / "github"
+        if sys.platform == "darwin":
+            return Path.home() / "Library" / "Application Support" / "OmniStore" / "github"
+        return Path.home() / ".local/share/omnistore/github"
+
+    def _directory_size(self, path: Path) -> int:
+        if not path.exists():
+            return 0
+        total = 0
+        for file_path in path.rglob("*"):
+            try:
+                if file_path.is_file():
+                    total += file_path.stat().st_size
+            except OSError:
+                pass
+        return total
+
+    def _format_bytes(self, size: int) -> str:
+        units = ["B", "KB", "MB", "GB", "TB"]
+        value = float(size)
+        for unit in units:
+            if value < 1024 or unit == units[-1]:
+                return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
+            value /= 1024
+
     async def get_recommendations(self) -> Dict[str, List[Dict[str, Any]]]:
         # Fetch trending/popular repos from GitHub as recommendations
         search_url = "https://api.github.com/search/repositories?q=stars:>1000&sort=stars&order=desc"

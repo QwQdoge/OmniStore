@@ -26,6 +26,9 @@ class CLIArguments(BaseModel):
     check_env: bool = False
     bootstrap: bool = False
     list_custom_repos: bool = False
+    list_plugins: bool = False
+    set_plugin_enabled: Optional[str] = None
+    remove_plugin: Optional[str] = None
     add_custom_repo: Optional[str] = None
     remove_custom_repo: Optional[str] = None
     ai_explain: Optional[str] = None
@@ -107,6 +110,26 @@ class CLIArguments(BaseModel):
             if len(parts) < 2: raise ValueError("Invalid format: type,name")
         return v
 
+    @field_validator("set_plugin_enabled")
+    @classmethod
+    def validate_set_plugin_enabled(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._-]+=(true|false|1|0|yes|no)$', v_stripped, re.IGNORECASE):
+                raise ValueError("Plugin enabled format: plugin.id=true|false")
+            return v_stripped
+        return v
+
+    @field_validator("remove_plugin")
+    @classmethod
+    def validate_plugin_id(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v_stripped = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._-]+$', v_stripped):
+                raise ValueError("Invalid plugin id")
+            return v_stripped
+        return v
+
     @field_validator("ai_changelog")
     @classmethod
     def validate_ai_changelog(cls, v: Optional[str]) -> Optional[str]:
@@ -162,14 +185,16 @@ async def handle_cli(backend: OmnistoreBackend, args):
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
 
     async def _handle_ai_conflicts(p):
+        packages = []
         if shutil.which("pacman"):
             try:
                 async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    res = await backend.ai.detect_conflicts(p, stdout.decode().splitlines())
-                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
-            except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
-        else: sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
+                    packages = stdout.decode().splitlines()
+            except Exception as e:
+                logging.debug(f"pacman package scan failed for AI conflicts: {e}")
+        res = await backend.ai.detect_conflicts(p, packages)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
 
     async def _handle_ai_compare(p):
         async with backend:
@@ -191,12 +216,17 @@ async def handle_cli(backend: OmnistoreBackend, args):
         parts = [p.strip() for p in raw_repo.split(',', 1)]
         async with backend: await backend.run_remove_custom_repo(parts[0], parts[1], validated_args.json_mode)
 
+    async def _handle_set_plugin_enabled(raw_value):
+        plugin_id, raw_enabled = [p.strip() for p in raw_value.split("=", 1)]
+        enabled = raw_enabled.lower() in ("true", "1", "yes")
+        await backend.run_set_plugin_enabled(plugin_id, enabled, validated_args.json_mode)
+
     REGISTRY = {
         "get_config": lambda: sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n"),
         "set_config": _save_config_handler,
         "search": lambda: backend.run_search(validated_args.search, validated_args.json_mode),
         "install": lambda: backend.run_install(validated_args.install, validated_args.source, validated_args.url, validated_args.json_mode),
-        "remove": lambda: backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode, validated_args.remove),
+        "remove": lambda: backend.run_uninstall(validated_args.remove, validated_args.source, validated_args.json_mode),
         "update": lambda: backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode),
         "check_updates": lambda: backend.run_check_updates(validated_args.json_mode),
         "list_installed": lambda: backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh),
@@ -207,6 +237,9 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "check_env": _handle_check_env,
         "bootstrap": _handle_bootstrap,
         "list_custom_repos": lambda: backend.run_list_custom_repos(),
+        "list_plugins": lambda: backend.run_list_plugins(validated_args.json_mode),
+        "set_plugin_enabled": lambda: _handle_set_plugin_enabled(validated_args.set_plugin_enabled),
+        "remove_plugin": lambda: backend.run_remove_plugin(validated_args.remove_plugin, validated_args.json_mode),
         "ai_explain": lambda: backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or ""),
         "ai_recommend": lambda: backend.run_ai_recommend(validated_args.ai_recommend),
         "ai_analyze_error": lambda: backend.run_ai_analyze_error(validated_args.ai_analyze_error),

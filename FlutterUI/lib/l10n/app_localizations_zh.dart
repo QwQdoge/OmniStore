@@ -92,10 +92,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get packageManager => '包管理器';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方库）';
+  String get pacmanOfficial => 'Pacman（官方源）';
 
   @override
-  String get aurUser => 'AUR（用户库）';
+  String get aurUser => 'AUR（用户源）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -548,10 +548,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+  String get envFatalDesc => '检测到您的系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+  String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
 
   @override
   String get envOkDesc => '一切就绪！系统环境已完美配置。';
@@ -825,7 +825,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get next => '下一步';
 
   @override
-  String get aurFull => 'AUR（Arch 用户软件仓库）';
+  String get aurFull => 'AUR（Arch 用户软件源）';
 
   @override
   String get flatpakFull => 'Flatpak（Flathub）';
@@ -911,7 +911,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程库、AppImage 订阅或 GitHub/Bitu 仓库';
+      '配置自定义 Flatpak 远程源、AppImage 订阅或 GitHub/Bitu 仓库';
 
   @override
   String get sourceType => '软件源类型';
@@ -923,7 +923,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bituRepoType => 'Bitu / Bitbucket（工作区/仓库）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 远程库';
+  String get flatpakRemoteType => 'Flatpak 远程源';
 
   @override
   String get appImageFeedType => 'AppImage 订阅链接';
@@ -1224,10 +1224,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方庫）';
+  String get pacmanOfficial => 'Pacman（官方存放庫）';
 
   @override
-  String get aurUser => 'AUR（使用者庫）';
+  String get aurUser => 'AUR（使用者存放庫）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -1283,7 +1283,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get cancel => '取消';
 
   @override
-  String get confirm => '確定';
+  String get confirm => '確認';
 
   @override
   String get terminalOutput => '終端輸出';
@@ -1596,7 +1596,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCompareTitle => 'AI 版本比較';
 
   @override
-  String get aiHealthTitle => 'AI 系統健康診斷';
+  String get aiHealthTitle => 'AI 系統健康報告';
 
   @override
   String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
@@ -1680,10 +1680,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
-  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
+  String get envFatalDesc => '偵測到您的系統似乎並非基於 Arch Linux，大部分核心功能將無法使用。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動設定。';
+  String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
 
   @override
   String get envOkDesc => '一切就緒！系統環境已完美配置。';
@@ -2033,17 +2033,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get relatedApps => '相關應用';
 
   @override
-  String get activeSources => '已啟用軟體源';
+  String get activeSources => '已啟用軟體存放庫';
 
   @override
   String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '新增自訂源';
+  String get addCustomSource => '新增自訂存放庫';
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
+      '設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
 
   @override
   String get sourceType => '存放庫類型';
@@ -2055,7 +2055,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/存放庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端庫';
+  String get flatpakRemoteType => 'Flatpak 遠端存放庫';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -2082,7 +2082,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
 
   @override
-  String get addingCustomSource => '正在新增自訂源...';
+  String get addingCustomSource => '正在新增自訂存放庫...';
 
   @override
   String get sourceAddSuccess => '來源新增成功！';
@@ -2091,7 +2091,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceAddFailed => '新增來源失敗。';
 
   @override
-  String get autoDetectingSources => '正在自動偵測系統中可用的軟體源...';
+  String get autoDetectingSources => '正在自動偵測系統中可用的軟體存放庫...';
 
   @override
   String get autoDetectSuccess => '自動偵測完成，設定已儲存！';
@@ -2221,7 +2221,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get taskHistory => '任務歷史記錄';
 
   @override
-  String get unknownApp => '未知應用';
+  String get unknownApp => '未知應用程式';
 
   @override
   String get taskSuccessMsg => '任務執行成功';

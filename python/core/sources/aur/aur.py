@@ -210,3 +210,46 @@ class AurSource(UnifiedSource):
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None
+
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        installed = await self._get_installed_aur_packages()
+        results: List[Dict[str, Any]] = []
+        for name in sorted(installed):
+            size = await self.get_size({"name": name, "id": name})
+            results.append({
+                "name": name,
+                "id": name,
+                "primary_source": "AUR",
+                "source": "AUR",
+                "managed": True,
+                "installed": True,
+                "description": "AUR package",
+                "version": "Local",
+                **size,
+                "variants": [{"source": "AUR", "id": name, "installed": True, "managed": True, **size}],
+            })
+        return results
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        name = package.get("id") or package.get("name")
+        helper = "yay" if os.path.exists("/usr/bin/yay") else ("paru" if os.path.exists("/usr/bin/paru") else "")
+        if not name or not helper:
+            return await super().get_size(package)
+        try:
+            async with safe_subprocess(helper, "-Qi", str(name), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await proc.communicate()
+                info = stdout.decode(errors="ignore")
+                installed_size = None
+                for line in info.splitlines():
+                    if line.startswith("Installed Size"):
+                        installed_size = line.split(":", 1)[1].strip()
+                        break
+                return {
+                    "download_size": None,
+                    "installed_size": installed_size,
+                    "disk_size": None,
+                    "size_confidence": "reported" if installed_size else "unknown",
+                    "size_source": f"{helper} -Qi",
+                }
+        except Exception:
+            return await super().get_size(package)

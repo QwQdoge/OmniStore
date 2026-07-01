@@ -87,6 +87,32 @@
         "proxy": { "type": "string" }
       },
       "required": ["enabled", "provider", "endpoint", "model"]
+    },
+    "plugins": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": { "type": "object" }
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "priority": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        }
+      }
     }
   },
   "required": ["first_run", "search", "ui", "ai"]

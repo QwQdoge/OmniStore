@@ -456,7 +456,7 @@ class OmnistoreBackend:
             sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
-    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False):
+    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False, include_unmanaged: bool = True):
         if not force_refresh:
             cached = self.cache.get_installed_packages() if self.cache else None
             if cached:
@@ -465,60 +465,23 @@ class OmnistoreBackend:
                 return
         installed_list = []
         async with self:
-            async def scan_appimage():
-                res = []
+            sources = list(self.manager.sources.values()) if self.manager else []
+
+            async def scan_source(source):
                 try:
-                    apps_dir = Path.home() / "Applications"
-                    if apps_dir.exists():
-                        loop = asyncio.get_running_loop()
-                        files = await loop.run_in_executor(None, lambda: list(apps_dir.glob("*.AppImage")))
-                        for f in files:
-                            res.append({"name": f.stem, "primary_source": "AppImage", "variants": [{"source": "AppImage"}],
-                                "installed": True, "description": f"Local AppImage at {f}", "version": "Local", "url": f.as_uri()})
-                except Exception as e: logging.debug(f"scan_appimage error: {e}")
-                return res
-            async def scan_flatpak():
-                res = []
-                if shutil.which("flatpak") is None: return res
-                try:
-                    async with safe_subprocess("flatpak", "list", "--app", "--columns=name,application,version,description",
-                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        if stdout:
-                            for line in stdout.decode().strip().splitlines():
-                                parts = [p.strip() for p in line.split('\t')]
-                                if len(parts) >= 2:
-                                    res.append({"name": parts[0], "id": parts[1], "primary_source": "Flatpak", "variants": [{"source": "Flatpak"}],
-                                        "installed": True, "version": parts[2] if len(parts) > 2 else "Unknown",
-                                        "description": parts[3] if len(parts) > 3 else f"Flatpak app {parts[1]}"})
-                except: pass
-                return res
-            async def scan_native():
-                res = []
-                if shutil.which("pacman") is None: return res
-                try:
-                    async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        if stdout:
-                            for line in stdout.decode().strip().splitlines():
-                                if line: res.append({"name": line, "primary_source": "Native", "variants": [{"source": "Native"}],
-                                                       "installed": True, "description": "Native package", "version": "Local"})
-                except: pass
-                return res
-            async def scan_aur():
-                res = []
-                if shutil.which("pacman") is None: return res
-                try:
-                    async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        if stdout:
-                            for line in stdout.decode().strip().splitlines():
-                                if line: res.append({"name": line, "primary_source": "AUR", "variants": [{"source": "AUR"}],
-                                                       "installed": True, "description": "AUR package", "version": "Local"})
-                except: pass
-                return res
-            results = await asyncio.gather(scan_appimage(), scan_flatpak(), scan_native(), scan_aur())
-            for r in results: installed_list.extend(r)
+                    if source.capabilities.get("list_installed"):
+                        return await asyncio.wait_for(source.list_installed(), timeout=30)
+                except Exception as e:
+                    logging.debug(f"list_installed failed for {getattr(source, 'name', 'unknown')}: {e}")
+                return []
+
+            results = await asyncio.gather(*[scan_source(source) for source in sources], return_exceptions=True)
+            for r in results:
+                if isinstance(r, list):
+                    installed_list.extend(r)
+            if include_unmanaged and sys.platform == "win32":
+                installed_list.extend(await self._scan_windows_unmanaged_installed())
+            installed_list = self._merge_installed_apps(installed_list)
             if self.recommender:
                 enrich_targets = [app for app in installed_list if not app.get('icon')]
                 async def _enrich_app(app):
@@ -535,6 +498,213 @@ class OmnistoreBackend:
             if json_mode: sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
             else: self._output_installed_pretty(installed_list)
             if self.cache: self.cache.save_installed_packages(installed_list)
+
+    @safe_command
+    async def run_list_installed_sources(self, json_mode: bool = False, force_refresh: bool = False, include_unmanaged: bool = True):
+        return await self.run_list_installed(
+            json_mode=json_mode,
+            force_refresh=force_refresh,
+            include_unmanaged=include_unmanaged,
+        )
+
+    @safe_command
+    async def run_list_plugins(self, json_mode: bool = False):
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            plugins = registry.list_plugins() if registry else []
+            if json_mode:
+                sys.stdout.write(json.dumps(plugins, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            else:
+                table = Table(title="OmniStore Plugins")
+                table.add_column("ID"); table.add_column("Name"); table.add_column("Enabled"); table.add_column("Available"); table.add_column("Builtin")
+                for p in plugins:
+                    table.add_row(p["id"], p["name"], str(p["enabled"]), str(p["available"]), str(p["builtin"]))
+                console.print(table)
+            return plugins
+
+    @safe_command
+    async def run_set_plugin_enabled(self, plugin_id: str, enabled: bool, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(plugin_id, "Plugin ID")
+        async with self:
+            ok = bool(self.manager and self.manager.plugin_registry and self.manager.plugin_registry.enable(plugin_id, enabled))
+            if self.cache:
+                self.cache.invalidate_installed_cache()
+            if json_mode:
+                sys.stdout.write(json.dumps({"status": "success" if ok else "error", "plugin_id": plugin_id, "enabled": enabled}) + "\n"); sys.stdout.flush()
+            return ok
+
+    @safe_command
+    async def run_remove_plugin(self, plugin_id: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(plugin_id, "Plugin ID")
+        if self.executor and self.executor.is_running:
+            if json_mode:
+                sys.stdout.write(json.dumps({"status": "error", "message": "A task is currently running"}) + "\n"); sys.stdout.flush()
+            return False
+        async with self:
+            ok = bool(self.manager and self.manager.plugin_registry and self.manager.plugin_registry.remove(plugin_id))
+            if self.cache:
+                self.cache.invalidate_installed_cache()
+            if json_mode:
+                sys.stdout.write(json.dumps({"status": "success" if ok else "error", "plugin_id": plugin_id}) + "\n"); sys.stdout.flush()
+            return ok
+
+    async def _scan_windows_unmanaged_installed(self) -> List[Dict[str, Any]]:
+        if sys.platform != "win32":
+            return []
+        try:
+            import winreg
+        except Exception:
+            return []
+
+        roots = [
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
+            (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
+        ]
+        managed_ids = set()
+        if self.manager:
+            for source in self.manager.sources.values():
+                if source.name.lower() == "winget":
+                    try:
+                        managed_ids = await source._get_installed_ids()
+                    except Exception:
+                        managed_ids = set()
+                    break
+
+        results: List[Dict[str, Any]] = []
+        for root, path in roots:
+            try:
+                with winreg.OpenKey(root, path) as key:
+                    for index in range(winreg.QueryInfoKey(key)[0]):
+                        try:
+                            sub_name = winreg.EnumKey(key, index)
+                            with winreg.OpenKey(key, sub_name) as subkey:
+                                app = self._read_windows_uninstall_entry(winreg, subkey, sub_name)
+                                if not app:
+                                    continue
+                                norm_id = str(app.get("id", "")).strip().lower().replace(" ", "")
+                                if norm_id in managed_ids:
+                                    continue
+                                results.append(app)
+                        except OSError:
+                            continue
+            except OSError:
+                continue
+        return results
+
+    def _read_windows_uninstall_entry(self, winreg, key, fallback_id: str) -> Optional[Dict[str, Any]]:
+        def read(name, default=None):
+            try:
+                return winreg.QueryValueEx(key, name)[0]
+            except OSError:
+                return default
+
+        display_name = read("DisplayName")
+        if not display_name:
+            return None
+        system_component = read("SystemComponent", 0)
+        if system_component == 1:
+            return None
+        estimated_kb = read("EstimatedSize")
+        disk_size = int(estimated_kb) * 1024 if isinstance(estimated_kb, int) and estimated_kb > 0 else None
+        install_location = read("InstallLocation") or ""
+        if not disk_size and install_location and os.path.isdir(install_location):
+            disk_size = self._directory_size(install_location)
+        size_text = self._format_bytes(disk_size) if disk_size else None
+        publisher = read("Publisher") or ""
+        version = read("DisplayVersion") or "Unknown"
+        uninstall_string = read("UninstallString")
+        app_id = fallback_id
+        return {
+            "name": str(display_name),
+            "id": app_id,
+            "primary_source": "UnmanagedWindows",
+            "source": "UnmanagedWindows",
+            "managed": False,
+            "installed": True,
+            "version": str(version),
+            "developer": str(publisher),
+            "description": "Windows installed application",
+            "install_location": install_location,
+            "uninstall_string": uninstall_string,
+            "installed_size": size_text,
+            "disk_size": disk_size,
+            "size_confidence": "reported" if estimated_kb else ("estimated" if disk_size else "unknown"),
+            "size_source": "Windows registry" if estimated_kb else ("filesystem scan" if disk_size else "unknown"),
+            "variants": [{
+                "source": "UnmanagedWindows",
+                "id": app_id,
+                "installed": True,
+                "managed": False,
+                "installed_size": size_text,
+                "disk_size": disk_size,
+                "size_confidence": "reported" if estimated_kb else ("estimated" if disk_size else "unknown"),
+                "size_source": "Windows registry" if estimated_kb else ("filesystem scan" if disk_size else "unknown"),
+            }],
+        }
+
+    def _merge_installed_apps(self, apps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        merged: Dict[str, Dict[str, Any]] = {}
+        for app in apps:
+            name = str(app.get("name") or app.get("id") or "").strip()
+            if not name:
+                continue
+            key = self._installed_key(app)
+            if key not in merged:
+                merged[key] = app
+                merged[key].setdefault("variants", [])
+                continue
+            target = merged[key]
+            for variant in app.get("variants", []):
+                if variant not in target.setdefault("variants", []):
+                    target["variants"].append(variant)
+            for field in (
+                "download_size",
+                "installed_size",
+                "disk_size",
+                "size_confidence",
+                "size_source",
+                "install_location",
+            ):
+                if not target.get(field) and app.get(field):
+                    target[field] = app[field]
+            if app.get("managed") and not target.get("managed"):
+                replacement = {**target, **app, "variants": target.get("variants", [])}
+                merged[key] = replacement
+        return sorted(merged.values(), key=lambda item: str(item.get("name", "")).lower())
+
+    def _installed_key(self, app: Dict[str, Any]) -> str:
+        name = str(app.get("name") or app.get("id") or "").strip().lower()
+        version = str(app.get("version") or "").strip().lower()
+        if name:
+            return f"name:{name}:{version}"
+        publisher = str(app.get("developer") or "").lower()
+        location = str(app.get("install_location") or "").lower()
+        return f"unmanaged:{publisher}:{location}:{str(app.get('id') or '').lower()}"
+
+    def _directory_size(self, path: str) -> int:
+        total = 0
+        try:
+            for root, _, files in os.walk(path):
+                for filename in files:
+                    try:
+                        total += os.path.getsize(os.path.join(root, filename))
+                    except OSError:
+                        pass
+        except OSError:
+            return 0
+        return total
+
+    def _format_bytes(self, size: Optional[int]) -> Optional[str]:
+        if not size:
+            return None
+        units = ["B", "KB", "MB", "GB", "TB"]
+        value = float(size)
+        for unit in units:
+            if value < 1024 or unit == units[-1]:
+                return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
+            value /= 1024
+        return f"{size} B"
 
     @safe_command
     async def run_list_custom_repos(self):
@@ -613,14 +783,17 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_conflicts(self, name: str):
+        SecurityValidator.validate_string(name, "App Name")
+        packages = []
         if shutil.which("pacman"):
             try:
                 async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    res = await self.ai.detect_conflicts(name, stdout.decode().splitlines())
-                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
-            except: sys.stdout.write(json.dumps({"response": "Conflict check failed."}) + "\n")
-        else: sys.stdout.write(json.dumps({"response": "pacman not found, conflict check skipped."}) + "\n")
+                    packages = stdout.decode().splitlines()
+            except Exception as e:
+                logging.debug(f"pacman package scan failed for AI conflicts: {e}")
+        res = await self.ai.detect_conflicts(name, packages)
+        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
         sys.stdout.flush()
 
     @safe_command

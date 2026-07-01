@@ -1711,25 +1711,25 @@ abstract class AppLocalizations {
   /// **'Process start failed, please check environment: {error}'**
   String errorProcessStart(String error);
 
-  /// No description provided for @taskForcedTerminated.
+  /// Error message when a task is forcefully terminated
   ///
   /// In en, this message translates to:
   /// **'Task forcibly terminated'**
   String get taskForcedTerminated;
 
-  /// No description provided for @aiTimeout.
+  /// Error message when AI request times out
   ///
   /// In en, this message translates to:
   /// **'AI connection timed out, please try again later.'**
   String get aiTimeout;
 
-  /// No description provided for @aiNoResponse.
+  /// Error message when AI does not respond
   ///
   /// In en, this message translates to:
   /// **'AI failed to provide a valid response.'**
   String get aiNoResponse;
 
-  /// No description provided for @aiParseFailed.
+  /// Error message when AI response parsing fails
   ///
   /// In en, this message translates to:
   /// **'AI response parsing failed: incorrect format.'**
@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// **'Update all error: {error}'**
   String errorUpdateAll(String error);
 
-  /// No description provided for @taskProcessing.
+  /// Task processing status label
   ///
   /// In en, this message translates to:
   /// **'Processing'**
@@ -1915,13 +1915,13 @@ abstract class AppLocalizations {
   /// **'Personal Access Token'**
   String get personalAccessToken;
 
-  /// No description provided for @copyName.
+  /// Button to copy the package name
   ///
   /// In en, this message translates to:
   /// **'Copy Name'**
   String get copyName;
 
-  /// No description provided for @nameCopied.
+  /// Snackbar message indicating name was copied to clipboard
   ///
   /// In en, this message translates to:
   /// **'Name copied to clipboard'**

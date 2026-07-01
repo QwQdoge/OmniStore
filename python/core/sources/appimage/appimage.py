@@ -267,3 +267,49 @@ Categories=Utility;Application;
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None
+
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        apps_dir = Path.home() / "Applications"
+        if not apps_dir.exists():
+            return []
+        results: List[Dict[str, Any]] = []
+        for path in sorted(apps_dir.glob("*.AppImage")):
+            size = await self.get_size({"name": path.stem, "path": str(path)})
+            results.append({
+                "name": path.stem,
+                "id": str(path),
+                "primary_source": "AppImage",
+                "source": "AppImage",
+                "managed": True,
+                "installed": True,
+                "description": f"Local AppImage at {path}",
+                "version": "Local",
+                "url": path.as_uri(),
+                **size,
+                "variants": [{"source": "AppImage", "id": str(path), "url": path.as_uri(), "installed": True, "managed": True, **size}],
+            })
+        return results
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        raw_path = package.get("path") or package.get("id")
+        try:
+            path = Path(str(raw_path))
+            if path.exists() and path.is_file():
+                return {
+                    "download_size": None,
+                    "installed_size": self._format_bytes(path.stat().st_size),
+                    "disk_size": path.stat().st_size,
+                    "size_confidence": "exact",
+                    "size_source": "filesystem scan",
+                }
+        except Exception:
+            pass
+        return await super().get_size(package)
+
+    def _format_bytes(self, size: int) -> str:
+        units = ["B", "KB", "MB", "GB", "TB"]
+        value = float(size)
+        for unit in units:
+            if value < 1024 or unit == units[-1]:
+                return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
+            value /= 1024

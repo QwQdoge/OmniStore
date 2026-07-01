@@ -217,3 +217,53 @@ class FlatpakSource(UnifiedSource):
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None
+
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        results: List[Dict[str, Any]] = []
+        if not self.enabled:
+            return results
+        try:
+            async with safe_subprocess(
+                "flatpak", "list", "--app", "--columns=name,application,version,description",
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = [p.strip() for p in line.split("\t")]
+                    if len(parts) < 2:
+                        continue
+                    app_id = parts[1]
+                    size = await self.get_size({"id": app_id, "name": parts[0]})
+                    results.append({
+                        "name": parts[0],
+                        "id": app_id,
+                        "primary_source": "Flatpak",
+                        "source": "Flatpak",
+                        "managed": True,
+                        "installed": True,
+                        "version": parts[2] if len(parts) > 2 else "Unknown",
+                        "description": parts[3] if len(parts) > 3 else f"Flatpak app {app_id}",
+                        **size,
+                        "variants": [{"source": "Flatpak", "id": app_id, "installed": True, "managed": True, **size}],
+                    })
+        except Exception:
+            pass
+        return results
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        app_id = package.get("id") or package.get("name")
+        if not app_id or not self.enabled:
+            return await super().get_size(package)
+        try:
+            async with safe_subprocess("flatpak", "info", "--show-size", str(app_id), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                raw = stdout.decode(errors="ignore").strip()
+                return {
+                    "download_size": None,
+                    "installed_size": raw or None,
+                    "disk_size": None,
+                    "size_confidence": "reported" if raw else "unknown",
+                    "size_source": "flatpak info --show-size",
+                }
+        except Exception:
+            return await super().get_size(package)

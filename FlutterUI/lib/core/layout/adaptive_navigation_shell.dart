@@ -77,7 +77,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
           color: Theme.of(context).brightness == Brightness.light
               ? scheme.surface
               : scheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(compact ? 16 : 28),
+          borderRadius: BorderRadius.circular(compact ? 16 : 24),
           clipBehavior: Clip.antiAlias,
           child: content,
         );
@@ -189,6 +189,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
         final isExpanded = context.select<SettingsController, bool>(
           (s) => s.isRailExpanded,
         );
+        final railWidth = isExpanded ? 216.0 : 88.0;
 
         return Scaffold(
           backgroundColor: scheme.surface,
@@ -206,41 +207,66 @@ class AdaptiveNavigationShell extends StatelessWidget {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOutCubic,
-                      width: isExpanded ? 180 : 72,
-                      child: NavigationRail(
-                        extended: isExpanded,
-                        minExtendedWidth: 180,
-                        selectedIndex: _railIndex(
-                          railDestinations,
-                          selectedIndex,
-                        ),
-                        onDestinationSelected: (i) => context
-                            .read<NavigationController>()
-                            .setIndex(railDestinations[i].index),
-                        labelType: isExpanded
-                            ? NavigationRailLabelType.none
-                            : NavigationRailLabelType.all,
-                        leading: HamburgerButton(
-                          isExpanded: isExpanded,
-                          onToggle: () => context
-                              .read<SettingsController>()
-                              .setRailExpanded(!isExpanded),
-                        ),
-                        destinations: [
-                          for (final d in railDestinations)
-                            NavigationRailDestination(
-                              icon: Semantics(
-                                label: d.label,
-                                child: Icon(d.icon),
-                              ),
-                              selectedIcon: Icon(d.selectedIcon),
-                              label: Text(d.label),
+                      width: railWidth,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerLowest,
+                        border: Border(
+                          right: BorderSide(
+                            color: scheme.outlineVariant.withValues(
+                              alpha: 0.55,
                             ),
-                        ],
-                        trailing: Expanded(
-                          child: RailBottomActions(
-                            isExpanded: isExpanded,
-                            settingsIndex: settingsIndex,
+                          ),
+                        ),
+                      ),
+                      child: SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: NavigationRail(
+                            extended: isExpanded,
+                            minWidth: 88,
+                            minExtendedWidth: 216,
+                            groupAlignment: -0.92,
+                            useIndicator: true,
+                            selectedIndex: _railIndex(
+                              railDestinations,
+                              selectedIndex,
+                            ),
+                            onDestinationSelected: (i) => context
+                                .read<NavigationController>()
+                                .setIndex(railDestinations[i].index),
+                            labelType: isExpanded
+                                ? NavigationRailLabelType.none
+                                : NavigationRailLabelType.all,
+                            leading: HamburgerButton(
+                              isExpanded: isExpanded,
+                              onToggle: () => context
+                                  .read<SettingsController>()
+                                  .setRailExpanded(!isExpanded),
+                            ),
+                            destinations: [
+                              for (final d in railDestinations)
+                                NavigationRailDestination(
+                                  icon: Tooltip(
+                                    message: d.label,
+                                    child: Icon(d.icon),
+                                  ),
+                                  selectedIcon: Tooltip(
+                                    message: d.label,
+                                    child: Icon(d.selectedIcon),
+                                  ),
+                                  label: Text(
+                                    d.label,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                            trailing: Expanded(
+                              child: RailBottomActions(
+                                isExpanded: isExpanded,
+                                settingsIndex: settingsIndex,
+                              ),
+                            ),
                           ),
                         ),
                       ),

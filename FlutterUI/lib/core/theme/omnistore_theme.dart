@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// MD3 palette: deep purple seed with pink-blue tertiary accent.
+/// MD3 palette with balanced cool and warm roles for desktop app surfaces.
 abstract final class OmnistoreTheme {
-  static const Color seedDeepPurple = Color(0xFF6750A4);
-  static const Color accentPinkBlue = Color(0xFF7BA3D4);
+  static const Color seedColor = Color(0xFF006A6A);
+  static const Color tertiaryAccent = Color(0xFF8B5E00);
 
   static ThemeData light({String? fontFamily}) =>
       _build(Brightness.light, fontFamily);
@@ -17,15 +17,15 @@ abstract final class OmnistoreTheme {
       fontSize: 26,
       fontWeight: FontWeight.w900,
       color: theme.colorScheme.primary,
-      letterSpacing: -1.0,
+      letterSpacing: 0,
     );
   }
 
   static ThemeData _build(Brightness brightness, String? fontFamily) {
     final base = ColorScheme.fromSeed(
-      seedColor: seedDeepPurple,
+      seedColor: seedColor,
       brightness: brightness,
-      tertiary: accentPinkBlue,
+      tertiary: tertiaryAccent,
     );
     final scheme = base.copyWith(
       surfaceContainerLowest: base.surface,
@@ -45,7 +45,7 @@ abstract final class OmnistoreTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
           side: BorderSide(
             color: scheme.outlineVariant.withValues(alpha: 0.35),
           ),
@@ -67,9 +67,17 @@ abstract final class OmnistoreTheme {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: scheme.surfaceContainerLow,
+        backgroundColor: scheme.surfaceContainerLowest,
         indicatorColor: scheme.secondaryContainer,
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
         selectedIconTheme: IconThemeData(color: scheme.onSecondaryContainer),
+        selectedLabelTextStyle: TextStyle(
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelTextStyle: TextStyle(color: scheme.onSurfaceVariant),
         unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
       ),
       snackBarTheme: const SnackBarThemeData(

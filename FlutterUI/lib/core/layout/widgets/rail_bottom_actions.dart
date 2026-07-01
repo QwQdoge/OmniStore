@@ -50,7 +50,7 @@ class RailBottomActions extends StatelessWidget {
                   settingsIndex,
                 ),
               ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         // Download button
         isExpanded
             ? const ExpandedDownloadTile()
@@ -114,14 +114,14 @@ class ExpandedActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Material(
         color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(18),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
@@ -170,18 +170,18 @@ class ExpandedDownloadTile extends StatelessWidget {
     final isSelected = selectedIndex == 4;
 
     return Padding(
-      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       child: ListenableBuilder(
         listenable: UpdateService().availableUpdates,
         builder: (context, _) {
           final updates = UpdateService().availableUpdates.value;
           return Material(
             color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(18),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => context.read<NavigationController>().setIndex(4),
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(18),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -217,7 +217,7 @@ class ExpandedDownloadTile extends StatelessWidget {
                       ),
                     ),
                     if (updates.isNotEmpty)
-                      Badge(label: Text(l10n.resultsFound(updates.length))),
+                      Badge(label: Text('${updates.length}')),
                   ],
                 ),
               ),

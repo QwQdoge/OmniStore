@@ -52,3 +52,53 @@ class PacmanSource(UnifiedSource):
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None
+
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        res: List[Dict[str, Any]] = []
+        if not self.enabled:
+            return res
+        try:
+            async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                for line in stdout.decode(errors="ignore").splitlines():
+                    name = line.strip()
+                    if name:
+                        size = await self.get_size({"name": name, "id": name})
+                        res.append({
+                            "name": name,
+                            "id": name,
+                            "primary_source": "Pacman",
+                            "source": "Pacman",
+                            "managed": True,
+                            "installed": True,
+                            "description": "Native package",
+                            "version": "Local",
+                            **size,
+                            "variants": [{"source": "Pacman", "id": name, "installed": True, "managed": True, **size}],
+                        })
+        except Exception:
+            pass
+        return res
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        name = package.get("id") or package.get("name")
+        if not name or not self.enabled:
+            return await super().get_size(package)
+        try:
+            async with safe_subprocess("pacman", "-Qi", str(name), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await proc.communicate()
+                info = stdout.decode(errors="ignore")
+                installed_size = None
+                for line in info.splitlines():
+                    if line.startswith("Installed Size"):
+                        installed_size = line.split(":", 1)[1].strip()
+                        break
+                return {
+                    "download_size": None,
+                    "installed_size": installed_size,
+                    "disk_size": None,
+                    "size_confidence": "reported" if installed_size else "unknown",
+                    "size_source": "pacman -Qi",
+                }
+        except Exception:
+            return await super().get_size(package)

@@ -50,12 +50,25 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     try {
       final sources = BackendService.availableSources.value;
       if (sources.isEmpty) return true;
-      final cap = sources.firstWhere(
-        (s) => s['name'] == _selectedSource,
-        orElse: () => {},
-      );
+      final selected = _selectedSource.toLowerCase();
+      final cap = sources.firstWhere((s) {
+        final name = (s['name'] ?? '').toString().toLowerCase();
+        final id = (s['id'] ?? '').toString().toLowerCase();
+        return name == selected ||
+            id == selected ||
+            id.endsWith('.$selected') ||
+            id.endsWith(selected);
+      }, orElse: () => {});
       if (cap.isEmpty) return true;
-      return cap['capabilities']?[capability] ?? true;
+      final caps = cap['capabilities'];
+      final normalized = capability == 'has_size' ? 'size' : capability;
+      if (caps is List) {
+        return caps.contains(capability) || caps.contains(normalized);
+      }
+      if (caps is Map) {
+        return caps[capability] ?? caps[normalized] ?? true;
+      }
+      return true;
     } catch (_) {
       return true;
     }

@@ -2,6 +2,8 @@ import json
 import asyncio
 import aiohttp
 import logging
+import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -39,7 +41,7 @@ class AIAssistant:
 
     def _get_ai_config(self) -> Dict:
         """Fetch AI-specific configuration with safe defaults."""
-        return self.cm.get("ai", {
+        cfg = dict(self.cm.get("ai", {
             "enabled": False,
             "provider": "ollama",
             "endpoint": "http://localhost:11434",
@@ -48,7 +50,43 @@ class AIAssistant:
             "temperature": 0.7,
             "max_tokens": 2048,
             "proxy": ""
-        })
+        }))
+        env_overrides = {
+            "enabled": os.environ.get("OMNISTORE_AI_ENABLED"),
+            "provider": os.environ.get("OMNISTORE_AI_PROVIDER"),
+            "endpoint": os.environ.get("OMNISTORE_AI_ENDPOINT"),
+            "model": os.environ.get("OMNISTORE_AI_MODEL"),
+            "api_key": os.environ.get("OMNISTORE_AI_API_KEY"),
+            "temperature": os.environ.get("OMNISTORE_AI_TEMPERATURE"),
+            "max_tokens": os.environ.get("OMNISTORE_AI_MAX_TOKENS"),
+            "proxy": os.environ.get("OMNISTORE_AI_PROXY"),
+        }
+        for key, value in env_overrides.items():
+            if value in (None, ""):
+                continue
+            if key == "enabled":
+                cfg[key] = str(value).lower() in {"1", "true", "yes", "on"}
+            elif key == "temperature":
+                try:
+                    cfg[key] = float(value)
+                except ValueError:
+                    pass
+            elif key == "max_tokens":
+                try:
+                    cfg[key] = int(value)
+                except ValueError:
+                    pass
+            else:
+                cfg[key] = value
+        return cfg
+
+    def _redact_sensitive(self, text: str) -> str:
+        """Redact likely API keys from provider errors before logging."""
+        if not text:
+            return text
+        text = re.sub(r"sk-[A-Za-z0-9_\-]{12,}", "sk-***", text)
+        text = re.sub(r"(Bearer\s+)[A-Za-z0-9_\-\.]{12,}", r"\1***", text, flags=re.IGNORECASE)
+        return text
 
     def _get_language(self) -> str:
         lang = str(self.cm.get("ui.language", "zh-CN"))
@@ -84,8 +122,7 @@ class AIAssistant:
         endpoint = str(cfg.get("endpoint", "")).rstrip('/')
         model = str(cfg.get("model", ""))
         api_key = str(cfg.get("api_key", ""))
-        if not api_key or api_key == "******":
-            import os
+        if api_key == "******":
             api_key = os.environ.get("OMNISTORE_AI_API_KEY", "")
         proxy = str(cfg.get("proxy", ""))
 
@@ -128,7 +165,7 @@ class AIAssistant:
                 if resp.status != 200:
                     self._failure_count += 1
                     self._last_failure_time = time.time()
-                    err_body = await resp.text()
+                    err_body = self._redact_sensitive(await resp.text())
                     logging.error(f"AI Provider Error ({resp.status}): {err_body}")
                     return f"AI 服务商返回错误 ({resp.status})。请检查 API 密钥或网络连接。"
 

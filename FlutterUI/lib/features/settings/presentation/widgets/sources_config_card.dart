@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
@@ -15,6 +16,64 @@ class SourcesConfigCard extends StatefulWidget {
 }
 
 class _SourcesConfigCardState extends State<SourcesConfigCard> {
+  List<SourcePluginInfo> _plugins = const [];
+  bool _loadingPlugins = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlugins();
+  }
+
+  Future<void> _loadPlugins() async {
+    if (kIsWeb) return;
+    setState(() => _loadingPlugins = true);
+    try {
+      final raw = await BackendService.instance.listPlugins();
+      if (!mounted) return;
+      setState(() {
+        _plugins = raw
+            .whereType<Map>()
+            .map(
+              (item) =>
+                  SourcePluginInfo.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .toList();
+      });
+    } catch (e) {
+      debugPrint("Failed to load source plugins: $e");
+    } finally {
+      if (mounted) setState(() => _loadingPlugins = false);
+    }
+  }
+
+  Future<void> _togglePlugin(SourcePluginInfo plugin, bool enabled) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await BackendService.instance.setPluginEnabled(
+      plugin.id,
+      enabled,
+    );
+    if (!mounted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Plugin updated' : 'Plugin update failed'),
+      ),
+    );
+    await _loadPlugins();
+  }
+
+  Future<void> _removePlugin(SourcePluginInfo plugin) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await BackendService.instance.removePlugin(plugin.id);
+    if (!mounted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Plugin removed' : 'Plugin removal failed'),
+      ),
+    );
+    await _loadPlugins();
+  }
+
   void _updateSourceConfig(String key, dynamic value) {
     final config = Map<String, dynamic>.from(widget.settings.config);
     config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
@@ -248,6 +307,34 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
               }).toList(),
             ),
             const SizedBox(height: 16),
+            if (!kIsWeb) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '插件与源',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded),
+                    tooltip: 'Refresh plugins',
+                    onPressed: _loadingPlugins ? null : _loadPlugins,
+                  ),
+                ],
+              ),
+              if (_loadingPlugins)
+                const LinearProgressIndicator(minHeight: 2)
+              else if (_plugins.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text('No source plugins found'),
+                )
+              else
+                ..._plugins.map(_buildPluginTile),
+              const SizedBox(height: 12),
+            ],
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.addCustomSource),
@@ -268,6 +355,72 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPluginTile(SourcePluginInfo plugin) {
+    final theme = Theme.of(context);
+    final statusColor = plugin.error != null
+        ? theme.colorScheme.error
+        : plugin.available
+        ? theme.colorScheme.primary
+        : theme.colorScheme.outline;
+    final subtitle = [
+      plugin.id,
+      if (plugin.platforms.isNotEmpty) plugin.platforms.join(', '),
+      if (plugin.capabilities.isNotEmpty)
+        '${plugin.capabilities.length} capabilities',
+      if (plugin.error != null) plugin.error!,
+    ].join(' · ');
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(
+        backgroundColor: statusColor.withValues(alpha: 0.12),
+        foregroundColor: statusColor,
+        child: Icon(
+          plugin.legacy ? Icons.extension_off_rounded : Icons.extension_rounded,
+        ),
+      ),
+      title: Row(
+        children: [
+          Expanded(child: Text(plugin.name)),
+          if (plugin.builtin)
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Chip(
+                label: Text('Builtin'),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          if (plugin.legacy)
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Chip(
+                label: Text('Legacy'),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+        ],
+      ),
+      subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Switch(
+            value: plugin.enabled,
+            onChanged: plugin.available && !plugin.legacy
+                ? (value) => _togglePlugin(plugin, value)
+                : null,
+          ),
+          if (!plugin.builtin && !plugin.legacy)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded),
+              tooltip: 'Remove plugin',
+              onPressed: () => _removePlugin(plugin),
+            ),
+        ],
       ),
     );
   }

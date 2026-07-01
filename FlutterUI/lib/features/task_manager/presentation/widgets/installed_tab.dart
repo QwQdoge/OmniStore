@@ -25,6 +25,7 @@ class InstalledTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filters = _buildFilters();
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       switchInCurve: Curves.easeOutCubic,
@@ -47,29 +48,22 @@ class InstalledTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       child: Row(
-                        children:
-                            ["all", "Native", "Flatpak", "AUR", "AppImage"]
-                                .map(
-                                  (s) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: ChoiceChip(
-                                      label: Text(
-                                        s == "all"
-                                            ? AppLocalizations.of(
-                                                context,
-                                              )!.explore
-                                            : s,
-                                      ),
-                                      selected: selectedSourceFilter == s,
-                                      onSelected: (v) {
-                                        if (v) {
-                                          onSourceFilterSelected(s);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                        children: filters
+                            .map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  label: Text(_filterLabel(context, s)),
+                                  selected: selectedSourceFilter == s,
+                                  onSelected: (v) {
+                                    if (v) {
+                                      onSourceFilterSelected(s);
+                                    }
+                                  },
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                   ),
@@ -78,6 +72,30 @@ class InstalledTab extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  List<String> _buildFilters() {
+    final sources =
+        filteredApps
+            .expand((app) => {...app.sources, app.primarySource})
+            .where((source) => source.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return ['all', 'managed', 'unmanaged', ...sources];
+  }
+
+  String _filterLabel(BuildContext context, String value) {
+    switch (value) {
+      case 'all':
+        return 'All';
+      case 'managed':
+        return 'Managed';
+      case 'unmanaged':
+        return 'Read-only';
+      default:
+        return value;
+    }
   }
 
   Widget _buildInstalledList(BuildContext context) {
@@ -113,6 +131,7 @@ class InstalledTab extends StatelessWidget {
       itemCount: filteredApps.length,
       itemBuilder: (context, index) {
         final app = filteredApps[index];
+        final sizeText = app.diskSize ?? app.installedSize ?? app.downloadSize;
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Semantics(
@@ -154,14 +173,29 @@ class InstalledTab extends StatelessWidget {
                 ),
                 subtitle: Row(
                   children: [
-                    Text(
-                      app.primarySource,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Chip(
+                      label: Text(app.primarySource),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      side: BorderSide.none,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
+                    if (!app.managed) ...[
+                      Chip(
+                        label: const Text('Read-only'),
+                        avatar: const Icon(Icons.visibility_rounded, size: 14),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    if (sizeText != null && sizeText.toString().isNotEmpty) ...[
+                      Text(
+                        sizeText.toString(),
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: Text(
                         app.description,

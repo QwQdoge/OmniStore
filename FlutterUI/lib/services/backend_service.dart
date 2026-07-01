@@ -717,6 +717,103 @@ class BackendService {
     }
   }
 
+  Future<List<dynamic>> listPlugins() async {
+    if (kIsWeb) return [];
+    try {
+      final daemonRes = await _sendToDaemon("run_list_plugins", [true]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        final data = _safeJsonDecode(daemonRes.stdout);
+        if (data is List) {
+          availableSources.value = data
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+          return data;
+        }
+      }
+    } catch (e) {
+      debugPrint("Daemon listPlugins error: $e. Falling back.");
+    }
+    try {
+      final res = await _safeRun(["--list-plugins", "--json"]);
+      if (res != null && res.exitCode == 0) {
+        final data = _safeJsonDecode(res.stdout.toString());
+        if (data is List) {
+          availableSources.value = data
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+          return data;
+        }
+      }
+    } catch (e) {
+      debugPrint("listPlugins Error: $e");
+    }
+    return [];
+  }
+
+  Future<bool> setPluginEnabled(String pluginId, bool enabled) async {
+    if (kIsWeb) return false;
+    _validateString(pluginId, "Plugin ID");
+    try {
+      final daemonRes = await _sendToDaemon("run_set_plugin_enabled", [
+        pluginId.trim(),
+        enabled,
+        true,
+      ]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        await listPlugins();
+        return true;
+      }
+    } catch (e) {
+      debugPrint("Daemon setPluginEnabled error: $e. Falling back.");
+    }
+    try {
+      final value = enabled ? "true" : "false";
+      final res = await _safeRun([
+        "--set-plugin-enabled",
+        "${pluginId.trim()}=$value",
+        "--json",
+      ]);
+      final success = res != null && res.exitCode == 0;
+      if (success) await listPlugins();
+      return success;
+    } catch (e) {
+      debugPrint("setPluginEnabled Error: $e");
+      return false;
+    }
+  }
+
+  Future<bool> removePlugin(String pluginId) async {
+    if (kIsWeb) return false;
+    _validateString(pluginId, "Plugin ID");
+    try {
+      final daemonRes = await _sendToDaemon("run_remove_plugin", [
+        pluginId.trim(),
+        true,
+      ]);
+      if (daemonRes != null && daemonRes.status == 'success') {
+        await listPlugins();
+        return true;
+      }
+    } catch (e) {
+      debugPrint("Daemon removePlugin error: $e. Falling back.");
+    }
+    try {
+      final res = await _safeRun([
+        "--remove-plugin",
+        pluginId.trim(),
+        "--json",
+      ]);
+      final success = res != null && res.exitCode == 0;
+      if (success) await listPlugins();
+      return success;
+    } catch (e) {
+      debugPrint("removePlugin Error: $e");
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> loadConfig() async {
     if (kIsWeb) {
       final data = await ConfigRepository().loadConfig();

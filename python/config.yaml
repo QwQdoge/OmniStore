@@ -24,6 +24,24 @@ priority:
   flatpak: 60          # Sandbox container apps
   appimage: 40         # Pre-compiled stand-alone binaries
 
+# --- Plugin Registry ---
+plugins:
+  enabled: {}          # Map plugin id to enabled state, e.g. {"builtin.winget": true}
+  config: {}           # Plugin-specific config keyed by plugin id
+
+sources:
+  order: ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "winget", "scoop", "brew"]
+  priority:
+    pacman: 100
+    winget: 90
+    aur: 80
+    scoop: 70
+    brew: 70
+    flatpak: 60
+    appimage: 40
+    github: 30
+    bitu: 30
+
 # --- User Interface (M3 Standards) ---
 ui:
   appearance: "system" # Theme mode: "system", "dark", or "light"

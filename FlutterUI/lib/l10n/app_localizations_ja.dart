@@ -448,7 +448,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => 'AI で説明';
+  String get aiPromptExplain => '解析';
 
   @override
   String get aiPromptRecommend => 'AI にアドバイスを求める';
@@ -499,7 +499,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiRefineSearch => 'AI で検索を絞り込む';
 
   @override
-  String get aiExplainUpdate => 'この更新を説明';
+  String get aiExplainUpdate => 'この更新を解析';
 
   @override
   String get windowMinimize => '最小化';

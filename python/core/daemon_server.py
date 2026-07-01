@@ -19,6 +19,8 @@ class DaemonRequest(BaseModel):
             "run_check_updates", "run_recommendations", "run_app_details",
             "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
             "run_remove_custom_repo", "run_launch", "run_locate",
+            "run_list_installed_sources", "run_list_plugins",
+            "run_set_plugin_enabled", "run_remove_plugin",
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
             "run_import_packages", "run_export_packages", "run_ai_test",
             "run_ai_explain", "run_ai_recommend", "run_ai_analyze_error", "run_ai_pick",

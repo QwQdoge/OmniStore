@@ -120,6 +120,8 @@ class _DownloadPageState extends State<DownloadPage>
     _filteredApps = _installedApps.where((app) {
       final matchesSource =
           _selectedSourceFilter == "all" ||
+          (_selectedSourceFilter == "managed" && app.managed) ||
+          (_selectedSourceFilter == "unmanaged" && !app.managed) ||
           app.sources.contains(_selectedSourceFilter) ||
           app.primarySource == _selectedSourceFilter;
       final matchesSearch =

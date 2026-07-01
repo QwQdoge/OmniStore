@@ -191,7 +191,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get catMedia => 'Multimedia';
 
   @override
-  String get catInternet => 'Internet';
+  String get catInternet => 'Internet y Redes';
 
   @override
   String get catSystem => 'Sistema';
@@ -940,7 +940,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiTimeout =>
-      'La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.';
+      'Se ha agotado el tiempo de conexión con la IA, por favor inténtelo de nuevo más tarde.';
 
   @override
   String get aiNoResponse => 'La IA no pudo proporcionar una respuesta válida.';

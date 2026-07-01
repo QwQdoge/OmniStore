@@ -1,0 +1,11 @@
+{
+  "id": "builtin.appimage",
+  "kind": "source",
+  "name": "AppImage",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["linux"],
+  "capabilities": ["search", "install", "uninstall", "details", "list_installed", "size", "repositories", "launch", "locate"],
+  "permissions": ["subprocess", "network", "filesystem"],
+  "builtin": true
+}

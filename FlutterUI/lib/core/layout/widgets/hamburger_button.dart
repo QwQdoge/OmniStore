@@ -16,13 +16,18 @@ class HamburgerButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Semantics(
         label: isExpanded ? l10n.collapse : l10n.expand,
         button: true,
-        child: IconButton(
+        child: IconButton.filledTonal(
           onPressed: onToggle,
           tooltip: isExpanded ? l10n.collapse : l10n.expand,
+          style: IconButton.styleFrom(
+            fixedSize: const Size(44, 44),
+            backgroundColor: scheme.surfaceContainerHighest,
+            foregroundColor: scheme.onSurfaceVariant,
+          ),
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeOutCubic,
@@ -34,7 +39,6 @@ class HamburgerButton extends StatelessWidget {
             child: Icon(
               isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
               key: ValueKey(isExpanded),
-              color: scheme.onSurfaceVariant,
             ),
           ),
         ),

@@ -1,0 +1,11 @@
+{
+  "id": "builtin.scoop",
+  "kind": "source",
+  "name": "Scoop",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["windows"],
+  "capabilities": ["search", "install", "uninstall", "update", "details", "list_installed", "size", "repositories", "launch", "locate"],
+  "permissions": ["subprocess", "filesystem", "system_package_manager"],
+  "builtin": true
+}

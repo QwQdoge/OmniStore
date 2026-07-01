@@ -5,6 +5,11 @@ class AppVariant {
   final String description;
   final String? url;
   final String? id;
+  final bool managed;
+  final int? diskSize;
+  final String? sizeConfidence;
+  final String? installedSize;
+  final String? downloadSize;
 
   AppVariant({
     required this.source,
@@ -13,6 +18,11 @@ class AppVariant {
     required this.description,
     this.url,
     this.id,
+    this.managed = true,
+    this.diskSize,
+    this.sizeConfidence,
+    this.installedSize,
+    this.downloadSize,
   });
 
   factory AppVariant.fromJson(Map<String, dynamic> json) {
@@ -23,6 +33,11 @@ class AppVariant {
       description: json['description'] ?? '',
       url: json['url'],
       id: json['id'],
+      managed: json['managed'] ?? true,
+      diskSize: json['disk_size'] is int ? json['disk_size'] as int : null,
+      sizeConfidence: json['size_confidence']?.toString(),
+      installedSize: json['installed_size']?.toString(),
+      downloadSize: json['download_size']?.toString(),
     );
   }
 
@@ -34,6 +49,11 @@ class AppVariant {
       'description': description,
       'url': url,
       'id': id,
+      'managed': managed,
+      'disk_size': diskSize,
+      'size_confidence': sizeConfidence,
+      'installed_size': installedSize,
+      'download_size': downloadSize,
     };
   }
 }
@@ -53,6 +73,11 @@ class AppPackage {
   final String? developer;
   final String? homepage;
   final bool isExactMatch;
+  final bool managed;
+  final int? diskSize;
+  final String? sizeConfidence;
+  final String? installedSize;
+  final String? downloadSize;
 
   AppPackage({
     required this.name,
@@ -68,6 +93,11 @@ class AppPackage {
     this.developer,
     this.homepage,
     this.isExactMatch = false,
+    this.managed = true,
+    this.diskSize,
+    this.sizeConfidence,
+    this.installedSize,
+    this.downloadSize,
   });
 
   List<String> get sources => variants.map((v) => v.source).toList();
@@ -93,6 +123,11 @@ class AppPackage {
           description: (json['description'] ?? '').toString(),
           url: json['url']?.toString(),
           id: json['id']?.toString(),
+          managed: json['managed'] ?? true,
+          diskSize: json['disk_size'] is int ? json['disk_size'] as int : null,
+          sizeConfidence: json['size_confidence']?.toString(),
+          installedSize: json['installed_size']?.toString(),
+          downloadSize: json['download_size']?.toString(),
         ),
       );
     }
@@ -117,6 +152,11 @@ class AppPackage {
       developer: json['developer']?.toString(),
       homepage: json['homepage']?.toString(),
       isExactMatch: json['is_exact_match'] == true,
+      managed: json['managed'] ?? true,
+      diskSize: json['disk_size'] is int ? json['disk_size'] as int : null,
+      sizeConfidence: json['size_confidence']?.toString(),
+      installedSize: json['installed_size']?.toString(),
+      downloadSize: json['download_size']?.toString(),
     );
   }
 
@@ -135,6 +175,11 @@ class AppPackage {
       'developer': developer,
       'homepage': homepage,
       'is_exact_match': isExactMatch,
+      'managed': managed,
+      'disk_size': diskSize,
+      'size_confidence': sizeConfidence,
+      'installed_size': installedSize,
+      'download_size': downloadSize,
     };
   }
 

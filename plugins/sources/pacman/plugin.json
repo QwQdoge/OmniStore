@@ -1,0 +1,11 @@
+{
+  "id": "builtin.pacman",
+  "kind": "source",
+  "name": "Pacman",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["linux"],
+  "capabilities": ["search", "install", "uninstall", "update", "details", "list_installed", "size", "mirrors", "repositories", "launch", "locate"],
+  "permissions": ["subprocess", "filesystem", "system_package_manager"],
+  "builtin": true
+}
