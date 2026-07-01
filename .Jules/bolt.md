@@ -52,3 +52,4 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Adding `prototypeItem` to `ListView.builder` significantly improves scroll performance and scrollbar accuracy by allowing the framework to pre-calculate dimensions without laying out every child. In `Selector`, when returning a filtered list, the default identity equality will always trigger a rebuild because `.toList()` creates a new instance. Using `shouldRebuild` with `IterableEquality` ensures rebuilds only occur when the actual contents change.
 
 **Action:** Optimized `SearchPage` by adding `prototypeItem` to results and skeleton lists, moving filtering logic into the `Selector`, and implementing `IterableEquality` in `shouldRebuild`.
+* Deferred initialization of `AnimationController` in `AppCard` until `isInteractive` (i.e. `widget.onTap != null`). This reduces memory and CPU pressure for rendering static elements in long lists or placeholders.
