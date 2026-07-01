@@ -81,3 +81,10 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 - Removed the top-level `Consumer<SettingsController>` from `SettingsPage` to leave the `ListView` static.
 - Wrapped only the exact `AppCard` elements (Primary Settings, Updates, Typography), `SourcesConfigCard`, and `AISettingsSection` that actually require `settings` dependencies in their own localized `Consumer<SettingsController>` blocks.
 - This targeted approach effectively isolates the "blast radius" of state updates, ensuring smooth performance and adhering to the directive for minimal and specific rebuild targets.
+## 2026-06-30 - State Management: Iterable Equality for List Selectors
+
+**Learning:** When using `Selector` in Provider that returns a List or a Record containing a List, the default equality check fails because two different list instances with the same content are not considered equal (`[] == []` is false). This causes redundant widget rebuilds even when the list content hasn't changed.
+
+**Action:**
+- Added `shouldRebuild` parameter using `const IterableEquality().equals(prev, next)` to `Selector`s in `home_page.dart`, `discovery_content.dart`, `tasks_tab.dart`, and `terminal_dialog.dart` that return Lists of apps or logs.
+- This ensures that widgets only rebuild when the actual content of the list changes, improving UI performance.
