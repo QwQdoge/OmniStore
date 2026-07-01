@@ -47,3 +47,7 @@
 - Updated `FlutterUI/lib/features/explore/presentation/widgets/ai_dialogs.dart` (`AIMarkdownDialog` and `AICliDialog`) to use `l10n.ok` instead of `l10n.confirm`.
 - Updated `FlutterUI/lib/features/task_manager/presentation/widgets/ai_update_summary_dialog.dart` to use `l10n.ok` instead of `l10n.confirm`.
 - Updated `FlutterUI/lib/features/settings/presentation/widgets/storage_cleanup_card.dart` cleanup dialog to use `l10n.ok` instead of `l10n.confirm`.
+## 2026-07-01 - Install Flow Consistency in Home Page
+- In `FlutterUI/lib/features/home/home_page.dart`, refactored `_executeInstall` to use `taskController.runTask` instead of directly calling `TaskRepository.executeAction`.
+- This unifies the install/update flow with the rest of the app's task management, ensuring consistent state updates and allowing the UI to check `isBusy` to prevent concurrent tasks.
+- Cleaned up the unused import of `task_repository.dart`.
