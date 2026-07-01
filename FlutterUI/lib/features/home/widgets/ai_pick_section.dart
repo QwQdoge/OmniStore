@@ -69,12 +69,11 @@ class AIPickSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              MagicPulseIcon(
+              const MagicPulseIcon(
                 icon: Icons.auto_awesome_rounded,
-                color: theme.colorScheme.tertiary,
-                size: 24,
+                size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Text(
                 AppLocalizations.of(context)!.aiPickDay,
                 style: theme.textTheme.titleMedium?.copyWith(

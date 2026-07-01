@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/home/widgets/banner_card.dart';
-import 'package:frontend/features/home/widgets/section_header.dart';
+import 'package:frontend/core/widgets/section_header.dart';
 
 class HeroSection extends StatelessWidget {
   final List<AppPackage> apps;
@@ -20,7 +20,7 @@ class HeroSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 32),
         SectionHeader(title: AppLocalizations.of(context)!.featured),
         const SizedBox(height: 16),
         SizedBox(
