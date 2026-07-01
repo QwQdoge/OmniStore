@@ -1,20 +1,20 @@
 import 'package:collection/collection.dart';
-import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_shelf.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
+import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 import 'package:frontend/core/widgets/section_header.dart';
 
 class HomePage extends StatefulWidget {
@@ -110,9 +110,9 @@ class _HomePageState extends State<HomePage> {
 
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.taskInProgress)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
       return;
     }
 
@@ -155,12 +155,15 @@ class _HomePageState extends State<HomePage> {
                 final source = pkg['source'] as String? ?? 'Native';
 
                 scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(appLocalizations.installingPkg(name)),
-                  ),
+                  SnackBar(content: Text(appLocalizations.installingPkg(name))),
                 );
 
-                await taskController.runTask("-I", name, source, appLocalizations);
+                await taskController.runTask(
+                  "-I",
+                  name,
+                  source,
+                  appLocalizations,
+                );
               }
             },
           ),
@@ -182,7 +185,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['featured'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -248,7 +252,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -270,7 +275,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['for_you'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -294,5 +300,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
