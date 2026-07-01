@@ -7,6 +7,7 @@ import "package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -405,7 +406,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                   label: AppLocalizations.of(context)!.aiPromptExplain,
                   button: true,
                   child: IconButton(
-                    icon: const Icon(Icons.auto_awesome_rounded),
+                    icon: MagicPulseIcon(
+                      icon: Icons.auto_awesome_rounded,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
                     tooltip: AppLocalizations.of(context)!.aiPromptExplain,
                     onPressed: _showAIExplainDialog,
                   ),
