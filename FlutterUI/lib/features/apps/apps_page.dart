@@ -163,7 +163,6 @@ class _AppsPageState extends State<AppsPage> {
                                             width: 40,
                                             height: 40,
                                             memCacheWidth: 80,
-                                            memCacheHeight: 80,
                                             errorWidget: (c, e, s) =>
                                                 const Icon(Icons.apps),
                                           ),

@@ -74,7 +74,6 @@ class AppShelf extends StatelessWidget {
                                     imageUrl: app.icon!,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 200,
-                                    memCacheHeight: 200,
                                     errorWidget: (c, e, s) =>
                                         const Icon(Icons.apps),
                                   )
