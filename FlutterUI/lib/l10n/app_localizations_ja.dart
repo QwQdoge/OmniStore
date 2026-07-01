@@ -451,7 +451,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptExplain => '解析';
 
   @override
-  String get aiPromptRecommend => 'AI にアドバイスを求める';
+  String get aiPromptRecommend => 'AI におすすめを尋ねる';
 
   @override
   String get aiPromptError => 'AI でエラーを分析';
