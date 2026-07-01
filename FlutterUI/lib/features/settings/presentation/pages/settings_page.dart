@@ -8,6 +8,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import '../widgets/storage_cleanup_card.dart';
 import '../widgets/sources_config_card.dart';
 import '../widgets/ai_settings_section.dart';
+import '../widgets/settings_section_header.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -48,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
 
           // Primary Settings
-          _buildSection(l10n.general),
+          SettingsSectionHeader(title: l10n.general),
           Semantics(
             label: l10n.general,
             explicitChildNodes: true,
@@ -119,7 +120,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          _buildSection(l10n.repositories),
+          SettingsSectionHeader(title: l10n.repositories),
           Semantics(
             label: l10n.repositories,
             explicitChildNodes: true,
@@ -130,7 +131,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          _buildSection(l10n.updates),
+          SettingsSectionHeader(title: l10n.updates),
           Semantics(
             label: l10n.updates,
             explicitChildNodes: true,
@@ -192,7 +193,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          _buildSection(l10n.typography),
+          SettingsSectionHeader(title: l10n.typography),
           Semantics(
             label: l10n.typography,
             explicitChildNodes: true,
@@ -280,19 +281,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 : const SizedBox.shrink(key: ValueKey('empty_advanced')),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSection(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }
