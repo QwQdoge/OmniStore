@@ -23,6 +23,7 @@ from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 from core.friendly_messages import get_friendly_message
+from core.security_validator import SecurityValidator
 
 # Initial rich console
 console = Console(force_terminal=True)
@@ -116,6 +117,7 @@ def safe_command(func):
             return False
         except asyncio.CancelledError:
             logging.warning(f"Command execution cancelled: {func.__name__}")
+            # Re-raise to allow proper async cleanup but ensure we don't crash the event loop
             raise
         except Exception as e:
             import traceback
@@ -124,6 +126,7 @@ def safe_command(func):
             logging.error(f"{error_msg}\n{err_trace}")
 
             if json_mode:
+                # Ensure we don't pollute JSON output with partial data
                 sys.stdout.write("\n")
                 sys.stdout.write(json.dumps({
                     "status": "error",
@@ -134,8 +137,10 @@ def safe_command(func):
                 sys.stdout.flush()
             else:
                 try:
+                    # Attempt graceful error handling
                     await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
                 except:
+                    # Final fail-safe: raw print to original stdout
                     hijacked_print(f"[ERROR] {error_msg}")
             return False
     return wrapper
@@ -317,15 +322,22 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_search(self, query: str, json_mode: bool = False):
+        # Murphy-proof: Input validation before resource acquisition
+        valid_query = SecurityValidator.validate_string(query, "Search Query")
         async with self:
             if not self.manager: raise RuntimeError("SearchManager is not initialized.")
-            results = await asyncio.wait_for(self.manager.search_all(query), timeout=45)
+            results = await asyncio.wait_for(self.manager.search_all(valid_query), timeout=45)
             if results is None: results = []
             if json_mode: self._output_json(results)
             else: self._output_pretty(query, results)
 
     @safe_command
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
+        # Murphy-proof: Guard against state corruption and malformed inputs
+        SecurityValidator.validate_string(name, "Package Name")
+        SecurityValidator.validate_string(source, "Source")
+        if url: SecurityValidator.validate_url(url)
+
         self.is_action = True
         package_data = {"name": name, "id": name, "source": source, "url": url}
         if self.manager and self.manager.habit_tracker:
@@ -343,6 +355,10 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
+        SecurityValidator.validate_string(package_name, "Package Name")
+        SecurityValidator.validate_string(source, "Source")
+        SecurityValidator.validate_action_flag(flag)
+
         self.is_action = True
         package_data = {"name": package_name, "id": package_name, "source": source, "flag": flag}
         async def cb(m): await self._flutter_callback(m, json_mode)
@@ -404,6 +420,7 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_app_details(self, app_id: str, json_mode: bool = False):
+        SecurityValidator.validate_string(app_id, "App ID")
         async with self:
             if not self.recommender or not self.manager: raise RuntimeError("Managers are not initialized.")
             details = await asyncio.wait_for(
@@ -530,6 +547,10 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(repo_type, "Repo Type")
+        SecurityValidator.validate_string(name, "Repo Name")
+        SecurityValidator.validate_url(url)
+
         self.is_action = True
         async def cb(m): await self._flutter_callback(m, json_mode)
         success = False
@@ -544,6 +565,9 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_remove_custom_repo(self, repo_type: str, name: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(repo_type, "Repo Type")
+        SecurityValidator.validate_string(name, "Repo Name")
+
         self.is_action = True
         async def cb(m): await self._flutter_callback(m, json_mode)
         success = False
@@ -558,11 +582,13 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_explain(self, app_name: str, app_description: str = ""):
+        SecurityValidator.validate_string(app_name, "App Name")
         res = await self.ai.explain_app(app_name, app_description)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
     async def run_ai_recommend(self, prompt: str):
+        SecurityValidator.validate_string(prompt, "AI Prompt")
         async with self:
             if not self.manager: raise RuntimeError("SearchManager not initialized.")
             keywords = prompt.split()
@@ -599,6 +625,7 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_correct(self, query: str):
+        SecurityValidator.validate_string(query, "Query")
         res = await self.ai.suggest_correction(query)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
@@ -637,11 +664,13 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_import_packages(self, filepath: str):
+        SecurityValidator.validate_path(filepath, "Import Path")
         res = self.essentials.import_from_file(filepath)
         sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
     async def run_export_packages(self, filepath: str):
+        SecurityValidator.validate_path(filepath, "Export Path")
         installed = []
         commands = [ (["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR") ]
         for cmd, src in commands:
@@ -662,6 +691,8 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_launch(self, name: str, source: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(name, "App Name")
+        SecurityValidator.validate_string(source, "Source")
         async with self:
             src = source.lower()
             if src == "native": src = "pacman"
@@ -673,6 +704,8 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_locate(self, name: str, source: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(name, "App Name")
+        SecurityValidator.validate_string(source, "Source")
         async with self:
             src = source.lower()
             if src == "native": src = "pacman"

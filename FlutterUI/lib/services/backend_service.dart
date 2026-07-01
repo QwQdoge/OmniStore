@@ -309,25 +309,40 @@ class BackendService {
   // Murphy-proof: Circuit breaker for persistent daemon failures
   int _daemonFailureStreak = 0;
   static const int _daemonFailureThreshold = 5;
+  DateTime? _lastDaemonFailureTime;
 
   Future<DaemonResult?> _sendToDaemon(
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
+    // Murphy-proof: Circuit Breaker Logic
     if (_daemonFailureStreak >= _daemonFailureThreshold) {
-      debugPrint(
-        "Circuit Breaker: Daemon persistent failure. Bypassing to CLI.",
-      );
-      return null;
+      final now = DateTime.now();
+      if (_lastDaemonFailureTime != null &&
+          now.difference(_lastDaemonFailureTime!) <
+              const Duration(minutes: 1)) {
+        debugPrint(
+          "Circuit Breaker ACTIVE: Daemon persistent failure. Bypassing to CLI for 60s.",
+        );
+        return null;
+      } else {
+        debugPrint("Circuit Breaker: Cooldown expired. Retrying daemon...");
+        _daemonFailureStreak = 0;
+      }
     }
 
     try {
       final res = await _daemonClient.send(action, args, kwargs: kwargs);
-      _daemonFailureStreak = 0; // Reset on success
-      return res;
+      if (res != null) {
+        _daemonFailureStreak = 0; // Reset on success
+        return res;
+      } else {
+        throw Exception("Daemon returned null result");
+      }
     } catch (e) {
       _daemonFailureStreak++;
+      _lastDaemonFailureTime = DateTime.now();
       debugPrint("Daemon IPC Error (Streak: $_daemonFailureStreak): $e");
       return null;
     }
@@ -535,7 +550,7 @@ class BackendService {
 
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return [];
-    if (trimmedQuery.length > 500) return [];
+    if (trimmedQuery.length > 500) return []; // Fail fast check
 
     try {
       SecurityValidator.validateString(trimmedQuery, "Search Query");

@@ -204,8 +204,10 @@ class DaemonClient {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
 
-    if (_responseCompleter != null && !_responseCompleter!.isCompleted) {
-      _responseCompleter!.completeError(Exception("Daemon connection lost"));
+    final completer = _responseCompleter;
+    _responseCompleter = null;
+    if (completer != null && !completer.isCompleted) {
+      completer.completeError(Exception("Daemon connection lost"));
     }
   }
 

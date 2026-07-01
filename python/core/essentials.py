@@ -19,7 +19,8 @@ class EssentialsManager:
 
     def import_from_file(self, filepath: str) -> List[Dict]:
         """Import a list of packages from a file (text or json)"""
-        if not os.path.exists(filepath):
+        # Murphy-proof: Check path existence and ensure it's a file
+        if not os.path.exists(filepath) or not os.path.isfile(filepath):
             return []
 
         packages = []
