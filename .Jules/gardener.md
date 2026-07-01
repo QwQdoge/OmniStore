@@ -92,6 +92,10 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracting inline dialogs into standalone widgets improves code structure, but it is easy to miss related cleanup or accidentally break compilation when removing builder methods (`_buildHeroSection`, `_buildAIPickSkeleton`, etc.) without updating their usages.
 
 **Action:** Extracted the inline package import confirmation `AlertDialog` from `home_page.dart` into a new `ImportPackagesDialog` widget located in `FlutterUI/lib/features/home/widgets/import_packages_dialog.dart`.
-## 2026-07-01 - Extract Widgets in AppDetailsPage
-**Learning:** Extracted oversized and repetitive `SliverAppBar` action button logic (including AI dialog toggles and the terminal output toggle) from `details_page.dart` into a clean `AppDetailsAppBarActions` component within `lib/features/explore/presentation/widgets/`. This decouples UI composition, reduces line count by heavily nesting logic into standard static helper methods, and significantly simplifies the main file.
-**Action:** Replaced inline `actions` array list logic in `details_page.dart` with the extracted `AppDetailsAppBarActions.buildActions` component, passing down minimal necessary state (`isAIEnabled`, `selectedSource`, and callbacks).
+## 2026-06-30 - [Extract Widgets in AppDetailsPage]
+
+Learning:
+Extracting large UI building blocks into separate `StatelessWidget` classes significantly improves maintainability and readability of long files like `details_page.dart`. By passing down minimal state and callbacks, we can decouple the UI layout from the complex business logic residing in the `StatefulWidget`.
+
+Action:
+Extracted `AppAboutSection` and `AppTechnicalDetails` from `details_page.dart` into the `widgets` directory, replacing the inline builders in `_buildMainContent`.
