@@ -74,8 +74,8 @@
 
 **Action:** Injected `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` into all `AnimatedSwitcher` components app-wide to ensure uniform and authentic MD3 interaction clarity.
 
-## 2026-06-30 - Settings Section Header Standardization
+## 2026-07-02 - Settings UI Refinement and Standardized Headers
 
-**Learning:** Replicating common MD3 design patterns (like section headers) across multiple files leads to inconsistent spacing and styling. Extracting these into a standardized component ensures global consistency. Moreover, when using dynamic sections (like AI settings) within a scroll view, the vertical rhythm must remain consistent (e.g., 24dp) regardless of whether the section is conditionally rendered.
+**Learning:** Duplicating private `_buildSection` methods for headers leads to inconsistent spacing and styling. Extracting a shared `SettingsSectionHeader` widget ensures that Material 3 typography (`labelLarge`, primary color, bold) is applied consistently with uniform 8dp vertical padding. Furthermore, adding proper easing curves (`Curves.easeOutCubic`, `Curves.fastOutSlowIn`) to `AnimatedSwitcher` transitions significantly improves the perceived quality of the UI when revealing advanced sections.
 
-**Action:** Standardized settings section headers by extracting `_buildSection` from `settings_page.dart` and `ai_settings_section.dart` into a reusable `SettingsSectionHeader` widget (`settings_section_header.dart`) matching MD3 specs. Fixed inconsistent top padding (32dp -> 24dp) in `AISettingsSection` to match the app's established 24dp vertical rhythm between sections.
+**Action:** Use `SettingsSectionHeader` for all settings category headers. Always pair `AnimatedSwitcher` with standard MD3 easing curves and maintain a consistent 24dp gap (`SizedBox`) between layout sections.
