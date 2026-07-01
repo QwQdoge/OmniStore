@@ -81,10 +81,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 - Removed the top-level `Consumer<SettingsController>` from `SettingsPage` to leave the `ListView` static.
 - Wrapped only the exact `AppCard` elements (Primary Settings, Updates, Typography), `SourcesConfigCard`, and `AISettingsSection` that actually require `settings` dependencies in their own localized `Consumer<SettingsController>` blocks.
 - This targeted approach effectively isolates the "blast radius" of state updates, ensuring smooth performance and adhering to the directive for minimal and specific rebuild targets.
-## 2026-06-30 - State Management: Iterable Equality for List Selectors
 
-**Learning:** When using `Selector` in Provider that returns a List or a Record containing a List, the default equality check fails because two different list instances with the same content are not considered equal (`[] == []` is false). This causes redundant widget rebuilds even when the list content hasn't changed.
+## 2026-06-25 - State Management: Deep Collection Equality for Selectors II
+
+**Learning:** When using `Selector` in Provider and returning a Collection like a `List` or a Record containing a `List` from the `selector`, the default equality check (`==`) fails for identical content (e.g., `[] == []` evaluates to `false`). This triggers unnecessary and costly UI rebuilds even when the conceptually underlying list hasn't changed.
 
 **Action:**
-- Added `shouldRebuild` parameter using `const IterableEquality().equals(prev, next)` to `Selector`s in `home_page.dart`, `discovery_content.dart`, `tasks_tab.dart`, and `terminal_dialog.dart` that return Lists of apps or logs.
-- This ensures that widgets only rebuild when the actual content of the list changes, improving UI performance.
+- Applied `shouldRebuild` callbacks leveraging `IterableEquality().equals(prev, next)` from the `package:collection` library to multiple `Selector` widgets returning `List<AppPackage>` in `home_page.dart` and `discovery_content.dart`.
+- Fixed task history and log selectors in `tasks_tab.dart` and `terminal_dialog.dart` by optimizing `shouldRebuild` with `prev.length != next.length || !const IterableEquality().equals(prev.list, next.list)` to ensure O(1) checks for size changes before falling back to O(N) deep inspection.

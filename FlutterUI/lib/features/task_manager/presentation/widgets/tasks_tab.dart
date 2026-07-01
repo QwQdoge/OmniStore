@@ -6,6 +6,7 @@ import 'package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
 import 'terminal_dialog.dart';
+import 'package:collection/collection.dart';
 
 class TasksTab extends StatelessWidget {
   const TasksTab({super.key});
@@ -141,7 +142,9 @@ class TasksTab extends StatelessWidget {
                   length: c.completedTasks.length,
                   history: c.completedTasks,
                 ),
-                shouldRebuild: (prev, next) => prev.length != next.length || !const IterableEquality().equals(prev.history, next.history),
+                shouldRebuild: (prev, next) =>
+                    prev.length != next.length ||
+                    !const IterableEquality().equals(prev.history, next.history),
                 builder: (context, data, child) {
                   final history = data.history;
                   return ListView.builder(

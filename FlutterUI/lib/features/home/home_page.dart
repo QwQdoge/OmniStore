@@ -18,6 +18,7 @@ import 'package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:frontend/features/home/widgets/section_header.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
+import 'package:collection/collection.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -184,7 +185,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['featured'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -246,7 +248,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -268,7 +271,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['for_you'] ?? [],
-                shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+                shouldRebuild: (prev, next) =>
+                    !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),

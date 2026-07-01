@@ -9,6 +9,7 @@ import 'package:frontend/features/explore/presentation/controllers/browse_contro
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:collection/collection.dart';
 
 class DiscoveryContent extends StatefulWidget {
   final AppLocalizations l10n;
@@ -137,7 +138,8 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
           Selector<BrowseController, List<AppPackage>>(
             selector: (context, browse) =>
                 browse.recommendations['trending'] ?? [],
-            shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+            shouldRebuild: (prev, next) =>
+                !const IterableEquality().equals(prev, next),
             builder: (context, trending, _) {
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
