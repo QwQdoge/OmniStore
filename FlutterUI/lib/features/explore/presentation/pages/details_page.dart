@@ -1,4 +1,3 @@
-import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:frontend/services/backend_service.dart";
 import "package:provider/provider.dart";
@@ -8,15 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
-import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
 
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_details_appbar_actions.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_actions.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_dependency_section.dart';
@@ -388,74 +386,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                     ).backButtonTooltip,
                     onPressed: () => Navigator.pop(context),
                   ),
-            actions: [
-              if (widget.app.url != null && widget.app.url!.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.language_rounded),
-                  tooltip: AppLocalizations.of(context)!.visitWebsite,
-                  onPressed: () async {
-                    final uri = Uri.parse(widget.app.url!);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
-                ),
-              if (isAIEnabled) ...[
-                Semantics(
-                  label: AppLocalizations.of(context)!.aiPromptExplain,
-                  button: true,
-                  child: IconButton(
-                    icon: const Icon(Icons.auto_awesome_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiPromptExplain,
-                    onPressed: _showAIExplainDialog,
-                  ),
-                ),
-                if (widget.app.variants.length > 1)
-                  Semantics(
-                    label: AppLocalizations.of(context)!.aiCompareTitle,
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.compare_arrows_rounded),
-                      tooltip: AppLocalizations.of(context)!.aiCompareTitle,
-                      onPressed: _showAICompareDialog,
-                    ),
-                  ),
-                Semantics(
-                  label: AppLocalizations.of(context)!.aiCliTitle,
-                  button: true,
-                  child: IconButton(
-                    icon: const Icon(Icons.terminal_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiCliTitle,
-                    onPressed: _showAICliDialog,
-                  ),
-                ),
-                Semantics(
-                  label: AppLocalizations.of(context)!.aiConflictTitle,
-                  button: true,
-                  child: IconButton(
-                    icon: const Icon(Icons.report_problem_rounded),
-                    tooltip: AppLocalizations.of(context)!.aiConflictTitle,
-                    onPressed: _showAIConflictDialog,
-                  ),
-                ),
-              ],
-              Semantics(
-                label: AppLocalizations.of(context)!.terminalOutput,
-                button: true,
-                child: IconButton(
-                  icon: Selector<TaskController, bool>(
-                    selector: (context, tc) => tc.isBusy,
-                    builder: (context, isBusy, child) => Badge(
-                      isLabelVisible: isBusy,
-                      child: const Icon(Icons.terminal_rounded),
-                    ),
-                  ),
-                  tooltip: AppLocalizations.of(context)!.terminalOutput,
-                  onPressed: _showTerminalDialog,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
+            actions: AppDetailsAppBarActions.buildActions(
+              context: context,
+              app: widget.app,
+              isAIEnabled: isAIEnabled,
+              selectedSource: _selectedSource,
+              onShowTerminalDialog: _showTerminalDialog,
+            ),
           ),
         ],
         body: SelectionArea(
@@ -575,53 +512,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       }
     }
     return false;
-  }
-
-  Future<void> _showAIExplainDialog() async {
-    final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiExplain(widget.app.name, widget.app.description);
-    showDialog(
-      context: context,
-      builder: (ctx) => AIMarkdownDialog(
-        title: AppLocalizations.of(context)!.aiPromptExplain,
-        future: future,
-      ),
-    );
-  }
-
-  Future<void> _showAICompareDialog() async {
-    final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiCompareVariants(widget.app.name);
-    showDialog(
-      context: context,
-      builder: (ctx) => AIMarkdownDialog(
-        title: AppLocalizations.of(context)!.aiCompareTitle,
-        future: future,
-        width: 600,
-        height: 450,
-      ),
-    );
-  }
-
-  Future<void> _showAICliDialog() async {
-    final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiGenerateCLI(widget.app.name, _selectedSource);
-    showDialog(
-      context: context,
-      builder: (ctx) => AICliDialog(future: future),
-    );
-  }
-
-  Future<void> _showAIConflictDialog() async {
-    final aiRepo = context.read<AIRepository>();
-    final future = aiRepo.aiDetectConflicts(widget.app.name);
-    showDialog(
-      context: context,
-      builder: (ctx) => AIMarkdownDialog(
-        title: AppLocalizations.of(context)!.aiConflictTitle,
-        future: future,
-      ),
-    );
   }
 
   void _showScreenshotViewer(String url) {
