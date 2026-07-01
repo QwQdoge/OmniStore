@@ -2,8 +2,8 @@ import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
-import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:flutter/material.dart';
+import "package:flutter/foundation.dart";
+import "package:flutter/material.dart";
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
@@ -175,6 +175,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['featured'] ?? [],
+                // Deep equality check to prevent redundant rebuilds when list content is identical
+                shouldRebuild: (prev, next) => !listEquals(prev, next),
                 builder: (context, featured, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -236,6 +238,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['trending'] ?? [],
+                // Deep equality check to prevent redundant rebuilds when list content is identical
+                shouldRebuild: (prev, next) => !listEquals(prev, next),
                 builder: (context, trending, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -257,6 +261,8 @@ class _HomePageState extends State<HomePage> {
               child: Selector<BrowseController, List<AppPackage>>(
                 selector: (context, browse) =>
                     browse.recommendations['for_you'] ?? [],
+                // Deep equality check to prevent redundant rebuilds when list content is identical
+                shouldRebuild: (prev, next) => !listEquals(prev, next),
                 builder: (context, forYou, _) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
