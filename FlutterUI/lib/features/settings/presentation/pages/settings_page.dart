@@ -263,6 +263,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
             child: _showAdvanced
                 ? Semantics(
                     key: const ValueKey('ai_settings'),
