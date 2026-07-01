@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -140,6 +141,7 @@ class TasksTab extends StatelessWidget {
                   length: c.completedTasks.length,
                   history: c.completedTasks,
                 ),
+                shouldRebuild: (prev, next) => prev.length != next.length || !const IterableEquality().equals(prev.history, next.history),
                 builder: (context, data, child) {
                   final history = data.history;
                   return ListView.builder(

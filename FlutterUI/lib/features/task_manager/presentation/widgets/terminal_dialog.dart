@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -52,6 +53,7 @@ class TerminalDialog extends StatelessWidget {
                   Selector<TaskController, ({int length, List<String> logs})>(
                     selector: (context, c) =>
                         (length: c.logs.length, logs: c.logs),
+                    shouldRebuild: (prev, next) => prev.length != next.length || !const IterableEquality().equals(prev.logs, next.logs),
                     builder: (context, data, _) {
                       final logs = data.logs;
                       return logs.isEmpty
