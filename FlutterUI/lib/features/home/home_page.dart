@@ -12,6 +12,7 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/home/widgets/app_shelf.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/features/home/widgets/section_header.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
@@ -106,6 +107,15 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _importPackages() async {
     final l10n = AppLocalizations.of(context)!;
+
+    final taskController = context.read<TaskController>();
+    if (taskController.isBusy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.taskInProgress)),
+      );
+      return;
+    }
+
     final packageRepo = context.read<PackageRepository>();
     FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -129,37 +139,34 @@ class _HomePageState extends State<HomePage> {
             cancelText: l10n.cancel,
             confirmText: l10n.allDownloads,
             onCancel: () => Navigator.pop(context),
-            onConfirm: () {
+            onConfirm: () async {
               Navigator.pop(context);
+
+              // Capture context properties before async gaps
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final appLocalizations = AppLocalizations.of(context);
+
+              if (appLocalizations == null) return;
+
               for (var pkg in packages) {
+                if (!mounted) break;
+
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
-                _executeInstall(name, source);
+
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(appLocalizations.installingPkg(name)),
+                  ),
+                );
+
+                await taskController.runTask("-I", name, source, appLocalizations);
               }
             },
           ),
         );
       }
     }
-  }
-
-  void _executeInstall(String name, String source) {
-    final taskController = context.read<TaskController>();
-    final l10n = AppLocalizations.of(context)!;
-
-    if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.taskInProgress)),
-      );
-      return;
-    }
-
-    taskController.runTask("-I", name, source, l10n);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.installingPkg(name)),
-      ),
-    );
   }
 
   @override
