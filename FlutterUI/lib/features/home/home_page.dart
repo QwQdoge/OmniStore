@@ -1,8 +1,8 @@
-import "package:frontend/data/repositories/task_repository.dart";
 import "package:frontend/data/repositories/ai_repository.dart";
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
+import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -144,13 +144,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _executeInstall(String name, String source) {
-    context
-        .read<TaskRepository>()
-        .executeAction("-I", name, source)
-        .listen((_) {});
+    final taskController = context.read<TaskController>();
+    final l10n = AppLocalizations.of(context)!;
+
+    if (taskController.isBusy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.taskInProgress)),
+      );
+      return;
+    }
+
+    taskController.runTask("-I", name, source, l10n);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.installingPkg(name)),
+        content: Text(l10n.installingPkg(name)),
       ),
     );
   }

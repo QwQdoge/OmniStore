@@ -11,7 +11,6 @@ class TerminalDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return Dialog(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       child: SizedBox(
         width: 600,
         height: 400,
