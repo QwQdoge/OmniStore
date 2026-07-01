@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/core/widgets/section_header.dart';
 
 class AppShelf extends StatelessWidget {
   final String title;
@@ -26,13 +26,10 @@ class AppShelf extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 32),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(title, style: OmnistoreTheme.standardHeader(context)),
-        ),
+        SectionHeader(title: title),
         const SizedBox(height: 16),
         SizedBox(
-          height: 186,
+          height: 182,
           child: Scrollbar(
             controller: scrollController,
             thumbVisibility: true,
@@ -44,11 +41,11 @@ class AppShelf extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final app = apps[index];
-                final heroTag = 'app-shelf-${app.name}-${app.primarySource}';
+                final heroTag = 'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
                 return SizedBox(
                   width: 130,
                   child: AppCard(
-                    borderRadius: 20,
+                    borderRadius: 16,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -66,7 +63,7 @@ class AppShelf extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: app.icon != null

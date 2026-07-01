@@ -35,7 +35,7 @@ class AppDetailsActions extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(16.0),
           border: Border.all(
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
