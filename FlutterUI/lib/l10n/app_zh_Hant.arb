@@ -43,8 +43,8 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "pacmanOfficial": "Pacman（官方庫）",
-  "aurUser": "AUR（使用者庫）",
+  "pacmanOfficial": "Pacman（官方存放庫）",
+  "aurUser": "AUR（使用者存放庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
   "sourcePriority": "來源優先級（拖曳排序）",
@@ -69,7 +69,7 @@
     }
   },
   "cancel": "取消",
-  "confirm": "確定",
+  "confirm": "確認",
   "terminalOutput": "終端輸出",
   "waitingForOutput": "等待終端輸出...",
   "screenshots": "應用程式截圖",
@@ -743,7 +743,7 @@
   "expand": "展開",
   "all": "全部",
   "relatedApps": "相關應用",
-  "activeSources": "已啟用軟體源",
+  "activeSources": "已啟用軟體存放庫",
   "@activeSources": {
     "description": "Label for active software sources"
   },
@@ -751,11 +751,11 @@
   "@autoDetect": {
     "description": "Button to auto detect available sources"
   },
-  "addCustomSource": "新增自訂源",
+  "addCustomSource": "新增自訂存放庫",
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
   "sourceType": "存放庫類型",
   "@sourceType": {
     "description": "Label for source type"
@@ -768,7 +768,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端庫",
+  "flatpakRemoteType": "Flatpak 遠端存放庫",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -804,7 +804,7 @@
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
-  "addingCustomSource": "正在新增自訂源...",
+  "addingCustomSource": "正在新增自訂存放庫...",
   "@addingCustomSource": {
     "description": "Message while adding custom source"
   },
@@ -816,7 +816,7 @@
   "@sourceAddFailed": {
     "description": "Failure message after adding source"
   },
-  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+  "autoDetectingSources": "正在自動偵測系統中可用的軟體存放庫...",
   "@autoDetectingSources": {
     "description": "Message while auto detecting sources"
   },

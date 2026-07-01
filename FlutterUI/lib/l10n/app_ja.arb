@@ -350,7 +350,7 @@
       }
     }
   },
-  "aiPromptExplain": "AI で説明",
+  "aiPromptExplain": "解析",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
@@ -418,7 +418,7 @@
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "この更新を説明",
+  "aiExplainUpdate": "この更新を解析",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },

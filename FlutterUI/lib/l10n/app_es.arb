@@ -704,7 +704,7 @@
   "@taskForcedTerminated": {
     "description": "Error message when a task is forcefully terminated"
   },
-  "aiTimeout": "La conexión de IA se agotó, por favor inténtelo de nuevo más tarde.",
+  "aiTimeout": "Se ha agotado el tiempo de conexión con la IA, por favor inténtelo de nuevo más tarde.",
   "@aiTimeout": {
     "description": "Error message when AI request times out"
   },
