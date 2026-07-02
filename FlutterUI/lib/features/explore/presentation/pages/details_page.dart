@@ -338,6 +338,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             title: AnimatedOpacity(
               opacity: innerBoxIsScrolled ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
               child: Text(
                 widget.app.name,
                 style: const TextStyle(

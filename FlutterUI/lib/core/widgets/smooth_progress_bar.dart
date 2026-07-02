@@ -82,7 +82,7 @@ class SmoothProgressBar extends StatelessWidget {
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: targetColor),
       duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
       builder: (context, animatedColor, _) {
         final currentColor = animatedColor ?? targetColor;
         final currentBgColor =
@@ -147,7 +147,7 @@ class _TaskHeaderRow extends StatelessWidget {
         if (taskState.stage.isNotEmpty && !isFailed)
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            curve: Curves.easeOutCubic,
             child: Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -281,6 +281,7 @@ class _ProgressIndicatorStack extends StatelessWidget {
               onTap: onCancel,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,

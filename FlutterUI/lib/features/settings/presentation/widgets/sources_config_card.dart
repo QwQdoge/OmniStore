@@ -324,15 +324,26 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   ),
                 ],
               ),
-              if (_loadingPlugins)
-                const LinearProgressIndicator(minHeight: 2)
-              else if (_plugins.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('No source plugins found'),
-                )
-              else
-                ..._plugins.map(_buildPluginTile),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: _loadingPlugins
+                    ? const LinearProgressIndicator(
+                        key: ValueKey('loading_plugins'),
+                        minHeight: 2,
+                      )
+                    : _plugins.isEmpty
+                        ? const Padding(
+                            key: ValueKey('empty_plugins'),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text('No source plugins found'),
+                          )
+                        : Column(
+                            key: const ValueKey('loaded_plugins'),
+                            children: _plugins.map(_buildPluginTile).toList(),
+                          ),
+              ),
               const SizedBox(height: 12),
             ],
             ListTile(
