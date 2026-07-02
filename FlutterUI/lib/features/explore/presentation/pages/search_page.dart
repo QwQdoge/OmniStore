@@ -1,16 +1,13 @@
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
-import "package:frontend/features/explore/presentation/pages/details_page.dart";
-import 'package:frontend/core/widgets/skeleton.dart';
-import "package:frontend/core/widgets/app_card.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:frontend/models/app_package.dart';
-import "package:frontend/features/explore/presentation/widgets/search_result_tile.dart";
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
-import "package:frontend/features/explore/presentation/widgets/empty_results.dart";
+import "package:frontend/features/explore/presentation/widgets/search_filters.dart";
+import "package:frontend/features/explore/presentation/widgets/search_results_view.dart";
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -117,32 +114,6 @@ class _SearchPageState extends State<SearchPage> {
     context.read<BrowseController>().search(query);
   }
 
-  static const Map<String, String> _sourceDisplayNameMap = {
-    'pacman': 'Pacman',
-    'aur': 'AUR',
-    'flatpak': 'Flatpak',
-    'appimage': 'AppImage',
-    'snap': 'Snap',
-    'github': 'GitHub',
-    'bitu': 'Bitu',
-    'winget': 'Winget',
-    'scoop': 'Scoop',
-    'brew': 'Homebrew',
-  };
-
-  static final AppPackage _prototypeApp = AppPackage(
-    name: 'Prototype',
-    description: 'This is a prototype item for performance',
-    installed: false,
-    primarySource: 'Native',
-    version: '1.0.0',
-    variants: [],
-  );
-
-  String _displayName(String key) {
-    return _sourceDisplayNameMap[key.toLowerCase()] ?? key;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -204,8 +175,18 @@ class _SearchPageState extends State<SearchPage> {
                       },
                       shouldRebuild: (prev, next) =>
                           !const MapEquality<String, bool>().equals(prev, next),
-                      builder: (context, sourcesMap, _) =>
-                          _buildSourceFilters(sourcesMap),
+                      builder: (context, sourcesMap, _) => SearchFilters(
+                        sourcesMap: sourcesMap,
+                        selectedSources: _selectedSources,
+                        onSelectedSourcesChanged: (newSources) {
+                          setState(() {
+                            _selectedSources.clear();
+                            _selectedSources.addAll(newSources);
+                          });
+                          _autoSelectFirstApp();
+                        },
+                        scrollController: _sourceFilterScrollController,
+                      ),
                     )
                   : const SizedBox.shrink(key: ValueKey('empty_filters')),
             ),
@@ -218,7 +199,14 @@ class _SearchPageState extends State<SearchPage> {
                     switchOutCurve: Curves.fastOutSlowIn,
                     child: _buildDiscovery(l10n),
                   )
-                : Selector<BrowseController, ({List<AppPackage> filteredResults, bool isSearching, bool isDesktop})>(
+                : Selector<
+                    BrowseController,
+                    ({
+                      List<AppPackage> filteredResults,
+                      bool isSearching,
+                      bool isDesktop,
+                    })
+                  >(
                     selector: (context, b) {
                       final results = b.searchResults;
                       final isDesktop = MediaQuery.sizeOf(context).width > 900;
@@ -226,7 +214,9 @@ class _SearchPageState extends State<SearchPage> {
                       final filtered = _selectedSources.isEmpty
                           ? results
                           : results.where((app) {
-                              return _selectedSources.contains(app.primarySource.toLowerCase());
+                              return _selectedSources.contains(
+                                app.primarySource.toLowerCase(),
+                              );
                             }).toList();
 
                       return (
@@ -238,118 +228,24 @@ class _SearchPageState extends State<SearchPage> {
                     shouldRebuild: (prev, next) {
                       return prev.isSearching != next.isSearching ||
                           prev.isDesktop != next.isDesktop ||
-                          !const IterableEquality().equals(prev.filteredResults, next.filteredResults);
+                          !const IterableEquality().equals(
+                            prev.filteredResults,
+                            next.filteredResults,
+                          );
                     },
                     builder: (context, data, _) {
-                      final resultsContent = data.isSearching
-                          ? _buildSkeletonResults()
-                          : _buildResults(data.filteredResults, l10n, data.isDesktop);
-
-                      if (data.isDesktop) {
-                        return Row(
-                          children: [
-                            Expanded(flex: 4, child: resultsContent),
-                            const VerticalDivider(width: 1),
-                            Expanded(
-                              flex: 6,
-                              child: Selector<BrowseController, AppPackage?>(
-                                selector: (context, b) => b.selectedApp,
-                                builder: (context, selectedApp, _) {
-                                  if (selectedApp == null) {
-                                    return Center(
-                                      child: Text(
-                                        l10n.noResults,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge,
-                                      ),
-                                    );
-                                  }
-                                  return AppDetailsPage(
-                                    app: selectedApp,
-                                    isEmbedded: true,
-                                    key: ValueKey(
-                                      selectedApp.id ?? selectedApp.name,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      } else {
-                        return AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.fastOutSlowIn,
-                          child: resultsContent,
-                        );
-                      }
+                      return SearchResultsView(
+                        filteredResults: data.filteredResults,
+                        isSearching: data.isSearching,
+                        isDesktop: data.isDesktop,
+                        searchController: _searchController,
+                        performSearch: _performSearch,
+                        l10n: l10n,
+                      );
                     },
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSourceFilters(Map<String, bool> sourcesMap) {
-    final enabledSources = sourcesMap.entries
-        .where((e) => e.value == true)
-        .map((e) => e.key)
-        .toList();
-
-    if (enabledSources.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: Scrollbar(
-        controller: _sourceFilterScrollController,
-        thumbVisibility: true,
-        child: ListView(
-          controller: _sourceFilterScrollController,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(bottom: 8),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: FilterChip(
-                label: Text(AppLocalizations.of(context)!.all),
-                selected: _selectedSources.isEmpty,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedSources.clear();
-                    });
-                    _autoSelectFirstApp();
-                  }
-                },
-              ),
-            ),
-            ...enabledSources.map((src) {
-              final name = _displayName(src);
-              final isSelected = _selectedSources.contains(name.toLowerCase());
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: FilterChip(
-                  label: Text(name),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        _selectedSources.add(name.toLowerCase());
-                      } else {
-                        _selectedSources.remove(name.toLowerCase());
-                      }
-                    });
-                    _autoSelectFirstApp();
-                  },
-                ),
-              );
-            }),
-          ],
-        ),
       ),
     );
   }
@@ -360,99 +256,6 @@ class _SearchPageState extends State<SearchPage> {
       l10n: l10n,
       searchController: _searchController,
       performSearch: _performSearch,
-    );
-  }
-
-  Widget _buildSkeletonResults() {
-    return ListView.builder(
-      key: const ValueKey('loading'),
-      padding: const EdgeInsets.all(16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(
-              width: double.infinity,
-              height: 12,
-              borderRadius: 8,
-            ),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-          ),
-        ),
-      ),
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            borderRadius: 16,
-            child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(
-                width: double.infinity,
-                height: 12,
-                borderRadius: 8,
-              ),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildResults(
-    List<AppPackage> filteredResults,
-    AppLocalizations l10n,
-    bool isDesktop,
-  ) {
-    if (filteredResults.isEmpty) {
-      return EmptyResults(
-        key: const ValueKey('empty'),
-        l10n: l10n,
-        searchController: _searchController,
-        performSearch: _performSearch,
-      );
-    }
-
-    return ListView.builder(
-      key: const ValueKey('results'),
-      padding: const EdgeInsets.all(16),
-      prototypeItem: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SearchResultTile(
-          app: _prototypeApp,
-          isDesktop: isDesktop,
-          onTap: () {},
-        ),
-      ),
-      itemCount: filteredResults.length,
-      itemBuilder: (context, index) {
-        final app = filteredResults[index];
-        return SearchResultTile(
-          app: app,
-          isDesktop: isDesktop,
-          onTap: () {
-            if (isDesktop) {
-              context.read<BrowseController>().selectedApp = app;
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AppDetailsPage(
-                    app: app,
-                    heroTag: 'search-result-${app.name}-${app.primarySource}',
-                  ),
-                ),
-              );
-            }
-          },
-        );
-      },
     );
   }
 }

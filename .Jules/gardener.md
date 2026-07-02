@@ -99,3 +99,12 @@ Extracting large UI building blocks into separate `StatelessWidget` classes sign
 
 Action:
 Extracted `AppAboutSection` and `AppTechnicalDetails` from `details_page.dart` into the `widgets` directory, replacing the inline builders in `_buildMainContent`.
+
+## 2026-07-02 - Extract Widgets in SearchPage
+
+**Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. `search_page.dart` had monolithic internal widget builders (`_buildSourceFilters`, `_buildSkeletonResults`, `_buildResults`) that made the file structures hard to parse and increased the risk of git conflicts.
+
+**Action:**
+- Extracted `_buildSourceFilters` from `search_page.dart` into a new `SearchFilters` stateless widget located in `FlutterUI/lib/features/explore/presentation/widgets/search_filters.dart`.
+- Extracted `_buildSkeletonResults` and `_buildResults` into a new `SearchResultsView` stateless widget in `FlutterUI/lib/features/explore/presentation/widgets/search_results_view.dart`.
+This drastically simplified the main page builds while ensuring exact behavioral preservation and better code localization.
