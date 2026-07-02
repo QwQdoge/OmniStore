@@ -24,6 +24,8 @@ from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
 from core.friendly_messages import get_friendly_message
 from core.security_validator import SecurityValidator
+from core.utils.win_utils import scan_windows_unmanaged_installed, format_bytes, get_directory_size
+from core.models import CommandResponse, AppPackage, PackageVariant
 
 # Initial rich console
 console = Console(force_terminal=True)
@@ -105,12 +107,13 @@ def safe_command(func):
             error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
             logging.error(error_msg)
             if json_mode:
-                sys.stdout.write(json.dumps({
-                    "status": "error",
-                    "error": "TimeoutError",
-                    "message": error_msg,
-                    "context": func.__name__
-                }, ensure_ascii=False) + "\n")
+                resp = CommandResponse(
+                    status="error",
+                    error="TimeoutError",
+                    message=error_msg,
+                    context=func.__name__
+                )
+                sys.stdout.write(resp.model_dump_json(exclude_none=True) + "\n")
                 sys.stdout.flush()
             else:
                 hijacked_print(f"[ERROR] {error_msg}")
@@ -128,12 +131,13 @@ def safe_command(func):
             if json_mode:
                 # Ensure we don't pollute JSON output with partial data
                 sys.stdout.write("\n")
-                sys.stdout.write(json.dumps({
-                    "status": "error",
-                    "error": str(e),
-                    "context": func.__name__,
-                    "traceback": err_trace if self.config.get("logging.level") == "DEBUG" else None
-                }, ensure_ascii=False) + "\n")
+                resp = CommandResponse(
+                    status="error",
+                    error=str(e),
+                    context=func.__name__,
+                    traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
+                )
+                sys.stdout.write(resp.model_dump_json(exclude_none=True) + "\n")
                 sys.stdout.flush()
             else:
                 try:
@@ -480,7 +484,7 @@ class OmnistoreBackend:
                 if isinstance(r, list):
                     installed_list.extend(r)
             if include_unmanaged and sys.platform == "win32":
-                installed_list.extend(await self._scan_windows_unmanaged_installed())
+                installed_list.extend(await scan_windows_unmanaged_installed(self.manager))
             installed_list = self._merge_installed_apps(installed_list)
             if self.recommender:
                 enrich_targets = [app for app in installed_list if not app.get('icon')]
@@ -495,7 +499,7 @@ class OmnistoreBackend:
                     for i, app in enumerate(enrich_targets): app['_use_network'] = (i < 10)
                     await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
                     for app in enrich_targets: app.pop('_use_network', None)
-            if json_mode: sys.stdout.write(json.dumps(installed_list) + "\n"); sys.stdout.flush()
+            if json_mode: self._output_json(installed_list)
             else: self._output_installed_pretty(installed_list)
             if self.cache: self.cache.save_installed_packages(installed_list)
 
@@ -548,101 +552,6 @@ class OmnistoreBackend:
                 sys.stdout.write(json.dumps({"status": "success" if ok else "error", "plugin_id": plugin_id}) + "\n"); sys.stdout.flush()
             return ok
 
-    async def _scan_windows_unmanaged_installed(self) -> List[Dict[str, Any]]:
-        if sys.platform != "win32":
-            return []
-        try:
-            import winreg
-        except Exception:
-            return []
-
-        roots = [
-            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
-            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
-            (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
-        ]
-        managed_ids = set()
-        if self.manager:
-            for source in self.manager.sources.values():
-                if source.name.lower() == "winget":
-                    try:
-                        managed_ids = await source._get_installed_ids()
-                    except Exception:
-                        managed_ids = set()
-                    break
-
-        results: List[Dict[str, Any]] = []
-        for root, path in roots:
-            try:
-                with winreg.OpenKey(root, path) as key:
-                    for index in range(winreg.QueryInfoKey(key)[0]):
-                        try:
-                            sub_name = winreg.EnumKey(key, index)
-                            with winreg.OpenKey(key, sub_name) as subkey:
-                                app = self._read_windows_uninstall_entry(winreg, subkey, sub_name)
-                                if not app:
-                                    continue
-                                norm_id = str(app.get("id", "")).strip().lower().replace(" ", "")
-                                if norm_id in managed_ids:
-                                    continue
-                                results.append(app)
-                        except OSError:
-                            continue
-            except OSError:
-                continue
-        return results
-
-    def _read_windows_uninstall_entry(self, winreg, key, fallback_id: str) -> Optional[Dict[str, Any]]:
-        def read(name, default=None):
-            try:
-                return winreg.QueryValueEx(key, name)[0]
-            except OSError:
-                return default
-
-        display_name = read("DisplayName")
-        if not display_name:
-            return None
-        system_component = read("SystemComponent", 0)
-        if system_component == 1:
-            return None
-        estimated_kb = read("EstimatedSize")
-        disk_size = int(estimated_kb) * 1024 if isinstance(estimated_kb, int) and estimated_kb > 0 else None
-        install_location = read("InstallLocation") or ""
-        if not disk_size and install_location and os.path.isdir(install_location):
-            disk_size = self._directory_size(install_location)
-        size_text = self._format_bytes(disk_size) if disk_size else None
-        publisher = read("Publisher") or ""
-        version = read("DisplayVersion") or "Unknown"
-        uninstall_string = read("UninstallString")
-        app_id = fallback_id
-        return {
-            "name": str(display_name),
-            "id": app_id,
-            "primary_source": "UnmanagedWindows",
-            "source": "UnmanagedWindows",
-            "managed": False,
-            "installed": True,
-            "version": str(version),
-            "developer": str(publisher),
-            "description": "Windows installed application",
-            "install_location": install_location,
-            "uninstall_string": uninstall_string,
-            "installed_size": size_text,
-            "disk_size": disk_size,
-            "size_confidence": "reported" if estimated_kb else ("estimated" if disk_size else "unknown"),
-            "size_source": "Windows registry" if estimated_kb else ("filesystem scan" if disk_size else "unknown"),
-            "variants": [{
-                "source": "UnmanagedWindows",
-                "id": app_id,
-                "installed": True,
-                "managed": False,
-                "installed_size": size_text,
-                "disk_size": disk_size,
-                "size_confidence": "reported" if estimated_kb else ("estimated" if disk_size else "unknown"),
-                "size_source": "Windows registry" if estimated_kb else ("filesystem scan" if disk_size else "unknown"),
-            }],
-        }
-
     def _merge_installed_apps(self, apps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         merged: Dict[str, Dict[str, Any]] = {}
         for app in apps:
@@ -681,30 +590,6 @@ class OmnistoreBackend:
         publisher = str(app.get("developer") or "").lower()
         location = str(app.get("install_location") or "").lower()
         return f"unmanaged:{publisher}:{location}:{str(app.get('id') or '').lower()}"
-
-    def _directory_size(self, path: str) -> int:
-        total = 0
-        try:
-            for root, _, files in os.walk(path):
-                for filename in files:
-                    try:
-                        total += os.path.getsize(os.path.join(root, filename))
-                    except OSError:
-                        pass
-        except OSError:
-            return 0
-        return total
-
-    def _format_bytes(self, size: Optional[int]) -> Optional[str]:
-        if not size:
-            return None
-        units = ["B", "KB", "MB", "GB", "TB"]
-        value = float(size)
-        for unit in units:
-            if value < 1024 or unit == units[-1]:
-                return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
-            value /= 1024
-        return f"{size} B"
 
     @safe_command
     async def run_list_custom_repos(self):
@@ -1016,15 +901,37 @@ class OmnistoreBackend:
         sys.stdout.flush()
 
     def _output_json(self, results):
-        def serialize_item(item):
-            return { "name": str(item.get("name", "Unknown")), "description": str(item.get("description", "")),
-                "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
-                "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
-                "url": str(item.get("url") or ""), "variants": item.get("variants", []),
-                "version": str(item.get("last_version") or item.get("version") or "N/A"), "score": int(item.get("score", 0)),
-                "icon": item.get("icon"), "is_exact_match": item.get("is_exact_match", False), "screenshots": item.get("screenshots", []), }
-        output = [serialize_item(i) for i in results]
-        sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n"); sys.stdout.flush()
+        output = []
+        for item in results:
+            try:
+                # Map loose dict fields to AppPackage model
+                data = {
+                    "name": str(item.get("name", "Unknown")),
+                    "id": str(item.get("id") or item.get("name", "unknown")),
+                    "description": str(item.get("description", "")),
+                    "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
+                    "version": str(item.get("last_version") or item.get("version") or "N/A"),
+                    "primary_source": str(item.get("primary_source") or item.get("source") or "Native"),
+                    "developer": item.get("developer"),
+                    "icon": item.get("icon"),
+                    "screenshots": item.get("screenshots", []),
+                    "score": int(item.get("score", 0)),
+                    "is_exact_match": bool(item.get("is_exact_match", False)),
+                    "install_location": item.get("install_location"),
+                    "uninstall_string": item.get("uninstall_string"),
+                    "size_confidence": item.get("size_confidence"),
+                    "size_source": item.get("size_source"),
+                    "disk_size": item.get("disk_size"),
+                    "installed_size": item.get("installed_size"),
+                    "managed": bool(item.get("managed", True)),
+                    "variants": [PackageVariant(**v) if isinstance(v, dict) else v for v in item.get("variants", [])]
+                }
+                output.append(AppPackage(**data).model_dump(exclude_none=True))
+            except Exception as e:
+                logging.error(f"Failed to serialize search result {item.get('name')}: {e}")
+
+        sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
 
     def _output_pretty(self, query, results):
         if not results: console.print(Panel(f"No results found for [bold cyan]'{query}'[/bold cyan]", border_style="yellow")); return

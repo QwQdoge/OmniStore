@@ -78,6 +78,7 @@ class AppPackage {
   final String? sizeConfidence;
   final String? installedSize;
   final String? downloadSize;
+  final String? license;
 
   AppPackage({
     required this.name,
@@ -98,6 +99,7 @@ class AppPackage {
     this.sizeConfidence,
     this.installedSize,
     this.downloadSize,
+    this.license,
   });
 
   List<String> get sources => variants.map((v) => v.source).toList();
@@ -157,6 +159,7 @@ class AppPackage {
       sizeConfidence: json['size_confidence']?.toString(),
       installedSize: json['installed_size']?.toString(),
       downloadSize: json['download_size']?.toString(),
+      license: json['license']?.toString(),
     );
   }
 
@@ -180,6 +183,7 @@ class AppPackage {
       'size_confidence': sizeConfidence,
       'installed_size': installedSize,
       'download_size': downloadSize,
+      'license': license,
     };
   }
 
