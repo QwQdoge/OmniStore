@@ -20,6 +20,9 @@ class SecurityValidator:
     # URL validation: alphanumeric, dots, underscores, slashes, colons, dashes, question marks, equals, ampersands, percent, plus, hash
     SAFE_URL_RE = re.compile(r'^[a-zA-Z0-9._/:\-?=&%+#]+$')
 
+    # Alphanumeric with basic separators only
+    STRICT_ALNUM_RE = re.compile(r'^[a-zA-Z0-9._-]+$')
+
     @classmethod
     def validate_string(cls, val: Optional[str], name: str = "Input", max_length: int = 1024) -> str:
         """Murphy-proof string validation."""
@@ -75,6 +78,20 @@ class SecurityValidator:
         if not cls.SAFE_URL_RE.match(trimmed):
             raise ValueError(f"Security: {name} contains invalid characters.")
 
+        # Guard: Sanity check for length to prevent extremely long URLs causing overhead
+        if len(trimmed) > 2048:
+            raise ValueError(f"Security: {name} is too long.")
+
+        return trimmed
+
+    @classmethod
+    def validate_strict_id(cls, val: Optional[str], name: str = "ID") -> str:
+        """Extremely strict validation for IDs/Identifiers."""
+        if not val:
+            raise ValueError(f"{name} is missing.")
+        trimmed = val.strip()
+        if not cls.STRICT_ALNUM_RE.match(trimmed):
+             raise ValueError(f"Security: {name} contains illegal characters. Only alphanumeric, dot, underscore, and dash allowed.")
         return trimmed
 
     @classmethod

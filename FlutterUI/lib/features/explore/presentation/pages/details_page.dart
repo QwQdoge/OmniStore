@@ -35,7 +35,7 @@ class AppDetailsPage extends StatefulWidget {
 class _AppDetailsPageState extends State<AppDetailsPage> {
   late String _selectedSource;
   late bool _isAppInstalled;
-  Map<String, dynamic>? _extraDetails;
+  AppPackage? _extraDetails;
   bool _isLoadingDetails = false;
 
   final ScrollController _screenshotScrollController = ScrollController();
@@ -179,7 +179,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
 
     final variantMap = _getVariantForSource(_selectedSource);
-    String? variantId = variantMap?['id']?.toString();
+    String? variantId = variantMap?.id;
     if (variantId == null || variantId.isEmpty) {
       try {
         final v = widget.app.variants.firstWhere(
@@ -241,6 +241,80 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         );
       }
     });
+  }
+
+  Widget _buildMainContent(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ThemeData theme,
+    bool isAIEnabled,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppDetailsHeader(
+          app: widget.app,
+          extraDetails: _extraDetails,
+          selectedSource: _selectedSource,
+          isAppInstalled: _isAppInstalled,
+          githubRepositoryUrl: _githubRepositoryUrl,
+          variantScrollController: _variantScrollController,
+          heroTag: widget.heroTag,
+          hasCapability: _hasCapability,
+          getVersionForSource: _getVersionForSource,
+          isSourceInstalled: _isSourceInstalled,
+          onSourceSelected: (String newValue) {
+            setState(() {
+              _selectedSource = newValue;
+              _isAppInstalled = _isSourceInstalled(newValue);
+            });
+          },
+        ),
+        const SizedBox(height: 24),
+        AppDetailsActions(
+          appName: widget.app.name,
+          isAppInstalled: _isAppInstalled,
+          onLocateApp: _locateApp,
+          onHandleAction: _handleAction,
+          onLaunchApp: _launchApp,
+          onCancelAction: _cancelAction,
+        ),
+        const SizedBox(height: 24),
+        const Divider(),
+        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
+        AppAboutSection(
+          isLoading: _isLoadingDetails,
+          description: _extraDetails?.description,
+          fallbackDescription: widget.app.description,
+        ),
+        if (_hasCapability('has_screenshots') &&
+            _extraDetails != null &&
+            _extraDetails!.screenshots != null &&
+            _extraDetails!.screenshots!.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          const Divider(),
+          AppDetailsSectionTitle(
+            title: AppLocalizations.of(context)!.screenshots,
+          ),
+          AppScreenshots(
+            screenshots: _extraDetails!.screenshots!,
+            scrollController: _screenshotScrollController,
+            onShowScreenshotViewer: _showScreenshotViewer,
+          ),
+        ],
+        const SizedBox(height: 24),
+        const Divider(),
+        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
+        AppTechnicalDetails(
+          primarySource: widget.app.primarySource,
+          allSources: widget.app.sources,
+          version: widget.app.version,
+          extraDetails: _extraDetails,
+          currentVariant: _getVariantForSource(_selectedSource),
+          hasCapability: _hasCapability,
+        ),
+      ],
+    );
   }
 
   @override
@@ -336,8 +410,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Future<void> _launchApp() async {
     final l10n = AppLocalizations.of(context)!;
     final variant = _getVariantForSource(_selectedSource);
-    String target = (variant?['id'] != null && _selectedSource == "Flatpak")
-        ? variant!['id']!
+    String target = (variant?.id != null && _selectedSource == "Flatpak")
+        ? variant!.id!
         : widget.app.name.trim();
     final packageRepo = context.read<PackageRepository>();
     final success = await packageRepo.launchApp(target, _selectedSource);
@@ -352,8 +426,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   Future<void> _locateApp() async {
     final l10n = AppLocalizations.of(context)!;
     final variant = _getVariantForSource(_selectedSource);
-    String target = (variant?['id'] != null && _selectedSource == "Flatpak")
-        ? variant!['id']!
+    String target = (variant?.id != null && _selectedSource == "Flatpak")
+        ? variant!.id!
         : widget.app.name.trim();
     final packageRepo = context.read<PackageRepository>();
     final success = await packageRepo.locateApp(target, _selectedSource);
@@ -369,8 +443,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final candidates = <String?>[
       widget.app.url,
       widget.app.homepage,
-      _extraDetails?['url'] as String?,
-      _extraDetails?['homepage'] as String?,
+      _extraDetails?.url,
+      _extraDetails?.homepage,
     ];
     for (final candidate in candidates) {
       if (candidate != null && GitHubClient.parseUrl(candidate) != null) {
@@ -380,10 +454,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return null;
   }
 
-  Map<String, dynamic>? _getVariantForSource(String source) {
-    if (_extraDetails != null && _extraDetails!['variants'] != null) {
-      for (var v in _extraDetails!['variants']) {
-        if (v['source'] == source) {
+  AppVariant? _getVariantForSource(String source) {
+    if (_extraDetails != null) {
+      for (var v in _extraDetails!.variants) {
+        if (v.source == source) {
           return v;
         }
       }
@@ -392,10 +466,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   String? _getVersionForSource(String source) {
-    if (_extraDetails != null && _extraDetails!['variants'] != null) {
-      for (var v in _extraDetails!['variants']) {
-        if (v['source'] == source) {
-          return v['version'] ?? v['last_version'];
+    if (_extraDetails != null) {
+      for (var v in _extraDetails!.variants) {
+        if (v.source == source) {
+          return v.version;
         }
       }
     }
@@ -408,10 +482,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
   }
 
   bool _isSourceInstalled(String source) {
-    if (_extraDetails != null && _extraDetails!['variants'] != null) {
-      for (var v in _extraDetails!['variants']) {
-        if (v['source'] == source) {
-          return v['installed'] ?? false;
+    if (_extraDetails != null) {
+      for (var v in _extraDetails!.variants) {
+        if (v.source == source) {
+          return v.installed;
         }
       }
     }

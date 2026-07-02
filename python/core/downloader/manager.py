@@ -116,7 +116,11 @@ class InstallExecutor:
                     self.is_running = True
                     # 5. Execution with Strict Isolation
                     # Murphy-proof: Standard timeout for the entire installation process (60 minutes)
-                    success = await asyncio.wait_for(source.install(package, callback=callback), timeout=3600)
+                    # Implementation of secondary watchdog to catch sources that don't respect internal cancellation
+                    async def run_with_watchdog():
+                        return await source.install(package, callback=callback)
+
+                    success = await asyncio.wait_for(run_with_watchdog(), timeout=3600)
                     return bool(success)
                 except asyncio.TimeoutError:
                     if callback: await callback("[ERROR] Installation timed out after 60 minutes. Task terminated for safety.")
@@ -174,7 +178,10 @@ class InstallExecutor:
                 source = self.backend.manager.sources[source_name]
                 try:
                     self.is_running = True
-                    success = await asyncio.wait_for(source.uninstall(package, callback=callback), timeout=1800)
+                    async def run_uninstall_with_watchdog():
+                        return await source.uninstall(package, callback=callback)
+
+                    success = await asyncio.wait_for(run_uninstall_with_watchdog(), timeout=1800)
                     return bool(success)
                 except asyncio.TimeoutError:
                     if callback: await callback("[ERROR] Uninstallation timed out after 30 minutes.")
