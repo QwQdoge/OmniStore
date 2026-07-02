@@ -49,6 +49,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
 
   Future<void> _togglePlugin(SourcePluginInfo plugin, bool enabled) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final success = await BackendService.instance.setPluginEnabled(
       plugin.id,
       enabled,
@@ -56,7 +57,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     if (!mounted) return;
     messenger.showSnackBar(
       SnackBar(
-        content: Text(success ? 'Plugin updated' : 'Plugin update failed'),
+        content: Text(success ? l10n.pluginUpdated : l10n.pluginUpdateFailed),
       ),
     );
     await _loadPlugins();
@@ -64,11 +65,12 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
 
   Future<void> _removePlugin(SourcePluginInfo plugin) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final success = await BackendService.instance.removePlugin(plugin.id);
     if (!mounted) return;
     messenger.showSnackBar(
       SnackBar(
-        content: Text(success ? 'Plugin removed' : 'Plugin removal failed'),
+        content: Text(success ? l10n.pluginRemoved : l10n.pluginRemovalFailed),
       ),
     );
     await _loadPlugins();
@@ -276,15 +278,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  l10n.activeSources,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
                 TextButton.icon(
                   onPressed: () => _autoDetectSources(l10n),
                   icon: const Icon(Icons.radar_rounded, size: 18),
@@ -312,14 +307,14 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '插件与源',
+                    l10n.pluginsAndSources,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
-                    tooltip: 'Refresh plugins',
+                    tooltip: l10n.refreshPlugins,
                     onPressed: _loadingPlugins ? null : _loadPlugins,
                   ),
                 ],
@@ -327,12 +322,12 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
               if (_loadingPlugins)
                 const LinearProgressIndicator(minHeight: 2)
               else if (_plugins.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('No source plugins found'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(l10n.noPluginsFound),
                 )
               else
-                ..._plugins.map(_buildPluginTile),
+                ..._plugins.map((p) => _buildPluginTile(p, l10n)),
               const SizedBox(height: 12),
             ],
             ListTile(
@@ -359,7 +354,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     );
   }
 
-  Widget _buildPluginTile(SourcePluginInfo plugin) {
+  Widget _buildPluginTile(SourcePluginInfo plugin, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final statusColor = plugin.error != null
         ? theme.colorScheme.error
@@ -387,18 +382,18 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
         children: [
           Expanded(child: Text(plugin.name)),
           if (plugin.builtin)
-            const Padding(
-              padding: EdgeInsets.only(left: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
               child: Chip(
-                label: Text('Builtin'),
+                label: Text(l10n.builtin),
                 visualDensity: VisualDensity.compact,
               ),
             ),
           if (plugin.legacy)
-            const Padding(
-              padding: EdgeInsets.only(left: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
               child: Chip(
-                label: Text('Legacy'),
+                label: Text(l10n.legacy),
                 visualDensity: VisualDensity.compact,
               ),
             ),
@@ -417,7 +412,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
           if (!plugin.builtin && !plugin.legacy)
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded),
-              tooltip: 'Remove plugin',
+              tooltip: l10n.removePlugin,
               onPressed: () => _removePlugin(plugin),
             ),
         ],

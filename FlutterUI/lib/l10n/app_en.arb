@@ -987,5 +987,45 @@
   "rankings": "Rankings",
   "trending": "Trending",
   "latestUpdates": "Latest Updates",
-  "searchNoResultsSubtitle": "Try searching for something else"
+  "searchNoResultsSubtitle": "Try searching for something else",
+  "pluginsAndSources": "Plugins & Sources",
+  "@pluginsAndSources": {
+    "description": "Section title for plugins and software sources"
+  },
+  "refreshPlugins": "Refresh plugins",
+  "@refreshPlugins": {
+    "description": "Tooltip for refreshing plugin list"
+  },
+  "noPluginsFound": "No source plugins found",
+  "@noPluginsFound": {
+    "description": "Message shown when no source plugins are available"
+  },
+  "builtin": "Builtin",
+  "@builtin": {
+    "description": "Label for builtin plugins"
+  },
+  "legacy": "Legacy",
+  "@legacy": {
+    "description": "Label for legacy plugins"
+  },
+  "pluginUpdated": "Plugin updated",
+  "@pluginUpdated": {
+    "description": "Success message after updating a plugin"
+  },
+  "pluginUpdateFailed": "Plugin update failed",
+  "@pluginUpdateFailed": {
+    "description": "Error message when plugin update fails"
+  },
+  "pluginRemoved": "Plugin removed",
+  "@pluginRemoved": {
+    "description": "Success message after removing a plugin"
+  },
+  "pluginRemovalFailed": "Plugin removal failed",
+  "@pluginRemovalFailed": {
+    "description": "Error message when plugin removal fails"
+  },
+  "removePlugin": "Remove plugin",
+  "@removePlugin": {
+    "description": "Tooltip for removing a plugin"
+  }
 }

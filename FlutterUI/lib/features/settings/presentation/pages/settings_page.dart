@@ -29,22 +29,9 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.settings,
-                style: OmnistoreTheme.standardHeader(context),
-              ),
-              Tooltip(
-                message: l10n.advanced,
-                child: FilterChip(
-                  label: Text(l10n.advanced),
-                  selected: _showAdvanced,
-                  onSelected: (val) => setState(() => _showAdvanced = val),
-                ),
-              ),
-            ],
+          Text(
+            l10n.settings,
+            style: OmnistoreTheme.standardHeader(context),
           ),
           const SizedBox(height: 24),
 
@@ -105,6 +92,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         settings.updateConfig(config);
                       },
                     ),
+                    SwitchListTile(
+                      title: Text(l10n.advanced),
+                      value: _showAdvanced,
+                      onChanged: (val) => setState(() => _showAdvanced = val),
+                    ),
                   ],
                 ),
               ),
@@ -112,6 +104,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
+          SettingsSectionHeader(title: l10n.systemCleaning),
           // Storage & Cleanup Card
           Semantics(
             label: l10n.systemCleaning,

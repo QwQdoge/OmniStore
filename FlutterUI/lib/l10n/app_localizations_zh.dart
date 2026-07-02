@@ -1134,6 +1134,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchNoResultsSubtitle => '尝试搜索其他内容';
+
+  @override
+  String get pluginsAndSources => 'Plugins & Sources';
+
+  @override
+  String get refreshPlugins => 'Refresh plugins';
+
+  @override
+  String get noPluginsFound => 'No source plugins found';
+
+  @override
+  String get builtin => 'Builtin';
+
+  @override
+  String get legacy => 'Legacy';
+
+  @override
+  String get pluginUpdated => 'Plugin updated';
+
+  @override
+  String get pluginUpdateFailed => 'Plugin update failed';
+
+  @override
+  String get pluginRemoved => 'Plugin removed';
+
+  @override
+  String get pluginRemovalFailed => 'Plugin removal failed';
+
+  @override
+  String get removePlugin => 'Remove plugin';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

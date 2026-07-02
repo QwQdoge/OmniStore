@@ -1232,4 +1232,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get searchNoResultsSubtitle => 'Intente buscar otra cosa';
+
+  @override
+  String get pluginsAndSources => 'Plugins & Sources';
+
+  @override
+  String get refreshPlugins => 'Refresh plugins';
+
+  @override
+  String get noPluginsFound => 'No source plugins found';
+
+  @override
+  String get builtin => 'Builtin';
+
+  @override
+  String get legacy => 'Legacy';
+
+  @override
+  String get pluginUpdated => 'Plugin updated';
+
+  @override
+  String get pluginUpdateFailed => 'Plugin update failed';
+
+  @override
+  String get pluginRemoved => 'Plugin removed';
+
+  @override
+  String get pluginRemovalFailed => 'Plugin removal failed';
+
+  @override
+  String get removePlugin => 'Remove plugin';
 }
