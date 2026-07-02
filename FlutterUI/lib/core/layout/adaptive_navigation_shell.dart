@@ -87,7 +87,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
           builder: (context, isBusy, child) {
             return AnimatedSize(
               duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
+              curve: Curves.easeOutCubic,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOutCubic,
@@ -206,7 +206,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                   children: [
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
+                      curve: Curves.easeOutCubic,
                       width: railWidth,
                       decoration: BoxDecoration(
                         color: scheme.surfaceContainerLowest,
