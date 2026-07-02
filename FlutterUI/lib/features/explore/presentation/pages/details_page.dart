@@ -10,13 +10,8 @@ import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
 
-import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_appbar_actions.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_details_header.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_details_actions.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_about_section.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_technical_details.dart';
-import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
+import 'package:frontend/features/explore/presentation/widgets/app_main_content.dart';
 import 'package:frontend/features/explore/presentation/widgets/screenshot_viewer.dart';
 
 // Feature: Extract details page transition to a declarative router (e.g. GoRouter) to support deep-linking (e.g. omnistore://app/id).
@@ -248,84 +243,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     });
   }
 
-  Widget _buildMainContent(
-    BuildContext context,
-    ColorScheme colorScheme,
-    ThemeData theme,
-    bool isAIEnabled,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppDetailsHeader(
-          app: widget.app,
-          extraDetails: _extraDetails,
-          selectedSource: _selectedSource,
-          isAppInstalled: _isAppInstalled,
-          githubRepositoryUrl: _githubRepositoryUrl,
-          variantScrollController: _variantScrollController,
-          heroTag: widget.heroTag,
-          hasCapability: _hasCapability,
-          getVersionForSource: _getVersionForSource,
-          isSourceInstalled: _isSourceInstalled,
-          onSourceSelected: (String newValue) {
-            setState(() {
-              _selectedSource = newValue;
-              _isAppInstalled = _isSourceInstalled(newValue);
-            });
-          },
-        ),
-        const SizedBox(height: 24),
-        AppDetailsActions(
-          appName: widget.app.name,
-          isAppInstalled: _isAppInstalled,
-          onLocateApp: _locateApp,
-          onHandleAction: _handleAction,
-          onLaunchApp: _launchApp,
-          onCancelAction: _cancelAction,
-        ),
-        const SizedBox(height: 24),
-        const Divider(),
-        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-        AppAboutSection(
-          isLoading: _isLoadingDetails,
-          description: _extraDetails?['description'],
-          fallbackDescription: widget.app.description,
-        ),
-        if (_hasCapability('has_screenshots') &&
-            _extraDetails != null &&
-            _extraDetails!['screenshots'] != null &&
-            (_extraDetails!['screenshots'] as List).isNotEmpty) ...[
-          const SizedBox(height: 24),
-          const Divider(),
-          AppDetailsSectionTitle(
-            title: AppLocalizations.of(context)!.screenshots,
-          ),
-          AppScreenshots(
-            screenshots: _extraDetails!['screenshots'] as List,
-            scrollController: _screenshotScrollController,
-            onShowScreenshotViewer: _showScreenshotViewer,
-          ),
-        ],
-        const SizedBox(height: 24),
-        const Divider(),
-        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
-        AppTechnicalDetails(
-          primarySource: widget.app.primarySource,
-          allSources: widget.app.sources,
-          version: widget.app.version,
-          extraDetails: _extraDetails,
-          currentVariant: _getVariantForSource(_selectedSource),
-          hasCapability: _hasCapability,
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final isAIEnabled = context.select<SettingsController, bool>(
       (s) => s.isAIEnabled,
     );
@@ -380,11 +299,31 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             },
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
-              child: _buildMainContent(
-                context,
-                colorScheme,
-                theme,
-                isAIEnabled,
+              child: AppMainContent(
+                app: widget.app,
+                extraDetails: _extraDetails,
+                selectedSource: _selectedSource,
+                isAppInstalled: _isAppInstalled,
+                githubRepositoryUrl: _githubRepositoryUrl,
+                variantScrollController: _variantScrollController,
+                heroTag: widget.heroTag,
+                hasCapability: _hasCapability,
+                getVersionForSource: _getVersionForSource,
+                isSourceInstalled: _isSourceInstalled,
+                onSourceSelected: (String newValue) {
+                  setState(() {
+                    _selectedSource = newValue;
+                    _isAppInstalled = _isSourceInstalled(newValue);
+                  });
+                },
+                onLocateApp: _locateApp,
+                onHandleAction: _handleAction,
+                onLaunchApp: _launchApp,
+                onCancelAction: _cancelAction,
+                isLoadingDetails: _isLoadingDetails,
+                screenshotScrollController: _screenshotScrollController,
+                onShowScreenshotViewer: _showScreenshotViewer,
+                getVariantForSource: _getVariantForSource,
               ),
             ),
           ),
