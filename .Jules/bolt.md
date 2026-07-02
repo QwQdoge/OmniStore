@@ -58,3 +58,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Initializing an `AnimationController` in every instance of a common list item (like `AppCard`) creates significant memory and Ticker overhead, especially for non-interactive skeletons and prototype items. Deferring initialization until `onTap` is confirmed as non-null reduces this waste. Additionally, for high-frequency metadata like star counts, relying solely on `FutureBuilder`-style async patterns causes visual "flicker" even when data is cached; a synchronous cache-check in `initState` provides a much smoother browsing experience.
 
 **Action:** Refactored `AppCard` to lazy-initialize its controller and updated `GitHubStarBadge` to perform synchronous cache lookups in `GitHubClient`.
+
+## 2026-07-02 - SettingsPage Granular Selector Optimization
+
+**Learning:** Using broad `Consumer<SettingsController>` widgets in a complex settings page causes significant performance degradation as any single change (like toggling a switch or moving a slider) forces the entire page or large sections of it to rebuild. Using targeted `Selector` widgets with Dart 3 records for primitive grouping and `MapEquality` for configuration maps ensures that only the relevant widgets rebuild.
+
+**Action:** Refactored `SettingsPage.dart` by replacing all `Consumer<SettingsController>` widgets with granular `Selector` implementations for General, Repositories, Updates, Typography, and AI sections.
