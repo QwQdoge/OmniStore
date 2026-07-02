@@ -560,7 +560,7 @@
   "logWarning": "ADVERTENCIA (WARNING)",
   "logError": "ERROR (ERROR)",
   "notificationTitle": "Actualizaciones disponibles",
-  "notificationBody": "{count, plural, =1{Hay 1 aplicación disponible para actualizar} other{Hay {count} aplicaciones disponibles para actualizar}}",
+  "notificationBody": "{count, plural, =1{1 aplicación disponible para actualizar} other{{count} aplicaciones disponibles para actualizar}}",
   "@notificationBody": {
     "placeholders": {
       "count": {

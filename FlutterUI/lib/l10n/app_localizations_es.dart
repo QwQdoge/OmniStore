@@ -830,8 +830,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Hay $count aplicaciones disponibles para actualizar',
-      one: 'Hay 1 aplicación disponible para actualizar',
+      other: '$count aplicaciones disponibles para actualizar',
+      one: '1 aplicación disponible para actualizar',
     );
     return '$_temp0';
   }
