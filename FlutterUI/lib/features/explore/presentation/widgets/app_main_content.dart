@@ -11,7 +11,7 @@ import 'package:frontend/features/explore/presentation/widgets/app_screenshots.d
 
 class AppMainContent extends StatelessWidget {
   final AppPackage app;
-  final Map<String, dynamic>? extraDetails;
+  final AppPackage? extraDetails;
   final String selectedSource;
   final bool isAppInstalled;
   final String? githubRepositoryUrl;
@@ -28,7 +28,7 @@ class AppMainContent extends StatelessWidget {
   final bool isLoadingDetails;
   final ScrollController screenshotScrollController;
   final ValueChanged<String> onShowScreenshotViewer;
-  final Map<String, dynamic>? Function(String) getVariantForSource;
+  final AppVariant? Function(String) getVariantForSource;
 
   const AppMainContent({
     super.key,
@@ -85,20 +85,20 @@ class AppMainContent extends StatelessWidget {
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AppAboutSection(
           isLoading: isLoadingDetails,
-          description: extraDetails?['description'],
+          description: extraDetails?.description,
           fallbackDescription: app.description,
         ),
         if (hasCapability('has_screenshots') &&
             extraDetails != null &&
-            extraDetails!['screenshots'] != null &&
-            (extraDetails!['screenshots'] as List).isNotEmpty) ...[
+            extraDetails!.screenshots != null &&
+            extraDetails!.screenshots!.isNotEmpty) ...[
           const SizedBox(height: 24),
           const Divider(),
           AppDetailsSectionTitle(
             title: AppLocalizations.of(context)!.screenshots,
           ),
           AppScreenshots(
-            screenshots: extraDetails!['screenshots'] as List,
+            screenshots: extraDetails!.screenshots!,
             scrollController: screenshotScrollController,
             onShowScreenshotViewer: onShowScreenshotViewer,
           ),

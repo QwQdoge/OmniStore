@@ -589,10 +589,11 @@ class BackendService {
         activeSearchProcess = null;
       }
 
-      final res = await _safeRun(
-        ["-S", trimmedQuery, "--json"],
-        timeout: const Duration(seconds: 30),
-      );
+      final res = await _safeRun([
+        "-S",
+        trimmedQuery,
+        "--json",
+      ], timeout: const Duration(seconds: 30));
 
       if (res != null && res.exitCode == 0) {
         final parsed = _safeJsonDecode(res.stdout.toString());
@@ -674,7 +675,10 @@ class BackendService {
           .toList();
     }
     try {
-      final daemonRes = await _sendToDaemon("run_list_installed", [true, false]);
+      final daemonRes = await _sendToDaemon("run_list_installed", [
+        true,
+        false,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         if (data is List) {
@@ -688,8 +692,10 @@ class BackendService {
       debugPrint("Daemon listInstalled error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["-L", "--json"],
-          timeout: const Duration(seconds: 45));
+      final res = await _safeRun([
+        "-L",
+        "--json",
+      ], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
       final data = _safeJsonDecode(res.stdout.toString());
       if (data is List) {
@@ -1066,8 +1072,10 @@ class BackendService {
       debugPrint("Daemon getRecommendations error: $e. Falling back.");
     }
     try {
-      final res = await _safeRun(["--recommend", "--json"],
-          timeout: const Duration(seconds: 30));
+      final res = await _safeRun([
+        "--recommend",
+        "--json",
+      ], timeout: const Duration(seconds: 30));
       if (res == null) return {};
       final data = _safeJsonDecode(res.stdout.toString());
       return _parseRecommendations(data);
@@ -1169,12 +1177,14 @@ class BackendService {
 
   Future<AppPackage?> getAppDetails(String id) async {
     if (kIsWeb) {
-      final data = await PackageRepository().getAppDetails(id);
-      return AppPackage.fromJson(data);
+      return PackageRepository().getAppDetails(id);
     }
     try {
       _validateString(id, "App ID");
-      final daemonRes = await _sendToDaemon("run_app_details", [id.trim(), true]);
+      final daemonRes = await _sendToDaemon("run_app_details", [
+        id.trim(),
+        true,
+      ]);
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = _safeJsonDecode(daemonRes.stdout);
         if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
@@ -1184,8 +1194,11 @@ class BackendService {
     }
     try {
       _validateString(id, "App ID");
-      final res = await _safeRun(["--details", id.trim(), "--json"],
-          timeout: const Duration(seconds: 25));
+      final res = await _safeRun([
+        "--details",
+        id.trim(),
+        "--json",
+      ], timeout: const Duration(seconds: 25));
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
       return null;
