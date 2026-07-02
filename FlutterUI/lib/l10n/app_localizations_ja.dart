@@ -1142,32 +1142,32 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searchNoResultsSubtitle => '別のキーワードで検索してみてください';
 
   @override
-  String get pluginsAndSources => 'Plugins & Sources';
+  String get pluginsAndSources => 'プラグインとソース';
 
   @override
-  String get refreshPlugins => 'Refresh plugins';
+  String get refreshPlugins => 'プラグインを更新';
 
   @override
-  String get noPluginsFound => 'No source plugins found';
+  String get noPluginsFound => 'プラグインが見つかりませんでした';
 
   @override
-  String get builtin => 'Builtin';
+  String get builtin => '内蔵';
 
   @override
-  String get legacy => 'Legacy';
+  String get legacy => 'レガシー';
 
   @override
-  String get pluginUpdated => 'Plugin updated';
+  String get pluginUpdated => 'プラグインを更新しました';
 
   @override
-  String get pluginUpdateFailed => 'Plugin update failed';
+  String get pluginUpdateFailed => 'プラグインの更新に失敗しました';
 
   @override
-  String get pluginRemoved => 'Plugin removed';
+  String get pluginRemoved => 'プラグインを削除しました';
 
   @override
-  String get pluginRemovalFailed => 'Plugin removal failed';
+  String get pluginRemovalFailed => 'プラグインの削除に失敗しました';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => 'プラグインを削除';
 }
