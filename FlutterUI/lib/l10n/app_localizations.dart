@@ -2220,6 +2220,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try searching for something else'**
   String get searchNoResultsSubtitle;
+
+  /// Section title for plugins and software sources
+  ///
+  /// In en, this message translates to:
+  /// **'Plugins & Sources'**
+  String get pluginsAndSources;
+
+  /// Tooltip for refreshing plugin list
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh plugins'**
+  String get refreshPlugins;
+
+  /// Message shown when no source plugins are available
+  ///
+  /// In en, this message translates to:
+  /// **'No source plugins found'**
+  String get noPluginsFound;
+
+  /// Label for builtin plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Builtin'**
+  String get builtin;
+
+  /// Label for legacy plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy'**
+  String get legacy;
+
+  /// Success message after updating a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin updated'**
+  String get pluginUpdated;
+
+  /// Error message when plugin update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin update failed'**
+  String get pluginUpdateFailed;
+
+  /// Success message after removing a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin removed'**
+  String get pluginRemoved;
+
+  /// Error message when plugin removal fails
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin removal failed'**
+  String get pluginRemovalFailed;
+
+  /// Tooltip for removing a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Remove plugin'**
+  String get removePlugin;
 }
 
 class _AppLocalizationsDelegate

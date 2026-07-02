@@ -141,32 +141,6 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.storage_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.systemCleaning,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                Semantics(
-                  label: l10n.refresh,
-                  button: true,
-                  child: IconButton(
-                    icon: const Icon(Icons.refresh_rounded),
-                    onPressed: _fetchStorageInfo,
-                    tooltip: l10n.refresh,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
@@ -217,6 +191,15 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                                     .toStringAsFixed(1),
                               ),
                               style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Semantics(
+                              label: l10n.refresh,
+                              button: true,
+                              child: IconButton(
+                                icon: const Icon(Icons.refresh_rounded),
+                                onPressed: _fetchStorageInfo,
+                                tooltip: l10n.refresh,
+                              ),
                             ),
                           ],
                         ),

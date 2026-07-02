@@ -30,22 +30,9 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.settings,
-                style: OmnistoreTheme.standardHeader(context),
-              ),
-              Tooltip(
-                message: l10n.advanced,
-                child: FilterChip(
-                  label: Text(l10n.advanced),
-                  selected: _showAdvanced,
-                  onSelected: (val) => setState(() => _showAdvanced = val),
-                ),
-              ),
-            ],
+          Text(
+            l10n.settings,
+            style: OmnistoreTheme.standardHeader(context),
           ),
           const SizedBox(height: 24),
 
@@ -89,51 +76,53 @@ class _SettingsPageState extends State<SettingsPage> {
                               : l10n.langEnglish,
                         ),
                       ),
-                      SwitchListTile(
-                        title: Text(l10n.closeToTray),
-                        value: data.closeToTray,
-                        onChanged: (val) {
-                          context.read<SettingsController>().setCloseToTray(
-                            val,
-                          );
-                        },
-                      ),
-                      SwitchListTile(
-                        title: Text(l10n.useSystemTitleBar),
-                        subtitle: Text(l10n.configSaved),
-                        value: data.useSystemTitleBar,
-                        onChanged: (val) {
-                          context.read<SettingsController>()
-                              .setUseSystemTitleBar(val);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.configSaved)),
-                          );
-                        },
-                      ),
-                      SwitchListTile(
-                        title: Text(l10n.aiEnabled),
-                        subtitle: Text(l10n.aiAssistantDesc),
-                        value: data.isAIEnabled,
-                        onChanged: (val) {
-                          final settings = context.read<SettingsController>();
-                          final config = Map<String, dynamic>.from(
-                            settings.config,
-                          );
-                          config['ai'] = Map<String, dynamic>.from(
-                            config['ai'] ?? {},
-                          );
-                          config['ai']['enabled'] = val;
-                          settings.updateConfig(config);
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                    SwitchListTile(
+                      title: Text(l10n.closeToTray),
+                      value: settings.closeToTray,
+                      onChanged: (val) {
+                        settings.setCloseToTray(val);
+                      },
+                    ),
+                    SwitchListTile(
+                      title: Text(l10n.useSystemTitleBar),
+                      subtitle: Text(l10n.configSaved),
+                      value: settings.useSystemTitleBar,
+                      onChanged: (val) {
+                        settings.setUseSystemTitleBar(val);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.configSaved)),
+                        );
+                      },
+                    ),
+                    SwitchListTile(
+                      title: Text(l10n.aiEnabled),
+                      subtitle: Text(l10n.aiAssistantDesc),
+                      value: settings.isAIEnabled,
+                      onChanged: (val) {
+                        final config = Map<String, dynamic>.from(
+                          settings.config,
+                        );
+                        config['ai'] = Map<String, dynamic>.from(
+                          config['ai'] ?? {},
+                        );
+                        config['ai']['enabled'] = val;
+                        settings.updateConfig(config);
+                      },
+                    ),
+                    SwitchListTile(
+                      title: Text(l10n.advanced),
+                      value: _showAdvanced,
+                      onChanged: (val) => setState(() => _showAdvanced = val),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
 
           const SizedBox(height: 24),
+          SettingsSectionHeader(title: l10n.systemCleaning),
           // Storage & Cleanup Card
           Semantics(
             label: l10n.systemCleaning,
