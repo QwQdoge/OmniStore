@@ -1170,4 +1170,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => '管理対象';
+
+  @override
+  String get readOnly => '読み取り専用';
 }

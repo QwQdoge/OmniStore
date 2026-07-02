@@ -1262,4 +1262,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => 'Gestionado';
+
+  @override
+  String get readOnly => 'Solo lectura';
 }

@@ -987,5 +987,7 @@
   "rankings": "Clasificaciones",
   "trending": "Tendencias",
   "latestUpdates": "Últimas actualizaciones",
-  "searchNoResultsSubtitle": "Intente buscar otra cosa"
+  "searchNoResultsSubtitle": "Intente buscar otra cosa",
+  "managed": "Gestionado",
+  "readOnly": "Solo lectura"
 }

@@ -1164,6 +1164,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => '已托管';
+
+  @override
+  String get readOnly => '只读';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2296,4 +2302,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
+
+  @override
+  String get managed => '已代管';
+
+  @override
+  String get readOnly => '唯讀';
 }

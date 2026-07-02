@@ -990,5 +990,7 @@
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "嘗試搜尋其他內容"
+  "searchNoResultsSubtitle": "嘗試搜尋其他內容",
+  "managed": "已代管",
+  "readOnly": "唯讀"
 }

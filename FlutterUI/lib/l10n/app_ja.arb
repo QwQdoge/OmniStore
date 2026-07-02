@@ -987,5 +987,7 @@
   "rankings": "ランキング",
   "trending": "トレンド",
   "latestUpdates": "最新の更新",
-  "searchNoResultsSubtitle": "別のキーワードで検索してみてください"
+  "searchNoResultsSubtitle": "別のキーワードで検索してみてください",
+  "managed": "管理対象",
+  "readOnly": "読み取り専用"
 }
