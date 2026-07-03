@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 
@@ -55,75 +56,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return AnimatedBuilder(
-          animation: taskController,
-          builder: (context, child) {
-            return AlertDialog(
-              title: Text(l10n.systemCleaning),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(taskController.status),
-                  const SizedBox(height: 16),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: taskController.progress != null
-                        ? TweenAnimationBuilder<double>(
-                            key: const ValueKey('determinate'),
-                            tween: Tween<double>(
-                              begin: 0,
-                              end: taskController.progress!,
-                            ),
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, _) {
-                              return LinearProgressIndicator(value: value);
-                            },
-                          )
-                        : const Skeleton(
-                            key: ValueKey('indeterminate'),
-                            height:
-                                4.0, // Match typical LinearProgressIndicator height
-                            width: double.infinity,
-                          ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 150,
-                    width: double.maxFinite,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        taskController.logs.join('\n'),
-                        style: const TextStyle(
-                          color: Colors.greenAccent,
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                if (!taskController.isBusy)
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(l10n.ok),
-                  ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (_) => const TerminalDialog(),
     );
 
     await taskController.runCleanSystem(l10n);

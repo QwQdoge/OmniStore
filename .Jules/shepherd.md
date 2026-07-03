@@ -52,3 +52,6 @@
 - Refactored `_importPackages` in `FlutterUI/lib/features/home/home_page.dart` to use the standardized `TaskController` flow instead of hitting `TaskRepository` directly.
 - Added `taskController.isBusy` guard in `_importPackages` to prevent overlapping installations, showing a standard `l10n.taskInProgress` SnackBar if busy.
 - Refactored the `packages` iteration in `_importPackages`'s `onConfirm` callback to safely capture `BuildContext` variables (`ScaffoldMessenger` and `AppLocalizations`) and `await taskController.runTask` sequentially. This prevents parallel installation race conditions and unifies the UI experience (e.g. terminal dialog progress) with the rest of the application.
+## 2026-06-23 - Dialog Consistency: Storage Cleanup
+- Replaced the custom inline `AlertDialog` in `StorageCleanupCard` (`FlutterUI/lib/features/settings/presentation/widgets/storage_cleanup_card.dart`) with the global `TerminalDialog`.
+- Refactored `TerminalDialog` (`FlutterUI/lib/features/task_manager/presentation/widgets/terminal_dialog.dart`) to support progress indicators and status messages using Dart 3 records in a `Selector`, thus preserving the UX of `StorageCleanupCard` while standardizing the codebase and removing duplicated UI logic.
