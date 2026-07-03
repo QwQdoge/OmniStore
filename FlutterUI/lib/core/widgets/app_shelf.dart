@@ -36,14 +36,18 @@ class AppShelf extends StatelessWidget {
             child: ListView.builder(
               controller: scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
+              prototypeItem: const SizedBox(
+                width: 142, // 130 + 12 (manual spacing)
+                child: SizedBox.shrink(),
+              ),
               itemCount: apps.length,
-              prototypeItem: const SizedBox(width: 142), // 130 width + 12 gap
               itemBuilder: (context, index) {
                 final app = apps[index];
                 final heroTag = 'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
                 return Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: SizedBox(
                     width: 130,
                     child: AppCard(
