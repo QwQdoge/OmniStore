@@ -13,13 +13,6 @@
 
 ## 2026-06-17 - Trending Shelf Rebuild Reduction
 
-**Learning:**  widgets rebuild their child tree every time the provided controller's  is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to , we narrow the rebuild trigger to only fire when the specific property changes.
-
-**Action:** Replaced  with  in  for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
-
-
-## 2026-06-17 - Trending Shelf Rebuild Reduction
-
 **Learning:** `Consumer` widgets rebuild their child tree every time the provided controller's `notifyListeners` is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to `Selector`, we narrow the rebuild trigger to only fire when the specific property changes.
 
 **Action:** Replaced `Consumer<BrowseController>` with `Selector<BrowseController, List<AppPackage>>` in `home_page.dart` for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
@@ -64,3 +57,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Using broad `Consumer<SettingsController>` widgets in a complex settings page causes significant performance degradation as any single change (like toggling a switch or moving a slider) forces the entire page or large sections of it to rebuild. Using targeted `Selector` widgets with Dart 3 records for primitive grouping and `MapEquality` for configuration maps ensures that only the relevant widgets rebuild.
 
 **Action:** Refactored `SettingsPage.dart` by replacing all `Consumer<SettingsController>` widgets with granular `Selector` implementations for General, Repositories, Updates, Typography, and AI sections.
+
+## 2026-07-04 - Search Latency & List Virtualization Optimization
+
+**Learning:** Artificial debounce timers (e.g., 300ms) in search controllers are redundant for explicit user actions (like 'onSubmitted' or category clicks) and introduce unnecessary lag. Using a request ID ('_activeSearchId') allows for immediate execution while safely handling asynchronous race conditions. Furthermore, horizontal shelves with fixed-size items benefit significantly from switching from 'ListView.separated' to 'ListView.builder' with a 'prototypeItem', as it optimizes scroll virtualization and scrollbar accuracy.
+
+**Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.

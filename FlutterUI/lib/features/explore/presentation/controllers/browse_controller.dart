@@ -10,8 +10,10 @@ class BrowseController with ChangeNotifier {
   List<AppPackage> _searchResults = [];
   bool _isSearching = false;
   String? _pendingSearchQuery;
-  Timer? _debounceTimer;
   AppPackage? _selectedApp;
+
+  // Race condition handler: ensures only the latest search results update the UI
+  int _activeSearchId = 0;
 
   BrowseController(this._packageRepository);
 
@@ -37,25 +39,28 @@ class BrowseController with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Performs an asynchronous search for packages.
+  /// ⚡ Bolt: Removed 300ms artificial debounce as searches are triggered by explicit
+  /// user actions (onSubmitted). Added _activeSearchId to handle race conditions.
   Future<void> search(String query) async {
-    _debounceTimer?.cancel();
+    final searchId = ++_activeSearchId;
     _isSearching = true;
     _selectedApp = null;
     notifyListeners();
 
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-      try {
-        _searchResults = await _packageRepository.searchPackages(query);
-      } finally {
+    try {
+      final results = await _packageRepository.searchPackages(query);
+
+      // Only update if this is still the most recent search
+      if (searchId == _activeSearchId) {
+        _searchResults = results;
+      }
+    } finally {
+      if (searchId == _activeSearchId) {
         _isSearching = false;
         notifyListeners();
       }
-    });
+    }
   }
 
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }

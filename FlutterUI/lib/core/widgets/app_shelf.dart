@@ -33,65 +33,72 @@ class AppShelf extends StatelessWidget {
           child: Scrollbar(
             controller: scrollController,
             thumbVisibility: true,
-            child: ListView.separated(
+            child: ListView.builder(
               controller: scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
+              prototypeItem: const SizedBox(
+                width: 142, // 130 + 12 (manual spacing)
+                child: SizedBox.shrink(),
+              ),
               itemCount: apps.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final app = apps[index];
                 final heroTag = 'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
-                return SizedBox(
-                  width: 130,
-                  child: AppCard(
-                    borderRadius: 16,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AppDetailsPage(app: app, heroTag: heroTag),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: SizedBox(
+                    width: 130,
+                    child: AppCard(
+                      borderRadius: 16,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AppDetailsPage(app: app, heroTag: heroTag),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 12),
-                        Hero(
-                          tag: heroTag,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: app.icon != null
-                                ? CachedNetworkImage(
-                                    imageUrl: app.icon!,
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 200,
-                                    errorWidget: (c, e, s) =>
-                                        const Icon(Icons.apps),
-                                  )
-                                : const Icon(Icons.apps, size: 40),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            app.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          Hero(
+                            tag: heroTag,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: app.icon != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: app.icon!,
+                                      fit: BoxFit.cover,
+                                      memCacheWidth: 200,
+                                      errorWidget: (c, e, s) =>
+                                          const Icon(Icons.apps),
+                                    )
+                                  : const Icon(Icons.apps, size: 40),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Text(
+                              app.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
