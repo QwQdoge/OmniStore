@@ -38,13 +38,17 @@ class AssetMatcher:
     def filter_assets_for_platform(assets_data: List[Dict[str, Any]], target_platform: str) -> List[Asset]:
         filtered = []
         for data in assets_data:
-            meta = AssetMatcher.identify_asset(data["name"])
+            name = data.get("name") or data.get("filename") or "download"
+            download_url = data.get("browser_download_url") or data.get("download_url") or data.get("url")
+            if not download_url:
+                continue
+            meta = AssetMatcher.identify_asset(name)
             if meta["platform"] == target_platform or meta["platform"] == "unknown":
                 filtered.append(Asset(
-                    name=data["name"],
-                    download_url=data["browser_download_url"],
-                    size=data["size"],
-                    content_type=data["content_type"],
+                    name=name,
+                    download_url=download_url,
+                    size=int(data.get("size") or 0),
+                    content_type=data.get("content_type") or "application/octet-stream",
                     platform=meta["platform"],
                     type=meta["type"]
                 ))

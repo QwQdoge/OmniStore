@@ -1,3 +1,4 @@
+import inspect
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
@@ -71,6 +72,18 @@ class UnifiedSource(ABC):
     def validate_config(self, config: Dict[str, Any]) -> bool:
         """Validate plugin-specific config. Sources can override for stricter checks."""
         return True
+
+    def _async_callback(self, callback):
+        """Accept both async UI callbacks and simple sync test/log callbacks."""
+        if callback is None:
+            return None
+
+        async def wrapped(message: str):
+            result = callback(message)
+            if inspect.isawaitable(result):
+                await result
+
+        return wrapped
 
     async def health_check(self) -> Dict[str, Any]:
         """Return source availability metadata without throwing."""

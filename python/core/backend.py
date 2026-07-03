@@ -423,19 +423,35 @@ class OmnistoreBackend:
                         if isinstance(app, dict): hijacked_print(f"推荐: {app.get('name')} ({app.get('id')})")
 
     @safe_command
-    async def run_app_details(self, app_id: str, json_mode: bool = False):
+    async def run_app_details(self, app_id: str, json_mode: bool = False, source: Optional[str] = None):
         SecurityValidator.validate_string(app_id, "App ID")
+        if source:
+            SecurityValidator.validate_string(source, "Source")
         async with self:
             if not self.recommender or not self.manager: raise RuntimeError("Managers are not initialized.")
-            details = await asyncio.wait_for(
-                self.recommender.get_details(app_id) if "." in app_id else self.recommender.find_metadata(app_id),
-                timeout=30
-            )
+            details: Dict[str, Any] = {}
+            source_key = (source or "").lower().replace("builtin.", "")
+            if source_key == "native":
+                source_key = "pacman"
+            source_obj = self.manager.sources.get(source_key) if source_key else None
+            if source_obj and source_obj.capabilities.get("details"):
+                try:
+                    details = await asyncio.wait_for(source_obj.get_details(app_id), timeout=30)
+                except Exception as exc:
+                    logging.debug(f"Plugin details failed for {source_key}:{app_id}: {exc}")
+                    details = {}
+            if not details:
+                details = await asyncio.wait_for(
+                    self.recommender.get_details(app_id) if "." in app_id else self.recommender.find_metadata(app_id),
+                    timeout=30
+                )
             search_name = details.get("name") or app_id.split(".")[-1]
             variants_results = await asyncio.wait_for(self.manager.search_all(search_name), timeout=30)
             norm_target = self.manager._normalize_app_name(search_name)
             matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
             if matched_app:
+                if not details:
+                    details.update(matched_app)
                 details["variants"] = matched_app.get("variants", [])
                 if not details.get("description") or len(details.get("description")) < 10:
                     details["description"] = matched_app.get("description", "")

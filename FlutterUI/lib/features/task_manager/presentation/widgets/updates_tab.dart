@@ -83,7 +83,7 @@ class UpdatesTab extends StatelessWidget {
                   prototypeItem: Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: AppCard(
-                      borderRadius: 16,
+                      borderRadius: 8,
                       child: ListTile(
                         leading: const SizedBox(width: 44, height: 44),
                         title: const SizedBox(height: 16),
@@ -101,7 +101,7 @@ class UpdatesTab extends StatelessWidget {
                         label: 'Update available: ${update['name']}',
                         button: true,
                         child: AppCard(
-                          borderRadius: 16,
+                          borderRadius: 8,
                           onTap: () async {
                             final packageRepo = context
                                 .read<PackageRepository>();

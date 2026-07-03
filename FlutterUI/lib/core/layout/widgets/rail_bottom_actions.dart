@@ -84,13 +84,20 @@ class CompactActionButton extends StatelessWidget {
     return Semantics(
       label: tooltip,
       button: true,
-      child: IconButton(
+      selected: isSelected,
+      child: IconButton.filledTonal(
         tooltip: tooltip,
         onPressed: onTap,
-        icon: Icon(
-          icon,
-          color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
+        style: IconButton.styleFrom(
+          fixedSize: const Size(48, 48),
+          backgroundColor: isSelected
+              ? scheme.primaryContainer
+              : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          foregroundColor: isSelected
+              ? scheme.onPrimaryContainer
+              : scheme.onSurfaceVariant,
         ),
+        icon: Icon(icon),
       ),
     );
   }
@@ -116,12 +123,12 @@ class ExpandedActionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Material(
-        color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
+        color: isSelected ? scheme.primaryContainer : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
@@ -130,7 +137,7 @@ class ExpandedActionTile extends StatelessWidget {
                   icon,
                   size: 24,
                   color: isSelected
-                      ? scheme.onSecondaryContainer
+                      ? scheme.onPrimaryContainer
                       : scheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 12),
@@ -140,10 +147,10 @@ class ExpandedActionTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
+                          ? FontWeight.w800
+                          : FontWeight.w600,
                       color: isSelected
-                          ? scheme.onSecondaryContainer
+                          ? scheme.onPrimaryContainer
                           : scheme.onSurfaceVariant,
                     ),
                   ),
@@ -176,12 +183,12 @@ class ExpandedDownloadTile extends StatelessWidget {
         builder: (context, _) {
           final updates = UpdateService().availableUpdates.value;
           return Material(
-            color: isSelected ? scheme.secondaryContainer : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
+            color: isSelected ? scheme.primaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => context.read<NavigationController>().setIndex(4),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -197,7 +204,7 @@ class ExpandedDownloadTile extends StatelessWidget {
                             : Icons.download_for_offline_rounded,
                         size: 24,
                         color: isSelected
-                            ? scheme.onSecondaryContainer
+                            ? scheme.onPrimaryContainer
                             : scheme.onSurfaceVariant,
                       ),
                     ),
@@ -208,10 +215,10 @@ class ExpandedDownloadTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                              ? FontWeight.w800
+                              : FontWeight.w600,
                           color: isSelected
-                              ? scheme.onSecondaryContainer
+                              ? scheme.onPrimaryContainer
                               : scheme.onSurfaceVariant,
                         ),
                       ),

@@ -23,7 +23,7 @@ class AppDetailsSectionTitle extends StatelessWidget {
         : theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w900,
             color: theme.colorScheme.primary,
-            letterSpacing: -0.5,
+            letterSpacing: 0,
           );
 
     return Padding(
@@ -65,7 +65,7 @@ class AppDetailsInfoRow extends StatelessWidget {
       message: "${l10n.tapToCopy} $label: $value",
       child: InkWell(
         onTap: () => _copyToClipboard(context),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         child: Semantics(
           label: "${l10n.tapToCopy} $label: $value",
           button: true,

@@ -11,6 +11,26 @@ class FlatpakSource(UnifiedSource):
         super().__init__(name="Flatpak", weight=weight)
         self.enabled = os.path.exists("/usr/bin/flatpak")
 
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "remotes": {
+                    "type": "array",
+                    "description": "Flatpak remotes to add or show.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "url": {"type": "string"},
+                            "user": {"type": "boolean", "default": True},
+                        },
+                        "required": ["name", "url"],
+                    },
+                }
+            },
+        }
+
     async def _get_installed_flatpaks(self) -> set:
         try:
             async with safe_subprocess(
@@ -93,6 +113,7 @@ class FlatpakSource(UnifiedSource):
             pass
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         try:
             app_id = package.get("id") or package.get("name")
             if not app_id:
@@ -158,6 +179,7 @@ class FlatpakSource(UnifiedSource):
                     pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         try:
             app_id = package.get("id") or package.get("name")
             if not app_id:
@@ -216,6 +238,27 @@ class FlatpakSource(UnifiedSource):
         return {"id": package_id, "source": "Flatpak"}
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        if not self.enabled or not package_id:
+            return None
+        try:
+            async with safe_subprocess(
+                "flatpak", "remote-ls", "--updates", "--columns=application,version",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = [p.strip() for p in line.split("\t") if p.strip()]
+                    if parts and parts[0] == package_id:
+                        return {
+                            "name": package_id,
+                            "id": package_id,
+                            "source": "Flatpak",
+                            "current_version": "Installed",
+                            "new_version": parts[1] if len(parts) > 1 else "Available",
+                        }
+        except Exception:
+            return None
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:

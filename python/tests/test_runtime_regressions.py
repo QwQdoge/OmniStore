@@ -1,8 +1,11 @@
 import json
+import inspect
 
 import pytest
 from pydantic import ValidationError
 
+from core import backend as backend_module
+from core import cli_handler
 from core.cli_handler import CLIArguments
 from core.config_loader import ConfigManager
 from daemon_main import parse_json_output
@@ -33,3 +36,11 @@ def test_config_load_does_not_mutate_defaults(tmp_path, monkeypatch):
 
     assert loaded["ui"]["language"] == "en"
     assert manager.default_config["ui"]["language"] == "zh-CN"
+
+
+def test_details_cli_routes_source_to_plugin_details():
+    handler_source = inspect.getsource(cli_handler.handle_cli)
+    backend_signature = inspect.signature(backend_module.OmnistoreBackend.run_app_details)
+
+    assert "backend.run_app_details(validated_args.details, validated_args.json_mode, validated_args.source)" in handler_source
+    assert "source" in backend_signature.parameters

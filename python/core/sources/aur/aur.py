@@ -79,6 +79,7 @@ class AurSource(UnifiedSource):
         except Exception:
             return []
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
@@ -135,6 +136,7 @@ class AurSource(UnifiedSource):
 
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
@@ -209,6 +211,24 @@ class AurSource(UnifiedSource):
         return {"name": package_id, "source": "AUR"}
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        helper = "yay" if os.path.exists("/usr/bin/yay") else ("paru" if os.path.exists("/usr/bin/paru") else "")
+        if not helper or not package_id:
+            return None
+        try:
+            async with safe_subprocess(helper, "-Qua", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=15)
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = line.split()
+                    if len(parts) >= 4 and parts[0] == package_id:
+                        return {
+                            "name": parts[0],
+                            "id": parts[0],
+                            "source": "AUR",
+                            "current_version": parts[1],
+                            "new_version": parts[3],
+                        }
+        except Exception:
+            return None
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:

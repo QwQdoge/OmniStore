@@ -43,7 +43,7 @@ class SearchResultsView extends StatelessWidget {
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
         child: AppCard(
-          borderRadius: 16,
+          borderRadius: 8,
           child: ListTile(
             leading: Skeleton(width: 40, height: 40, borderRadius: 12),
             title: Skeleton(width: 120, height: 16),
@@ -61,7 +61,7 @@ class SearchResultsView extends StatelessWidget {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 16,
+            borderRadius: 8,
             child: ListTile(
               leading: Skeleton(width: 40, height: 40, borderRadius: 12),
               title: Skeleton(width: 120, height: 16),

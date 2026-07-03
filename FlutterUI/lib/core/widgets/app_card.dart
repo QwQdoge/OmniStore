@@ -14,7 +14,7 @@ class AppCard extends StatefulWidget {
     required this.child,
     this.onTap,
     this.color,
-    this.borderRadius = 16.0,
+    this.borderRadius = 8.0,
     this.clipBehavior = Clip.antiAlias,
     this.elevation,
     this.margin,
@@ -40,10 +40,9 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.98,
-    ).animate(CurvedAnimation(parent: _controller!, curve: Curves.easeInOut));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.99).animate(
+      CurvedAnimation(parent: _controller!, curve: Curves.easeOutCubic),
+    );
   }
 
   @override
@@ -59,7 +58,7 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(widget.borderRadius),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
           width: 1,
         ),
       ),

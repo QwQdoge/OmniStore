@@ -19,16 +19,24 @@ class DesktopTopBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      height: 72,
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-      color: scheme.surface,
+      height: 76,
+      padding: const EdgeInsets.fromLTRB(28, 16, 20, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.36),
+          ),
+        ),
+      ),
       child: Row(
         children: [
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.5,
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
             ),
           ),
           const Spacer(),

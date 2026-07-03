@@ -4,6 +4,9 @@ import subprocess
 import os
 import sys
 import re
+import shutil
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
@@ -88,23 +91,27 @@ class GitHubSource(UnifiedSource):
 
     def _is_installed(self, repo_id: str) -> bool:
         # Check if we have a metadata file or the binary in our managed folder
-        managed_dir = Path.home() / ".local/share/omnistore/github"
+        managed_dir = self._managed_base_dir()
         repo_safe_name = repo_id.replace("/", "_")
         return (managed_dir / repo_safe_name).exists()
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         repo_id = package.get("id")
         if not repo_id: return False
 
-        if callback: await callback(f"[INFO] Fetching releases for {repo_id}...")
-
-        owner, repo = repo_id.split("/", 1)
-        release = await self.forge.get_latest_release(owner, repo)
-        if not release:
-            if callback: await callback(f"[ERROR] No releases found for {repo_id}")
-            return False
-
-        assets_data = release.get("assets", [])
+        assets_data = package.get("assets") or []
+        if not assets_data:
+            if callback: await callback(f"[INFO] Fetching releases for {repo_id}...")
+            if "/" not in repo_id:
+                if callback: await callback(f"[ERROR] Invalid GitHub repository id: {repo_id}")
+                return False
+            owner, repo = repo_id.split("/", 1)
+            release = await self.forge.get_latest_release(owner, repo)
+            if not release:
+                if callback: await callback(f"[ERROR] No releases found for {repo_id}")
+                return False
+            assets_data = release.get("assets", [])
 
         # Match asset for current platform
         platform = sys.platform
@@ -124,7 +131,7 @@ class GitHubSource(UnifiedSource):
         download_url = target_asset.download_url
         asset_name = target_asset.name
 
-        managed_dir = Path.home() / ".local/share/omnistore/github"
+        managed_dir = self._managed_base_dir()
         managed_dir.mkdir(parents=True, exist_ok=True)
         repo_safe_name = repo_id.replace("/", "_")
         install_dir = managed_dir / repo_safe_name
@@ -135,8 +142,20 @@ class GitHubSource(UnifiedSource):
         if callback: await callback(f"[INFO] Downloading {asset_name}...")
 
         try:
-            async with self.session.get(download_url) as dl_resp:
-                if dl_resp.status == 200:
+            parsed = urlparse(download_url)
+            if parsed.scheme == "file":
+                shutil.copy2(Path(url2pathname(parsed.path)), dest_path)
+                if callback:
+                    await callback("[PROGRESS] 100")
+            elif parsed.scheme == "" and Path(download_url).exists():
+                shutil.copy2(Path(download_url), dest_path)
+                if callback:
+                    await callback("[PROGRESS] 100")
+            else:
+                async with self.session.get(download_url) as dl_resp:
+                    if dl_resp.status != 200:
+                        if callback: await callback(f"[ERROR] Download failed: HTTP {dl_resp.status}")
+                        return False
                     total = int(dl_resp.headers.get('content-length', 0))
                     downloaded = 0
                     with open(dest_path, 'wb') as f:
@@ -146,21 +165,19 @@ class GitHubSource(UnifiedSource):
                             if total > 0 and callback:
                                 await callback(f"[PROGRESS] {int(downloaded/total*100)}")
 
-                    dest_path.chmod(0o755)
-                    if callback: await callback(f"[INFO] Installed to {dest_path}")
-                    return True
-                else:
-                    if callback: await callback(f"[ERROR] Download failed: HTTP {dl_resp.status}")
-                    return False
+            dest_path.chmod(0o755)
+            if callback: await callback(f"[INFO] Installed to {dest_path}")
+            return True
         except Exception as e:
             if callback: await callback(f"[ERROR] GitHub installation failed: {e}")
             return False
 
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         repo_id = package.get("id")
         repo_safe_name = repo_id.replace("/", "_")
-        install_dir = Path.home() / ".local/share/omnistore/github" / repo_safe_name
+        install_dir = self._managed_base_dir() / repo_safe_name
         if install_dir.exists():
             import shutil
             shutil.rmtree(install_dir)
@@ -171,7 +188,7 @@ class GitHubSource(UnifiedSource):
     async def launch(self, package: Dict[str, Any]) -> bool:
         repo_id = package.get("id")
         repo_safe_name = repo_id.replace("/", "_")
-        install_dir = Path.home() / ".local/share/omnistore/github" / repo_safe_name
+        install_dir = self._managed_base_dir() / repo_safe_name
         from core.subprocess_utils import safe_subprocess
         # Find the executable (usually the biggest file that isn't a zip/tar)
         executables = [f for f in install_dir.iterdir() if f.is_file() and os.access(f, os.X_OK)]

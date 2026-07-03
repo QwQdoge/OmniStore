@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import re
 from core.subprocess_utils import safe_subprocess
 from typing import Dict, Any, Callable, Optional
@@ -6,7 +7,19 @@ from core.sources.utils import PrivilegeManager
 
 privilege = PrivilegeManager()
 
+def _async_callback(callback):
+    if callback is None:
+        return None
+
+    async def wrapped(message: str):
+        result = callback(message)
+        if inspect.isawaitable(result):
+            await result
+
+    return wrapped
+
 async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
+    callback = _async_callback(callback)
     try:
         if not await privilege.ensure_privileged(callback):
             return False
@@ -57,11 +70,6 @@ async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] =
                                 await callback("[PROGRESS] 70")
                                 last_sent_progress = 70
                             
-                            # Use [SPEED] to display the current status text to the user
-                            if len(line) > 0 and not line.startswith("("):
-                                display_line = line[:40] + "..." if len(line) > 40 else line
-                                await callback(f"[SPEED] {display_line}")
-
                         if speed_match:
                             await callback(f"[SPEED] {speed_match.group(1)}")
 
@@ -74,6 +82,7 @@ async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] =
         return False
 
 async def uninstall_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
+    callback = _async_callback(callback)
     try:
         if not await privilege.ensure_privileged(callback):
             return False
@@ -106,9 +115,6 @@ async def uninstall_pacman(package: Dict[str, Any], callback: Optional[Callable]
                             await callback("[PROGRESS] 20")
                         elif "removing" in line.lower():
                             await callback("[PROGRESS] 50")
-                        if len(line) > 0 and not line.startswith("("):
-                            display_line = line[:40] + "..." if len(line) > 40 else line
-                            await callback(f"[SPEED] {display_line}")
 
             await proc.wait()
         if proc.returncode == 0 and callback:

@@ -38,7 +38,7 @@ class AppScreenshots extends StatelessWidget {
                 width: 360,
                 child: AppCard(
                   onTap: () => onShowScreenshotViewer(imageUrl),
-                  borderRadius: 16.0,
+                  borderRadius: 8.0,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.0),
                     child: CachedNetworkImage(
@@ -49,7 +49,7 @@ class AppScreenshots extends StatelessWidget {
                       placeholder: (context, url) => const Skeleton(
                         width: 360,
                         height: 220,
-                        borderRadius: 16.0,
+                        borderRadius: 8.0,
                       ),
                       errorWidget: (context, url, error) => Container(
                         width: 360,

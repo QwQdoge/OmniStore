@@ -71,7 +71,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                   child: SizedBox(
                     width: 100,
                     child: AppCard(
-                      borderRadius: 24,
+                      borderRadius: 8,
                       child: const SizedBox.expand(),
                     ),
                   ),
@@ -85,7 +85,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                       label: widget.l10n.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
-                        borderRadius: 16,
+                        borderRadius: 8,
                         onTap: () {
                           widget.searchController.text =
                               '/${cat.id.toLowerCase()}';
@@ -130,7 +130,8 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
           Selector<BrowseController, List<AppPackage>>(
             selector: (context, browse) =>
                 browse.recommendations['trending'] ?? [],
-            shouldRebuild: (prev, next) => !const IterableEquality().equals(prev, next),
+            shouldRebuild: (prev, next) =>
+                !const IterableEquality().equals(prev, next),
             builder: (context, trending, _) {
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),

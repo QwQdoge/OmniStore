@@ -12,6 +12,31 @@ class PacmanSource(UnifiedSource):
         super().__init__(name="Pacman", weight=weight)
         self.enabled = os.path.exists("/usr/bin/pacman")
 
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "mirrorlist_path": {
+                    "type": "string",
+                    "default": "/etc/pacman.d/mirrorlist",
+                    "description": "Pacman mirrorlist path for preview and privileged edits.",
+                },
+                "repositories": {
+                    "type": "array",
+                    "description": "Additional pacman repositories.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "server": {"type": "string"},
+                            "enabled": {"type": "boolean", "default": True},
+                        },
+                        "required": ["name", "server"],
+                    },
+                },
+            },
+        }
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         return await search_pacman(query, page)
 
@@ -51,6 +76,23 @@ class PacmanSource(UnifiedSource):
         return await get_pacman_details(package_id)
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        if not self.enabled or not package_id:
+            return None
+        try:
+            async with safe_subprocess("pacman", "-Qu", package_id, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = line.split()
+                    if len(parts) >= 4 and parts[0] == package_id:
+                        return {
+                            "name": parts[0],
+                            "id": parts[0],
+                            "source": "Pacman",
+                            "current_version": parts[1],
+                            "new_version": parts[3],
+                        }
+        except Exception:
+            return None
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:

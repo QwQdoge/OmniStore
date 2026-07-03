@@ -73,12 +73,10 @@ class AdaptiveNavigationShell extends StatelessWidget {
           ),
         );
 
-        final pageSurface = Material(
+        final pageSurface = ColoredBox(
           color: Theme.of(context).brightness == Brightness.light
               ? scheme.surface
               : scheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(compact ? 16 : 24),
-          clipBehavior: Clip.antiAlias,
           child: content,
         );
 
@@ -122,7 +120,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
               );
             },
             child: Scaffold(
-              backgroundColor: scheme.surface,
+              backgroundColor: scheme.surfaceContainerLowest,
               appBar: AppBar(
                 title: Text(pageTitle),
                 centerTitle: false,
@@ -157,7 +155,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 ],
               ),
               body: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                 child: pageSurface,
               ),
               bottomNavigationBar: Column(
@@ -192,7 +190,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
         final railWidth = isExpanded ? 216.0 : 88.0;
 
         return Scaffold(
-          backgroundColor: scheme.surface,
+          backgroundColor: scheme.surfaceContainerLowest,
           body: Column(
             children: [
               DesktopTopBar(
@@ -209,11 +207,11 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       curve: Curves.easeOutCubic,
                       width: railWidth,
                       decoration: BoxDecoration(
-                        color: scheme.surfaceContainerLowest,
+                        color: scheme.surfaceContainerLow,
                         border: Border(
                           right: BorderSide(
                             color: scheme.outlineVariant.withValues(
-                              alpha: 0.55,
+                              alpha: 0.42,
                             ),
                           ),
                         ),
@@ -221,12 +219,12 @@ class AdaptiveNavigationShell extends StatelessWidget {
                       child: SafeArea(
                         top: false,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           child: NavigationRail(
                             extended: isExpanded,
                             minWidth: 88,
                             minExtendedWidth: 216,
-                            groupAlignment: -0.92,
+                            groupAlignment: -0.9,
                             useIndicator: true,
                             selectedIndex: _railIndex(
                               railDestinations,
@@ -273,7 +271,7 @@ class AdaptiveNavigationShell extends StatelessWidget {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 12, 12),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                         child: pageSurface,
                       ),
                     ),

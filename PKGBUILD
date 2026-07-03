@@ -34,6 +34,17 @@ package() {
   install -d "${pkgdir}/usr/bin"
   echo -e '#!/bin/sh\ncd /opt/omnistore && ./frontend "$@"' > "${pkgdir}/usr/bin/omnistore"
   chmod +x "${pkgdir}/usr/bin/omnistore"
+  cat > "${pkgdir}/usr/bin/omnistore-cleanup-systemd" <<'EOF'
+#!/bin/sh
+set -eu
+systemctl --user disable --now omnistore-update.timer >/dev/null 2>&1 || true
+systemctl --user stop omnistore-update.service >/dev/null 2>&1 || true
+rm -f "$HOME/.config/systemd/user/omnistore-update.timer"
+rm -f "$HOME/.config/systemd/user/omnistore-update.service"
+systemctl --user daemon-reload >/dev/null 2>&1 || true
+echo "OmniStore user systemd units removed."
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-cleanup-systemd"
 
   # 4. 安装图标到系统图标库，以便桌面环境自动识别
   install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"

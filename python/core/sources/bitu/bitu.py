@@ -4,6 +4,9 @@ import subprocess
 import os
 import sys
 import shutil
+import zipfile
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
@@ -63,6 +66,7 @@ class BituSource(UnifiedSource):
         return results
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         repo_id = package.get("id") or package.get("name")
         if not repo_id: return False
 
@@ -74,30 +78,55 @@ class BituSource(UnifiedSource):
         install_dir = managed_dir / repo_safe_name
         install_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create dummy file to simulate install
-        dest_path = install_dir / "app.exe" if sys.platform == "win32" else install_dir / "app"
-        
+        archive_url = package.get("download_url") or package.get("url") or f"https://bitbucket.org/{repo_id}/get/HEAD.zip"
+        if "bitbucket.org" in archive_url and not archive_url.endswith(".zip"):
+            archive_url = f"https://bitbucket.org/{repo_id}/get/HEAD.zip"
+        archive_path = install_dir / "source.zip"
+
         try:
-            if callback: await callback("[INFO] Downloading files...")
-            for i in range(1, 101, 20):
-                await asyncio.sleep(0.1)
-                if callback: await callback(f"[PROGRESS] {i}")
-            
-            with open(dest_path, "w") as f:
-                f.write(f"Mock installation of Bitu package: {repo_id}\n")
-            
-            if sys.platform != "win32":
-                dest_path.chmod(0o755)
+            if callback: await callback(f"[INFO] Downloading repository archive: {archive_url}")
+            parsed = urlparse(archive_url)
+            if parsed.scheme == "file":
+                shutil.copy2(Path(url2pathname(parsed.path)), archive_path)
+                if callback:
+                    await callback("[PROGRESS] 80")
+            elif parsed.scheme == "" and Path(archive_url).exists():
+                shutil.copy2(Path(archive_url), archive_path)
+                if callback:
+                    await callback("[PROGRESS] 80")
+            else:
+                async with self.session.get(archive_url, headers=self.headers) as resp:
+                    if resp.status != 200:
+                        if callback: await callback(f"[ERROR] Bitbucket archive download failed: HTTP {resp.status}")
+                        return False
+                    total = int(resp.headers.get("content-length", 0))
+                    downloaded = 0
+                    with open(archive_path, "wb") as f:
+                        async for chunk in resp.content.iter_chunked(8192):
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if callback and total:
+                                await callback(f"[PROGRESS] {min(99, int(downloaded / total * 80))}")
+
+            if callback: await callback("[INFO] Extracting repository archive...")
+            with zipfile.ZipFile(archive_path) as archive:
+                archive.extractall(install_dir)
+            archive_path.unlink(missing_ok=True)
 
             if callback: 
                 await callback(f"[PROGRESS] 100")
-                await callback(f"[INFO] Bitu package successfully installed: {dest_path}")
+                await callback(f"[INFO] Bitu package successfully installed: {install_dir}")
             return True
         except Exception as e:
+            try:
+                archive_path.unlink(missing_ok=True)
+            except Exception:
+                pass
             if callback: await callback(f"[ERROR] Bitu installation failed: {e}")
             return False
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         repo_id = package.get("id") or package.get("name")
         repo_safe_name = repo_id.replace("/", "_")
         install_dir = self._get_managed_dir() / repo_safe_name
@@ -108,7 +137,26 @@ class BituSource(UnifiedSource):
         return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        return True
+        repo_id = package.get("id") or package.get("name")
+        if not repo_id:
+            return False
+        install_dir = self._get_managed_dir() / str(repo_id).replace("/", "_")
+        if not install_dir.exists():
+            return False
+        candidates = [p for p in install_dir.rglob("*") if p.is_file()]
+        executable = next((p for p in candidates if p.suffix.lower() in {".exe", ".appimage", ".app"}), None)
+        executable = executable or next((p for p in candidates if os.access(p, os.X_OK)), None)
+        target = executable or install_dir
+        open_cmd = "explorer" if sys.platform == "win32" and target.is_dir() else ("open" if sys.platform == "darwin" and target.is_dir() else "xdg-open" if target.is_dir() else str(target))
+        try:
+            from core.subprocess_utils import safe_subprocess
+            if target.is_dir():
+                async with safe_subprocess(open_cmd, str(target), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                    return True
+            async with safe_subprocess(str(target), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+                return True
+        except Exception:
+            return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         repo_id = package.get("id") or package.get("name")
@@ -139,7 +187,14 @@ class BituSource(UnifiedSource):
                     }
         except Exception:
             pass
-        return {}
+        return {
+            "name": package_id.split("/")[-1],
+            "id": package_id,
+            "description": f"Bitu repository {package_id}",
+            "source": "Bitu",
+            "primary_source": "Bitu",
+            "variants": [{"source": "Bitu", "id": package_id, "installed": self._is_installed(package_id)}],
+        }
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         return None

@@ -230,7 +230,7 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "update": lambda: backend.run_update(validated_args.update, validated_args.source, validated_args.json_mode),
         "check_updates": lambda: backend.run_check_updates(validated_args.json_mode),
         "list_installed": lambda: backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh),
-        "details": lambda: backend.run_app_details(validated_args.details, validated_args.json_mode),
+        "details": lambda: backend.run_app_details(validated_args.details, validated_args.json_mode, validated_args.source),
         "recommend": lambda: backend.run_recommendations(validated_args.json_mode),
         "clean_system": lambda: backend.run_clean_system(validated_args.json_mode),
         "ai_summary": lambda: backend.run_ai_summary(validated_args.json_mode),

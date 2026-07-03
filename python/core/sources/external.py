@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 import os
 import re
@@ -31,12 +32,38 @@ class WingetSource(UnifiedSource):
         super().__init__(name="Winget", weight=weight)
         self.enabled = sys.platform == "win32" and shutil.which("winget") is not None
 
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string",
+                    "default": "winget",
+                    "description": "Winget source name to use for search/install/show.",
+                },
+                "extra_sources": {
+                    "type": "array",
+                    "description": "Additional winget sources for future source management.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "arg": {"type": "string"},
+                            "type": {"type": "string"},
+                        },
+                        "required": ["name", "arg"],
+                    },
+                },
+            },
+        }
+
     async def _run(
         self,
         *args: str,
         timeout: int = 30,
         callback=None,
     ) -> Tuple[int, str]:
+        callback = self._async_callback(callback)
         if not self.enabled:
             if callback:
                 await callback("[ERROR] winget is not available on this system.")
@@ -46,16 +73,28 @@ class WingetSource(UnifiedSource):
             **os.environ,
             "WINGET_DISABLE_INTERACTIVITY": "1",
         }
-        async with safe_subprocess(
-            "winget",
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-            env=env,
-        ) as proc:
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
-            output = _decode_output(stdout or b"")
-            return proc.returncode or 0, output
+        proc = None
+        try:
+            async with safe_subprocess(
+                "winget",
+                *args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                env=env,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+                output = _decode_output(stdout or b"")
+                return proc.returncode or 0, output
+        except asyncio.TimeoutError:
+            if proc and proc.returncode is None:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except Exception:
+                    pass
+            if callback:
+                await callback(f"[ERROR] winget command timed out after {timeout}s.")
+            return 124, ""
 
     async def _stream_run(
         self,
@@ -488,25 +527,109 @@ class ScoopSource(UnifiedSource):
         self.enabled = shutil.which("scoop") is not None
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
-        return []
+        if not self.enabled:
+            return []
+        try:
+            async with safe_subprocess("scoop", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
+                installed = {item["id"].lower() for item in await self.list_installed()}
+                results = []
+                for line in _decode_output(stdout or b"").splitlines():
+                    line = line.strip()
+                    if not line or line.lower().startswith(("results", "name", "---")):
+                        continue
+                    parts = line.split()
+                    name = parts[0]
+                    version = parts[1] if len(parts) > 1 and not parts[1].startswith("[") else "Unknown"
+                    bucket = parts[-1].strip("[]") if parts[-1].startswith("[") else ""
+                    results.append({
+                        "name": name,
+                        "id": name,
+                        "last_version": version,
+                        "description": f"Scoop package{f' from {bucket}' if bucket else ''}",
+                        "source": "Scoop",
+                        "installed": name.lower() in installed,
+                        "variants": [{"source": "Scoop", "id": name, "version": version, "installed": name.lower() in installed}],
+                    })
+                return results
+        except Exception:
+            return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        return False
+        callback = self._async_callback(callback)
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name:
+            if callback: await callback("[ERROR] Scoop package name missing.")
+            return False
+        return await _stream_simple_command(["scoop", "install", name], self.enabled, callback, "scoop", timeout=1800)
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
-        return False
+        callback = self._async_callback(callback)
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name:
+            if callback: await callback("[ERROR] Scoop package name missing for uninstall.")
+            return False
+        return await _stream_simple_command(["scoop", "uninstall", name], self.enabled, callback, "scoop", timeout=900)
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        return False
+        path = await self._prefix(package)
+        if not path:
+            return False
+        cmd = "explorer" if sys.platform == "win32" else ("open" if sys.platform == "darwin" else "xdg-open")
+        try:
+            async with safe_subprocess(cmd, path, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+                return True
+        except Exception:
+            return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
-        return False
+        return await self.launch(package)
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
-        return {}
+        return {
+            "name": package_id,
+            "id": package_id,
+            "source": "Scoop",
+            "primary_source": "Scoop",
+            "description": f"Scoop package {package_id}",
+            "variants": [{"source": "Scoop", "id": package_id, "installed": False}],
+        }
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        if not self.enabled:
+            return None
+        try:
+            async with safe_subprocess("scoop", "status", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                for line in _decode_output(stdout or b"").splitlines():
+                    parts = line.split()
+                    if parts and parts[0].lower() == package_id.lower():
+                        return {
+                            "name": package_id,
+                            "id": package_id,
+                            "source": "Scoop",
+                            "current_version": parts[1] if len(parts) > 1 else "Unknown",
+                            "new_version": parts[2] if len(parts) > 2 else "Unknown",
+                        }
+        except Exception:
+            return None
         return None
+
+    async def _prefix(self, package: Dict[str, Any]) -> str:
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name:
+            return ""
+        scoop_home = os.environ.get("SCOOP") or os.path.join(os.path.expanduser("~"), "scoop")
+        app_dir = os.path.join(scoop_home, "apps", name, "current")
+        return app_dir if os.path.exists(app_dir) else ""
+
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "buckets": {"type": "array", "items": {"type": "string"}, "description": "Extra Scoop buckets to add before searching/installing."}
+            },
+        }
 
     async def list_installed(self) -> List[Dict[str, Any]]:
         if not self.enabled:
@@ -558,25 +681,124 @@ class BrewSource(UnifiedSource):
         self.enabled = shutil.which("brew") is not None
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
-        return []
+        if not self.enabled:
+            return []
+        try:
+            async with safe_subprocess("brew", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
+                installed = {item["id"].lower() for item in await self.list_installed()}
+                results = []
+                for line in _decode_output(stdout or b"").splitlines():
+                    name = line.strip()
+                    if not name or name.startswith("==>"):
+                        continue
+                    results.append({
+                        "name": name,
+                        "id": name,
+                        "last_version": "Unknown",
+                        "description": f"Homebrew package {name}",
+                        "source": "Homebrew",
+                        "installed": name.lower() in installed,
+                        "variants": [{"source": "Homebrew", "id": name, "installed": name.lower() in installed}],
+                    })
+                return results
+        except Exception:
+            return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
-        return False
+        callback = self._async_callback(callback)
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name:
+            if callback: await callback("[ERROR] Homebrew package name missing.")
+            return False
+        return await _stream_simple_command(["brew", "install", name], self.enabled, callback, "brew", timeout=1800)
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
-        return False
+        callback = self._async_callback(callback)
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name:
+            if callback: await callback("[ERROR] Homebrew package name missing for uninstall.")
+            return False
+        return await _stream_simple_command(["brew", "uninstall", name], self.enabled, callback, "brew", timeout=900)
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        return False
+        path = await self._prefix(package)
+        if not path:
+            return False
+        cmd = "open" if sys.platform == "darwin" else "xdg-open"
+        try:
+            async with safe_subprocess(cmd, path, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+                return True
+        except Exception:
+            return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
-        return False
+        return await self.launch(package)
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
-        return {}
+        info: Dict[str, Any] = {
+            "name": package_id,
+            "id": package_id,
+            "source": "Homebrew",
+            "primary_source": "Homebrew",
+            "description": f"Homebrew package {package_id}",
+            "variants": [{"source": "Homebrew", "id": package_id, "installed": False}],
+        }
+        if not self.enabled:
+            return info
+        try:
+            async with safe_subprocess("brew", "info", "--json=v2", package_id, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                data = json.loads(_decode_output(stdout or b"{}"))
+                formulae = data.get("formulae") or []
+                casks = data.get("casks") or []
+                item = (formulae or casks or [{}])[0]
+                info["description"] = item.get("desc") or info["description"]
+                versions = item.get("versions") or {}
+                info["version"] = versions.get("stable") or item.get("version") or "Unknown"
+        except Exception:
+            pass
+        return info
 
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        if not self.enabled:
+            return None
+        try:
+            async with safe_subprocess("brew", "outdated", "--json=v2", package_id, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                data = json.loads(_decode_output(stdout or b"{}"))
+                items = (data.get("formulae") or []) + (data.get("casks") or [])
+                if items:
+                    item = items[0]
+                    return {
+                        "name": item.get("name", package_id),
+                        "id": item.get("name", package_id),
+                        "source": "Homebrew",
+                        "current_version": item.get("installed_versions", ["Unknown"])[0] if item.get("installed_versions") else "Unknown",
+                        "new_version": item.get("current_version", "Unknown"),
+                    }
+        except Exception:
+            return None
         return None
+
+    async def _prefix(self, package: Dict[str, Any]) -> str:
+        name = str(package.get("id") or package.get("name") or "").strip()
+        if not name or not self.enabled:
+            return ""
+        try:
+            async with safe_subprocess("brew", "--prefix", name, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                return _decode_output(stdout or b"").strip()
+        except Exception:
+            return ""
+
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "taps": {"type": "array", "items": {"type": "string"}, "description": "Extra Homebrew taps to enable."}
+            },
+        }
 
     async def list_installed(self) -> List[Dict[str, Any]]:
         if not self.enabled:
@@ -647,3 +869,38 @@ def _format_bytes(size: int) -> str:
             return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
         value /= 1024
     return f"{size} B"
+
+
+async def _stream_simple_command(command: List[str], enabled: bool, callback, tool_name: str, timeout: int = 900) -> bool:
+    if callback is not None:
+        original_callback = callback
+
+        async def callback(message: str):
+            result = original_callback(message)
+            if inspect.isawaitable(result):
+                await result
+
+    if not enabled:
+        if callback:
+            await callback(f"[ERROR] {tool_name} is not available on this system.")
+        return False
+    if callback:
+        await callback(f"[INFO] Running: {' '.join(command)}")
+        await callback("[PROGRESS] 5")
+    try:
+        async with safe_subprocess(*command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT) as proc:
+            if proc.stdout:
+                while True:
+                    line = await asyncio.wait_for(proc.stdout.readline(), timeout=timeout)
+                    if not line:
+                        break
+                    if callback:
+                        await callback(f"[INFO] {_decode_output(line).strip()}")
+            await asyncio.wait_for(proc.wait(), timeout=10)
+            if callback and proc.returncode == 0:
+                await callback("[PROGRESS] 100")
+            return proc.returncode == 0
+    except Exception as exc:
+        if callback:
+            await callback(f"[ERROR] {tool_name} command failed: {exc}")
+        return False

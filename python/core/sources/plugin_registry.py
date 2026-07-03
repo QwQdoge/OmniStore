@@ -37,6 +37,7 @@ class PluginInfo:
     legacy: bool = False
     path: str = ""
     error: Optional[str] = None
+    config_schema: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_manifest(cls, data: Dict[str, Any], path: Path) -> "PluginInfo":
@@ -69,6 +70,7 @@ class PluginInfo:
             "legacy": self.legacy,
             "path": self.path,
             "error": self.error,
+            "config_schema": self.config_schema,
         }
 
 
@@ -142,6 +144,11 @@ class PluginRegistry:
                 info = PluginInfo.from_manifest(data, manifest_path)
                 info.enabled = self._is_enabled(info)
                 info.available = self._is_platform_available(info)
+                schema_path = manifest_path.parent / "schema.json"
+                if schema_path.exists():
+                    info.config_schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                elif info.builtin:
+                    info.config_schema = self._builtin_config_schema(info)
                 self.plugins[info.id] = info
                 if info.kind == "source" and info.enabled and info.available:
                     source = self._instantiate_manifest_source(info, manifest_path.parent)
@@ -169,8 +176,12 @@ class PluginRegistry:
                 return None
             source.source_id = info.id
             source.display_name = info.name
+            source.capabilities = {cap: False for cap in source.capabilities}
             source.capabilities.update({cap: True for cap in info.capabilities})
-            source.enabled = bool(source.enabled and info.enabled and info.available)
+            runtime_available = bool(source.enabled)
+            info.available = bool(info.available and runtime_available)
+            source.enabled = bool(runtime_available and info.enabled and info.available)
+            info.config_schema = info.config_schema or source.config_schema()
             return source
         except Exception as exc:
             info.error = str(exc)
@@ -198,6 +209,13 @@ class PluginRegistry:
         }
         factory = factories.get(info.id)
         return factory() if factory else None
+
+    def _builtin_config_schema(self, info: PluginInfo) -> Dict[str, Any]:
+        try:
+            source = self._builtin_source(info)
+            return source.config_schema() if source else {}
+        except Exception:
+            return {}
 
     def _load_entry_source(self, info: PluginInfo, plugin_dir: Path) -> Optional[UnifiedSource]:
         if ":" not in info.entry:
@@ -236,21 +254,26 @@ class PluginRegistry:
                     if isinstance(attr, type) and issubclass(attr, UnifiedSource) and attr is not UnifiedSource:
                         instance = attr()
                         plugin_id = f"legacy.{instance.name.lower()}"
+                        capabilities = self._implemented_capabilities(instance)
+                        config_schema = instance.config_schema() if type(instance).config_schema is not UnifiedSource.config_schema else {}
                         info = PluginInfo(
                             id=plugin_id,
                             kind="source",
                             name=instance.name,
                             version="legacy",
                             platforms=[],
-                            capabilities=list(instance.capabilities.keys()),
+                            capabilities=capabilities,
                             permissions=["legacy"],
                             builtin=False,
                             enabled=True,
                             available=True,
                             legacy=True,
                             path=str(file_path),
+                            config_schema=config_schema,
                         )
                         instance.source_id = plugin_id
+                        instance.capabilities = {cap: False for cap in instance.capabilities}
+                        instance.capabilities.update({cap: True for cap in capabilities})
                         self.plugins[plugin_id] = info
                         self.sources[instance.name.lower()] = instance
             except Exception as exc:
@@ -259,6 +282,33 @@ class PluginRegistry:
     def _register_source(self, info: PluginInfo, source: UnifiedSource) -> None:
         key = info.id.replace("builtin.", "").replace("legacy.", "").lower()
         self.sources[key] = source
+
+    def _implemented_capabilities(self, source: UnifiedSource) -> List[str]:
+        cap_to_method = {
+            "search": "search",
+            "install": "install",
+            "uninstall": "uninstall",
+            "update": "check_update",
+            "details": "get_details",
+            "list_installed": "list_installed",
+            "size": "get_size",
+            "launch": "launch",
+            "locate": "locate",
+        }
+        implemented: List[str] = []
+        for cap, method_name in cap_to_method.items():
+            method = getattr(type(source), method_name, None)
+            base_method = getattr(UnifiedSource, method_name, None)
+            if method is not None and method is not base_method:
+                implemented.append(cap)
+        if type(source).config_schema is not UnifiedSource.config_schema:
+            schema = source.config_schema() or {}
+            properties = schema.get("properties", {}) if isinstance(schema, dict) else {}
+            if any(name in properties for name in ("mirrors", "mirrorlist_path")):
+                implemented.append("mirrors")
+            if any(name in properties for name in ("repositories", "remotes", "feeds", "buckets", "taps")):
+                implemented.append("repositories")
+        return implemented
 
     def _is_platform_available(self, info: PluginInfo) -> bool:
         return not info.platforms or _platform_key() in info.platforms

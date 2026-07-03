@@ -12,7 +12,7 @@ class InstalledAppListSkeleton extends StatelessWidget {
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
         child: AppCard(
-          borderRadius: 16,
+          borderRadius: 8,
           child: ListTile(
             leading: Skeleton(width: 40, height: 40, borderRadius: 8),
             title: Skeleton(width: 120, height: 16),
@@ -26,7 +26,7 @@ class InstalledAppListSkeleton extends StatelessWidget {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 16,
+            borderRadius: 8,
             child: ListTile(
               leading: Skeleton(width: 40, height: 40, borderRadius: 8),
               title: Skeleton(width: 120, height: 16),

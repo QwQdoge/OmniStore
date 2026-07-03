@@ -108,7 +108,7 @@ class AppDetailsHeader extends StatelessWidget {
                       app.name,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -1.0,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),

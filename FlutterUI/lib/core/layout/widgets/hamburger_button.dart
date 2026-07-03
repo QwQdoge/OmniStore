@@ -24,9 +24,16 @@ class HamburgerButton extends StatelessWidget {
           onPressed: onToggle,
           tooltip: isExpanded ? l10n.collapse : l10n.expand,
           style: IconButton.styleFrom(
-            fixedSize: const Size(44, 44),
-            backgroundColor: scheme.surfaceContainerHighest,
-            foregroundColor: scheme.onSurfaceVariant,
+            fixedSize: const Size(48, 48),
+            backgroundColor: isExpanded
+                ? scheme.primaryContainer
+                : scheme.surfaceContainerHighest,
+            foregroundColor: isExpanded
+                ? scheme.onPrimaryContainer
+                : scheme.onSurfaceVariant,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),

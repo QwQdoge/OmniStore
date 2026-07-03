@@ -232,7 +232,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               onChanged: (val) {
                                 context
                                     .read<SettingsController>()
-                                    .setDaemonEnabled(val);
+                                    .setEnableSystemdService(val);
                               },
                             ),
                           ListTile(

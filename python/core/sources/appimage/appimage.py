@@ -3,6 +3,9 @@ import aiohttp
 import subprocess
 import os
 import re
+import shutil
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
@@ -19,6 +22,24 @@ class AppImageSource(UnifiedSource):
         self.cache_timestamp: float = 0.0
         self.cache_duration = 3600
         self.lock = asyncio.Lock()
+
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "feeds": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Additional AppImage feed URLs.",
+                },
+                "local_dirs": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": ["~/Applications"],
+                    "description": "Directories scanned for local AppImage files.",
+                },
+            },
+        }
 
     async def _fetch_feed(self) -> List[Dict]:
         async with self.lock:
@@ -171,6 +192,7 @@ Categories=Utility;Application;
                 pass
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         name = str(package.get("name") or "")
         url = package.get("url")
         if not name or not url:
@@ -186,23 +208,33 @@ Categories=Utility;Application;
         if callback: await callback(f"[INFO] Downloading {name} AppImage from {url}...")
 
         try:
-            async with self.session.get(url) as resp:
-                if resp.status != 200:
-                    if callback: await callback(f"[ERROR] Download failed: HTTP {resp.status}")
-                    return False
+            parsed = urlparse(url)
+            if parsed.scheme == "file":
+                shutil.copy2(Path(url2pathname(parsed.path)), dest)
+                if callback:
+                    await callback("[PROGRESS] 100")
+            elif parsed.scheme == "" and Path(url).exists():
+                shutil.copy2(Path(url), dest)
+                if callback:
+                    await callback("[PROGRESS] 100")
+            else:
+                async with self.session.get(url) as resp:
+                    if resp.status != 200:
+                        if callback: await callback(f"[ERROR] Download failed: HTTP {resp.status}")
+                        return False
 
-                total = int(resp.headers.get('content-length', 0))
-                downloaded = 0
-                last_percent = -1
-                with open(dest, 'wb') as f:
-                    async for chunk in resp.content.iter_chunked(8192):
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if total > 0 and callback:
-                            progress = int(downloaded / total * 100)
-                            if progress > last_percent:
-                                await callback(f"[PROGRESS] {progress}")
-                                last_percent = progress
+                    total = int(resp.headers.get('content-length', 0))
+                    downloaded = 0
+                    last_percent = -1
+                    with open(dest, 'wb') as f:
+                        async for chunk in resp.content.iter_chunked(8192):
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total > 0 and callback:
+                                progress = int(downloaded / total * 100)
+                                if progress > last_percent:
+                                    await callback(f"[PROGRESS] {progress}")
+                                    last_percent = progress
 
             dest.chmod(0o755)
             try:
@@ -218,6 +250,7 @@ Categories=Utility;Application;
             return False
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
         name = str(package.get("name") or "")
         if not name:
             if callback: await callback("[ERROR] Missing package name for AppImage uninstall.")

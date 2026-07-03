@@ -262,7 +262,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 widget.app.name,
                 style: const TextStyle(
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+                  letterSpacing: 0,
                 ),
               ),
             ),

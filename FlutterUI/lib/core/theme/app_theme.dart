@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const seedColor = Color(0xFF6750A4); // Deep Purple
-  static const secondarySeedColor = Color(0xFF006494); // Blue
+  static const seedColor = Color(0xFF006D77);
+  static const secondarySeedColor = Color(0xFFB05A00);
 
   static ThemeData lightTheme() {
     return ThemeData(
@@ -12,10 +12,7 @@ class AppTheme {
       visualDensity: VisualDensity.adaptivePlatformDensity,
       cardTheme: CardThemeData(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-          side: const BorderSide(color: Colors.transparent, width: 1),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         clipBehavior: Clip.antiAlias,
       ),
       appBarTheme: const AppBarTheme(
@@ -33,10 +30,7 @@ class AppTheme {
       visualDensity: VisualDensity.adaptivePlatformDensity,
       cardTheme: CardThemeData(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-          side: const BorderSide(color: Colors.transparent, width: 1),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         clipBehavior: Clip.antiAlias,
       ),
       appBarTheme: const AppBarTheme(

@@ -85,7 +85,7 @@ class GitHubAppList extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         prototypeItem: const Padding(
           padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(borderRadius: 16, child: SizedBox(height: 120)),
+          child: AppCard(borderRadius: 8, child: SizedBox(height: 120)),
         ),
         itemCount: apps.length,
         itemBuilder: (context, index) {
@@ -98,7 +98,7 @@ class GitHubAppList extends StatelessWidget {
               label: 'App: ${app.name}',
               button: true,
               child: AppCard(
-                borderRadius: 16,
+                borderRadius: 8,
                 color: scheme.surfaceContainerLow,
                 onTap: () => Navigator.push(
                   context,
@@ -235,14 +235,14 @@ class GitHubAppListSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(borderRadius: 16, child: SizedBox(height: 120)),
+        child: AppCard(borderRadius: 8, child: SizedBox(height: 120)),
       ),
       itemCount: 8,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 16,
+            borderRadius: 8,
             color: scheme.surfaceContainerLow,
             child: const Padding(
               padding: EdgeInsets.all(16),
