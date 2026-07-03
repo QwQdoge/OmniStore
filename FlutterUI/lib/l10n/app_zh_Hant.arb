@@ -534,7 +534,7 @@
   "flatpakBetterDesc": "發現此應用程式有 Flatpak 存放庫，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "同時清理無用依賴（孤兒套件）",
+  "cleanOrphans": "清理無用依賴（孤兒套件）",
   "securityWarning": "安全風險提示",
   "aurSecurityDesc": "AUR（Arch User Repository） 是由社群維護的軟體存放庫。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
@@ -990,5 +990,45 @@
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "嘗試搜尋其他內容"
+  "searchNoResultsSubtitle": "嘗試搜尋其他內容",
+  "pluginsAndSources": "外掛程式與軟體存放庫",
+  "@pluginsAndSources": {
+    "description": "Section title for plugins and software sources"
+  },
+  "refreshPlugins": "重新整理外掛程式",
+  "@refreshPlugins": {
+    "description": "Tooltip for refreshing plugin list"
+  },
+  "noPluginsFound": "未發現外掛程式",
+  "@noPluginsFound": {
+    "description": "Message shown when no source plugins are available"
+  },
+  "builtin": "內建",
+  "@builtin": {
+    "description": "Label for builtin plugins"
+  },
+  "legacy": "舊版",
+  "@legacy": {
+    "description": "Label for legacy plugins"
+  },
+  "pluginUpdated": "外掛程式已更新",
+  "@pluginUpdated": {
+    "description": "Success message after updating a plugin"
+  },
+  "pluginUpdateFailed": "外掛程式更新失敗",
+  "@pluginUpdateFailed": {
+    "description": "Error message when plugin update fails"
+  },
+  "pluginRemoved": "外掛程式已移除",
+  "@pluginRemoved": {
+    "description": "Success message after removing a plugin"
+  },
+  "pluginRemovalFailed": "外掛程式移除失敗",
+  "@pluginRemovalFailed": {
+    "description": "Error message when plugin removal fails"
+  },
+  "removePlugin": "移除外掛程式",
+  "@removePlugin": {
+    "description": "Tooltip for removing a plugin"
+  }
 }

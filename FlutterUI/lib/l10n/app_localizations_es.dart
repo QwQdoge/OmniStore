@@ -483,7 +483,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => 'Explicar con IA';
+  String get aiPromptExplain => 'Análisis';
 
   @override
   String get aiPromptRecommend => 'Pedir sugerencias a la IA';
@@ -534,7 +534,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Explicar esta actualización';
+  String get aiExplainUpdate => 'Analizar esta actualización';
 
   @override
   String get windowMinimize => 'Minimizar';
@@ -830,8 +830,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count aplicaciones disponibles para actualizar',
-      one: '1 aplicación disponible para actualizar',
+      other: '$count aplicaciones disponibles',
+      one: '1 aplicación disponible',
     );
     return '$_temp0';
   }
@@ -1234,32 +1234,32 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searchNoResultsSubtitle => 'Intente buscar otra cosa';
 
   @override
-  String get pluginsAndSources => 'Plugins & Sources';
+  String get pluginsAndSources => 'Complementos y fuentes';
 
   @override
-  String get refreshPlugins => 'Refresh plugins';
+  String get refreshPlugins => 'Actualizar complementos';
 
   @override
-  String get noPluginsFound => 'No source plugins found';
+  String get noPluginsFound => 'No se encontraron complementos';
 
   @override
-  String get builtin => 'Builtin';
+  String get builtin => 'Integrado';
 
   @override
-  String get legacy => 'Legacy';
+  String get legacy => 'Heredado';
 
   @override
-  String get pluginUpdated => 'Plugin updated';
+  String get pluginUpdated => 'Complemento actualizado';
 
   @override
-  String get pluginUpdateFailed => 'Plugin update failed';
+  String get pluginUpdateFailed => 'Error al actualizar el complemento';
 
   @override
-  String get pluginRemoved => 'Plugin removed';
+  String get pluginRemoved => 'Complemento eliminado';
 
   @override
-  String get pluginRemovalFailed => 'Plugin removal failed';
+  String get pluginRemovalFailed => 'Error al eliminar el complemento';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => 'Eliminar complemento';
 }

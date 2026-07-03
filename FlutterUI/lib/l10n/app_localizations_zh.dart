@@ -691,7 +691,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '同时清理无用依赖（孤儿软件包）';
+  String get cleanOrphans => '清理无用依赖（孤儿软件包）';
 
   @override
   String get securityWarning => '安全风险提示';
@@ -1136,34 +1136,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchNoResultsSubtitle => '尝试搜索其他内容';
 
   @override
-  String get pluginsAndSources => 'Plugins & Sources';
+  String get pluginsAndSources => '插件与软件源';
 
   @override
-  String get refreshPlugins => 'Refresh plugins';
+  String get refreshPlugins => '刷新插件';
 
   @override
-  String get noPluginsFound => 'No source plugins found';
+  String get noPluginsFound => '未发现插件';
 
   @override
-  String get builtin => 'Builtin';
+  String get builtin => '内置';
 
   @override
-  String get legacy => 'Legacy';
+  String get legacy => '旧版';
 
   @override
-  String get pluginUpdated => 'Plugin updated';
+  String get pluginUpdated => '插件已更新';
 
   @override
-  String get pluginUpdateFailed => 'Plugin update failed';
+  String get pluginUpdateFailed => '插件更新失败';
 
   @override
-  String get pluginRemoved => 'Plugin removed';
+  String get pluginRemoved => '插件已移除';
 
   @override
-  String get pluginRemovalFailed => 'Plugin removal failed';
+  String get pluginRemovalFailed => '插件移除失败';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => '移除插件';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1853,7 +1853,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '同時清理無用依賴（孤兒套件）';
+  String get cleanOrphans => '清理無用依賴（孤兒套件）';
 
   @override
   String get securityWarning => '安全風險提示';
@@ -2296,4 +2296,34 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
+
+  @override
+  String get pluginsAndSources => '外掛程式與軟體存放庫';
+
+  @override
+  String get refreshPlugins => '重新整理外掛程式';
+
+  @override
+  String get noPluginsFound => '未發現外掛程式';
+
+  @override
+  String get builtin => '內建';
+
+  @override
+  String get legacy => '舊版';
+
+  @override
+  String get pluginUpdated => '外掛程式已更新';
+
+  @override
+  String get pluginUpdateFailed => '外掛程式更新失敗';
+
+  @override
+  String get pluginRemoved => '外掛程式已移除';
+
+  @override
+  String get pluginRemovalFailed => '外掛程式移除失敗';
+
+  @override
+  String get removePlugin => '移除外掛程式';
 }
