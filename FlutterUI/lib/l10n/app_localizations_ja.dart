@@ -73,7 +73,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '$count 件の結果が見つかりました';
+    return '$count 件の結果';
   }
 
   @override
@@ -451,7 +451,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptExplain => '解析';
 
   @override
-  String get aiPromptRecommend => 'AI におすすめを尋ねる';
+  String get aiPromptRecommend => 'AI おすすめ';
 
   @override
   String get aiPromptError => 'AI でエラーを分析';
@@ -1148,10 +1148,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get refreshPlugins => 'プラグインを更新';
 
   @override
-  String get noPluginsFound => 'プラグインが見つかりませんでした';
+  String get noPluginsFound => 'プラグインが見つかりません';
 
   @override
-  String get builtin => '内蔵';
+  String get builtin => '組み込み';
 
   @override
   String get legacy => 'レガシー';
@@ -1169,7 +1169,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pluginRemovalFailed => 'プラグインの削除に失敗しました';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => 'プラグインを削除';
 
   @override
   String get managed => '管理対象';

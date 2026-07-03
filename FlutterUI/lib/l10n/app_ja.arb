@@ -24,7 +24,7 @@
   },
   "version": "バージョン",
   "ready": "インストール済み",
-  "resultsFound": "{count} 件の結果が見つかりました",
+  "resultsFound": "{count} 件の結果",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -354,7 +354,7 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "AI におすすめを尋ねる",
+  "aiPromptRecommend": "AI おすすめ",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
@@ -988,6 +988,46 @@
   "trending": "トレンド",
   "latestUpdates": "最新の更新",
   "searchNoResultsSubtitle": "別のキーワードで検索してみてください",
+  "pluginsAndSources": "プラグインとソース",
+  "@pluginsAndSources": {
+    "description": "Section title for plugins and software sources"
+  },
+  "refreshPlugins": "プラグインを更新",
+  "@refreshPlugins": {
+    "description": "Tooltip for refreshing plugin list"
+  },
+  "noPluginsFound": "プラグインが見つかりません",
+  "@noPluginsFound": {
+    "description": "Message shown when no source plugins are available"
+  },
+  "builtin": "組み込み",
+  "@builtin": {
+    "description": "Label for builtin plugins"
+  },
+  "legacy": "レガシー",
+  "@legacy": {
+    "description": "Label for legacy plugins"
+  },
+  "pluginUpdated": "プラグインを更新しました",
+  "@pluginUpdated": {
+    "description": "Success message after updating a plugin"
+  },
+  "pluginUpdateFailed": "プラグインの更新に失敗しました",
+  "@pluginUpdateFailed": {
+    "description": "Error message when plugin update fails"
+  },
+  "pluginRemoved": "プラグインを削除しました",
+  "@pluginRemoved": {
+    "description": "Success message after removing a plugin"
+  },
+  "pluginRemovalFailed": "プラグインの削除に失敗しました",
+  "@pluginRemovalFailed": {
+    "description": "Error message when plugin removal fails"
+  },
+  "removePlugin": "プラグインを削除",
+  "@removePlugin": {
+    "description": "Tooltip for removing a plugin"
+  },
   "managed": "管理対象",
   "readOnly": "読み取り専用"
 }

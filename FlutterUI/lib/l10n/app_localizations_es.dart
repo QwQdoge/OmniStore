@@ -76,8 +76,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count resultados encontrados',
-      one: '1 resultado encontrado',
+      other: '$count resultados',
+      one: '1 resultado',
     );
     return '$_temp0';
   }
@@ -151,7 +151,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String confirmActionMsg(String name) {
-    return '¿Confirmas que deseas realizar esta acción en $name?';
+    return '¿Deseas realizar esta acción en $name?';
   }
 
   @override
@@ -228,8 +228,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Se encontraron $count actualizaciones',
-      one: 'Se encontró 1 actualización',
+      other: '$count actualizaciones encontradas',
+      one: '1 actualización encontrada',
     );
     return '$_temp0';
   }
@@ -266,8 +266,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'OmniStore: Se encontraron $count actualizaciones',
-      one: 'OmniStore: Se encontró 1 actualización',
+      other: 'OmniStore: $count actualizaciones encontradas',
+      one: 'OmniStore: 1 actualización encontrada',
     );
     return '$_temp0';
   }
@@ -403,9 +403,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'Se leyeron $count paquetes de la copia. ¿Iniciar recuperación por lotes?',
-      one: 'Se leyó 1 paquete de la copia. ¿Iniciar recuperación?',
+      other: '$count paquetes detectados en la copia. ¿Recuperar por lotes?',
+      one: '1 paquete detectado en la copia. ¿Recuperar?',
     );
     return '$_temp0';
   }
@@ -703,9 +702,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'Se leyeron $count paquetes del archivo. ¿Iniciar descarga por lotes?',
-      one: 'Se leyó 1 paquete del archivo. ¿Iniciar descarga?',
+      other: '$count paquetes detectados. ¿Descargar por lotes?',
+      one: '1 paquete detectado. ¿Descargar?',
     );
     return '$_temp0';
   }
@@ -1261,7 +1259,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pluginRemovalFailed => 'Error al eliminar el complemento';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => 'Eliminar complemento';
 
   @override
   String get managed => 'Gestionado';

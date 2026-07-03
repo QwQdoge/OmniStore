@@ -63,7 +63,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source => '来源';
 
   @override
-  String get variant => '可用版本';
+  String get variant => '版本';
 
   @override
   String get version => '版本';
@@ -73,7 +73,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resultsFound(int count) {
-    return '找到 $count 个结果';
+    return '$count 个结果';
   }
 
   @override
@@ -1133,7 +1133,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get latestUpdates => '最新更新';
 
   @override
-  String get searchNoResultsSubtitle => '尝试搜索其他内容';
+  String get searchNoResultsSubtitle => '尝试搜索其他关键词';
 
   @override
   String get pluginsAndSources => '插件与软件源';
@@ -1163,7 +1163,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pluginRemovalFailed => '插件移除失败';
 
   @override
-  String get removePlugin => 'Remove plugin';
+  String get removePlugin => '移除插件';
 
   @override
   String get managed => '已托管';
@@ -1231,7 +1231,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source => '來源';
 
   @override
-  String get variant => '可用版本';
+  String get variant => '版本';
 
   @override
   String get version => '版本';
@@ -1241,7 +1241,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resultsFound(int count) {
-    return '找到 $count 個結果';
+    return '$count 個結果';
   }
 
   @override
@@ -2302,6 +2302,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
+
+  @override
+  String get pluginsAndSources => '外掛程式與軟體源';
+
+  @override
+  String get refreshPlugins => '重新整理外掛程式';
+
+  @override
+  String get noPluginsFound => '未找到外掛程式';
+
+  @override
+  String get builtin => '內建';
+
+  @override
+  String get legacy => '舊版';
+
+  @override
+  String get pluginUpdated => '外掛程式已更新';
+
+  @override
+  String get pluginUpdateFailed => '外掛程式更新失敗';
+
+  @override
+  String get pluginRemoved => '外掛程式已移除';
+
+  @override
+  String get pluginRemovalFailed => '外掛程式移除失敗';
+
+  @override
+  String get removePlugin => '移除外掛程式';
 
   @override
   String get managed => '已代管';
