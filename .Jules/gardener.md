@@ -108,3 +108,7 @@ Extracted `AppAboutSection` and `AppTechnicalDetails` from `details_page.dart` i
 - Extracted `_buildSourceFilters` from `search_page.dart` into a new `SearchFilters` stateless widget located in `FlutterUI/lib/features/explore/presentation/widgets/search_filters.dart`.
 - Extracted `_buildSkeletonResults` and `_buildResults` into a new `SearchResultsView` stateless widget in `FlutterUI/lib/features/explore/presentation/widgets/search_results_view.dart`.
 This drastically simplified the main page builds while ensuring exact behavioral preservation and better code localization.
+
+* Applied redundant state guard in `search_page.dart` to prevent unnecessary rebuilds of discovery content.
+* Extracted duplicated fetching logic in `github_store_page.dart` into a generic `_fetchCategory` helper method to improve maintainability.
+* Extracted the oversized premium header widget in `github_store_page.dart` into a standalone `_GitHubStoreHeader` widget to improve readability.

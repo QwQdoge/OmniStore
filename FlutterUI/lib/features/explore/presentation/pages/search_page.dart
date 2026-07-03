@@ -102,15 +102,19 @@ class _SearchPageState extends State<SearchPage> {
 
   void _performSearch(String query) {
     if (query.length < 2) {
-      setState(() {
-        _showDiscovery = true;
-      });
+      if (!_showDiscovery) {
+        setState(() {
+          _showDiscovery = true;
+        });
+      }
       context.read<BrowseController>().selectedApp = null;
       return;
     }
-    setState(() {
-      _showDiscovery = false;
-    });
+    if (_showDiscovery) {
+      setState(() {
+        _showDiscovery = false;
+      });
+    }
     context.read<BrowseController>().search(query);
   }
 
@@ -142,10 +146,12 @@ class _SearchPageState extends State<SearchPage> {
                         onPressed: () {
                           _searchController.clear();
                           _hasSearchText.value = false;
-                          setState(() {
-                            _showDiscovery = true;
-                            _selectedSources.clear();
-                          });
+                          if (!_showDiscovery || _selectedSources.isNotEmpty) {
+                            setState(() {
+                              _showDiscovery = true;
+                              _selectedSources.clear();
+                            });
+                          }
                           context.read<BrowseController>().selectedApp = null;
                         },
                       );
