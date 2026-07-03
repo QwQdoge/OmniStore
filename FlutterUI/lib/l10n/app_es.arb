@@ -988,44 +988,6 @@
   "trending": "Tendencias",
   "latestUpdates": "Últimas actualizaciones",
   "searchNoResultsSubtitle": "Intente buscar otra cosa",
-  "pluginsAndSources": "Complementos y fuentes",
-  "@pluginsAndSources": {
-    "description": "Section title for plugins and software sources"
-  },
-  "refreshPlugins": "Actualizar complementos",
-  "@refreshPlugins": {
-    "description": "Tooltip for refreshing plugin list"
-  },
-  "noPluginsFound": "No se encontraron complementos",
-  "@noPluginsFound": {
-    "description": "Message shown when no source plugins are available"
-  },
-  "builtin": "Integrado",
-  "@builtin": {
-    "description": "Label for builtin plugins"
-  },
-  "legacy": "Heredado",
-  "@legacy": {
-    "description": "Label for legacy plugins"
-  },
-  "pluginUpdated": "Complemento actualizado",
-  "@pluginUpdated": {
-    "description": "Success message after updating a plugin"
-  },
-  "pluginUpdateFailed": "Error al actualizar el complemento",
-  "@pluginUpdateFailed": {
-    "description": "Error message when plugin update fails"
-  },
-  "pluginRemoved": "Complemento eliminado",
-  "@pluginRemoved": {
-    "description": "Success message after removing a plugin"
-  },
-  "pluginRemovalFailed": "Error al eliminar el complemento",
-  "@pluginRemovalFailed": {
-    "description": "Error message when plugin removal fails"
-  },
-  "removePlugin": "Eliminar complemento",
-  "@removePlugin": {
-    "description": "Tooltip for removing a plugin"
-  }
+  "managed": "Gestionado",
+  "readOnly": "Solo lectura"
 }

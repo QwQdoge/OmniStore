@@ -1261,5 +1261,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pluginRemovalFailed => 'Error al eliminar el complemento';
 
   @override
-  String get removePlugin => 'Eliminar complemento';
+  String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => 'Gestionado';
+
+  @override
+  String get readOnly => 'Solo lectura';
 }

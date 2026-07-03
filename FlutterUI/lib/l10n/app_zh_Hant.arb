@@ -991,44 +991,6 @@
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
   "searchNoResultsSubtitle": "嘗試搜尋其他內容",
-  "pluginsAndSources": "外掛程式與軟體存放庫",
-  "@pluginsAndSources": {
-    "description": "Section title for plugins and software sources"
-  },
-  "refreshPlugins": "重新整理外掛程式",
-  "@refreshPlugins": {
-    "description": "Tooltip for refreshing plugin list"
-  },
-  "noPluginsFound": "未發現外掛程式",
-  "@noPluginsFound": {
-    "description": "Message shown when no source plugins are available"
-  },
-  "builtin": "內建",
-  "@builtin": {
-    "description": "Label for builtin plugins"
-  },
-  "legacy": "舊版",
-  "@legacy": {
-    "description": "Label for legacy plugins"
-  },
-  "pluginUpdated": "外掛程式已更新",
-  "@pluginUpdated": {
-    "description": "Success message after updating a plugin"
-  },
-  "pluginUpdateFailed": "外掛程式更新失敗",
-  "@pluginUpdateFailed": {
-    "description": "Error message when plugin update fails"
-  },
-  "pluginRemoved": "外掛程式已移除",
-  "@pluginRemoved": {
-    "description": "Success message after removing a plugin"
-  },
-  "pluginRemovalFailed": "外掛程式移除失敗",
-  "@pluginRemovalFailed": {
-    "description": "Error message when plugin removal fails"
-  },
-  "removePlugin": "移除外掛程式",
-  "@removePlugin": {
-    "description": "Tooltip for removing a plugin"
-  }
+  "managed": "已代管",
+  "readOnly": "唯讀"
 }
