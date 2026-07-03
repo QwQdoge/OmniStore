@@ -102,6 +102,7 @@ class _SearchPageState extends State<SearchPage> {
 
   void _performSearch(String query) {
     if (query.length < 2) {
+      // ⚡ Bolt: Only trigger setState if state actually changes to avoid redundant builds
       if (!_showDiscovery) {
         setState(() {
           _showDiscovery = true;
@@ -110,6 +111,7 @@ class _SearchPageState extends State<SearchPage> {
       context.read<BrowseController>().selectedApp = null;
       return;
     }
+
     if (_showDiscovery) {
       setState(() {
         _showDiscovery = false;
