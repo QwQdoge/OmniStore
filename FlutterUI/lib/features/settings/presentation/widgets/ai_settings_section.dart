@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
@@ -182,7 +181,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
         focusNode: focusNode,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: true,
           errorText: errorText,
         ),
@@ -199,7 +198,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSectionHeader(title: l10n.aiSettings),
+        SettingsSectionHeader(title: l10n.aiSettings, icon: Icons.auto_awesome_rounded),
         AppCard(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -281,11 +280,14 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
                       child: _isTestingAI
-                          ? const Skeleton(
-                              key: ValueKey('loading'),
+                          ? SizedBox(
+                              key: const ValueKey('loading'),
                               width: 16,
                               height: 16,
-                              borderRadius: 8.0,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             )
                           : const Icon(
                               Icons.network_check_rounded,

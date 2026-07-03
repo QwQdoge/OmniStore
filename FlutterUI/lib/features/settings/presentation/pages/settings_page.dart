@@ -34,7 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
 
           // Primary Settings
-          SettingsSectionHeader(title: l10n.general),
+          SettingsSectionHeader(title: l10n.general, icon: Icons.settings_rounded),
           Semantics(
             label: l10n.general,
             explicitChildNodes: true,
@@ -60,21 +60,44 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Column(
                         children: [
                           ListTile(
+                            leading: const Icon(Icons.translate_rounded),
                             title: Text(l10n.language),
-                            subtitle: Text(
-                              data.language == 'zh-CN'
-                                  ? l10n.langSimplifiedChinese
-                                  : data.language == 'zh-TW'
-                                  ? l10n.langTraditionalChinese
-                                  : data.language == 'ja-JP'
-                                  ? l10n.langJapanese
-                                  : data.language == 'es-ES' ||
-                                        data.language == 'es'
-                                  ? l10n.langSpanish
-                                  : l10n.langEnglish,
+                            subtitle: Text(l10n.languageSubtitle),
+                            trailing: DropdownButton<String>(
+                              value: data.language,
+                              underline: const SizedBox(),
+                              borderRadius: BorderRadius.circular(12),
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'en-US',
+                                  child: Text(l10n.langEnglish),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'zh-CN',
+                                  child: Text(l10n.langSimplifiedChinese),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'zh-TW',
+                                  child: Text(l10n.langTraditionalChinese),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'ja-JP',
+                                  child: Text(l10n.langJapanese),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'es-ES',
+                                  child: Text(l10n.langSpanish),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) {
+                                  settings.setLanguage(val);
+                                }
+                              },
                             ),
                           ),
                           SwitchListTile(
+                            secondary: const Icon(Icons.archive_rounded),
                             title: Text(l10n.closeToTray),
                             value: data.closeToTray,
                             onChanged: (val) {
@@ -82,8 +105,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                           SwitchListTile(
+                            secondary: const Icon(Icons.window_rounded),
                             title: Text(l10n.useSystemTitleBar),
-                            subtitle: Text(l10n.configSaved),
+                            subtitle: Text(l10n.restartTitleBar),
                             value: data.useSystemTitleBar,
                             onChanged: (val) {
                               settings.setUseSystemTitleBar(val);
@@ -93,6 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                           SwitchListTile(
+                            secondary: const Icon(Icons.auto_awesome_rounded),
                             title: Text(l10n.aiEnabled),
                             subtitle: Text(l10n.aiAssistantDesc),
                             value: data.isAIEnabled,
@@ -108,6 +133,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                           SwitchListTile(
+                            secondary: const Icon(Icons.tune_rounded),
                             title: Text(l10n.advanced),
                             value: _showAdvanced,
                             onChanged: (val) =>
@@ -121,7 +147,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          SettingsSectionHeader(title: l10n.systemCleaning),
+          SettingsSectionHeader(
+            title: l10n.systemCleaning,
+            icon: Icons.cleaning_services_rounded,
+          ),
           // Storage & Cleanup Card
           Semantics(
             label: l10n.systemCleaning,
@@ -130,7 +159,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          SettingsSectionHeader(title: l10n.repositories),
+          SettingsSectionHeader(
+            title: l10n.repositories,
+            icon: Icons.source_rounded,
+          ),
           Semantics(
             label: l10n.repositories,
             explicitChildNodes: true,
@@ -145,7 +177,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          SettingsSectionHeader(title: l10n.updates),
+          SettingsSectionHeader(title: l10n.updates, icon: Icons.system_update_rounded),
           Semantics(
             label: l10n.updates,
             explicitChildNodes: true,
@@ -170,6 +202,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Column(
                         children: [
                           SwitchListTile(
+                            secondary: const Icon(Icons.settings_suggest_rounded),
                             title: Text(l10n.enableDaemon),
                             subtitle: Text(l10n.enableDaemonDesc),
                             value: data.daemonEnabled,
@@ -180,6 +213,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                           SwitchListTile(
+                            secondary: const Icon(Icons.auto_mode_rounded),
                             title: Text(l10n.autoUpdate),
                             subtitle: Text(l10n.autoUpdateDesc),
                             value: data.autoUpdate,
@@ -191,6 +225,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           if (Platform.isLinux)
                             SwitchListTile(
+                              secondary: const Icon(Icons.terminal_rounded),
                               title: Text(l10n.enableSystemdService),
                               subtitle: Text(l10n.enableSystemdServiceDesc),
                               value: data.enableSystemdService,
@@ -201,6 +236,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               },
                             ),
                           ListTile(
+                            leading: const Icon(Icons.timer_rounded),
                             title: Text(l10n.checkIntervalTitle),
                             subtitle: Text(
                               l10n.checkIntervalSubtitle(
@@ -234,7 +270,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          SettingsSectionHeader(title: l10n.typography),
+          SettingsSectionHeader(
+            title: l10n.typography,
+            icon: Icons.text_fields_rounded,
+          ),
           Semantics(
             label: l10n.typography,
             explicitChildNodes: true,
@@ -250,6 +289,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Column(
                         children: [
                           ListTile(
+                            leading: const Icon(Icons.font_download_rounded),
                             title: Text(l10n.fontFamily),
                             subtitle: Text(
                               data.fontFamily == 'System'
@@ -288,6 +328,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                           ),
                           ListTile(
+                            leading: const Icon(Icons.format_size_rounded),
                             title: Text(l10n.fontScale),
                             subtitle: Text(
                               "${(data.fontScale * 100).toInt()}%",
