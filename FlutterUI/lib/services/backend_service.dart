@@ -308,8 +308,9 @@ class BackendService {
 
   // Murphy-proof: Circuit breaker for persistent daemon failures
   int _daemonFailureStreak = 0;
-  static const int _daemonFailureThreshold = 5;
+  static const int _daemonFailureThreshold = 3; // Reduced threshold for faster fallback
   DateTime? _lastDaemonFailureTime;
+  bool _isCircuitBreakerTripped = false;
 
   Future<DaemonResult?> _sendToDaemon(
     String action,
@@ -317,23 +318,32 @@ class BackendService {
     Map<String, dynamic>? kwargs,
   ]) async {
     // Murphy-proof: Circuit Breaker Logic
-    if (_daemonFailureStreak >= _daemonFailureThreshold) {
+    if (_isCircuitBreakerTripped) {
       final now = DateTime.now();
       if (_lastDaemonFailureTime != null &&
           now.difference(_lastDaemonFailureTime!) <
-              const Duration(minutes: 1)) {
+              const Duration(minutes: 2)) {
         debugPrint(
-          "Circuit Breaker ACTIVE: Daemon persistent failure. Bypassing to CLI for 60s.",
+          "Circuit Breaker ACTIVE: Daemon persistent failure. Bypassing to CLI.",
         );
         return null;
       } else {
-        debugPrint("Circuit Breaker: Cooldown expired. Retrying daemon...");
+        debugPrint("Circuit Breaker: Cooldown expired. Resetting...");
+        _isCircuitBreakerTripped = false;
         _daemonFailureStreak = 0;
       }
     }
 
     try {
-      final res = await _daemonClient.send(action, args, kwargs: kwargs);
+      // Murphy-proof: Ensure daemon is running before sending
+      if (_daemonProcess == null) {
+        await _startDaemonIfNeeded();
+      }
+
+      final res = await _daemonClient
+          .send(action, args, kwargs: kwargs)
+          .timeout(const Duration(seconds: 15)); // Strict timeout for IPC
+
       if (res != null) {
         _daemonFailureStreak = 0; // Reset on success
         return res;
@@ -344,6 +354,11 @@ class BackendService {
       _daemonFailureStreak++;
       _lastDaemonFailureTime = DateTime.now();
       debugPrint("Daemon IPC Error (Streak: $_daemonFailureStreak): $e");
+
+      if (_daemonFailureStreak >= _daemonFailureThreshold) {
+        _isCircuitBreakerTripped = true;
+        debugPrint("Circuit Breaker TRIPPED due to $_daemonFailureStreak errors.");
+      }
       return null;
     }
   }
@@ -635,29 +650,34 @@ class BackendService {
       );
 
       try {
-        // Pattern-based extraction: look for the first balanced JSON structure
+        // 1. Precise balanced JSON extraction (improved regex)
+        // We look for the LAST possible JSON object or array to avoid partial matches
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
-        final match = jsonPattern.firstMatch(cleaned);
+        final matches = jsonPattern.allMatches(cleaned).toList();
 
-        if (match != null) {
-          final candidate = match.group(0)!;
-          try {
-            return jsonDecode(candidate);
-          } catch (_) {
-            // Last Resort: Line-by-line tail recovery for concatenated logs/JSON
-            final lines = cleaned.split('\n');
-            if (lines.length <= 200) {
-              for (int i = lines.length - 1; i >= 0; i--) {
-                try {
-                  final tailCandidate = lines.sublist(i).join('\n').trim();
-                  if (tailCandidate.startsWith('{') ||
-                      tailCandidate.startsWith('[')) {
-                    return jsonDecode(tailCandidate);
-                  }
-                } catch (_) {}
-              }
-            }
+        if (matches.isNotEmpty) {
+          // Try matches in reverse order (most likely to be the full response)
+          for (final match in matches.reversed) {
+            final candidate = match.group(0)!;
+            try {
+              return jsonDecode(candidate);
+            } catch (_) {}
           }
+        }
+
+        // 2. Line-by-line tail recovery for concatenated logs/JSON
+        final lines = cleaned.split('\n');
+        // Limit scan depth for performance
+        final scanDepth = lines.length.clamp(0, 100);
+        final startIdx = (lines.length - scanDepth).clamp(0, lines.length);
+        for (int i = lines.length - 1; i >= startIdx; i--) {
+          try {
+            final tailCandidate = lines.sublist(i).join('\n').trim();
+            if (tailCandidate.startsWith('{') ||
+                tailCandidate.startsWith('[')) {
+              return jsonDecode(tailCandidate);
+            }
+          } catch (_) {}
         }
       } catch (e) {
         debugPrint("Murphy-proof Error: JSON recovery failed: $e");
