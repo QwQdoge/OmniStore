@@ -2280,6 +2280,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove plugin'**
   String get removePlugin;
+
+  /// No description provided for @managed.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed'**
+  String get managed;
+
+  /// No description provided for @readOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get readOnly;
 }
 
 class _AppLocalizationsDelegate

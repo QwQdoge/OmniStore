@@ -1163,7 +1163,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pluginRemovalFailed => '插件移除失败';
 
   @override
-  String get removePlugin => '移除插件';
+  String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => '已托管';
+
+  @override
+  String get readOnly => '只读';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2298,32 +2304,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體存放庫';
+  String get managed => '已代管';
 
   @override
-  String get refreshPlugins => '重新整理外掛程式';
-
-  @override
-  String get noPluginsFound => '未發現外掛程式';
-
-  @override
-  String get builtin => '內建';
-
-  @override
-  String get legacy => '舊版';
-
-  @override
-  String get pluginUpdated => '外掛程式已更新';
-
-  @override
-  String get pluginUpdateFailed => '外掛程式更新失敗';
-
-  @override
-  String get pluginRemoved => '外掛程式已移除';
-
-  @override
-  String get pluginRemovalFailed => '外掛程式移除失敗';
-
-  @override
-  String get removePlugin => '移除外掛程式';
+  String get readOnly => '唯讀';
 }

@@ -86,13 +86,14 @@ class InstalledTab extends StatelessWidget {
   }
 
   String _filterLabel(BuildContext context, String value) {
+    final l10n = AppLocalizations.of(context)!;
     switch (value) {
       case 'all':
-        return 'All';
+        return l10n.all;
       case 'managed':
-        return 'Managed';
+        return l10n.managed;
       case 'unmanaged':
-        return 'Read-only';
+        return l10n.readOnly;
       default:
         return value;
     }
@@ -182,7 +183,7 @@ class InstalledTab extends StatelessWidget {
                     const SizedBox(width: 6),
                     if (!app.managed) ...[
                       Chip(
-                        label: const Text('Read-only'),
+                        label: Text(AppLocalizations.of(context)!.readOnly),
                         avatar: const Icon(Icons.visibility_rounded, size: 14),
                         visualDensity: VisualDensity.compact,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

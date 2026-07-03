@@ -1169,5 +1169,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pluginRemovalFailed => 'プラグインの削除に失敗しました';
 
   @override
-  String get removePlugin => 'プラグインを削除';
+  String get removePlugin => 'Remove plugin';
+
+  @override
+  String get managed => '管理対象';
+
+  @override
+  String get readOnly => '読み取り専用';
 }

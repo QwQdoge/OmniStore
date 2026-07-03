@@ -992,44 +992,6 @@
   "trending": "热度榜",
   "latestUpdates": "最新更新",
   "searchNoResultsSubtitle": "尝试搜索其他内容",
-  "pluginsAndSources": "插件与软件源",
-  "@pluginsAndSources": {
-    "description": "Section title for plugins and software sources"
-  },
-  "refreshPlugins": "刷新插件",
-  "@refreshPlugins": {
-    "description": "Tooltip for refreshing plugin list"
-  },
-  "noPluginsFound": "未发现插件",
-  "@noPluginsFound": {
-    "description": "Message shown when no source plugins are available"
-  },
-  "builtin": "内置",
-  "@builtin": {
-    "description": "Label for builtin plugins"
-  },
-  "legacy": "旧版",
-  "@legacy": {
-    "description": "Label for legacy plugins"
-  },
-  "pluginUpdated": "插件已更新",
-  "@pluginUpdated": {
-    "description": "Success message after updating a plugin"
-  },
-  "pluginUpdateFailed": "插件更新失败",
-  "@pluginUpdateFailed": {
-    "description": "Error message when plugin update fails"
-  },
-  "pluginRemoved": "插件已移除",
-  "@pluginRemoved": {
-    "description": "Success message after removing a plugin"
-  },
-  "pluginRemovalFailed": "插件移除失败",
-  "@pluginRemovalFailed": {
-    "description": "Error message when plugin removal fails"
-  },
-  "removePlugin": "移除插件",
-  "@removePlugin": {
-    "description": "Tooltip for removing a plugin"
-  }
+  "managed": "已托管",
+  "readOnly": "只读"
 }
