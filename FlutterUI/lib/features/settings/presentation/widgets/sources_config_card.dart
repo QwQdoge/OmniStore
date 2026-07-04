@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/source_plugin_info.dart';
@@ -256,7 +257,6 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settings = context.watch<SettingsController>();
     final sources = [
       'github',
       'bitu',
@@ -269,91 +269,93 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       'scoop',
       'brew',
     ];
-    final sourcesMap =
-        settings.config['search']?['sources']
-            as Map<dynamic, dynamic>? ??
-        {};
 
-    return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+    return Selector<SettingsController, Map<dynamic, dynamic>>(
+      selector: (context, s) => s.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {},
+      shouldRebuild: (prev, next) => !const MapEquality().equals(prev, next),
+      builder: (context, sourcesMap, child) {
+        return AppCard(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextButton.icon(
-                  onPressed: () => _autoDetectSources(l10n),
-                  icon: const Icon(Icons.radar_rounded, size: 18),
-                  label: Text(l10n.autoDetect),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => _autoDetectSources(l10n),
+                      icon: const Icon(Icons.radar_rounded, size: 18),
+                      label: Text(l10n.autoDetect),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: sources.map((src) {
+                    final bool isEnabled =
+                        sourcesMap[src] ?? (src == 'github' || src == 'bitu');
+                    return FilterChip(
+                      label: Text(_displayName(src)),
+                      selected: isEnabled,
+                      onSelected: (val) => _updateSourceConfig(src, val),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                if (!kIsWeb) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.pluginsAndSources,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh_rounded),
+                        tooltip: l10n.refreshPlugins,
+                        onPressed: _loadingPlugins ? null : _loadPlugins,
+                      ),
+                    ],
+                  ),
+                  if (_loadingPlugins)
+                    const LinearProgressIndicator(minHeight: 2)
+                  else if (_plugins.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(l10n.noPluginsFound),
+                    )
+                  else
+                    ..._plugins.map((p) => _buildPluginTile(p, l10n)),
+                  const SizedBox(height: 12),
+                ],
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.addCustomSource),
+                  subtitle: Text(l10n.addCustomSourceDesc),
+                  trailing: Semantics(
+                    label: l10n.addCustomSource,
+                    button: true,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.add_circle_outline_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 28,
+                      ),
+                      tooltip: l10n.addCustomSource,
+                      onPressed: () => _showAddSourceDialog(l10n),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const Divider(),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: sources.map((src) {
-                final bool isEnabled =
-                    sourcesMap[src] ?? (src == 'github' || src == 'bitu');
-                return FilterChip(
-                  label: Text(_displayName(src)),
-                  selected: isEnabled,
-                  onSelected: (val) => _updateSourceConfig(src, val),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-            if (!kIsWeb) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.pluginsAndSources,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh_rounded),
-                    tooltip: l10n.refreshPlugins,
-                    onPressed: _loadingPlugins ? null : _loadPlugins,
-                  ),
-                ],
-              ),
-              if (_loadingPlugins)
-                const LinearProgressIndicator(minHeight: 2)
-              else if (_plugins.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(l10n.noPluginsFound),
-                )
-              else
-                ..._plugins.map((p) => _buildPluginTile(p, l10n)),
-              const SizedBox(height: 12),
-            ],
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.addCustomSource),
-              subtitle: Text(l10n.addCustomSourceDesc),
-              trailing: Semantics(
-                label: l10n.addCustomSource,
-                button: true,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.add_circle_outline_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 28,
-                  ),
-                  tooltip: l10n.addCustomSource,
-                  onPressed: () => _showAddSourceDialog(l10n),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -166,12 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Semantics(
             label: l10n.repositories,
             explicitChildNodes: true,
-            child: Selector<SettingsController, Map<dynamic, dynamic>>(
-              selector: (context, s) => s.config['search']?['sources'] ?? {},
-              shouldRebuild: (prev, next) =>
-                  !const MapEquality().equals(prev, next),
-              builder: (context, _, child) => const SourcesConfigCard(),
-            ),
+            child: const SourcesConfigCard(),
           ),
 
           const SizedBox(height: 24),
@@ -357,25 +352,18 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          Selector<SettingsController, Map<dynamic, dynamic>>(
-            selector: (context, s) => s.config['ai'] ?? {},
-            shouldRebuild: (prev, next) =>
-                !const MapEquality().equals(prev, next),
-            builder: (context, aiConfig, _) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: _showAdvanced
-                    ? Semantics(
-                        key: const ValueKey('ai_settings'),
-                        label: l10n.aiSettings,
-                        explicitChildNodes: true,
-                        child: const AISettingsSection(),
-                      )
-                    : const SizedBox.shrink(key: ValueKey('empty_advanced')),
-              );
-            },
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
+            child: _showAdvanced
+                ? Semantics(
+                    key: const ValueKey('ai_settings'),
+                    label: l10n.aiSettings,
+                    explicitChildNodes: true,
+                    child: const AISettingsSection(),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty_advanced')),
           ),
         ],
       ),
