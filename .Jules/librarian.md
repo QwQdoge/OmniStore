@@ -88,3 +88,9 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Added `shouldRebuild` parameter using `const IterableEquality().equals(prev, next)` to `Selector`s in `home_page.dart`, `discovery_content.dart`, `tasks_tab.dart`, and `terminal_dialog.dart` that return Lists of apps or logs.
 - This ensures that widgets only rebuild when the actual content of the list changes, improving UI performance.
+
+## Actions Taken
+* Removed `context.watch<SettingsController>()` from `SourcesConfigCard` and `AISettingsSection` to fix performance issues ("rebuild ownership", "state duplication") where widgets would over-rebuild on unrelated changes.
+* Replaced `context.watch` with localized `Selector` usage encapsulating the widgets directly in `sources_config_card.dart` and `ai_settings_section.dart`.
+* Refactored `SettingsPage` to drop redundant outer `Selector`s and `AnimatedSwitcher` wrappers that didn't pass state correctly.
+* Removed `context.watch` from `didChangeDependencies` inside `AISettingsSection` and merged `_syncControllers` safely inside its own `Selector` builder payload ("invalidation correctness").

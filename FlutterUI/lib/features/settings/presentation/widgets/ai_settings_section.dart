@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
@@ -47,32 +48,25 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _syncControllers();
-  }
-
-  void _syncControllers() {
-    final settings = context.watch<SettingsController>();
+  void _syncControllers(Map<dynamic, dynamic> aiConfig) {
     _updateIfChanged(
       _endpointController,
-      settings.config['ai']?['endpoint'] ?? '',
+      aiConfig['endpoint'] ?? '',
       _endpointFocus,
     );
     _updateIfChanged(
       _modelController,
-      settings.config['ai']?['model'] ?? '',
+      aiConfig['model'] ?? '',
       _modelFocus,
     );
     _updateIfChanged(
       _apiKeyController,
-      settings.config['ai']?['api_key'] ?? '',
+      aiConfig['api_key'] ?? '',
       _apiKeyFocus,
     );
     _updateIfChanged(
       _tempController,
-      (settings.config['ai']?['temperature'] ?? 0.7).toString(),
+      (aiConfig['temperature'] ?? 0.7).toString(),
       _tempFocus,
     );
   }
@@ -196,115 +190,121 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settings = context.watch<SettingsController>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SettingsSectionHeader(title: l10n.aiSettings, icon: Icons.auto_awesome_rounded),
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.aiProvider),
-                  trailing: DropdownButton<String>(
-                    value:
-                        settings.config['ai']?['provider'] ?? 'ollama',
-                    underline: const SizedBox(),
-                    borderRadius: BorderRadius.circular(12),
-                    items: [
-                      DropdownMenuItem(
-                        value: 'ollama',
-                        child: Text(l10n.ollamaLocal),
+    return Selector<SettingsController, Map<dynamic, dynamic>>(
+      selector: (context, s) => s.config['ai'] as Map<dynamic, dynamic>? ?? {},
+      shouldRebuild: (prev, next) => !const MapEquality().equals(prev, next),
+      builder: (context, aiConfig, _) {
+        _syncControllers(aiConfig);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SettingsSectionHeader(title: l10n.aiSettings, icon: Icons.auto_awesome_rounded),
+            AppCard(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l10n.aiProvider),
+                      trailing: DropdownButton<String>(
+                        value:
+                            aiConfig['provider'] ?? 'ollama',
+                        underline: const SizedBox(),
+                        borderRadius: BorderRadius.circular(12),
+                        items: [
+                          DropdownMenuItem(
+                            value: 'ollama',
+                            child: Text(l10n.ollamaLocal),
+                          ),
+                          DropdownMenuItem(
+                            value: 'openai',
+                            child: Text(l10n.openaiCompatible),
+                          ),
+                          DropdownMenuItem(
+                            value: 'gemini',
+                            child: Text(l10n.googleGemini),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            _updateAIConfig('provider', val);
+                          }
+                        },
                       ),
-                      DropdownMenuItem(
-                        value: 'openai',
-                        child: Text(l10n.openaiCompatible),
-                      ),
-                      DropdownMenuItem(
-                        value: 'gemini',
-                        child: Text(l10n.googleGemini),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        _updateAIConfig('provider', val);
-                      }
-                    },
-                  ),
-                ),
-                _buildTextField(
-                  l10n.aiEndpoint,
-                  _endpointController,
-                  _endpointFocus,
-                  (val) => _debounceUpdateAIConfig('endpoint', val),
-                ),
-                _buildTextField(
-                  l10n.aiModel,
-                  _modelController,
-                  _modelFocus,
-                  (val) => _debounceUpdateAIConfig('model', val),
-                ),
-                _buildTextField(
-                  l10n.aiApiKey,
-                  _apiKeyController,
-                  _apiKeyFocus,
-                  (val) => _debounceUpdateAIConfig('api_key', val),
-                  isPassword: true,
-                ),
-                _buildTextField(
-                  l10n.aiTemperature,
-                  _tempController,
-                  _tempFocus,
-                  (val) {
-                    final d = double.tryParse(val);
-                    if (d == null) {
-                      setState(() => _tempError = l10n.failed);
-                    } else if (d < 0.0 || d > 2.0) {
-                      setState(() => _tempError = l10n.temperatureRangeError);
-                    } else {
-                      setState(() => _tempError = null);
-                      _debounceUpdateAIConfig('temperature', d);
-                    }
-                  },
-                  errorText: _tempError,
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    onPressed: _isTestingAI ? null : _testAIConnection,
-                    icon: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: _isTestingAI
-                          ? SizedBox(
-                              key: const ValueKey('loading'),
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.network_check_rounded,
-                              key: ValueKey('idle'),
-                            ),
                     ),
-                    label: Text(l10n.aiTestButton),
-                  ),
+                    _buildTextField(
+                      l10n.aiEndpoint,
+                      _endpointController,
+                      _endpointFocus,
+                      (val) => _debounceUpdateAIConfig('endpoint', val),
+                    ),
+                    _buildTextField(
+                      l10n.aiModel,
+                      _modelController,
+                      _modelFocus,
+                      (val) => _debounceUpdateAIConfig('model', val),
+                    ),
+                    _buildTextField(
+                      l10n.aiApiKey,
+                      _apiKeyController,
+                      _apiKeyFocus,
+                      (val) => _debounceUpdateAIConfig('api_key', val),
+                      isPassword: true,
+                    ),
+                    _buildTextField(
+                      l10n.aiTemperature,
+                      _tempController,
+                      _tempFocus,
+                      (val) {
+                        final d = double.tryParse(val);
+                        if (d == null) {
+                          setState(() => _tempError = l10n.failed);
+                        } else if (d < 0.0 || d > 2.0) {
+                          setState(() => _tempError = l10n.temperatureRangeError);
+                        } else {
+                          setState(() => _tempError = null);
+                          _debounceUpdateAIConfig('temperature', d);
+                        }
+                      },
+                      errorText: _tempError,
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FilledButton.icon(
+                        onPressed: _isTestingAI ? null : _testAIConnection,
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
+                          child: _isTestingAI
+                              ? SizedBox(
+                                  key: const ValueKey('loading'),
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.network_check_rounded,
+                                  key: ValueKey('idle'),
+                                ),
+                        ),
+                        label: Text(l10n.aiTestButton),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
