@@ -224,21 +224,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
           ),
         );
       } else {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.failed),
-            content: Text(
-              "${taskController.status}\n\n${l10n.errorFatalStream("Check task logs for details")}",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.ok),
-              ),
-            ],
-          ),
-        );
+        showDialog(context: context, builder: (ctx) => const TerminalDialog());
       }
     });
   }

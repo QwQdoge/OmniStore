@@ -55,3 +55,5 @@
 ## 2026-06-23 - Dialog Consistency: Storage Cleanup
 - Replaced the custom inline `AlertDialog` in `StorageCleanupCard` (`FlutterUI/lib/features/settings/presentation/widgets/storage_cleanup_card.dart`) with the global `TerminalDialog`.
 - Refactored `TerminalDialog` (`FlutterUI/lib/features/task_manager/presentation/widgets/terminal_dialog.dart`) to support progress indicators and status messages using Dart 3 records in a `Selector`, thus preserving the UX of `StorageCleanupCard` while standardizing the codebase and removing duplicated UI logic.
+## 2026-06-24 - Dialog Consistency: Task Failure Terminal Output
+- Replaced the custom inline `AlertDialog` in `details_page.dart` (which showed a generic task failure message) with the centralized `TerminalDialog`. This standardizes the task progress and terminal output experience, ensuring that task failures immediately present the user with the relevant terminal logs for inspection.
