@@ -42,8 +42,8 @@ void main() {
         'features',
         'settings',
         'presentation',
-        'pages',
-        'settings_page.dart',
+        'widgets',
+        'update_settings_card.dart',
       ),
     ).readAsStringSync();
 
