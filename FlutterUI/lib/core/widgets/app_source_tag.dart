@@ -10,6 +10,9 @@ enum AppSourceTagMode {
 
   /// Displays the installation status (Ready/Installed)
   ready,
+
+  /// Displays the management status (Managed/Read-only)
+  managed,
 }
 
 class AppSourceTag extends StatelessWidget {
@@ -40,10 +43,14 @@ class AppSourceTag extends StatelessWidget {
       label = l10n.ready;
       color = colorScheme.primary;
       icon = Icons.check_circle_rounded;
+    } else if (mode == AppSourceTagMode.managed) {
+      label = l10n.readOnly;
+      color = colorScheme.secondary;
+      icon = Icons.visibility_rounded;
     } else if (mode == AppSourceTagMode.trust) {
       if (source == "Pacman" || source == "Native") {
         label = l10n.official;
-        color = Colors.blue;
+        color = colorScheme.primary;
         icon = Icons.verified_user_rounded;
       } else if (source == "Flatpak") {
         label = l10n.verified;
@@ -57,16 +64,38 @@ class AppSourceTag extends StatelessWidget {
     } else {
       label = source;
       if (source == "Pacman" || source == "Native") {
-        color = Colors.blue;
+        color = colorScheme.primary;
       } else if (source == "AUR") {
         color = Colors.orange;
       } else if (source == "Flatpak") {
-        color = Colors.purple;
+        color = colorScheme.tertiary;
       } else if (source == "AppImage") {
         color = Colors.teal;
       } else {
         color = theme.colorScheme.onSurfaceVariant;
       }
+    }
+
+    final Color backgroundColor;
+    switch (mode) {
+      case AppSourceTagMode.ready:
+        backgroundColor = colorScheme.primaryContainer.withValues(alpha: 0.7);
+        break;
+      case AppSourceTagMode.managed:
+        backgroundColor = colorScheme.secondaryContainer.withValues(alpha: 0.7);
+        break;
+      case AppSourceTagMode.trust:
+        if (source == "Pacman" || source == "Native") {
+          backgroundColor = colorScheme.primaryContainer.withValues(alpha: 0.5);
+        } else if (source == "Flatpak") {
+          backgroundColor = Colors.green.withValues(alpha: 0.1);
+        } else {
+          backgroundColor = Colors.orange.withValues(alpha: 0.1);
+        }
+        break;
+      case AppSourceTagMode.source:
+        backgroundColor = color.withValues(alpha: 0.1);
+        break;
     }
 
     final tagContent = Container(
@@ -75,11 +104,9 @@ class AppSourceTag extends StatelessWidget {
         vertical: isSmall ? 2 : 4,
       ),
       decoration: BoxDecoration(
-        color: (mode == AppSourceTagMode.ready)
-            ? colorScheme.primaryContainer.withValues(alpha: 0.7)
-            : colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(isSmall ? 6 : 8),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -79,3 +79,9 @@
 **Learning:** Duplicating private `_buildSection` methods for headers leads to inconsistent spacing and styling. Extracting a shared `SettingsSectionHeader` widget ensures that Material 3 typography (`labelLarge`, primary color, bold) is applied consistently with uniform 8dp vertical padding. Furthermore, adding proper easing curves (`Curves.easeOutCubic`, `Curves.fastOutSlowIn`) to `AnimatedSwitcher` transitions significantly improves the perceived quality of the UI when revealing advanced sections.
 
 **Action:** Use `SettingsSectionHeader` for all settings category headers. Always pair `AnimatedSwitcher` with standard MD3 easing curves and maintain a consistent 24dp gap (`SizedBox`) between layout sections.
+
+## 2026-07-04 - Standardized App Metadata Tags
+
+**Learning:** App metadata (source, trust, installation status) was displayed inconsistently across different features (Search, Installed, Updates), using a mix of custom widgets, raw Chips, and plain text. This reduced visual harmony and brand recognition.
+
+**Action:** Standardized metadata display using a refined `AppSourceTag` widget. Added `managed` mode for read-only status and improved MD3 tonal color mapping using `ColorScheme` tokens. Applied this consistently across `InstalledTab` and `UpdatesTab`, improving scannability and visual consistency.
