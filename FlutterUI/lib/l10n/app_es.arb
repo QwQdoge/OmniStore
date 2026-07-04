@@ -24,7 +24,7 @@
   },
   "version": "Versión",
   "ready": "Instalado",
-  "resultsFound": "{count, plural, =1{1 resultado encontrado} other{{count} resultados encontrados}}",
+  "resultsFound": "{count, plural, =1{1 resultado} other{{count} resultados}}",
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -60,7 +60,7 @@
   "configSaveFailed": "Error al guardar la configuración",
   "confirmUninstall": "Confirmar desinstalación",
   "confirmInstall": "Confirmar instalación",
-  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
+  "confirmActionMsg": "¿Deseas realizar esta acción en {name}?",
   "@confirmActionMsg": {
     "placeholders": {
       "name": {
@@ -103,7 +103,7 @@
   "updates": "Actualizaciones",
   "upToDate": "Todas las aplicaciones están al día",
   "checkUpdates": "Buscar actualizaciones",
-  "foundUpdates": "{count, plural, =1{Se encontró 1 actualización} other{Se encontraron {count} actualizaciones}}",
+  "foundUpdates": "{count, plural, =1{1 actualización encontrada} other{{count} actualizaciones encontradas}}",
   "@foundUpdates": {
     "placeholders": {
       "count": {
@@ -120,7 +120,7 @@
   "useSystemTitleBar": "Usar barra de título del sistema",
   "showWindow": "Mostrar ventana",
   "exit": "Salir",
-  "trayTooltipUpdates": "{count, plural, =1{OmniStore: Se encontró 1 actualización} other{OmniStore: Se encontraron {count} actualizaciones}}",
+  "trayTooltipUpdates": "{count, plural, =1{OmniStore: 1 actualización encontrada} other{OmniStore: {count} actualizaciones encontradas}}",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -246,7 +246,7 @@
   "@importBackup": {
     "description": "importBackup"
   },
-  "importBackupConfirm": "{count, plural, =1{Se leyó 1 paquete de la copia. ¿Iniciar recuperación?} other{Se leyeron {count} paquetes de la copia. ¿Iniciar recuperación por lotes?}}",
+  "importBackupConfirm": "{count, plural, =1{1 paquete detectado en la copia. ¿Recuperar?} other{{count} paquetes detectados en la copia. ¿Recuperar por lotes?}}",
   "@importBackupConfirm": {
     "placeholders": {
       "count": {
@@ -505,7 +505,7 @@
   "openaiCompatible": "Compatible con OpenAI",
   "googleGemini": "Google Gemini",
   "importPackages": "Importar paquetes",
-  "importPackagesConfirm": "{count, plural, =1{Se leyó 1 paquete del archivo. ¿Iniciar descarga?} other{Se leyeron {count} paquetes del archivo. ¿Iniciar descarga por lotes?}}",
+  "importPackagesConfirm": "{count, plural, =1{1 paquete detectado. ¿Descargar?} other{{count} paquetes detectados. ¿Descargar por lotes?}}",
   "@importPackagesConfirm": {
     "placeholders": {
       "count": {
@@ -988,6 +988,46 @@
   "trending": "Tendencias",
   "latestUpdates": "Últimas actualizaciones",
   "searchNoResultsSubtitle": "Intente buscar otra cosa",
+  "pluginsAndSources": "Complementos y fuentes",
+  "@pluginsAndSources": {
+    "description": "Section title for plugins and software sources"
+  },
+  "refreshPlugins": "Actualizar complementos",
+  "@refreshPlugins": {
+    "description": "Tooltip for refreshing plugin list"
+  },
+  "noPluginsFound": "No se encontraron complementos",
+  "@noPluginsFound": {
+    "description": "Message shown when no source plugins are available"
+  },
+  "builtin": "Integrado",
+  "@builtin": {
+    "description": "Label for builtin plugins"
+  },
+  "legacy": "Heredado",
+  "@legacy": {
+    "description": "Label for legacy plugins"
+  },
+  "pluginUpdated": "Complemento actualizado",
+  "@pluginUpdated": {
+    "description": "Success message after updating a plugin"
+  },
+  "pluginUpdateFailed": "Error al actualizar el complemento",
+  "@pluginUpdateFailed": {
+    "description": "Error message when plugin update fails"
+  },
+  "pluginRemoved": "Complemento eliminado",
+  "@pluginRemoved": {
+    "description": "Success message after removing a plugin"
+  },
+  "pluginRemovalFailed": "Error al eliminar el complemento",
+  "@pluginRemovalFailed": {
+    "description": "Error message when plugin removal fails"
+  },
+  "removePlugin": "Eliminar complemento",
+  "@removePlugin": {
+    "description": "Tooltip for removing a plugin"
+  },
   "managed": "Gestionado",
   "readOnly": "Solo lectura"
 }
