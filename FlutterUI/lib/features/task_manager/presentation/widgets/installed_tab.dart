@@ -5,6 +5,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list_skeleton.dart';
 
 class InstalledTab extends StatelessWidget {
@@ -100,6 +101,7 @@ class InstalledTab extends StatelessWidget {
   }
 
   Widget _buildInstalledList(BuildContext context) {
+    final theme = Theme.of(context);
     if (filteredApps.isEmpty) {
       return Center(
         child: Column(
@@ -172,40 +174,47 @@ class InstalledTab extends StatelessWidget {
                   app.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: Row(
-                  children: [
-                    Chip(
-                      label: Text(app.primarySource),
-                      visualDensity: VisualDensity.compact,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      side: BorderSide.none,
-                    ),
-                    const SizedBox(width: 6),
-                    if (!app.managed) ...[
-                      Chip(
-                        label: Text(AppLocalizations.of(context)!.readOnly),
-                        avatar: const Icon(Icons.visibility_rounded, size: 14),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Row(
+                    children: [
+                      AppSourceTag(
+                        source: app.primarySource,
+                        mode: AppSourceTagMode.source,
+                        isSmall: true,
                       ),
-                      const SizedBox(width: 6),
-                    ],
-                    if (sizeText != null && sizeText.toString().isNotEmpty) ...[
-                      Text(
-                        sizeText.toString(),
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
+                      if (!app.managed) ...[
+                        const SizedBox(width: 6),
+                        const AppSourceTag(
+                          source: '',
+                          mode: AppSourceTagMode.managed,
+                          isSmall: true,
+                        ),
+                      ],
+                      if (sizeText != null &&
+                          sizeText.toString().isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          sizeText.toString(),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.outline,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                       const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: Text(
-                        app.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
+                      Expanded(
+                        child: Text(
+                          app.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

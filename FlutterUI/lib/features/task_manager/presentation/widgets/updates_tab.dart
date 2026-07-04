@@ -7,6 +7,7 @@ import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
+import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'ai_update_summary_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
@@ -129,8 +130,29 @@ class UpdatesTab extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            subtitle: Text(
-                              "${update['current_version']} → ${update['new_version']}",
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
+                                children: [
+                                  AppSourceTag(
+                                    source: update['source'] ?? 'Native',
+                                    mode: AppSourceTagMode.source,
+                                    isSmall: true,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "${update['current_version']} → ${update['new_version']}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
