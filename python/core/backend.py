@@ -113,13 +113,22 @@ def safe_command(func):
                     message=error_msg,
                     context=func.__name__
                 )
-                sys.stdout.write(resp.model_dump_json(exclude_none=True) + "\n")
+                sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n")
                 sys.stdout.flush()
             else:
                 hijacked_print(f"[ERROR] {error_msg}")
             return False
         except asyncio.CancelledError:
             logging.warning(f"Command execution cancelled: {func.__name__}")
+            if json_mode:
+                resp = CommandResponse(
+                    status="error",
+                    error="CancelledError",
+                    message=f"Command {func.__name__} was cancelled.",
+                    context=func.__name__
+                )
+                sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n")
+                sys.stdout.flush()
             # Re-raise to allow proper async cleanup but ensure we don't crash the event loop
             raise
         except Exception as e:
@@ -134,6 +143,7 @@ def safe_command(func):
                 resp = CommandResponse(
                     status="error",
                     error=str(e),
+                    message=error_msg,
                     context=func.__name__,
                     traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
                 )
@@ -143,8 +153,9 @@ def safe_command(func):
                 try:
                     # Attempt graceful error handling
                     await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
-                except:
+                except Exception as inner_e:
                     # Final fail-safe: raw print to original stdout
+                    logging.error(f"Double fault in _handle_error: {inner_e}")
                     hijacked_print(f"[ERROR] {error_msg}")
             return False
     return wrapper
@@ -216,25 +227,38 @@ class OmnistoreBackend:
         return self._essentials
 
     async def initialize(self):
+        """Murphy-proof: Hardened initialization with graceful degradation."""
         async with self._lock:
             session_replaced = False
-            if self.session is None or self.session.closed:
-                connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
-                self.session = aiohttp.ClientSession(
-                    connector=connector,
-                    timeout=aiohttp.ClientTimeout(total=60)
-                )
-                session_replaced = True
+            try:
+                if self.session is None or self.session.closed:
+                    connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
+                    self.session = aiohttp.ClientSession(
+                        connector=connector,
+                        timeout=aiohttp.ClientTimeout(total=60)
+                    )
+                    session_replaced = True
+            except Exception as e:
+                logging.error(f"Murphy-proof: Failed to initialize aiohttp session: {e}")
+                # We continue as some commands might not need a session
 
-            if self.recommender is None or session_replaced:
-                self.recommender = RecommendationManager(self.session, self.habit_tracker, backend=self)
+            try:
+                if self.recommender is None or session_replaced:
+                    self.recommender = RecommendationManager(self.session, self.habit_tracker, backend=self)
+            except Exception as e:
+                logging.error(f"Murphy-proof: Failed to initialize RecommendationManager: {e}")
+                # Graceful degradation: recommender stays None
 
-            if self.manager is None or session_replaced:
-                self.manager = SearchManager(
-                    self.config, self.session, self.habit_tracker,
-                    recommender=self.recommender, cache_manager=self.cache,
-                    ai_assistant=self.ai
-                )
+            try:
+                if self.manager is None or session_replaced:
+                    self.manager = SearchManager(
+                        self.config, self.session, self.habit_tracker,
+                        recommender=self.recommender, cache_manager=self.cache,
+                        ai_assistant=self.ai
+                    )
+            except Exception as e:
+                logging.error(f"Murphy-proof: Failed to initialize SearchManager: {e}")
+                # Graceful degradation: manager stays None
         return self
 
     async def __aenter__(self):
@@ -378,6 +402,8 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
+        SecurityValidator.validate_string(package_name, "Package Name")
+        SecurityValidator.validate_string(source, "Source")
         self.is_action = True
         package_data = {"name": package_name, "id": package_name, "source": source}
         async def cb(m): await self._flutter_callback(m, json_mode)
@@ -446,6 +472,9 @@ class OmnistoreBackend:
                     timeout=30
                 )
             search_name = details.get("name") or app_id.split(".")[-1]
+            # Defense: Sanitize search_name before using it in any subprocess or search
+            search_name = re.sub(r'[^a-zA-Z0-9._ -]', '', search_name)
+
             variants_results = await asyncio.wait_for(self.manager.search_all(search_name), timeout=30)
             norm_target = self.manager._normalize_app_name(search_name)
             matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
@@ -456,13 +485,18 @@ class OmnistoreBackend:
                 if not details.get("description") or len(details.get("description")) < 10:
                     details["description"] = matched_app.get("description", "")
             async def _fetch_variant_info(variant):
-                source = variant['source']
+                source = variant.get('source')
+                if not source: return
                 if source in ("Native", "Pacman", "AUR"):
+                    if not sys.platform.startswith("linux"): return
                     try:
                         binary = "pacman" if source in ("Native", "Pacman") else "yay"
                         if not shutil.which(binary): return
                         flag = "-Si" if source in ("Native", "Pacman") else "-Sii"
-                        cmd = [binary, flag, variant.get('name', search_name)]
+                        pkg_name = variant.get('name', search_name)
+                        # Defense: Ensure pkg_name is safe
+                        pkg_name = re.sub(r'[^a-zA-Z0-9._ -]', '', pkg_name)
+                        cmd = [binary, flag, pkg_name]
                         async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                             stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
                             if stdout:
@@ -569,33 +603,49 @@ class OmnistoreBackend:
             return ok
 
     def _merge_installed_apps(self, apps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Murphy-proof: Robust merging of installed app metadata with malformed data protection."""
         merged: Dict[str, Dict[str, Any]] = {}
         for app in apps:
+            if not isinstance(app, dict):
+                continue
             name = str(app.get("name") or app.get("id") or "").strip()
             if not name:
                 continue
-            key = self._installed_key(app)
-            if key not in merged:
-                merged[key] = app
-                merged[key].setdefault("variants", [])
+            try:
+                key = self._installed_key(app)
+                if key not in merged:
+                    merged[key] = app.copy()
+                    merged[key].setdefault("variants", [])
+                    continue
+                target = merged[key]
+                # Merge variants carefully
+                existing_variants = target.setdefault("variants", [])
+                for variant in app.get("variants", []):
+                    if not isinstance(variant, dict): continue
+                    if variant not in existing_variants:
+                        existing_variants.append(variant)
+
+                # Merge other fields
+                for field in (
+                    "download_size",
+                    "installed_size",
+                    "disk_size",
+                    "size_confidence",
+                    "size_source",
+                    "install_location",
+                ):
+                    if not target.get(field) and app.get(field):
+                        target[field] = app[field]
+
+                # If current item is managed and target is not, prefer managed metadata
+                if app.get("managed") and not target.get("managed"):
+                    target_variants = target.get("variants", [])
+                    target.update({k: v for k, v in app.items() if k != "variants"})
+                    target["variants"] = target_variants
+            except Exception as e:
+                logging.error(f"Murphy-proof: Error merging app {name}: {e}")
                 continue
-            target = merged[key]
-            for variant in app.get("variants", []):
-                if variant not in target.setdefault("variants", []):
-                    target["variants"].append(variant)
-            for field in (
-                "download_size",
-                "installed_size",
-                "disk_size",
-                "size_confidence",
-                "size_source",
-                "install_location",
-            ):
-                if not target.get(field) and app.get(field):
-                    target[field] = app[field]
-            if app.get("managed") and not target.get("managed"):
-                replacement = {**target, **app, "variants": target.get("variants", [])}
-                merged[key] = replacement
+
         return sorted(merged.values(), key=lambda item: str(item.get("name", "")).lower())
 
     def _installed_key(self, app: Dict[str, Any]) -> str:
@@ -654,7 +704,9 @@ class OmnistoreBackend:
     @safe_command
     async def run_ai_explain(self, app_name: str, app_description: str = ""):
         SecurityValidator.validate_string(app_name, "App Name")
-        res = await self.ai.explain_app(app_name, app_description)
+        # Murphy-proof: Basic length validation for descriptions
+        safe_desc = str(app_description or "")[:10000]
+        res = await self.ai.explain_app(app_name, safe_desc)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
@@ -669,16 +721,23 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_analyze_error(self, error_log: str):
-        res = await self.ai.analyze_error(error_log)
+        # Murphy-proof: Basic length validation for logs to prevent OOM
+        safe_log = str(error_log or "")[:50000]
+        res = await self.ai.analyze_error(safe_log)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
     async def run_ai_changelog(self, name: str, current: str, next_v: str):
+        SecurityValidator.validate_string(name, "App Name")
+        SecurityValidator.validate_string(current, "Current Version")
+        SecurityValidator.validate_string(next_v, "Next Version")
         res = await self.ai.summarize_changelog(name, current, next_v)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
     async def run_ai_cli(self, name: str, summary: str):
+        SecurityValidator.validate_string(name, "App Name")
+        SecurityValidator.validate_string(summary, "Summary")
         res = await self.ai.generate_cli_command(name, summary)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
@@ -705,6 +764,7 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_compare(self, name: str):
+        SecurityValidator.validate_string(name, "App Name")
         async with self:
             if self.manager:
                 candidates = await self.manager.search_all(name)
@@ -722,7 +782,7 @@ class OmnistoreBackend:
         sys.stdout.flush()
         status = await self.env.check_env()
         status["orphaned_count"] = 0
-        if shutil.which("pacman"):
+        if sys.platform.startswith("linux") and shutil.which("pacman"):
             try:
                 async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
@@ -746,7 +806,15 @@ class OmnistoreBackend:
     async def run_export_packages(self, filepath: str):
         SecurityValidator.validate_path(filepath, "Export Path")
         installed = []
-        commands = [ (["pacman", "-Qqne"], "Native"), (["flatpak", "list", "--app", "--columns=application"], "Flatpak"), (["yay", "-Qm"], "AUR") ]
+        is_linux = sys.platform.startswith("linux")
+        commands = []
+        if is_linux:
+            commands.extend([
+                (["pacman", "-Qqne"], "Native"),
+                (["yay", "-Qm"], "AUR")
+            ])
+        commands.append((["flatpak", "list", "--app", "--columns=application"], "Flatpak"))
+
         for cmd, src in commands:
             if not shutil.which(cmd[0]): continue
             try:
@@ -830,6 +898,11 @@ class OmnistoreBackend:
     async def run_clean_system(self, json_mode: bool = False) -> bool:
         async def cb(m): await self._flutter_callback(m, json_mode)
         try:
+            if not sys.platform.startswith("linux"):
+                await cb("[INFO] System cleanup is only supported on Linux. Skipping.")
+                if json_mode: sys.stdout.write(json.dumps({"status": "success", "message": "Unsupported platform"}) + "\n"); sys.stdout.flush()
+                return True
+
             if not json_mode: console.print(Panel("Starting System Cleanup", border_style="blue"))
             if shutil.which("pacman") is None: await cb("[INFO] pacman not found, skipping."); return True
             await cb("[INFO] Detecting orphan packages...")

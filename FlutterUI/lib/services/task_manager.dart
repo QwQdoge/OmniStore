@@ -52,12 +52,22 @@ class TaskManager {
 
   void _startStaleCheck() {
     _staleTaskTimer?.cancel();
-    _staleTaskTimer = Timer(const Duration(minutes: 10), () {
-      if (isBusy &&
-          DateTime.now().difference(_lastLogTime) >=
-              const Duration(minutes: 10)) {
-        debugPrint("Murphy-proof: Stale task detected. Forcing reset.");
-        cancelTask();
+    // Murphy-proof: More aggressive stale check.
+    // Tasks like installs can be slow, but if no output occurs for 10 minutes,
+    // it's likely stuck or the subprocess died without notification.
+    _staleTaskTimer = Timer(const Duration(minutes: 10), () async {
+      if (isBusy) {
+        final now = DateTime.now();
+        final idleTime = now.difference(_lastLogTime);
+        if (idleTime >= const Duration(minutes: 10)) {
+          debugPrint(
+            "Murphy-proof: Stale task detected (Idle for ${idleTime.inMinutes}m). Forcing absolute cleanup.",
+          );
+          await cancelTask();
+        } else {
+          // Re-schedule check if not yet timed out
+          _startStaleCheck();
+        }
       }
     });
   }
@@ -491,7 +501,17 @@ class TaskManager {
       // Murphy-proof: Capture current task ID for idempotent clearing
       final cancelledTaskId = _currentTask?.id;
 
-      // 1. Cancel all active subscriptions to stop UI updates and stream processing
+      // 1. Immediate UI Feedback
+      if (_currentTask != null && _currentTask!.status != TaskStatus.failed) {
+        _updateState(
+          _currentTask!.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskCancelling",
+          ),
+        );
+      }
+
+      // 2. Cancel all active subscriptions to stop UI updates and stream processing
       final subs = List<StreamSubscription>.from(_subscriptions);
       _subscriptions.clear();
       for (final sub in subs) {
@@ -516,15 +536,22 @@ class TaskManager {
         return;
       }
 
-      // 2. Deep Reaping: Signal BackendService to kill the underlying process
+      // 3. Deep Reaping: Signal BackendService to kill the underlying process
       try {
         await BackendService.cancelCurrentTask().timeout(
-          const Duration(seconds: 5),
+          const Duration(seconds: 10),
           onTimeout: () =>
               debugPrint("BackendService.cancelCurrentTask timed out"),
         );
       } catch (e) {
         debugPrint("Murphy-proof Error: Process cancellation failed: $e");
+      }
+
+      // 4. Force Reset Lock
+      // If we are cancelling, we must ensure the mutex is cleared for the next task
+      final currentMutex = _mutex;
+      if (!currentMutex.isCompleted) {
+        currentMutex.complete();
       }
 
       if (_currentTask?.id == cancelledTaskId) {
@@ -540,13 +567,15 @@ class TaskManager {
       debugPrint("TaskManager.cancelTask Fatal Exception: $e");
     } finally {
       final cancelledTaskId = _currentTask?.id;
-      // Ensure the UI state eventually resets
+      // Ensure the UI state eventually resets to neutral
       Future.delayed(const Duration(seconds: 3), () {
         if (_currentTask?.id == cancelledTaskId &&
             _currentTask?.status == TaskStatus.failed) {
           _updateState(null);
         }
       });
+      // Final fail-safe: clear downloading flag
+      BackendService.isDownloading.value = false;
     }
   }
 

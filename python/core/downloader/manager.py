@@ -118,7 +118,12 @@ class InstallExecutor:
                     # Murphy-proof: Standard timeout for the entire installation process (60 minutes)
                     # Implementation of secondary watchdog to catch sources that don't respect internal cancellation
                     async def run_with_watchdog():
-                        return await source.install(package, callback=callback)
+                        try:
+                            return await source.install(package, callback=callback)
+                        except Exception as e:
+                            logging.error(f"Murphy-proof: Internal source installation error: {e}")
+                            if callback: await callback(f"[ERROR] Source installation error: {e}")
+                            return False
 
                     success = await asyncio.wait_for(run_with_watchdog(), timeout=3600)
                     return bool(success)
@@ -179,7 +184,12 @@ class InstallExecutor:
                 try:
                     self.is_running = True
                     async def run_uninstall_with_watchdog():
-                        return await source.uninstall(package, callback=callback)
+                        try:
+                            return await source.uninstall(package, callback=callback)
+                        except Exception as e:
+                            logging.error(f"Murphy-proof: Internal source uninstallation error: {e}")
+                            if callback: await callback(f"[ERROR] Source uninstallation error: {e}")
+                            return False
 
                     success = await asyncio.wait_for(run_uninstall_with_watchdog(), timeout=1800)
                     return bool(success)
@@ -230,8 +240,12 @@ class InstallExecutor:
         elif source_name == "flatpak":
             return is_exe("flatpak")
         elif source_name == "aur":
+            # Support both yay and paru as AUR helpers
             return is_exe("yay") or is_exe("paru")
         elif source_name == "appimage":
+            # Basic requirement for AppImages is often fuse2 or fuse3 on Linux
+            if is_linux and not (is_exe("fusermount") or is_exe("fusermount3")):
+                logging.warning("Murphy-proof: FUSE not detected. AppImages might fail to mount.")
             return True
 
         return True
