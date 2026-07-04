@@ -13,11 +13,10 @@ class SecurityValidator:
     # Allowing alphanumeric, dots, underscores, dashes, slashes, and spaces.
     SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ -]+$')
 
-    # Cross-platform path regex (allows Windows drive letters and backslashes if needed,
-    # but we primarily target Linux as per main.py warning)
+    # Cross-platform path regex
     SAFE_PATH_RE = re.compile(r'^[a-zA-Z0-9._/\\: -]+$')
 
-    # URL validation: alphanumeric, dots, underscores, slashes, colons, dashes, question marks, equals, ampersands, percent, plus, hash
+    # URL validation
     SAFE_URL_RE = re.compile(r'^[a-zA-Z0-9._/:\-?=&%+#]+$')
 
     # Alphanumeric with basic separators only
@@ -31,6 +30,9 @@ class SecurityValidator:
 
         trimmed = val.strip()
         if not trimmed:
+            # For descriptions, we might allow empty but valid strings
+            if name == "App Description":
+                return ""
             raise ValueError(f"{name} cannot be empty")
 
         if len(trimmed) > max_length:
@@ -42,7 +44,7 @@ class SecurityValidator:
         return trimmed
 
     @classmethod
-    def validate_path(cls, path: Optional[str], name: str = "Path", max_length: int = 1024) -> str:
+    def validate_path(cls, path: Optional[str], name: str = "Path", max_length: int = 4096) -> str:
         """Murphy-proof path validation to prevent traversal attacks."""
         if path is None:
             raise ValueError(f"{name} cannot be null")
@@ -54,7 +56,9 @@ class SecurityValidator:
         if len(trimmed) > max_length:
             raise ValueError(f"{name} is too long")
 
-        if ".." in trimmed:
+        # Normalize path to check for traversal
+        norm_path = os.path.normpath(trimmed)
+        if ".." in norm_path.split(os.sep):
             raise ValueError(f"Security: Relative path traversal ('..') is strictly forbidden in {name}.")
 
         if not cls.SAFE_PATH_RE.match(trimmed):
@@ -78,7 +82,6 @@ class SecurityValidator:
         if not cls.SAFE_URL_RE.match(trimmed):
             raise ValueError(f"Security: {name} contains invalid characters.")
 
-        # Guard: Sanity check for length to prevent extremely long URLs causing overhead
         if len(trimmed) > 2048:
             raise ValueError(f"Security: {name} is too long.")
 
