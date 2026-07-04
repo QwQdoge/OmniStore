@@ -55,7 +55,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     isAIEnabled: s.isAIEnabled,
                   ),
                   builder: (context, data, _) {
-                    final settings = context.read<SettingsController>();
                     return AppCard(
                       child: Column(
                         children: [
@@ -91,7 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               ],
                               onChanged: (val) {
                                 if (val != null) {
-                                  settings.setLanguage(val);
+                                  context.read<SettingsController>().setLanguage(val);
                                 }
                               },
                             ),
@@ -101,7 +100,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             title: Text(l10n.closeToTray),
                             value: data.closeToTray,
                             onChanged: (val) {
-                              settings.setCloseToTray(val);
+                              context.read<SettingsController>().setCloseToTray(val);
                             },
                           ),
                           SwitchListTile(
@@ -110,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             subtitle: Text(l10n.restartTitleBar),
                             value: data.useSystemTitleBar,
                             onChanged: (val) {
-                              settings.setUseSystemTitleBar(val);
+                              context.read<SettingsController>().setUseSystemTitleBar(val);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(l10n.configSaved)),
                               );
@@ -122,6 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             subtitle: Text(l10n.aiAssistantDesc),
                             value: data.isAIEnabled,
                             onChanged: (val) {
+                              final settings = context.read<SettingsController>();
                               final config = Map<String, dynamic>.from(
                                 settings.config,
                               );
@@ -170,9 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
               selector: (context, s) => s.config['search']?['sources'] ?? {},
               shouldRebuild: (prev, next) =>
                   !const MapEquality().equals(prev, next),
-              builder: (context, _, child) => SourcesConfigCard(
-                settings: context.read<SettingsController>(),
-              ),
+              builder: (context, _, child) => const SourcesConfigCard(),
             ),
           ),
 
@@ -373,9 +371,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         key: const ValueKey('ai_settings'),
                         label: l10n.aiSettings,
                         explicitChildNodes: true,
-                        child: AISettingsSection(
-                          settings: context.read<SettingsController>(),
-                        ),
+                        child: const AISettingsSection(),
                       )
                     : const SizedBox.shrink(key: ValueKey('empty_advanced')),
               );

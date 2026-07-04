@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
@@ -7,9 +8,7 @@ import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
 
 class AISettingsSection extends StatefulWidget {
-  final SettingsController settings;
-
-  const AISettingsSection({super.key, required this.settings});
+  const AISettingsSection({super.key});
 
   @override
   State<AISettingsSection> createState() => _AISettingsSectionState();
@@ -33,45 +32,47 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsController>();
     _endpointController = TextEditingController(
-      text: widget.settings.config['ai']?['endpoint'] ?? '',
+      text: settings.config['ai']?['endpoint'] ?? '',
     );
     _modelController = TextEditingController(
-      text: widget.settings.config['ai']?['model'] ?? '',
+      text: settings.config['ai']?['model'] ?? '',
     );
     _apiKeyController = TextEditingController(
-      text: widget.settings.config['ai']?['api_key'] ?? '',
+      text: settings.config['ai']?['api_key'] ?? '',
     );
     _tempController = TextEditingController(
-      text: (widget.settings.config['ai']?['temperature'] ?? 0.7).toString(),
+      text: (settings.config['ai']?['temperature'] ?? 0.7).toString(),
     );
   }
 
   @override
-  void didUpdateWidget(AISettingsSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _syncControllers();
   }
 
   void _syncControllers() {
+    final settings = context.watch<SettingsController>();
     _updateIfChanged(
       _endpointController,
-      widget.settings.config['ai']?['endpoint'] ?? '',
+      settings.config['ai']?['endpoint'] ?? '',
       _endpointFocus,
     );
     _updateIfChanged(
       _modelController,
-      widget.settings.config['ai']?['model'] ?? '',
+      settings.config['ai']?['model'] ?? '',
       _modelFocus,
     );
     _updateIfChanged(
       _apiKeyController,
-      widget.settings.config['ai']?['api_key'] ?? '',
+      settings.config['ai']?['api_key'] ?? '',
       _apiKeyFocus,
     );
     _updateIfChanged(
       _tempController,
-      (widget.settings.config['ai']?['temperature'] ?? 0.7).toString(),
+      (settings.config['ai']?['temperature'] ?? 0.7).toString(),
       _tempFocus,
     );
   }
@@ -108,10 +109,11 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   void _updateAIConfig(String key, dynamic value) {
-    final config = Map<String, dynamic>.from(widget.settings.config);
+    final settings = context.read<SettingsController>();
+    final config = Map<String, dynamic>.from(settings.config);
     config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
     config['ai'][key] = value;
-    widget.settings.updateConfig(config);
+    settings.updateConfig(config);
   }
 
   void _debounceUpdateAIConfig(String key, dynamic value) {
@@ -194,6 +196,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsController>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +213,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                   title: Text(l10n.aiProvider),
                   trailing: DropdownButton<String>(
                     value:
-                        widget.settings.config['ai']?['provider'] ?? 'ollama',
+                        settings.config['ai']?['provider'] ?? 'ollama',
                     underline: const SizedBox(),
                     borderRadius: BorderRadius.circular(12),
                     items: [

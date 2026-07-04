@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
@@ -7,9 +8,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 
 class SourcesConfigCard extends StatefulWidget {
-  final SettingsController settings;
-
-  const SourcesConfigCard({super.key, required this.settings});
+  const SourcesConfigCard({super.key});
 
   @override
   State<SourcesConfigCard> createState() => _SourcesConfigCardState();
@@ -77,13 +76,14 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   void _updateSourceConfig(String key, dynamic value) {
-    final config = Map<String, dynamic>.from(widget.settings.config);
+    final settings = context.read<SettingsController>();
+    final config = Map<String, dynamic>.from(settings.config);
     config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
     config['search']['sources'] = Map<String, dynamic>.from(
       config['search']['sources'] ?? {},
     );
     config['search']['sources'][key] = value;
-    widget.settings.updateConfig(config);
+    settings.updateConfig(config);
   }
 
   String _displayName(String key) {
@@ -107,7 +107,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       context,
     ).showSnackBar(SnackBar(content: Text(l10n.autoDetectingSources)));
 
-    final success = await widget.settings.autoDetectSources();
+    final settings = context.read<SettingsController>();
+    final success = await settings.autoDetectSources();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -201,6 +202,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                       return;
                     }
                     final messenger = ScaffoldMessenger.of(context);
+                    final settings = context.read<SettingsController>();
                     Navigator.pop(context);
 
                     messenger.showSnackBar(
@@ -210,7 +212,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                     bool success = false;
                     if (kIsWeb) {
                       final config = Map<String, dynamic>.from(
-                        widget.settings.config,
+                        settings.config,
                       );
                       config['custom_repos'] = Map<String, dynamic>.from(
                         config['custom_repos'] ?? {},
@@ -222,7 +224,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                         "name": name,
                         "url": url,
                       });
-                      success = await widget.settings.updateConfig(config);
+                      success = await settings.updateConfig(config);
                     } else {
                       final result = await BackendService.instance
                           .addCustomRepo(type, name, url);
@@ -254,6 +256,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsController>();
     final sources = [
       'github',
       'bitu',
@@ -267,7 +270,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       'brew',
     ];
     final sourcesMap =
-        widget.settings.config['search']?['sources']
+        settings.config['search']?['sources']
             as Map<dynamic, dynamic>? ??
         {};
 
