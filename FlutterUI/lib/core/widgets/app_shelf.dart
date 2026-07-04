@@ -33,19 +33,24 @@ class AppShelf extends StatelessWidget {
           child: Scrollbar(
             controller: scrollController,
             thumbVisibility: true,
-            child: ListView.separated(
+            child: ListView.builder(
               controller: scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              prototypeItem: const SizedBox(
+                width: 142, // 130 + 12 (manual spacing)
+                child: SizedBox.shrink(),
+              ),
               itemCount: apps.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final app = apps[index];
                 final heroTag =
                     'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
-                return SizedBox(
-                  width: 130,
-                  child: AppCard(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: SizedBox(
+                    width: 130,
+                    child: AppCard(
                     borderRadius: 8,
                     onTap: () => Navigator.push(
                       context,
@@ -95,6 +100,7 @@ class AppShelf extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
                 );
               },
             ),
