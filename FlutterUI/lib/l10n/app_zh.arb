@@ -489,7 +489,7 @@
   "howToGetApiKey": "如何获取 API 密钥？",
   "howToGetApiKeyDesc": "1. Ollama（本地）：下载并运行 Ollama，无需密钥。2. 云端（OpenAI）：前往服务商官网创建 API Key，然后填入此处。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "aiOllamaNote": "提示：如果您使用 Ollama，请确保它已在后台运行并设置了 OLLAMA_ORIGINS=\"*\" 环境变量。",
   "enterStore": "进入商店",
   "nextStep": "下一步",
   "resetCache": "重置缓存与历史记录",
