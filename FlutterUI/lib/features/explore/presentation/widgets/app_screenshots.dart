@@ -23,38 +23,45 @@ class AppScreenshots extends StatelessWidget {
       child: Scrollbar(
         controller: scrollController,
         thumbVisibility: true,
-        child: ListView.separated(
+        child: ListView.builder(
           controller: scrollController,
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 16),
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
+          // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
+          prototypeItem: const SizedBox(
+            width: 376, // 360 + 16 (manual spacing)
+            child: SizedBox.shrink(),
+          ),
           itemCount: screenshots.length,
-          separatorBuilder: (context, _) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
             final imageUrl = screenshots[index];
-            return Hero(
-              tag: 'screenshot-$imageUrl',
-              child: SizedBox(
-                width: 360,
-                child: AppCard(
-                  onTap: () => onShowScreenshotViewer(imageUrl),
-                  borderRadius: 8.0,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.0),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      width: 360,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 720,
-                      placeholder: (context, url) => const Skeleton(
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Hero(
+                tag: 'screenshot-$imageUrl',
+                child: SizedBox(
+                  width: 360,
+                  child: AppCard(
+                    onTap: () => onShowScreenshotViewer(imageUrl),
+                    borderRadius: 16.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: 360,
-                        height: 220,
-                        borderRadius: 8.0,
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: 360,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.broken_image_rounded),
+                        fit: BoxFit.cover,
+                        memCacheWidth: 720,
+                        placeholder: (context, url) => const Skeleton(
+                          width: 360,
+                          height: 220,
+                          borderRadius: 16.0,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 360,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.broken_image_rounded),
+                        ),
                       ),
                     ),
                   ),
