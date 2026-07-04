@@ -28,13 +28,20 @@ class HeroSection extends StatelessWidget {
           child: Scrollbar(
             controller: scrollController,
             thumbVisibility: true,
-            child: ListView.separated(
+            child: ListView.builder(
               controller: scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               scrollDirection: Axis.horizontal,
+              // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
+              prototypeItem: const SizedBox(
+                width: 460, // 440 + 20 (manual spacing)
+                child: SizedBox.shrink(),
+              ),
               itemCount: apps.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 20),
-              itemBuilder: (context, index) => BannerCard(app: apps[index]),
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: BannerCard(app: apps[index]),
+              ),
             ),
           ),
         ),
