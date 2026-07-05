@@ -33,15 +33,17 @@ class SmartScoring:
 
         return False
 
-    def _calculate_smart_score(self, item, query_lower, priority_map=None, source_weights=None, query_re=None):
+    def _calculate_smart_score(self, item, query_lower, priority_map=None, source_weights=None, query_re=None, name_lower=None, desc_lower=None):
         """
         Calculates a ranking score for a search result.
         Optimized with optional pre-calculated maps to avoid redundant lookups in hot loops.
         """
         score = 0
-        name_lower = item.get('name', '').lower()
-        description = item.get('description', '')
-        desc_lower = description.lower() if description else ""
+        if name_lower is None:
+            name_lower = item.get('name', '').lower()
+        if desc_lower is None:
+            description = item.get('description', '')
+            desc_lower = description.lower() if description else ""
 
         # --- 维度 1：匹配精准度 (决定性因素) ---
         if name_lower == query_lower:

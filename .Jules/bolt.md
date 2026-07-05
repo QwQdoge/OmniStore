@@ -64,3 +64,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.
 - Refactored `AppShelf` (FlutterUI/lib/core/widgets/app_shelf.dart) to replace `ListView.separated` with `ListView.builder` utilizing `prototypeItem` for list virtualization. Adjusted padding to maintain exact pixel layout.
+
+## 2026-07-05 - Hot-path String & Repaint Optimization
+
+**Learning:** Redundant string transformations (like `.lower()`) and dictionary allocations inside hot search loops (e.g., scoring hundreds of items) create significant CPU overhead. Additionally, hover-triggered animations in common list items (like `AppCard`) can trigger expensive repaints of the entire list if not isolated.
+
+**Action:** Hoisted priority dictionary and `.lower()` transformations out of search loops in `manager.py` and `scoring.py`. Wrapped `ScaleTransition` in `AppCard` with a `RepaintBoundary` to isolate hover animations.

@@ -179,11 +179,18 @@ class SearchManager:
 
         for item in combined:
             # Restoration: Ensure _norm_name is set for scoring and merging
-            item['_norm_name'] = self._normalize_app_name(item.get('name', 'unknown'))
+            raw_name = item.get('name', 'unknown')
+            item['_norm_name'] = self._normalize_app_name(raw_name)
+
+            # ⚡ Bolt: Pre-calculate lower-case name and description to avoid redundant work in scoring loop
+            name_lower = raw_name.lower()
+            description = item.get('description', '')
+            desc_lower = description.lower() if description else ""
 
             # Base smart score
             base_score = self.smart_scoring._calculate_smart_score(
-                item, query_lower, priority_map, source_weights, query_re
+                item, query_lower, priority_map, source_weights, query_re,
+                name_lower=name_lower, desc_lower=desc_lower
             )
 
             # Apply manual source weights
@@ -357,6 +364,8 @@ class SearchManager:
 
     def merge_duplicates(self, items: List[Dict]) -> List[Dict]:
         seen: Dict[str, Dict] = {}
+        # Priority mapping: Move outside loop to avoid redundant allocations
+        prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
         for item in items:
             raw_name = item.get('name', 'unknown')
             # ⚡ Bolt: Using pre-calculated _norm_name to avoid redundant calls
@@ -388,8 +397,6 @@ class SearchManager:
                 if is_installed:
                     seen[norm_key]['installed'] = True
 
-                # Priority mapping
-                prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
                 if prio.get(source, 0) > prio.get(seen[norm_key]['primary_source'], 0):
                     seen[norm_key]['name'] = raw_name
                     seen[norm_key]['primary_source'] = source
