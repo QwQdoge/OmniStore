@@ -18,7 +18,7 @@
   "about": "关于",
   "details": "详情",
   "source": "来源",
-  "variant": "版本",
+  "variant": "可用版本",
   "@variant": {
     "description": "Label for app variants/versions"
   },

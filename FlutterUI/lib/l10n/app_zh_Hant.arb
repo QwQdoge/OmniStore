@@ -4,7 +4,7 @@
   "featured": "精選",
   "forYou": "為您推薦",
   "essentialTools": "必備工具",
-  "hotApps": "熱門應用",
+  "hotApps": "熱門應用程式",
   "explore": "探索",
   "search": "搜尋",
   "settings": "設定",
@@ -18,7 +18,7 @@
   "about": "關於",
   "details": "詳情",
   "source": "來源",
-  "variant": "版本",
+  "variant": "可用版本",
   "@variant": {
     "description": "Label for app variants/versions"
   },
@@ -742,7 +742,7 @@
   "collapse": "收起",
   "expand": "展開",
   "all": "全部",
-  "relatedApps": "相關應用",
+  "relatedApps": "相關應用程式",
   "activeSources": "已啟用軟體存放庫",
   "@activeSources": {
     "description": "Label for active software sources"
@@ -984,13 +984,13 @@
   "viewDetails": "查看詳情",
   "ok": "確定",
   "checkNetwork": "請檢查您的網路連線並重試",
-  "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用",
+  "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用程式",
   "searchGithubHint": "搜尋 GitHub 存放庫...",
   "recommended": "推薦",
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "嘗試搜尋其他內容",
+  "searchNoResultsSubtitle": "嘗試搜尋其他關鍵字",
   "pluginsAndSources": "外掛程式與軟體源",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"

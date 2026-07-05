@@ -63,7 +63,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source => '来源';
 
   @override
-  String get variant => '版本';
+  String get variant => '可用版本';
 
   @override
   String get version => '版本';
@@ -1189,7 +1189,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get essentialTools => '必備工具';
 
   @override
-  String get hotApps => '熱門應用';
+  String get hotApps => '熱門應用程式';
 
   @override
   String get explore => '探索';
@@ -1231,7 +1231,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source => '來源';
 
   @override
-  String get variant => '版本';
+  String get variant => '可用版本';
 
   @override
   String get version => '版本';
@@ -2066,7 +2066,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get all => '全部';
 
   @override
-  String get relatedApps => '相關應用';
+  String get relatedApps => '相關應用程式';
 
   @override
   String get activeSources => '已啟用軟體存放庫';
@@ -2283,7 +2283,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get checkNetwork => '請檢查您的網路連線並重試';
 
   @override
-  String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用';
+  String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用程式';
 
   @override
   String get searchGithubHint => '搜尋 GitHub 存放庫...';
@@ -2301,7 +2301,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get latestUpdates => '最新更新';
 
   @override
-  String get searchNoResultsSubtitle => '嘗試搜尋其他內容';
+  String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
 
   @override
   String get pluginsAndSources => '外掛程式與軟體源';

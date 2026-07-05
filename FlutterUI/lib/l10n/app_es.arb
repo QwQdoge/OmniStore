@@ -18,7 +18,7 @@
   "about": "Acerca de",
   "details": "Detalles",
   "source": "Fuente",
-  "variant": "Versiones",
+  "variant": "Variantes disponibles",
   "@variant": {
     "description": "Label for app variants/versions"
   },
@@ -481,7 +481,7 @@
   "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
   "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
   "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
-  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
+  "aiApiKeyHelper": "Deje en blanco para Ollama, introduzca sk-xxx para OpenAI",
   "howToGetApiKey": "¿Cómo obtener una clave API?",
   "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
   "gotIt": "Entendido",

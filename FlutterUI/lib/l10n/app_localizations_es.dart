@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Versiones';
+  String get variant => 'Variantes disponibles';
 
   @override
   String get version => 'Versión';
@@ -641,7 +641,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiApiKeyHelper =>
-      'Dejar en blanco para Ollama, introducir sk-xxx para OpenAI';
+      'Deje en blanco para Ollama, introduzca sk-xxx para OpenAI';
 
   @override
   String get howToGetApiKey => '¿Cómo obtener una clave API?';
