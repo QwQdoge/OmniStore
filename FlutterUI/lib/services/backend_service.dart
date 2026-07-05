@@ -6,11 +6,14 @@ import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
 import '../data/python_bridge.dart';
-import '../../models/app_package.dart';
+import '../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
 import 'backend/platform_environment.dart';
 import 'backend/security_validator.dart';
+import 'backend/daemon_ipc_service.dart';
+import 'backend/process_execution_service.dart';
+import 'backend/ai_bridge_service.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -21,9 +24,17 @@ class BackendService {
   late final ProcessRegistry _processRegistry;
   late final DaemonClient _daemonClient;
 
+  // Specialized Services
+  late final DaemonIpcService _ipc;
+  late final ProcessExecutionService _executor;
+  late final AiBridgeService _aiBridge;
+
   BackendService._internal() {
     _processRegistry = ProcessRegistry();
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
+    _ipc = DaemonIpcService(_daemonClient);
+    _executor = ProcessExecutionService(_processRegistry);
+    _aiBridge = AiBridgeService(this);
   }
 
   // ignore: unused_field
@@ -306,61 +317,17 @@ class BackendService {
     });
   }
 
-  // Murphy-proof: Circuit breaker for persistent daemon failures
-  int _daemonFailureStreak = 0;
-  static const int _daemonFailureThreshold = 3; // Reduced threshold for faster fallback
-  DateTime? _lastDaemonFailureTime;
-  bool _isCircuitBreakerTripped = false;
-
   Future<DaemonResult?> _sendToDaemon(
     String action,
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    // Murphy-proof: Circuit Breaker Logic
-    if (_isCircuitBreakerTripped) {
-      final now = DateTime.now();
-      if (_lastDaemonFailureTime != null &&
-          now.difference(_lastDaemonFailureTime!) <
-              const Duration(minutes: 2)) {
-        debugPrint(
-          "Circuit Breaker ACTIVE: Daemon persistent failure. Bypassing to CLI.",
-        );
-        return null;
-      } else {
-        debugPrint("Circuit Breaker: Cooldown expired. Resetting...");
-        _isCircuitBreakerTripped = false;
-        _daemonFailureStreak = 0;
-      }
-    }
+    return _ipc.send(action, args, kwargs: kwargs);
+  }
 
-    try {
-      // Murphy-proof: Ensure daemon is running before sending
-      if (_daemonProcess == null) {
-        await _startDaemonIfNeeded();
-      }
-
-      final res = await _daemonClient
-          .send(action, args, kwargs: kwargs)
-          .timeout(const Duration(seconds: 15)); // Strict timeout for IPC
-
-      if (res != null) {
-        _daemonFailureStreak = 0; // Reset on success
-        return res;
-      } else {
-        throw Exception("Daemon returned null result");
-      }
-    } catch (e) {
-      _daemonFailureStreak++;
-      _lastDaemonFailureTime = DateTime.now();
-      debugPrint("Daemon IPC Error (Streak: $_daemonFailureStreak): $e");
-
-      if (_daemonFailureStreak >= _daemonFailureThreshold) {
-        _isCircuitBreakerTripped = true;
-        debugPrint("Circuit Breaker TRIPPED due to $_daemonFailureStreak errors.");
-      }
-      return null;
-    }
+  Future<ProcessResult?> runRaw(List<String> args, {Duration timeout = const Duration(seconds: 30)}) async {
+    final apiKey = await PythonBridge.getApiKey();
+    return _executor.run(args: args, timeout: timeout, apiKey: apiKey);
   }
 
   Future<ProcessResult?> _safeRun(
@@ -368,161 +335,28 @@ class BackendService {
     Duration timeout = const Duration(seconds: 30),
     bool useLock = false,
   }) async {
-    if (kIsWeb) return null;
-
-    // Murphy-proof: Pre-flight check
-    if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-      debugPrint("Backend Error: Python executable not found at $_venvPython");
-      return null;
-    }
-
     if (useLock) await _acquireLock();
-
-    Process? process;
     try {
-      final apiKey = await PythonBridge.getApiKey();
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
-      }
-
-      process =
-          await Process.start(
-            _venvPython,
-            _buildArgs(args),
-            workingDirectory: _workingDir,
-            environment: env.isEmpty ? null : env,
-          ).timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw TimeoutException("Process start timed out for $args");
-            },
-          );
-
-      _processRegistry.add(process);
-
-      final stdoutFuture = process.stdout
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
-      final stderrFuture = process.stderr
-          .transform(utf8.decoder)
-          .join()
-          .timeout(const Duration(seconds: 5), onTimeout: () => "");
-      final exitCode = await process.exitCode.timeout(
-        timeout,
-        onTimeout: () {
-          throw TimeoutException(
-            "Process execution timed out after ${timeout.inSeconds}s",
-          );
-        },
-      );
-      final stdout = await stdoutFuture;
-      final stderr = await stderrFuture;
-
-      return ProcessResult(process.pid, exitCode, stdout, stderr);
-    } catch (e) {
-      debugPrint("BackendService._safeRun Exception [args: $args]: $e");
-      if (process != null) await _killProcess(process);
-      return null;
+      return await runRaw(args, timeout: timeout);
     } finally {
-      if (process != null) _processRegistry.remove(process);
       if (useLock) _releaseLock();
     }
   }
 
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
-    if (kIsWeb) {
-      yield "[CALLBACK] {\"log\": \"Running in browser sandbox\"}";
-      return;
-    }
-
-    // Murphy-proof: Pre-flight check
-    if (!File(_venvPython).existsSync() && _venvPython != 'python') {
-      yield "[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] Python environment missing at $_venvPython\", \"level\": \"ERROR\"}";
-      return;
-    }
-
     if (useLock) await _acquireLock();
-
-    Process? process;
-    final controller = StreamController<String>();
-
     try {
       final apiKey = await PythonBridge.getApiKey();
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
-      }
-
-      process =
-          await Process.start(
-            _venvPython,
-            _buildArgs(args),
-            workingDirectory: _workingDir,
-            environment: env.isEmpty ? null : env,
-            runInShell: true,
-          ).timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw TimeoutException(
-                "Streaming process start timed out for $args",
-              );
-            },
-          );
-
-      _processRegistry.add(process);
-      activeProcess = process;
-
-      final stdoutSub = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen(
-            (data) {
-              if (!controller.isClosed) controller.add(data);
-            },
-            onError: (e) {
-              debugPrint("Process Stdout Error: $e");
-              if (!controller.isClosed) {
-                controller.add(
-                  "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
-                );
-              }
-            },
-            onDone: () {
-              if (process != null) _processRegistry.remove(process);
-              if (!controller.isClosed) controller.close();
-              if (activeProcess == process) activeProcess = null;
-            },
-            cancelOnError: false,
-          );
-
-      final stderrSub = process.stderr
-          .transform(utf8.decoder)
-          .listen(
-            (data) => debugPrint("Backend Stderr: $data"),
-            onError: (e) => debugPrint("Stderr Error: $e"),
-          );
-
-      controller.onCancel = () async {
-        debugPrint(
-          "Stream cancelled, performing deep cleanup for process ${process?.pid}",
-        );
-        stdoutSub.cancel();
-        stderrSub.cancel();
-        await _killProcess(process);
-        if (activeProcess == process) activeProcess = null;
-        if (!controller.isClosed) await controller.close();
-      };
-
-      yield* controller.stream;
-    } catch (e) {
-      debugPrint("BackendService._safeStream Exception: $e");
-      yield "[CALLBACK] {\"key\": \"errorProcessStart\", \"error\": \"$e\"}";
-      if (!controller.isClosed) await controller.close();
-      if (process != null) await _killProcess(process);
+      yield* _executor.stream(
+        args: args,
+        apiKey: apiKey,
+        onProcessStarted: (p) => activeProcess = p,
+      );
     } finally {
-      if (useLock) _releaseLock();
+      if (useLock) {
+        _releaseLock();
+        activeProcess = null;
+      }
     }
   }
 
@@ -630,6 +464,8 @@ class BackendService {
 
   /// Murphy-proof: Strict JSON decoder with size limits, noise filtering,
   /// and fallback recovery for messy subprocess output.
+  dynamic safeJsonDecode(String input) => _safeJsonDecode(input);
+
   dynamic _safeJsonDecode(String input) {
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
@@ -864,142 +700,43 @@ class BackendService {
     }
   }
 
-  Future<String> _aiCall(
-    List<String> args, {
-    Duration timeout = const Duration(seconds: 60),
-  }) async {
-    if (kIsWeb) {
-      return "This is a simulated AI response on web.";
-    }
-    try {
-      final res = await _safeRun([...args, "--json"], timeout: timeout);
-      if (res == null) {
-        return "AI_TIMEOUT"; // Standardized internal code for l10n mapping
-      }
-      final data = _safeJsonDecode(res.stdout.toString());
-      if (data is Map) {
-        return data['response']?.toString() ?? "AI_NO_RESPONSE";
-      }
-      return "AI_PARSE_FAILED";
-    } catch (e) {
-      debugPrint("_aiCall Error: $e");
-      return "AI_ERROR: ${e.toString()}";
-    }
-  }
-
   // Fail-safe AI counter to prevent infinite retry loops in UI
+  // ignore: unused_field
   int _aiFailureCount = 0;
 
-  Future<String> aiExplain(String name, String desc) async {
-    try {
-      _validateString(name, "AI App Name");
-      return await _aiCall([
-        "--ai-explain",
-        name.trim(),
-        "--ai-desc",
-        desc.trim(),
-      ]);
-    } catch (e) {
-      return "AI Explanation unavailable: $e";
-    }
-  }
+  Future<String> aiExplain(String name, String desc) => _aiBridge.explain(name, desc);
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
-    try {
-      _validateString(n, "AI Package Name");
-      return await _aiCall([
-        "--ai-changelog",
-        "${n.trim()},${c.trim()},${next.trim()}",
-      ]);
-    } catch (e) {
-      return "Update summary unavailable.";
-    }
+    return _aiBridge.call(["--ai-changelog", "$n,$c,$next"]);
   }
 
   Future<String> aiGenerateCLI(String n, String s) async {
-    try {
-      _validateString(n, "AI App Name");
-      _validateString(s, "AI Source");
-      return await _aiCall([
-        "--ai-cli",
-        "${n.trim()},${s.trim()}",
-      ], timeout: const Duration(seconds: 20));
-    } catch (e) {
-      return "CLI generation failed.";
-    }
+    return _aiBridge.call(["--ai-cli", "$n,$s"], timeout: const Duration(seconds: 20));
   }
 
   Future<String> aiDetectConflicts(String n) async {
-    try {
-      SecurityValidator.validateString(n, "AI Package Name");
-      return await _aiCall(["--ai-conflicts", n.trim()]);
-    } catch (e) {
-      return "Conflict detection failed.";
-    }
+    return _aiBridge.call(["--ai-conflicts", n.trim()]);
   }
 
   Future<String> aiPickOfTheDay() async {
-    try {
-      return await _aiCall(["--ai-pick"]);
-    } catch (e) {
-      return "Pick of the day unavailable.";
-    }
+    return _aiBridge.call(["--ai-pick"]);
   }
 
   Future<String> aiSuggestCorrection(String q) async {
-    try {
-      _validateString(q, "AI Query");
-      return await _aiCall([
-        "--ai-correct",
-        q.trim(),
-      ], timeout: const Duration(seconds: 15));
-    } catch (e) {
-      return q; // Graceful degradation: return original query
-    }
+    return _aiBridge.call(["--ai-correct", q.trim()], timeout: const Duration(seconds: 15));
   }
 
   Future<String> aiCompareVariants(String n) async {
-    try {
-      SecurityValidator.validateString(n, "AI App Name");
-      return await _aiCall(["--ai-compare", n.trim()]);
-    } catch (e) {
-      return "Variant comparison unavailable.";
-    }
+    return _aiBridge.call(["--ai-compare", n.trim()]);
   }
 
   Future<String> aiSystemHealth() async {
-    try {
-      return await _aiCall(["--ai-health"]);
-    } catch (e) {
-      return "System health report unavailable.";
-    }
+    return _aiBridge.call(["--ai-health"]);
   }
 
-  Future<String> aiAnalyzeError(String log) async {
-    try {
-      return await _aiCall(["--ai-analyze-error", log.trim()]);
-    } catch (e) {
-      return "Error analysis unavailable.";
-    }
-  }
+  Future<String> aiAnalyzeError(String log) => _aiBridge.analyzeError(log);
 
-  Future<String> aiRecommend(String p) async {
-    try {
-      _validateString(p, "AI Prompt");
-      final res = await _aiCall([
-        "--ai-recommend",
-        p.trim(),
-      ], timeout: const Duration(seconds: 90));
-      _aiFailureCount = 0;
-      return res;
-    } catch (e) {
-      _aiFailureCount++;
-      if (_aiFailureCount > 3) {
-        return "AI recommendations are currently offline. Please try again later.";
-      }
-      return "Recommendation service error.";
-    }
-  }
+  Future<String> aiRecommend(String p) => _aiBridge.recommend(p);
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     if (kIsWeb) {
@@ -1481,9 +1218,7 @@ class BackendService {
 
   Future<void> shutdownBackend() async {
     if (kIsWeb) return;
-    try {
-      await _sendToDaemon("shutdown", []);
-    } catch (_) {}
+    await _ipc.shutdown();
   }
 
   Future<Map<String, dynamic>> testAiConnection() async {

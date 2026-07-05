@@ -3,12 +3,17 @@ import sys
 import json
 import yaml
 import asyncio
-import subprocess
 import logging
+import shutil
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Dict, Any, Optional
 
 from core.subprocess_utils import safe_subprocess
+from core.security_validator import SecurityValidator
+
+# Murphy-proof: Event for graceful shutdown signaling
+stop_event = asyncio.Event()
 
 # Setup logging
 logging.basicConfig(
@@ -52,15 +57,24 @@ def load_config():
         return defaults
 
 async def send_notification(summary: str, body: str):
-    logging.info(f"Sending notification: {summary} - {body}")
+    """Murphy-proof notification dispatcher."""
+    v_summary = SecurityValidator.validate_string(summary, "Notification Summary")
+    v_body = SecurityValidator.validate_string(body, "Notification Body")
+
+    logging.info(f"Sending notification: {v_summary} - {v_body}")
+
+    if not shutil.which("notify-send"):
+        logging.warning("notify-send not found. Skipping notification.")
+        return
+
     try:
         # Use notify-send which is standard on Linux desktops
         async with safe_subprocess(
-            "notify-send", "-a", "OmniStore", "-t", "5000", summary, body,
+            "notify-send", "-a", "OmniStore", "-t", "5000", v_summary, v_body,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL
         ) as proc:
-            await proc.wait()
+            await asyncio.wait_for(proc.wait(), timeout=5)
     except Exception as e:
         logging.error(f"Failed to send notification via notify-send: {e}")
 
@@ -95,19 +109,20 @@ def parse_json_output(raw: str):
                 return json.loads(candidate)
         raise
 
-async def run_auto_updates(updates):
+async def run_auto_updates(updates: list):
+    """Murphy-proof auto-update execution using safe_subprocess."""
     logging.info("Auto-update is enabled. Starting updates...")
     
     has_flatpaks = any(u.get("source") == "Flatpak" for u in updates)
-    if has_flatpaks:
+    if has_flatpaks and shutil.which("flatpak"):
         logging.info("Auto-updating Flatpak applications...")
         try:
             async with safe_subprocess(
                 "flatpak", "update", "-y", "--user",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
             ) as proc:
-                await proc.wait()
+                await asyncio.wait_for(proc.wait(), timeout=1800) # 30 min limit
         except Exception as e:
             logging.error(f"Flatpak auto-update failed: {e}")
 
@@ -119,15 +134,15 @@ async def run_auto_updates(updates):
 
     if is_root:
         has_natives = any(u.get("source") in ("Native", "AUR") for u in updates)
-        if has_natives:
+        if has_natives and shutil.which("pacman"):
             logging.info("Running as root. Auto-updating native packages...")
             try:
                 async with safe_subprocess(
                     "pacman", "-Syu", "--noconfirm",
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL
                 ) as proc:
-                    await proc.wait()
+                    await asyncio.wait_for(proc.wait(), timeout=3600) # 1 hour limit
             except Exception as e:
                 logging.error(f"Pacman auto-update failed: {e}")
     else:
@@ -195,20 +210,22 @@ async def main():
     logging.info(f"Starting background loop. Checking every {config['check_interval_hours']} hour(s).")
     
     try:
-        while True:
-            # Sleep in 60s chunks so we can check for shutdown or config reload/disabled sooner
+        while not stop_event.is_set():
+            # Sleep in small chunks so we can check for shutdown or config reload/disabled sooner
             sleep_hours = config.get("check_interval_hours", 4)
-            sleep_seconds = sleep_hours * 3600
+            sleep_seconds = max(60, sleep_hours * 3600)
             elapsed = 0
             
-            while elapsed < sleep_seconds:
-                await asyncio.sleep(60)
+            while elapsed < sleep_seconds and not stop_event.is_set():
+                await asyncio.sleep(min(60, sleep_seconds - elapsed))
                 elapsed += 60
+
                 # Check config dynamically to see if daemon got disabled
                 current_config = load_config()
                 if not current_config.get("enabled"):
                     logging.info("Daemon was disabled in configuration. Stopping.")
                     return
+
                 # If interval decreased, adjust sleep
                 new_sleep_hours = current_config.get("check_interval_hours", 4)
                 if new_sleep_hours != sleep_hours:
@@ -216,6 +233,8 @@ async def main():
                     config = current_config
                     break
             else:
+                if stop_event.is_set(): break
+
                 # Timer completed naturally
                 config = load_config()
                 if not config.get("enabled"):
@@ -226,7 +245,23 @@ async def main():
         logging.info("Background loop cancelled.")
 
 if __name__ == "__main__":
+    # Signal handlers for graceful shutdown
+    def _handle_exit():
+        logging.info("Received exit signal. Shutting down daemon loop...")
+        stop_event.set()
+
+    import signal
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        try:
+            loop.add_signal_handler(sig, _handle_exit)
+        except NotImplementedError:
+            pass
+
     try:
-        asyncio.run(main())
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         logging.info("Daemon stopped via KeyboardInterrupt.")
+    finally:
+        loop.close()

@@ -87,17 +87,22 @@ def setup_stdout_hijack():
         sys.stdout.reconfigure(line_buffering=True, encoding='utf-8', errors='replace') # type: ignore
 
 def safe_command(func):
-    """Murphy-proof decorator to isolate command failures and prevent backend crashes."""
+    """
+    Murphy-proof decorator to isolate command failures and prevent backend crashes.
+    Enforces timeout, cancellation safety, and structured error reporting.
+    """
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
         json_mode = getattr(self, "json_mode", False)
-        # Defensive Logging: Log the start of every command
         logging.debug(f"Command execution started: {func.__name__} (args={args}, kwargs={kwargs})")
 
-        # Murphy-proof: Command-level timeout protection.
-        # Installs/updates get 1 hour, others get 2 minutes by default.
+        # Murphy-proof: Strict command-level timeout protection.
         is_long_running = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system", "run_bootstrap")
         timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
+
+        # Fail-safe: Register command for resource tracking
+        command_id = f"{func.__name__}_{id(func)}"
+        self._active_commands[command_id] = asyncio.current_task()
 
         try:
             result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
@@ -113,8 +118,7 @@ def safe_command(func):
                     message=error_msg,
                     context=func.__name__
                 )
-                sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n")
-                sys.stdout.flush()
+                self._output_command_response(resp)
             else:
                 hijacked_print(f"[ERROR] {error_msg}")
             return False
@@ -127,9 +131,7 @@ def safe_command(func):
                     message=f"Command {func.__name__} was cancelled.",
                     context=func.__name__
                 )
-                sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n")
-                sys.stdout.flush()
-            # Re-raise to allow proper async cleanup but ensure we don't crash the event loop
+                self._output_command_response(resp)
             raise
         except Exception as e:
             import traceback
@@ -138,26 +140,24 @@ def safe_command(func):
             logging.error(f"{error_msg}\n{err_trace}")
 
             if json_mode:
-                # Ensure we don't pollute JSON output with partial data
-                sys.stdout.write("\n")
                 resp = CommandResponse(
                     status="error",
-                    error=str(e),
+                    error=type(e).__name__,
                     message=error_msg,
                     context=func.__name__,
                     traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
                 )
-                sys.stdout.write(resp.model_dump_json(exclude_none=True) + "\n")
-                sys.stdout.flush()
+                self._output_command_response(resp)
             else:
                 try:
-                    # Attempt graceful error handling
                     await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
                 except Exception as inner_e:
-                    # Final fail-safe: raw print to original stdout
                     logging.error(f"Double fault in _handle_error: {inner_e}")
                     hijacked_print(f"[ERROR] {error_msg}")
             return False
+        finally:
+            self._active_commands.pop(command_id, None)
+
     return wrapper
 
 class OmnistoreBackend:
@@ -181,8 +181,10 @@ class OmnistoreBackend:
         self.session: Optional[aiohttp.ClientSession] = None
         self._ref_count = 0
         self._lock = asyncio.Lock()
-        # Murphy-proof: Task registry for lifecycle management
+        # Murphy-proof: Resource and task registry for absolute lifecycle management
         self._task_registry: set[asyncio.Task] = set()
+        self._active_commands: Dict[str, asyncio.Task] = {}
+        self._temp_resources: List[Any] = []
 
     def create_task(self, coro) -> asyncio.Task:
         """Murphy-proof: Create a tracked task that is guaranteed to be reaped on backend exit."""
@@ -227,27 +229,38 @@ class OmnistoreBackend:
         return self._essentials
 
     async def initialize(self):
-        """Murphy-proof: Hardened initialization with graceful degradation."""
+        """
+        Murphy-proof: Hardened initialization with graceful degradation.
+        Ensures that failures in optional components do not block the entire backend.
+        """
         async with self._lock:
+            # 1. Critical Dependency: Network Session
             session_replaced = False
             try:
                 if self.session is None or self.session.closed:
-                    connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
+                    # Optimized connector with connection pooling and DNS caching
+                    connector = aiohttp.TCPConnector(
+                        limit=100,
+                        ttl_dns_cache=300,
+                        use_dns_cache=True,
+                        enable_cleanup_closed=True
+                    )
                     self.session = aiohttp.ClientSession(
                         connector=connector,
-                        timeout=aiohttp.ClientTimeout(total=60)
+                        timeout=aiohttp.ClientTimeout(total=60, connect=10),
+                        raise_for_status=False
                     )
                     session_replaced = True
             except Exception as e:
-                logging.error(f"Murphy-proof: Failed to initialize aiohttp session: {e}")
-                # We continue as some commands might not need a session
+                logging.error(f"Murphy-proof: Critical failure initializing aiohttp session: {e}")
+                # Fault isolation: We continue even if network is down
 
+            # 2. Lazy Component Injection
             try:
                 if self.recommender is None or session_replaced:
                     self.recommender = RecommendationManager(self.session, self.habit_tracker, backend=self)
             except Exception as e:
-                logging.error(f"Murphy-proof: Failed to initialize RecommendationManager: {e}")
-                # Graceful degradation: recommender stays None
+                logging.error(f"Murphy-proof: Graceful degradation: Failed to initialize RecommendationManager: {e}")
 
             try:
                 if self.manager is None or session_replaced:
@@ -257,8 +270,8 @@ class OmnistoreBackend:
                         ai_assistant=self.ai
                     )
             except Exception as e:
-                logging.error(f"Murphy-proof: Failed to initialize SearchManager: {e}")
-                # Graceful degradation: manager stays None
+                logging.error(f"Murphy-proof: Graceful degradation: Failed to initialize SearchManager: {e}")
+
         return self
 
     async def __aenter__(self):
@@ -307,6 +320,14 @@ class OmnistoreBackend:
                 try: await self._ai.close()
                 except: pass
 
+            # Murphy-proof: Cleanup temporary resources (files, etc.)
+            for res in self._temp_resources:
+                try:
+                    if hasattr(res, "close"): res.close()
+                    elif os.path.exists(str(res)): os.remove(str(res))
+                except: pass
+            self._temp_resources.clear()
+
             self.manager = None
             self.recommender = None
             self._ai = None
@@ -349,72 +370,136 @@ class OmnistoreBackend:
             else: logging.info(clean_msg)
 
     @safe_command
-    async def run_search(self, query: str, json_mode: bool = False):
-        # Murphy-proof: Input validation before resource acquisition
+    async def run_search(self, query: str, json_mode: bool = False) -> Any:
+        """Murphy-proof search command with structured response."""
         valid_query = SecurityValidator.validate_string(query, "Search Query")
         async with self:
-            if not self.manager: raise RuntimeError("SearchManager is not initialized.")
+            if not self.manager:
+                raise RuntimeError("SearchManager is not initialized.")
+
             results = await asyncio.wait_for(self.manager.search_all(valid_query), timeout=45)
-            if results is None: results = []
-            if json_mode: self._output_json(results)
-            else: self._output_pretty(query, results)
+            if results is None:
+                results = []
+
+            # Standardize and type-check results
+            typed_results = self._to_app_packages(results)
+
+            if json_mode:
+                resp = CommandResponse(
+                    status="success",
+                    response=[item.model_dump(exclude_none=True) for item in typed_results],
+                    context="run_search"
+                )
+                self._output_command_response(resp)
+            else:
+                self._output_pretty(query, [item.model_dump() for item in typed_results])
+
+            return typed_results
 
     @safe_command
-    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> bool:
-        # Murphy-proof: Guard against state corruption and malformed inputs
-        SecurityValidator.validate_string(name, "Package Name")
-        SecurityValidator.validate_string(source, "Source")
-        if url: SecurityValidator.validate_url(url)
+    async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> Any:
+        """
+        Murphy-proof installation command.
+        Enforces strict input validation and returns structured CommandResponse.
+        """
+        valid_name = SecurityValidator.validate_string(name, "Package Name")
+        valid_source = SecurityValidator.validate_string(source, "Source")
+        valid_url = SecurityValidator.validate_url(url) if url else None
 
         self.is_action = True
-        package_data = {"name": name, "id": name, "source": source, "url": url}
-        if self.manager and self.manager.habit_tracker:
-            self.manager.habit_tracker.record_install(name, source)
-        async def cb(m): await self._flutter_callback(m, json_mode)
-        if not json_mode:
-            console.print(Panel(f"Installing [bold green]{name}[/bold green] from [cyan]{source}[/cyan]", border_style="green"))
-        success = await self.executor.install(package_data, callback=cb)
-        if success:
-            self.cache.invalidate_installed_cache()
+        package_data = {"name": valid_name, "id": valid_name, "source": valid_source, "url": valid_url}
+
+        async with self:
+            if self.manager and self.manager.habit_tracker:
+                self.manager.habit_tracker.record_install(valid_name, valid_source)
+
+            async def cb(m): await self._flutter_callback(m, json_mode)
+
             if not json_mode:
-                console.print(Panel(f"Successfully installed [bold green]{name}[/bold green]! 🎉", border_style="green"))
-                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-        return success
+                console.print(Panel(f"Installing [bold green]{valid_name}[/bold green] from [cyan]{valid_source}[/cyan]", border_style="green"))
+
+            success = await self.executor.install(package_data, callback=cb)
+
+            if success:
+                self.cache.invalidate_installed_cache()
+                if not json_mode:
+                    console.print(Panel(f"Successfully installed [bold green]{valid_name}[/bold green]! 🎉", border_style="green"))
+                    console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+
+            if json_mode:
+                resp = CommandResponse(
+                    status="success" if success else "error",
+                    response=success,
+                    message=f"Installation {'succeeded' if success else 'failed'} for {valid_name}"
+                )
+                self._output_command_response(resp)
+            return success
 
     @safe_command
-    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> bool:
-        SecurityValidator.validate_string(package_name, "Package Name")
-        SecurityValidator.validate_string(source, "Source")
-        SecurityValidator.validate_action_flag(flag)
+    async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> Any:
+        """Murphy-proof uninstallation command."""
+        valid_name = SecurityValidator.validate_string(package_name, "Package Name")
+        valid_source = SecurityValidator.validate_string(source, "Source")
+        valid_flag = SecurityValidator.validate_action_flag(flag)
 
         self.is_action = True
-        package_data = {"name": package_name, "id": package_name, "source": source, "flag": flag}
-        async def cb(m): await self._flutter_callback(m, json_mode)
-        if not json_mode:
-            console.print(Panel(f"Uninstalling [bold red]{package_name}[/bold red] from [cyan]{source}[/cyan]", border_style="red"))
-        success = await self.executor.uninstall(package_data, callback=cb)
-        if success:
-            self.cache.invalidate_installed_cache()
+        package_data = {"name": valid_name, "id": valid_name, "source": valid_source, "flag": valid_flag}
+
+        async with self:
+            async def cb(m): await self._flutter_callback(m, json_mode)
+
             if not json_mode:
-                console.print(Panel(f"Successfully uninstalled [bold red]{package_name}[/bold red]! ✨", border_style="green"))
-                console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-        return success
+                console.print(Panel(f"Uninstalling [bold red]{valid_name}[/bold red] from [cyan]{valid_source}[/cyan]", border_style="red"))
+
+            success = await self.executor.uninstall(package_data, callback=cb)
+
+            if success:
+                self.cache.invalidate_installed_cache()
+                if not json_mode:
+                    console.print(Panel(f"Successfully uninstalled [bold red]{valid_name}[/bold red]! ✨", border_style="green"))
+                    console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+
+            if json_mode:
+                resp = CommandResponse(
+                    status="success" if success else "error",
+                    response=success,
+                    message=f"Uninstallation {'succeeded' if success else 'failed'} for {valid_name}"
+                )
+                self._output_command_response(resp)
+            return success
 
     @safe_command
-    async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> bool:
-        SecurityValidator.validate_string(package_name, "Package Name")
-        SecurityValidator.validate_string(source, "Source")
+    async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> Any:
+        """Murphy-proof update command."""
+        valid_name = SecurityValidator.validate_string(package_name, "Package Name")
+        valid_source = SecurityValidator.validate_string(source, "Source")
+
         self.is_action = True
-        package_data = {"name": package_name, "id": package_name, "source": source}
-        async def cb(m): await self._flutter_callback(m, json_mode)
-        if not json_mode:
-            target = "all packages" if package_name == "all" else f"[bold green]{package_name}[/bold green]"
-            console.print(Panel(f"Updating {target} via [cyan]{source}[/cyan]", border_style="blue"))
-        success = await self.executor.update(package_data, callback=cb)
-        if success and not json_mode:
-            console.print(Panel(f"Update completed! 🎉", border_style="green"))
-            console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
-        return success
+        package_data = {"name": valid_name, "id": valid_name, "source": valid_source}
+
+        async with self:
+            async def cb(m): await self._flutter_callback(m, json_mode)
+
+            if not json_mode:
+                target = "all packages" if valid_name == "all" else f"[bold green]{valid_name}[/bold green]"
+                console.print(Panel(f"Updating {target} via [cyan]{valid_source}[/cyan]", border_style="blue"))
+
+            success = await self.executor.update(package_data, callback=cb)
+
+            if success:
+                self.cache.invalidate_installed_cache()
+                if not json_mode:
+                    console.print(Panel(f"Update completed! 🎉", border_style="green"))
+                    console.print(f"\n[italic]{get_friendly_message()}[/italic]\n")
+
+            if json_mode:
+                resp = CommandResponse(
+                    status="success" if success else "error",
+                    response=success,
+                    message=f"Update {'completed' if success else 'failed'} for {valid_name}"
+                )
+                self._output_command_response(resp)
+            return success
 
     @safe_command
     async def run_check_updates(self, json_mode: bool = False):
@@ -449,53 +534,61 @@ class OmnistoreBackend:
                         if isinstance(app, dict): hijacked_print(f"推荐: {app.get('name')} ({app.get('id')})")
 
     @safe_command
-    async def run_app_details(self, app_id: str, json_mode: bool = False, source: Optional[str] = None):
-        SecurityValidator.validate_string(app_id, "App ID")
-        if source:
-            SecurityValidator.validate_string(source, "Source")
+    async def run_app_details(self, app_id: str, json_mode: bool = False, source: Optional[str] = None) -> Any:
+        """Murphy-proof app details command with structured response."""
+        valid_id = SecurityValidator.validate_strict_id(app_id, "App ID")
+        valid_source = SecurityValidator.validate_string(source, "Source") if source else None
+
         async with self:
-            if not self.recommender or not self.manager: raise RuntimeError("Managers are not initialized.")
+            if not self.recommender or not self.manager:
+                raise RuntimeError("Managers are not initialized.")
+
             details: Dict[str, Any] = {}
-            source_key = (source or "").lower().replace("builtin.", "")
+            source_key = (valid_source or "").lower().replace("builtin.", "")
             if source_key == "native":
                 source_key = "pacman"
+
             source_obj = self.manager.sources.get(source_key) if source_key else None
             if source_obj and source_obj.capabilities.get("details"):
                 try:
-                    details = await asyncio.wait_for(source_obj.get_details(app_id), timeout=30)
+                    details = await asyncio.wait_for(source_obj.get_details(valid_id), timeout=30)
                 except Exception as exc:
-                    logging.debug(f"Plugin details failed for {source_key}:{app_id}: {exc}")
+                    logging.debug(f"Plugin details failed for {source_key}:{valid_id}: {exc}")
                     details = {}
+
             if not details:
                 details = await asyncio.wait_for(
-                    self.recommender.get_details(app_id) if "." in app_id else self.recommender.find_metadata(app_id),
+                    self.recommender.get_details(valid_id) if "." in valid_id else self.recommender.find_metadata(valid_id),
                     timeout=30
                 )
-            search_name = details.get("name") or app_id.split(".")[-1]
-            # Defense: Sanitize search_name before using it in any subprocess or search
-            search_name = re.sub(r'[^a-zA-Z0-9._ -]', '', search_name)
+
+            search_name = details.get("name") or valid_id.split(".")[-1]
+            # Defense: Strictly sanitize search_name for safety
+            search_name = SecurityValidator.validate_string(search_name, "Search Name")
 
             variants_results = await asyncio.wait_for(self.manager.search_all(search_name), timeout=30)
             norm_target = self.manager._normalize_app_name(search_name)
             matched_app = next((res for res in variants_results if self.manager._normalize_app_name(res['name']) == norm_target), None)
+
             if matched_app:
                 if not details:
                     details.update(matched_app)
                 details["variants"] = matched_app.get("variants", [])
                 if not details.get("description") or len(details.get("description")) < 10:
                     details["description"] = matched_app.get("description", "")
+
             async def _fetch_variant_info(variant):
-                source = variant.get('source')
-                if not source: return
-                if source in ("Native", "Pacman", "AUR"):
+                v_source = variant.get('source')
+                if not v_source: return
+                if v_source in ("Native", "Pacman", "AUR"):
                     if not sys.platform.startswith("linux"): return
                     try:
-                        binary = "pacman" if source in ("Native", "Pacman") else "yay"
+                        binary = "pacman" if v_source in ("Native", "Pacman") else "yay"
                         if not shutil.which(binary): return
-                        flag = "-Si" if source in ("Native", "Pacman") else "-Sii"
+                        flag = "-Si" if v_source in ("Native", "Pacman") else "-Sii"
                         pkg_name = variant.get('name', search_name)
                         # Defense: Ensure pkg_name is safe
-                        pkg_name = re.sub(r'[^a-zA-Z0-9._ -]', '', pkg_name)
+                        pkg_name = SecurityValidator.validate_string(pkg_name, "Package Name")
                         cmd = [binary, flag, pkg_name]
                         async with safe_subprocess(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                             stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
@@ -505,37 +598,63 @@ class OmnistoreBackend:
                                 if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
                                 if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
                     except: pass
+
             variant_tasks = [_fetch_variant_info(v) for v in details.get("variants", [])]
-            if variant_tasks: await asyncio.wait_for(asyncio.gather(*variant_tasks), timeout=20)
-            sys.stdout.write(json.dumps(details, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            if variant_tasks:
+                await asyncio.wait_for(asyncio.gather(*variant_tasks, return_exceptions=True), timeout=20)
+
+            # Standardize output model
+            try:
+                typed_details = AppPackage(**details)
+                if json_mode:
+                    resp = CommandResponse(
+                        status="success",
+                        response=typed_details.model_dump(exclude_none=True),
+                        context="run_app_details"
+                    )
+                    self._output_command_response(resp)
+                return typed_details
+            except Exception as e:
+                logging.error(f"AppPackage validation failed for details of {valid_id}: {e}")
+                if json_mode:
+                    raise
+                return details
 
     @safe_command
-    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False, include_unmanaged: bool = True):
+    async def run_list_installed(self, json_mode: bool = False, force_refresh: bool = False, include_unmanaged: bool = True) -> Any:
+        """Murphy-proof list installed apps command with structured response."""
         if not force_refresh:
             cached = self.cache.get_installed_packages() if self.cache else None
             if cached:
-                if json_mode: sys.stdout.write(json.dumps(cached) + "\n"); sys.stdout.flush()
-                else: self._output_installed_pretty(cached)
-                return
+                if json_mode:
+                    resp = CommandResponse(status="success", response=cached, context="run_list_installed")
+                    self._output_command_response(resp)
+                else:
+                    self._output_installed_pretty(cached)
+                return cached
+
         installed_list = []
         async with self:
             sources = list(self.manager.sources.values()) if self.manager else []
 
-            async def scan_source(source):
+            async def scan_source(source_obj):
                 try:
-                    if source.capabilities.get("list_installed"):
-                        return await asyncio.wait_for(source.list_installed(), timeout=30)
+                    if source_obj.capabilities.get("list_installed"):
+                        return await asyncio.wait_for(source_obj.list_installed(), timeout=30)
                 except Exception as e:
-                    logging.debug(f"list_installed failed for {getattr(source, 'name', 'unknown')}: {e}")
+                    logging.debug(f"list_installed failed for {getattr(source_obj, 'name', 'unknown')}: {e}")
                 return []
 
             results = await asyncio.gather(*[scan_source(source) for source in sources], return_exceptions=True)
             for r in results:
                 if isinstance(r, list):
                     installed_list.extend(r)
+
             if include_unmanaged and sys.platform == "win32":
                 installed_list.extend(await scan_windows_unmanaged_installed(self.manager))
+
             installed_list = self._merge_installed_apps(installed_list)
+
             if self.recommender:
                 enrich_targets = [app for app in installed_list if not app.get('icon')]
                 async def _enrich_app(app):
@@ -545,13 +664,24 @@ class OmnistoreBackend:
                             if metadata.get('icon'): app['icon'] = metadata['icon']
                             if metadata.get('description'): app['description'] = metadata['description']
                     except: pass
+
                 if enrich_targets:
                     for i, app in enumerate(enrich_targets): app['_use_network'] = (i < 10)
                     await asyncio.gather(*[_enrich_app(app) for app in enrich_targets[:10]], return_exceptions=True)
                     for app in enrich_targets: app.pop('_use_network', None)
-            if json_mode: self._output_json(installed_list)
-            else: self._output_installed_pretty(installed_list)
-            if self.cache: self.cache.save_installed_packages(installed_list)
+
+            typed_list = [item.model_dump(exclude_none=True) for item in self._to_app_packages(installed_list)]
+
+            if json_mode:
+                resp = CommandResponse(status="success", response=typed_list, context="run_list_installed")
+                self._output_command_response(resp)
+            else:
+                self._output_installed_pretty(typed_list)
+
+            if self.cache:
+                self.cache.save_installed_packages(typed_list)
+
+            return typed_list
 
     @safe_command
     async def run_list_installed_sources(self, json_mode: bool = False, force_refresh: bool = False, include_unmanaged: bool = True):
@@ -702,94 +832,151 @@ class OmnistoreBackend:
         return success
 
     @safe_command
-    async def run_ai_explain(self, app_name: str, app_description: str = ""):
-        SecurityValidator.validate_string(app_name, "App Name")
-        # Murphy-proof: Basic length validation for descriptions
+    async def run_ai_explain(self, app_name: str, app_description: str = "", json_mode: bool = False):
+        """Murphy-proof AI explain command."""
+        valid_name = SecurityValidator.validate_string(app_name, "App Name")
         safe_desc = str(app_description or "")[:10000]
-        res = await self.ai.explain_app(app_name, safe_desc)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
-    @safe_command
-    async def run_ai_recommend(self, prompt: str):
-        SecurityValidator.validate_string(prompt, "AI Prompt")
         async with self:
-            if not self.manager: raise RuntimeError("SearchManager not initialized.")
-            keywords = prompt.split()
-            candidates = await self.manager.search_all(keywords[0] if keywords else prompt)
-            res = await self.ai.recommend_apps(prompt, candidates)
-            sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            res = await self.ai.explain_app(valid_name, safe_desc)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_explain"))
+            else:
+                hijacked_print(res)
+            return res
 
     @safe_command
-    async def run_ai_analyze_error(self, error_log: str):
-        # Murphy-proof: Basic length validation for logs to prevent OOM
+    async def run_ai_recommend(self, prompt: str, json_mode: bool = False):
+        """Murphy-proof AI recommend command."""
+        valid_prompt = SecurityValidator.validate_string(prompt, "AI Prompt")
+        async with self:
+            if not self.manager:
+                raise RuntimeError("SearchManager not initialized.")
+            keywords = valid_prompt.split()
+            candidates = await self.manager.search_all(keywords[0] if keywords else valid_prompt)
+            res = await self.ai.recommend_apps(valid_prompt, candidates)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_recommend"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_analyze_error(self, error_log: str, json_mode: bool = False):
+        """Murphy-proof AI error analysis."""
         safe_log = str(error_log or "")[:50000]
-        res = await self.ai.analyze_error(safe_log)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-
-    @safe_command
-    async def run_ai_changelog(self, name: str, current: str, next_v: str):
-        SecurityValidator.validate_string(name, "App Name")
-        SecurityValidator.validate_string(current, "Current Version")
-        SecurityValidator.validate_string(next_v, "Next Version")
-        res = await self.ai.summarize_changelog(name, current, next_v)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-
-    @safe_command
-    async def run_ai_cli(self, name: str, summary: str):
-        SecurityValidator.validate_string(name, "App Name")
-        SecurityValidator.validate_string(summary, "Summary")
-        res = await self.ai.generate_cli_command(name, summary)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-
-    @safe_command
-    async def run_ai_conflicts(self, name: str):
-        SecurityValidator.validate_string(name, "App Name")
-        packages = []
-        if shutil.which("pacman"):
-            try:
-                async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    packages = stdout.decode().splitlines()
-            except Exception as e:
-                logging.debug(f"pacman package scan failed for AI conflicts: {e}")
-        res = await self.ai.detect_conflicts(name, packages)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
-        sys.stdout.flush()
-
-    @safe_command
-    async def run_ai_correct(self, query: str):
-        SecurityValidator.validate_string(query, "Query")
-        res = await self.ai.suggest_correction(query)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
-
-    @safe_command
-    async def run_ai_compare(self, name: str):
-        SecurityValidator.validate_string(name, "App Name")
         async with self:
-            if self.manager:
-                candidates = await self.manager.search_all(name)
-                target = next((c for c in candidates if c['name'].lower() == name.lower()), candidates[0] if candidates else None)
-                if target:
-                    res = await self.ai.compare_variants(name, target.get('variants', []))
-                    sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n")
-                else: sys.stdout.write(json.dumps({"response": "App not found for comparison."}) + "\n")
-            else: sys.stdout.write(json.dumps({"response": "Search manager not initialized."}) + "\n")
-        sys.stdout.flush()
+            res = await self.ai.analyze_error(safe_log)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_analyze_error"))
+            else:
+                hijacked_print(res)
+            return res
 
     @safe_command
-    async def run_ai_health(self):
-        """Murphy-proof: Unified AI health report logic."""
-        sys.stdout.flush()
-        status = await self.env.check_env()
-        status["orphaned_count"] = 0
-        if sys.platform.startswith("linux") and shutil.which("pacman"):
-            try:
-                async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                    status["orphaned_count"] = len(stdout.decode().splitlines())
-            except: pass
-        res = await self.ai.generate_health_report(status)
-        sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
+    async def run_ai_changelog(self, name: str, current: str, next_v: str, json_mode: bool = False):
+        """Murphy-proof AI changelog summary."""
+        v_name = SecurityValidator.validate_string(name, "App Name")
+        v_cur = SecurityValidator.validate_string(current, "Current Version")
+        v_next = SecurityValidator.validate_string(next_v, "Next Version")
+
+        async with self:
+            res = await self.ai.summarize_changelog(v_name, v_cur, v_next)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_changelog"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_cli(self, name: str, summary: str, json_mode: bool = False):
+        """Murphy-proof AI CLI command generation."""
+        v_name = SecurityValidator.validate_string(name, "App Name")
+        v_summary = SecurityValidator.validate_string(summary, "Summary")
+
+        async with self:
+            res = await self.ai.generate_cli_command(v_name, v_summary)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_cli"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_conflicts(self, name: str, json_mode: bool = False):
+        """Murphy-proof AI conflict detection."""
+        v_name = SecurityValidator.validate_string(name, "App Name")
+
+        async with self:
+            packages = []
+            if shutil.which("pacman"):
+                try:
+                    async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        packages = stdout.decode().splitlines()
+                except Exception as e:
+                    logging.debug(f"pacman package scan failed for AI conflicts: {e}")
+
+            res = await self.ai.detect_conflicts(v_name, packages)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_conflicts"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_correct(self, query: str, json_mode: bool = False):
+        """Murphy-proof AI query correction."""
+        v_query = SecurityValidator.validate_string(query, "Query")
+        async with self:
+            res = await self.ai.suggest_correction(v_query)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_correct"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_compare(self, name: str, json_mode: bool = False):
+        """Murphy-proof AI variant comparison."""
+        v_name = SecurityValidator.validate_string(name, "App Name")
+        async with self:
+            if not self.manager:
+                raise RuntimeError("Search manager not initialized.")
+
+            candidates = await self.manager.search_all(v_name)
+            target = next((c for c in candidates if c['name'].lower() == v_name.lower()), candidates[0] if candidates else None)
+
+            if target:
+                res = await self.ai.compare_variants(v_name, target.get('variants', []))
+            else:
+                res = "App not found for comparison."
+
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_compare"))
+            else:
+                hijacked_print(res)
+            return res
+
+    @safe_command
+    async def run_ai_health(self, json_mode: bool = False):
+        """Murphy-proof AI system health report."""
+        async with self:
+            status = await self.env.check_env()
+            status["orphaned_count"] = 0
+            if sys.platform.startswith("linux") and shutil.which("pacman"):
+                try:
+                    async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
+                        status["orphaned_count"] = len(stdout.decode().splitlines())
+                except: pass
+
+            res = await self.ai.generate_health_report(status)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=res, context="ai_health"))
+            else:
+                hijacked_print(res)
+            return res
 
     @safe_command
     async def run_get_essentials(self):
@@ -895,49 +1082,55 @@ class OmnistoreBackend:
             return info
 
     @safe_command
-    async def run_clean_system(self, json_mode: bool = False) -> bool:
+    async def run_clean_system(self, json_mode: bool = False) -> Any:
+        """Murphy-proof system cleanup command."""
         async def cb(m): await self._flutter_callback(m, json_mode)
-        try:
-            if not sys.platform.startswith("linux"):
-                await cb("[INFO] System cleanup is only supported on Linux. Skipping.")
-                if json_mode: sys.stdout.write(json.dumps({"status": "success", "message": "Unsupported platform"}) + "\n"); sys.stdout.flush()
+
+        if not sys.platform.startswith("linux"):
+            await cb("[INFO] System cleanup is only supported on Linux. Skipping.")
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", message="Unsupported platform"))
+            return True
+
+        async with self:
+            if not json_mode: console.print(Panel("Starting System Cleanup", border_style="blue"))
+            if shutil.which("pacman") is None:
+                await cb("[INFO] pacman not found, skipping.")
                 return True
 
-            if not json_mode: console.print(Panel("Starting System Cleanup", border_style="blue"))
-            if shutil.which("pacman") is None: await cb("[INFO] pacman not found, skipping."); return True
             await cb("[INFO] Detecting orphan packages...")
+            orphans = []
             try:
                 async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                     orphans = [o.strip() for o in stdout.decode().strip().splitlines() if o.strip()]
-            except: orphans = []
+            except: pass
+
             if orphans:
-                await cb(f"[INFO] Cleaning {len(orphans)} orphans...");
-                if not await self.executor._ensure_privileged(cb): return False
-                async with safe_subprocess("sudo", "pacman", "-Rs", "--noconfirm", *orphans) as p:
-                    try: await asyncio.wait_for(p.wait(), timeout=60)
-                    except asyncio.TimeoutError: pass
+                await cb(f"[INFO] Cleaning {len(orphans)} orphans...")
+                if await self.executor._ensure_privileged(cb):
+                    async with safe_subprocess("sudo", "pacman", "-Rs", "--noconfirm", *orphans) as p:
+                        try: await asyncio.wait_for(p.wait(), timeout=60)
+                        except asyncio.TimeoutError: pass
+
             await cb("[INFO] Cleaning package cache...")
             if await self.executor._ensure_privileged(cb):
                 async with safe_subprocess("sudo", "pacman", "-Scc", stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT) as p:
                     try:
                         p.stdin.write(b"y\ny\n"); await p.stdin.drain(); p.stdin.close()
                         while True:
-                            line_bytes = await p.stdout.readline()
+                            line_bytes = await asyncio.wait_for(p.stdout.readline(), timeout=5)
                             if not line_bytes: break
                             line = line_bytes.decode('utf-8', errors='ignore').strip()
                             if line: await cb(f"[INFO] {line}")
                         await asyncio.wait_for(p.wait(), timeout=60)
-                    except asyncio.TimeoutError:
-                        if p and p.returncode is None:
-                            try: p.kill()
-                            except: pass
+                    except (asyncio.TimeoutError, Exception):
+                        pass
+
             await cb("[INFO] System cleanup finished!")
-            if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", message="System cleanup finished"))
             return True
-        except Exception as e:
-            await self._handle_error("Cleanup failed", e, json_mode)
-            return False
 
     @safe_command
     async def run_ai_summary(self, json_mode: bool = False):
@@ -983,20 +1176,42 @@ class OmnistoreBackend:
             else: res = "Today's recommendation: OmniStore itself!"
             sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
+    def _output_command_response(self, resp: CommandResponse):
+        """Murphy-proof: Standardized output for all CommandResponse models."""
+        try:
+            # Ensure we start on a new line and flush for absolute clarity
+            sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n")
+            sys.stdout.flush()
+        except Exception as e:
+            logging.error(f"Critical: Failed to serialize CommandResponse: {e}")
+            # Final fallback
+            sys.stdout.write(f"\n{{\"status\":\"error\",\"error\":\"SerializationError\",\"message\":\"{str(e)}\"}}\n")
+            sys.stdout.flush()
+
     async def _handle_error(self, context: str, exception: Exception, json_mode: bool):
         error_msg = f"{context}: {str(exception)}"
-        if json_mode: sys.stdout.write(json.dumps({"status": "error", "error": error_msg, "results": [], "response": f"Error: {error_msg}"}) + "\n")
-        else: logging.error(error_msg)
-        sys.stdout.flush()
+        if json_mode:
+            resp = CommandResponse(
+                status="error",
+                error=type(exception).__name__,
+                message=error_msg,
+                context=context
+            )
+            self._output_command_response(resp)
+        else:
+            logging.error(error_msg)
 
-    def _output_json(self, results):
+    def _to_app_packages(self, results: List[Dict]) -> List[AppPackage]:
+        """Murphy-proof: Convert raw dictionaries to validated AppPackage models."""
         output = []
         for item in results:
+            if not isinstance(item, dict):
+                continue
             try:
-                # Map loose dict fields to AppPackage model
+                # Map loose dict fields to AppPackage model with defaults
                 data = {
-                    "name": str(item.get("name", "Unknown")),
-                    "id": str(item.get("id") or item.get("name", "unknown")),
+                    "name": str(item.get("name") or "Unknown"),
+                    "id": str(item.get("id") or item.get("name") or "unknown"),
                     "description": str(item.get("description", "")),
                     "installed": bool(item.get("installed", False) or item.get("is_installed", False)),
                     "version": str(item.get("last_version") or item.get("version") or "N/A"),
@@ -1015,10 +1230,15 @@ class OmnistoreBackend:
                     "managed": bool(item.get("managed", True)),
                     "variants": [PackageVariant(**v) if isinstance(v, dict) else v for v in item.get("variants", [])]
                 }
-                output.append(AppPackage(**data).model_dump(exclude_none=True))
+                output.append(AppPackage(**data))
             except Exception as e:
-                logging.error(f"Failed to serialize search result {item.get('name')}: {e}")
+                logging.error(f"Murphy-proof: Failed to validate AppPackage '{item.get('name')}': {e}")
+        return output
 
+    def _output_json(self, results):
+        """Legacy JSON output wrapper."""
+        typed_results = self._to_app_packages(results)
+        output = [item.model_dump(exclude_none=True) for item in typed_results]
         sys.stdout.write(json.dumps(output, ensure_ascii=False) + "\n")
         sys.stdout.flush()
 
