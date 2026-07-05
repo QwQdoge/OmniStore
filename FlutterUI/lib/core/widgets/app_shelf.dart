@@ -51,7 +51,7 @@ class AppShelf extends StatelessWidget {
                   child: SizedBox(
                     width: 130,
                     child: AppCard(
-                    borderRadius: 8,
+                    borderRadius: 16,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -69,7 +69,7 @@ class AppShelf extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: app.icon != null

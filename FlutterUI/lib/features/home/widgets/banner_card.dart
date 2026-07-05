@@ -21,7 +21,7 @@ class BannerCard extends StatelessWidget {
       label: 'Featured app: ${app.name}',
       button: true,
       child: AppCard(
-        borderRadius: 8,
+        borderRadius: 28,
         clipBehavior: Clip.antiAlias,
         onTap: () => Navigator.push(
           context,
@@ -81,7 +81,7 @@ class BannerCard extends StatelessWidget {
                         height: 54,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.2),
