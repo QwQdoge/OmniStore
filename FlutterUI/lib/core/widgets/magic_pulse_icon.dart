@@ -42,10 +42,11 @@ class _MagicPulseIconState extends State<MagicPulseIcon>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: ShaderMask(
-        shaderCallback: (Rect bounds) {
+    return RepaintBoundary(
+      child: ScaleTransition(
+        scale: _animation,
+        child: ShaderMask(
+          shaderCallback: (Rect bounds) {
           return LinearGradient(
             colors: [
               widget.color,
@@ -56,13 +57,14 @@ class _MagicPulseIconState extends State<MagicPulseIcon>
             end: Alignment.bottomRight,
           ).createShader(bounds);
         },
-        child: Icon(
-          widget.icon,
-          color: Colors.white, // Color is handled by ShaderMask
-          size: widget.size,
-          shadows: [
-            Shadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 12),
-          ],
+          child: Icon(
+            widget.icon,
+            color: Colors.white, // Color is handled by ShaderMask
+            size: widget.size,
+            shadows: [
+              Shadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 12),
+            ],
+          ),
         ),
       ),
     );

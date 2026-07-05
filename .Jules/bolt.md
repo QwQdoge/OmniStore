@@ -64,3 +64,4 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.
 - Refactored `AppShelf` (FlutterUI/lib/core/widgets/app_shelf.dart) to replace `ListView.separated` with `ListView.builder` utilizing `prototypeItem` for list virtualization. Adjusted padding to maintain exact pixel layout.
+- Wrapped `ScaleTransition` in `AppCard` and `MagicPulseIcon` with `RepaintBoundary` to isolate high-frequency animations from triggering repaints in the surrounding widget tree.
