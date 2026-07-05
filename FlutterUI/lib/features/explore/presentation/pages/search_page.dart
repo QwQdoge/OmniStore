@@ -37,8 +37,11 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
 
+    _browseController = context.read<BrowseController>();
+    _browseController?.addListener(_onBrowseChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final browse = context.read<BrowseController>();
+      final browse = _browseController!;
       if (browse.pendingSearchQuery != null) {
         _searchController.text = browse.pendingSearchQuery!;
         _hasSearchText.value = _searchController.text.isNotEmpty;
@@ -46,17 +49,6 @@ class _SearchPageState extends State<SearchPage> {
         browse.pendingSearchQuery = null;
       }
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final newBrowse = Provider.of<BrowseController>(context);
-    if (_browseController != newBrowse) {
-      _browseController?.removeListener(_onBrowseChanged);
-      _browseController = newBrowse;
-      _browseController?.addListener(_onBrowseChanged);
-    }
   }
 
   @override
