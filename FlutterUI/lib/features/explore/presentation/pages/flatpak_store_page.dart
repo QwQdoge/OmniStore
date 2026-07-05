@@ -2,12 +2,9 @@ import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:frontend/features/explore/presentation/pages/details_page.dart";
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
-import 'package:frontend/core/widgets/app_source_tag.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/features/explore/presentation/widgets/flatpak_app_list.dart';
 
 class FlatpakStorePage extends StatefulWidget {
   const FlatpakStorePage({super.key});
@@ -46,130 +43,17 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.sizeOf(context).width > 900;
 
-    Widget buildListContent() {
-      if (_apps.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.cloud_off_rounded,
-                size: 64,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context)!.noResults,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context)!.checkNetwork,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(AppLocalizations.of(context)!.retry),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return ListView.builder(
-        padding: const EdgeInsets.all(16),
-        prototypeItem: const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(borderRadius: 8, child: SizedBox(height: 100)),
-        ),
-        itemCount: _apps.length,
-        itemBuilder: (context, index) {
-          final app = _apps[index];
-          final isSelected = _selectedApp?.id == app.id;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Semantics(
-              label: 'App: ${app.name}',
-              button: true,
-              child: AppCard(
-                borderRadius: 8,
-                color: isSelected && isDesktop
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer.withValues(alpha: 0.3)
-                    : Theme.of(context).colorScheme.surfaceContainerLow,
-                onTap: () {
-                  if (isDesktop) {
-                    setState(() {
-                      _selectedApp = app;
-                    });
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AppDetailsPage(app: app),
-                      ),
-                    );
-                  }
-                },
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: app.icon != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: app.icon!,
-                            width: 44,
-                            height: 44,
-                            memCacheWidth: 88,
-                            errorWidget: (c, e, s) =>
-                                const Icon(Icons.shopping_bag_rounded),
-                          ),
-                        )
-                      : const Icon(Icons.shopping_bag_rounded, size: 44),
-                  title: Text(
-                    app.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    app.description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: AppSourceTag(
-                    source: app.primarySource,
-                    mode: AppSourceTagMode.source,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    Widget bodyContent = AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.fastOutSlowIn,
-      child: _isLoading
-          ? _buildSkeletonList(key: const ValueKey('loading'))
-          : RefreshIndicator(
-              key: const ValueKey('list'),
-              onRefresh: _refresh,
-              child: buildListContent(),
-            ),
+    Widget bodyContent = FlatpakAppList(
+      apps: _apps,
+      isLoading: _isLoading,
+      isDesktop: isDesktop,
+      selectedApp: _selectedApp,
+      onRetry: _refresh,
+      onAppSelected: (app) {
+        setState(() {
+          _selectedApp = app;
+        });
+      },
     );
 
     if (isDesktop) {
@@ -206,32 +90,5 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     } else {
       return Scaffold(backgroundColor: Colors.transparent, body: bodyContent);
     }
-  }
-
-  Widget _buildSkeletonList({Key? key}) {
-    return ListView.builder(
-      key: key,
-      padding: const EdgeInsets.all(16),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            borderRadius: 8,
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: Skeleton(width: 44, height: 44, borderRadius: 12),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(
-                width: double.infinity,
-                height: 12,
-                borderRadius: 8,
-              ),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-            ),
-          ),
-        );
-      },
-    );
   }
 }

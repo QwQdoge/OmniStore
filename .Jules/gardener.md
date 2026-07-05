@@ -114,3 +114,13 @@ This drastically simplified the main page builds while ensuring exact behavioral
 * Extracted the oversized premium header widget in `github_store_page.dart` into a standalone `_GitHubStoreHeader` widget to improve readability.
 - Extracted large inline settings sections from `SettingsPage` into `GeneralSettingsCard`, `UpdateSettingsCard`, and `TypographySettingsCard` widgets.
 - This modularization reduces `SettingsPage.dart` file size and complexity, significantly improving maintainability without altering existing app behavior.
+## 2026-07-06 - Extract Widgets in FlatpakStorePage
+
+**Learning:** Extracting oversized and complex UI state logic (like `_isLoading`, `_apps` handling with `RefreshIndicator` and `AnimatedSwitcher`) from the monolithic `FlatpakStorePage` into a dedicated `FlatpakAppList` stateless widget improves maintainability, mirrors the structure of `GitHubStorePage`, and simplifies the main page.
+
+**Action:** Extracted `buildListContent` and `_buildSkeletonList` into `FlatpakAppList` and `FlatpakAppListSkeleton` located in `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart`. Updated `FlatpakStorePage` to consume this widget, passing necessary state via callbacks.
+## 2026-07-06 - Fixing RefreshIndicator regression
+
+**Learning:** When passing down callbacks that are meant to be used by `RefreshIndicator.onRefresh`, the typed function must be a `Future<void> Function()` rather than a simple `VoidCallback` (which resolves immediately as it's synchronous), otherwise the visual loading indicator spin will instantly disappear without waiting for the task to finish.
+
+**Action:** Adjusted `FlatpakAppList.onRetry` to be `Future<void> Function()` so `RefreshIndicator` properly awaits the refresh network request. Also reverted unneeded file changes to unrelated settings files that would have caused unresolved imports.
