@@ -1,11 +1,6 @@
-import 'dart:io';
-import 'package:collection/collection.dart';
-import 'package:provider/provider.dart';
-import '../controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
-import 'package:frontend/core/widgets/app_card.dart';
 import '../widgets/storage_cleanup_card.dart';
 import '../widgets/sources_config_card.dart';
 import '../widgets/ai_settings_section.dart';
