@@ -108,3 +108,19 @@ Unused and duplicated methods can lead to hidden warnings or broken code logic. 
 
 Action:
 Ensure necessary dependencies and imports are handled correctly before doing cleanup on dead functions and dead UI elements.
+
+## 2026-06-25 - [Atomic File Write Hardening in Plugins and Tests]
+
+Learning:
+Non-atomic file writes `with open(..., "w")` leave the application vulnerable to state corruption if a crash occurs mid-write. This applies broadly, even to test mocks and localized operations like AppImage `.desktop` entry generation.
+
+Action:
+Updated `_create_desktop_entry` in `python/core/sources/appimage/appimage.py` and file operations in `test_cache_manager.py` and `test_essentials.py` to utilize `.tmp` files with atomic `replace` operations.
+
+## 2026-06-25 - [Async Lifecycle Context and State Safety Hardening in Main Navigation]
+
+Learning:
+Extensive audit revealed asynchronous gaps where `context` was accessed after an `await` without verifying `mounted` status in less obvious paths, such as utility shutdown sequences invoked by window closure events.
+
+Action:
+Implemented a strict `if (!mounted) return;` guard immediately at the beginning of `_handleFullExit` in `FlutterUI/lib/app/main_navigation.dart`, which is invoked after asynchronous gaps during window shutdown (`onWindowClose`). This proactively prevents "use of BuildContext across async gaps" errors.

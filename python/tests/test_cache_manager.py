@@ -22,8 +22,10 @@ def test_get_installed_packages_valid_cache(cache_manager):
         "packages": packages
     }
 
-    with open(cache_manager.installed_cache_path, "w") as f:
+    tmp_path = cache_manager.installed_cache_path.with_suffix(".tmp")
+    with open(tmp_path, "w") as f:
         json.dump(data, f)
+    tmp_path.replace(cache_manager.installed_cache_path)
 
     assert cache_manager.get_installed_packages() == packages
 
@@ -34,14 +36,18 @@ def test_get_installed_packages_expired_cache(cache_manager):
         "packages": packages
     }
 
-    with open(cache_manager.installed_cache_path, "w") as f:
+    tmp_path = cache_manager.installed_cache_path.with_suffix(".tmp")
+    with open(tmp_path, "w") as f:
         json.dump(data, f)
+    tmp_path.replace(cache_manager.installed_cache_path)
 
     assert cache_manager.get_installed_packages() is None
 
 def test_get_installed_packages_invalid_json(cache_manager):
-    with open(cache_manager.installed_cache_path, "w") as f:
+    tmp_path = cache_manager.installed_cache_path.with_suffix(".tmp")
+    with open(tmp_path, "w") as f:
         f.write("invalid json")
+    tmp_path.replace(cache_manager.installed_cache_path)
 
     assert cache_manager.get_installed_packages() is None
 
