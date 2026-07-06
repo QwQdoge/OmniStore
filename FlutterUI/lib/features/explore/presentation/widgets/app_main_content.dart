@@ -88,31 +88,46 @@ class AppMainContent extends StatelessWidget {
           description: extraDetails?.description,
           fallbackDescription: app.description,
         ),
-        if (hasCapability('has_screenshots') &&
-            extraDetails != null &&
-            extraDetails!.screenshots != null &&
-            extraDetails!.screenshots!.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          const Divider(),
-          AppDetailsSectionTitle(
-            title: AppLocalizations.of(context)!.screenshots,
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasCapability('has_screenshots') &&
+                  extraDetails != null &&
+                  extraDetails!.screenshots != null &&
+                  extraDetails!.screenshots!.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                const Divider(),
+                AppDetailsSectionTitle(
+                  title: AppLocalizations.of(context)!.screenshots,
+                ),
+                AppScreenshots(
+                  screenshots: extraDetails!.screenshots!,
+                  scrollController: screenshotScrollController,
+                  onShowScreenshotViewer: onShowScreenshotViewer,
+                ),
+              ],
+            ],
           ),
-          AppScreenshots(
-            screenshots: extraDetails!.screenshots!,
-            scrollController: screenshotScrollController,
-            onShowScreenshotViewer: onShowScreenshotViewer,
-          ),
-        ],
+        ),
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
-        AppTechnicalDetails(
-          primarySource: app.primarySource,
-          allSources: app.sources,
-          version: app.version,
-          extraDetails: extraDetails,
-          currentVariant: getVariantForSource(selectedSource),
-          hasCapability: hasCapability,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
+          child: AppTechnicalDetails(
+            key: ValueKey(extraDetails != null ? 'loaded' : 'loading'),
+            primarySource: app.primarySource,
+            allSources: app.sources,
+            version: app.version,
+            extraDetails: extraDetails,
+            currentVariant: getVariantForSource(selectedSource),
+            hasCapability: hasCapability,
+          ),
         ),
       ],
     );

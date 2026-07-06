@@ -18,3 +18,6 @@
 - Added `TweenAnimationBuilder` to `StorageCleanupCard` in `features/settings/presentation/widgets/storage_cleanup_card.dart` for smooth animation of storage and task progress indicators using `Curves.easeOutCubic`.
 - Updated curves of implicit animations (`AnimatedContainer`, `AnimatedSize`, `AnimatedOpacity`) in core widgets to `Curves.easeOutCubic`.
 - Wrapped source plugins loading state in `sources_config_card.dart` with `AnimatedSwitcher` to prevent abrupt transitions.
+- Added `AnimatedSize` to wrap `AppScreenshots` section in `AppMainContent` to prevent abrupt height changes when loading details.
+- Wrapped `AppTechnicalDetails` in `AppMainContent` with `AnimatedSwitcher` to ensure smooth appearance when switching states (loading vs loaded).
+- Updated `PageTransitionsTheme` in `omnistore_theme.dart` to use `ZoomPageTransitionsBuilder` for Android, Linux, macOS, and Windows. This aligns with Material Design 3 guidelines for improved motion and transition clarity across platforms, replacing the legacy `FadeUpwardsPageTransitionsBuilder`.
