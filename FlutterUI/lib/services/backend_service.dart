@@ -479,19 +479,27 @@ class BackendService {
           .transform(const LineSplitter())
           .listen(
             (data) {
-              if (!controller.isClosed) controller.add(data);
+              try {
+                if (!controller.isClosed) controller.add(data);
+              } catch (e) {
+                debugPrint("Error adding stdout to controller: $e");
+              }
             },
             onError: (e) {
               debugPrint("Process Stdout Error: $e");
-              if (!controller.isClosed) {
-                controller.add(
-                  "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
-                );
-              }
+              try {
+                if (!controller.isClosed) {
+                  controller.add(
+                    "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$e\"}",
+                  );
+                }
+              } catch (_) {}
             },
             onDone: () {
-              if (process != null) _processRegistry.remove(process);
-              if (!controller.isClosed) controller.close();
+              try {
+                if (process != null) _processRegistry.remove(process);
+                if (!controller.isClosed) controller.close();
+              } catch (_) {}
               if (activeProcess == process) activeProcess = null;
             },
             cancelOnError: false,
@@ -508,11 +516,18 @@ class BackendService {
         debugPrint(
           "Stream cancelled, performing deep cleanup for process ${process?.pid}",
         );
-        stdoutSub.cancel();
-        stderrSub.cancel();
+        try {
+          await stdoutSub.cancel();
+          await stderrSub.cancel();
+        } catch (_) {}
+
         await _killProcess(process);
         if (activeProcess == process) activeProcess = null;
-        if (!controller.isClosed) await controller.close();
+        if (!controller.isClosed) {
+          try {
+            await controller.close();
+          } catch (_) {}
+        }
       };
 
       yield* controller.stream;
@@ -630,7 +645,8 @@ class BackendService {
 
   /// Murphy-proof: Strict JSON decoder with size limits, noise filtering,
   /// and fallback recovery for messy subprocess output.
-  dynamic _safeJsonDecode(String input) {
+  dynamic _safeJsonDecode(String? input) {
+    if (input == null) return null;
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
 
@@ -643,13 +659,13 @@ class BackendService {
     try {
       return jsonDecode(rawInput);
     } catch (_) {
-      // Noise Reduction: Strip ANSI escape codes and terminal artifacts
-      final cleaned = rawInput.replaceAll(
-        RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
-        '',
-      );
-
       try {
+        // Noise Reduction: Strip ANSI escape codes and terminal artifacts
+        final cleaned = rawInput.replaceAll(
+          RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
+          '',
+        );
+
         // 1. Precise balanced JSON extraction (improved regex)
         // We look for the LAST possible JSON object or array to avoid partial matches
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
@@ -673,8 +689,9 @@ class BackendService {
         for (int i = lines.length - 1; i >= startIdx; i--) {
           try {
             final tailCandidate = lines.sublist(i).join('\n').trim();
-            if (tailCandidate.startsWith('{') ||
-                tailCandidate.startsWith('[')) {
+            if (tailCandidate.isNotEmpty &&
+                (tailCandidate.startsWith('{') ||
+                    tailCandidate.startsWith('['))) {
               return jsonDecode(tailCandidate);
             }
           } catch (_) {}

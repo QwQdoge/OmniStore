@@ -704,14 +704,15 @@ class OmnistoreBackend:
     @safe_command
     async def run_ai_explain(self, app_name: str, app_description: str = ""):
         SecurityValidator.validate_string(app_name, "App Name")
-        # Murphy-proof: Basic length validation for descriptions
+        # Murphy-proof: Basic length validation for descriptions (10KB limit)
         safe_desc = str(app_description or "")[:10000]
         res = await self.ai.explain_app(app_name, safe_desc)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
 
     @safe_command
     async def run_ai_recommend(self, prompt: str):
-        SecurityValidator.validate_string(prompt, "AI Prompt")
+        # Murphy-proof: Strict length validation for AI prompts (2KB limit)
+        SecurityValidator.validate_string(prompt, "AI Prompt", max_length=2048)
         async with self:
             if not self.manager: raise RuntimeError("SearchManager not initialized.")
             keywords = prompt.split()
@@ -721,7 +722,7 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_analyze_error(self, error_log: str):
-        # Murphy-proof: Basic length validation for logs to prevent OOM
+        # Murphy-proof: Strict length validation for logs (50KB limit) to prevent OOM
         safe_log = str(error_log or "")[:50000]
         res = await self.ai.analyze_error(safe_log)
         sys.stdout.write(json.dumps({"response": res}, ensure_ascii=False) + "\n"); sys.stdout.flush()
@@ -745,7 +746,8 @@ class OmnistoreBackend:
     async def run_ai_conflicts(self, name: str):
         SecurityValidator.validate_string(name, "App Name")
         packages = []
-        if shutil.which("pacman"):
+        # Murphy-proof: Platform guard for pacman dependency
+        if sys.platform.startswith("linux") and shutil.which("pacman"):
             try:
                 async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE) as proc:
                     stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
