@@ -5,6 +5,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import 'terminal_dialog.dart';
 
 class TasksTab extends StatelessWidget {
@@ -56,11 +57,9 @@ class TasksTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Card(
+              AppCard(
                 elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                borderRadius: 16.0,
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -151,11 +150,9 @@ class TasksTab extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final task = history[index];
                       final isSuccess = task.status == TaskStatus.success;
-                      return Card(
+                      return AppCard(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        borderRadius: 12.0,
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: isSuccess
