@@ -212,6 +212,23 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     return ListView.builder(
       key: key,
       padding: const EdgeInsets.all(16),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 8,
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Skeleton(width: 44, height: 44, borderRadius: 12),
+            title: Skeleton(width: 120, height: 16),
+            subtitle: Skeleton(
+              width: double.infinity,
+              height: 12,
+              borderRadius: 8,
+            ),
+            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
+          ),
+        ),
+      ),
       itemCount: 8,
       itemBuilder: (context, index) {
         return const Padding(
