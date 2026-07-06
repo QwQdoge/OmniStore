@@ -61,19 +61,7 @@ class _DownloadPageState extends State<DownloadPage>
       final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              Icon(
-                newCount > 0
-                    ? Icons.system_update_alt
-                    : Icons.check_circle_outline,
-                color: Colors.white,
-                size: 18,
-              ),
-              const SizedBox(width: 10),
-              Text(msg),
-            ],
-          ),
+          content: Text(msg),
           duration: const Duration(seconds: 3),
         ),
       );
