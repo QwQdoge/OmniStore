@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/app_card.dart';
-import '../../controllers/settings_controller.dart';
+import '../controllers/settings_controller.dart';
 
 class UpdateSettingsCard extends StatelessWidget {
   const UpdateSettingsCard({super.key});

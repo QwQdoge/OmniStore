@@ -14,7 +14,7 @@ class AppCard extends StatefulWidget {
     required this.child,
     this.onTap,
     this.color,
-    this.borderRadius = 8.0,
+    this.borderRadius = 16.0,
     this.clipBehavior = Clip.antiAlias,
     this.elevation,
     this.margin,

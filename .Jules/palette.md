@@ -85,3 +85,9 @@
 **Learning:** App metadata (source, trust, installation status) was displayed inconsistently across different features (Search, Installed, Updates), using a mix of custom widgets, raw Chips, and plain text. This reduced visual harmony and brand recognition.
 
 **Action:** Standardized metadata display using a refined `AppSourceTag` widget. Added `managed` mode for read-only status and improved MD3 tonal color mapping using `ColorScheme` tokens. Applied this consistently across `InstalledTab` and `UpdatesTab`, improving scannability and visual consistency.
+
+## 2026-07-06 - Global MD3 Geometric Token Standardization
+
+**Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
+
+**Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
