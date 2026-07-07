@@ -4,6 +4,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 
 class AppDetailsActions extends StatelessWidget {
   final String appName;
@@ -30,35 +31,32 @@ class AppDetailsActions extends StatelessWidget {
     Widget content;
 
     if (context.select((TaskController task) => task.isBusy)) {
-      content = Container(
+      content = AppCard(
         key: const ValueKey('busy'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16.0),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
-        child:
-            Selector<
-              TaskController,
-              ({double? progress, String status, String speed})
-            >(
-              selector: (context, c) =>
-                  (progress: c.progress, status: c.status, speed: c.speed),
-              builder: (context, data, _) => SmoothProgressBar(
-                taskState: TaskState(
-                  id: "active",
-                  packageName: appName,
-                  status: TaskStatus.downloading,
-                  progress: data.progress ?? 0.0,
-                  stage: data.status,
-                  speed: data.speed,
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: 16.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child:
+              Selector<
+                TaskController,
+                ({double? progress, String status, String speed})
+              >(
+                selector: (context, c) =>
+                    (progress: c.progress, status: c.status, speed: c.speed),
+                builder: (context, data, _) => SmoothProgressBar(
+                  taskState: TaskState(
+                    id: "active",
+                    packageName: appName,
+                    status: TaskStatus.downloading,
+                    progress: data.progress ?? 0.0,
+                    stage: data.status,
+                    speed: data.speed,
+                  ),
+                  onCancel: onCancelAction,
                 ),
-                onCancel: onCancelAction,
               ),
-            ),
+        ),
       );
     } else if (isAppInstalled) {
       content = Row(
@@ -74,7 +72,7 @@ class AppDetailsActions extends StatelessWidget {
               style: IconButton.styleFrom(
                 minimumSize: const Size(56, 56),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
@@ -95,7 +93,7 @@ class AppDetailsActions extends StatelessWidget {
                       width: 1,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(14.0),
                     ),
                   ),
                   onPressed: () => onHandleAction("-R"),
@@ -118,7 +116,7 @@ class AppDetailsActions extends StatelessWidget {
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(14.0),
                     ),
                   ),
                   onPressed: onLaunchApp,
@@ -147,7 +145,7 @@ class AppDetailsActions extends StatelessWidget {
           child: FilledButton.icon(
             style: FilledButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
+                borderRadius: BorderRadius.circular(14.0),
               ),
             ),
             onPressed: () => onHandleAction("-I"),
