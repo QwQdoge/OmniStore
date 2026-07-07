@@ -114,10 +114,13 @@ This drastically simplified the main page builds while ensuring exact behavioral
 * Extracted the oversized premium header widget in `github_store_page.dart` into a standalone `_GitHubStoreHeader` widget to improve readability.
 - Extracted large inline settings sections from `SettingsPage` into `GeneralSettingsCard`, `UpdateSettingsCard`, and `TypographySettingsCard` widgets.
 - This modularization reduces `SettingsPage.dart` file size and complexity, significantly improving maintainability without altering existing app behavior.
-## 2026-07-06 - Extract Duplicated Fetching Logic & Widgets in GitHubStorePage
+## 2026-07-06 - Extract Widgets in FlatpakStorePage
 
-**Learning:** `github_store_page.dart` had multiple distinct fetch methods (`_fetchRecommended`, `_fetchRankings`, `_fetchTrending`, `_fetchUpdated`) that duplicated identical logic (try-catch, setting loading state, context reads) leading to bloated and redundant code. It also had an oversized inline "Premium GitHub Store Hero Header" container that muddied up the `build` method. Consolidating the fetch methods into a generic `_fetchCategory` helper and extracting the hero header into a dedicated standalone widget improves readability and makes the page much simpler and easier to maintain.
+**Learning:** Extracting oversized and complex UI state logic (like `_isLoading`, `_apps` handling with `RefreshIndicator` and `AnimatedSwitcher`) from the monolithic `FlatpakStorePage` into a dedicated `FlatpakAppList` stateless widget improves maintainability, mirrors the structure of `GitHubStorePage`, and simplifies the main page.
 
-**Action:**
-- Replaced `_fetchRecommended`, `_fetchRankings`, `_fetchTrending`, and `_fetchUpdated` in `FlutterUI/lib/features/explore/presentation/pages/github_store_page.dart` with a single `_fetchCategory` helper function.
-- Extracted the oversized "Premium GitHub Store Hero Header" inline container from `GitHubStorePage` into a standalone `_GitHubStoreHeader` widget within the same file.
+**Action:** Extracted `buildListContent` and `_buildSkeletonList` into `FlatpakAppList` and `FlatpakAppListSkeleton` located in `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart`. Updated `FlatpakStorePage` to consume this widget, passing necessary state via callbacks.
+## 2026-07-06 - Fixing RefreshIndicator regression
+
+**Learning:** When passing down callbacks that are meant to be used by `RefreshIndicator.onRefresh`, the typed function must be a `Future<void> Function()` rather than a simple `VoidCallback` (which resolves immediately as it's synchronous), otherwise the visual loading indicator spin will instantly disappear without waiting for the task to finish.
+
+**Action:** Adjusted `FlatpakAppList.onRetry` to be `Future<void> Function()` so `RefreshIndicator` properly awaits the refresh network request. Also reverted unneeded file changes to unrelated settings files that would have caused unresolved imports.
