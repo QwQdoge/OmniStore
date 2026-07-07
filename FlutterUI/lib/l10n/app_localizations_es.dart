@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get searchHint => 'Buscar aplicaciones, juegos, herramientas...';
+  String get searchHint => 'Busca aplicaciones, juegos, herramientas...';
 
   @override
   String get featured => 'Destacado';
@@ -326,7 +326,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get taskCompleted => 'Tarea completada';
 
   @override
-  String get searchInstalledHint => 'Buscar aplicaciones instaladas...';
+  String get searchInstalledHint => 'Busca aplicaciones instaladas...';
 
   @override
   String get refresh => 'Actualizar';
@@ -637,11 +637,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Seleccione su fuente de modelo de IA (Local o Nube)';
 
   @override
-  String get aiEndpointHelper => 'Ollama por defecto es http://localhost:11434';
+  String get aiEndpointHelper =>
+      'Ollama usa por defecto http://localhost:11434';
 
   @override
   String get aiApiKeyHelper =>
-      'Deje en blanco para Ollama, introduzca sk-xxx para OpenAI';
+      'Deje en blanco para Ollama e introduzca sk-xxx para OpenAI';
 
   @override
   String get howToGetApiKey => '¿Cómo obtener una clave API?';
@@ -828,8 +829,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count aplicaciones disponibles',
-      one: '1 aplicación disponible',
+      other: '$count aplicaciones disponibles para actualizar',
+      one: '1 aplicación disponible para actualizar',
     );
     return '$_temp0';
   }
@@ -1214,7 +1215,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Descubre y descarga aplicaciones directamente desde las versiones de GitHub';
 
   @override
-  String get searchGithubHint => 'Buscar repositorios de GitHub...';
+  String get searchGithubHint => 'Busca repositorios de GitHub...';
 
   @override
   String get recommended => 'Recomendado';

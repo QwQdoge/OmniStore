@@ -250,7 +250,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore：共有 $count 项可更新';
+    return 'OmniStore：发现 $count 个可用更新';
   }
 
   @override
@@ -548,7 +548,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '检测到您的系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。';
+  String get envFatalDesc => '系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。';
 
   @override
   String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
@@ -610,7 +610,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：如果您使用 Ollama，请确保它已在后台运行并设置了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -1367,7 +1367,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get catGraphics => '圖形設計';
 
   @override
-  String get catUtility => '實用工具';
+  String get catUtility => '公用程式';
 
   @override
   String get systemAndWindow => '系統與視窗';
@@ -1418,7 +1418,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore：共有 $count 項可更新';
+    return 'OmniStore：發現 $count 個可用更新';
   }
 
   @override
@@ -1716,7 +1716,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
-  String get envFatalDesc => '偵測到您的系統似乎並非基於 Arch Linux，大部分核心功能將無法使用。';
+  String get envFatalDesc => '系統似乎並非基於 Arch Linux，大部分核心功能將無法使用。';
 
   @override
   String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
@@ -2304,7 +2304,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體源';
+  String get pluginsAndSources => '外掛程式與軟體存放庫';
 
   @override
   String get refreshPlugins => '重新整理外掛程式';
