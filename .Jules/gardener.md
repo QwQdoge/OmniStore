@@ -114,3 +114,10 @@ This drastically simplified the main page builds while ensuring exact behavioral
 * Extracted the oversized premium header widget in `github_store_page.dart` into a standalone `_GitHubStoreHeader` widget to improve readability.
 - Extracted large inline settings sections from `SettingsPage` into `GeneralSettingsCard`, `UpdateSettingsCard`, and `TypographySettingsCard` widgets.
 - This modularization reduces `SettingsPage.dart` file size and complexity, significantly improving maintainability without altering existing app behavior.
+## 2026-07-06 - Extract Duplicated Fetching Logic & Widgets in GitHubStorePage
+
+**Learning:** `github_store_page.dart` had multiple distinct fetch methods (`_fetchRecommended`, `_fetchRankings`, `_fetchTrending`, `_fetchUpdated`) that duplicated identical logic (try-catch, setting loading state, context reads) leading to bloated and redundant code. It also had an oversized inline "Premium GitHub Store Hero Header" container that muddied up the `build` method. Consolidating the fetch methods into a generic `_fetchCategory` helper and extracting the hero header into a dedicated standalone widget improves readability and makes the page much simpler and easier to maintain.
+
+**Action:**
+- Replaced `_fetchRecommended`, `_fetchRankings`, `_fetchTrending`, and `_fetchUpdated` in `FlutterUI/lib/features/explore/presentation/pages/github_store_page.dart` with a single `_fetchCategory` helper function.
+- Extracted the oversized "Premium GitHub Store Hero Header" inline container from `GitHubStorePage` into a standalone `_GitHubStoreHeader` widget within the same file.

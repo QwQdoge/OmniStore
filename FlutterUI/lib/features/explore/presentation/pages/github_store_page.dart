@@ -73,79 +73,53 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     }
   }
 
-  // Fetch Recommended (Default search:github)
-  Future<void> _fetchRecommended() async {
+  Future<void> _fetchCategory({
+    required String query,
+    required void Function(bool) setLoading,
+    required void Function(List<AppPackage>) setApps,
+  }) async {
     if (!mounted) return;
-    setState(() => _isLoadingRecommended = true);
+    setState(() => setLoading(true));
     final packageRepo = context.read<PackageRepository>();
     try {
-      final results = await packageRepo.searchPackages("source:github");
+      final results = await packageRepo.searchPackages(query);
       if (!mounted) return;
       setState(() {
-        _recommendedApps = results;
-        _isLoadingRecommended = false;
+        setApps(results);
+        setLoading(false);
       });
     } catch (_) {
-      if (mounted) setState(() => _isLoadingRecommended = false);
+      if (mounted) setState(() => setLoading(false));
     }
   }
+
+  // Fetch Recommended (Default search:github)
+  Future<void> _fetchRecommended() => _fetchCategory(
+        query: "source:github",
+        setLoading: (v) => _isLoadingRecommended = v,
+        setApps: (v) => _recommendedApps = v,
+      );
 
   // Fetch Rankings (stars:>5000 sort:stars)
-  Future<void> _fetchRankings() async {
-    if (!mounted) return;
-    setState(() => _isLoadingRankings = true);
-    final packageRepo = context.read<PackageRepository>();
-    try {
-      final results = await packageRepo.searchPackages(
-        "source:github:stars:>5000 sort:stars",
+  Future<void> _fetchRankings() => _fetchCategory(
+        query: "source:github:stars:>5000 sort:stars",
+        setLoading: (v) => _isLoadingRankings = v,
+        setApps: (v) => _rankingApps = v,
       );
-      if (!mounted) return;
-      setState(() {
-        _rankingApps = results;
-        _isLoadingRankings = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingRankings = false);
-    }
-  }
 
   // Fetch Trending (stars:>1000 sort:forks)
-  Future<void> _fetchTrending() async {
-    if (!mounted) return;
-    setState(() => _isLoadingTrending = true);
-    final packageRepo = context.read<PackageRepository>();
-    try {
-      final results = await packageRepo.searchPackages(
-        "source:github:stars:>1000 sort:forks",
+  Future<void> _fetchTrending() => _fetchCategory(
+        query: "source:github:stars:>1000 sort:forks",
+        setLoading: (v) => _isLoadingTrending = v,
+        setApps: (v) => _trendingApps = v,
       );
-      if (!mounted) return;
-      setState(() {
-        _trendingApps = results;
-        _isLoadingTrending = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingTrending = false);
-    }
-  }
 
   // Fetch Recently Updated (stars:>500 sort:updated)
-  Future<void> _fetchUpdated() async {
-    if (!mounted) return;
-    setState(() => _isLoadingUpdated = true);
-    final packageRepo = context.read<PackageRepository>();
-    try {
-      final results = await packageRepo.searchPackages(
-        "source:github:stars:>500 sort:updated",
+  Future<void> _fetchUpdated() => _fetchCategory(
+        query: "source:github:stars:>500 sort:updated",
+        setLoading: (v) => _isLoadingUpdated = v,
+        setApps: (v) => _updatedApps = v,
       );
-      if (!mounted) return;
-      setState(() {
-        _updatedApps = results;
-        _isLoadingUpdated = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingUpdated = false);
-    }
-  }
 
   // Handle Search
   Future<void> _performSearch(String query) async {
@@ -211,119 +185,17 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           // Premium GitHub Store Hero Header
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [
-                        scheme.surfaceContainerHigh,
-                        scheme.surfaceContainerLowest,
-                      ]
-                    : [
-                        scheme.surfaceContainerLowest,
-                        scheme.surfaceContainerLow,
-                      ],
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    // Glassmorphic GitHub Icon Container
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(
-                          alpha: isDark ? 0.3 : 0.05,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: scheme.outlineVariant.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Image.network(
-                        "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-                        width: 32,
-                        height: 32,
-                        color: isDark ? Colors.white : Colors.black87,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.code_rounded, size: 32),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "GitHub App Store",
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                          Text(
-                            "Discover and download apps directly from GitHub releases",
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Premium Integrated Search Bar
-                SearchBar(
-                  controller: _searchController,
-                  hintText: "Search GitHub repositories...",
-                  leading: const Icon(Icons.search_rounded),
-                  trailing: [
-                    if (_isSearching)
-                      IconButton(
-                        onPressed: _clearSearch,
-                        icon: const Icon(Icons.clear_rounded),
-                      ),
-                  ],
-                  elevation: WidgetStateProperty.all(0),
-                  backgroundColor: WidgetStateProperty.all(
-                    scheme.surfaceContainerHigh.withValues(alpha: 0.7),
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: scheme.outlineVariant.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                  onSubmitted: _performSearch,
-                ),
-              ],
-            ),
+          _GitHubStoreHeader(
+            searchController: _searchController,
+            isSearching: _isSearching,
+            onSearchSubmitted: _performSearch,
+            onClearSearch: _clearSearch,
           ),
 
           // Navigation / Tabs (Hidden when searching)
@@ -443,6 +315,135 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       emptyText: "No results found",
       emptySubtitle: "Try searching for something else",
       showRetry: false,
+    );
+  }
+}
+
+class _GitHubStoreHeader extends StatelessWidget {
+  final TextEditingController searchController;
+  final bool isSearching;
+  final ValueChanged<String> onSearchSubmitted;
+  final VoidCallback onClearSearch;
+
+  const _GitHubStoreHeader({
+    required this.searchController,
+    required this.isSearching,
+    required this.onSearchSubmitted,
+    required this.onClearSearch,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  scheme.surfaceContainerHigh,
+                  scheme.surfaceContainerLowest,
+                ]
+              : [
+                  scheme.surfaceContainerLowest,
+                  scheme.surfaceContainerLow,
+                ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Glassmorphic GitHub Icon Container
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(
+                    alpha: isDark ? 0.3 : 0.05,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Image.network(
+                  "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                  width: 32,
+                  height: 32,
+                  color: isDark ? Colors.white : Colors.black87,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.code_rounded, size: 32),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "GitHub App Store",
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                    Text(
+                      "Discover and download apps directly from GitHub releases",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Premium Integrated Search Bar
+          SearchBar(
+            controller: searchController,
+            hintText: "Search GitHub repositories...",
+            leading: const Icon(Icons.search_rounded),
+            trailing: [
+              if (isSearching)
+                IconButton(
+                  onPressed: onClearSearch,
+                  icon: const Icon(Icons.clear_rounded),
+                ),
+            ],
+            elevation: WidgetStateProperty.all(0),
+            backgroundColor: WidgetStateProperty.all(
+              scheme.surfaceContainerHigh.withValues(alpha: 0.7),
+            ),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(
+                  color: scheme.outlineVariant.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+            onSubmitted: onSearchSubmitted,
+          ),
+        ],
+      ),
     );
   }
 }
