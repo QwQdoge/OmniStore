@@ -64,9 +64,4 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.
 - Refactored `AppShelf` (FlutterUI/lib/core/widgets/app_shelf.dart) to replace `ListView.separated` with `ListView.builder` utilizing `prototypeItem` for list virtualization. Adjusted padding to maintain exact pixel layout.
-
-## 2026-07-06 - Animation Repaint Isolation
-
-**Learning:** Widgets with continuous animations (like `MagicPulseIcon` using `repeat(reverse: true)` with a `ShaderMask`) trigger repaints for their entire parent widget tree on every frame if not isolated. `ShaderMask` is particularly expensive to re-rasterize. Wrapping the animating subtree in a `RepaintBoundary` allows the Flutter engine to cache the layer and perform transformations (like scaling) on the GPU, significantly reducing the CPU/GPU cost of the animation.
-
-**Action:** Wrapped the `ShaderMask` in `MagicPulseIcon` with a `RepaintBoundary`.
+- Wrapped `ScaleTransition` in `AppCard` and `MagicPulseIcon` with `RepaintBoundary` to isolate high-frequency animations from triggering repaints in the surrounding widget tree.
