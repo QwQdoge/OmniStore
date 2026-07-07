@@ -85,7 +85,7 @@ class GitHubAppList extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         prototypeItem: const Padding(
           padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(borderRadius: 8, child: SizedBox(height: 120)),
+          child: AppCard(child: SizedBox(height: 120)),
         ),
         itemCount: apps.length,
         itemBuilder: (context, index) {
@@ -98,7 +98,7 @@ class GitHubAppList extends StatelessWidget {
               label: 'App: ${app.name}',
               button: true,
               child: AppCard(
-                borderRadius: 8,
+
                 color: scheme.surfaceContainerLow,
                 onTap: () => Navigator.push(
                   context,
@@ -235,14 +235,14 @@ class GitHubAppListSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(borderRadius: 8, child: SizedBox(height: 120)),
+        child: AppCard(child: SizedBox(height: 120)),
       ),
       itemCount: 8,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 8,
+
             color: scheme.surfaceContainerLow,
             child: const Padding(
               padding: EdgeInsets.all(16),
@@ -258,7 +258,7 @@ class GitHubAppListSkeleton extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Skeleton(width: 140, height: 18, borderRadius: 8),
+                            Skeleton(width: 140, height: 18,),
                             Skeleton(width: 60, height: 20, borderRadius: 12),
                           ],
                         ),
@@ -266,16 +266,16 @@ class GitHubAppListSkeleton extends StatelessWidget {
                         Skeleton(
                           width: double.infinity,
                           height: 14,
-                          borderRadius: 8,
+
                         ),
                         SizedBox(height: 6),
-                        Skeleton(width: 200, height: 14, borderRadius: 8),
+                        Skeleton(width: 200, height: 14,),
                         SizedBox(height: 14),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Skeleton(width: 80, height: 22, borderRadius: 12),
-                            Skeleton(width: 70, height: 16, borderRadius: 8),
+                            Skeleton(width: 70, height: 16,),
                           ],
                         ),
                       ],

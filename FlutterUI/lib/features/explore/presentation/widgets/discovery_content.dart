@@ -71,7 +71,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                   child: SizedBox(
                     width: 100,
                     child: AppCard(
-                      borderRadius: 8,
+
                       child: const SizedBox.expand(),
                     ),
                   ),
@@ -85,7 +85,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                       label: widget.l10n.categorySemantics(cat.name),
                       button: true,
                       child: AppCard(
-                        borderRadius: 8,
+
                         onTap: () {
                           widget.searchController.text =
                               '/${cat.id.toLowerCase()}';

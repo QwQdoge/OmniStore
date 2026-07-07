@@ -112,7 +112,7 @@ class AICliDialog extends StatelessWidget {
                         Skeleton(
                           width: double.infinity,
                           height: 24,
-                          borderRadius: 8,
+
                         ),
                       ],
                     ),

@@ -122,7 +122,7 @@ class InstalledTab extends StatelessWidget {
       prototypeItem: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: AppCard(
-          borderRadius: 8,
+
           child: ListTile(
             leading: const SizedBox(width: 40, height: 40),
             title: const SizedBox(height: 16),
@@ -141,7 +141,7 @@ class InstalledTab extends StatelessWidget {
             label: 'Installed app: ${app.name}',
             button: true,
             child: AppCard(
-              borderRadius: 8,
+
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
