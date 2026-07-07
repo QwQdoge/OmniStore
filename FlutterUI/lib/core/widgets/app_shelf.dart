@@ -36,9 +36,9 @@ class AppShelf extends StatelessWidget {
             child: ListView.builder(
               controller: scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               prototypeItem: const SizedBox(
-                width: 142, // 130 + 12 (manual spacing)
+                width: 150, // 130 + 10*2 (symmetric horizontal padding)
                 child: SizedBox.shrink(),
               ),
               itemCount: apps.length,
@@ -47,11 +47,11 @@ class AppShelf extends StatelessWidget {
                 final heroTag =
                     'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: SizedBox(
                     width: 130,
                     child: AppCard(
-                    borderRadius: 8,
+                    borderRadius: 16,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -69,7 +69,7 @@ class AppShelf extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: app.icon != null

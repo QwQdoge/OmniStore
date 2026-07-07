@@ -105,7 +105,7 @@ class AppSourceTag extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(isSmall ? 6 : 8),
+        borderRadius: BorderRadius.circular(isSmall ? 8 : 12),
         border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Row(

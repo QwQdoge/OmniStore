@@ -86,8 +86,8 @@
 
 **Action:** Standardized metadata display using a refined `AppSourceTag` widget. Added `managed` mode for read-only status and improved MD3 tonal color mapping using `ColorScheme` tokens. Applied this consistently across `InstalledTab` and `UpdatesTab`, improving scannability and visual consistency.
 
-## 2026-07-06 - SnackBar UX and MD3 Theme Adaptation
+## 2026-07-06 - Global MD3 Geometric Token Standardization
 
-**Learning:** Appending custom layouts (`Row` with icons) or hardcoding background colors (`Colors.green`) in `SnackBar` content breaks Material Design 3 dynamic theme adaptation (light/dark modes) and creates visual fragmentation across the app.
+**Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
 
-**Action:** All SnackBars must use a standard `SnackBar(content: Text(...))` format without manual color overrides. Rely exclusively on the global `SnackBarThemeData` defined in `OmnistoreTheme` for background, text color, and layout styling to ensure a cohesive and theme-responsive user experience.
+**Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
