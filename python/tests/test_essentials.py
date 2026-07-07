@@ -25,8 +25,10 @@ def test_import_from_file_json_valid(essentials_manager, tmp_path):
         {"name": "pkg2", "source": "AUR"},
         {"other": "invalid"}  # should be skipped as it has no "name"
     ]
-    with open(filepath, "w", encoding="utf-8") as f:
+    tmp_path = filepath.with_suffix(".tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(data, f)
+    tmp_path.replace(filepath)
 
     result = essentials_manager.import_from_file(str(filepath))
     assert result == [
@@ -38,8 +40,10 @@ def test_import_from_file_json_valid(essentials_manager, tmp_path):
 def test_import_from_file_json_not_list(essentials_manager, tmp_path):
     filepath = tmp_path / "test.json"
     data = {"name": "pkg1", "source": "Native"}  # dictionary instead of list
-    with open(filepath, "w", encoding="utf-8") as f:
+    tmp_path = filepath.with_suffix(".tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(data, f)
+    tmp_path.replace(filepath)
 
     result = essentials_manager.import_from_file(str(filepath))
     assert result == []
@@ -54,8 +58,10 @@ pkg1
 pkg2
 # Another comment
 """
-    with open(filepath, "w", encoding="utf-8") as f:
+    tmp_path = filepath.with_suffix(".tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
         f.write(content)
+    tmp_path.replace(filepath)
 
     result = essentials_manager.import_from_file(str(filepath))
     assert result == [
@@ -66,8 +72,10 @@ pkg2
 
 def test_import_from_file_json_decode_error(essentials_manager, tmp_path):
     filepath = tmp_path / "invalid.json"
-    with open(filepath, "w", encoding="utf-8") as f:
+    tmp_path = filepath.with_suffix(".tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
         f.write("invalid json content")
+    tmp_path.replace(filepath)
 
     with patch("builtins.print") as mock_print:
         result = essentials_manager.import_from_file(str(filepath))

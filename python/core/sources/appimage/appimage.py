@@ -180,8 +180,10 @@ Icon={name.lower()}
 Terminal=false
 Categories=Utility;Application;
 """
-        with open(desktop_file, "w") as f:
+        tmp_path = desktop_file.with_suffix(".tmp")
+        with open(tmp_path, "w") as f:
             f.write(content)
+        tmp_path.replace(desktop_file)
 
     def _delete_desktop_entry(self, name: str):
         desktop_file = Path.home() / f".local/share/applications/{name.lower()}.desktop"

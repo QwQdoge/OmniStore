@@ -127,6 +127,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
   }
 
   Future<void> _handleFullExit() async {
+    if (!mounted) return;
     try {
       // Murphy-proof: Capture service before await gaps
       final backend = context.read<BackendService>();
