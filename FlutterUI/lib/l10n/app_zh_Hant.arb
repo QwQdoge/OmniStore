@@ -991,7 +991,7 @@
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
   "searchNoResultsSubtitle": "嘗試搜尋其他關鍵字",
-  "pluginsAndSources": "外掛程式與軟體源",
+  "pluginsAndSources": "外掛程式與軟體存放庫",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
   },

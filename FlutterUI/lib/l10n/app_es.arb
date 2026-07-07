@@ -480,8 +480,8 @@
   "aiAssistant": "Asistente de IA",
   "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
   "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
-  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
-  "aiApiKeyHelper": "Deje en blanco para Ollama, introduzca sk-xxx para OpenAI",
+  "aiEndpointHelper": "Ollama usa por defecto http://localhost:11434",
+  "aiApiKeyHelper": "Deje en blanco para Ollama e introduzca sk-xxx para OpenAI",
   "howToGetApiKey": "¿Cómo obtener una clave API?",
   "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
   "gotIt": "Entendido",
@@ -560,7 +560,7 @@
   "logWarning": "ADVERTENCIA (WARNING)",
   "logError": "ERROR (ERROR)",
   "notificationTitle": "Actualizaciones disponibles",
-  "notificationBody": "{count, plural, =1{1 aplicación disponible} other{{count} aplicaciones disponibles}}",
+  "notificationBody": "{count, plural, =1{1 actualización disponible} other{{count} actualizaciones disponibles}}",
   "@notificationBody": {
     "placeholders": {
       "count": {
