@@ -192,7 +192,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   onPressed: () => Navigator.pop(context),
                   child: Text(l10n.cancel),
                 ),
-                TextButton(
+                FilledButton(
                   onPressed: () async {
                     final name = nameController.text.trim();
                     final url = urlController.text.trim();

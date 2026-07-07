@@ -57,3 +57,6 @@
 - Refactored `TerminalDialog` (`FlutterUI/lib/features/task_manager/presentation/widgets/terminal_dialog.dart`) to support progress indicators and status messages using Dart 3 records in a `Selector`, thus preserving the UX of `StorageCleanupCard` while standardizing the codebase and removing duplicated UI logic.
 ## 2026-06-24 - Dialog Consistency: Task Failure Terminal Output
 - Replaced the custom inline `AlertDialog` in `details_page.dart` (which showed a generic task failure message) with the centralized `TerminalDialog`. This standardizes the task progress and terminal output experience, ensuring that task failures immediately present the user with the relevant terminal logs for inspection.
+## 2026-06-25 - Dialog Button and Card Consistency
+- Replaced the primary action `TextButton` with `FilledButton` in the 'Add Custom Source' inline dialog in `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` to match the consistent dialog confirmation button pattern used throughout the app.
+- Replaced raw `Card` with `AppCard` in `TasksTab` (`FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`) to ensure visual consistency with the rest of the application's Material Design 3 surface containers. Updated the `shape` parameter to `borderRadius` as required by `AppCard`.
