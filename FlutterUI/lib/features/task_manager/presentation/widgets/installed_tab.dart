@@ -122,7 +122,7 @@ class InstalledTab extends StatelessWidget {
       prototypeItem: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: AppCard(
-
+          borderRadius: 16,
           child: ListTile(
             leading: const SizedBox(width: 40, height: 40),
             title: const SizedBox(height: 16),
@@ -141,7 +141,7 @@ class InstalledTab extends StatelessWidget {
             label: 'Installed app: ${app.name}',
             button: true,
             child: AppCard(
-
+              borderRadius: 16,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -154,7 +154,7 @@ class InstalledTab extends StatelessWidget {
                 ),
                 leading: app.icon != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         child: CachedNetworkImage(
                           imageUrl: app.icon!,
                           width: 40,
@@ -163,7 +163,7 @@ class InstalledTab extends StatelessWidget {
                           placeholder: (context, url) => const Skeleton(
                             width: 40,
                             height: 40,
-                            borderRadius: 0,
+                            borderRadius: 16,
                           ),
                           errorWidget: (context, url, error) =>
                               const Icon(Icons.apps),

@@ -65,7 +65,7 @@ class AppDetailsInfoRow extends StatelessWidget {
       message: "${l10n.tapToCopy} $label: $value",
       child: InkWell(
         onTap: () => _copyToClipboard(context),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         child: Semantics(
           label: "${l10n.tapToCopy} $label: $value",
           button: true,
