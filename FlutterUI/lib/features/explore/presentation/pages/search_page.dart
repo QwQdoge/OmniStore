@@ -37,6 +37,9 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
 
+    _browseController = context.read<BrowseController>();
+    _browseController?.addListener(_onBrowseChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final browse = context.read<BrowseController>();
       if (browse.pendingSearchQuery != null) {
@@ -48,16 +51,6 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final newBrowse = Provider.of<BrowseController>(context);
-    if (_browseController != newBrowse) {
-      _browseController?.removeListener(_onBrowseChanged);
-      _browseController = newBrowse;
-      _browseController?.addListener(_onBrowseChanged);
-    }
-  }
 
   @override
   void dispose() {
