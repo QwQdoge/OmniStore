@@ -41,7 +41,7 @@ class _SearchPageState extends State<SearchPage> {
     _browseController?.addListener(_onBrowseChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final browse = context.read<BrowseController>();
+      final browse = _browseController!;
       if (browse.pendingSearchQuery != null) {
         _searchController.text = browse.pendingSearchQuery!;
         _hasSearchText.value = _searchController.text.isNotEmpty;
@@ -50,7 +50,6 @@ class _SearchPageState extends State<SearchPage> {
       }
     });
   }
-
 
   @override
   void dispose() {

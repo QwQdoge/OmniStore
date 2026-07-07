@@ -94,11 +94,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 * Replaced `context.watch` with localized `Selector` usage encapsulating the widgets directly in `sources_config_card.dart` and `ai_settings_section.dart`.
 * Refactored `SettingsPage` to drop redundant outer `Selector`s and `AnimatedSwitcher` wrappers that didn't pass state correctly.
 * Removed `context.watch` from `didChangeDependencies` inside `AISettingsSection` and merged `_syncControllers` safely inside its own `Selector` builder payload ("invalidation correctness").
-## 2026-07-01 - State Management: Lifecycle Subscriptions in didChangeDependencies
+## 2026-07-02 - State Management: Scoping Listeners for SearchPage
 
-**Learning:** Using `Provider.of<T>(context)` (which defaults to `listen: true`) inside `didChangeDependencies` violates the "Provider build() Anti-pattern" and "Lifecycle Subscriptions" rules. It triggers full widget rebuilds on every state change because the framework inherently reruns `didChangeDependencies` whenever the inherited widget (the provider) updates. This is inefficient and can cause unpredictable state flow.
+**Learning:** Using `Provider.of<T>(context)` (which defaults to `listen: true`) inside `didChangeDependencies` causes the entire widget to rebuild every time the provider notifies its listeners. This completely defeats the purpose of granular `Selector` and `Consumer` blocks used lower in the tree. In `SearchPage`, listening to `BrowseController` this way caused expensive full UI redraws on unrelated state changes (like download progress).
 
 **Action:**
-- Removed `Provider.of<BrowseController>(context)` from `didChangeDependencies` in `search_page.dart`.
-- Initialized the `_browseController` reference using `context.read<BrowseController>()` in `initState()` and manually added the listener (`_onBrowseChanged`) there.
-- This ensures the listener is attached once during initialization and properly disposed of, providing predictable and scalable state flow without causing full rebuilds of the `SearchPage`.
+- Moved the listener attachment logic out of `didChangeDependencies` into `initState`.
+- Used `context.read<BrowseController>()` to safely grab the provider instance without subscribing the entire page to its broadcast stream.
+- Explicitly added the manual callback `_onBrowseChanged` which only executes targeted logic (auto-selecting the first result) without invalidating the whole widget.
