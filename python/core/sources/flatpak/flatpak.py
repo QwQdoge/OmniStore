@@ -262,12 +262,16 @@ class FlatpakSource(UnifiedSource):
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:
+        """
+        ⚡ Bolt: Optimized metadata retrieval by consolidating size information
+        into a single subprocess call. Reduces O(N) subprocesses to O(1).
+        """
         results: List[Dict[str, Any]] = []
         if not self.enabled:
             return results
         try:
             async with safe_subprocess(
-                "flatpak", "list", "--app", "--columns=name,application,version,description",
+                "flatpak", "list", "--app", "--columns=name,application,version,description,size",
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
             ) as proc:
                 stdout, _ = await proc.communicate()
@@ -275,8 +279,19 @@ class FlatpakSource(UnifiedSource):
                     parts = [p.strip() for p in line.split("\t")]
                     if len(parts) < 2:
                         continue
+
                     app_id = parts[1]
-                    size = await self.get_size({"id": app_id, "name": parts[0]})
+                    raw_size = parts[4] if len(parts) > 4 else None
+
+                    # ⚡ Pre-construct size metadata to avoid redundant function calls
+                    size_data = {
+                        "download_size": None,
+                        "installed_size": raw_size,
+                        "disk_size": None,
+                        "size_confidence": "reported" if raw_size else "unknown",
+                        "size_source": "flatpak list",
+                    }
+
                     results.append({
                         "name": parts[0],
                         "id": app_id,
@@ -286,8 +301,14 @@ class FlatpakSource(UnifiedSource):
                         "installed": True,
                         "version": parts[2] if len(parts) > 2 else "Unknown",
                         "description": parts[3] if len(parts) > 3 else f"Flatpak app {app_id}",
-                        **size,
-                        "variants": [{"source": "Flatpak", "id": app_id, "installed": True, "managed": True, **size}],
+                        **size_data,
+                        "variants": [{
+                            "source": "Flatpak",
+                            "id": app_id,
+                            "installed": True,
+                            "managed": True,
+                            **size_data
+                        }],
                     })
         except Exception:
             pass
