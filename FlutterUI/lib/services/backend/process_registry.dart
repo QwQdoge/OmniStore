@@ -40,7 +40,7 @@ class ProcessRegistry {
     _activeProcesses.remove(process);
   }
 
-  /// Murphy-proof: Guaranteed process reaping using group-kill on Linux/macOS.
+  /// Murphy-proof: Guaranteed process reaping with tree-killing capability.
   /// Escalates from SIGTERM to SIGKILL to ensure termination.
   Future<void> kill(Process? process) async {
     if (process == null) return;
@@ -50,10 +50,8 @@ class ProcessRegistry {
     try {
       if (Platform.isLinux || Platform.isMacOS) {
         // Murphy-proof: Verify process group ID before group-killing to avoid hitting self.
-        // On Unix, group-kill uses negative PID or explicit PGID.
         bool groupKillSuccess = false;
         try {
-          // Check if we can get the pgid.
           final pgidRes = await Process.run('ps', [
             '-o',
             'pgid=',
@@ -62,8 +60,8 @@ class ProcessRegistry {
           ]);
           final pgid = int.tryParse(pgidRes.stdout.toString().trim());
 
-          if (pgid != null && pgid > 1) {
-            // 1. Attempt SIGTERM on the entire process group
+          if (pgid != null && pgid > 1 && pgid != pid) {
+             // 1. Attempt SIGTERM on the entire process group
             await Process.run('kill', [
               '-TERM',
               '--',
@@ -74,7 +72,6 @@ class ProcessRegistry {
         } catch (_) {}
 
         if (!groupKillSuccess) {
-          // Fallback: Individual SIGTERM
           try {
             process.kill(ProcessSignal.sigterm);
           } catch (_) {}
@@ -82,7 +79,7 @@ class ProcessRegistry {
 
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // 2. Escalation: Check if process is still alive and use SIGKILL if necessary.
+        // 2. Escalation: SIGKILL
         if (await _isProcessAlive(pid)) {
           try {
             final pgidRes = await Process.run('ps', [
@@ -92,7 +89,7 @@ class ProcessRegistry {
               '$pid',
             ]);
             final pgid = int.tryParse(pgidRes.stdout.toString().trim());
-            if (pgid != null && pgid > 1) {
+            if (pgid != null && pgid > 1 && pgid != pid) {
               await Process.run('kill', [
                 '-KILL',
                 '--',
@@ -105,20 +102,22 @@ class ProcessRegistry {
             process.kill(ProcessSignal.sigkill);
           }
         }
-      }
-      if (Platform.isWindows) {
+      } else if (Platform.isWindows) {
+        // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows
         try {
-          process.kill(ProcessSignal.sigterm);
-        } catch (_) {}
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (await _isProcessAlive(pid)) {
+          await Process.run('taskkill', ['/F', '/T', '/PID', '$pid'])
+              .timeout(const Duration(seconds: 5));
+        } catch (e) {
+          debugPrint("ProcessRegistry: Windows taskkill failed for PID $pid: $e");
           process.kill(ProcessSignal.sigkill);
         }
+      } else {
+        process.kill(ProcessSignal.sigkill);
       }
     } catch (e) {
       debugPrint("ProcessRegistry: Group reap failed for PID $pid: $e");
     } finally {
-      // 3. Final Fail-safe: Direct SIGKILL to the parent process handle.
+      // 3. Final Fail-safe: Direct SIGKILL to the parent process handle if still tracked.
       try {
         process.kill(ProcessSignal.sigkill);
       } catch (_) {}
@@ -148,8 +147,8 @@ class ProcessRegistry {
           'PID eq $pid',
           '/NH',
         ]);
-        return result.exitCode == 0 &&
-            result.stdout.toString().contains('$pid');
+        final output = result.stdout.toString();
+        return result.exitCode == 0 && output.contains('$pid');
       }
     } catch (_) {}
     return false;

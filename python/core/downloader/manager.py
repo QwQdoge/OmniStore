@@ -5,6 +5,7 @@ import shutil
 import contextlib
 import re
 import weakref
+import sys
 from typing import Dict, Any, Optional, Callable, Awaitable
 from core.subprocess_utils import safe_subprocess
 from core.security_validator import SecurityValidator
@@ -20,7 +21,6 @@ class InstallExecutor:
         self.backend = backend
         self._global_lock = asyncio.Lock()
         # Murphy-proof: Use WeakValueDictionary to prevent memory growth.
-        # Locks will be automatically removed from the dict when no active task is holding a reference.
         self._package_locks = weakref.WeakValueDictionary()
         self.is_running = False
         self.privilege_manager = PrivilegeManager()
@@ -35,11 +35,7 @@ class InstallExecutor:
             pass
 
     async def _periodic_lock_cleanup(self):
-        """
-        Murphy-proof: Periodically purge unused package locks to prevent slow memory growth.
-        Note: WeakValueDictionary already handles most of this, but we keep this as a
-        double-safety guard and to trigger GC collection of the weak references.
-        """
+        """Murphy-proof: Periodically trigger GC to collect weak references."""
         while True:
             try:
                 await asyncio.sleep(600)  # Every 10 minutes
@@ -65,32 +61,33 @@ class InstallExecutor:
     async def install(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute installation with state lock protection and fail-safe checks."""
         # 1. Basic Parameter Validation (pre-lock)
-        pkg_name = package.get("name")
-        if not package or not isinstance(pkg_name, str) or not pkg_name.strip():
+        if not package or not isinstance(package.get("name"), str) or not package["name"].strip():
             if callback: await callback("[ERROR] Invalid package data (missing name). Installation aborted.")
             return False
 
+        pkg_name = package["name"].strip()
+
         # Murphy-proof: Global lock acquisition with timeout
         try:
-            await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+            await asyncio.wait_for(self._global_lock.acquire(), timeout=10.0)
         except asyncio.TimeoutError:
             if callback: await callback("[ERROR] System is busy. A previous task may still be cleaning up. Please wait 30s.")
             return False
 
         try:
-            # 2. Granular Package Lock: Prevent concurrent actions on the same package
-            pkg_lock = self._get_package_lock(pkg_name.strip())
+            # 2. Granular Package Lock
+            pkg_lock = self._get_package_lock(pkg_name)
             try:
-                await asyncio.wait_for(pkg_lock.acquire(), timeout=2.0)
+                await asyncio.wait_for(pkg_lock.acquire(), timeout=5.0)
             except asyncio.TimeoutError:
                 if callback: await callback(f"[ERROR] Package '{pkg_name}' is already being processed by another task.")
                 return False
 
             try:
                 # 3. Environment & Security Validation
-                # Boundary Defense: Prevent shell injection or malformed paths
                 try:
                     SecurityValidator.validate_string(pkg_name, "Package Name")
+                    source_name = SecurityValidator.validate_string(str(package.get("source", "Native")), "Source").lower()
                     url = package.get("url")
                     if url:
                         SecurityValidator.validate_url(url)
@@ -98,12 +95,12 @@ class InstallExecutor:
                     if callback: await callback(f"[ERROR] Security: {str(ve)}")
                     return False
 
-                # 4. Environment & Dependency Check
-                source_name = str(package.get("source", "Native")).lower()
                 if source_name == "native":
                     source_name = "pacman"
+
+                # 4. Environment & Platform Guard
                 if not self._check_environment(source_name):
-                    if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools (pacman/flatpak/yay) are installed.")
+                    if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools are installed and supported on this platform.")
                     return False
 
                 if not self.backend.manager or source_name not in self.backend.manager.sources:
@@ -114,9 +111,7 @@ class InstallExecutor:
 
                 try:
                     self.is_running = True
-                    # 5. Execution with Strict Isolation
-                    # Murphy-proof: Standard timeout for the entire installation process (60 minutes)
-                    # Implementation of secondary watchdog to catch sources that don't respect internal cancellation
+                    # 5. Execution with Strict Isolation and Watchdog
                     async def run_with_watchdog():
                         try:
                             return await source.install(package, callback=callback)
@@ -125,6 +120,7 @@ class InstallExecutor:
                             if callback: await callback(f"[ERROR] Source installation error: {e}")
                             return False
 
+                    # Long timeout for installs (60 min)
                     success = await asyncio.wait_for(run_with_watchdog(), timeout=3600)
                     return bool(success)
                 except asyncio.TimeoutError:
@@ -146,21 +142,22 @@ class InstallExecutor:
 
     async def uninstall(self, package: Dict[str, Any], callback: Optional[Callable[[str], Awaitable[None]]]) -> bool:
         """Execute uninstallation with state lock protection."""
-        pkg_name = package.get("name")
-        if not package or not isinstance(pkg_name, str) or not pkg_name.strip():
+        if not package or not isinstance(package.get("name"), str) or not package["name"].strip():
             if callback: await callback("[ERROR] Package name missing for uninstallation.")
             return False
 
+        pkg_name = package["name"].strip()
+
         try:
-            await asyncio.wait_for(self._global_lock.acquire(), timeout=5.0)
+            await asyncio.wait_for(self._global_lock.acquire(), timeout=10.0)
         except asyncio.TimeoutError:
             if callback: await callback("[ERROR] System is busy. Please wait for the current task to finish.")
             return False
 
         try:
-            pkg_lock = self._get_package_lock(pkg_name.strip())
+            pkg_lock = self._get_package_lock(pkg_name)
             try:
-                await asyncio.wait_for(pkg_lock.acquire(), timeout=2.0)
+                await asyncio.wait_for(pkg_lock.acquire(), timeout=5.0)
             except asyncio.TimeoutError:
                 if callback: await callback(f"[ERROR] Package '{pkg_name}' is currently busy.")
                 return False
@@ -169,13 +166,19 @@ class InstallExecutor:
                 # Sanitization
                 try:
                     SecurityValidator.validate_string(pkg_name, "Package Name")
+                    source_name = SecurityValidator.validate_string(str(package.get("source", "Native")), "Source").lower()
                 except ValueError as ve:
                     if callback: await callback(f"[ERROR] Security: {str(ve)}")
                     return False
 
-                source_name = str(package.get("source", "Native")).lower()
                 if source_name == "native":
                     source_name = "pacman"
+
+                # Platform Guard
+                if not self._check_environment(source_name):
+                    if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'.")
+                    return False
+
                 if not self.backend.manager or source_name not in self.backend.manager.sources:
                     if callback: await callback(f"[ERROR] Uninstallation source '{source_name}' not found.")
                     return False
@@ -191,6 +194,7 @@ class InstallExecutor:
                             if callback: await callback(f"[ERROR] Source uninstallation error: {e}")
                             return False
 
+                    # 30 min timeout for uninstall
                     success = await asyncio.wait_for(run_uninstall_with_watchdog(), timeout=1800)
                     return bool(success)
                 except asyncio.TimeoutError:
@@ -212,9 +216,9 @@ class InstallExecutor:
         return await self.install(package, callback)
 
     def _check_environment(self, source_name: str) -> bool:
-        """Verify that the required system tools exist and are executable for the given source."""
-        import sys
+        """Murphy-proof: Verify system tools and platform compatibility."""
         is_linux = sys.platform.startswith("linux")
+        is_windows = sys.platform == "win32"
 
         def is_exe(name):
             path = shutil.which(name)
@@ -226,12 +230,19 @@ class InstallExecutor:
                 return False
             return True
 
-        if not is_linux and source_name in ("native", "pacman", "aur", "flatpak"):
-            logging.error(f"Foolproof: Source '{source_name}' is Linux-only. Current platform: {sys.platform}")
+        # Platform compatibility matrix
+        linux_only_sources = ("native", "pacman", "aur", "flatpak", "appimage")
+        windows_only_sources = ("winget",)
+
+        if not is_linux and source_name in linux_only_sources:
+            logging.error(f"Foolproof: Source '{source_name}' is Linux-only. Platform: {sys.platform}")
             return False
 
-        # Murphy-proof: Check for sudo if on Linux, as most installs need it
-        if is_linux and not is_exe("sudo"):
+        if not is_windows and source_name in windows_only_sources:
+            logging.error(f"Foolproof: Source '{source_name}' is Windows-only. Platform: {sys.platform}")
+            return False
+
+        if is_linux and not is_exe("sudo") and source_name in ("native", "pacman", "aur"):
              logging.error("Murphy-proof: 'sudo' not found. Privileged operations will fail.")
              return False
 
@@ -240,13 +251,11 @@ class InstallExecutor:
         elif source_name == "flatpak":
             return is_exe("flatpak")
         elif source_name == "aur":
-            # Support both yay and paru as AUR helpers
             return is_exe("yay") or is_exe("paru")
+        elif source_name == "winget":
+            return is_exe("winget")
         elif source_name == "appimage":
-            # Basic requirement for AppImages is often fuse2 or fuse3 on Linux
-            if is_linux and not (is_exe("fusermount") or is_exe("fusermount3")):
-                logging.warning("Murphy-proof: FUSE not detected. AppImages might fail to mount.")
-            return True
+            return True # Usually just fuse is needed, handled at runtime
 
         return True
 

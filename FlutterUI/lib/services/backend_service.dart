@@ -470,29 +470,29 @@ class BackendService {
     final rawInput = input.trim();
     if (rawInput.isEmpty) return null;
 
-    // Boundary Defense: Reject payloads > 5MB to prevent OOM
-    if (rawInput.length > 5 * 1024 * 1024) {
-      debugPrint("Security Warning: Rejected JSON payload exceeding 5MB limit");
+    // Boundary Defense: Reject payloads > 10MB to prevent OOM
+    if (rawInput.length > 10 * 1024 * 1024) {
+      debugPrint("Security Warning: Rejected JSON payload exceeding 10MB limit");
       return null;
     }
 
     try {
       return jsonDecode(rawInput);
     } catch (_) {
-      try {
-        // Noise Reduction: Strip ANSI escape codes and terminal artifacts
-        final cleaned = rawInput.replaceAll(
-          RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
-          '',
-        );
+      // Noise Reduction: Strip ANSI escape codes
+      final cleaned = rawInput.replaceAll(
+        RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
+        '',
+      );
 
-        // 1. Precise balanced JSON extraction (improved regex)
+      try {
+        // Precise balanced JSON extraction
         // We look for the LAST possible JSON object or array to avoid partial matches
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
         final matches = jsonPattern.allMatches(cleaned).toList();
 
         if (matches.isNotEmpty) {
-          // Try matches in reverse order (most likely to be the full response)
+          // Try matches in reverse order
           for (final match in matches.reversed) {
             final candidate = match.group(0)!;
             try {
@@ -501,9 +501,8 @@ class BackendService {
           }
         }
 
-        // 2. Line-by-line tail recovery for concatenated logs/JSON
+        // Line-by-line tail recovery
         final lines = cleaned.split('\n');
-        // Limit scan depth for performance
         final scanDepth = lines.length.clamp(0, 100);
         final startIdx = (lines.length - scanDepth).clamp(0, lines.length);
         for (int i = lines.length - 1; i >= startIdx; i--) {
@@ -701,8 +700,30 @@ class BackendService {
     }
   }
 
-  // Fail-safe AI counter to prevent infinite retry loops in UI
-  // ignore: unused_field
+  Future<String> _aiCall(
+    List<String> args, {
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
+    if (kIsWeb) {
+      return "This is a simulated AI response on web.";
+    }
+    try {
+      final res = await _safeRun([...args, "--json"], timeout: timeout);
+      if (res == null) {
+        return "AI_TIMEOUT";
+      }
+      final data = _safeJsonDecode(res.stdout.toString());
+      if (data is Map) {
+        return data['response']?.toString() ?? "AI_NO_RESPONSE";
+      }
+      return "AI_PARSE_FAILED";
+    } catch (e) {
+      debugPrint("_aiCall Error: $e");
+      return "AI_ERROR: ${e.toString()}";
+    }
+  }
+
+  // Fail-safe AI counter
   int _aiFailureCount = 0;
 
   Future<String> aiExplain(String name, String desc) => _aiBridge.explain(name, desc);
@@ -724,7 +745,15 @@ class BackendService {
   }
 
   Future<String> aiSuggestCorrection(String q) async {
-    return _aiBridge.call(["--ai-correct", q.trim()], timeout: const Duration(seconds: 15));
+    try {
+      _validateString(q, "AI Query");
+      return await _aiCall([
+        "--ai-correct",
+        q.trim(),
+      ], timeout: const Duration(seconds: 15));
+    } catch (e) {
+      return q;
+    }
   }
 
   Future<String> aiCompareVariants(String n) async {
@@ -737,7 +766,23 @@ class BackendService {
 
   Future<String> aiAnalyzeError(String log) => _aiBridge.analyzeError(log);
 
-  Future<String> aiRecommend(String p) => _aiBridge.recommend(p);
+  Future<String> aiRecommend(String p) async {
+    try {
+      _validateString(p, "AI Prompt");
+      final res = await _aiCall([
+        "--ai-recommend",
+        p.trim(),
+      ], timeout: const Duration(seconds: 90));
+      _aiFailureCount = 0;
+      return res;
+    } catch (e) {
+      _aiFailureCount++;
+      if (_aiFailureCount > 3) {
+        return "AI recommendations are currently offline.";
+      }
+      return "Recommendation service error.";
+    }
+  }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
     if (kIsWeb) {
@@ -753,7 +798,6 @@ class BackendService {
         _buildArgs(["--set-config", "stdin", "--json"]),
         workingDirectory: _workingDir,
       );
-      // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(process);
 
       try {
@@ -893,7 +937,7 @@ class BackendService {
       ], timeout: const Duration(seconds: 15));
       return res?.exitCode == 0;
     } catch (e) {
-      debugPrint("launchApp [name: $n] Error: $e");
+      debugPrint("launchApp Error: $e");
       return false;
     }
   }
@@ -928,7 +972,7 @@ class BackendService {
       ], timeout: const Duration(seconds: 10));
       return res?.exitCode == 0;
     } catch (e) {
-      debugPrint("locateApp [name: $n] Error: $e");
+      debugPrint("locateApp Error: $e");
       return false;
     }
   }
@@ -961,7 +1005,7 @@ class BackendService {
       if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
       return null;
     } catch (e) {
-      debugPrint("getAppDetails [id: $id] Error: $e");
+      debugPrint("getAppDetails Error: $e");
       return null;
     }
   }
@@ -1090,7 +1134,7 @@ class BackendService {
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return data is List ? data : [];
     } catch (e) {
-      debugPrint("importPackages [path: $path] Error: $e");
+      debugPrint("importPackages Error: $e");
       return [];
     }
   }
@@ -1121,7 +1165,7 @@ class BackendService {
       final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
       return (data is Map<String, dynamic>) ? data : {"status": "error"};
     } catch (e) {
-      debugPrint("exportPackages [path: $path] Error: $e");
+      debugPrint("exportPackages Error: $e");
       return {"status": "error", "message": e.toString()};
     }
   }
