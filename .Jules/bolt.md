@@ -64,13 +64,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.
 - Refactored `AppShelf` (FlutterUI/lib/core/widgets/app_shelf.dart) to replace `ListView.separated` with `ListView.builder` utilizing `prototypeItem` for list virtualization. Adjusted padding to maintain exact pixel layout.
-## 2026-07-06 - Flatpak Store Page Scroll Optimization
 
-**Learning:** Long scrollable lists with complex child widgets (like  and  loaders) can suffer from poor rendering performance and inaccurate scrollbar thumb sizing if the framework has to calculate the layout of every item synchronously. The `ListView.builder` provides a `prototypeItem` property that solves this by giving the framework a single template to calculate the exact dimensions of all list items, heavily optimizing list virtualization.
+## 2026-07-06 - Animation Repaint Isolation
 
-**Action:** Refactored `_buildSkeletonList` in `flatpak_store_page.dart` to include a `prototypeItem` matching the structure of the `Skeleton` loading `ListTile`. This ensures O(1) layout calculation for the skeleton list and avoids unnecessary layout passes.
-## 2026-07-06 - Flatpak Store Page Scroll Optimization
+**Learning:** Widgets with continuous animations (like `MagicPulseIcon` using `repeat(reverse: true)` with a `ShaderMask`) trigger repaints for their entire parent widget tree on every frame if not isolated. `ShaderMask` is particularly expensive to re-rasterize. Wrapping the animating subtree in a `RepaintBoundary` allows the Flutter engine to cache the layer and perform transformations (like scaling) on the GPU, significantly reducing the CPU/GPU cost of the animation.
 
-**Learning:** Long scrollable lists with complex child widgets (like `AppCard` and `Skeleton` loaders) can suffer from poor rendering performance and inaccurate scrollbar thumb sizing if the framework has to calculate the layout of every item synchronously. The `ListView.builder` provides a `prototypeItem` property that solves this by giving the framework a single template to calculate the exact dimensions of all list items, heavily optimizing list virtualization.
-
-**Action:** Refactored `_buildSkeletonList` in `flatpak_store_page.dart` to include a `prototypeItem` matching the structure of the `Skeleton` loading `ListTile`. This ensures O(1) layout calculation for the skeleton list and avoids unnecessary layout passes.
+**Action:** Wrapped the `ShaderMask` in `MagicPulseIcon` with a `RepaintBoundary`.
