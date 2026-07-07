@@ -213,14 +213,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(l10n.success),
-              ],
-            ),
-            backgroundColor: Colors.green.shade700,
+            content: Text(l10n.success),
           ),
         );
       } else {

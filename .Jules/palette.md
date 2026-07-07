@@ -85,3 +85,9 @@
 **Learning:** App metadata (source, trust, installation status) was displayed inconsistently across different features (Search, Installed, Updates), using a mix of custom widgets, raw Chips, and plain text. This reduced visual harmony and brand recognition.
 
 **Action:** Standardized metadata display using a refined `AppSourceTag` widget. Added `managed` mode for read-only status and improved MD3 tonal color mapping using `ColorScheme` tokens. Applied this consistently across `InstalledTab` and `UpdatesTab`, improving scannability and visual consistency.
+
+## 2026-07-06 - SnackBar UX and MD3 Theme Adaptation
+
+**Learning:** Appending custom layouts (`Row` with icons) or hardcoding background colors (`Colors.green`) in `SnackBar` content breaks Material Design 3 dynamic theme adaptation (light/dark modes) and creates visual fragmentation across the app.
+
+**Action:** All SnackBars must use a standard `SnackBar(content: Text(...))` format without manual color overrides. Rely exclusively on the global `SnackBarThemeData` defined in `OmnistoreTheme` for background, text color, and layout styling to ensure a cohesive and theme-responsive user experience.
