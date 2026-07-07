@@ -11,6 +11,20 @@ class DaemonRequest(BaseModel):
     args: list = Field(default_factory=list)
     kwargs: dict = Field(default_factory=dict)
 
+    @field_validator("args")
+    @classmethod
+    def validate_args(cls, v):
+        if not isinstance(v, list):
+            raise ValueError("args must be a list")
+        return v
+
+    @field_validator("kwargs")
+    @classmethod
+    def validate_kwargs(cls, v):
+        if not isinstance(v, dict):
+            raise ValueError("kwargs must be a dict")
+        return v
+
     @field_validator("action")
     @classmethod
     def validate_action(cls, v):
@@ -83,13 +97,12 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
             token = captured_output_var.set(captured_stdout)
 
             try:
-                action = cmd_data.action
-                if action == "shutdown":
-                    stop_event.set()
-                    writer.write(json.dumps({"status": "success", "response": True}).encode('utf-8') + b'\n')
-                    continue
+                async def execute_action():
+                    action = cmd_data.action
+                    if action == "shutdown":
+                        stop_event.set()
+                        return {"status": "success", "response": True}
 
-                try:
                     async with backend:
                         args = cmd_data.args
                         kwargs = cmd_data.kwargs
@@ -100,46 +113,44 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                             if obj is None: break
 
                         if obj is not None:
-                            try:
-                                if callable(obj):
-                                    if inspect.iscoroutinefunction(obj):
-                                        res = await asyncio.wait_for(obj(*args, **kwargs), timeout=120)
-                                    else:
-                                        res = obj(*args, **kwargs)
+                            if callable(obj):
+                                if inspect.iscoroutinefunction(obj):
+                                    res = await obj(*args, **kwargs)
                                 else:
-                                    res = obj
+                                    res = obj(*args, **kwargs)
+                            else:
+                                res = obj
 
-                                stdout_content = captured_stdout.getvalue()
-                                response_payload = json.dumps({
-                                    "status": "success",
-                                    "response": res,
-                                    "stdout": stdout_content
-                                }, ensure_ascii=False).encode('utf-8') + b'\n'
-                                writer.write(response_payload)
-                            except asyncio.TimeoutError:
-                                writer.write(json.dumps({"status": "error", "error": f"Action '{action}' timed out after 120s"}).encode('utf-8') + b'\n')
-                            except Exception as action_e:
-                                logging.error(f"Murphy-proof Action Exception [{action}]: {action_e}")
-                                writer.write(json.dumps({
-                                    "status": "error",
-                                    "error": str(action_e),
-                                    "stdout": captured_stdout.getvalue()
-                                }).encode('utf-8') + b'\n')
+                            return {
+                                "status": "success",
+                                "response": res,
+                                "stdout": captured_stdout.getvalue()
+                            }
                         else:
-                            writer.write(json.dumps({"status": "error", "error": f"Method not found: {action}"}).encode('utf-8') + b'\n')
+                            return {"status": "error", "error": f"Method not found: {action}"}
+
+                try:
+                    # Murphy-proof: Server-side watchdog to prevent hanging actions
+                    result = await asyncio.wait_for(execute_action(), timeout=120)
+                    writer.write(json.dumps(result, ensure_ascii=False).encode('utf-8') + b'\n')
+                except asyncio.TimeoutError:
+                    writer.write(json.dumps({
+                        "status": "error",
+                        "error": f"Action '{cmd_data.action}' timed out after 120s watchdog",
+                        "stdout": captured_stdout.getvalue()
+                    }).encode('utf-8') + b'\n')
                 except Exception as e:
                     import traceback
                     err_trace = traceback.format_exc()
-                    logging.error(f"Daemon Action Logic Error [{action}]: {e}\n{err_trace}")
-                    try:
-                        writer.write(json.dumps({
-                            "status": "error",
-                            "error": str(e),
-                            "stdout": captured_stdout.getvalue(),
-                            "traceback": err_trace if backend.config.get("logging.level") == "DEBUG" else None
-                        }).encode('utf-8') + b'\n')
-                    except: pass
+                    logging.error(f"Daemon Action Execution Error: {e}\n{err_trace}")
+                    writer.write(json.dumps({
+                        "status": "error",
+                        "error": str(e),
+                        "stdout": captured_stdout.getvalue(),
+                        "traceback": err_trace if backend.config.get("logging.level") == "DEBUG" else None
+                    }).encode('utf-8') + b'\n')
             finally:
+                # Murphy-proof: Guarantee contextvar reset even on task cancellation or timeout
                 captured_output_var.reset(token)
 
             try:

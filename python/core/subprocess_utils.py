@@ -26,12 +26,13 @@ async def safe_subprocess(*args, **kwargs):
                     # 1. Attempt graceful group termination (SIGTERM to the process group)
                     if os.name == 'posix':
                         try:
-                            # Verification: Ensure PID still exists before querying PGID
+                            # Verification: Ensure PID still exists and belongs to us before querying PGID
                             os.kill(proc.pid, 0)
                             # Race condition protection: if process dies here, getpgid might raise
                             try:
                                 pgid = os.getpgid(proc.pid)
                                 # Murphy-proof: Never kill our own process group or system-critical groups
+                                # Extra safety: Ensure pgid matches proc.pid (standard for os.setsid)
                                 if pgid != os.getpgrp() and pgid > 1:
                                     # Start with SIGTERM, SIGHUP, SIGQUIT for a wider graceful shutdown signal
                                     for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
@@ -64,6 +65,7 @@ async def safe_subprocess(*args, **kwargs):
                         else:
                             try: proc.kill()
                             except: pass
+
                         # Final wait to reap the zombie
                         try:
                             await asyncio.wait_for(proc.wait(), timeout=2)

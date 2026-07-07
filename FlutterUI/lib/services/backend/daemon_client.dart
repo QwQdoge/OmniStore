@@ -80,10 +80,19 @@ class DaemonClient {
         return null;
       }
 
-      return await _responseCompleter!.future.timeout(
+      final completer = _responseCompleter;
+      if (completer == null) return null;
+
+      return await completer.future.timeout(
         timeout,
-        onTimeout: () =>
-            throw TimeoutException("Daemon response timed out for $action"),
+        onTimeout: () {
+          if (!completer.isCompleted) {
+            completer.completeError(
+              TimeoutException("Daemon response timed out for $action"),
+            );
+          }
+          throw TimeoutException("Daemon response timed out for $action");
+        },
       );
     } catch (e) {
       debugPrint("DaemonClient: Transaction failed [$action]: $e");
@@ -148,9 +157,11 @@ class DaemonClient {
 
   void _handleLine(String line) {
     try {
-      final res = jsonDecode(line);
-      if (res is Map &&
-          (res.containsKey('status') || res.containsKey('error'))) {
+      final trimmedLine = line.trim();
+      if (trimmedLine.isEmpty) return;
+
+      final dynamic res = jsonDecode(trimmedLine);
+      if (res is Map) {
         final completer = _responseCompleter;
         if (completer != null && !completer.isCompleted) {
           if (res['status'] == 'success') {
@@ -158,22 +169,27 @@ class DaemonClient {
               DaemonResult(
                 status: 'success',
                 response: res['response'],
-                stdout: res['stdout'] ?? '',
+                stdout: res['stdout']?.toString() ?? '',
               ),
             );
-          } else {
+          } else if (res['status'] == 'error' || res.containsKey('error')) {
             completer.complete(
               DaemonResult(
                 status: 'error',
-                error: res['error'] ?? 'Daemon error',
-                stdout: res['stdout'] ?? '',
+                error: res['error']?.toString() ?? 'Daemon error',
+                stdout: res['stdout']?.toString() ?? '',
               ),
             );
+          } else {
+            // Unexpected map structure
+            debugPrint("DaemonClient: Received unexpected JSON map: $res");
           }
         }
+      } else {
+        debugPrint("DaemonClient: Received non-map JSON: $res");
       }
     } catch (e) {
-      debugPrint("DaemonClient: JSON parse error: $e");
+      debugPrint("DaemonClient: JSON parse error on line: $line\nError: $e");
     }
   }
 
