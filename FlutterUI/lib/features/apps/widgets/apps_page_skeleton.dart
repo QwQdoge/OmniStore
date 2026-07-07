@@ -18,7 +18,7 @@ class AppsPageSkeleton extends StatelessWidget {
             subtitle: Skeleton(
               width: double.infinity,
               height: 12,
-              borderRadius: 8,
+
             ),
             trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
           ),
@@ -35,7 +35,7 @@ class AppsPageSkeleton extends StatelessWidget {
               subtitle: Skeleton(
                 width: double.infinity,
                 height: 12,
-                borderRadius: 8,
+
               ),
               trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
             ),

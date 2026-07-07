@@ -51,7 +51,7 @@ class AppShelf extends StatelessWidget {
                   child: SizedBox(
                     width: 130,
                     child: AppCard(
-                    borderRadius: 16,
+
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
