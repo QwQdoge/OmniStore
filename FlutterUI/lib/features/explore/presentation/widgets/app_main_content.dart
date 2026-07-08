@@ -81,7 +81,6 @@ class AppMainContent extends StatelessWidget {
           onCancelAction: onCancelAction,
         ),
         const SizedBox(height: 24),
-        const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AppAboutSection(
           isLoading: isLoadingDetails,
@@ -99,7 +98,6 @@ class AppMainContent extends StatelessWidget {
                   extraDetails!.screenshots != null &&
                   extraDetails!.screenshots!.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                const Divider(),
                 AppDetailsSectionTitle(
                   title: AppLocalizations.of(context)!.screenshots,
                 ),
@@ -113,7 +111,6 @@ class AppMainContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),

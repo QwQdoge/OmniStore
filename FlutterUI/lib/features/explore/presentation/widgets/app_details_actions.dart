@@ -74,7 +74,7 @@ class AppDetailsActions extends StatelessWidget {
               style: IconButton.styleFrom(
                 minimumSize: const Size(56, 56),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
@@ -95,7 +95,7 @@ class AppDetailsActions extends StatelessWidget {
                       width: 1,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(14.0),
                     ),
                   ),
                   onPressed: () => onHandleAction("-R"),
@@ -118,7 +118,7 @@ class AppDetailsActions extends StatelessWidget {
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(14.0),
                     ),
                   ),
                   onPressed: onLaunchApp,
@@ -147,7 +147,7 @@ class AppDetailsActions extends StatelessWidget {
           child: FilledButton.icon(
             style: FilledButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
+                borderRadius: BorderRadius.circular(14.0),
               ),
             ),
             onPressed: () => onHandleAction("-I"),
