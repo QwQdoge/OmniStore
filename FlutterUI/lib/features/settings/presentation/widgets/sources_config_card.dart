@@ -6,6 +6,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import "add_source_dialog.dart";
 import '../controllers/settings_controller.dart';
 
 class SourcesConfigCard extends StatefulWidget {
@@ -122,135 +123,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   void _showAddSourceDialog(AppLocalizations l10n) {
-    String type = "github";
-    final nameController = TextEditingController();
-    final urlController = TextEditingController();
-
     showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(l10n.addCustomSource),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DropdownButtonFormField<String>(
-                      initialValue: type,
-                      decoration: InputDecoration(labelText: l10n.sourceType),
-                      items: [
-                        DropdownMenuItem(
-                          value: "github",
-                          child: Text(l10n.githubRepoType),
-                        ),
-                        DropdownMenuItem(
-                          value: "bitu",
-                          child: Text(l10n.bituRepoType),
-                        ),
-                        DropdownMenuItem(
-                          value: "flatpak",
-                          child: Text(l10n.flatpakRemoteType),
-                        ),
-                        DropdownMenuItem(
-                          value: "appimage",
-                          child: Text(l10n.appImageFeedType),
-                        ),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setDialogState(() => type = val);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: l10n.sourceName,
-                        hintText: l10n.hintCustomAppName,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: urlController,
-                      decoration: InputDecoration(
-                        labelText: type == "github" || type == "bitu"
-                            ? l10n.repoOwnerRepo
-                            : l10n.sourceUrl,
-                        hintText: type == "github" || type == "bitu"
-                            ? l10n.hintRepoFormat
-                            : l10n.hintFeedUrl,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(l10n.cancel),
-                ),
-                FilledButton(
-                  onPressed: () async {
-                    final name = nameController.text.trim();
-                    final url = urlController.text.trim();
-                    if (name.isEmpty || url.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.errorNameUrlRequired)),
-                      );
-                      return;
-                    }
-                    final messenger = ScaffoldMessenger.of(context);
-                    final settings = context.read<SettingsController>();
-                    Navigator.pop(context);
-
-                    messenger.showSnackBar(
-                      SnackBar(content: Text(l10n.addingCustomSource)),
-                    );
-
-                    bool success = false;
-                    if (kIsWeb) {
-                      final config = Map<String, dynamic>.from(
-                        settings.config,
-                      );
-                      config['custom_repos'] = Map<String, dynamic>.from(
-                        config['custom_repos'] ?? {},
-                      );
-                      config['custom_repos'][type] = List<dynamic>.from(
-                        config['custom_repos'][type] ?? [],
-                      );
-                      config['custom_repos'][type].add({
-                        "name": name,
-                        "url": url,
-                      });
-                      success = await settings.updateConfig(config);
-                    } else {
-                      final result = await BackendService.instance
-                          .addCustomRepo(type, name, url);
-                      success = result;
-                    }
-
-                    if (!mounted) return;
-
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          success
-                              ? l10n.sourceAddSuccess
-                              : l10n.sourceAddFailed,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Text(l10n.add),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => AddSourceDialog(l10n: l10n),
     );
   }
 
