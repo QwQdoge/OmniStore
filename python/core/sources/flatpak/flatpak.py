@@ -266,8 +266,9 @@ class FlatpakSource(UnifiedSource):
         if not self.enabled:
             return results
         try:
+            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) subprocess call
             async with safe_subprocess(
-                "flatpak", "list", "--app", "--columns=name,application,version,description",
+                "flatpak", "list", "--app", "--columns=name,application,version,description,size",
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
             ) as proc:
                 stdout, _ = await proc.communicate()
@@ -276,7 +277,14 @@ class FlatpakSource(UnifiedSource):
                     if len(parts) < 2:
                         continue
                     app_id = parts[1]
-                    size = await self.get_size({"id": app_id, "name": parts[0]})
+                    raw_size = parts[4] if len(parts) > 4 else None
+                    size_info = {
+                        "download_size": None,
+                        "installed_size": raw_size,
+                        "disk_size": None,
+                        "size_confidence": "reported" if raw_size else "unknown",
+                        "size_source": "flatpak list --columns=...,size",
+                    }
                     results.append({
                         "name": parts[0],
                         "id": app_id,
@@ -286,8 +294,8 @@ class FlatpakSource(UnifiedSource):
                         "installed": True,
                         "version": parts[2] if len(parts) > 2 else "Unknown",
                         "description": parts[3] if len(parts) > 3 else f"Flatpak app {app_id}",
-                        **size,
-                        "variants": [{"source": "Flatpak", "id": app_id, "installed": True, "managed": True, **size}],
+                        **size_info,
+                        "variants": [{"source": "Flatpak", "id": app_id, "installed": True, "managed": True, **size_info}],
                     })
         except Exception:
             pass
