@@ -21,7 +21,7 @@ class AppDetailsSectionTitle extends StatelessWidget {
             color: theme.colorScheme.secondary,
           )
         : theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             color: theme.colorScheme.primary,
             letterSpacing: 0,
           );

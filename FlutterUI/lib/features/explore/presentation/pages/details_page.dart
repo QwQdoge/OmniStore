@@ -240,7 +240,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
               child: Text(
                 widget.app.name,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
               ),

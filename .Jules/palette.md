@@ -91,3 +91,8 @@
 **Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
 
 **Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
+
+## 2026-07-07 - Refined Detail Typography and Control Density
+
+**Learning:** Using `FontWeight.w900` for app names and section titles creates unnecessary visual noise and reduces reading comfort, especially in dark mode. Backing this off slightly to `w800` maintains a strong hierarchy while feeling more refined. Additionally, default `SegmentedButton` visual density can feel slightly cramped on desktop form factors.
+**Action:** Changed `w900` to `w800` in `AppDetailsHeader`, `AppDetailsShared`, and `DetailsPage`. Applied `visualDensity: VisualDensity.comfortable` to `SegmentedButton` in `AppDetailsHeader` to ensure a more accessible and comfortable touch target. Also aligned `AppDetailsActions` button border radii to `14.0` for consistency with MD3 components.
