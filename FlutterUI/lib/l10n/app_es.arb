@@ -1,6 +1,6 @@
 {
   "@@locale": "es",
-  "searchHint": "Buscar aplicaciones, juegos, herramientas...",
+  "searchHint": "Busca aplicaciones, juegos, herramientas...",
   "featured": "Destacado",
   "forYou": "Para ti",
   "essentialTools": "Herramientas esenciales",
@@ -158,7 +158,7 @@
   "installFailedTitle": "Instalación fallida",
   "uninstallFailedTitle": "Desinstalación fallida",
   "taskCompleted": "Tarea completada",
-  "searchInstalledHint": "Buscar aplicaciones instaladas...",
+  "searchInstalledHint": "Busca aplicaciones instaladas...",
   "@searchInstalledHint": {
     "description": "searchInstalledHint"
   },
@@ -982,7 +982,7 @@
   "ok": "Aceptar",
   "checkNetwork": "Compruebe su conexión a la red e inténtelo de nuevo",
   "githubStoreSubtitle": "Descubre y descarga aplicaciones directamente desde las versiones de GitHub",
-  "searchGithubHint": "Buscar repositorios de GitHub...",
+  "searchGithubHint": "Busca repositorios de GitHub...",
   "recommended": "Recomendado",
   "rankings": "Clasificaciones",
   "trending": "Tendencias",
