@@ -410,10 +410,6 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiCommandCopied": "クリップボードにコピーしました",
-  "@aiCommandCopied": {
-    "description": "aiCommandCopied"
-  },
   "aiRefineSearch": "AI で検索を絞り込む",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
@@ -832,10 +828,6 @@
   "copyName": "名前をコピー",
   "@copyName": {
     "description": "Button to copy the package name"
-  },
-  "nameCopied": "名前をクリップボードにコピーしました",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
   },
   "copiedToClipboard": "クリップボードにコピーしました",
   "tapToCopy": "タップしてコピー",

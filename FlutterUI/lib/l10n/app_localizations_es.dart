@@ -527,9 +527,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiCommandCopied => 'Comando copiado al portapapeles';
-
-  @override
   String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
@@ -1049,9 +1046,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get copyName => 'Copiar nombre';
-
-  @override
-  String get nameCopied => 'Nombre copiado al portapapeles';
 
   @override
   String get copiedToClipboard => 'Copiado al portapapeles';

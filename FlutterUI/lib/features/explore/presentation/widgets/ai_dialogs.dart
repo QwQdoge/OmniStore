@@ -139,7 +139,7 @@ class AICliDialog extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                AppLocalizations.of(context)!.aiCommandCopied,
+                                AppLocalizations.of(context)!.copiedToClipboard,
                               ),
                             ),
                           );
