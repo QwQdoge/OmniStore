@@ -10,8 +10,9 @@ class GitHubForge(GitForge):
         self.headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "Omnistore/0.1"}
 
     async def search_repositories(self, query: str, sort: str = "stars", order: str = "desc") -> List[Dict[str, Any]]:
-        url = f"{self.api_base}/search/repositories?q={query}&sort={sort}&order={order}"
-        async with self.session.get(url, headers=self.headers) as resp:
+        url = f"{self.api_base}/search/repositories"
+        params = {"q": query, "sort": sort, "order": order}
+        async with self.session.get(url, headers=self.headers, params=params) as resp:
             if resp.status == 200:
                 data = await resp.json()
                 return data.get("items", [])

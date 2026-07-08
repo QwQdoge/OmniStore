@@ -12,6 +12,7 @@ class FlatpakAppList extends StatelessWidget {
   final bool isLoading;
   final bool isDesktop;
   final AppPackage? selectedApp;
+  final String? loadError;
   final Future<void> Function() onRetry;
   final ValueChanged<AppPackage> onAppSelected;
 
@@ -21,6 +22,7 @@ class FlatpakAppList extends StatelessWidget {
     required this.isLoading,
     required this.isDesktop,
     this.selectedApp,
+    this.loadError,
     required this.onRetry,
     required this.onAppSelected,
   });
@@ -30,13 +32,14 @@ class FlatpakAppList extends StatelessWidget {
     Widget content;
 
     if (apps.isEmpty && !isLoading) {
+      final hasError = loadError != null;
       content = Center(
         key: const ValueKey('empty'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.cloud_off_rounded,
+              hasError ? Icons.cloud_off_rounded : Icons.inventory_2_rounded,
               size: 64,
               color: Theme.of(
                 context,
@@ -51,7 +54,7 @@ class FlatpakAppList extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.checkNetwork,
+              loadError ?? AppLocalizations.of(context)!.checkNetwork,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

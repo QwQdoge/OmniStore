@@ -1,5 +1,5 @@
 pkgname=omnistore-bin
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 pkgdesc="OmniStore: A unified software repository search and management tool built with Flutter, Rust, and Python."
 arch=('x86_64')

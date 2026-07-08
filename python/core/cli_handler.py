@@ -9,6 +9,7 @@ import re
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from core.backend import OmnistoreBackend, hijacked_print, safe_subprocess
+from core.security_validator import SecurityValidator
 
 class CLIArguments(BaseModel):
     search: Optional[str] = Field(None, max_length=500)
@@ -56,7 +57,7 @@ class CLIArguments(BaseModel):
     force_refresh: bool = False
 
     @field_validator(
-        "search", "install", "remove", "update", "details",
+        "install", "remove", "update", "details",
         "ai_explain", "ai_recommend", "ai_analyze_error", "ai_compare",
         "ai_correct", "ai_conflicts", "launch", "locate"
     )
@@ -71,6 +72,13 @@ class CLIArguments(BaseModel):
             if not re.match(r'^[a-zA-Z0-9._/ +\-@]+$', v_stripped):
                 raise ValueError("Security violation: Argument contains forbidden shell metacharacters.")
             return v_stripped
+        return v
+
+    @field_validator("search")
+    @classmethod
+    def validate_search_input(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            return SecurityValidator.validate_search_query(v)
         return v
 
     @field_validator("import_packages", "export_packages")

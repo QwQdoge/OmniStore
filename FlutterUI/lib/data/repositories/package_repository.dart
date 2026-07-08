@@ -12,6 +12,7 @@ class PackageRepository {
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
+    bool throwOnError = false,
     int? limit,
     int? offset,
   }) async {
@@ -24,6 +25,7 @@ class PackageRepository {
     return BackendService.instance.searchPackages(
       query,
       cancelOngoing: cancelOngoing,
+      throwOnError: throwOnError,
     );
   }
 

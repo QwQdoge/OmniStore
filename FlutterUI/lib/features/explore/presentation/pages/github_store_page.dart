@@ -30,6 +30,12 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   bool _isLoadingUpdated = true;
   bool _isLoadingSearch = false;
 
+  String? _recommendedError;
+  String? _rankingError;
+  String? _trendingError;
+  String? _updatedError;
+  String? _searchError;
+
   bool _isSearching = false;
   String _searchQuery = "";
 
@@ -77,49 +83,67 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     required String query,
     required void Function(bool) setLoading,
     required void Function(List<AppPackage>) setApps,
+    required void Function(String?) setError,
   }) async {
     if (!mounted) return;
-    setState(() => setLoading(true));
+    setState(() {
+      setLoading(true);
+      setError(null);
+    });
     final packageRepo = context.read<PackageRepository>();
     try {
-      final results = await packageRepo.searchPackages(query);
+      final results = await packageRepo.searchPackages(
+        query,
+        throwOnError: true,
+      );
       if (!mounted) return;
       setState(() {
         setApps(results);
+        setError(null);
         setLoading(false);
       });
-    } catch (_) {
-      if (mounted) setState(() => setLoading(false));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        setError(
+          "Could not load GitHub repositories. Check your network and try again.",
+        );
+        setLoading(false);
+      });
     }
   }
 
   // Fetch Recommended (Default search:github)
   Future<void> _fetchRecommended() => _fetchCategory(
-        query: "source:github",
-        setLoading: (v) => _isLoadingRecommended = v,
-        setApps: (v) => _recommendedApps = v,
-      );
+    query: "source:github",
+    setLoading: (v) => _isLoadingRecommended = v,
+    setApps: (v) => _recommendedApps = v,
+    setError: (v) => _recommendedError = v,
+  );
 
   // Fetch Rankings (stars:>5000 sort:stars)
   Future<void> _fetchRankings() => _fetchCategory(
-        query: "source:github:stars:>5000 sort:stars",
-        setLoading: (v) => _isLoadingRankings = v,
-        setApps: (v) => _rankingApps = v,
-      );
+    query: "source:github:stars:>5000 sort:stars",
+    setLoading: (v) => _isLoadingRankings = v,
+    setApps: (v) => _rankingApps = v,
+    setError: (v) => _rankingError = v,
+  );
 
   // Fetch Trending (stars:>1000 sort:forks)
   Future<void> _fetchTrending() => _fetchCategory(
-        query: "source:github:stars:>1000 sort:forks",
-        setLoading: (v) => _isLoadingTrending = v,
-        setApps: (v) => _trendingApps = v,
-      );
+    query: "source:github:stars:>1000 sort:forks",
+    setLoading: (v) => _isLoadingTrending = v,
+    setApps: (v) => _trendingApps = v,
+    setError: (v) => _trendingError = v,
+  );
 
   // Fetch Recently Updated (stars:>500 sort:updated)
   Future<void> _fetchUpdated() => _fetchCategory(
-        query: "source:github:stars:>500 sort:updated",
-        setLoading: (v) => _isLoadingUpdated = v,
-        setApps: (v) => _updatedApps = v,
-      );
+    query: "source:github:stars:>500 sort:updated",
+    setLoading: (v) => _isLoadingUpdated = v,
+    setApps: (v) => _updatedApps = v,
+    setError: (v) => _updatedError = v,
+  );
 
   // Handle Search
   Future<void> _performSearch(String query) async {
@@ -135,19 +159,29 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       _isSearching = true;
       _searchQuery = query;
       _isLoadingSearch = true;
+      _searchError = null;
     });
 
     final packageRepo = context.read<PackageRepository>();
     try {
       // Direct query search in GitHub source
-      final results = await packageRepo.searchPackages("source:github:$query");
+      final results = await packageRepo.searchPackages(
+        "source:github:$query",
+        throwOnError: true,
+      );
       if (!mounted) return;
       setState(() {
         _searchApps = results;
+        _searchError = null;
         _isLoadingSearch = false;
       });
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingSearch = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _searchError =
+            "Could not search GitHub repositories. Check your network and try again.";
+        _isLoadingSearch = false;
+      });
     }
   }
 
@@ -157,6 +191,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       _isSearching = false;
       _searchQuery = "";
       _searchApps = [];
+      _searchError = null;
     });
   }
 
@@ -270,29 +305,29 @@ class _GitHubStorePageState extends State<GitHubStorePage>
                         key: const ValueKey('tab_bar_view'),
                         controller: _tabController,
                         children: [
-                          GitHubAppList(
+                          _buildGitHubList(
                             apps: _recommendedApps,
                             isLoading: _isLoadingRecommended,
                             keyPrefix: 'recommended',
-                            onRetry: _handleRefresh,
+                            error: _recommendedError,
                           ),
-                          GitHubAppList(
+                          _buildGitHubList(
                             apps: _rankingApps,
                             isLoading: _isLoadingRankings,
                             keyPrefix: 'rankings',
-                            onRetry: _handleRefresh,
+                            error: _rankingError,
                           ),
-                          GitHubAppList(
+                          _buildGitHubList(
                             apps: _trendingApps,
                             isLoading: _isLoadingTrending,
                             keyPrefix: 'trending',
-                            onRetry: _handleRefresh,
+                            error: _trendingError,
                           ),
-                          GitHubAppList(
+                          _buildGitHubList(
                             apps: _updatedApps,
                             isLoading: _isLoadingUpdated,
                             keyPrefix: 'updated',
-                            onRetry: _handleRefresh,
+                            error: _updatedError,
                           ),
                         ],
                       ),
@@ -305,16 +340,38 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   }
 
   Widget _buildSearchResultsView({Key? key}) {
+    final hasError = _searchError != null;
     return GitHubAppList(
       key: key,
       apps: _searchApps,
       isLoading: _isLoadingSearch,
       keyPrefix: 'search',
       onRetry: _handleRefresh,
-      emptyIcon: Icons.search_off_rounded,
-      emptyText: "No results found",
-      emptySubtitle: "Try searching for something else",
-      showRetry: false,
+      emptyIcon: hasError ? Icons.cloud_off_rounded : Icons.search_off_rounded,
+      emptyText: hasError ? "GitHub search failed" : "No results found",
+      emptySubtitle: _searchError ?? "Try searching for something else",
+      showRetry: hasError,
+    );
+  }
+
+  Widget _buildGitHubList({
+    required List<AppPackage> apps,
+    required bool isLoading,
+    required String keyPrefix,
+    required String? error,
+  }) {
+    final hasError = error != null;
+    return GitHubAppList(
+      apps: apps,
+      isLoading: isLoading,
+      keyPrefix: keyPrefix,
+      onRetry: _handleRefresh,
+      emptyIcon: hasError ? Icons.cloud_off_rounded : Icons.inventory_2_rounded,
+      emptyText: hasError
+          ? "GitHub Store unavailable"
+          : "No GitHub repositories found",
+      emptySubtitle: error ?? "Pull to refresh or try another category.",
+      showRetry: true,
     );
   }
 }
@@ -345,14 +402,8 @@ class _GitHubStoreHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [
-                  scheme.surfaceContainerHigh,
-                  scheme.surfaceContainerLowest,
-                ]
-              : [
-                  scheme.surfaceContainerLowest,
-                  scheme.surfaceContainerLow,
-                ],
+              ? [scheme.surfaceContainerHigh, scheme.surfaceContainerLowest]
+              : [scheme.surfaceContainerLowest, scheme.surfaceContainerLow],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
@@ -375,9 +426,7 @@ class _GitHubStoreHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(
-                    alpha: isDark ? 0.3 : 0.05,
-                  ),
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: scheme.outlineVariant.withValues(alpha: 0.3),

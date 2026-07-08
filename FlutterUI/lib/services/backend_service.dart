@@ -325,7 +325,10 @@ class BackendService {
     return _ipc.send(action, args, kwargs: kwargs);
   }
 
-  Future<ProcessResult?> runRaw(List<String> args, {Duration timeout = const Duration(seconds: 30)}) async {
+  Future<ProcessResult?> runRaw(
+    List<String> args, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
     final apiKey = await PythonBridge.getApiKey();
     return _executor.run(args: args, timeout: timeout, apiKey: apiKey);
   }
@@ -397,6 +400,7 @@ class BackendService {
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
+    bool throwOnError = false,
   }) async {
     if (kIsWeb) {
       return PackageRepository().searchPackages(
@@ -410,9 +414,10 @@ class BackendService {
     if (trimmedQuery.length > 500) return []; // Fail fast check
 
     try {
-      SecurityValidator.validateString(trimmedQuery, "Search Query");
+      SecurityValidator.validateSearchQuery(trimmedQuery, "Search Query");
     } catch (e) {
       debugPrint("Security: $e");
+      if (throwOnError) rethrow;
       return [];
     }
 
@@ -453,9 +458,13 @@ class BackendService {
               .toList();
         }
       }
+      if (throwOnError) {
+        throw StateError("Search failed for query: $trimmedQuery");
+      }
       return [];
     } catch (e) {
       debugPrint("searchPackages [query: $query] Error: $e");
+      if (throwOnError) rethrow;
       return [];
     } finally {
       activeSearchProcess = null;
@@ -472,7 +481,9 @@ class BackendService {
 
     // Boundary Defense: Reject payloads > 10MB to prevent OOM
     if (rawInput.length > 10 * 1024 * 1024) {
-      debugPrint("Security Warning: Rejected JSON payload exceeding 10MB limit");
+      debugPrint(
+        "Security Warning: Rejected JSON payload exceeding 10MB limit",
+      );
       return null;
     }
 
@@ -726,14 +737,18 @@ class BackendService {
   // Fail-safe AI counter
   int _aiFailureCount = 0;
 
-  Future<String> aiExplain(String name, String desc) => _aiBridge.explain(name, desc);
+  Future<String> aiExplain(String name, String desc) =>
+      _aiBridge.explain(name, desc);
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
     return _aiBridge.call(["--ai-changelog", "$n,$c,$next"]);
   }
 
   Future<String> aiGenerateCLI(String n, String s) async {
-    return _aiBridge.call(["--ai-cli", "$n,$s"], timeout: const Duration(seconds: 20));
+    return _aiBridge.call([
+      "--ai-cli",
+      "$n,$s",
+    ], timeout: const Duration(seconds: 20));
   }
 
   Future<String> aiDetectConflicts(String n) async {

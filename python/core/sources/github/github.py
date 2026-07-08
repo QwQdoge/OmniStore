@@ -306,24 +306,24 @@ class GitHubSource(UnifiedSource):
 
     async def get_recommendations(self) -> Dict[str, List[Dict[str, Any]]]:
         # Fetch trending/popular repos from GitHub as recommendations
-        search_url = "https://api.github.com/search/repositories?q=stars:>1000&sort=stars&order=desc"
         try:
-            async with self.session.get(search_url, headers=self.forge.headers) as resp:
-                if resp.status != 200: return {"featured": [], "trending": [], "for_you": []}
-                data = await resp.json()
-                repos = data.get("items", [])
+            repos = await self.forge.search_repositories(
+                "stars:>1000",
+                sort="stars",
+                order="desc",
+            )
 
-                featured = []
-                for repo in repos[:20]:
-                    featured.append({
-                        "name": repo["name"],
-                        "id": repo["full_name"],
-                        "description": repo.get("description", ""),
-                        "source": "GitHub",
-                        "icon": repo.get("owner", {}).get("avatar_url"),
-                        "installed": self._is_installed(repo["full_name"]),
-                        "variants": [{"source": "GitHub", "id": repo["full_name"]}]
-                    })
-                return {"featured": featured, "trending": [], "for_you": []}
+            featured = []
+            for repo in repos[:20]:
+                featured.append({
+                    "name": repo["name"],
+                    "id": repo["full_name"],
+                    "description": repo.get("description", ""),
+                    "source": "GitHub",
+                    "icon": repo.get("owner", {}).get("avatar_url"),
+                    "installed": self._is_installed(repo["full_name"]),
+                    "variants": [{"source": "GitHub", "id": repo["full_name"]}]
+                })
+            return {"featured": featured, "trending": [], "for_you": []}
         except Exception:
             return {"featured": [], "trending": [], "for_you": []}

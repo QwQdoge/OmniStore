@@ -610,7 +610,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：如果您使用 Ollama，请确保它已在后台运行并设置了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -2304,7 +2304,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體源';
+  String get pluginsAndSources => '外掛程式與軟體存放庫';
 
   @override
   String get refreshPlugins => '重新整理外掛程式';

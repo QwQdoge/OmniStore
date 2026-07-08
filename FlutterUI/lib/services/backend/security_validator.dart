@@ -12,7 +12,30 @@ class SecurityValidator {
     // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
     if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
       throw ArgumentError(
-          "Invalid characters in $name: Security policy forbids shell metacharacters.");
+        "Invalid characters in $name: Security policy forbids shell metacharacters.",
+      );
+    }
+  }
+
+  /// Search queries support source filters and repository qualifiers such as
+  /// source:github stars:>5000 sort:stars, while still blocking shell syntax.
+  static void validateSearchQuery(String? val, String name) {
+    if (val == null || val.trim().isEmpty) {
+      throw ArgumentError("$name cannot be null or empty");
+    }
+    final trimmed = val.trim();
+    if (trimmed.length > 500) {
+      throw ArgumentError("$name is too long (max 500 characters)");
+    }
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
+      throw ArgumentError(
+        "Security: $name contains forbidden shell metacharacters.",
+      );
+    }
+    if (!RegExp(r'^[a-zA-Z0-9._/ +\-@:<>~=]+$').hasMatch(trimmed)) {
+      throw ArgumentError(
+        "Security: $name contains invalid search characters.",
+      );
     }
   }
 
@@ -54,12 +77,14 @@ class SecurityValidator {
     }
     if (trimmed.contains('..')) {
       throw ArgumentError(
-          "Security: Relative path traversal ('..') is strictly forbidden.");
+        "Security: Relative path traversal ('..') is strictly forbidden.",
+      );
     }
     // Cross-platform support: Allow Windows-style paths (C:\...)
     if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
       throw ArgumentError(
-          "Invalid characters in path: Security policy forbids shell metacharacters.");
+        "Invalid characters in path: Security policy forbids shell metacharacters.",
+      );
     }
   }
 }

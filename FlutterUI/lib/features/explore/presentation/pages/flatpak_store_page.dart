@@ -16,6 +16,7 @@ class FlatpakStorePage extends StatefulWidget {
 class _FlatpakStorePageState extends State<FlatpakStorePage> {
   List<AppPackage> _apps = [];
   bool _isLoading = true;
+  String? _loadError;
   AppPackage? _selectedApp;
 
   @override
@@ -26,17 +27,33 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
 
   Future<void> _refresh() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
-    final packageRepo = context.read<PackageRepository>();
-    final results = await packageRepo.searchPackages("source:flatpak");
-    if (!mounted) return;
     setState(() {
-      _apps = results;
-      _isLoading = false;
-      if (results.isNotEmpty && _selectedApp == null) {
-        _selectedApp = results.first;
-      }
+      _isLoading = true;
+      _loadError = null;
     });
+    final packageRepo = context.read<PackageRepository>();
+    try {
+      final results = await packageRepo.searchPackages(
+        "source:flatpak",
+        throwOnError: true,
+      );
+      if (!mounted) return;
+      setState(() {
+        _apps = results;
+        _loadError = null;
+        _isLoading = false;
+        if (results.isNotEmpty && _selectedApp == null) {
+          _selectedApp = results.first;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadError =
+            "Could not load Flatpak apps. Check Flathub/network access and try again.";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -48,6 +65,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
       isLoading: _isLoading,
       isDesktop: isDesktop,
       selectedApp: _selectedApp,
+      loadError: _loadError,
       onRetry: _refresh,
       onAppSelected: (app) {
         setState(() {

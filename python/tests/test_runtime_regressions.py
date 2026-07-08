@@ -8,6 +8,8 @@ from core import backend as backend_module
 from core import cli_handler
 from core.cli_handler import CLIArguments
 from core.config_loader import ConfigManager
+from core.security_validator import SecurityValidator
+from core.sources.git_forges.github import GitHubForge
 from daemon_main import parse_json_output
 
 
@@ -19,6 +21,25 @@ def test_appimage_custom_repo_requires_url():
 def test_appimage_custom_repo_accepts_url_only_shortcut():
     args = CLIArguments(add_custom_repo="appimage,https://example.com/feed.json")
     assert args.add_custom_repo == "appimage,https://example.com/feed.json"
+
+
+def test_search_cli_accepts_github_store_query_syntax():
+    args = CLIArguments(search="source:github stars:>5000 sort:stars")
+    assert args.search == "source:github stars:>5000 sort:stars"
+
+
+def test_search_validator_rejects_shell_control_syntax():
+    for char in [";", "&", "|", "`", "$", "(", ")", "\\", "'", '"']:
+        with pytest.raises(ValueError):
+            SecurityValidator.validate_search_query(f"source:github{char} rm -rf /")
+
+
+def test_github_forge_uses_structured_query_params():
+    source = inspect.getsource(GitHubForge.search_repositories)
+
+    assert "params = " in source
+    assert "params=params" in source
+    assert "?q={query}" not in source
 
 
 def test_daemon_update_check_parses_json_after_log_noise():

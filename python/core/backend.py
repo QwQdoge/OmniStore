@@ -372,7 +372,7 @@ class OmnistoreBackend:
     @safe_command
     async def run_search(self, query: str, json_mode: bool = False) -> Any:
         """Murphy-proof search command with structured response."""
-        valid_query = SecurityValidator.validate_string(query, "Search Query")
+        valid_query = SecurityValidator.validate_search_query(query, "Search Query")
         async with self:
             if not self.manager:
                 raise RuntimeError("SearchManager is not initialized.")

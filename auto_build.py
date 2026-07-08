@@ -26,17 +26,23 @@ def run_command(cmd, cwd, name):
     print(f"✅ {name} 成功！")
 
 def ensure_venv():
-    # Check if .venv already exists in the project
-    venv_dir = PYTHON_PROJECT_DIR / ".venv"
-    if not venv_dir.exists():
-        venv_dir = PYTHON_PROJECT_DIR / "build_venv"
+    def venv_tools(path):
+        if sys.platform == "win32":
+            return path / "Scripts" / "pip.exe", path / "Scripts" / "pyinstaller.exe"
+        return path / "bin" / "pip", path / "bin" / "pyinstaller"
 
-    venv_pip = venv_dir / "bin" / "pip"
-    venv_pyinstaller = venv_dir / "bin" / "pyinstaller"
+    # Prefer a reusable venv only when it matches the current platform layout.
+    primary_venv = PYTHON_PROJECT_DIR / ".venv"
+    fallback_venv = PYTHON_PROJECT_DIR / "build_venv"
+    venv_dir = primary_venv
+    if primary_venv.exists():
+        primary_pip, _ = venv_tools(primary_venv)
+        if not primary_pip.exists():
+            venv_dir = fallback_venv
+    else:
+        venv_dir = fallback_venv
 
-    if sys.platform == "win32":
-        venv_pip = venv_dir / "Scripts" / "pip.exe"
-        venv_pyinstaller = venv_dir / "Scripts" / "pyinstaller.exe"
+    venv_pip, venv_pyinstaller = venv_tools(venv_dir)
 
     if not venv_dir.exists():
         print("Creating virtual environment...")
@@ -48,8 +54,10 @@ def ensure_venv():
     if venv_pip.exists():
         print("Checking/installing dependencies...")
         try:
-            subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=False, cwd=str(PYTHON_PROJECT_DIR))
-            subprocess.run([str(venv_pip), "install", "pyinstaller"], check=False, cwd=str(PYTHON_PROJECT_DIR))
+            pip_base = [str(venv_pip), "--disable-pip-version-check"]
+            subprocess.run(pip_base + ["install", "-r", "requirements.txt"], check=False, cwd=str(PYTHON_PROJECT_DIR))
+            if not venv_pyinstaller.exists():
+                subprocess.run(pip_base + ["install", "pyinstaller"], check=False, cwd=str(PYTHON_PROJECT_DIR))
         except Exception as e:
             print(f"⚠️ Dependency installation skipped/failed (possibly offline): {e}")
 

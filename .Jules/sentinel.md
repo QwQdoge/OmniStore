@@ -124,3 +124,11 @@ Extensive audit revealed asynchronous gaps where `context` was accessed after an
 
 Action:
 Implemented a strict `if (!mounted) return;` guard immediately at the beginning of `_handleFullExit` in `FlutterUI/lib/app/main_navigation.dart`, which is invoked after asynchronous gaps during window shutdown (`onWindowClose`). This proactively prevents "use of BuildContext across async gaps" errors.
+
+## 2026-07-08 - [Exit Flow Async Lifecycle Tail Guard]
+
+Learning:
+Even after capturing services before shutdown awaits, the final window-manager calls in `_handleFullExit` still execute after multiple async gaps. If the widget is unmounted during backend cleanup, calling window APIs from the stale lifecycle path can create hard-to-reproduce shutdown crashes.
+
+Action:
+Added a final `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `FlutterUI/lib/app/main_navigation.dart`. Rechecked nearby home and storage cleanup paths; they already had the mounted guards recommended by the audit.

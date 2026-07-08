@@ -13,6 +13,10 @@ class SecurityValidator:
     # Allowing alphanumeric, dots, underscores, dashes, slashes, and spaces.
     SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ -]+$')
 
+    # Search queries need source filters and GitHub qualifiers such as
+    # source:github stars:>5000 sort:stars, while still rejecting shell syntax.
+    SAFE_SEARCH_QUERY_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:<>~=]+$')
+
     # Cross-platform path regex
     SAFE_PATH_RE = re.compile(r'^[a-zA-Z0-9._/\\: -]+$')
 
@@ -40,6 +44,27 @@ class SecurityValidator:
 
         if not cls.SAFE_STRING_RE.match(trimmed):
             raise ValueError(f"Security: {name} contains forbidden characters or shell metacharacters.")
+
+        return trimmed
+
+    @classmethod
+    def validate_search_query(cls, val: Optional[str], name: str = "Search Query", max_length: int = 500) -> str:
+        """Validate user/search-source query syntax without allowing shell control characters."""
+        if val is None:
+            raise ValueError(f"{name} cannot be null")
+
+        trimmed = val.strip()
+        if not trimmed:
+            raise ValueError(f"{name} cannot be empty")
+
+        if len(trimmed) > max_length:
+            raise ValueError(f"{name} is too long (max {max_length} characters)")
+
+        if any(c in trimmed for c in ";&|`$()\\'\""):
+            raise ValueError(f"Security: {name} contains forbidden shell metacharacters.")
+
+        if not cls.SAFE_SEARCH_QUERY_RE.match(trimmed):
+            raise ValueError(f"Security: {name} contains invalid search characters.")
 
         return trimmed
 

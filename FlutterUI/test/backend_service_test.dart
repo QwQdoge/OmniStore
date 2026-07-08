@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/services/backend/platform_environment.dart';
+import 'package:frontend/services/backend/security_validator.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 
@@ -62,5 +63,25 @@ void main() {
       backend.searchPackages("", cancelOngoing: false),
       isA<Future<List>>(),
     ); // Triggers trimmed empty query early return
+  });
+
+  test('Search validator accepts GitHub store query syntax', () {
+    expect(
+      () => SecurityValidator.validateSearchQuery(
+        'source:github:stars:>5000 sort:stars',
+        'Search Query',
+      ),
+      returnsNormally,
+    );
+  });
+
+  test('Search validator rejects shell control syntax', () {
+    expect(
+      () => SecurityValidator.validateSearchQuery(
+        'source:github; rm -rf /',
+        'Search Query',
+      ),
+      throwsArgumentError,
+    );
   });
 }
