@@ -491,9 +491,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiCopyCommand => '复制命令';
 
   @override
-  String get aiCommandCopied => '命令已复制到剪贴板';
-
-  @override
   String get aiRefineSearch => '使用 AI 优化搜索';
 
   @override
@@ -610,7 +607,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：如果您使用 Ollama，请确保它已在后台运行并设置了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -972,9 +969,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copyName => '复制名称';
-
-  @override
-  String get nameCopied => '名称已复制到剪贴板';
 
   @override
   String get copiedToClipboard => '已复制到剪贴板';
@@ -1659,9 +1653,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCopyCommand => '複製命令';
 
   @override
-  String get aiCommandCopied => '命令已複製到剪貼簿';
-
-  @override
   String get aiRefineSearch => '使用 AI 精煉搜尋';
 
   @override
@@ -2142,9 +2133,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get copyName => '複製名稱';
 
   @override
-  String get nameCopied => '名稱已複製到剪貼簿';
-
-  @override
   String get copiedToClipboard => '已複製到剪貼簿';
 
   @override
@@ -2304,7 +2292,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體源';
+  String get pluginsAndSources => '外掛程式與軟體存放庫';
 
   @override
   String get refreshPlugins => '重新整理外掛程式';

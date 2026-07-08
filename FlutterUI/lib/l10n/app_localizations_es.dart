@@ -527,9 +527,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiCommandCopied => 'Comando copiado al portapapeles';
-
-  @override
   String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
@@ -637,11 +634,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Seleccione su fuente de modelo de IA (Local o Nube)';
 
   @override
-  String get aiEndpointHelper => 'Ollama por defecto es http://localhost:11434';
+  String get aiEndpointHelper =>
+      'Ollama usa por defecto http://localhost:11434';
 
   @override
   String get aiApiKeyHelper =>
-      'Deje en blanco para Ollama, introduzca sk-xxx para OpenAI';
+      'Deje en blanco para Ollama e introduzca sk-xxx para OpenAI';
 
   @override
   String get howToGetApiKey => '¿Cómo obtener una clave API?';
@@ -828,8 +826,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count aplicaciones disponibles',
-      one: '1 aplicación disponible',
+      other: '$count actualizaciones disponibles',
+      one: '1 actualización disponible',
     );
     return '$_temp0';
   }
@@ -1048,9 +1046,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get copyName => 'Copiar nombre';
-
-  @override
-  String get nameCopied => 'Nombre copiado al portapapeles';
 
   @override
   String get copiedToClipboard => 'Copiado al portapapeles';
