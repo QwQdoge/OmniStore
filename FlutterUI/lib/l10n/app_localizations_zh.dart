@@ -491,9 +491,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiCopyCommand => '复制命令';
 
   @override
-  String get aiCommandCopied => '命令已复制到剪贴板';
-
-  @override
   String get aiRefineSearch => '使用 AI 优化搜索';
 
   @override
@@ -972,9 +969,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copyName => '复制名称';
-
-  @override
-  String get nameCopied => '名称已复制到剪贴板';
 
   @override
   String get copiedToClipboard => '已复制到剪贴板';
@@ -1659,9 +1653,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCopyCommand => '複製命令';
 
   @override
-  String get aiCommandCopied => '命令已複製到剪貼簿';
-
-  @override
   String get aiRefineSearch => '使用 AI 精煉搜尋';
 
   @override
@@ -2140,9 +2131,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get copyName => '複製名稱';
-
-  @override
-  String get nameCopied => '名稱已複製到剪貼簿';
 
   @override
   String get copiedToClipboard => '已複製到剪貼簿';
