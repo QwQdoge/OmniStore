@@ -1044,9 +1044,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyName => 'Copy Name';
 
   @override
-  String get nameCopied => 'Name copied to clipboard';
-
-  @override
   String get copiedToClipboard => 'Copied to clipboard';
 
   @override

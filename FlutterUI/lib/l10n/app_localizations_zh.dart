@@ -974,9 +974,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copyName => '复制名称';
 
   @override
-  String get nameCopied => '名称已复制到剪贴板';
-
-  @override
   String get copiedToClipboard => '已复制到剪贴板';
 
   @override
@@ -2140,9 +2137,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get copyName => '複製名稱';
-
-  @override
-  String get nameCopied => '名稱已複製到剪貼簿';
 
   @override
   String get copiedToClipboard => '已複製到剪貼簿';

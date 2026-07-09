@@ -979,9 +979,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get copyName => '名前をコピー';
 
   @override
-  String get nameCopied => '名前をクリップボードにコピーしました';
-
-  @override
   String get copiedToClipboard => 'クリップボードにコピーしました';
 
   @override

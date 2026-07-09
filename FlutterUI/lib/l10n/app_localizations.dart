@@ -1921,12 +1921,6 @@ abstract class AppLocalizations {
   /// **'Copy Name'**
   String get copyName;
 
-  /// Snackbar message indicating name was copied to clipboard
-  ///
-  /// In en, this message translates to:
-  /// **'Name copied to clipboard'**
-  String get nameCopied;
-
   /// No description provided for @copiedToClipboard.
   ///
   /// In en, this message translates to:

@@ -837,10 +837,6 @@
   "@copyName": {
     "description": "Button to copy the package name"
   },
-  "nameCopied": "名称已复制到剪贴板",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
-  },
   "copiedToClipboard": "已复制到剪贴板",
   "tapToCopy": "点击复制",
   "language": "界面语言",

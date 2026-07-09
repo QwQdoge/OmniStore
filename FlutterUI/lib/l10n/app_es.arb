@@ -833,10 +833,6 @@
   "@copyName": {
     "description": "Button to copy the package name"
   },
-  "nameCopied": "Nombre copiado al portapapeles",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
-  },
   "copiedToClipboard": "Copiado al portapapeles",
   "tapToCopy": "Toca para copiar",
   "language": "Idioma de la interfaz",

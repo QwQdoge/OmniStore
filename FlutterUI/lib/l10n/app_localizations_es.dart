@@ -1051,9 +1051,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get copyName => 'Copiar nombre';
 
   @override
-  String get nameCopied => 'Nombre copiado al portapapeles';
-
-  @override
   String get copiedToClipboard => 'Copiado al portapapeles';
 
   @override
