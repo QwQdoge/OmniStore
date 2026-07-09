@@ -20,11 +20,15 @@ class AppAboutSection extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return AnimatedSwitcher(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.fastOutSlowIn,
-      child: isLoading
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topLeft,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.fastOutSlowIn,
+        child: isLoading
           ? const ParagraphSkeleton(key: ValueKey('loading'))
           : MarkdownBody(
               key: const ValueKey('loaded'),
@@ -35,6 +39,7 @@ class AppAboutSection extends StatelessWidget {
               selectable: true,
               styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
             ),
+      ),
     );
   }
 }
