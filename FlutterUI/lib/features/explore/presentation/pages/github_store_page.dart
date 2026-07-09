@@ -2,6 +2,7 @@ import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/features/explore/presentation/widgets/github_app_list.dart';
 
 class GitHubStorePage extends StatefulWidget {
@@ -432,12 +433,12 @@ class _GitHubStoreHeader extends StatelessWidget {
                     color: scheme.outlineVariant.withValues(alpha: 0.3),
                   ),
                 ),
-                child: Image.network(
-                  "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                child: CachedNetworkImage(
+                  imageUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
                   width: 32,
                   height: 32,
                   color: isDark ? Colors.white : Colors.black87,
-                  errorBuilder: (context, error, stackTrace) =>
+                  errorWidget: (context, url, error) =>
                       const Icon(Icons.code_rounded, size: 32),
                 ),
               ),

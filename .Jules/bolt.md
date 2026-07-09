@@ -70,3 +70,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Redundant string transformations (like `.lower()`) and dictionary allocations inside hot search loops (e.g., scoring hundreds of items) create significant CPU overhead. Additionally, hover-triggered animations in common list items (like `AppCard`) can trigger expensive repaints of the entire list if not isolated.
 
 **Action:** Hoisted priority dictionary and `.lower()` transformations out of search loops in `manager.py` and `scoring.py`. Wrapped `ScaleTransition` in `AppCard` with a `RepaintBoundary` to isolate hover animations.
+
+## 2026-07-06 - Image Loading Optimization
+
+**Learning:** `Image.network` downloads the image over the network every time it is rendered, unless handled by custom caching logic. For static images or frequently accessed assets, using `CachedNetworkImage` prevents redundant network requests and improves loading performance.
+
+**Action:** Replaced `Image.network` with `CachedNetworkImage` for the GitHub store logo in `github_store_page.dart`.
