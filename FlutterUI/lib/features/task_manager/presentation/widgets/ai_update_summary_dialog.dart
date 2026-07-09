@@ -76,11 +76,16 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
         child: FutureBuilder<String>(
           future: _summaryFuture,
           builder: (context, snapshot) {
-            return AnimatedSwitcher(
+            return AnimatedSize(
               duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topLeft,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+              ),
             );
           },
         ),

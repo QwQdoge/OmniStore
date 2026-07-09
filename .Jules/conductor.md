@@ -1,23 +1,18 @@
-- Replaced generic LinearProgressIndicator with Skeleton inside AnimatedSwitcher in ai_app_resolver.dart and storage_cleanup_card.dart.
-- Wrapped content resolution in github_app_list.dart with AnimatedSwitcher to prevent abrupt jumps between loading/empty/list states.
-- Ensured all new and existing AnimatedSwitchers use a standard duration of 300ms.
-- Added TweenAnimationBuilder to animate progress value changes in TaskProgressBar to reduce abrupt transitions.\n- Reverted replacing the indeterminate standard LinearProgressIndicator with a Skeleton to maintain UI clarity.
--- - Updated HamburgerButton AnimatedSwitcher to 300ms.
-- Updated AppDetailsPage AnimatedOpacity and TweenAnimationBuilder to 300ms.
-- Updated AdaptiveNavigationShell AnimatedContainer to 300ms.
-- Updated SmoothProgressBar AnimatedContainer to 300ms.
-- Wrapped TasksTab conditional empty/list rendering in AnimatedSwitcher (300ms).
-- Wrapped UpdatesTab conditional empty/list rendering in AnimatedSwitcher (300ms).
-- Wrapped AppShelfs (forYou, hotApps) and _buildHeroSection in HomePage with AnimatedSwitcher (300ms) to ensure smooth transitions from empty to populated states.
-- Wrapped trending AppShelf in DiscoveryContent with AnimatedSwitcher (300ms).
-- Wrapped TabBar and main TabBarView/SearchResults in GitHubStorePage with AnimatedSwitcher (300ms) to prevent abrupt UI changes when toggling search mode.
+# Conductor Agent Journal
 
-## YYYY-MM-DD
-- Added `switchInCurve: Curves.easeOutCubic` and `switchOutCurve: Curves.fastOutSlowIn` to all `AnimatedSwitcher` instances in the Flutter UI to make the transition smoother, adhering to subtle MD3 motion rules.
-- Added `TweenAnimationBuilder` to `TaskProgressBar` in `core/layout/widgets/task_progress_bar.dart` for smooth animation of task progress using `Curves.easeOutCubic`.
-- Added `TweenAnimationBuilder` to `StorageCleanupCard` in `features/settings/presentation/widgets/storage_cleanup_card.dart` for smooth animation of storage and task progress indicators using `Curves.easeOutCubic`.
-- Updated curves of implicit animations (`AnimatedContainer`, `AnimatedSize`, `AnimatedOpacity`) in core widgets to `Curves.easeOutCubic`.
-- Wrapped source plugins loading state in `sources_config_card.dart` with `AnimatedSwitcher` to prevent abrupt transitions.
-- Added `AnimatedSize` to wrap `AppScreenshots` section in `AppMainContent` to prevent abrupt height changes when loading details.
-- Wrapped `AppTechnicalDetails` in `AppMainContent` with `AnimatedSwitcher` to ensure smooth appearance when switching states (loading vs loaded).
-- Updated `PageTransitionsTheme` in `omnistore_theme.dart` to use `ZoomPageTransitionsBuilder` for Android, Linux, macOS, and Windows. This aligns with Material Design 3 guidelines for improved motion and transition clarity across platforms, replacing the legacy `FadeUpwardsPageTransitionsBuilder`.
+## Motion Polish: Eliminating Layout Jumps
+
+When using `AnimatedSwitcher` to transition between widgets of different sizes (e.g., swapping a fixed-height loading skeleton for dynamically sized text or lists), Flutter's layout will immediately jump to the new widget's intrinsic size before the cross-fade animation completes. This causes an abrupt, jarring visual transition.
+
+To fix this and maintain smooth, implicit motion, we can wrap the `AnimatedSwitcher` in an `AnimatedSize` widget. This ensures both the opacity cross-fade and the layout height transition occur concurrently and smoothly.
+
+### Actions Taken
+Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using standard MD3 transition curves (`Curves.easeOutCubic`) and appropriate alignments:
+
+1.  **`AppAboutSection`**: Transitioning from a loading `ParagraphSkeleton` to loaded `MarkdownBody`. Set alignment to `Alignment.topLeft`.
+2.  **`AppMainContent`**: Transitioning the `AppTechnicalDetails` block when extra asynchronous details are loaded. Set alignment to `Alignment.topCenter`.
+3.  **`AIAppResolver`**: Transitioning from a 32dp `Skeleton`, an empty state, and a horizontal 100dp `ListView`. Set alignment to `Alignment.topCenter`.
+4.  **`AppDetailsActions`**: Transitioning between the static Install/Uninstall buttons and the dynamic `SmoothProgressBar` active task widget. Set alignment to `Alignment.topCenter`.
+5.  **`AIUpdateSummaryDialog`**: Transitioning from a loading state to a variable-height AI response `MarkdownBody`. Set alignment to `Alignment.topLeft`.
+
+These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps.
