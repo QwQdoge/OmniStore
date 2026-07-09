@@ -52,7 +52,7 @@ async def safe_subprocess(*args, **kwargs):
                     try:
                         # Murphy-proof: Use wait_for with a strict timeout to avoid hanging the entire event loop
                         await asyncio.wait_for(proc.wait(), timeout=5)
-                    except (asyncio.TimeoutError, Exception):
+                    except BaseException as wait_err:
                         # 2. Escalation: Force group kill (SIGKILL to the process group)
                         if os.name == 'posix':
                             try:
@@ -68,8 +68,12 @@ async def safe_subprocess(*args, **kwargs):
 
                         # Final wait to reap the zombie
                         try:
-                            await asyncio.wait_for(proc.wait(), timeout=2)
-                        except:
+                            # Shield the final wait to ensure it's not interrupted by the same cancellation
+                            await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
+                        except BaseException:
                             pass
+
+                        if not isinstance(wait_err, (asyncio.TimeoutError, Exception)):
+                            raise
             except Exception as e:
                 logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid if proc else 'N/A'}): {e}")

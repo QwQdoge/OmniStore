@@ -303,6 +303,9 @@ class OmnistoreBackend:
                     )
                 except (asyncio.TimeoutError, Exception):
                     logging.warning("OmnistoreBackend: Some tasks failed to terminate gracefully during cleanup.")
+                except BaseException as e:
+                    logging.warning(f"OmnistoreBackend: Cleanup interrupted by {type(e).__name__}.")
+                    raise
                 self._task_registry.clear()
 
             if self._executor:
