@@ -92,10 +92,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get packageManager => '包管理器';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方源）';
+  String get pacmanOfficial => 'Pacman（官方软件源）';
 
   @override
-  String get aurUser => 'AUR（用户源）';
+  String get aurUser => 'AUR（用户软件源）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '应用源优先级（拖动排序）';
+  String get sourcePriority => '软件源优先级（拖动排序）';
 
   @override
   String get maxResults => '最大显示结果数';
@@ -250,7 +250,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore：共有 $count 项可更新';
+    return '发现 $count 个可用更新';
   }
 
   @override
@@ -545,10 +545,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+  String get envCheckSubtitle => '正在确保系统已准备就绪';
 
   @override
-  String get envFatalDesc => '检测到您的系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。';
+  String get envFatalDesc => '系统并非基于 Arch Linux，大部分核心功能将无法使用。';
 
   @override
   String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
@@ -1418,7 +1418,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String trayTooltipUpdates(int count) {
-    return 'OmniStore：共有 $count 項可更新';
+    return '發現 $count 個可用更新';
   }
 
   @override
@@ -1713,10 +1713,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
+  String get envCheckSubtitle => '正在確保系統已準備就緒';
 
   @override
-  String get envFatalDesc => '偵測到您的系統似乎並非基於 Arch Linux，大部分核心功能將無法使用。';
+  String get envFatalDesc => '系統並非基於 Arch Linux，大部分核心功能將無法使用。';
 
   @override
   String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';

@@ -83,7 +83,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searching => '検索中...';
 
   @override
-  String get activity => 'タスク履歴';
+  String get activity => 'アクティビティ';
 
   @override
   String get category => 'カテゴリー';

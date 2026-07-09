@@ -34,7 +34,7 @@
   },
   "noResults": "検索結果が見つかりませんでした",
   "searching": "検索中...",
-  "activity": "タスク履歴",
+  "activity": "アクティビティ",
   "@activity": {
     "description": "Activity tab label"
   },

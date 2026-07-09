@@ -120,7 +120,7 @@
   "useSystemTitleBar": "使用系統標題列",
   "showWindow": "顯示視窗",
   "exit": "退出",
-  "trayTooltipUpdates": "OmniStore：共有 {count} 項可更新",
+  "trayTooltipUpdates": "發現 {count} 個可用更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -467,8 +467,8 @@
   "getStarted": "開始使用",
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
-  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
-  "envFatalDesc": "偵測到您的系統似乎並非基於 Arch Linux，大部分核心功能將無法使用。",
+  "envCheckSubtitle": "正在確保系統已準備就緒",
+  "envFatalDesc": "系統並非基於 Arch Linux，大部分核心功能將無法使用。",
   "envWarningDesc": "系統缺少必要的執行組件，我們可以為您自動設定。",
   "envOkDesc": "一切就緒！系統環境已完美配置。",
   "fixProblems": "一鍵修復/設定",

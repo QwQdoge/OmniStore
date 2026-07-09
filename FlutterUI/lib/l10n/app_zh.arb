@@ -43,11 +43,11 @@
     "description": "Category label"
   },
   "packageManager": "包管理器",
-  "pacmanOfficial": "Pacman（官方源）",
-  "aurUser": "AUR（用户源）",
+  "pacmanOfficial": "Pacman（官方软件源）",
+  "aurUser": "AUR（用户软件源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "应用源优先级（拖动排序）",
+  "sourcePriority": "软件源优先级（拖动排序）",
   "maxResults": "最大显示结果数",
   "appearance": "界面外观",
   "themeColor": "主题色",
@@ -120,7 +120,7 @@
   "useSystemTitleBar": "使用系统标题栏",
   "showWindow": "显示窗口",
   "exit": "退出",
-  "trayTooltipUpdates": "OmniStore：共有 {count} 项可更新",
+  "trayTooltipUpdates": "发现 {count} 个可用更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -468,8 +468,8 @@
   "getStarted": "开始使用",
   "skip": "跳过",
   "envCheckTitle": "环境检查",
-  "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
-  "envFatalDesc": "检测到您的系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。",
+  "envCheckSubtitle": "正在确保系统已准备就绪",
+  "envFatalDesc": "系统并非基于 Arch Linux，大部分核心功能将无法使用。",
   "envWarningDesc": "系统缺少必要的运行组件，我们可以为您自动配置。",
   "envOkDesc": "一切就绪！系统环境已完美配置。",
   "fixProblems": "一键修复/配置",
