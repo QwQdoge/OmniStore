@@ -91,3 +91,9 @@
 **Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
 
 **Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
+
+## 2026-07-09 - Standardized Empty States
+
+**Learning:** Duplicated and inconsistent "empty state" implementations across features (Search, Apps, Tasks, Updates) create a fragmented UX. Centralizing this into a single `EmptyState` widget ensures consistent iconography, typography (titleMedium bold), and spacing (16dp icon-to-text, 32dp extra content gap) while adhering to MD3 tonal elevation principles.
+
+**Action:** Use the `EmptyState` widget for all "no results" or empty list scenarios. It supports an `extra` widget for contextual actions (like category chips in search) while maintaining a consistent visual anchor.

@@ -10,6 +10,7 @@ import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'ai_update_summary_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
 
 class UpdatesTab extends StatelessWidget {
   final VoidCallback onUpdateStarted;
@@ -26,23 +27,10 @@ class UpdatesTab extends StatelessWidget {
         Widget content;
 
         if (updates.isEmpty) {
-          content = Center(
+          content = EmptyState(
             key: const ValueKey('empty'),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  size: 64,
-                  color: Colors.grey.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context)!.allUpdated,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
+            icon: Icons.check_circle_outline,
+            title: AppLocalizations.of(context)!.allUpdated,
           );
         } else {
           content = Column(
