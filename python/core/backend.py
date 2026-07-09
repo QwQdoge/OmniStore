@@ -133,7 +133,10 @@ def safe_command(func):
                 )
                 self._output_command_response(resp)
             raise
-        except Exception as e:
+        except BaseException as e:
+            # Murphy-proof: Catching BaseException ensures we don't swallow
+            # critical signals (like SIGTERM/KeyboardInterrupt) while still
+            # providing structured error feedback before re-raising if necessary.
             import traceback
             err_trace = traceback.format_exc()
             error_msg = f"Murphy-proof Error in {func.__name__}: {str(e)}"
@@ -150,10 +153,18 @@ def safe_command(func):
                 self._output_command_response(resp)
             else:
                 try:
-                    await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                    # We pass the error to handle_error, but we must be careful with BaseException
+                    if isinstance(e, Exception):
+                        await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                    else:
+                        hijacked_print(f"[CRITICAL] {error_msg}")
                 except Exception as inner_e:
                     logging.error(f"Double fault in _handle_error: {inner_e}")
                     hijacked_print(f"[ERROR] {error_msg}")
+
+            # If it's a critical BaseException (not standard Exception), re-raise it
+            if not isinstance(e, Exception):
+                raise
             return False
         finally:
             self._active_commands.pop(command_id, None)

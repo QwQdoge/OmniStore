@@ -79,8 +79,10 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                     continue
             except (asyncio.LimitOverrunError, ValueError):
                 logging.error(f"Payload size limit exceeded from {client_addr}")
-                writer.write(json.dumps({"status": "error", "error": "Payload size limit exceeded (max 512KB)"}).encode('utf-8') + b'\n')
-                await writer.drain()
+                try:
+                    writer.write(json.dumps({"status": "error", "error": "Payload size limit exceeded (max 512KB)"}).encode('utf-8') + b'\n')
+                    await writer.drain()
+                except: pass
                 break
             except asyncio.TimeoutError:
                 logging.debug(f"Daemon client {client_addr} connection timed out")

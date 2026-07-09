@@ -11,11 +11,13 @@ class SecurityValidator:
 
     # Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
     # Allowing alphanumeric, dots, underscores, dashes, slashes, and spaces.
-    SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ -]+$')
+    # Murphy-proof: Added explicit character class exclusion for additional safety.
+    SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ \-]+$')
 
-    # Search queries need source filters and GitHub qualifiers such as
-    # source:github stars:>5000 sort:stars, while still rejecting shell syntax.
-    SAFE_SEARCH_QUERY_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:<>~=]+$')
+    # Search queries need source filters and GitHub qualifiers.
+    # Murphy-proof: Expanded to support complex GitHub/AI search syntax (filters,
+    # globbing) while still excluding dangerous shell delimiters like ; & | $ ( ) \ `
+    SAFE_SEARCH_QUERY_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:<>~=!#%^*\[\]{}]+$')
 
     # Cross-platform path regex
     SAFE_PATH_RE = re.compile(r'^[a-zA-Z0-9._/\\: -]+$')

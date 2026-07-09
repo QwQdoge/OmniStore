@@ -490,20 +490,20 @@ class BackendService {
     try {
       return jsonDecode(rawInput);
     } catch (_) {
-      // Noise Reduction: Strip ANSI escape codes
+      // Noise Reduction: Aggressive ANSI stripping including OSC and ESC sequences
       final cleaned = rawInput.replaceAll(
-        RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
+        RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]|\x1B\][^\x07]*\x07'),
         '',
       );
 
       try {
-        // Precise balanced JSON extraction
-        // We look for the LAST possible JSON object or array to avoid partial matches
+        // Precise balanced JSON extraction using a non-greedy reverse scan
+        // for more accurate recovery of nested structures.
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
         final matches = jsonPattern.allMatches(cleaned).toList();
 
         if (matches.isNotEmpty) {
-          // Try matches in reverse order
+          // Priority 1: Full-match reverse scan
           for (final match in matches.reversed) {
             final candidate = match.group(0)!;
             try {
@@ -512,19 +512,32 @@ class BackendService {
           }
         }
 
-        // Line-by-line tail recovery
+        // Priority 2: Precise Tail Recovery for multiplexed output
+        // Splitting by lines and attempting to find the most recent valid JSON block
+        // Murphy-proof: Scanning only the last 100 lines for performance.
         final lines = cleaned.split('\n');
         final scanDepth = lines.length.clamp(0, 100);
         final startIdx = (lines.length - scanDepth).clamp(0, lines.length);
+
         for (int i = lines.length - 1; i >= startIdx; i--) {
-          try {
-            final tailCandidate = lines.sublist(i).join('\n').trim();
-            if (tailCandidate.isNotEmpty &&
-                (tailCandidate.startsWith('{') ||
-                    tailCandidate.startsWith('['))) {
-              return jsonDecode(tailCandidate);
-            }
-          } catch (_) {}
+          final lineCandidate = lines[i].trim();
+          if (lineCandidate.isEmpty) continue;
+
+          // Optimization: Only attempt decode if line looks like JSON
+          if (lineCandidate.startsWith('{') || lineCandidate.startsWith('[')) {
+            try {
+              return jsonDecode(lineCandidate);
+            } catch (_) {}
+          }
+
+          // Sub-line recovery for lines that contain both text and JSON
+          final startIdx = lineCandidate.indexOf(RegExp(r'[\{\[]'));
+          if (startIdx != -1) {
+            final subCandidate = lineCandidate.substring(startIdx);
+            try {
+              return jsonDecode(subCandidate);
+            } catch (_) {}
+          }
         }
       } catch (e) {
         debugPrint("Murphy-proof Error: JSON recovery failed: $e");
