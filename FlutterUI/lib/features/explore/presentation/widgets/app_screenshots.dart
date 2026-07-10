@@ -25,19 +25,19 @@ class AppScreenshots extends StatelessWidget {
         thumbVisibility: true,
         child: ListView.builder(
           controller: scrollController,
-          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 16),
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 16),
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
           prototypeItem: const SizedBox(
-            width: 376, // 360 + 16 (manual spacing)
+            width: 380, // 360 + 2*10 (symmetric horizontal padding)
             child: SizedBox.shrink(),
           ),
           itemCount: screenshots.length,
           itemBuilder: (context, index) {
             final imageUrl = screenshots[index];
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Hero(
                 tag: 'screenshot-$imageUrl',
                 child: SizedBox(
