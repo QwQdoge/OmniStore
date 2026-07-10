@@ -123,7 +123,7 @@ class AppDetailsHeader extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                                AppLocalizations.of(context)!.copiedToClipboard,
+                              AppLocalizations.of(context)!.copiedToClipboard,
                             ),
                           ),
                         );
