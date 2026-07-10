@@ -8,6 +8,7 @@ import 'package:frontend/features/explore/presentation/widgets/search_result_til
 import 'package:frontend/features/explore/presentation/widgets/empty_results.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
 
 class SearchResultsView extends StatelessWidget {
   final List<AppPackage> filteredResults;
@@ -142,11 +143,9 @@ class SearchResultsView extends StatelessWidget {
               selector: (context, b) => b.selectedApp,
               builder: (context, selectedApp, _) {
                 if (selectedApp == null) {
-                  return Center(
-                    child: Text(
-                      l10n.noResults,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
+                  return EmptyState(
+                    icon: Icons.search_off_rounded,
+                    title: l10n.noResults,
                   );
                 }
                 return AppDetailsPage(

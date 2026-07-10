@@ -92,8 +92,8 @@
 
 **Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
 
-## 2026-07-09 - Standardized Empty States
+## 2026-07-10 - Standardized Empty States with MD3 Consistency
 
-**Learning:** Duplicated and inconsistent "empty state" implementations across features (Search, Apps, Tasks, Updates) create a fragmented UX. Centralizing this into a single `EmptyState` widget ensures consistent iconography, typography (titleMedium bold), and spacing (16dp icon-to-text, 32dp extra content gap) while adhering to MD3 tonal elevation principles.
+**Learning:** Centrally managing "no results" or empty list scenarios via a dedicated `EmptyState` widget ensures a rhythmic, predictable UI. Using `SingleChildScrollView` for these states prevents `RenderFlex` overflows on smaller viewports or when keyboards are active. Standardizing on 64dp icons and `titleMedium` (bold) typography aligns with Material Design 3 surface guidelines.
 
-**Action:** Use the `EmptyState` widget for all "no results" or empty list scenarios. It supports an `extra` widget for contextual actions (like category chips in search) while maintaining a consistent visual anchor.
+**Action:** Replaced fragmented inline empty states with the `EmptyState` core widget across Search, Installed Apps, and Update tabs. Standardized icon colors to `outline.withValues(alpha: 0.5)` for a subtle, layered appearance.

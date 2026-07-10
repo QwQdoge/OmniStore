@@ -34,8 +34,7 @@ class _EmptyResultsState extends State<EmptyResults> {
     return EmptyState(
       icon: Icons.search_off_rounded,
       title: widget.l10n.noResults,
-      padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 24),
-      extra: Column(
+      child: Column(
         children: [
           Text(
             widget.l10n.categories,

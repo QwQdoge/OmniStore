@@ -4,41 +4,36 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
-  final Widget? extra;
-  final double iconSize;
-  final EdgeInsetsGeometry padding;
+  final Widget? child;
 
   const EmptyState({
     super.key,
     required this.icon,
     required this.title,
     this.subtitle,
-    this.extra,
-    this.iconSize = 64,
-    this.padding = const EdgeInsets.all(24),
+    this.child,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Center(
       child: SingleChildScrollView(
-        padding: padding,
+        padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: iconSize,
-              color: colorScheme.outline.withValues(alpha: 0.5),
+              size: 64,
+              color: theme.colorScheme.outline.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               title,
               style: theme.textTheme.titleMedium?.copyWith(
-                color: colorScheme.outline,
+                color: theme.colorScheme.outline,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -48,14 +43,14 @@ class EmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.outline,
+                  color: theme.colorScheme.outline,
                 ),
                 textAlign: TextAlign.center,
               ),
             ],
-            if (extra != null) ...[
+            if (child != null) ...[
               const SizedBox(height: 32),
-              extra!,
+              child!,
             ],
           ],
         ),
