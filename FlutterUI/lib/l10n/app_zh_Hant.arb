@@ -357,11 +357,11 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "諮詢 AI 建議",
+  "aiPromptRecommend": "AI 建議",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
-  "aiPromptError": "使用 AI 分析錯誤",
+  "aiPromptError": "AI 分析錯誤",
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },
@@ -464,7 +464,7 @@
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
   "envCheckSubtitle": "正在確保系統已準備就緒",
-  "envFatalDesc": "系統並非基於 Arch Linux，大部分核心功能將無法使用。",
+  "envFatalDesc": "系統並非基於 Arch Linux，核心功能將無法使用。",
   "envWarningDesc": "系統缺少必要的執行組件，我們可以為您自動設定。",
   "envOkDesc": "一切就緒！系統環境已完美配置。",
   "fixProblems": "一鍵修復/設定",

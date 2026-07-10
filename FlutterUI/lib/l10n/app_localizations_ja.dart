@@ -63,7 +63,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => '利用可能なバージョン';
+  String get variant => 'バリアント';
 
   @override
   String get version => 'バージョン';

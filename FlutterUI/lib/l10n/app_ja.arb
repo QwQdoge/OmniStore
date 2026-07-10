@@ -18,7 +18,7 @@
   "about": "このアプリについて",
   "details": "詳細",
   "source": "ソース",
-  "variant": "利用可能なバージョン",
+  "variant": "バリアント",
   "@variant": {
     "description": "Label for app variants/versions"
   },

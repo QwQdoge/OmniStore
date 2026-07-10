@@ -449,10 +449,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPromptExplain => '解析';
 
   @override
-  String get aiPromptRecommend => '咨询 AI 建议';
+  String get aiPromptRecommend => 'AI 建议';
 
   @override
-  String get aiPromptError => '使用 AI 分析错误';
+  String get aiPromptError => 'AI 分析错误';
 
   @override
   String get aiPickDay => 'AI 今日精选';
@@ -545,7 +545,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '正在确保系统已准备就绪';
 
   @override
-  String get envFatalDesc => '系统并非基于 Arch Linux，大部分核心功能将无法使用。';
+  String get envFatalDesc => '系统并非基于 Arch Linux，核心功能将无法使用。';
 
   @override
   String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
@@ -1611,10 +1611,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiPromptExplain => '解析';
 
   @override
-  String get aiPromptRecommend => '諮詢 AI 建議';
+  String get aiPromptRecommend => 'AI 建議';
 
   @override
-  String get aiPromptError => '使用 AI 分析錯誤';
+  String get aiPromptError => 'AI 分析錯誤';
 
   @override
   String get aiPickDay => 'AI 今日精選';
@@ -1707,7 +1707,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '正在確保系統已準備就緒';
 
   @override
-  String get envFatalDesc => '系統並非基於 Arch Linux，大部分核心功能將無法使用。';
+  String get envFatalDesc => '系統並非基於 Arch Linux，核心功能將無法使用。';
 
   @override
   String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
