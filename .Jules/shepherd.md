@@ -60,7 +60,6 @@
 ## 2026-06-25 - Dialog Button and Card Consistency
 - Replaced the primary action `TextButton` with `FilledButton` in the 'Add Custom Source' inline dialog in `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` to match the consistent dialog confirmation button pattern used throughout the app.
 - Replaced raw `Card` with `AppCard` in `TasksTab` (`FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`) to ensure visual consistency with the rest of the application's Material Design 3 surface containers. Updated the `shape` parameter to `borderRadius` as required by `AppCard`.
-
-## 2026-06-26 - Terminology Consistency: Copy SnackBar
-- Replaced `AppLocalizations.of(context)!.aiCommandCopied` and `AppLocalizations.of(context)!.nameCopied` with `AppLocalizations.of(context)!.copiedToClipboard` to standardize copy snackbar messages across the application.
-- Cleaned up unused translation keys `aiCommandCopied` and `nameCopied` from all localization bundles (`.arb` files) and regenerated localizations.
+## 2026-07-09 - Terminology Consistency: Clipboard SnackBars
+- Unified clipboard SnackBar messages by replacing `nameCopied` and `aiCommandCopied` with the generic `copiedToClipboard` localized string.
+- Removed outdated `nameCopied` and `aiCommandCopied` keys from all `.arb` files and regenerated Dart localization files to maintain a clean translation state.
