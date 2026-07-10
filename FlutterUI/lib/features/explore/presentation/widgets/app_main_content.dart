@@ -119,6 +119,7 @@ class AppMainContent extends StatelessWidget {
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeOutCubic,
