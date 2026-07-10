@@ -2,17 +2,26 @@ import asyncio
 from core.subprocess_utils import safe_subprocess
 import re
 import os
+import sys
+import shutil
+import logging
 from typing import List, Dict, Any, Optional
 
 _PKG_HEADER_RE = re.compile(r'^([^\s/]+)/([^\s]+)\s+([^\s]+)(.*)$')
 
 async def search_pacman(query: str, page: int = 1) -> List[Dict[str, Any]]:
-    if not os.path.exists("/usr/bin/pacman"):
+    # Murphy-proof: Strict platform guard and binary discovery
+    if not sys.platform.startswith("linux"):
+        return []
+
+    pacman_bin = shutil.which("pacman")
+    if not pacman_bin:
+        logging.warning("search_pacman: 'pacman' binary not found.")
         return []
 
     try:
         async with safe_subprocess(
-            'pacman', '-Ss', query,
+            pacman_bin, '-Ss', query,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL
         ) as proc:
@@ -58,9 +67,13 @@ async def search_pacman(query: str, page: int = 1) -> List[Dict[str, Any]]:
         return []
 
 async def get_pacman_details(package_id: str) -> Dict[str, Any]:
+    pacman_bin = shutil.which("pacman")
+    if not pacman_bin or not sys.platform.startswith("linux"):
+        return {}
+
     try:
         async with safe_subprocess(
-            "pacman", "-Si", package_id,
+            pacman_bin, "-Si", package_id,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL
         ) as proc:

@@ -46,6 +46,18 @@ class AppDetails(AppPackage):
     # Details might have more fields or just be a more populated AppPackage
     pass
 
+class RecommendationResponse(BaseModel):
+    featured: List[AppPackage] = Field(default_factory=list)
+    trending: List[AppPackage] = Field(default_factory=list)
+    for_you: List[AppPackage] = Field(default_factory=list)
+
+class UpdateInfo(BaseModel):
+    name: str
+    source: str
+    current_version: Optional[str] = None
+    new_version: str
+    description: Optional[str] = None
+
 class CommandResponse(BaseModel):
     status: str = "success"
     message: Optional[str] = None
