@@ -237,34 +237,54 @@ class AurSource(UnifiedSource):
             return []
 
         results: List[Dict[str, Any]] = []
-        try:
-            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) batch call
-            # We use 'pacman -Qi' on the entire list of AUR packages to get their details in one go.
-            async with safe_subprocess("pacman", "-Qi", *sorted(installed), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
-                stdout, _ = await proc.communicate()
-                raw_info = stdout.decode(errors="ignore")
+        if not installed:
+            return results
 
-                current_pkg = {}
-                for line in raw_info.splitlines():
-                    if not line.strip():
-                        if current_pkg:
-                            results.append(self._format_installed_pkg(current_pkg))
-                        current_pkg = {}
+        try:
+            # ⚡ Bolt: Use a single pacman -Qi call for all AUR packages to batch retrieve metadata (O(1) subprocess)
+            # We use sorted list of names to ensure stable output
+            names = sorted(list(installed))
+            async with safe_subprocess("pacman", "-Qi", *names, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await proc.communicate()
+                output = stdout.decode(errors="ignore")
+
+                # Split by double newline to separate package entries
+                entries = output.split("\n\n")
+                for entry in entries:
+                    if not entry.strip():
                         continue
 
-                    if " : " in line:
-                        key, val = line.split(" : ", 1)
-                        key = key.strip()
-                        val = val.strip()
-                        if key == "Name": current_pkg["name"] = val
-                        elif key == "Version": current_pkg["version"] = val
-                        elif key == "Description": current_pkg["description"] = val
-                        elif key == "Installed Size": current_pkg["installed_size"] = val
+                    data = {}
+                    for line in entry.splitlines():
+                        if ":" in line:
+                            key, val = line.split(":", 1)
+                            data[key.strip()] = val.strip()
 
-                if current_pkg:
-                    results.append(self._format_installed_pkg(current_pkg))
+                    name = data.get("Name")
+                    if name:
+                        size_val = data.get("Installed Size")
+                        size = {
+                            "download_size": None,
+                            "installed_size": size_val,
+                            "disk_size": None,
+                            "size_confidence": "reported" if size_val else "unknown",
+                            "size_source": "pacman -Qi batch (AUR)",
+                        }
+
+                        results.append({
+                            "name": name,
+                            "id": name,
+                            "primary_source": "AUR",
+                            "source": "AUR",
+                            "managed": True,
+                            "installed": True,
+                            "description": data.get("Description", "AUR package"),
+                            "version": data.get("Version", "Local"),
+                            **size,
+                            "variants": [{"source": "AUR", "id": name, "installed": True, "managed": True, **size}],
+                        })
         except Exception:
-            # Fallback to name-only list if batch Qi fails
+            # Fallback to names only if batch metadata fails
             for name in sorted(installed):
                 results.append({
                     "name": name,

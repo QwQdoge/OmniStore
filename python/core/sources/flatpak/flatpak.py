@@ -270,7 +270,7 @@ class FlatpakSource(UnifiedSource):
         if not self.enabled:
             return results
         try:
-            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) subprocess call
+            # ⚡ Bolt: Use batch retrieval to reduce complexity from O(N) subprocess calls to O(1)
             async with safe_subprocess(
                 "flatpak", "list", "--app", "--columns=name,application,version,description,size",
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
@@ -283,7 +283,7 @@ class FlatpakSource(UnifiedSource):
 
                     app_id = parts[1]
                     raw_size = parts[4] if len(parts) > 4 else None
-                    size_info = {
+                    size = {
                         "download_size": None,
                         "installed_size": raw_size,
                         "disk_size": None,

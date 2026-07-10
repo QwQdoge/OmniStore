@@ -96,43 +96,55 @@ class PacmanSource(UnifiedSource):
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:
-        res: List[Dict[str, Any]] = []
+        results: List[Dict[str, Any]] = []
         if not self.enabled:
-            return res
+            return results
         try:
-            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) subprocess call
-            # 1. Get explicitly installed foreign packages to filter them out (matching -n behavior)
-            async with safe_subprocess("pacman", "-Qqme", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout_f, _ = await proc.communicate()
-                foreign_explicit = {line.strip() for line in stdout_f.decode(errors="ignore").splitlines() if line.strip()}
-
-            # 2. Use a single 'pacman -Qie' call to get details for all explicitly installed packages
-            async with safe_subprocess("pacman", "-Qie", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+            # ⚡ Bolt: Use a single pacman -Qi call to retrieve all native package metadata at once (O(1) subprocess)
+            # We pipe names of native explicitly installed packages to pacman -Qi to get their metadata in batch.
+            cmd = "pacman -Qqne | pacman -Qi -"
+            async with safe_subprocess("bash", "-c", cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                 stdout, _ = await proc.communicate()
-                raw_info = stdout.decode(errors="ignore")
+                output = stdout.decode(errors="ignore")
 
-                current_pkg = {}
-                for line in raw_info.splitlines():
-                    if not line.strip():
-                        if current_pkg and current_pkg.get("name") not in foreign_explicit:
-                            res.append(self._format_installed_pkg(current_pkg))
-                        current_pkg = {}
+                # Split by double newline to separate package entries
+                entries = output.split("\n\n")
+                for entry in entries:
+                    if not entry.strip():
                         continue
 
-                    if " : " in line:
-                        key, val = line.split(" : ", 1)
-                        key = key.strip()
-                        val = val.strip()
-                        if key == "Name": current_pkg["name"] = val
-                        elif key == "Version": current_pkg["version"] = val
-                        elif key == "Description": current_pkg["description"] = val
-                        elif key == "Installed Size": current_pkg["installed_size"] = val
+                    data = {}
+                    for line in entry.splitlines():
+                        if ":" in line:
+                            key, val = line.split(":", 1)
+                            data[key.strip()] = val.strip()
 
-                if current_pkg and current_pkg.get("name") not in foreign_explicit:
-                    res.append(self._format_installed_pkg(current_pkg))
+                    name = data.get("Name")
+                    if name:
+                        size_val = data.get("Installed Size")
+                        size = {
+                            "download_size": None,
+                            "installed_size": size_val,
+                            "disk_size": None,
+                            "size_confidence": "reported" if size_val else "unknown",
+                            "size_source": "pacman -Qi batch",
+                        }
+
+                        results.append({
+                            "name": name,
+                            "id": name,
+                            "primary_source": "Pacman",
+                            "source": "Pacman",
+                            "managed": True,
+                            "installed": True,
+                            "description": data.get("Description", "Native package"),
+                            "version": data.get("Version", "Local"),
+                            **size,
+                            "variants": [{"source": "Pacman", "id": name, "installed": True, "managed": True, **size}],
+                        })
         except Exception:
             pass
-        return res
+        return results
 
     def _format_installed_pkg(self, pkg: Dict[str, str]) -> Dict[str, Any]:
         name = pkg.get("name", "unknown")
