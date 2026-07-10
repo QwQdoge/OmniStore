@@ -164,10 +164,6 @@ class AppDetailsHeader extends StatelessWidget {
                     child: SegmentedButton<String>(
                       style: SegmentedButton.styleFrom(
                         visualDensity: VisualDensity.comfortable,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 8,
-                        ),
                       ),
                       segments:
                           <String>{

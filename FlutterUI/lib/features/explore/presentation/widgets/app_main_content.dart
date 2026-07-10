@@ -83,10 +83,14 @@ class AppMainContent extends StatelessWidget {
         const SizedBox(height: 24),
         const Divider(),
         AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-        AppAboutSection(
-          isLoading: isLoadingDetails,
-          description: extraDetails?.description,
-          fallbackDescription: app.description,
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          child: AppAboutSection(
+            isLoading: isLoadingDetails,
+            description: extraDetails?.description,
+            fallbackDescription: app.description,
+          ),
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
