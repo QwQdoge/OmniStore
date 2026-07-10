@@ -124,8 +124,4 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** When passing down callbacks that are meant to be used by `RefreshIndicator.onRefresh`, the typed function must be a `Future<void> Function()` rather than a simple `VoidCallback` (which resolves immediately as it's synchronous), otherwise the visual loading indicator spin will instantly disappear without waiting for the task to finish.
 
 **Action:** Adjusted `FlatpakAppList.onRetry` to be `Future<void> Function()` so `RefreshIndicator` properly awaits the refresh network request. Also reverted unneeded file changes to unrelated settings files that would have caused unresolved imports.
-## 2026-07-08 - Extract Widgets in GitHubStorePage and SourcesConfigCard
-
-**Learning:** Extracted oversized and repetitive header and tabs UI components from `github_store_page.dart` into `GitHubStoreHeader` and `GitHubStoreTabs`. I also extracted the `AddSourceDialog` from `sources_config_card.dart`. Extracting large inline UI building blocks into separate `StatelessWidget` and `StatefulWidget` classes significantly improves maintainability and readability of long files.
-
-**Action:** Extracted `_GitHubStoreHeader` into `GitHubStoreHeader` in `lib/features/explore/presentation/widgets/github_store_header.dart`. Extracted the tabs logic into `GitHubStoreTabs` in `lib/features/explore/presentation/widgets/github_store_tabs.dart`. Extracted `AddSourceDialog` into `lib/features/settings/presentation/widgets/add_source_dialog.dart`.
+- **Widget Extraction:** Extracted the private `_GitHubStoreHeader` class from `FlutterUI/lib/features/explore/presentation/pages/github_store_page.dart` into its own file `FlutterUI/lib/features/explore/presentation/widgets/github_store_header.dart` and made it public. This reduces the size of the page file and improves readability without changing any behavior.

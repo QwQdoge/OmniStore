@@ -1,3 +1,4 @@
+import 'package:frontend/features/explore/presentation/widgets/github_store_header.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
@@ -324,3 +325,4 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     );
   }
 }
+
