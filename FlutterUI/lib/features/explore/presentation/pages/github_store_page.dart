@@ -2,7 +2,9 @@ import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
+import "package:frontend/features/explore/presentation/widgets/github_store_header.dart";
 import 'package:frontend/features/explore/presentation/widgets/github_app_list.dart';
+import "package:frontend/features/explore/presentation/widgets/github_store_tabs.dart";
 
 class GitHubStorePage extends StatefulWidget {
   const GitHubStorePage({super.key});
@@ -218,15 +220,12 @@ class _GitHubStorePageState extends State<GitHubStorePage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           // Premium GitHub Store Hero Header
-          _GitHubStoreHeader(
+          GitHubStoreHeader(
             searchController: _searchController,
             isSearching: _isSearching,
             onSearchSubmitted: _performSearch,
@@ -234,59 +233,9 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           ),
 
           // Navigation / Tabs (Hidden when searching)
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: _isSearching
-                ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
-                : Padding(
-                    key: const ValueKey('tabs_padding'),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
-                        dividerColor: Colors.transparent,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: scheme.primaryContainer.withValues(alpha: 0.5),
-                        ),
-                        labelColor: scheme.onPrimaryContainer,
-                        unselectedLabelColor: scheme.onSurfaceVariant,
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        tabs: const [
-                          Tab(
-                            text: "推荐",
-                            icon: Icon(Icons.recommend_rounded, size: 20),
-                          ),
-                          Tab(
-                            text: "排行榜",
-                            icon: Icon(Icons.leaderboard_rounded, size: 20),
-                          ),
-                          Tab(
-                            text: "热度榜",
-                            icon: Icon(
-                              Icons.local_fire_department_rounded,
-                              size: 20,
-                            ),
-                          ),
-                          Tab(
-                            text: "最新更新",
-                            icon: Icon(Icons.update_rounded, size: 20),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+          GitHubStoreTabs(
+            tabController: _tabController,
+            isSearching: _isSearching,
           ),
 
           // Main Content Area
@@ -372,127 +321,6 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           : "No GitHub repositories found",
       emptySubtitle: error ?? "Pull to refresh or try another category.",
       showRetry: true,
-    );
-  }
-}
-
-class _GitHubStoreHeader extends StatelessWidget {
-  final TextEditingController searchController;
-  final bool isSearching;
-  final ValueChanged<String> onSearchSubmitted;
-  final VoidCallback onClearSearch;
-
-  const _GitHubStoreHeader({
-    required this.searchController,
-    required this.isSearching,
-    required this.onSearchSubmitted,
-    required this.onClearSearch,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [scheme.surfaceContainerHigh, scheme.surfaceContainerLowest]
-              : [scheme.surfaceContainerLowest, scheme.surfaceContainerLow],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Glassmorphic GitHub Icon Container
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: scheme.outlineVariant.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Image.network(
-                  "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-                  width: 32,
-                  height: 32,
-                  color: isDark ? Colors.white : Colors.black87,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.code_rounded, size: 32),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "GitHub App Store",
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    Text(
-                      "Discover and download apps directly from GitHub releases",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Premium Integrated Search Bar
-          SearchBar(
-            controller: searchController,
-            hintText: "Search GitHub repositories...",
-            leading: const Icon(Icons.search_rounded),
-            trailing: [
-              if (isSearching)
-                IconButton(
-                  onPressed: onClearSearch,
-                  icon: const Icon(Icons.clear_rounded),
-                ),
-            ],
-            elevation: WidgetStateProperty.all(0),
-            backgroundColor: WidgetStateProperty.all(
-              scheme.surfaceContainerHigh.withValues(alpha: 0.7),
-            ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(
-                  color: scheme.outlineVariant.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-            onSubmitted: onSearchSubmitted,
-          ),
-        ],
-      ),
     );
   }
 }
