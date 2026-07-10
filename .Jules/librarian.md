@@ -102,3 +102,10 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 - Moved the listener attachment logic out of `didChangeDependencies` into `initState`.
 - Used `context.read<BrowseController>()` to safely grab the provider instance without subscribing the entire page to its broadcast stream.
 - Explicitly added the manual callback `_onBrowseChanged` which only executes targeted logic (auto-selecting the first result) without invalidating the whole widget.
+## 2026-07-06 - State Management: Proper  typing\n\n**Learning:** Passing a  to  bypasses the wait functionality of the refresh indicator. The framework will drop the visual loading spinner instantly because it does not know to wait for the future. The callback should always be strongly typed as .\n\n**Action:**\n- Modified  to correct the  signature from  to , preserving async continuation semantics.
+## 2026-07-06 - State Management: Proper `RefreshIndicator` typing
+
+**Learning:** Passing a `VoidCallback` to `RefreshIndicator.onRefresh` bypasses the wait functionality of the refresh indicator. The framework will drop the visual loading spinner instantly because it does not know to wait for the future. The callback should always be strongly typed as `Future<void> Function()`.
+
+**Action:**
+- Modified `github_app_list.dart` to correct the `onRetry` signature from `VoidCallback` to `Future<void> Function()`, preserving async continuation semantics.

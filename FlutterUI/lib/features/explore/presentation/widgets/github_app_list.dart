@@ -14,7 +14,7 @@ class GitHubAppList extends StatelessWidget {
   final List<AppPackage> apps;
   final bool isLoading;
   final String keyPrefix;
-  final VoidCallback onRetry;
+  final Future<void> Function() onRetry;
   final String? emptyText;
   final IconData emptyIcon;
   final String emptySubtitle;
