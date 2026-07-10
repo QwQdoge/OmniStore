@@ -70,3 +70,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Redundant string transformations (like `.lower()`) and dictionary allocations inside hot search loops (e.g., scoring hundreds of items) create significant CPU overhead. Additionally, hover-triggered animations in common list items (like `AppCard`) can trigger expensive repaints of the entire list if not isolated.
 
 **Action:** Hoisted priority dictionary and `.lower()` transformations out of search loops in `manager.py` and `scoring.py`. Wrapped `ScaleTransition` in `AppCard` with a `RepaintBoundary` to isolate hover animations.
+
+## 2026-07-06 - Batch Subprocess Consolidation for Installed Apps
+
+**Learning:** Spawning a subprocess for every installed package to fetch metadata (like size or description) creates extreme O(N) latency and CPU spikes. Most package managers (pacman, flatpak) support batch retrieval or streaming output that allows fetching metadata for all packages in a single O(1) operation.
+
+**Action:** Optimized `FlatpakSource`, `PacmanSource`, and `AurSource` in the Python backend. Replaced per-package loops with batch commands (`flatpak list --columns=...,size`, `pacman -Qqne | pacman -Qi -`, and `pacman -Qi [foreign_pkgs]`). Implemented a metadata stream parser to extract details efficiently.

@@ -96,31 +96,55 @@ class PacmanSource(UnifiedSource):
         return None
 
     async def list_installed(self) -> List[Dict[str, Any]]:
-        res: List[Dict[str, Any]] = []
+        results: List[Dict[str, Any]] = []
         if not self.enabled:
-            return res
+            return results
         try:
-            async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+            # ⚡ Bolt: Use a single pacman -Qi call to retrieve all native package metadata at once (O(1) subprocess)
+            # We pipe names of native explicitly installed packages to pacman -Qi to get their metadata in batch.
+            cmd = "pacman -Qqne | pacman -Qi -"
+            async with safe_subprocess("bash", "-c", cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                 stdout, _ = await proc.communicate()
-                for line in stdout.decode(errors="ignore").splitlines():
-                    name = line.strip()
+                output = stdout.decode(errors="ignore")
+
+                # Split by double newline to separate package entries
+                entries = output.split("\n\n")
+                for entry in entries:
+                    if not entry.strip():
+                        continue
+
+                    data = {}
+                    for line in entry.splitlines():
+                        if ":" in line:
+                            key, val = line.split(":", 1)
+                            data[key.strip()] = val.strip()
+
+                    name = data.get("Name")
                     if name:
-                        size = await self.get_size({"name": name, "id": name})
-                        res.append({
+                        size_val = data.get("Installed Size")
+                        size = {
+                            "download_size": None,
+                            "installed_size": size_val,
+                            "disk_size": None,
+                            "size_confidence": "reported" if size_val else "unknown",
+                            "size_source": "pacman -Qi batch",
+                        }
+
+                        results.append({
                             "name": name,
                             "id": name,
                             "primary_source": "Pacman",
                             "source": "Pacman",
                             "managed": True,
                             "installed": True,
-                            "description": "Native package",
-                            "version": "Local",
+                            "description": data.get("Description", "Native package"),
+                            "version": data.get("Version", "Local"),
                             **size,
                             "variants": [{"source": "Pacman", "id": name, "installed": True, "managed": True, **size}],
                         })
         except Exception:
             pass
-        return res
+        return results
 
     async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
         name = package.get("id") or package.get("name")

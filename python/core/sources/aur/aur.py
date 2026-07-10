@@ -234,20 +234,66 @@ class AurSource(UnifiedSource):
     async def list_installed(self) -> List[Dict[str, Any]]:
         installed = await self._get_installed_aur_packages()
         results: List[Dict[str, Any]] = []
-        for name in sorted(installed):
-            size = await self.get_size({"name": name, "id": name})
-            results.append({
-                "name": name,
-                "id": name,
-                "primary_source": "AUR",
-                "source": "AUR",
-                "managed": True,
-                "installed": True,
-                "description": "AUR package",
-                "version": "Local",
-                **size,
-                "variants": [{"source": "AUR", "id": name, "installed": True, "managed": True, **size}],
-            })
+        if not installed:
+            return results
+
+        try:
+            # ⚡ Bolt: Use a single pacman -Qi call for all AUR packages to batch retrieve metadata (O(1) subprocess)
+            # We use sorted list of names to ensure stable output
+            names = sorted(list(installed))
+            async with safe_subprocess("pacman", "-Qi", *names, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+                stdout, _ = await proc.communicate()
+                output = stdout.decode(errors="ignore")
+
+                # Split by double newline to separate package entries
+                entries = output.split("\n\n")
+                for entry in entries:
+                    if not entry.strip():
+                        continue
+
+                    data = {}
+                    for line in entry.splitlines():
+                        if ":" in line:
+                            key, val = line.split(":", 1)
+                            data[key.strip()] = val.strip()
+
+                    name = data.get("Name")
+                    if name:
+                        size_val = data.get("Installed Size")
+                        size = {
+                            "download_size": None,
+                            "installed_size": size_val,
+                            "disk_size": None,
+                            "size_confidence": "reported" if size_val else "unknown",
+                            "size_source": "pacman -Qi batch (AUR)",
+                        }
+
+                        results.append({
+                            "name": name,
+                            "id": name,
+                            "primary_source": "AUR",
+                            "source": "AUR",
+                            "managed": True,
+                            "installed": True,
+                            "description": data.get("Description", "AUR package"),
+                            "version": data.get("Version", "Local"),
+                            **size,
+                            "variants": [{"source": "AUR", "id": name, "installed": True, "managed": True, **size}],
+                        })
+        except Exception:
+            # Fallback to names only if batch metadata fails
+            for name in sorted(installed):
+                results.append({
+                    "name": name,
+                    "id": name,
+                    "primary_source": "AUR",
+                    "source": "AUR",
+                    "managed": True,
+                    "installed": True,
+                    "description": "AUR package",
+                    "version": "Local",
+                    "variants": [{"source": "AUR", "id": name, "installed": True, "managed": True}],
+                })
         return results
 
     async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
