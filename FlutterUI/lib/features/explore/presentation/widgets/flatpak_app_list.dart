@@ -78,7 +78,7 @@ class FlatpakAppList extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           prototypeItem: const Padding(
             padding: EdgeInsets.only(bottom: 12),
-            child: AppCard(borderRadius: 8, child: SizedBox(height: 100)),
+            child: AppCard(child: SizedBox(height: 100)),
           ),
           itemCount: apps.length,
           itemBuilder: (context, index) {
@@ -90,7 +90,6 @@ class FlatpakAppList extends StatelessWidget {
                 label: 'App: ${app.name}',
                 button: true,
                 child: AppCard(
-                  borderRadius: 8,
                   color: isSelected && isDesktop
                       ? Theme.of(
                           context,
@@ -169,7 +168,6 @@ class FlatpakAppListSkeleton extends StatelessWidget {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-            borderRadius: 8,
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: Skeleton(width: 44, height: 44, borderRadius: 12),
