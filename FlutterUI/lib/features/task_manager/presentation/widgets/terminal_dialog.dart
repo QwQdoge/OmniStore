@@ -101,10 +101,8 @@ class TerminalDialog extends StatelessWidget {
                                     );
                                   },
                                 )
-                                : const Skeleton(
+                                : const LinearProgressIndicator(
                                   key: ValueKey('indeterminate'),
-                                  height: 4.0,
-                                  width: double.infinity,
                                 ),
                       ),
                     ],

@@ -21,3 +21,4 @@
 - Added `AnimatedSize` to wrap `AppScreenshots` section in `AppMainContent` to prevent abrupt height changes when loading details.
 - Wrapped `AppTechnicalDetails` in `AppMainContent` with `AnimatedSwitcher` to ensure smooth appearance when switching states (loading vs loaded).
 - Updated `PageTransitionsTheme` in `omnistore_theme.dart` to use `ZoomPageTransitionsBuilder` for Android, Linux, macOS, and Windows. This aligns with Material Design 3 guidelines for improved motion and transition clarity across platforms, replacing the legacy `FadeUpwardsPageTransitionsBuilder`.
+- Replaced Skeleton with LinearProgressIndicator for indeterminate loading states in terminal_dialog.dart and smooth_progress_bar.dart to maintain subtle MD3 motion.

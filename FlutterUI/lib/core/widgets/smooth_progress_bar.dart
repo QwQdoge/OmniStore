@@ -246,12 +246,12 @@ class _ProgressIndicatorStack extends StatelessWidget {
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,
               child: isIndeterminate && !isFailed
-                  ? Skeleton(
+                  ? LinearProgressIndicator(
                       key: const ValueKey('indeterminate'),
-                      height: height,
-                      width: double.infinity,
-                      borderRadius:
-                          borderRadius.bottomLeft.x, // Extract double value
+                      backgroundColor: backgroundColor,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: height,
+                      borderRadius: borderRadius,
                     )
                   : TweenAnimationBuilder<double>(
                       key: const ValueKey('determinate'),
