@@ -6,6 +6,7 @@ import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list_skeleton.dart';
 
 class InstalledTab extends StatelessWidget {
@@ -103,18 +104,9 @@ class InstalledTab extends StatelessWidget {
   Widget _buildInstalledList(BuildContext context) {
     final theme = Theme.of(context);
     if (filteredApps.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.noResults,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
+      return EmptyState(
+        icon: Icons.search_off,
+        title: AppLocalizations.of(context)!.noResults,
       );
     }
     return ListView.builder(

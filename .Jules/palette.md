@@ -91,3 +91,9 @@
 **Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
 
 **Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
+
+## 2026-07-10 - Standardized Empty States with MD3 Consistency
+
+**Learning:** Centrally managing "no results" or empty list scenarios via a dedicated `EmptyState` widget ensures a rhythmic, predictable UI. Using `SingleChildScrollView` for these states prevents `RenderFlex` overflows on smaller viewports or when keyboards are active. Standardizing on 64dp icons and `titleMedium` (bold) typography aligns with Material Design 3 surface guidelines.
+
+**Action:** Replaced fragmented inline empty states with the `EmptyState` core widget across Search, Installed Apps, and Update tabs. Standardized icon colors to `outline.withValues(alpha: 0.5)` for a subtle, layered appearance.
