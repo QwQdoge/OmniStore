@@ -29,16 +29,16 @@ class AppAboutSection extends StatelessWidget {
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.fastOutSlowIn,
         child: isLoading
-            ? const ParagraphSkeleton(key: ValueKey('loading'))
-            : MarkdownBody(
-                key: const ValueKey('loaded'),
-                data: description ??
-                    (fallbackDescription.isEmpty
-                        ? l10n.noResults
-                        : fallbackDescription),
-                selectable: true,
-                styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
-              ),
+          ? const ParagraphSkeleton(key: ValueKey('loading'))
+          : MarkdownBody(
+              key: const ValueKey('loaded'),
+              data: description ??
+                  (fallbackDescription.isEmpty
+                      ? l10n.noResults
+                      : fallbackDescription),
+              selectable: true,
+              styleSheet: MarkdownStyleSheet(p: theme.textTheme.bodyLarge),
+            ),
       ),
     );
   }
