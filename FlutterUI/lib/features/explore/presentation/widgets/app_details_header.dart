@@ -90,7 +90,7 @@ class AppDetailsHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 56,
                       color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
           ),
@@ -162,9 +162,7 @@ class AppDetailsHeader extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<String>(
-                      style: SegmentedButton.styleFrom(
-                        visualDensity: VisualDensity.comfortable,
-                      ),
+                      style: SegmentedButton.styleFrom(visualDensity: VisualDensity.comfortable),
                       segments:
                           <String>{
                             for (var v in app.variants) v.source,

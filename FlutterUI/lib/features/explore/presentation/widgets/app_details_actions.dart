@@ -33,27 +33,29 @@ class AppDetailsActions extends StatelessWidget {
     if (context.select((TaskController task) => task.isBusy)) {
       content = AppCard(
         key: const ValueKey('busy'),
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: 16.0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child:
-              Selector<
-                TaskController,
-                ({double? progress, String status, String speed})
-              >(
-                selector: (context, c) =>
-                    (progress: c.progress, status: c.status, speed: c.speed),
-                builder: (context, data, _) => SmoothProgressBar(
-                  taskState: TaskState(
-                    id: "active",
-                    packageName: appName,
-                    status: TaskStatus.downloading,
-                    progress: data.progress ?? 0.0,
-                    stage: data.status,
-                    speed: data.speed,
-                  ),
-                  onCancel: onCancelAction,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child:
+            Selector<
+              TaskController,
+              ({double? progress, String status, String speed})
+            >(
+              selector: (context, c) =>
+                  (progress: c.progress, status: c.status, speed: c.speed),
+              builder: (context, data, _) => SmoothProgressBar(
+                taskState: TaskState(
+                  id: "active",
+                  packageName: appName,
+                  status: TaskStatus.downloading,
+                  progress: data.progress ?? 0.0,
+                  stage: data.status,
+                  speed: data.speed,
                 ),
               ),
         ),
