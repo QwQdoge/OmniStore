@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get searchHint => 'Buscar aplicaciones, juegos, herramientas...';
+  String get searchHint => 'Busca aplicaciones, juegos, herramientas...';
 
   @override
   String get featured => 'Destacado';
@@ -326,7 +326,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get taskCompleted => 'Tarea completada';
 
   @override
-  String get searchInstalledHint => 'Buscar aplicaciones instaladas...';
+  String get searchInstalledHint => 'Busca aplicaciones instaladas...';
 
   @override
   String get refresh => 'Actualizar';
@@ -826,8 +826,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count actualizaciones disponibles',
-      one: '1 actualización disponible',
+      other: '$count aplicaciones disponibles para actualizar',
+      one: '1 aplicación disponible para actualizar',
     );
     return '$_temp0';
   }
@@ -1209,7 +1209,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Descubre y descarga aplicaciones directamente desde las versiones de GitHub';
 
   @override
-  String get searchGithubHint => 'Buscar repositorios de GitHub...';
+  String get searchGithubHint => 'Busca repositorios de GitHub...';
 
   @override
   String get recommended => 'Recomendado';
