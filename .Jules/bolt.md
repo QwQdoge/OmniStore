@@ -77,8 +77,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Hoisted priority dictionary and `.lower()` transformations out of search loops in `manager.py` and `scoring.py`. Wrapped `ScaleTransition` in `AppCard` with a `RepaintBoundary` to isolate hover animations.
 
-## 2026-07-06 - Flatpak Installed List O(N) Subprocess Bottleneck
+## 2026-07-06 - Image Loading Optimization
 
-**Learning:** Spawning a subprocess for every item in a list (e.g., retrieving size for each installed Flatpak) is a major performance killer. Flatpak allows customizing output columns, enabling consolidation of all required metadata into a single command.
+**Learning:** `Image.network` downloads the image over the network every time it is rendered, unless handled by custom caching logic. For static images or frequently accessed assets, using `CachedNetworkImage` prevents redundant network requests and improves loading performance.
 
-**Action:** Refactored `FlatpakSource.list_installed` to use `--columns=name,application,version,description,size`, reducing subprocess calls from +1$ to 1.
+**Action:** Replaced `Image.network` with `CachedNetworkImage` for the GitHub store logo in `github_store_page.dart`.
