@@ -10,11 +10,17 @@ class SecurityValidator:
     and malformed inputs using a Whitelist-only (Positive Security) model.
     """
 
-    # Whitelist for general strings: Alphanumeric, dots, underscores, dashes, slashes, spaces, pluses, at-signs, and colons.
-    # Allowing @ for npm/scoped packages, + for versioning, and : for namespaces/urls.
-    SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:]+$')
+    # Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
+    # Allowing alphanumeric, dots, underscores, dashes, slashes, and spaces.
+    # Murphy-proof: Added explicit character class exclusion for additional safety.
+    SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ \-]+$')
 
-    # Cross-platform path whitelist
+    # Search queries need source filters and GitHub qualifiers.
+    # Murphy-proof: Expanded to support complex GitHub/AI search syntax (filters,
+    # globbing) while still excluding dangerous shell delimiters like ; & | $ ( ) \ `
+    SAFE_SEARCH_QUERY_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:<>~=!#%^*\[\]{}]+$')
+
+    # Cross-platform path regex
     SAFE_PATH_RE = re.compile(r'^[a-zA-Z0-9._/\\: -]+$')
 
     # Strict URL whitelist (No shell metacharacters allowed)

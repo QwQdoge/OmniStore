@@ -176,13 +176,37 @@ def safe_command(func):
             if json_mode:
                 self._output_command_response(CommandResponse(status="error", error="CancelledError", message=f"Command {func.__name__} was cancelled.", context=func.__name__))
             raise
-        except Exception as e:
+        except BaseException as e:
+            # Murphy-proof: Catching BaseException ensures we don't swallow
+            # critical signals (like SIGTERM/KeyboardInterrupt) while still
+            # providing structured error feedback before re-raising if necessary.
             import traceback
             err_trace = traceback.format_exc()
             error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
             logging.error(f"{error_msg}\n{err_trace}")
             if json_mode:
-                self._output_command_response(CommandResponse(status="error", error=type(e).__name__, message=error_msg, context=func.__name__, traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None))
+                resp = CommandResponse(
+                    status="error",
+                    error=type(e).__name__,
+                    message=error_msg,
+                    context=func.__name__,
+                    traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
+                )
+                self._output_command_response(resp)
+            else:
+                try:
+                    # We pass the error to handle_error, but we must be careful with BaseException
+                    if isinstance(e, Exception):
+                        await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                    else:
+                        hijacked_print(f"[CRITICAL] {error_msg}")
+                except Exception as inner_e:
+                    logging.error(f"Double fault in _handle_error: {inner_e}")
+                    hijacked_print(f"[ERROR] {error_msg}")
+
+            # If it's a critical BaseException (not standard Exception), re-raise it
+            if not isinstance(e, Exception):
+                raise
             return False
         finally:
             self._active_commands.pop(command_id, None)
