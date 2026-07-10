@@ -83,7 +83,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching => '正在搜索...';
 
   @override
-  String get activity => '任务记录';
+  String get activity => '活动';
 
   @override
   String get category => '分类';
@@ -1245,7 +1245,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searching => '搜尋中...';
 
   @override
-  String get activity => '任務記錄';
+  String get activity => '活動';
 
   @override
   String get category => '分類';

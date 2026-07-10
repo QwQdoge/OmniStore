@@ -283,12 +283,12 @@ class FlatpakSource(UnifiedSource):
 
                     app_id = parts[1]
                     raw_size = parts[4] if len(parts) > 4 else None
-                    size = {
+                    size_info = {
                         "download_size": None,
                         "installed_size": raw_size,
                         "disk_size": None,
                         "size_confidence": "reported" if raw_size else "unknown",
-                        "size_source": "flatpak list --columns=...,size",
+                        "size_source": "flatpak list",
                     }
                     results.append({
                         "name": parts[0],

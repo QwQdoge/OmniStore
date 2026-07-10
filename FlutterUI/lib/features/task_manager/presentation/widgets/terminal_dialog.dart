@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:frontend/core/widgets/skeleton.dart';
 
 class TerminalDialog extends StatelessWidget {
   const TerminalDialog({super.key});
@@ -53,12 +52,8 @@ class TerminalDialog extends StatelessWidget {
               TaskController,
               ({String status, double? progress, bool isBusy})
             >(
-              selector:
-                  (context, c) => (
-                    status: c.status,
-                    progress: c.progress,
-                    isBusy: c.isBusy,
-                  ),
+              selector: (context, c) =>
+                  (status: c.status, progress: c.progress, isBusy: c.isBusy),
               builder: (context, data, _) {
                 if (!data.isBusy && data.status == "Ready") {
                   return const SizedBox.shrink();
@@ -85,25 +80,22 @@ class TerminalDialog extends StatelessWidget {
                         duration: const Duration(milliseconds: 300),
                         switchInCurve: Curves.easeOutCubic,
                         switchOutCurve: Curves.fastOutSlowIn,
-                        child:
-                            data.progress != null
-                                ? TweenAnimationBuilder<double>(
-                                  key: const ValueKey('determinate'),
-                                  tween: Tween<double>(
-                                    begin: 0,
-                                    end: data.progress!,
-                                  ),
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeOutCubic,
-                                  builder: (context, value, _) {
-                                    return LinearProgressIndicator(
-                                      value: value,
-                                    );
-                                  },
-                                )
-                                : const LinearProgressIndicator(
-                                  key: ValueKey('indeterminate'),
+                        child: data.progress != null
+                            ? TweenAnimationBuilder<double>(
+                                key: const ValueKey('determinate'),
+                                tween: Tween<double>(
+                                  begin: 0,
+                                  end: data.progress!,
                                 ),
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, _) {
+                                  return LinearProgressIndicator(value: value);
+                                },
+                              )
+                            : const LinearProgressIndicator(
+                                key: ValueKey('indeterminate'),
+                              ),
                       ),
                     ],
                   ),
@@ -115,7 +107,9 @@ class TerminalDialog extends StatelessWidget {
                   Selector<TaskController, ({int length, List<String> logs})>(
                     selector: (context, c) =>
                         (length: c.logs.length, logs: c.logs),
-                    shouldRebuild: (prev, next) => prev.length != next.length || !const IterableEquality().equals(prev.logs, next.logs),
+                    shouldRebuild: (prev, next) =>
+                        prev.length != next.length ||
+                        !const IterableEquality().equals(prev.logs, next.logs),
                     builder: (context, data, _) {
                       final logs = data.logs;
                       return logs.isEmpty

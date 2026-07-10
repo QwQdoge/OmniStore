@@ -5,7 +5,6 @@ import 'package:frontend/models/task_state.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
-import 'package:frontend/core/widgets/app_card.dart';
 
 class AppDetailsActions extends StatelessWidget {
   final String appName;
