@@ -34,7 +34,7 @@
   },
   "noResults": "暂无搜索结果",
   "searching": "正在搜索...",
-  "activity": "任务记录",
+  "activity": "活动",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -120,7 +120,7 @@
   "useSystemTitleBar": "使用系统标题栏",
   "showWindow": "显示窗口",
   "exit": "退出",
-  "trayTooltipUpdates": "OmniStore：共有 {count} 项可更新",
+  "trayTooltipUpdates": "OmniStore：发现 {count} 个可用更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -465,7 +465,7 @@
   "skip": "跳过",
   "envCheckTitle": "环境检查",
   "envCheckSubtitle": "我们需要确保您的系统已准备就绪",
-  "envFatalDesc": "检测到您的系统似乎并非基于 Arch Linux，大部分核心功能将无法使用。",
+  "envFatalDesc": "检测到系统并非基于 Arch Linux，大部分核心功能将无法使用。",
   "envWarningDesc": "系统缺少必要的运行组件，我们可以为您自动配置。",
   "envOkDesc": "一切就绪！系统环境已完美配置。",
   "fixProblems": "一键修复/配置",
