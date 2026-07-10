@@ -91,3 +91,8 @@
 **Learning:** Standardizing geometric tokens (border radii) across the app to align with Material Design 3 (16dp for Medium/Cards, 28dp for Extra Large/Banners/Dialogs, 12dp for Small/Tags) creates a rhythmic, predictable UI. Using a centralized `AppCard` component instead of manual `Container` decorations for feature blocks (like AI Pick) ensures consistent surface feedback and reduces styling fragmentation.
 
 **Action:** Update `AppCard` default to 16dp. Use 28dp for prominent featured sections and dialogs. Replace manual `Container` styling with `AppCard` in feature widgets. Apply symmetric horizontal padding (10dp on list, 10dp on items) in horizontal shelves to maintain accurate scroll virtualization and a consistent 20dp visual rhythm.
+
+## 2026-07-07 - Conditional Layout Animation Refinement
+
+**Learning:** When dynamically rendering optional sections of a layout (like app screenshots or detailed technical specs) using `AnimatedSwitcher`, varying intrinsic heights cause the parent layout to jump abruptly. This breaks the perceived fluidity of Material Design 3.
+**Action:** Always wrap `AnimatedSwitcher` widgets inside `AnimatedSize` when the switched children can have significantly different vertical heights. Set an appropriate `alignment` (e.g., `Alignment.topLeft` or `Alignment.topCenter`) to ensure the transition expands in the correct visual direction rather than awkwardly resizing from the center.
