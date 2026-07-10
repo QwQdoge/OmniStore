@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/github_store_header.dart";
 import 'package:frontend/features/explore/presentation/widgets/github_app_list.dart';
-import "package:frontend/features/explore/presentation/widgets/github_store_tabs.dart";
+import 'package:frontend/features/explore/presentation/widgets/github_store_header.dart';
 
 class GitHubStorePage extends StatefulWidget {
   const GitHubStorePage({super.key});

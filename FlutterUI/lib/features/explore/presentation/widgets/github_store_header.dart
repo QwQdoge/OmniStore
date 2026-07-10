@@ -27,14 +27,8 @@ class GitHubStoreHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [
-                  scheme.surfaceContainerHigh,
-                  scheme.surfaceContainerLowest,
-                ]
-              : [
-                  scheme.surfaceContainerLowest,
-                  scheme.surfaceContainerLow,
-                ],
+              ? [scheme.surfaceContainerHigh, scheme.surfaceContainerLowest]
+              : [scheme.surfaceContainerLowest, scheme.surfaceContainerLow],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
@@ -57,9 +51,7 @@ class GitHubStoreHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(
-                    alpha: isDark ? 0.3 : 0.05,
-                  ),
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: scheme.outlineVariant.withValues(alpha: 0.3),

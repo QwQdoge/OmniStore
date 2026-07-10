@@ -1,7 +1,7 @@
+import "package:provider/provider.dart";
+import "package:frontend/core/navigation_controller.dart";
+import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:frontend/core/navigation_controller.dart';
-import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
@@ -20,6 +20,7 @@ class CategoryCard extends StatelessWidget {
       label: AppLocalizations.of(context)!.categorySemantics(category.name),
       button: true,
       child: AppCard(
+
         onTap: () {
           final browse = context.read<BrowseController>();
           final nav = context.read<NavigationController>();
