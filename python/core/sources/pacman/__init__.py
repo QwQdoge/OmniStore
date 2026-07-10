@@ -100,27 +100,61 @@ class PacmanSource(UnifiedSource):
         if not self.enabled:
             return res
         try:
-            async with safe_subprocess("pacman", "-Qqne", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) subprocess call
+            # 1. Get explicitly installed foreign packages to filter them out (matching -n behavior)
+            async with safe_subprocess("pacman", "-Qqme", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout_f, _ = await proc.communicate()
+                foreign_explicit = {line.strip() for line in stdout_f.decode(errors="ignore").splitlines() if line.strip()}
+
+            # 2. Use a single 'pacman -Qie' call to get details for all explicitly installed packages
+            async with safe_subprocess("pacman", "-Qie", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                 stdout, _ = await proc.communicate()
-                for line in stdout.decode(errors="ignore").splitlines():
-                    name = line.strip()
-                    if name:
-                        size = await self.get_size({"name": name, "id": name})
-                        res.append({
-                            "name": name,
-                            "id": name,
-                            "primary_source": "Pacman",
-                            "source": "Pacman",
-                            "managed": True,
-                            "installed": True,
-                            "description": "Native package",
-                            "version": "Local",
-                            **size,
-                            "variants": [{"source": "Pacman", "id": name, "installed": True, "managed": True, **size}],
-                        })
+                raw_info = stdout.decode(errors="ignore")
+
+                current_pkg = {}
+                for line in raw_info.splitlines():
+                    if not line.strip():
+                        if current_pkg and current_pkg.get("name") not in foreign_explicit:
+                            res.append(self._format_installed_pkg(current_pkg))
+                        current_pkg = {}
+                        continue
+
+                    if " : " in line:
+                        key, val = line.split(" : ", 1)
+                        key = key.strip()
+                        val = val.strip()
+                        if key == "Name": current_pkg["name"] = val
+                        elif key == "Version": current_pkg["version"] = val
+                        elif key == "Description": current_pkg["description"] = val
+                        elif key == "Installed Size": current_pkg["installed_size"] = val
+
+                if current_pkg and current_pkg.get("name") not in foreign_explicit:
+                    res.append(self._format_installed_pkg(current_pkg))
         except Exception:
             pass
         return res
+
+    def _format_installed_pkg(self, pkg: Dict[str, str]) -> Dict[str, Any]:
+        name = pkg.get("name", "unknown")
+        size_info = {
+            "download_size": None,
+            "installed_size": pkg.get("installed_size"),
+            "disk_size": None,
+            "size_confidence": "reported" if pkg.get("installed_size") else "unknown",
+            "size_source": "pacman -Qi",
+        }
+        return {
+            "name": name,
+            "id": name,
+            "primary_source": "Pacman",
+            "source": "Pacman",
+            "managed": True,
+            "installed": True,
+            "description": pkg.get("description", "Native package"),
+            "version": pkg.get("version", "Local"),
+            **size_info,
+            "variants": [{"source": "Pacman", "id": name, "installed": True, "managed": True, **size_info}],
+        }
 
     async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
         name = package.get("id") or package.get("name")

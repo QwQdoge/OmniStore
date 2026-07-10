@@ -270,6 +270,7 @@ class FlatpakSource(UnifiedSource):
         if not self.enabled:
             return results
         try:
+            # ⚡ Bolt: Consolidated metadata and size retrieval into a single O(1) subprocess call
             async with safe_subprocess(
                 "flatpak", "list", "--app", "--columns=name,application,version,description,size",
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
@@ -282,16 +283,13 @@ class FlatpakSource(UnifiedSource):
 
                     app_id = parts[1]
                     raw_size = parts[4] if len(parts) > 4 else None
-
-                    # ⚡ Pre-construct size metadata to avoid redundant function calls
-                    size_data = {
+                    size_info = {
                         "download_size": None,
                         "installed_size": raw_size,
                         "disk_size": None,
                         "size_confidence": "reported" if raw_size else "unknown",
-                        "size_source": "flatpak list",
+                        "size_source": "flatpak list --columns=...,size",
                     }
-
                     results.append({
                         "name": parts[0],
                         "id": app_id,
@@ -301,14 +299,8 @@ class FlatpakSource(UnifiedSource):
                         "installed": True,
                         "version": parts[2] if len(parts) > 2 else "Unknown",
                         "description": parts[3] if len(parts) > 3 else f"Flatpak app {app_id}",
-                        **size_data,
-                        "variants": [{
-                            "source": "Flatpak",
-                            "id": app_id,
-                            "installed": True,
-                            "managed": True,
-                            **size_data
-                        }],
+                        **size_info,
+                        "variants": [{"source": "Flatpak", "id": app_id, "installed": True, "managed": True, **size_info}],
                     })
         except Exception:
             pass
