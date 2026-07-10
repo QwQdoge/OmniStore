@@ -413,10 +413,6 @@
   "@aiCopyCommand": {
     "description": "Button label to copy generated command"
   },
-  "aiCommandCopied": "命令已複製到剪貼簿",
-  "@aiCommandCopied": {
-    "description": "Message shown after copying a command"
-  },
   "aiRefineSearch": "使用 AI 精煉搜尋",
   "@aiRefineSearch": {
     "description": "Action to refine search using AI"
@@ -835,10 +831,6 @@
   "copyName": "複製名稱",
   "@copyName": {
     "description": "Button to copy the package name"
-  },
-  "nameCopied": "名稱已複製到剪貼簿",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
   },
   "copiedToClipboard": "已複製到剪貼簿",
   "tapToCopy": "點擊複製",

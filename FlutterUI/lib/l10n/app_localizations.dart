@@ -1027,12 +1027,6 @@ abstract class AppLocalizations {
   /// **'Copy Command'**
   String get aiCopyCommand;
 
-  /// aiCommandCopied
-  ///
-  /// In en, this message translates to:
-  /// **'Command copied to clipboard'**
-  String get aiCommandCopied;
-
   /// aiRefineSearch
   ///
   /// In en, this message translates to:
@@ -1920,12 +1914,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy Name'**
   String get copyName;
-
-  /// Snackbar message indicating name was copied to clipboard
-  ///
-  /// In en, this message translates to:
-  /// **'Name copied to clipboard'**
-  String get nameCopied;
 
   /// No description provided for @copiedToClipboard.
   ///
