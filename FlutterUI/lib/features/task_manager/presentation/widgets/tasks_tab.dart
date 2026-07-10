@@ -6,6 +6,7 @@ import 'package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
 import 'terminal_dialog.dart';
 
 class TasksTab extends StatelessWidget {
@@ -23,23 +24,10 @@ class TasksTab extends StatelessWidget {
     Widget content;
 
     if (!isBusy && historyLength == 0) {
-      content = Center(
+      content = EmptyState(
         key: const ValueKey('empty'),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.task_alt,
-              size: 64,
-              color: Colors.grey.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.noActiveTasks,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
+        icon: Icons.task_alt,
+        title: l10n.noActiveTasks,
       );
     } else {
       content = SingleChildScrollView(
