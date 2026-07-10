@@ -410,10 +410,6 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiCommandCopied": "Command copied to clipboard",
-  "@aiCommandCopied": {
-    "description": "aiCommandCopied"
-  },
   "aiRefineSearch": "Refine search with AI",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
@@ -832,10 +828,6 @@
   "copyName": "Copy Name",
   "@copyName": {
     "description": "Button to copy the package name"
-  },
-  "nameCopied": "Name copied to clipboard",
-  "@nameCopied": {
-    "description": "Snackbar message indicating name was copied to clipboard"
   },
   "copiedToClipboard": "Copied to clipboard",
   "tapToCopy": "Tap to copy",

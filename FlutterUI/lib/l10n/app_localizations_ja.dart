@@ -493,9 +493,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiCopyCommand => 'コマンドをコピー';
 
   @override
-  String get aiCommandCopied => 'クリップボードにコピーしました';
-
-  @override
   String get aiRefineSearch => 'AI で検索を絞り込む';
 
   @override
@@ -977,9 +974,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get copyName => '名前をコピー';
-
-  @override
-  String get nameCopied => '名前をクリップボードにコピーしました';
 
   @override
   String get copiedToClipboard => 'クリップボードにコピーしました';
