@@ -124,3 +124,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** When passing down callbacks that are meant to be used by `RefreshIndicator.onRefresh`, the typed function must be a `Future<void> Function()` rather than a simple `VoidCallback` (which resolves immediately as it's synchronous), otherwise the visual loading indicator spin will instantly disappear without waiting for the task to finish.
 
 **Action:** Adjusted `FlatpakAppList.onRetry` to be `Future<void> Function()` so `RefreshIndicator` properly awaits the refresh network request. Also reverted unneeded file changes to unrelated settings files that would have caused unresolved imports.
+## 2024-03-24 - Extract Widgets in CategoryPage
+
+**Learning:** Extracted the private `_CategoryCard` widget from `category_page.dart` into its own dedicated file (`category_card.dart`) as `CategoryCard` to improve maintainability and decouple UI logic.
+
+**Action:** Moved `_CategoryCard` logic into `lib/features/explore/presentation/widgets/category_card.dart`, preserving its behavior while updating necessary file imports to ensure cleaner dependency isolation.
