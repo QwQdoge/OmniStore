@@ -48,10 +48,13 @@ class AppShelf extends StatelessWidget {
                     'app-shelf-${key.toString()}-${app.name}-${app.primarySource}';
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SizedBox(
-                    width: 130,
-                    child: AppCard(
-                    borderRadius: 16,
+                  child: Semantics(
+                    label: 'App: ${app.name}',
+                    button: true,
+                    child: SizedBox(
+                      width: 130,
+                      child: AppCard(
+                      borderRadius: 16,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -100,6 +103,7 @@ class AppShelf extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
                 ),
                 );
               },

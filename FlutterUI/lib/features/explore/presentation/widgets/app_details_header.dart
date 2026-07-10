@@ -162,6 +162,13 @@ class AppDetailsHeader extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(bottom: 12),
                     child: SegmentedButton<String>(
+                      style: SegmentedButton.styleFrom(
+                        visualDensity: VisualDensity.comfortable,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 8,
+                        ),
+                      ),
                       segments:
                           <String>{
                             for (var v in app.variants) v.source,
