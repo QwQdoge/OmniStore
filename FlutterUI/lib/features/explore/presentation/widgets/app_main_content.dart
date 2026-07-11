@@ -85,6 +85,7 @@ class AppMainContent extends StatelessWidget {
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
+          alignment: Alignment.topLeft,
           child: AppAboutSection(
             isLoading: isLoadingDetails,
             description: extraDetails?.description,
@@ -115,25 +116,32 @@ class AppMainContent extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 24),
-        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.details),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           alignment: Alignment.topCenter,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: AppTechnicalDetails(
-              key: ValueKey(extraDetails != null ? 'loaded' : 'loading'),
-              primarySource: app.primarySource,
-              allSources: app.sources,
-              version: app.version,
-              extraDetails: extraDetails,
-              currentVariant: getVariantForSource(selectedSource),
-              hasCapability: hasCapability,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              AppDetailsSectionTitle(
+                title: AppLocalizations.of(context)!.details,
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: AppTechnicalDetails(
+                  key: ValueKey(extraDetails != null ? 'loaded' : 'loading'),
+                  primarySource: app.primarySource,
+                  allSources: app.sources,
+                  version: app.version,
+                  extraDetails: extraDetails,
+                  currentVariant: getVariantForSource(selectedSource),
+                  hasCapability: hasCapability,
+                ),
+              ),
+            ],
           ),
         ),
       ],

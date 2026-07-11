@@ -154,65 +154,70 @@ class AppDetailsHeader extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               if (hasCapability('has_versions'))
-                Scrollbar(
-                  controller: variantScrollController,
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topLeft,
+                  child: Scrollbar(
                     controller: variantScrollController,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: SegmentedButton<String>(
-                      style: SegmentedButton.styleFrom(
-                        visualDensity: VisualDensity.comfortable,
-                      ),
-                      segments:
-                          <String>{
-                            for (var v in app.variants) v.source,
-                            if (extraDetails != null)
-                              for (var v in extraDetails!.variants) v.source,
-                            selectedSource,
-                          }.map((String source) {
-                            final version = getVersionForSource(source);
-                            return ButtonSegment<String>(
-                              value: source,
-                              label: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      source,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    if (version != null)
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: variantScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: SegmentedButton<String>(
+                        style: SegmentedButton.styleFrom(
+                          visualDensity: VisualDensity.comfortable,
+                        ),
+                        segments:
+                            <String>{
+                              for (var v in app.variants) v.source,
+                              if (extraDetails != null)
+                                for (var v in extraDetails!.variants) v.source,
+                              selectedSource,
+                            }.map((String source) {
+                              final version = getVersionForSource(source);
+                              return ButtonSegment<String>(
+                                value: source,
+                                label: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
                                       Text(
-                                        "v$version",
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w500,
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant
-                                              .withValues(alpha: 0.8),
+                                        source,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                  ],
+                                      if (version != null)
+                                        Text(
+                                          "v$version",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant
+                                                .withValues(alpha: 0.8),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              icon: _getSourceIcon(source),
-                            );
-                          }).toList(),
-                      selected: {selectedSource},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        final newValue = newSelection.first;
-                        onSourceSelected(newValue);
-                      },
-                      showSelectedIcon: false,
+                                icon: _getSourceIcon(source),
+                              );
+                            }).toList(),
+                        selected: {selectedSource},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          final newValue = newSelection.first;
+                          onSourceSelected(newValue);
+                        },
+                        showSelectedIcon: false,
+                      ),
                     ),
                   ),
                 ),
