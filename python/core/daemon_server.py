@@ -3,8 +3,16 @@ import json
 import logging
 import io
 import inspect
+from typing import Any
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from core.backend import OmnistoreBackend, captured_output_var
+
+class PydanticEncoder(json.JSONEncoder):
+    """Murphy-proof: JSON encoder that handles Pydantic models automatically."""
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, BaseModel):
+            return obj.model_dump(exclude_none=True)
+        return super().default(obj)
 
 class DaemonRequest(BaseModel):
     action: str = Field(..., min_length=1, max_length=100)
@@ -40,7 +48,7 @@ class DaemonRequest(BaseModel):
             "run_ai_explain", "run_ai_recommend", "run_ai_analyze_error", "run_ai_pick",
             "run_ai_changelog", "run_ai_cli", "run_ai_conflicts", "run_ai_correct",
             "run_ai_compare", "run_ai_health",
-            "run_update_env", "run_save_config", "config.data", "env.check_env", "shutdown"
+            "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:
             raise ValueError(f"Forbidden Action: {v}")
@@ -134,7 +142,8 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                 try:
                     # Murphy-proof: Server-side watchdog to prevent hanging actions
                     result = await asyncio.wait_for(execute_action(), timeout=120)
-                    writer.write(json.dumps(result, ensure_ascii=False).encode('utf-8') + b'\n')
+                    # Murphy-proof: Use custom encoder to handle nested models
+                    writer.write(json.dumps(result, ensure_ascii=False, cls=PydanticEncoder).encode('utf-8') + b'\n')
                 except asyncio.TimeoutError:
                     writer.write(json.dumps({
                         "status": "error",

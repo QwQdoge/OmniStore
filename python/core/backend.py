@@ -109,13 +109,23 @@ class ResourceCoordinator:
         self._handles.append(handle)
 
     async def cleanup(self):
-        """Absolute reaping of all tracked resources."""
+        """Absolute reaping of all tracked resources with multi-stage verification."""
         async with self._lock:
             if self._tasks:
                 logging.debug(f"ResourceCoordinator: Cancelling {len(self._tasks)} tasks.")
                 for task in list(self._tasks):
-                    if not task.done(): task.cancel()
-                await asyncio.gather(*self._tasks, return_exceptions=True)
+                    if not task.done():
+                        task.cancel()
+
+                # Murphy-proof: multi-stage gather with timeout to prevent cleanup hang
+                try:
+                    await asyncio.wait_for(
+                        asyncio.gather(*self._tasks, return_exceptions=True),
+                        timeout=5.0
+                    )
+                except asyncio.TimeoutError:
+                    logging.error("ResourceCoordinator: Task cleanup timed out, Proceeding to other resources.")
+
                 self._tasks.clear()
 
             for handle in self._handles:
@@ -138,15 +148,17 @@ def safe_command(func):
     """
     Murphy-proof decorator with Panic Recovery, Mandatory Resource Tracking,
     and State Locking to prevent concurrent duplicate commands.
+    Automatically handles Pydantic model serialization for consistent IPC.
     """
     @wraps(func)
     async def wrapper(self: 'OmnistoreBackend', *args, **kwargs):
         json_mode = getattr(self, "json_mode", False)
 
         # 1. State Locking: Reject concurrent duplicate high-frequency commands
+        # Murphy-proof: Protect against rapid re-entry for state-modifying actions.
         is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
         if is_action:
-            for active_id in self._active_commands:
+            for active_id in list(self._active_commands.keys()):
                 if active_id.startswith(func.__name__):
                     error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
                     logging.warning(error_msg)
@@ -160,10 +172,21 @@ def safe_command(func):
 
         # 3. Execution & Panic Recovery
         command_id = f"{func.__name__}_{time.time()}"
-        self._active_commands[command_id] = asyncio.current_task()
+        current_task = asyncio.current_task()
+        if current_task:
+            self._active_commands[command_id] = current_task
 
         try:
+            # Murphy-proof: Ensure even the wrapper is shielded from unhandled task leaks
             result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
+
+            # Murphy-proof: Automatic serialization of Pydantic models for IPC consistency
+            from pydantic import BaseModel
+            if isinstance(result, BaseModel):
+                return result.model_dump(exclude_none=True)
+            if isinstance(result, list) and result and isinstance(result[0], BaseModel):
+                return [i.model_dump(exclude_none=True) for i in result]
+
             return result
         except asyncio.TimeoutError:
             error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
@@ -195,16 +218,17 @@ def safe_command(func):
                 self._output_command_response(resp)
             else:
                 try:
-                    # We pass the error to handle_error, but we must be careful with BaseException
                     if isinstance(e, Exception):
+                        # Graceful degradation for standard exceptions
                         await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
                     else:
+                        # Critical alerts for BaseExceptions (SIGTERM, etc.)
                         hijacked_print(f"[CRITICAL] {error_msg}")
                 except Exception as inner_e:
                     logging.error(f"Double fault in _handle_error: {inner_e}")
                     hijacked_print(f"[ERROR] {error_msg}")
 
-            # If it's a critical BaseException (not standard Exception), re-raise it
+            # Re-raise critical signals to allow main loop to handle shutdown
             if not isinstance(e, Exception):
                 raise
             return False
@@ -683,6 +707,11 @@ class OmnistoreBackend:
             elif k in os.environ: del os.environ[k]
         if json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n"); sys.stdout.flush()
         return True
+
+    @safe_command
+    async def run_check_env(self, json_mode: bool = False):
+        """Murphy-proof environment check for heartbeat and status."""
+        return await self.env.check_env()
 
     @safe_command
     async def run_ai_test(self, json_mode: bool = False):

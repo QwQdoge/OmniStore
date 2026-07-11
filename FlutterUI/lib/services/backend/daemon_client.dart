@@ -195,18 +195,24 @@ class DaemonClient {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel();
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 20), (
       timer,
     ) async {
+      if (_socket == null) {
+        timer.cancel();
+        return;
+      }
+
       try {
-        // Send a simple no-op action or check socket state
-        if (_socket == null) {
-          timer.cancel();
-          return;
+        // Murphy-proof: Lightweight liveness ping to ensure daemon is still responsive.
+        // We use a short timeout to prevent the heartbeat from hanging.
+        final res = await send("run_check_env", [], timeout: const Duration(seconds: 5));
+        if (res == null || res.status != 'success') {
+          debugPrint("DaemonClient: Heartbeat failed. Reconnecting...");
+          _cleanupSocket();
         }
-        // Minimal ping logic can be added here if the daemon supports it.
-        // For now, we rely on socket 'done' and 'error' events.
-      } catch (_) {
+      } catch (e) {
+        debugPrint("DaemonClient: Heartbeat Exception: $e");
         _cleanupSocket();
       }
     });
