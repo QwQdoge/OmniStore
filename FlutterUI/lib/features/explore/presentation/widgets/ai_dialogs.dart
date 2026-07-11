@@ -56,17 +56,21 @@ class AIMarkdownDialog extends StatelessWidget {
       ),
       content: SizedBox(
         width: width,
-        height: height,
-        child: FutureBuilder<String>(
-          future: future,
-          builder: (context, snapshot) {
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
-            );
-          },
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topLeft,
+          child: FutureBuilder<String>(
+            future: future,
+            builder: (context, snapshot) {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+              );
+            },
+          ),
         ),
       ),
       actions: [
@@ -94,15 +98,19 @@ class AICliDialog extends StatelessWidget {
           Text(AppLocalizations.of(context)!.aiCliTitle),
         ],
       ),
-      content: FutureBuilder<String>(
-        future: future,
-        builder: (context, snapshot) {
-          final cmd = snapshot.data ?? "";
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: snapshot.connectionState == ConnectionState.waiting
+      content: AnimatedSize(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: FutureBuilder<String>(
+          future: future,
+          builder: (context, snapshot) {
+            final cmd = snapshot.data ?? "";
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
+              child: snapshot.connectionState == ConnectionState.waiting
                 ? const SizedBox(
                     key: ValueKey('loading'),
                     height: 100,
@@ -151,8 +159,9 @@ class AICliDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-          );
-        },
+            );
+          },
+        ),
       ),
       actions: [
         TextButton(
