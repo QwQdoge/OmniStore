@@ -485,10 +485,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiPromptExplain => 'Análisis';
 
   @override
-  String get aiPromptRecommend => 'Pedir sugerencias a la IA';
+  String get aiPromptRecommend => 'Sugerencias de IA';
 
   @override
-  String get aiPromptError => 'Analizar error con IA';
+  String get aiPromptError => 'Análisis de errores';
 
   @override
   String get aiPickDay => 'Selección del día de la IA';

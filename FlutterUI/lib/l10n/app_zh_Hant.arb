@@ -357,11 +357,11 @@
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
-  "aiPromptRecommend": "諮詢 AI 建議",
+  "aiPromptRecommend": "AI 建議",
   "@aiPromptRecommend": {
     "description": "Prompt action to ask AI for recommendations"
   },
-  "aiPromptError": "使用 AI 分析錯誤",
+  "aiPromptError": "AI 分析錯誤",
   "@aiPromptError": {
     "description": "Prompt action to analyze an error with AI"
   },

@@ -18,7 +18,7 @@
   "about": "このアプリについて",
   "details": "詳細",
   "source": "ソース",
-  "variant": "利用可能なバージョン",
+  "variant": "バリアント",
   "@variant": {
     "description": "Label for app variants/versions"
   },
@@ -354,11 +354,11 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "AI おすすめ",
+  "aiPromptRecommend": "AI 提案",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "AI でエラーを分析",
+  "aiPromptError": "AI エラー分析",
   "@aiPromptError": {
     "description": "aiPromptError"
   },

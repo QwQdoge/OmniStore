@@ -63,7 +63,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get source => 'ソース';
 
   @override
-  String get variant => '利用可能なバージョン';
+  String get variant => 'バリアント';
 
   @override
   String get version => 'バージョン';
@@ -451,10 +451,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPromptExplain => '解析';
 
   @override
-  String get aiPromptRecommend => 'AI おすすめ';
+  String get aiPromptRecommend => 'AI 提案';
 
   @override
-  String get aiPromptError => 'AI でエラーを分析';
+  String get aiPromptError => 'AI エラー分析';
 
   @override
   String get aiPickDay => '本日の一押し（AI）';
