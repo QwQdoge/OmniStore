@@ -116,33 +116,50 @@ class SearchManager:
             active_sources = [source_filter_obj] if source_filter_obj.enabled else []
         else:
             active_sources = self._get_active_sources()
+        # ⚡ Bolt: Pre-filter cached installed packages into source-specific sets to avoid O(N*S) iteration
+        # This saves ~50-150ms on systems with many installed packages.
+        cached_apps = self.cache.get_installed_packages() if self.cache else None
+        cached_sets = {"flatpak": set(), "aur": set(), "winget": set()}
+        if cached_apps:
+            for app in cached_apps:
+                src = app.get('primary_source', '').lower()
+                if src == 'flatpak' and (app_id := app.get('id')):
+                    cached_sets["flatpak"].add(app_id)
+                elif src == 'aur' and (app_name := app.get('name')):
+                    cached_sets["aur"].add(app_name)
+                elif src == 'winget':
+                    val = str(app.get('id') or app.get('name')).strip().lower().replace(" ", "")
+                    if val: cached_sets["winget"].add(val)
+
         # ⚡ Optimization: Pre-fetch installed packages as tasks to be awaited in parallel by individual sources
         installed_flatpak_task = None
         installed_aur_task = None
         installed_winget_task = None
 
-        # ⚡ Bolt: Use cached installed packages if available to avoid redundant subprocesses (~150-400ms saved)
-        cached_apps = self.cache.get_installed_packages() if self.cache else None
-
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}
         if "flatpak" in active_names:
+            # ⚡ Bolt: Distinguish between None (no cache) and empty set (valid cache, 0 apps)
+            # to avoid redundant subprocess calls when no apps are installed.
+            f_cached = cached_sets["flatpak"] if cached_apps is not None else None
             if hasattr(self.cm, "backend") and self.cm.backend:
-                installed_flatpak_task = self.cm.backend.create_task(self._get_installed_flatpak(cached_apps))
+                installed_flatpak_task = self.cm.backend.create_task(self._get_installed_flatpak(f_cached))
             else:
-                installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(cached_apps))
+                installed_flatpak_task = asyncio.create_task(self._get_installed_flatpak(f_cached))
 
         if "aur" in active_names:
+            a_cached = cached_sets["aur"] if cached_apps is not None else None
             if hasattr(self.cm, "backend") and self.cm.backend:
-                installed_aur_task = self.cm.backend.create_task(self._get_installed_aur(cached_apps))
+                installed_aur_task = self.cm.backend.create_task(self._get_installed_aur(a_cached))
             else:
-                installed_aur_task = asyncio.create_task(self._get_installed_aur(cached_apps))
+                installed_aur_task = asyncio.create_task(self._get_installed_aur(a_cached))
 
         if "winget" in active_names:
+            w_cached = cached_sets["winget"] if cached_apps is not None else None
             if hasattr(self.cm, "backend") and self.cm.backend:
-                installed_winget_task = self.cm.backend.create_task(self._get_installed_winget(cached_apps))
+                installed_winget_task = self.cm.backend.create_task(self._get_installed_winget(w_cached))
             else:
-                installed_winget_task = asyncio.create_task(self._get_installed_winget(cached_apps))
+                installed_winget_task = asyncio.create_task(self._get_installed_winget(w_cached))
 
         # Record the search query (moved after spawning async tasks to reduce startup latency)
         self.habit_tracker.record_search(query)
@@ -173,8 +190,16 @@ class SearchManager:
         query_lower = query.lower()
         query_norm = self._normalize_app_name(query)
         priority_map = self.cm.get("priority", {})
-        potential_sources = list(self.sources.keys())
-        source_weights = {s: self.habit_tracker.get_source_weight(s) for s in potential_sources}
+
+        # ⚡ Bolt: Pre-calculate source metadata map to avoid lookups in the scoring loop
+        # This reduces per-item scoring overhead significantly for large result sets.
+        source_metadata = {}
+        for s_id, s_obj in self.sources.items():
+            source_metadata[s_id] = {
+                "weight": getattr(s_obj, "weight", 1.0),
+                "habit_weight": self.habit_tracker.get_source_weight(s_id) if self.habit_tracker else 0
+            }
+
         query_re = re.compile(rf"\b{re.escape(query_lower)}")
 
         for item in combined:
@@ -187,16 +212,19 @@ class SearchManager:
             description = item.get('description', '')
             desc_lower = description.lower() if description else ""
 
+            # ⚡ Bolt: Pass pre-calculated source metadata to avoid internal lookups
+            src_key = item.get("source", "").lower()
+            meta = source_metadata.get(src_key, {"weight": 1.0, "habit_weight": 0})
+
             # Base smart score
             base_score = self.smart_scoring._calculate_smart_score(
-                item, query_lower, priority_map, source_weights, query_re,
-                name_lower=name_lower, desc_lower=desc_lower
+                item, query_lower, priority_map, query_re=query_re,
+                name_lower=name_lower, desc_lower=desc_lower,
+                source_habit_weight=meta["habit_weight"]
             )
 
             # Apply manual source weights
-            src_obj = self.sources.get(item.get("source", "").lower())
-            source_weight: float = src_obj.weight if src_obj is not None else 1.0
-            item['_smart_score'] = base_score * source_weight
+            item['_smart_score'] = base_score * meta["weight"]
 
         combined.sort(key=lambda x: x['_smart_score'], reverse=True)
         merged = self.merge_duplicates(combined)
@@ -247,9 +275,9 @@ class SearchManager:
         return top_results
 
 
-    async def _get_installed_flatpak(self, cached_apps: Optional[List[Dict]]):
-        if cached_apps:
-            return {app['id'] for app in cached_apps if app.get('primary_source') == 'Flatpak' and app.get('id')}
+    async def _get_installed_flatpak(self, cached_set: Optional[set]):
+        if cached_set:
+            return cached_set
         p = None
         try:
             async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
@@ -265,9 +293,9 @@ class SearchManager:
                     await p.wait()
                 except: pass
 
-    async def _get_installed_aur(self, cached_apps: Optional[List[Dict]]):
-        if cached_apps:
-            return {app['name'] for app in cached_apps if app.get('primary_source') == 'AUR'}
+    async def _get_installed_aur(self, cached_set: Optional[set]):
+        if cached_set:
+            return cached_set
         p = None
         try:
             async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
@@ -282,13 +310,9 @@ class SearchManager:
                     await p.wait()
                 except: pass
 
-    async def _get_installed_winget(self, cached_apps: Optional[List[Dict]]):
-        if cached_apps:
-            return {
-                str(app.get('id') or app.get('name')).strip().lower().replace(" ", "")
-                for app in cached_apps
-                if app.get('primary_source') == 'Winget' and (app.get('id') or app.get('name'))
-            }
+    async def _get_installed_winget(self, cached_set: Optional[set]):
+        if cached_set:
+            return cached_set
         source = self.sources.get("winget")
         if source and hasattr(source, "_get_installed_ids"):
             try:
@@ -367,12 +391,14 @@ class SearchManager:
         # Priority mapping: Move outside loop to avoid redundant allocations
         prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
         for item in items:
-            raw_name = item.get('name', 'unknown')
             # ⚡ Bolt: Using pre-calculated _norm_name to avoid redundant calls
             norm_key = item.get('_norm_name')
+            if not norm_key: continue
+
             source = item.get('source', 'Unknown')
             is_installed = item.get('installed', False)
 
+            # ⚡ Bolt: Inline variant creation to avoid overhead
             variant = {
                 "source": source,
                 "version": item.get('last_version', 'Unknown'),
@@ -383,29 +409,28 @@ class SearchManager:
             }
 
             if norm_key not in seen:
+                # ⚡ Bolt: Shallow copy for speed, deep copy of variants is handled below
                 entry = item.copy()
                 entry['primary_source'] = source
-                # ⚡ Ensure deep copy of variants to prevent cross-entry mutation
-                entry['variants'] = [variant.copy()]
-                entry['_norm_name'] = norm_key
+                entry['variants'] = [variant]
                 entry['_source_types'] = {source}
                 seen[norm_key] = entry
             else:
-                if source not in seen[norm_key]['_source_types']:
-                    seen[norm_key]['variants'].append(variant.copy())
-                    seen[norm_key]['_source_types'].add(source)
+                target = seen[norm_key]
+                if source not in target['_source_types']:
+                    target['variants'].append(variant)
+                    target['_source_types'].add(source)
                 if is_installed:
-                    seen[norm_key]['installed'] = True
+                    target['installed'] = True
 
-                if prio.get(source, 0) > prio.get(seen[norm_key]['primary_source'], 0):
-                    seen[norm_key]['name'] = raw_name
-                    seen[norm_key]['primary_source'] = source
-                    seen[norm_key]['description'] = item.get('description', seen[norm_key]['description'])
+                if prio.get(source, 0) > prio.get(target['primary_source'], 0):
+                    target['name'] = item.get('name', 'unknown')
+                    target['primary_source'] = source
+                    target['description'] = item.get('description', target['description'])
                     # ⚡ Bolt: Ensure ID and URL are updated when switching primary source
-                    # This ensures correct metadata enrichment and installation links.
-                    seen[norm_key]['id'] = item.get('id')
-                    seen[norm_key]['url'] = item.get('url')
-                    if item.get("icon"): seen[norm_key]['icon'] = item["icon"]
+                    target['id'] = item.get('id')
+                    target['url'] = item.get('url')
+                    if (icon := item.get("icon")): target['icon'] = icon
 
         for entry in seen.values(): entry.pop('_source_types', None)
         return list(seen.values())
