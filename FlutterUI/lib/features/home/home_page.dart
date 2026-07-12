@@ -188,17 +188,22 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
-                  return AnimatedSwitcher(
+                  return AnimatedSize(
                     duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: featured.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('empty_hero'))
-                        : HeroSection(
-                            key: const ValueKey('hero_section'),
-                            apps: featured,
-                            scrollController: _heroScrollController,
-                          ),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: featured.isEmpty
+                          ? const SizedBox.shrink(key: ValueKey('empty_hero'))
+                          : HeroSection(
+                              key: const ValueKey('hero_section'),
+                              apps: featured,
+                              scrollController: _heroScrollController,
+                            ),
+                    ),
                   );
                 },
               ),
@@ -208,20 +213,25 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, settings) => settings.isAIEnabled,
                 builder: (context, isAIEnabled, _) {
                   if (!isAIEnabled) return const SizedBox.shrink();
-                  return AnimatedSwitcher(
+                  return AnimatedSize(
                     duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: _isAILoading
-                        ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
-                        : (_aiPickBlurb != null
-                              ? AIPickSection(
-                                  key: const ValueKey('ai_content'),
-                                  aiPickBlurb: _aiPickBlurb!,
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey('ai_empty'),
-                                )),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topLeft,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: _isAILoading
+                          ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
+                          : (_aiPickBlurb != null
+                                ? AIPickSection(
+                                    key: const ValueKey('ai_content'),
+                                    aiPickBlurb: _aiPickBlurb!,
+                                  )
+                                : const SizedBox.shrink(
+                                    key: ValueKey('ai_empty'),
+                                  )),
+                    ),
                   );
                 },
               ),
@@ -255,18 +265,23 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
-                  return AnimatedSwitcher(
+                  return AnimatedSize(
                     duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: trending.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('empty_trending'))
-                        : AppShelf(
-                            key: const ValueKey('trending_shelf'),
-                            title: l10n.hotApps,
-                            apps: trending,
-                            scrollController: _hotAppsScrollController,
-                          ),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: trending.isEmpty
+                          ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                          : AppShelf(
+                              key: const ValueKey('trending_shelf'),
+                              title: l10n.hotApps,
+                              apps: trending,
+                              scrollController: _hotAppsScrollController,
+                            ),
+                    ),
                   );
                 },
               ),
@@ -278,18 +293,23 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
-                  return AnimatedSwitcher(
+                  return AnimatedSize(
                     duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: forYou.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
-                        : AppShelf(
-                            key: const ValueKey('forYou_shelf'),
-                            title: l10n.forYou,
-                            apps: forYou,
-                            scrollController: _forYouScrollController,
-                          ),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: forYou.isEmpty
+                          ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
+                          : AppShelf(
+                              key: const ValueKey('forYou_shelf'),
+                              title: l10n.forYou,
+                              apps: forYou,
+                              scrollController: _forYouScrollController,
+                            ),
+                    ),
                   );
                 },
               ),

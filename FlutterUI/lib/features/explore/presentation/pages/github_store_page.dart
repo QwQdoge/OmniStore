@@ -242,44 +242,49 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           Expanded(
             child: RefreshIndicator(
               onRefresh: _handleRefresh,
-              child: AnimatedSwitcher(
+              child: AnimatedSize(
                 duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: _isSearching
-                    ? _buildSearchResultsView(
-                        key: const ValueKey('search_results'),
-                      )
-                    : TabBarView(
-                        key: const ValueKey('tab_bar_view'),
-                        controller: _tabController,
-                        children: [
-                          _buildGitHubList(
-                            apps: _recommendedApps,
-                            isLoading: _isLoadingRecommended,
-                            keyPrefix: 'recommended',
-                            error: _recommendedError,
-                          ),
-                          _buildGitHubList(
-                            apps: _rankingApps,
-                            isLoading: _isLoadingRankings,
-                            keyPrefix: 'rankings',
-                            error: _rankingError,
-                          ),
-                          _buildGitHubList(
-                            apps: _trendingApps,
-                            isLoading: _isLoadingTrending,
-                            keyPrefix: 'trending',
-                            error: _trendingError,
-                          ),
-                          _buildGitHubList(
-                            apps: _updatedApps,
-                            isLoading: _isLoadingUpdated,
-                            keyPrefix: 'updated',
-                            error: _updatedError,
-                          ),
-                        ],
-                      ),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.fastOutSlowIn,
+                  child: _isSearching
+                      ? _buildSearchResultsView(
+                          key: const ValueKey('search_results'),
+                        )
+                      : TabBarView(
+                          key: const ValueKey('tab_bar_view'),
+                          controller: _tabController,
+                          children: [
+                            _buildGitHubList(
+                              apps: _recommendedApps,
+                              isLoading: _isLoadingRecommended,
+                              keyPrefix: 'recommended',
+                              error: _recommendedError,
+                            ),
+                            _buildGitHubList(
+                              apps: _rankingApps,
+                              isLoading: _isLoadingRankings,
+                              keyPrefix: 'rankings',
+                              error: _rankingError,
+                            ),
+                            _buildGitHubList(
+                              apps: _trendingApps,
+                              isLoading: _isLoadingTrending,
+                              keyPrefix: 'trending',
+                              error: _trendingError,
+                            ),
+                            _buildGitHubList(
+                              apps: _updatedApps,
+                              isLoading: _isLoadingUpdated,
+                              keyPrefix: 'updated',
+                              error: _updatedError,
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ),
           ),

@@ -159,11 +159,16 @@ class SearchResultsView extends StatelessWidget {
         ],
       );
     } else {
-      return AnimatedSwitcher(
+      return AnimatedSize(
         duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: resultsContent,
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
+          child: resultsContent,
+        ),
       );
     }
   }

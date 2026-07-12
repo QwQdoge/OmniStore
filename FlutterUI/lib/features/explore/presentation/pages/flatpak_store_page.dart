@@ -83,23 +83,28 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
             const VerticalDivider(width: 1),
             Expanded(
               flex: 6,
-              child: AnimatedSwitcher(
+              child: AnimatedSize(
                 duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: _selectedApp == null
-                    ? Center(
-                        key: const ValueKey('no_selection'),
-                        child: Text(
-                          AppLocalizations.of(context)!.noResults,
-                          style: Theme.of(context).textTheme.bodyLarge,
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.fastOutSlowIn,
+                  child: _selectedApp == null
+                      ? Center(
+                          key: const ValueKey('no_selection'),
+                          child: Text(
+                            AppLocalizations.of(context)!.noResults,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        )
+                      : AppDetailsPage(
+                          app: _selectedApp!,
+                          isEmbedded: true,
+                          key: ValueKey(_selectedApp!.id),
                         ),
-                      )
-                    : AppDetailsPage(
-                        app: _selectedApp!,
-                        isEmbedded: true,
-                        key: ValueKey(_selectedApp!.id),
-                      ),
+                ),
               ),
             ),
           ],

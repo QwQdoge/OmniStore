@@ -28,17 +28,21 @@ class InstalledTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filters = _buildFilters();
-    return AnimatedSwitcher(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.fastOutSlowIn,
-      child: isLoading
-          ? const InstalledAppListSkeleton(key: ValueKey('loading'))
-          : Column(
-              key: const ValueKey('loaded'),
-              children: [
-                SizedBox(
-                  height: 66,
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.fastOutSlowIn,
+        child: isLoading
+            ? const InstalledAppListSkeleton(key: ValueKey('loading'))
+            : Column(
+                key: const ValueKey('loaded'),
+                children: [
+                  SizedBox(
+                    height: 66,
                   child: Scrollbar(
                     controller: filterScrollController,
                     thumbVisibility: true,
@@ -70,9 +74,10 @@ class InstalledTab extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(child: _buildInstalledList(context)),
-              ],
-            ),
+                  Expanded(child: _buildInstalledList(context)),
+                ],
+              ),
+      ),
     );
   }
 
