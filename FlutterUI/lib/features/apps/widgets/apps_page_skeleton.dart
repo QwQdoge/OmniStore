@@ -8,19 +8,22 @@ class AppsPageSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
         child: AppCard(
           child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
+            leading: Skeleton(width: 40, height: 40, borderRadius: 16),
             title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(
-              width: double.infinity,
-              height: 12,
-
+            subtitle: Row(
+              children: [
+                Skeleton(width: 40, height: 12, borderRadius: 16),
+                SizedBox(width: 8),
+                Skeleton(width: 60, height: 12, borderRadius: 16),
+                SizedBox(width: 8),
+                Expanded(child: Skeleton(height: 12, borderRadius: 16)),
+              ],
             ),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
           ),
         ),
       ),
@@ -30,14 +33,17 @@ class AppsPageSkeleton extends StatelessWidget {
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
             child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 12),
+              leading: Skeleton(width: 40, height: 40, borderRadius: 16),
               title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(
-                width: double.infinity,
-                height: 12,
-
+              subtitle: Row(
+                children: [
+                  Skeleton(width: 40, height: 12, borderRadius: 16),
+                  SizedBox(width: 8),
+                  Skeleton(width: 60, height: 12, borderRadius: 16),
+                  SizedBox(width: 8),
+                  Expanded(child: Skeleton(height: 12, borderRadius: 16)),
+                ],
               ),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
             ),
           ),
         );

@@ -77,6 +77,7 @@ class _AppsPageState extends State<AppsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -119,15 +120,20 @@ class _AppsPageState extends State<AppsPage> {
                       key: const ValueKey('list'),
                       onRefresh: _refresh,
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
                         prototypeItem: const Padding(
                           padding: EdgeInsets.only(bottom: 12),
                           child: AppCard(
                             child: ListTile(
                               leading: SizedBox(width: 40, height: 40),
                               title: SizedBox(height: 16),
-                              subtitle: SizedBox(height: 12),
-                              trailing: SizedBox(width: 60, height: 24),
+                              subtitle: Row(
+                                children: [
+                                  SizedBox(width: 40, height: 12),
+                                  SizedBox(width: 8),
+                                  Expanded(child: SizedBox(height: 12)),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -136,53 +142,96 @@ class _AppsPageState extends State<AppsPage> {
                           final app = _filteredApps[index];
                           final heroTag =
                               'installed-app-${app.name}-${app.primarySource}';
-                          return Semantics(
-                            label:
-                                'Installed app: ${app.name} from ${app.primarySource}',
-                            button: true,
-                            child: AppCard(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AppDetailsPage(
-                                    app: app,
-                                    heroTag: heroTag,
+                          final sizeText = app.diskSize ??
+                              app.installedSize ??
+                              app.downloadSize;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Semantics(
+                              label:
+                                  'Installed app: ${app.name} from ${app.primarySource}',
+                              button: true,
+                              child: AppCard(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AppDetailsPage(
+                                      app: app,
+                                      heroTag: heroTag,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              child: ListTile(
-                                leading: Hero(
-                                  tag: heroTag,
-                                  child: app.icon != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          child: CachedNetworkImage(
-                                            imageUrl: app.icon!,
-                                            width: 40,
-                                            height: 40,
-                                            memCacheWidth: 80,
-                                            errorWidget: (c, e, s) =>
-                                                const Icon(Icons.apps),
-                                          ),
+                                child: ListTile(
+                                  leading: Hero(
+                                    tag: heroTag,
+                                    child: app.icon != null
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            child: CachedNetworkImage(
+                                              imageUrl: app.icon!,
+                                              width: 40,
+                                              height: 40,
+                                              memCacheWidth: 80,
+                                              errorWidget: (c, e, s) =>
+                                                  const Icon(Icons.apps),
+                                            ),
                                         )
-                                      : const Icon(Icons.apps, size: 40),
-                                ),
-                                title: Text(
-                                  app.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                        : const Icon(Icons.apps, size: 40),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  app.description,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: AppSourceTag(
-                                  source: app.primarySource,
-                                  mode: AppSourceTagMode.source,
+                                  title: Text(
+                                    app.name,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Row(
+                                      children: [
+                                        AppSourceTag(
+                                          source: app.primarySource,
+                                          mode: AppSourceTagMode.source,
+                                          isSmall: true,
+                                        ),
+                                        if (!app.managed) ...[
+                                          const SizedBox(width: 6),
+                                          const AppSourceTag(
+                                            source: '',
+                                            mode: AppSourceTagMode.managed,
+                                            isSmall: true,
+                                          ),
+                                        ],
+                                        if (sizeText != null &&
+                                            sizeText.toString().isNotEmpty) ...[
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            sizeText.toString(),
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                              color: theme.colorScheme.outline,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            app.description,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: theme
+                                                  .colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
