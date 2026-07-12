@@ -354,11 +354,11 @@
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "Pedir sugerencias a la IA",
+  "aiPromptRecommend": "Sugerencias de IA",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "Analizar error con IA",
+  "aiPromptError": "Análisis de errores",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
