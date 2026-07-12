@@ -23,8 +23,9 @@ class AppsPage extends StatefulWidget {
 class _AppsPageState extends State<AppsPage> {
   final TextEditingController _searchController = TextEditingController();
   List<AppPackage> _apps = [];
-  List<AppPackage> _filteredApps = [];
-  bool _isLoading = true;
+  final ValueNotifier<List<AppPackage>> _filteredAppsNotifier =
+      ValueNotifier([]);
+  final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(true);
   Timer? _searchDebounceTimer;
 
   @override
@@ -37,6 +38,8 @@ class _AppsPageState extends State<AppsPage> {
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
+    _filteredAppsNotifier.dispose();
+    _isLoadingNotifier.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
@@ -44,7 +47,12 @@ class _AppsPageState extends State<AppsPage> {
 
   void _onSearchChanged() {
     _searchDebounceTimer?.cancel();
-    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+    final query = _searchController.text;
+    if (query.isEmpty) {
+      _applyFilter();
+      return;
+    }
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), () {
       _applyFilter();
     });
   }
@@ -52,25 +60,23 @@ class _AppsPageState extends State<AppsPage> {
   void _applyFilter() {
     if (!mounted) return;
     final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredApps = _apps.where((app) {
-        return app.name.toLowerCase().contains(query) ||
-            app.description.toLowerCase().contains(query);
-      }).toList();
-    });
+    final filtered =
+        _apps.where((app) {
+          return app.name.toLowerCase().contains(query) ||
+              app.description.toLowerCase().contains(query);
+        }).toList();
+    _filteredAppsNotifier.value = filtered;
   }
 
   Future<void> _refresh() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+    _isLoadingNotifier.value = true;
     final packageRepo = context.read<PackageRepository>();
     final results = await packageRepo.listInstalled();
     if (mounted) {
-      setState(() {
-        _apps = results;
-        _applyFilter();
-        _isLoading = false;
-      });
+      _apps = results;
+      _applyFilter();
+      _isLoadingNotifier.value = false;
     }
   }
 
@@ -107,19 +113,23 @@ class _AppsPageState extends State<AppsPage> {
             ),
           ),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _isLoading
-                  ? const AppsPageSkeleton(key: ValueKey('loading'))
-                  : _filteredApps.isEmpty
-                  ? const AppsPageEmptyState(key: ValueKey('empty'))
-                  : RefreshIndicator(
-                      key: const ValueKey('list'),
-                      onRefresh: _refresh,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoadingNotifier,
+              builder: (context, isLoading, _) {
+                return ValueListenableBuilder<List<AppPackage>>(
+                  valueListenable: _filteredAppsNotifier,
+                  builder: (context, filteredApps, _) {
+                    Widget child;
+                    if (isLoading) {
+                      child = const AppsPageSkeleton(key: ValueKey('loading'));
+                    } else if (filteredApps.isEmpty) {
+                      child = const AppsPageEmptyState(key: ValueKey('empty'));
+                    } else {
+                      child = RefreshIndicator(
+                        key: const ValueKey('list'),
+                        onRefresh: _refresh,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                         prototypeItem: const Padding(
                           padding: EdgeInsets.only(bottom: 12),
                           child: AppCard(
@@ -136,39 +146,35 @@ class _AppsPageState extends State<AppsPage> {
                             ),
                           ),
                         ),
-                        itemCount: _filteredApps.length,
-                        itemBuilder: (context, index) {
-                          final app = _filteredApps[index];
-                          final heroTag =
-                              'installed-app-${app.name}-${app.primarySource}';
-
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Semantics(
-                              label:
-                                  'Installed app: ${app.name} from ${app.primarySource}',
-                              button: true,
-                              child: AppCard(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AppDetailsPage(
-                                      app: app,
-                                      heroTag: heroTag,
+                          itemCount: filteredApps.length,
+                          itemBuilder: (context, index) {
+                            final app = filteredApps[index];
+                            final heroTag =
+                                'installed-app-${app.name}-${app.primarySource}';
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Semantics(
+                                label:
+                                    'Installed app: ${app.name} from ${app.primarySource}',
+                                button: true,
+                                child: AppCard(
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AppDetailsPage(
+                                        app: app,
+                                        heroTag: heroTag,
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
                                   ),
                                   child: ListTile(
                                     leading: Hero(
                                       tag: heroTag,
                                       child: app.icon != null
                                           ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
+                                              borderRadius: BorderRadius.circular(
+                                                12,
+                                              ),
                                               child: CachedNetworkImage(
                                                 imageUrl: app.icon!,
                                                 width: 40,
@@ -198,11 +204,21 @@ class _AppsPageState extends State<AppsPage> {
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: child,
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
