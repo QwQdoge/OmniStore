@@ -420,12 +420,14 @@ class BackendService {
       return [];
     }
 
+    // Murphy-proof: Use daemon with automatic fallbacks and strong typing
     try {
       final daemonRes = await _sendToDaemon("run_search", [trimmedQuery, true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final parsed = _safeJsonDecode(daemonRes.stdout);
-        if (parsed is List) {
-          return parsed
+        // Murphy-proof: Support both stdout-wrapped JSON and direct response body
+        final rawData = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
+        if (rawData is List) {
+          return rawData
               .whereType<Map<String, dynamic>>()
               .map((item) => AppPackage.fromJson(item))
               .toList();
@@ -435,7 +437,7 @@ class BackendService {
       debugPrint("Daemon searchPackages error: $e. Falling back.");
     }
 
-    // Legacy fallback
+    // Legacy fallback: Raw process execution
     try {
       if (cancelOngoing && activeSearchProcess != null) {
         await _killProcess(activeSearchProcess);
@@ -568,7 +570,7 @@ class BackendService {
         false,
       ]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         if (data is List) {
           return data
               .whereType<Map<String, dynamic>>()
@@ -604,7 +606,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_list_plugins", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         if (data is List) {
           availableSources.value = data
               .whereType<Map>()
@@ -903,7 +905,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_recommendations", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return _parseRecommendations(data);
       }
     } catch (e) {
@@ -1024,7 +1026,7 @@ class BackendService {
         true,
       ]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         if (data is Map<String, dynamic>) return AppPackage.fromJson(data);
       }
     } catch (e) {
@@ -1081,7 +1083,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_check_updates", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -1121,7 +1123,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_get_essentials", []);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -1158,7 +1160,7 @@ class BackendService {
         path.trim(),
       ]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return data is List ? data : [];
       }
     } catch (e) {
@@ -1185,7 +1187,7 @@ class BackendService {
         path.trim(),
       ]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {"status": "error"};
       }
     } catch (e) {
@@ -1278,7 +1280,7 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_get_storage_info", [true]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
+        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         return (data is Map<String, dynamic>) ? data : {};
       }
     } catch (e) {
