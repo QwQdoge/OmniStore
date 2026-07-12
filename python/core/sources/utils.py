@@ -40,7 +40,7 @@ class PrivilegeManager:
                 try:
                     check.kill()
                     await check.wait()
-                except:
+                except Exception:
                     pass
 
         # 2. Memory cache
@@ -96,7 +96,7 @@ class PrivilegeManager:
                     try:
                         sudo_proc.kill()
                         await sudo_proc.wait()
-                    except: pass
+                    except Exception: pass
                 if callback: await callback("[ERROR] Sudo verification timed out.")
                 return False
             finally:
@@ -140,7 +140,7 @@ class PrivilegeManager:
                     try:
                         which.kill()
                         await which.wait()
-                    except:
+                    except Exception:
                         pass
         return None
 
@@ -162,5 +162,5 @@ class PrivilegeManager:
                 try:
                     proc.kill()
                     await proc.wait()
-                except:
+                except Exception:
                     pass

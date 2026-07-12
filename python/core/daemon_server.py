@@ -90,7 +90,7 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                 try:
                     writer.write(json.dumps({"status": "error", "error": "Payload size limit exceeded (max 512KB)"}).encode('utf-8') + b'\n')
                     await writer.drain()
-                except: pass
+                except Exception: pass
                 break
             except asyncio.TimeoutError:
                 logging.debug(f"Daemon client {client_addr} connection timed out")
@@ -100,7 +100,7 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                 try:
                     writer.write(json.dumps({"status": "error", "error": f"Protocol Violation: {str(ex)}"}).encode('utf-8') + b'\n')
                     await writer.drain()
-                except: pass
+                except Exception: pass
                 break
 
             captured_stdout = io.StringIO()
@@ -176,7 +176,7 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
         try:
             writer.close()
             await writer.wait_closed()
-        except: pass
+        except Exception: pass
 
 async def daemon_watchdog(stop_event: asyncio.Event):
     """Murphy-proof watchdog that monitors the parent process."""

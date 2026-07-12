@@ -335,14 +335,15 @@ class OmnistoreBackend:
             try:
                 if self._executor:
                     try: self._executor.stop()
-                    except: pass
-                await self._resources.cleanup()
-                self.session = self.manager = self.recommender = self._ai = self._updater = self._executor = self._repo_manager = self._essentials = None
+                    except Exception: pass
+                await asyncio.shield(self._resources.cleanup())
             except BaseException as e:
                 if isinstance(e, Exception):
                     logging.error(f"Murphy-proof Critical Cleanup Failure: {e}")
                 else:
                     raise
+            finally:
+                self.session = self.manager = self.recommender = self._ai = self._updater = self._executor = self._repo_manager = self._essentials = None
 
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
         if level is None:
@@ -357,7 +358,7 @@ class OmnistoreBackend:
             try:
                 output = json.dumps({"type": "log", "message": f"[{level.upper()}] {icon} {clean_msg}", "level": level.upper()}, ensure_ascii=False)
                 sys.stdout.write(f"[CALLBACK] {output}\n"); sys.stdout.flush()
-            except: pass
+            except Exception: pass
         else: logging.info(f"{level}: {clean_msg}")
 
     @safe_command
@@ -491,7 +492,7 @@ class OmnistoreBackend:
                                     info = stdout.decode()
                                     if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
                                     if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
-                        except: pass
+                        except Exception: pass
             typed_details = AppPackage(**details)
             if json_mode: self._output_command_response(CommandResponse(status="success", response=typed_details.model_dump(exclude_none=True), context="run_app_details"))
             return typed_details
@@ -785,7 +786,7 @@ class OmnistoreBackend:
                     async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE) as proc:
                         stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
                         orphans = [o.strip() for o in stdout.decode().splitlines() if o.strip()]
-                except: pass
+                except Exception: pass
                 if orphans and await self.executor._ensure_privileged(cb):
                     await cb(f"[INFO] Removing {len(orphans)} orphan packages...")
                     async with safe_subprocess("sudo", "pacman", "-Rns", "--noconfirm", *orphans) as p: await asyncio.wait_for(p.wait(), timeout=120)
@@ -796,7 +797,7 @@ class OmnistoreBackend:
 
     def _output_command_response(self, resp: CommandResponse):
         try: sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n"); sys.stdout.flush()
-        except: pass
+        except Exception: pass
 
     def _to_app_packages(self, results: List[Dict]) -> List[AppPackage]:
         output = []
