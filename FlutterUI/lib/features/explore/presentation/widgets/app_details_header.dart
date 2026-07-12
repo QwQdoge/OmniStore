@@ -68,12 +68,12 @@ class AppDetailsHeader extends StatelessWidget {
             height: 120,
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(28.0),
+              borderRadius: BorderRadius.circular(16.0),
             ),
             alignment: Alignment.center,
             child: iconUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(28.0),
+                    borderRadius: BorderRadius.circular(16.0),
                     child: CachedNetworkImage(
                       imageUrl: iconUrl,
                       fit: BoxFit.cover,
@@ -81,7 +81,7 @@ class AppDetailsHeader extends StatelessWidget {
                       placeholder: (context, url) => const Skeleton(
                         width: 120,
                         height: 120,
-                        borderRadius: 28.0,
+                        borderRadius: 16.0,
                       ),
                     ),
                   )
