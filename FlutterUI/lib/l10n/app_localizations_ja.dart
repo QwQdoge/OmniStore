@@ -547,7 +547,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get envCheckSubtitle => 'システムの準備が整っていることを確認します';
 
   @override
-  String get envFatalDesc => 'お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。';
+  String get envFatalDesc => 'お使いのシステムは Arch ベースではありません。ほとんどの機能が利用できなくなります。';
 
   @override
   String get envWarningDesc => 'いくつかの必要なコンポーネントが不足しています。自動的に設定できます。';

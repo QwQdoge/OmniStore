@@ -32,7 +32,7 @@
       }
     }
   },
-  "noResults": "No se encontraron resultados",
+  "noResults": "Sin resultados",
   "searching": "Buscando...",
   "activity": "Historial de tareas",
   "@activity": {
@@ -410,11 +410,11 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiRefineSearch": "Refinar búsqueda con IA",
+  "aiRefineSearch": "Refinamiento de búsqueda con IA",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Analizar esta actualización",
+  "aiExplainUpdate": "Análisis de esta actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },
@@ -461,7 +461,7 @@
   "skip": "Omitir",
   "envCheckTitle": "Comprobación del entorno",
   "envCheckSubtitle": "Asegurando que su sistema esté listo",
-  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
+  "envFatalDesc": "Su sistema no está basado en Arch. La mayoría de las funciones no estarán disponibles.",
   "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
   "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
   "fixProblems": "Corregir / Configurar todo",
@@ -524,8 +524,8 @@
     }
   },
   "switchSource": "Cambiar",
-  "flatpakBetterDesc": "Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.",
-  "aiAnalysisPrompt": "Se encontraron registros de errores, ¿necesita un análisis de IA?",
+  "flatpakBetterDesc": "Fuente Flatpak disponible, generalmente más estable.",
+  "aiAnalysisPrompt": "¿Analizar registros de errores con IA?",
   "analyzeNow": "Analizar ahora",
   "cleanOrphans": "Limpiar dependencias no utilizadas (huérfanos)",
   "securityWarning": "Advertencia de seguridad",
