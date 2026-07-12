@@ -30,7 +30,8 @@ async def safe_subprocess(*args, **kwargs):
                 # orphan the subprocess.
                 await _cleanup_proc(proc)
             except BaseException as e:
-                logging.error(f"Murphy-proof: Fatal error in subprocess cleanup: {e}")
+                if isinstance(e, Exception):
+                    logging.error(f"Murphy-proof: Fatal error in subprocess cleanup: {e}")
                 raise
 
 async def _cleanup_proc(proc):
@@ -61,7 +62,7 @@ async def _cleanup_proc(proc):
             try:
                 # Murphy-proof: Use wait_for with a strict timeout
                 await asyncio.wait_for(proc.wait(), timeout=5)
-            except (asyncio.TimeoutError, BaseException):
+            except (asyncio.TimeoutError, Exception):
                 # 2. Escalation: Force group kill (SIGKILL to the process group)
                 if os.name == 'posix':
                     try:
@@ -77,8 +78,11 @@ async def _cleanup_proc(proc):
 
                 # Final wait to reap the zombie
                 try:
-                    await asyncio.wait_for(proc.wait(), timeout=2)
-                except:
+                    await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
+                except (asyncio.TimeoutError, Exception):
                     pass
-    except Exception as e:
-        logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid}): {e}")
+    except BaseException as e:
+        if isinstance(e, Exception):
+            logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid}): {e}")
+        else:
+            raise

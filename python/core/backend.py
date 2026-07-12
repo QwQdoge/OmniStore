@@ -319,7 +319,11 @@ class OmnistoreBackend:
                     except: pass
                 await self._resources.cleanup()
                 self.session = self.manager = self.recommender = self._ai = self._updater = self._executor = self._repo_manager = self._essentials = None
-            except Exception as e: logging.error(f"Murphy-proof Critical Cleanup Failure: {e}")
+            except BaseException as e:
+                if isinstance(e, Exception):
+                    logging.error(f"Murphy-proof Critical Cleanup Failure: {e}")
+                else:
+                    raise
 
     async def _flutter_callback(self, msg: str, json_mode: bool = False, level: Optional[str] = None):
         if level is None:

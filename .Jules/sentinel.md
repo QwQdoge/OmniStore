@@ -139,3 +139,11 @@ In Python 3.8+, `asyncio.CancelledError` inherits from `BaseException` rather th
 
 Action:
 Modified `safe_subprocess` in `python/core/subprocess_utils.py` and `OmnistoreBackend` in `python/core/backend.py` to explicitly catch `BaseException` during shutdown/reaping blocks. Used `asyncio.shield` to protect the final `wait()` from the same cancellation event. Re-raised `BaseException` (like `CancelledError`) after completing the necessary zombie cleanup to ensure standard async propagation.
+
+## 2026-07-11 - [Zombie Process Leak on Async Cancellation - Fix Refinement]
+
+Learning:
+When modifying `except Exception:` to `except BaseException:` to catch `asyncio.CancelledError`, care must be taken not to blindly suppress cancellation entirely or trigger false-positive critical logs when cancellation is standard behavior. The inner `try-except` blocks within `safe_subprocess` should only catch and swallow specific errors like `TimeoutError`, rather than broadly silencing `BaseException` which breaks asyncio cancellation flows.
+
+Action:
+Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py` to properly re-raise `BaseException` variants (like `CancelledError` or `KeyboardInterrupt`) without logging them as critical errors, and ensured inner `try-except` blocks don't swallow `BaseException`. Used `asyncio.shield` correctly to allow the cancellation cleanup sequence to run without leaving zombies, while maintaining the correct propagation of `asyncio.CancelledError`.
