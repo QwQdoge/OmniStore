@@ -24,19 +24,21 @@ class SmartScoring:
 
         # 2. Check description keywords
         if desc_lower:
-            # ⚡ Bolt: Use pre-compiled regex for ~30% faster matching than any() loop
-            if _DESC_LIB_RE.search(desc_lower):
+            # ⚡ Bolt: Limit regex matching to first 200 chars for faster matching in hot loops.
+            # Library keywords almost always appear in the first two sentences.
+            truncated_desc = desc_lower[:200]
+            if _DESC_LIB_RE.search(truncated_desc):
                 # 排除掉一些可能是桌面软件但描述里含 keywords 的情况 (模糊处理)
-                if "desktop" in desc_lower or "client" in desc_lower or "editor" in desc_lower:
+                if "desktop" in truncated_desc or "client" in truncated_desc or "editor" in truncated_desc:
                     return False
                 return True
 
         return False
 
-    def _calculate_smart_score(self, item, query_lower, priority_map=None, source_weights=None, query_re=None, name_lower=None, desc_lower=None):
+    def _calculate_smart_score(self, item, query_lower, priority_map=None, query_re=None, name_lower=None, desc_lower=None, source_habit_weight=None):
         """
         Calculates a ranking score for a search result.
-        Optimized with optional pre-calculated maps to avoid redundant lookups in hot loops.
+        Optimized with optional pre-calculated values to avoid redundant lookups in hot loops.
         """
         score = 0
         if name_lower is None:
@@ -70,6 +72,13 @@ class SmartScoring:
         if priority_map is None:
             priority_map = self.cm.get("priority", {})
 
+        # ⚡ Bolt: Use pre-calculated habit weight if provided to avoid O(N) dict lookups
+        if source_habit_weight is not None:
+            score += source_habit_weight * 10
+        elif self.habit_tracker:
+            source_raw = item.get('source', '')
+            score += self.habit_tracker.get_source_weight(source_raw) * 10
+
         source_raw = item.get('source', '')
         source_key = source_raw.lower()
         # 兼容配置中的 key 名
@@ -77,14 +86,6 @@ class SmartScoring:
         else: cfg_key = source_key
 
         score += priority_map.get(cfg_key, 50)
-
-        # 加入用户偏好权重
-        if source_weights is not None:
-            # use pre-calculated weights if provided
-            score += source_weights.get(source_raw, 0) * 10
-        elif self.habit_tracker:
-            user_pref_score = self.habit_tracker.get_source_weight(source_raw)
-            score += user_pref_score * 10  # 放大用户习惯的影响
 
         # --- 维度 5：细节微调 ---
         length_diff = len(name_lower) - len(query_lower)
