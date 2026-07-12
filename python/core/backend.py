@@ -26,7 +26,7 @@ from core.subprocess_utils import safe_subprocess
 from core.friendly_messages import get_friendly_message
 from core.security_validator import SecurityValidator
 from core.utils.win_utils import scan_windows_unmanaged_installed, format_bytes, get_directory_size
-from core.models import CommandResponse, AppPackage, PackageVariant
+from core.models import CommandResponse, AppPackage, PackageVariant, UpdateInfo, RecommendationResponse
 
 # Initial rich console
 console = Console(force_terminal=True)
@@ -114,24 +114,35 @@ class ResourceCoordinator:
             if self._tasks:
                 logging.debug(f"ResourceCoordinator: Cancelling {len(self._tasks)} tasks.")
                 for task in list(self._tasks):
-                    if not task.done(): task.cancel()
-                await asyncio.gather(*self._tasks, return_exceptions=True)
+                    if not task.done():
+                        task.cancel()
+                # Use wait_for to prevent cleanup from hanging indefinitely
+                try:
+                    await asyncio.wait_for(asyncio.gather(*self._tasks, return_exceptions=True), timeout=5.0)
+                except asyncio.TimeoutError:
+                    logging.error("ResourceCoordinator: Task cleanup timed out.")
                 self._tasks.clear()
 
             for handle in self._handles:
                 try:
+                    # Murphy-proof: Handle aiohttp.ClientSession explicitly
                     if hasattr(handle, "close"):
                         res = handle.close()
-                        if inspect.isawaitable(res): await res
-                except: pass
+                        if inspect.isawaitable(res):
+                            await asyncio.wait_for(res, timeout=2.0)
+                except Exception as e:
+                    logging.error(f"ResourceCoordinator: Handle cleanup failed: {e}")
             self._handles.clear()
 
             for path in self._files:
                 try:
                     if os.path.exists(path):
-                        if os.path.isdir(path): shutil.rmtree(path)
-                        else: os.remove(path)
-                except: pass
+                        if os.path.isdir(path):
+                            shutil.rmtree(path)
+                        else:
+                            os.remove(path)
+                except Exception as e:
+                    logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
             self._files.clear()
 
 def safe_command(func):
@@ -382,25 +393,61 @@ class OmnistoreBackend:
             return success
 
     @safe_command
-    async def run_check_updates(self, json_mode: bool = False):
+    async def run_check_updates(self, json_mode: bool = False) -> Any:
         updates = await self.updater.check_all_updates()
-        if json_mode: sys.stdout.write(json.dumps(updates, ensure_ascii=False) + "\n"); sys.stdout.flush()
+
+        # Murphy-proof: Typed UpdateInfo models
+        typed_updates = []
+        for u in (updates or []):
+            try:
+                typed_updates.append(UpdateInfo(**u))
+            except Exception as e:
+                logging.error(f"Murphy-proof: Invalid update data: {e}")
+
+        if json_mode:
+            self._output_command_response(CommandResponse(
+                status="success",
+                response=[u.model_dump(exclude_none=True) for u in typed_updates],
+                context="run_check_updates"
+            ))
         else:
-            if not updates: console.print(Panel("All apps are up to date! ✨", border_style="green"))
+            if not typed_updates:
+                console.print(Panel("All apps are up to date! ✨", border_style="green"))
             else:
-                table = Table(title="Available Updates"); table.add_column("Source"); table.add_column("Package Name"); table.add_column("New Version")
-                for u in updates: table.add_row(u['source'], u['name'], u['new_version'])
+                table = Table(title="Available Updates")
+                table.add_column("Source")
+                table.add_column("Package Name")
+                table.add_column("New Version")
+                for u in typed_updates:
+                    table.add_row(u.source, u.name, u.new_version)
                 console.print(table)
-        return updates
+        return typed_updates
 
     @safe_command
-    async def run_recommendations(self, json_mode: bool = False):
+    async def run_recommendations(self, json_mode: bool = False) -> Any:
         async with self:
-            if not self.recommender: raise RuntimeError("RecommendationManager offline")
+            if not self.recommender:
+                raise RuntimeError("RecommendationManager offline")
             sources = list(self.manager.sources.values()) if self.manager else []
             results = await self.recommender.get_recommendations(sources=sources)
-            if json_mode: sys.stdout.write(json.dumps(results, ensure_ascii=False) + "\n"); sys.stdout.flush()
-            return results
+
+            # Murphy-proof: Strict parsing of recommendations into typed models
+            typed_recs = RecommendationResponse()
+
+            if isinstance(results, dict):
+                for key in ('featured', 'trending', 'for_you'):
+                    if key in results and isinstance(results[key], list):
+                        setattr(typed_recs, key, self._to_app_packages(results[key]))
+            elif isinstance(results, list):
+                typed_recs.featured = self._to_app_packages(results)
+
+            if json_mode:
+                self._output_command_response(CommandResponse(
+                    status="success",
+                    response=typed_recs.model_dump(exclude_none=True),
+                    context="run_recommendations"
+                ))
+            return typed_recs
 
     @safe_command
     async def run_app_details(self, app_id: str, json_mode: bool = False, source: Optional[str] = None) -> Any:

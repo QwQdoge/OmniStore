@@ -229,19 +229,18 @@ class BackendService {
         return null;
       }
 
-      _daemonProcess =
-          await Process.start(
-            _venvPython,
-            _buildArgs(['--daemon', '--json']),
-            workingDirectory: _workingDir,
-          ).timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw TimeoutException(
-                "Failed to start Python daemon within 10s",
-              );
-            },
-          );
+      _daemonProcess = await Process.start(
+        _venvPython,
+        _buildArgs(['--daemon', '--json']),
+        workingDirectory: _workingDir,
+        // Murphy-proof: Ensure new process group for the daemon
+        runInShell: false,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw TimeoutException("Failed to start Python daemon within 15s");
+        },
+      );
 
       // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);
@@ -497,24 +496,35 @@ class BackendService {
       );
 
       try {
-        // Precise balanced JSON extraction using a non-greedy reverse scan
-        // for more accurate recovery of nested structures.
+        // Multi-stage Recovery:
+        // 1. Precise balanced JSON extraction using non-greedy scan
         final jsonPattern = RegExp(r'(\{[\s\S]*\}|\[[\s\S]*\])');
         final matches = jsonPattern.allMatches(cleaned).toList();
 
         if (matches.isNotEmpty) {
-          // Priority 1: Full-match reverse scan
           for (final match in matches.reversed) {
             final candidate = match.group(0)!;
-            try {
-              return jsonDecode(candidate);
-            } catch (_) {}
+            // Murphy-proof: Basic brace balancing check before full decode
+            int balance = 0;
+            bool inQuote = false;
+            for (int i = 0; i < candidate.length; i++) {
+              if (candidate[i] == '"' && (i == 0 || candidate[i - 1] != '\\')) {
+                inQuote = !inQuote;
+              }
+              if (!inQuote) {
+                if (candidate[i] == '{' || candidate[i] == '[') balance++;
+                if (candidate[i] == '}' || candidate[i] == ']') balance--;
+              }
+            }
+            if (balance == 0) {
+              try {
+                return jsonDecode(candidate);
+              } catch (_) {}
+            }
           }
         }
 
-        // Priority 2: Precise Tail Recovery for multiplexed output
-        // Splitting by lines and attempting to find the most recent valid JSON block
-        // Murphy-proof: Scanning only the last 100 lines for performance.
+        // 2. Line-by-line tail recovery
         final lines = cleaned.split('\n');
         final scanDepth = lines.length.clamp(0, 100);
         final startIdx = (lines.length - scanDepth).clamp(0, lines.length);
@@ -523,17 +533,15 @@ class BackendService {
           final lineCandidate = lines[i].trim();
           if (lineCandidate.isEmpty) continue;
 
-          // Optimization: Only attempt decode if line looks like JSON
           if (lineCandidate.startsWith('{') || lineCandidate.startsWith('[')) {
             try {
               return jsonDecode(lineCandidate);
             } catch (_) {}
           }
 
-          // Sub-line recovery for lines that contain both text and JSON
-          final startIdx = lineCandidate.indexOf(RegExp(r'[\{\[]'));
-          if (startIdx != -1) {
-            final subCandidate = lineCandidate.substring(startIdx);
+          final jsonStart = lineCandidate.indexOf(RegExp(r'[\{\[]'));
+          if (jsonStart != -1) {
+            final subCandidate = lineCandidate.substring(jsonStart);
             try {
               return jsonDecode(subCandidate);
             } catch (_) {}
