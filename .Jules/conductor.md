@@ -14,5 +14,6 @@ Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using stand
 3.  **`AIAppResolver`**: Transitioning from a 32dp `Skeleton`, an empty state, and a horizontal 100dp `ListView`. Set alignment to `Alignment.topCenter`.
 4.  **`AppDetailsActions`**: Transitioning between the static Install/Uninstall buttons and the dynamic `SmoothProgressBar` active task widget. Set alignment to `Alignment.topCenter`.
 5.  **`AIUpdateSummaryDialog`**: Transitioning from a loading state to a variable-height AI response `MarkdownBody`. Set alignment to `Alignment.topLeft`.
+6.  **`AppDetailsHeader`**: Transitioning the version selector height when asynchronous version data is loaded. Set alignment to `Alignment.topLeft`.
 
-These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps.
+These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
