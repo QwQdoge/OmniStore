@@ -162,6 +162,11 @@ class _AppsPageState extends State<AppsPage> {
                                     ),
                                   ),
                                 ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: ListTile(
                                   leading: Hero(
                                     tag: heroTag,
@@ -178,59 +183,23 @@ class _AppsPageState extends State<AppsPage> {
                                               errorWidget: (c, e, s) =>
                                                   const Icon(Icons.apps),
                                             ),
-                                        )
+                                          )
                                         : const Icon(Icons.apps, size: 40),
                                   ),
                                   title: Text(
                                     app.name,
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Row(
-                                      children: [
-                                        AppSourceTag(
-                                          source: app.primarySource,
-                                          mode: AppSourceTagMode.source,
-                                          isSmall: true,
-                                        ),
-                                        if (!app.managed) ...[
-                                          const SizedBox(width: 6),
-                                          const AppSourceTag(
-                                            source: '',
-                                            mode: AppSourceTagMode.managed,
-                                            isSmall: true,
-                                          ),
-                                        ],
-                                        if (sizeText != null &&
-                                            sizeText.toString().isNotEmpty) ...[
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            sizeText.toString(),
-                                            style: theme.textTheme.labelSmall
-                                                ?.copyWith(
-                                              color: theme.colorScheme.outline,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            app.description,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: theme.textTheme.bodySmall
-                                                ?.copyWith(
-                                              color: theme
-                                                  .colorScheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  subtitle: Text(
+                                    app.description,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  trailing: AppSourceTag(
+                                    source: app.primarySource,
+                                    mode: AppSourceTagMode.source,
                                   ),
                                 ),
                               ),
