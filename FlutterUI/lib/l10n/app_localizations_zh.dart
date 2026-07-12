@@ -333,10 +333,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaning => '系统清理';
 
   @override
-  String get systemCleaningDesc => '清理孤儿软件包与 pacman 缓存';
+  String get systemCleaningDesc => '清理孤立软件包与 pacman 缓存';
 
   @override
-  String get systemCleaningSubtitle => '清理孤儿软件包与 pacman 缓存';
+  String get systemCleaningSubtitle => '清理孤立软件包与 pacman 缓存';
 
   @override
   String get systemCleaningStarted => '系统清理任务已启动';
@@ -545,7 +545,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '正在确保系统已准备就绪';
 
   @override
-  String get envFatalDesc => '系统并非基于 Arch Linux，核心功能将无法使用。';
+  String get envFatalDesc => '当前系统并非 Arch Linux，大部分核心功能将无法使用。';
 
   @override
   String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
@@ -688,7 +688,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理无用依赖（孤儿软件包）';
+  String get cleanOrphans => '清理无用依赖（孤立软件包）';
 
   @override
   String get securityWarning => '安全风险提示';

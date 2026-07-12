@@ -194,11 +194,11 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "清理孤儿软件包与 pacman 缓存",
+  "systemCleaningDesc": "清理孤立软件包与 pacman 缓存",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "清理孤儿软件包与 pacman 缓存",
+  "systemCleaningSubtitle": "清理孤立软件包与 pacman 缓存",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -465,7 +465,7 @@
   "skip": "跳过",
   "envCheckTitle": "环境检查",
   "envCheckSubtitle": "正在确保系统已准备就绪",
-  "envFatalDesc": "系统并非基于 Arch Linux，核心功能将无法使用。",
+  "envFatalDesc": "当前系统并非 Arch Linux，大部分核心功能将无法使用。",
   "envWarningDesc": "系统缺少必要的运行组件，我们可以为您自动配置。",
   "envOkDesc": "一切就绪！系统环境已完美配置。",
   "fixProblems": "一键修复/配置",
@@ -531,7 +531,7 @@
   "flatpakBetterDesc": "发现此应用有 Flatpak 源，通常更稳定。",
   "aiAnalysisPrompt": "发现错误日志，需要 AI 分析吗？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理无用依赖（孤儿软件包）",
+  "cleanOrphans": "清理无用依赖（孤立软件包）",
   "securityWarning": "安全风险提示",
   "aurSecurityDesc": "AUR（Arch User Repository） 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。",
   "continueInstall": "继续安装",
