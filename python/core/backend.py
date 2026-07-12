@@ -186,58 +186,68 @@ def safe_command(func):
             # Murphy-proof: Ensure even the wrapper is shielded from unhandled task leaks
             result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
 
-            # Murphy-proof: Automatic serialization of Pydantic models for IPC consistency
-            from pydantic import BaseModel
-            if isinstance(result, BaseModel):
-                return result.model_dump(exclude_none=True)
-            if isinstance(result, list) and result and isinstance(result[0], BaseModel):
-                return [i.model_dump(exclude_none=True) for i in result]
+            # Murphy-proof: Consistent return of CommandResponse for IPC
+            if json_mode:
+                # If the function already output a CommandResponse, we avoid double output
+                # but we still want to return a serializable object.
+                from pydantic import BaseModel
+                resp_data = result
+                if isinstance(result, BaseModel):
+                    resp_data = result.model_dump(exclude_none=True)
+                elif isinstance(result, list) and result and isinstance(result[0], BaseModel):
+                    resp_data = [i.model_dump(exclude_none=True) for i in result]
+
+                # If result is already a CommandResponse dict or model, return it.
+                # Otherwise wrap it.
+                if isinstance(resp_data, dict) and "status" in resp_data:
+                    return resp_data
+
+                final_resp = CommandResponse(status="success", response=resp_data, context=func.__name__)
+                return final_resp.model_dump(exclude_none=True)
 
             return result
         except asyncio.TimeoutError:
             error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
             logging.error(error_msg)
+            resp = CommandResponse(status="error", error="TimeoutError", message=error_msg, context=func.__name__)
             if json_mode:
-                self._output_command_response(CommandResponse(status="error", error="TimeoutError", message=error_msg, context=func.__name__))
-            return False
+                self._output_command_response(resp)
+            return resp.model_dump(exclude_none=True) if json_mode else False
         except asyncio.CancelledError:
             logging.warning(f"Murphy-proof: Command {func.__name__} was cancelled.")
+            resp = CommandResponse(status="error", error="CancelledError", message=f"Command {func.__name__} was cancelled.", context=func.__name__)
             if json_mode:
-                self._output_command_response(CommandResponse(status="error", error="CancelledError", message=f"Command {func.__name__} was cancelled.", context=func.__name__))
+                self._output_command_response(resp)
             raise
         except BaseException as e:
-            # Murphy-proof: Catching BaseException ensures we don't swallow
-            # critical signals (like SIGTERM/KeyboardInterrupt) while still
-            # providing structured error feedback before re-raising if necessary.
             import traceback
             err_trace = traceback.format_exc()
             error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
             logging.error(f"{error_msg}\n{err_trace}")
+
+            resp = CommandResponse(
+                status="error",
+                error=type(e).__name__,
+                message=error_msg,
+                context=func.__name__,
+                traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
+            )
+
             if json_mode:
-                resp = CommandResponse(
-                    status="error",
-                    error=type(e).__name__,
-                    message=error_msg,
-                    context=func.__name__,
-                    traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
-                )
                 self._output_command_response(resp)
             else:
                 try:
                     if isinstance(e, Exception):
-                        # Graceful degradation for standard exceptions
                         await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
                     else:
-                        # Critical alerts for BaseExceptions (SIGTERM, etc.)
                         hijacked_print(f"[CRITICAL] {error_msg}")
                 except Exception as inner_e:
                     logging.error(f"Double fault in _handle_error: {inner_e}")
                     hijacked_print(f"[ERROR] {error_msg}")
 
-            # Re-raise critical signals to allow main loop to handle shutdown
             if not isinstance(e, Exception):
                 raise
-            return False
+            return resp.model_dump(exclude_none=True) if json_mode else False
         finally:
             self._active_commands.pop(command_id, None)
 
@@ -367,8 +377,8 @@ class OmnistoreBackend:
             if not self.manager: raise RuntimeError("SearchManager offline")
             results = await asyncio.wait_for(self.manager.search_all(valid_query), timeout=45)
             typed_results = self._to_app_packages(results or [])
-            if json_mode: self._output_command_response(CommandResponse(status="success", response=[item.model_dump(exclude_none=True) for item in typed_results], context="run_search"))
-            else: self._output_pretty(query, [item.model_dump() for item in typed_results])
+            if not json_mode:
+                self._output_pretty(query, [item.model_dump() for item in typed_results])
             return typed_results
 
     @safe_command
@@ -383,8 +393,7 @@ class OmnistoreBackend:
             if success:
                 self.cache.invalidate_installed_cache()
                 if not json_mode: console.print(Panel(f"Successfully installed [bold green]{v_name}[/bold green]! 🎉", border_style="green"))
-            if json_mode: self._output_command_response(CommandResponse(status="success" if success else "error", response=success))
-            return success
+            return CommandResponse(status="success" if success else "error", response=success)
 
     @safe_command
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> Any:
@@ -398,8 +407,7 @@ class OmnistoreBackend:
             if success:
                 self.cache.invalidate_installed_cache()
                 if not json_mode: console.print(Panel(f"Successfully uninstalled [bold red]{v_name}[/bold red]! ✨", border_style="green"))
-            if json_mode: self._output_command_response(CommandResponse(status="success" if success else "error", response=success))
-            return success
+            return CommandResponse(status="success" if success else "error", response=success)
 
     @safe_command
     async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> Any:
@@ -412,8 +420,7 @@ class OmnistoreBackend:
             if success:
                 self.cache.invalidate_installed_cache()
                 if not json_mode: console.print(Panel(f"Update completed! 🎉", border_style="green"))
-            if json_mode: self._output_command_response(CommandResponse(status="success" if success else "error", response=success))
-            return success
+            return CommandResponse(status="success" if success else "error", response=success)
 
     @safe_command
     async def run_check_updates(self, json_mode: bool = False) -> Any:

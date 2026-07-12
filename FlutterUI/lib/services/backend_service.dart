@@ -197,15 +197,20 @@ class BackendService {
       } catch (_) {}
     }
 
-    // Guard: Prevent rapid restart-loop "storm"
+    // Guard: Prevent rapid restart-loop "storm" with exponential backoff logic
     final now = DateTime.now();
     if (_lastDaemonStartTime != null &&
-        now.difference(_lastDaemonStartTime!) < const Duration(seconds: 10)) {
+        now.difference(_lastDaemonStartTime!) < const Duration(seconds: 15)) {
       _daemonRestartCount++;
       if (_daemonRestartCount > 3) {
+        final backoff = Duration(seconds: 5 * _daemonRestartCount);
         debugPrint(
-          "Murphy-proof Warning: Daemon restart loop detected. Throttling.",
+          "Murphy-proof: Daemon restart storm detected. Throttling for ${backoff.inSeconds}s.",
         );
+        await Future.delayed(backoff);
+      }
+      if (_daemonRestartCount > 10) {
+        debugPrint("Murphy-proof Fatal: Daemon failed to stabilize after 10 retries.");
         return null;
       }
     } else {
@@ -222,6 +227,7 @@ class BackendService {
     );
 
     try {
+      // Murphy-proof: Strict environment check before process launch
       if (!File(_venvPython).existsSync() && _venvPython != 'python') {
         debugPrint(
           "Backend Error: Python executable not found at $_venvPython",

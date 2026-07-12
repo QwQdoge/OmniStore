@@ -61,6 +61,8 @@ class TaskController with ChangeNotifier {
     AppLocalizations l10n, {
     String? url,
   }) async {
+    // Murphy-proof: Strict state locking to prevent concurrent tasks
+    if (_isBusy) return false;
     _isBusy = true;
     _packageName = packageName;
     _flag = flag;
@@ -70,29 +72,35 @@ class TaskController with ChangeNotifier {
     bool hasError = false;
     notifyListeners();
 
-    final stream = _taskRepository.executeAction(
-      flag,
-      packageName,
-      source,
-      url: url,
-    );
+    try {
+      final stream = _taskRepository.executeAction(
+        flag,
+        packageName,
+        source,
+        url: url,
+      );
 
-    await for (final line in stream) {
-      if (line.contains("errorFatalStream") ||
-          line.contains("errorProcessStart") ||
-          line.contains("errorStartFailed") ||
-          line.contains("errorUpdateFailed") ||
-          line.contains("errorCleanFailed") ||
-          line.contains("errorUpdateAll") ||
-          line.contains("[ERROR]")) {
-        hasError = true;
+      await for (final line in stream) {
+        if (line.contains("errorFatalStream") ||
+            line.contains("errorProcessStart") ||
+            line.contains("errorStartFailed") ||
+            line.contains("errorUpdateFailed") ||
+            line.contains("errorCleanFailed") ||
+            line.contains("errorUpdateAll") ||
+            line.contains("[ERROR]")) {
+          hasError = true;
+        }
+        _parseLine(line, l10n);
+        notifyListeners();
       }
-      _parseLine(line, l10n);
-      notifyListeners();
+    } catch (e) {
+      hasError = true;
+      _status = l10n.errorFatalStream(e.toString());
+      _logs.add("[ERROR] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
-
-    _isBusy = false;
-    _progress = null;
 
     _completedTasks.insert(
       0,
@@ -118,6 +126,7 @@ class TaskController with ChangeNotifier {
   }
 
   Future<bool> updateAll(String source, AppLocalizations l10n) async {
+    if (_isBusy) return false;
     _isBusy = true;
     _packageName = "All Packages";
     _flag = "-U";
@@ -127,22 +136,28 @@ class TaskController with ChangeNotifier {
     bool hasError = false;
     notifyListeners();
 
-    final stream = _taskRepository.updateAll(source);
+    try {
+      final stream = _taskRepository.updateAll(source);
 
-    await for (final line in stream) {
-      if (line.contains("errorFatalStream") ||
-          line.contains("errorProcessStart") ||
-          line.contains("errorStartFailed") ||
-          line.contains("errorUpdateFailed") ||
-          line.contains("[ERROR]")) {
-        hasError = true;
+      await for (final line in stream) {
+        if (line.contains("errorFatalStream") ||
+            line.contains("errorProcessStart") ||
+            line.contains("errorStartFailed") ||
+            line.contains("errorUpdateFailed") ||
+            line.contains("[ERROR]")) {
+          hasError = true;
+        }
+        _parseLine(line, l10n);
+        notifyListeners();
       }
-      _parseLine(line, l10n);
-      notifyListeners();
+    } catch (e) {
+      hasError = true;
+      _status = l10n.errorUpdateAll(e.toString());
+      _logs.add("[ERROR] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
-
-    _isBusy = false;
-    _progress = null;
 
     _completedTasks.insert(
       0,
@@ -165,20 +180,26 @@ class TaskController with ChangeNotifier {
   }
 
   Future<void> runCleanSystem(AppLocalizations l10n) async {
+    if (_isBusy) return;
     _isBusy = true;
     _progress = null;
     _status = l10n.systemCleaningStarted;
     notifyListeners();
 
-    final stream = _taskRepository.cleanSystem();
+    try {
+      final stream = _taskRepository.cleanSystem();
 
-    await for (final line in stream) {
-      _parseLine(line, l10n);
-      notifyListeners();
+      await for (final line in stream) {
+        _parseLine(line, l10n);
+        notifyListeners();
+      }
+    } catch (e) {
+      _status = l10n.errorCleanFailed(e.toString());
+      _logs.add("[ERROR] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
-
-    _isBusy = false;
-    _progress = null;
     _completedTasks.insert(
       0,
       TaskState(

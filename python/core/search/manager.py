@@ -167,12 +167,13 @@ class SearchManager:
         # Defensive source execution: failures in one source shouldn't crash everything
         async def safe_search(source: UnifiedSource, q: str, **kwargs):
             try:
+                # Murphy-proof: Strict timeout and isolation for external source calls
                 return await asyncio.wait_for(source.search(q, **kwargs), timeout=10)
             except asyncio.TimeoutError:
-                logging.warning(f"Search timeout (10s) for source: {source.name}")
+                logging.warning(f"Murphy-proof: Search timeout (10s) for source: {source.name}")
                 return []
             except Exception as e:
-                logging.error(f"Search failed for source {source.name}: {e}")
+                logging.error(f"Murphy-proof: Search failed for source {source.name}: {e}")
                 return []
 
         tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task, installed_winget_task=installed_winget_task) for src in active_sources]
@@ -240,16 +241,20 @@ class SearchManager:
                 if candidates_str and ai:
                     prompt = f"Rank these apps for query '{query}': {', '.join(candidates_str)}"
                     try:
+                        # Murphy-proof: Tight timeout and panic recovery for AI ranking
                         res = await asyncio.wait_for(ai.recommend_apps(prompt, candidates_list), timeout=1.5)
-                        ai_ranked_names = {n.strip() for n in res.split("\n") if n.strip()}
+                        if res:
+                            ai_ranked_names = {n.strip() for n in res.split("\n") if n.strip()}
 
-                        # Apply AI boost to merged results and re-sort
-                        for item in merged:
-                            if item['name'] in ai_ranked_names:
-                                item['_smart_score'] *= 1.5
-                        merged.sort(key=lambda x: x['_smart_score'], reverse=True)
+                            # Apply AI boost to merged results and re-sort
+                            for item in merged:
+                                if item['name'] in ai_ranked_names:
+                                    item['_smart_score'] *= 1.5
+                            merged.sort(key=lambda x: x['_smart_score'], reverse=True)
                     except asyncio.TimeoutError:
-                        logging.warning("AI Ranking timed out (1.5s)")
+                        logging.warning("Murphy-proof: AI Ranking timed out (1.5s). Falling back to smart score.")
+                    except Exception as e:
+                        logging.error(f"Murphy-proof: AI Ranking panic: {e}. Falling back to smart score.")
             except Exception: pass
 
         exact_match_idx = -1
