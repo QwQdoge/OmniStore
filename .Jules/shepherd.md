@@ -64,3 +64,6 @@
 - Replaced fragmented clipboard copy feedback strings (`nameCopied`, `aiCommandCopied`) with a globally consistent `copiedToClipboard` string.
 - Updated `FlutterUI/lib/features/explore/presentation/widgets/app_details_header.dart` and `FlutterUI/lib/features/explore/presentation/widgets/ai_dialogs.dart` to use the unified `copiedToClipboard` localization key.
 - Removed redundant `nameCopied` and `aiCommandCopied` keys from all `.arb` files and regenerated localization files via `flutter gen-l10n`.
+## 2026-06-27 - Global SnackBar Consistency: Clipboard Feedback Duration
+- Identified inconsistency in the display duration of `SnackBar` widgets used for clipboard copy feedback. `FlutterUI/lib/features/explore/presentation/widgets/app_details_shared.dart` explicitly set `duration: const Duration(seconds: 2)`, while `FlutterUI/lib/features/explore/presentation/widgets/ai_dialogs.dart` and `FlutterUI/lib/features/explore/presentation/widgets/app_details_header.dart` relied on the default framework duration (typically 4 seconds).
+- Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
