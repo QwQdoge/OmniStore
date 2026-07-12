@@ -88,18 +88,23 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          AnimatedSwitcher(
+          AnimatedSize(
             duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: _showAdvanced
-                ? Semantics(
-                    key: const ValueKey('ai_settings'),
-                    label: l10n.aiSettings,
-                    explicitChildNodes: true,
-                    child: const AISettingsSection(),
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty_advanced')),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
+              child: _showAdvanced
+                  ? Semantics(
+                      key: const ValueKey('ai_settings'),
+                      label: l10n.aiSettings,
+                      explicitChildNodes: true,
+                      child: const AISettingsSection(),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty_advanced')),
+            ),
           ),
         ],
       ),

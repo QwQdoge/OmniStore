@@ -76,26 +76,31 @@ class TerminalDialog extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
-                      AnimatedSwitcher(
+                      AnimatedSize(
                         duration: const Duration(milliseconds: 300),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.fastOutSlowIn,
-                        child: data.progress != null
-                            ? TweenAnimationBuilder<double>(
-                                key: const ValueKey('determinate'),
-                                tween: Tween<double>(
-                                  begin: 0,
-                                  end: data.progress!,
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
+                          child: data.progress != null
+                              ? TweenAnimationBuilder<double>(
+                                  key: const ValueKey('determinate'),
+                                  tween: Tween<double>(
+                                    begin: 0,
+                                    end: data.progress!,
+                                  ),
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, value, _) {
+                                    return LinearProgressIndicator(value: value);
+                                  },
+                                )
+                              : const LinearProgressIndicator(
+                                  key: ValueKey('indeterminate'),
                                 ),
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeOutCubic,
-                                builder: (context, value, _) {
-                                  return LinearProgressIndicator(value: value);
-                                },
-                              )
-                            : const LinearProgressIndicator(
-                                key: ValueKey('indeterminate'),
-                              ),
+                        ),
                       ),
                     ],
                   ),
