@@ -391,8 +391,9 @@ class SearchManager:
         # Priority mapping: Move outside loop to avoid redundant allocations
         prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
         for item in items:
-            # ⚡ Bolt: Using pre-calculated _norm_name to avoid redundant calls
-            norm_key = item.get('_norm_name')
+            # Use pre-calculated _norm_name when available, but keep merge_duplicates
+            # safe for tests and direct callers that pass raw result dictionaries.
+            norm_key = item.get('_norm_name') or self._normalize_app_name(item.get('name', 'unknown'))
             if not norm_key: continue
 
             source = item.get('source', 'Unknown')
