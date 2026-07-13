@@ -74,13 +74,17 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedSwitcher(
+            AnimatedSize(
               duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _loadingStorage
-                  ? const Column(
-                      key: ValueKey('loading'),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topLeft,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: _loadingStorage
+                    ? const Column(
+                        key: ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Skeleton(width: double.infinity, height: 14),
@@ -215,11 +219,12 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                         ),
                       ],
                     )
-                  : Text(
-                      key: const ValueKey('empty'),
-                      l10n.systemCleaningSubtitle,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    : Text(
+                        key: const ValueKey('empty'),
+                        l10n.systemCleaningSubtitle,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+              ),
             ),
           ],
         ),
