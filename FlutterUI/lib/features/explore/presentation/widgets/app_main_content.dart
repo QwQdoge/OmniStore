@@ -80,22 +80,27 @@ class AppMainContent extends StatelessWidget {
           onLaunchApp: onLaunchApp,
           onCancelAction: onCancelAction,
         ),
-        const SizedBox(height: 24),
-        AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           alignment: Alignment.topLeft,
-          child: AppAboutSection(
-            isLoading: isLoadingDetails,
-            description: extraDetails?.description,
-            fallbackDescription: app.description,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
+              AppAboutSection(
+                isLoading: isLoadingDetails,
+                description: extraDetails?.description,
+                fallbackDescription: app.description,
+              ),
+            ],
           ),
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          alignment: Alignment.topCenter,
+          alignment: Alignment.topLeft,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -119,7 +124,7 @@ class AppMainContent extends StatelessWidget {
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          alignment: Alignment.topCenter,
+          alignment: Alignment.topLeft,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
