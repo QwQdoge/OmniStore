@@ -12,19 +12,12 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  List<CategoryItem> _categories = [];
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _categories = CategoryService.getCategories(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -62,9 +55,9 @@ class _CategoryPageState extends State<CategoryPage> {
                 mainAxisExtent: 140,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
-                final cat = _categories[index];
+                final cat = categories[index];
                 return CategoryCard(category: cat);
-              }, childCount: _categories.length),
+              }, childCount: categories.length),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
