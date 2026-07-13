@@ -42,7 +42,7 @@
   "@category": {
     "description": "Category label"
   },
-  "packageManager": "包管理器",
+  "packageManager": "软件包管理器",
   "pacmanOfficial": "Pacman（官方软件源）",
   "aurUser": "AUR（用户软件源）",
   "flatpak": "Flatpak",
@@ -120,7 +120,7 @@
   "useSystemTitleBar": "使用系统标题栏",
   "showWindow": "显示窗口",
   "exit": "退出",
-  "trayTooltipUpdates": "发现 {count} 个可用更新",
+  "trayTooltipUpdates": "OmniStore：发现 {count} 个可用更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -128,7 +128,7 @@
       }
     }
   },
-  "trayTooltipUpToDate": "OmniStore：应用已是最新",
+  "trayTooltipUpToDate": "OmniStore：应用已是最新版本",
   "updateReminders": "更新提醒",
   "maintenance": "维护",
   "updateAllPackages": "更新所有应用",
