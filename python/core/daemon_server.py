@@ -24,6 +24,9 @@ class DaemonRequest(BaseModel):
     def validate_args(cls, v):
         if not isinstance(v, list):
             raise ValueError("args must be a list")
+        # Murphy-proof: Payload size limit for args
+        if len(str(v)) > 50000:
+            raise ValueError("args payload too large (max 50,000 characters)")
         return v
 
     @field_validator("kwargs")
@@ -31,6 +34,9 @@ class DaemonRequest(BaseModel):
     def validate_kwargs(cls, v):
         if not isinstance(v, dict):
             raise ValueError("kwargs must be a dict")
+        # Murphy-proof: Payload size limit for kwargs
+        if len(str(v)) > 100000:
+            raise ValueError("kwargs payload too large (max 100,000 characters)")
         return v
 
     @field_validator("action")

@@ -70,29 +70,35 @@ class TaskController with ChangeNotifier {
     bool hasError = false;
     notifyListeners();
 
-    final stream = _taskRepository.executeAction(
-      flag,
-      packageName,
-      source,
-      url: url,
-    );
+    try {
+      final stream = _taskRepository.executeAction(
+        flag,
+        packageName,
+        source,
+        url: url,
+      );
 
-    await for (final line in stream) {
-      if (line.contains("errorFatalStream") ||
-          line.contains("errorProcessStart") ||
-          line.contains("errorStartFailed") ||
-          line.contains("errorUpdateFailed") ||
-          line.contains("errorCleanFailed") ||
-          line.contains("errorUpdateAll") ||
-          line.contains("[ERROR]")) {
-        hasError = true;
+      await for (final line in stream) {
+        if (line.contains("errorFatalStream") ||
+            line.contains("errorProcessStart") ||
+            line.contains("errorStartFailed") ||
+            line.contains("errorUpdateFailed") ||
+            line.contains("errorCleanFailed") ||
+            line.contains("errorUpdateAll") ||
+            line.contains("[ERROR]")) {
+          hasError = true;
+        }
+        _parseLine(line, l10n);
+        notifyListeners();
       }
-      _parseLine(line, l10n);
-      notifyListeners();
+    } catch (e) {
+      hasError = true;
+      _status = l10n.errorFatalStream(e.toString());
+      _logs.add("[FATAL] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
-
-    _isBusy = false;
-    _progress = null;
 
     _completedTasks.insert(
       0,
@@ -127,22 +133,28 @@ class TaskController with ChangeNotifier {
     bool hasError = false;
     notifyListeners();
 
-    final stream = _taskRepository.updateAll(source);
+    try {
+      final stream = _taskRepository.updateAll(source);
 
-    await for (final line in stream) {
-      if (line.contains("errorFatalStream") ||
-          line.contains("errorProcessStart") ||
-          line.contains("errorStartFailed") ||
-          line.contains("errorUpdateFailed") ||
-          line.contains("[ERROR]")) {
-        hasError = true;
+      await for (final line in stream) {
+        if (line.contains("errorFatalStream") ||
+            line.contains("errorProcessStart") ||
+            line.contains("errorStartFailed") ||
+            line.contains("errorUpdateFailed") ||
+            line.contains("[ERROR]")) {
+          hasError = true;
+        }
+        _parseLine(line, l10n);
+        notifyListeners();
       }
-      _parseLine(line, l10n);
-      notifyListeners();
+    } catch (e) {
+      hasError = true;
+      _status = l10n.errorUpdateAll(e.toString());
+      _logs.add("[FATAL] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
-
-    _isBusy = false;
-    _progress = null;
 
     _completedTasks.insert(
       0,
@@ -168,76 +180,127 @@ class TaskController with ChangeNotifier {
     _isBusy = true;
     _progress = null;
     _status = l10n.systemCleaningStarted;
+    bool hasError = false;
     notifyListeners();
 
-    final stream = _taskRepository.cleanSystem();
+    try {
+      final stream = _taskRepository.cleanSystem();
 
-    await for (final line in stream) {
-      _parseLine(line, l10n);
-      notifyListeners();
+      await for (final line in stream) {
+        if (line.contains("errorCleanFailed") ||
+            line.contains("errorFatalStream") ||
+            line.contains("[ERROR]")) {
+          hasError = true;
+        }
+        _parseLine(line, l10n);
+        notifyListeners();
+      }
+    } catch (e) {
+      hasError = true;
+      _status = l10n.errorCleanFailed(e.toString());
+      _logs.add("[FATAL] $e");
+    } finally {
+      _isBusy = false;
+      _progress = null;
     }
 
-    _isBusy = false;
-    _progress = null;
     _completedTasks.insert(
       0,
       TaskState(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         packageName: "System Cleanup",
         source: "System",
-        status: TaskStatus.success,
-        progress: 1.0,
+        status: !hasError ? TaskStatus.success : TaskStatus.failed,
+        progress: !hasError ? 1.0 : 0.0,
         stage: "Clean",
-        message: _status,
+        message: !hasError ? "Success" : _status,
       ),
     );
     notifyListeners();
   }
 
   void _parseLine(String line, AppLocalizations l10n) {
-    if (line.startsWith("[PROGRESS]")) {
-      final val = double.tryParse(line.replaceFirst("[PROGRESS]", "").trim());
-      if (val != null) _progress = val / 100.0;
-    } else if (line.startsWith("[SPEED]")) {
-      _speed = line.replaceFirst("[SPEED]", "").trim();
-    } else if (line.startsWith("[CALLBACK]")) {
-      final jsonStr = line.replaceFirst("[CALLBACK]", "").trim();
+    final cleanLine = line.trim();
+    if (cleanLine.isEmpty) return;
+
+    // Murphy-proof: Prioritize structured [CALLBACK] JSON data for reliable parsing.
+    if (cleanLine.startsWith("[CALLBACK]")) {
+      final jsonStr = cleanLine.replaceFirst("[CALLBACK]", "").trim();
       try {
         final data = jsonDecode(jsonStr);
-        String? message;
-        if (data['key'] != null) {
-          final key = data['key'] as String;
-          final error = data['error'] as String?;
-          if (key == "errorPackageNameRequired") {
-            message = l10n.errorPackageNameRequired;
-          } else if (key == "errorStartFailed") {
-            message = l10n.errorStartFailed(error ?? "Unknown");
-          } else if (key == "errorUpdateFailed") {
-            message = l10n.errorUpdateFailed(error ?? "Unknown");
-          } else if (key == "errorCleanFailed") {
-            message = l10n.errorCleanFailed(error ?? "Unknown");
-          } else if (key == "errorFatalStream") {
-            message = l10n.errorFatalStream(error ?? "Unknown");
-          } else if (key == "errorProcessStart") {
-            message = l10n.errorProcessStart(error ?? "Unknown");
-          } else if (key == "errorUpdateAll") {
-            message = l10n.errorUpdateAll(error ?? "Unknown");
-          }
-        } else if (data['log'] != null) {
-          message = data['log'];
-        } else if (data['message'] != null) {
-          message = data['message'];
-        }
+        _processStructuredData(data, l10n);
+        return;
+      } catch (e) {
+        debugPrint("TaskController: JSON parse error: $e");
+      }
+    }
 
-        if (message != null) {
-          _logs.add(message);
-          _status = message;
-        }
-      } catch (_) {}
+    // Fallback: Legacy tag-based parsing or raw log lines.
+    if (cleanLine.startsWith("[PROGRESS]")) {
+      final val = double.tryParse(cleanLine.replaceFirst("[PROGRESS]", "").trim());
+      if (val != null) _progress = val / 100.0;
+    } else if (cleanLine.startsWith("[SPEED]")) {
+      _speed = cleanLine.replaceFirst("[SPEED]", "").trim();
+    } else if (cleanLine.startsWith("[ERROR]")) {
+      final msg = cleanLine.replaceFirst("[ERROR]", "").trim();
+      _logs.add(msg);
+      _status = msg;
+    } else if (cleanLine.startsWith("[INFO]")) {
+      final msg = cleanLine.replaceFirst("[INFO]", "").trim();
+      _logs.add(msg);
+      _status = msg;
     } else {
-      _logs.add(line);
+      _logs.add(cleanLine);
     }
 
     if (_logs.length > 500) _logs.removeAt(0);
+  }
+
+  void _processStructuredData(dynamic data, AppLocalizations l10n) {
+    if (data is! Map<String, dynamic>) return;
+
+    String? message;
+    if (data['key'] != null) {
+      final key = data['key'] as String;
+      final error = data['error'] as String?;
+      message = _translateKey(key, error, l10n);
+    } else if (data['log'] != null) {
+      message = data['log'];
+    } else if (data['message'] != null) {
+      message = data['message'];
+    }
+
+    if (data['progress'] != null) {
+      final p = double.tryParse(data['progress'].toString());
+      if (p != null) _progress = p / 100.0;
+    }
+
+    if (message != null) {
+      _logs.add(message);
+      _status = message;
+    }
+
+    if (_logs.length > 500) _logs.removeAt(0);
+  }
+
+  String? _translateKey(String key, String? error, AppLocalizations l10n) {
+    switch (key) {
+      case "errorPackageNameRequired":
+        return l10n.errorPackageNameRequired;
+      case "errorStartFailed":
+        return l10n.errorStartFailed(error ?? "Unknown");
+      case "errorUpdateFailed":
+        return l10n.errorUpdateFailed(error ?? "Unknown");
+      case "errorCleanFailed":
+        return l10n.errorCleanFailed(error ?? "Unknown");
+      case "errorFatalStream":
+        return l10n.errorFatalStream(error ?? "Unknown");
+      case "errorProcessStart":
+        return l10n.errorProcessStart(error ?? "Unknown");
+      case "errorUpdateAll":
+        return l10n.errorUpdateAll(error ?? "Unknown");
+      default:
+        return error ?? key;
+    }
   }
 }

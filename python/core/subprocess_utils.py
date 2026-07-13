@@ -56,7 +56,14 @@ async def _cleanup_proc(proc):
                 except (ProcessLookupError, PermissionError):
                     pass
             else:
-                try: proc.terminate()
+                try:
+                    import subprocess
+                    if os.name == 'nt':
+                        # Murphy-proof: Windows tree kill using taskkill
+                        subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    else:
+                        proc.terminate()
                 except: pass
 
             try:
@@ -73,7 +80,13 @@ async def _cleanup_proc(proc):
                     except (ProcessLookupError, PermissionError):
                         pass
                 else:
-                    try: proc.kill()
+                    try:
+                        if os.name == 'nt':
+                             import subprocess
+                             subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        else:
+                            proc.kill()
                     except: pass
 
                 # Final wait to reap the zombie

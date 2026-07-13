@@ -362,23 +362,43 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_search(self, query: str, json_mode: bool = False) -> Any:
-        valid_query = SecurityValidator.validate_string(query, "Search Query")
+        # Murphy-proof: Fail-safe query handling
+        try:
+            valid_query = SecurityValidator.validate_string(query or "", "Search Query")
+        except ValueError:
+            return []
+
         async with self:
-            if not self.manager: raise RuntimeError("SearchManager offline")
-            results = await asyncio.wait_for(self.manager.search_all(valid_query), timeout=45)
-            typed_results = self._to_app_packages(results or [])
-            if json_mode: self._output_command_response(CommandResponse(status="success", response=[item.model_dump(exclude_none=True) for item in typed_results], context="run_search"))
-            else: self._output_pretty(query, [item.model_dump() for item in typed_results])
-            return typed_results
+            if not self.manager:
+                logging.warning("SearchManager offline. Returning empty results.")
+                return []
+            try:
+                results = await asyncio.wait_for(self.manager.search_all(valid_query), timeout=45)
+                typed_results = self._to_app_packages(results or [])
+                if json_mode:
+                    self._output_command_response(CommandResponse(status="success", response=[item.model_dump(exclude_none=True) for item in typed_results], context="run_search"))
+                else:
+                    self._output_pretty(query, [item.model_dump() for item in typed_results])
+                return typed_results
+            except asyncio.TimeoutError:
+                logging.error(f"Search timed out for query: {valid_query}")
+                return []
 
     @safe_command
     async def run_install(self, name: str, source: str, url: Optional[str] = None, json_mode: bool = False) -> Any:
-        v_name = SecurityValidator.validate_string(name, "Package Name")
-        v_source = SecurityValidator.validate_string(source, "Source")
+        # Murphy-proof: Strict validation before lock
+        v_name = SecurityValidator.validate_string(name or "", "Package Name")
+        v_source = SecurityValidator.validate_string(source or "Native", "Source")
         v_url = SecurityValidator.validate_url(url) if url else None
+
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Installing [bold green]{v_name}[/bold green] from [cyan]{v_source}[/cyan]", border_style="green"))
+
+            # Explicit tracking for the installation task
+            install_task = asyncio.current_task()
+            if install_task: self._resources.track_task(install_task)
+
             success = await self.executor.install({"name": v_name, "id": v_name, "source": v_source, "url": v_url}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()
@@ -388,12 +408,18 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> Any:
-        v_name = SecurityValidator.validate_string(package_name, "Package Name")
-        v_source = SecurityValidator.validate_string(source, "Source")
-        v_flag = SecurityValidator.validate_action_flag(flag)
+        v_name = SecurityValidator.validate_string(package_name or "", "Package Name")
+        v_source = SecurityValidator.validate_string(source or "Native", "Source")
+        v_flag = SecurityValidator.validate_action_flag(flag or "-R")
+
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Uninstalling [bold red]{v_name}[/bold red] from [cyan]{v_source}[/cyan]", border_style="red"))
+
+            # Explicit tracking
+            uninstall_task = asyncio.current_task()
+            if uninstall_task: self._resources.track_task(uninstall_task)
+
             success = await self.executor.uninstall({"name": v_name, "id": v_name, "source": v_source, "flag": v_flag}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()
@@ -403,11 +429,17 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_update(self, package_name: str, source: str, json_mode: bool = False) -> Any:
-        v_name = SecurityValidator.validate_string(package_name, "Package Name")
-        v_source = SecurityValidator.validate_string(source, "Source")
+        v_name = SecurityValidator.validate_string(package_name or "", "Package Name")
+        v_source = SecurityValidator.validate_string(source or "Native", "Source")
+
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Updating [bold blue]{v_name}[/bold blue] via [cyan]{v_source}[/cyan]", border_style="blue"))
+
+            # Explicit tracking
+            update_task = asyncio.current_task()
+            if update_task: self._resources.track_task(update_task)
+
             success = await self.executor.update({"name": v_name, "id": v_name, "source": v_source}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()

@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../python_bridge.dart';
+import '../../services/backend_service.dart';
 import "../../services/local_apps_tracker.dart";
 import "../../services/sync_service.dart";
 
 class TaskRepository {
-  Process? _activeProcess;
-
   Stream<String> executeAction(
     String flag,
     String packageName,
@@ -24,107 +21,54 @@ class TaskRepository {
       return _webExecuteAction(flag, packageName, source, url: url);
     }
 
-    // NOTE: Convert stdout parsing to JSON-RPC over Local Sockets (UDS/TCP) to avoid parsing stdout text directly.
-    // NOTE: Implement a heartbeat / watchdog system to detect if the Python subprocess hangs indefinitely.
+    // Murphy-proof: Delegate process execution to BackendService to benefit from
+    // centralized ProcessRegistry tracking, daemon multiplexing, and safety guards.
     final controller = StreamController<String>();
     var sawBackendError = false;
 
-    try {
-      List<String> baseArgs = [flag, packageName, "--source", source, "--json"];
-      if (url != null && url.isNotEmpty) {
-        baseArgs.addAll(["--url", url]);
-      }
+    final stream = BackendService.instance.executeAction(
+      flag,
+      packageName,
+      source,
+      url: url,
+    );
 
-      // NOTE: Support multiplexing multiple concurrent tasks over a single persistent backend daemon process.
-      Process.start(
-            PythonBridge.venvPython,
-            PythonBridge.buildArgs(baseArgs),
-            workingDirectory: PythonBridge.workingDir,
-          )
-          .then((process) {
-            _activeProcess = process;
-
-            // Listen to stdout
-            process.stdout
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen(
-                  (line) {
-                    if (line.contains('[ERROR]')) sawBackendError = true;
-                    if (!controller.isClosed) controller.add(line);
-                  },
-                  onError: (err) {
-                    if (!controller.isClosed) {
-                      controller.add(
-                        "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-                      );
-                    }
-                  },
-                );
-
-            // Listen to stderr
-            process.stderr
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen((line) {
-                  debugPrint("Python Stderr: $line");
-                  if (!controller.isClosed) {
-                    controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
-                  }
-                });
-
-            // Wait for exit code
-            process.exitCode.then((exitCode) async {
-              _activeProcess = null;
-              if (exitCode != 0) {
-                if (!controller.isClosed) {
-                  controller.add(
-                    "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Process exited with code $exitCode\"}",
-                  );
-                }
-              } else if (sawBackendError) {
-                if (!controller.isClosed) {
-                  controller.add(
-                    "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Backend reported an error\"}",
-                  );
-                }
-              } else {
-                // Local tracking for OmniStore apps
-                if (flag == "-I") {
-                  await LocalAppsTracker.trackApp(packageName);
-                  SyncService().syncInstalledApps();
-                } else if (flag == "-R") {
-                  await LocalAppsTracker.untrackApp(packageName);
-                  SyncService().syncInstalledApps();
-                }
-              }
-              if (!controller.isClosed) controller.close();
-            });
-          })
-          .catchError((err) {
-            _activeProcess = null;
-            if (!controller.isClosed) {
-              controller.add(
-                "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$err\"}",
-              );
-              controller.close();
+    stream.listen(
+      (line) {
+        if (line.contains('[ERROR]')) sawBackendError = true;
+        if (!controller.isClosed) controller.add(line);
+      },
+      onError: (err) {
+        if (!controller.isClosed) {
+          controller.add(
+            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
+          );
+          controller.close();
+        }
+      },
+      onDone: () async {
+        if (!controller.isClosed) {
+          if (sawBackendError) {
+            controller.add(
+              "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Backend reported an error\"}",
+            );
+          } else {
+            // Local tracking for OmniStore apps
+            if (flag == "-I") {
+              await LocalAppsTracker.trackApp(packageName);
+              SyncService().syncInstalledApps();
+            } else if (flag == "-R") {
+              await LocalAppsTracker.untrackApp(packageName);
+              SyncService().syncInstalledApps();
             }
-          });
-    } catch (e) {
-      _activeProcess = null;
-      if (!controller.isClosed) {
-        controller.add(
-          "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"$e\"}",
-        );
-        controller.close();
-      }
-    }
+          }
+          controller.close();
+        }
+      },
+    );
 
     controller.onCancel = () {
-      if (_activeProcess != null) {
-        _activeProcess!.kill(ProcessSignal.sigterm);
-        _activeProcess = null;
-      }
+      BackendService.cancelCurrentTask();
     };
 
     return controller.stream;
@@ -205,19 +149,8 @@ class TaskRepository {
       return [];
     }
 
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["-C", "--json"]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 30));
-
-      if (result.exitCode != 0) return [];
-      return _tryParseJson(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("CheckUpdates Exception: $e");
-      return [];
-    }
+    // Murphy-proof: Delegate to BackendService for centralized execution and caching.
+    return BackendService.instance.checkUpdates();
   }
 
   Stream<String> updateAll(String source) {
@@ -240,78 +173,27 @@ class TaskRepository {
     }
 
     final controller = StreamController<String>();
+    final stream = BackendService.instance.updateAll(source);
 
-    try {
-      Process.start(
-            PythonBridge.venvPython,
-            PythonBridge.buildArgs(["-U", "all", "--source", source, "--json"]),
-            workingDirectory: PythonBridge.workingDir,
-          )
-          .then((process) {
-            _activeProcess = process;
-
-            process.stdout
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen(
-                  (line) {
-                    if (!controller.isClosed) controller.add(line);
-                  },
-                  onError: (err) {
-                    if (!controller.isClosed) {
-                      controller.add(
-                        "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-                      );
-                    }
-                  },
-                );
-
-            process.stderr
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen((line) {
-                  debugPrint("Python Stderr: $line");
-                  if (!controller.isClosed) {
-                    controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
-                  }
-                });
-
-            process.exitCode.then((exitCode) {
-              _activeProcess = null;
-              if (exitCode != 0) {
-                if (!controller.isClosed) {
-                  controller.add(
-                    "[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"Process exited with code $exitCode\"}",
-                  );
-                }
-              }
-              if (!controller.isClosed) controller.close();
-            });
-          })
-          .catchError((err) {
-            _activeProcess = null;
-            if (!controller.isClosed) {
-              controller.add(
-                "[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$err\"}",
-              );
-              controller.close();
-            }
-          });
-    } catch (e) {
-      _activeProcess = null;
-      if (!controller.isClosed) {
-        controller.add(
-          "[CALLBACK] {\"key\": \"errorUpdateFailed\", \"error\": \"$e\"}",
-        );
-        controller.close();
-      }
-    }
+    stream.listen(
+      (line) {
+        if (!controller.isClosed) controller.add(line);
+      },
+      onError: (err) {
+        if (!controller.isClosed) {
+          controller.add(
+            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
+          );
+          controller.close();
+        }
+      },
+      onDone: () {
+        if (!controller.isClosed) controller.close();
+      },
+    );
 
     controller.onCancel = () {
-      if (_activeProcess != null) {
-        _activeProcess!.kill(ProcessSignal.sigterm);
-        _activeProcess = null;
-      }
+      BackendService.cancelCurrentTask();
     };
 
     return controller.stream;
@@ -319,23 +201,7 @@ class TaskRepository {
 
   void cancelCurrentTask() {
     if (kIsWeb) return;
-    _activeProcess?.kill(ProcessSignal.sigterm);
-    _activeProcess = null;
-  }
-
-  List<dynamic> _tryParseJson(String input) {
-    try {
-      return jsonDecode(input);
-    } catch (_) {
-      final start = input.lastIndexOf('[');
-      final end = input.lastIndexOf(']');
-      if (start != -1 && end != -1 && end > start) {
-        try {
-          return jsonDecode(input.substring(start, end + 1));
-        } catch (_) {}
-      }
-      return [];
-    }
+    BackendService.cancelCurrentTask();
   }
 
   Future<Map<String, dynamic>> exportPackages(String filepath) async {
@@ -346,19 +212,8 @@ class TaskRepository {
       };
     }
 
-    try {
-      final result = await Process.run(
-        PythonBridge.venvPython,
-        PythonBridge.buildArgs(["--export-packages", filepath]),
-        workingDirectory: PythonBridge.workingDir,
-      ).timeout(const Duration(seconds: 15));
-
-      if (result.exitCode != 0) return {"status": "error"};
-      return jsonDecode(result.stdout.toString().trim());
-    } catch (e) {
-      debugPrint("exportPackages Exception: $e");
-      return {"status": "error", "message": e.toString()};
-    }
+    // Murphy-proof: Delegate to BackendService for centralized execution and validation.
+    return BackendService.instance.exportPackages(filepath);
   }
 
   Stream<String> cleanSystem() {
@@ -381,78 +236,27 @@ class TaskRepository {
     }
 
     final controller = StreamController<String>();
+    final stream = BackendService.instance.cleanSystem();
 
-    try {
-      Process.start(
-            PythonBridge.venvPython,
-            PythonBridge.buildArgs(["--clean-system", "--json"]),
-            workingDirectory: PythonBridge.workingDir,
-          )
-          .then((process) {
-            _activeProcess = process;
-
-            process.stdout
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen(
-                  (line) {
-                    if (!controller.isClosed) controller.add(line);
-                  },
-                  onError: (err) {
-                    if (!controller.isClosed) {
-                      controller.add(
-                        "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-                      );
-                    }
-                  },
-                );
-
-            process.stderr
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())
-                .listen((line) {
-                  debugPrint("Python Stderr: $line");
-                  if (!controller.isClosed) {
-                    controller.add("[CALLBACK] {\"log\": \"stderr: $line\"}");
-                  }
-                });
-
-            process.exitCode.then((exitCode) {
-              _activeProcess = null;
-              if (exitCode != 0) {
-                if (!controller.isClosed) {
-                  controller.add(
-                    "[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"Process exited with code $exitCode\"}",
-                  );
-                }
-              }
-              if (!controller.isClosed) controller.close();
-            });
-          })
-          .catchError((err) {
-            _activeProcess = null;
-            if (!controller.isClosed) {
-              controller.add(
-                "[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$err\"}",
-              );
-              controller.close();
-            }
-          });
-    } catch (e) {
-      _activeProcess = null;
-      if (!controller.isClosed) {
-        controller.add(
-          "[CALLBACK] {\"key\": \"errorCleanFailed\", \"error\": \"$e\"}",
-        );
-        controller.close();
-      }
-    }
+    stream.listen(
+      (line) {
+        if (!controller.isClosed) controller.add(line);
+      },
+      onError: (err) {
+        if (!controller.isClosed) {
+          controller.add(
+            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
+          );
+          controller.close();
+        }
+      },
+      onDone: () {
+        if (!controller.isClosed) controller.close();
+      },
+    );
 
     controller.onCancel = () {
-      if (_activeProcess != null) {
-        _activeProcess!.kill(ProcessSignal.sigterm);
-        _activeProcess = null;
-      }
+      BackendService.cancelCurrentTask();
     };
 
     return controller.stream;

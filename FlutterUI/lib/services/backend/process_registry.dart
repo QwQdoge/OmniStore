@@ -103,13 +103,16 @@ class ProcessRegistry {
           }
         }
       } else if (Platform.isWindows) {
-        // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows
+        // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows.
+        // /T ensures children are also terminated, /F forces termination.
         try {
-          await Process.run('taskkill', ['/F', '/T', '/PID', '$pid'])
+          final res = await Process.run('taskkill', ['/F', '/T', '/PID', '$pid'])
               .timeout(const Duration(seconds: 5));
+          if (res.exitCode != 0) {
+             debugPrint("ProcessRegistry: taskkill exit code ${res.exitCode} for PID $pid");
+          }
         } catch (e) {
           debugPrint("ProcessRegistry: Windows taskkill failed for PID $pid: $e");
-          process.kill(ProcessSignal.sigkill);
         }
       } else {
         process.kill(ProcessSignal.sigkill);
