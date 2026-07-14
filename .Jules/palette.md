@@ -96,3 +96,8 @@
 
 **Learning:** When dynamically rendering optional sections of a layout (like app screenshots or detailed technical specs) using `AnimatedSwitcher`, varying intrinsic heights cause the parent layout to jump abruptly. This breaks the perceived fluidity of Material Design 3.
 **Action:** Always wrap `AnimatedSwitcher` widgets inside `AnimatedSize` when the switched children can have significantly different vertical heights. Set an appropriate `alignment` (e.g., `Alignment.topLeft` or `Alignment.topCenter`) to ensure the transition expands in the correct visual direction rather than awkwardly resizing from the center.
+## 2026-07-12 - Semantics wrappers vs Tooltips
+
+**Learning:** `IconButton` widgets in Flutter automatically use their `tooltip` property as their semantic label and mark themselves as buttons in the accessibility tree. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` is redundant and bloats the layout tree.
+
+**Action:** Ensure `IconButton` components provide semantic meaning natively by always passing a localized string to their `tooltip` parameter, rather than wrapping them in custom `Semantics` widgets.

@@ -100,6 +100,7 @@ class GitHubStoreHeader extends StatelessWidget {
                 IconButton(
                   onPressed: onClearSearch,
                   icon: const Icon(Icons.clear_rounded),
+                  tooltip: 'Clear search',
                 ),
             ],
             elevation: WidgetStateProperty.all(0),
