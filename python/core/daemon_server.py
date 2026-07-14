@@ -24,6 +24,10 @@ class DaemonRequest(BaseModel):
     def validate_args(cls, v):
         if not isinstance(v, list):
             raise ValueError("args must be a list")
+        # Murphy-proof: Deep validation of args to prevent complex object injection
+        for i, arg in enumerate(v):
+            if isinstance(arg, (dict, list)) and len(str(arg)) > 50000:
+                raise ValueError(f"Argument at index {i} exceeds safety size limit")
         return v
 
     @field_validator("kwargs")
@@ -31,6 +35,9 @@ class DaemonRequest(BaseModel):
     def validate_kwargs(cls, v):
         if not isinstance(v, dict):
             raise ValueError("kwargs must be a dict")
+        # Murphy-proof: Prevent deeply nested or oversized kwargs
+        if len(str(v)) > 100000:
+            raise ValueError("kwargs exceed safety size limit")
         return v
 
     @field_validator("action")

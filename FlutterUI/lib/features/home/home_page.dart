@@ -47,6 +47,11 @@ class _HomePageState extends State<HomePage> {
     _quickAccessScrollController.dispose();
     _hotAppsScrollController.dispose();
     _forYouScrollController.dispose();
+    // Murphy-proof: Clear shelf controllers to prevent memory leaks
+    for (final controller in _shelfControllers.values) {
+      controller.dispose();
+    }
+    _shelfControllers.clear();
     super.dispose();
   }
 
