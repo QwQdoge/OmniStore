@@ -16,17 +16,15 @@ class SmartScoring:
 
     @staticmethod
     @lru_cache(maxsize=1024)
-    def _is_library(name_lower: str, desc_lower: str):
+    def _is_library(name_lower: str, truncated_desc: str):
         """识别是否为库文件或开发包"""
         # 1. Check name pattern using pre-compiled regex (Fast)
         if _LIB_RE.search(name_lower):
             return True
 
         # 2. Check description keywords
-        if desc_lower:
-            # ⚡ Bolt: Limit regex matching to first 200 chars for faster matching in hot loops.
-            # Library keywords almost always appear in the first two sentences.
-            truncated_desc = desc_lower[:200]
+        if truncated_desc:
+            # ⚡ Bolt: Truncation is now handled by the caller to optimize cache key size.
             if _DESC_LIB_RE.search(truncated_desc):
                 # 排除掉一些可能是桌面软件但描述里含 keywords 的情况 (模糊处理)
                 if "desktop" in truncated_desc or "client" in truncated_desc or "editor" in truncated_desc:
@@ -35,7 +33,9 @@ class SmartScoring:
 
         return False
 
-    def _calculate_smart_score(self, item, query_lower, priority_map=None, query_re=None, name_lower=None, desc_lower=None, source_habit_weight=None):
+    def _calculate_smart_score(self, item, query_lower, priority_map=None, query_re=None,
+                               name_lower=None, desc_lower=None, truncated_desc=None,
+                               source_habit_weight=None, source_prio_score=None):
         """
         Calculates a ranking score for a search result.
         Optimized with optional pre-calculated values to avoid redundant lookups in hot loops.
@@ -43,9 +43,12 @@ class SmartScoring:
         score = 0
         if name_lower is None:
             name_lower = item.get('name', '').lower()
-        if desc_lower is None:
-            description = item.get('description', '')
-            desc_lower = description.lower() if description else ""
+        if truncated_desc is None:
+            if desc_lower is not None:
+                truncated_desc = desc_lower[:200]
+            else:
+                description = item.get('description', '')
+                truncated_desc = description[:200].lower() if description else ""
 
         # --- 维度 1：匹配精准度 (决定性因素) ---
         if name_lower == query_lower:
@@ -63,29 +66,32 @@ class SmartScoring:
                 score += 100
 
         # --- 维度 3：软件优先 (降权库文件) ---
-        if self._is_library(name_lower, desc_lower):
+        if self._is_library(name_lower, truncated_desc):
             score -= 2000  # 大幅降权库文件
         else:
             score += 500   # 鼓励普通软件
 
         # --- 维度 4：来源优先级与用户偏好 ---
-        if priority_map is None:
-            priority_map = self.cm.get("priority", {})
-
-        # ⚡ Bolt: Use pre-calculated habit weight if provided to avoid O(N) dict lookups
+        # ⚡ Bolt: Use pre-calculated priority and habit weights to avoid string operations and O(N) dict lookups
         if source_habit_weight is not None:
             score += source_habit_weight * 10
         elif self.habit_tracker:
             source_raw = item.get('source', '')
             score += self.habit_tracker.get_source_weight(source_raw) * 10
 
-        source_raw = item.get('source', '')
-        source_key = source_raw.lower()
-        # 兼容配置中的 key 名
-        if source_key == "native": cfg_key = "pacman"
-        else: cfg_key = source_key
+        if source_prio_score is not None:
+            score += source_prio_score
+        else:
+            if priority_map is None:
+                priority_map = self.cm.get("priority", {})
 
-        score += priority_map.get(cfg_key, 50)
+            source_raw = item.get('source', '')
+            source_key = source_raw.lower()
+            # 兼容配置中的 key 名
+            if source_key == "native": cfg_key = "pacman"
+            else: cfg_key = source_key
+
+            score += priority_map.get(cfg_key, 50)
 
         # --- 维度 5：细节微调 ---
         length_diff = len(name_lower) - len(query_lower)
