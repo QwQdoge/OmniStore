@@ -17,3 +17,6 @@ Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using stand
 6.  **`AppDetailsHeader`**: Transitioning the version selector height when asynchronous version data is loaded. Set alignment to `Alignment.topLeft`.
 
 These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
+## Motion Polish: Eliminating UI Layout Jumps
+
+Added `AnimatedSize` wrappers to multiple `AnimatedSwitcher` usages across the app (in `home_page.dart`, `discovery_content.dart`, `search_results_view.dart`, `flatpak_store_page.dart`, `github_store_page.dart`, and `installed_tab.dart`). This effectively eliminates abrupt layout jumps when transitioning between UI states of varying sizes, such as empty states and fully populated item lists. Alignments were set according to the content (e.g. `Alignment.topCenter` for lists). Standard MD3 transitions curves were applied.

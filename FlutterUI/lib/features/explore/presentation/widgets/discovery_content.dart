@@ -133,18 +133,23 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
             shouldRebuild: (prev, next) =>
                 !const IterableEquality().equals(prev, next),
             builder: (context, trending, _) {
-              return AnimatedSwitcher(
+              return AnimatedSize(
                 duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: trending.isEmpty
-                    ? const SizedBox.shrink(key: ValueKey('empty_trending'))
-                    : AppShelf(
-                        key: const ValueKey('trending_content'),
-                        title: widget.l10n.hotApps,
-                        apps: trending,
-                        scrollController: _trendingScrollController,
-                      ),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.fastOutSlowIn,
+                  child: trending.isEmpty
+                      ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                      : AppShelf(
+                          key: const ValueKey('trending_content'),
+                          title: widget.l10n.hotApps,
+                          apps: trending,
+                          scrollController: _trendingScrollController,
+                        ),
+                ),
               );
             },
           ),
