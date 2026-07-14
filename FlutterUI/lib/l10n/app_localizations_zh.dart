@@ -89,7 +89,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get category => '分类';
 
   @override
-  String get packageManager => '包管理器';
+  String get packageManager => '软件包管理器';
 
   @override
   String get pacmanOfficial => 'Pacman（官方软件源）';
@@ -250,7 +250,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String trayTooltipUpdates(int count) {
-    return '发现 $count 个可用更新';
+    return 'OmniStore：发现 $count 个可用更新';
   }
 
   @override
@@ -1257,7 +1257,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pacmanOfficial => 'Pacman（官方存放庫）';
 
   @override
-  String get aurUser => 'AUR（使用者存放庫）';
+  String get aurUser => 'AUR（使用者軟體存放庫）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -1412,11 +1412,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String trayTooltipUpdates(int count) {
-    return '發現 $count 個可用更新';
+    return 'OmniStore：發現 $count 個可用更新';
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore：已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：應用程式已是最新';
 
   @override
   String get updateReminders => '更新提醒';
@@ -1495,10 +1495,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaning => '系統清理';
 
   @override
-  String get systemCleaningDesc => '清理孤兒套件與 pacman 快取';
+  String get systemCleaningDesc => '清理孤立套件與 pacman 快取';
 
   @override
-  String get systemCleaningSubtitle => '清理孤兒套件與 pacman 快取';
+  String get systemCleaningSubtitle => '清理孤立套件與 pacman 快取';
 
   @override
   String get systemCleaningStarted => '系統清理任務已啟動';
@@ -1850,7 +1850,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理無用依賴（孤兒套件）';
+  String get cleanOrphans => '清理無用依賴（孤立套件）';
 
   @override
   String get securityWarning => '安全風險提示';

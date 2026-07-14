@@ -83,7 +83,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get noResults => 'No se encontraron resultados';
+  String get noResults => 'Sin resultados';
 
   @override
   String get searching => 'Buscando...';
@@ -527,10 +527,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiRefineSearch => 'Refinar búsqueda con IA';
+  String get aiRefineSearch => 'Refinamiento de búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Analizar esta actualización';
+  String get aiExplainUpdate => 'Análisis de esta actualización';
 
   @override
   String get windowMinimize => 'Minimizar';
@@ -583,7 +583,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get envFatalDesc =>
-      'Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.';
+      'Su sistema no está basado en Arch. La mayoría de las funciones no estarán disponibles.';
 
   @override
   String get envWarningDesc =>
@@ -735,11 +735,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get flatpakBetterDesc =>
-      'Se encontró una fuente Flatpak para esta aplicación, que suele ser más estable.';
+      'Fuente Flatpak disponible, generalmente más estable.';
 
   @override
-  String get aiAnalysisPrompt =>
-      'Se encontraron registros de errores, ¿necesita un análisis de IA?';
+  String get aiAnalysisPrompt => '¿Analizar registros de errores con IA?';
 
   @override
   String get analyzeNow => 'Analizar ahora';

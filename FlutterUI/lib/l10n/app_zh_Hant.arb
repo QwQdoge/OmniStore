@@ -44,7 +44,7 @@
   },
   "packageManager": "套件管理員",
   "pacmanOfficial": "Pacman（官方存放庫）",
-  "aurUser": "AUR（使用者存放庫）",
+  "aurUser": "AUR（使用者軟體存放庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
   "sourcePriority": "來源優先級（拖曳排序）",
@@ -120,7 +120,7 @@
   "useSystemTitleBar": "使用系統標題列",
   "showWindow": "顯示視窗",
   "exit": "退出",
-  "trayTooltipUpdates": "發現 {count} 個可用更新",
+  "trayTooltipUpdates": "OmniStore：發現 {count} 個可用更新",
   "@trayTooltipUpdates": {
     "placeholders": {
       "count": {
@@ -128,7 +128,7 @@
       }
     }
   },
-  "trayTooltipUpToDate": "OmniStore：已是最新",
+  "trayTooltipUpToDate": "OmniStore：應用程式已是最新",
   "updateReminders": "更新提醒",
   "maintenance": "維護",
   "updateAllPackages": "更新所有套件",
@@ -194,11 +194,11 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "清理孤兒套件與 pacman 快取",
+  "systemCleaningDesc": "清理孤立套件與 pacman 快取",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "清理孤兒套件與 pacman 快取",
+  "systemCleaningSubtitle": "清理孤立套件與 pacman 快取",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -530,7 +530,7 @@
   "flatpakBetterDesc": "發現此應用程式有 Flatpak 存放庫，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理無用依賴（孤兒套件）",
+  "cleanOrphans": "清理無用依賴（孤立套件）",
   "securityWarning": "安全風險提示",
   "aurSecurityDesc": "AUR（Arch User Repository） 是由社群維護的軟體存放庫。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
