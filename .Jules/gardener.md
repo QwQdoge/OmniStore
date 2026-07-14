@@ -125,3 +125,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 
 **Action:** Adjusted `FlatpakAppList.onRetry` to be `Future<void> Function()` so `RefreshIndicator` properly awaits the refresh network request. Also reverted unneeded file changes to unrelated settings files that would have caused unresolved imports.
 - **Widget Extraction:** Extracted the private `_GitHubStoreHeader` class from `FlutterUI/lib/features/explore/presentation/pages/github_store_page.dart` into its own file `FlutterUI/lib/features/explore/presentation/widgets/github_store_header.dart` and made it public. This reduces the size of the page file and improves readability without changing any behavior.
+## 2026-07-08 - Extract InstalledAppList in AppsPage
+
+**Learning:** Extracted the oversized `ListView.builder` representing the loaded state from `apps_page.dart` into a new stateless widget `InstalledAppList`. Large files with extensive nested list rendering hurt readability and maintainability.
+
+**Action:** Created `FlutterUI/lib/features/apps/widgets/installed_app_list.dart` to encapsulate the list rendering logic, passing only `filteredApps` and `onRefresh` as parameters, preserving exact functionality while cleaning up the parent file.
