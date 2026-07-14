@@ -17,3 +17,4 @@ Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using stand
 6.  **`AppDetailsHeader`**: Transitioning the version selector height when asynchronous version data is loaded. Set alignment to `Alignment.topLeft`.
 
 These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
+7.  **`HomePage`**: Transitioning asynchronous sections (Featured, AI Pick, Trending, For You) between empty/loading states and populated states. Set alignment to `Alignment.topCenter`.
