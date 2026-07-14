@@ -23,8 +23,9 @@ class AppsPage extends StatefulWidget {
 class _AppsPageState extends State<AppsPage> {
   final TextEditingController _searchController = TextEditingController();
   List<AppPackage> _apps = [];
-  final ValueNotifier<List<AppPackage>> _filteredAppsNotifier =
-      ValueNotifier([]);
+  final ValueNotifier<List<AppPackage>> _filteredAppsNotifier = ValueNotifier(
+    [],
+  );
   final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(true);
   Timer? _searchDebounceTimer;
 
@@ -60,11 +61,10 @@ class _AppsPageState extends State<AppsPage> {
   void _applyFilter() {
     if (!mounted) return;
     final query = _searchController.text.toLowerCase();
-    final filtered =
-        _apps.where((app) {
-          return app.name.toLowerCase().contains(query) ||
-              app.description.toLowerCase().contains(query);
-        }).toList();
+    final filtered = _apps.where((app) {
+      return app.name.toLowerCase().contains(query) ||
+          app.description.toLowerCase().contains(query);
+    }).toList();
     _filteredAppsNotifier.value = filtered;
   }
 
@@ -130,22 +130,22 @@ class _AppsPageState extends State<AppsPage> {
                         onRefresh: _refresh,
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                        prototypeItem: const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: AppCard(
-                            child: ListTile(
-                              leading: SizedBox(width: 40, height: 40),
-                              title: SizedBox(height: 16),
-                              subtitle: Row(
-                                children: [
-                                  SizedBox(width: 40, height: 12),
-                                  SizedBox(width: 8),
-                                  Expanded(child: SizedBox(height: 12)),
-                                ],
+                          prototypeItem: const Padding(
+                            padding: EdgeInsets.only(bottom: 12),
+                            child: AppCard(
+                              child: ListTile(
+                                leading: SizedBox(width: 40, height: 40),
+                                title: SizedBox(height: 16),
+                                subtitle: Row(
+                                  children: [
+                                    SizedBox(width: 40, height: 12),
+                                    SizedBox(width: 8),
+                                    Expanded(child: SizedBox(height: 12)),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
                           itemCount: filteredApps.length,
                           itemBuilder: (context, index) {
                             final app = filteredApps[index];
@@ -172,9 +172,8 @@ class _AppsPageState extends State<AppsPage> {
                                       tag: heroTag,
                                       child: app.icon != null
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(
-                                                12,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                               child: CachedNetworkImage(
                                                 imageUrl: app.icon!,
                                                 width: 40,
@@ -211,9 +210,9 @@ class _AppsPageState extends State<AppsPage> {
                     }
 
                     return AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
+                      duration: const Duration(milliseconds: 300),
                       child: child,
                     );
                   },

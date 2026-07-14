@@ -56,13 +56,17 @@ class UpdateSettingsCard extends StatelessWidget {
                   subtitle: Text(l10n.enableSystemdServiceDesc),
                   value: data.enableSystemdService,
                   onChanged: (val) {
-                    context.read<SettingsController>().setEnableSystemdService(val);
+                    context.read<SettingsController>().setEnableSystemdService(
+                      val,
+                    );
                   },
                 ),
               ListTile(
                 leading: const Icon(Icons.timer_rounded),
                 title: Text(l10n.checkIntervalTitle),
-                subtitle: Text(l10n.checkIntervalSubtitle(data.checkIntervalHours)),
+                subtitle: Text(
+                  l10n.checkIntervalSubtitle(data.checkIntervalHours),
+                ),
                 trailing: DropdownButton<int>(
                   value: data.checkIntervalHours,
                   underline: const SizedBox(),
@@ -75,7 +79,9 @@ class UpdateSettingsCard extends StatelessWidget {
                   }).toList(),
                   onChanged: (val) {
                     if (val != null) {
-                      context.read<SettingsController>().setCheckIntervalHours(val);
+                      context.read<SettingsController>().setCheckIntervalHours(
+                        val,
+                      );
                     }
                   },
                 ),

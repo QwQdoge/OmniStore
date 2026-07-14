@@ -84,7 +84,10 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
                 duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOutCubic,
                 switchOutCurve: Curves.fastOutSlowIn,
-                child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+                child: _buildAIMarkdown(
+                  snapshot,
+                  AppLocalizations.of(context)!,
+                ),
               ),
             );
           },

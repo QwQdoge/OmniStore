@@ -146,7 +146,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     ];
 
     return Selector<SettingsController, Map<dynamic, dynamic>>(
-      selector: (context, s) => s.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {},
+      selector: (context, s) =>
+          s.config['search']?['sources'] as Map<dynamic, dynamic>? ?? {},
       shouldRebuild: (prev, next) => !const MapEquality().equals(prev, next),
       builder: (context, sourcesMap, child) {
         return AppCard(
@@ -186,9 +187,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                     children: [
                       Text(
                         l10n.pluginsAndSources,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       IconButton(
                         icon: const Icon(Icons.refresh_rounded),

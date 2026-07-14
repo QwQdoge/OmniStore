@@ -54,11 +54,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       aiConfig['endpoint'] ?? '',
       _endpointFocus,
     );
-    _updateIfChanged(
-      _modelController,
-      aiConfig['model'] ?? '',
-      _modelFocus,
-    );
+    _updateIfChanged(_modelController, aiConfig['model'] ?? '', _modelFocus);
     _updateIfChanged(
       _apiKeyController,
       aiConfig['api_key'] ?? '',
@@ -199,7 +195,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SettingsSectionHeader(title: l10n.aiSettings, icon: Icons.auto_awesome_rounded),
+            SettingsSectionHeader(
+              title: l10n.aiSettings,
+              icon: Icons.auto_awesome_rounded,
+            ),
             AppCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -210,8 +209,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(l10n.aiProvider),
                       trailing: DropdownButton<String>(
-                        value:
-                            aiConfig['provider'] ?? 'ollama',
+                        value: aiConfig['provider'] ?? 'ollama',
                         underline: const SizedBox(),
                         borderRadius: BorderRadius.circular(12),
                         items: [
@@ -263,7 +261,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                         if (d == null) {
                           setState(() => _tempError = l10n.failed);
                         } else if (d < 0.0 || d > 2.0) {
-                          setState(() => _tempError = l10n.temperatureRangeError);
+                          setState(
+                            () => _tempError = l10n.temperatureRangeError,
+                          );
                         } else {
                           setState(() => _tempError = null);
                           _debounceUpdateAIConfig('temperature', d);
@@ -277,9 +277,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       child: FilledButton.icon(
                         onPressed: _isTestingAI ? null : _testAIConnection,
                         icon: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.fastOutSlowIn,
+                          duration: const Duration(milliseconds: 300),
                           child: _isTestingAI
                               ? SizedBox(
                                   key: const ValueKey('loading'),
@@ -287,7 +287,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                                   height: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 )
                               : const Icon(

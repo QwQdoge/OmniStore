@@ -130,13 +130,11 @@ class UpdatesTab extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Text(
                                     "${update['current_version']} → ${update['new_version']}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                         ),
                                   ),
                                 ],

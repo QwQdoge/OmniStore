@@ -32,7 +32,8 @@ class AppAboutSection extends StatelessWidget {
             ? const ParagraphSkeleton(key: ValueKey('loading'))
             : MarkdownBody(
                 key: const ValueKey('loaded'),
-                data: description ??
+                data:
+                    description ??
                     (fallbackDescription.isEmpty
                         ? l10n.noResults
                         : fallbackDescription),

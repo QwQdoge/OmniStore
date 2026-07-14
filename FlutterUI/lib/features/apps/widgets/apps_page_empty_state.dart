@@ -8,9 +8,6 @@ class AppsPageEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return EmptyState(
-      icon: Icons.inventory_2_outlined,
-      title: l10n.noResults,
-    );
+    return EmptyState(icon: Icons.inventory_2_outlined, title: l10n.noResults);
   }
 }

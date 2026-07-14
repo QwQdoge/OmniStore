@@ -61,19 +61,12 @@ class AppDetailsActions extends StatelessWidget {
       content = Row(
         key: const ValueKey('installed'),
         children: [
-          Semantics(
-            label: AppLocalizations.of(context)!.locateInstallation,
-            button: true,
-            child: IconButton.filledTonal(
-              onPressed: onLocateApp,
-              icon: const Icon(Icons.folder_open_rounded),
-              tooltip: AppLocalizations.of(context)!.locateInstallation,
-              style: IconButton.styleFrom(
-                minimumSize: const Size(56, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
+          IconButton.filledTonal(
+            onPressed: onLocateApp,
+            icon: const Icon(Icons.folder_open_rounded),
+            tooltip: AppLocalizations.of(context)!.locateInstallation,
+            style: IconButton.styleFrom(
+              minimumSize: const Size(56, 56),
             ),
           ),
           const SizedBox(width: 12),

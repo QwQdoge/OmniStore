@@ -20,7 +20,9 @@ class ProcessExecutionService {
     if (kIsWeb) return null;
 
     if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
-      debugPrint("Backend Error: Python environment missing at ${_env.venvPython}");
+      debugPrint(
+        "Backend Error: Python environment missing at ${_env.venvPython}",
+      );
       return null;
     }
 
@@ -40,8 +42,12 @@ class ProcessExecutionService {
 
       _registry.add(process);
 
-      final stdoutFuture = process.stdout.transform(const SystemEncoding().decoder).join();
-      final stderrFuture = process.stderr.transform(const SystemEncoding().decoder).join();
+      final stdoutFuture = process.stdout
+          .transform(const SystemEncoding().decoder)
+          .join();
+      final stderrFuture = process.stderr
+          .transform(const SystemEncoding().decoder)
+          .join();
 
       final exitCode = await process.exitCode.timeout(timeout);
       final stdout = await stdoutFuture;
@@ -93,15 +99,22 @@ class ProcessExecutionService {
           .transform(const SystemEncoding().decoder)
           .transform(const LineSplitter())
           .listen(
-            (data) { if (!controller.isClosed) controller.add(data); },
-            onError: (e) { if (!controller.isClosed) controller.add("[CALLBACK] {\"error\": \"$e\"}"); },
+            (data) {
+              if (!controller.isClosed) controller.add(data);
+            },
+            onError: (e) {
+              if (!controller.isClosed)
+                controller.add("[CALLBACK] {\"error\": \"$e\"}");
+            },
             onDone: () {
               if (process != null) _registry.remove(process);
               if (!controller.isClosed) controller.close();
             },
           );
 
-      process.stderr.transform(const SystemEncoding().decoder).listen((data) => debugPrint("Stderr: $data"));
+      process.stderr
+          .transform(const SystemEncoding().decoder)
+          .listen((data) => debugPrint("Stderr: $data"));
 
       controller.onCancel = () async {
         await _registry.kill(process);

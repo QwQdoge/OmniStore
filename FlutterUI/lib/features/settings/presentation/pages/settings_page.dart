@@ -32,12 +32,14 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
 
           // Primary Settings
-          SettingsSectionHeader(title: l10n.general, icon: Icons.settings_rounded),
+          SettingsSectionHeader(
+            title: l10n.general,
+            icon: Icons.settings_rounded,
+          ),
           Semantics(
             label: l10n.general,
             explicitChildNodes: true,
-            child:
-                GeneralSettingsCard(
+            child: GeneralSettingsCard(
               showAdvanced: _showAdvanced,
               onAdvancedChanged: (val) => setState(() => _showAdvanced = val),
             ),
@@ -67,12 +69,14 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          SettingsSectionHeader(title: l10n.updates, icon: Icons.system_update_rounded),
+          SettingsSectionHeader(
+            title: l10n.updates,
+            icon: Icons.system_update_rounded,
+          ),
           Semantics(
             label: l10n.updates,
             explicitChildNodes: true,
-            child:
-                const UpdateSettingsCard(),
+            child: const UpdateSettingsCard(),
           ),
 
           const SizedBox(height: 24),
@@ -83,8 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Semantics(
             label: l10n.typography,
             explicitChildNodes: true,
-            child:
-                const TypographySettingsCard(),
+            child: const TypographySettingsCard(),
           ),
 
           const SizedBox(height: 24),

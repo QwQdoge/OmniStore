@@ -60,10 +60,7 @@ class _DownloadPageState extends State<DownloadPage>
       final newCount = UpdateService().availableUpdates.value.length;
       final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          duration: const Duration(seconds: 3),
-        ),
+        SnackBar(content: Text(msg), duration: const Duration(seconds: 3)),
       );
       if (newCount > 0 && prevCount == 0) {
         // 自动跳转到更新标签页

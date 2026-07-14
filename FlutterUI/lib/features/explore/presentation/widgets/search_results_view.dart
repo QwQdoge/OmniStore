@@ -44,15 +44,10 @@ class SearchResultsView extends StatelessWidget {
       prototypeItem: const Padding(
         padding: EdgeInsets.only(bottom: 12),
         child: AppCard(
-
           child: ListTile(
             leading: Skeleton(width: 40, height: 40, borderRadius: 12),
             title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(
-              width: double.infinity,
-              height: 12,
-
-            ),
+            subtitle: Skeleton(width: double.infinity, height: 12),
             trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
           ),
         ),
@@ -62,15 +57,10 @@ class SearchResultsView extends StatelessWidget {
         return const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: AppCard(
-
             child: ListTile(
               leading: Skeleton(width: 40, height: 40, borderRadius: 12),
               title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(
-                width: double.infinity,
-                height: 12,
-
-              ),
+              subtitle: Skeleton(width: double.infinity, height: 12),
               trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
             ),
           ),

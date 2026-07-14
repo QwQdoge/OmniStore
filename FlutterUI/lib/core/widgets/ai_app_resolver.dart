@@ -92,10 +92,10 @@ class _AIAppResolverState extends State<AIAppResolver> {
                 key: const ValueKey('loaded'),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Text(
-                  AppLocalizations.of(context)!.relatedApps,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                  Text(
+                    AppLocalizations.of(context)!.relatedApps,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 100,

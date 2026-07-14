@@ -23,10 +23,7 @@ class GitHubStoreTabs extends StatelessWidget {
           ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
           : Padding(
               key: const ValueKey('tabs_padding'),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TabBar(
@@ -41,9 +38,7 @@ class GitHubStoreTabs extends StatelessWidget {
                   ),
                   labelColor: scheme.onPrimaryContainer,
                   unselectedLabelColor: scheme.onSurfaceVariant,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                   tabs: const [
                     Tab(
                       text: "推荐",
@@ -55,10 +50,7 @@ class GitHubStoreTabs extends StatelessWidget {
                     ),
                     Tab(
                       text: "热度榜",
-                      icon: Icon(
-                        Icons.local_fire_department_rounded,
-                        size: 20,
-                      ),
+                      icon: Icon(Icons.local_fire_department_rounded, size: 20),
                     ),
                     Tab(
                       text: "最新更新",

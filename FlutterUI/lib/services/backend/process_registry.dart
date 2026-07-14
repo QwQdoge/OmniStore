@@ -61,7 +61,7 @@ class ProcessRegistry {
           final pgid = int.tryParse(pgidRes.stdout.toString().trim());
 
           if (pgid != null && pgid > 1 && pgid != pid) {
-             // 1. Attempt SIGTERM on the entire process group
+            // 1. Attempt SIGTERM on the entire process group
             await Process.run('kill', [
               '-TERM',
               '--',
@@ -105,10 +105,16 @@ class ProcessRegistry {
       } else if (Platform.isWindows) {
         // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows
         try {
-          await Process.run('taskkill', ['/F', '/T', '/PID', '$pid'])
-              .timeout(const Duration(seconds: 5));
+          await Process.run('taskkill', [
+            '/F',
+            '/T',
+            '/PID',
+            '$pid',
+          ]).timeout(const Duration(seconds: 5));
         } catch (e) {
-          debugPrint("ProcessRegistry: Windows taskkill failed for PID $pid: $e");
+          debugPrint(
+            "ProcessRegistry: Windows taskkill failed for PID $pid: $e",
+          );
           process.kill(ProcessSignal.sigkill);
         }
       } else {

@@ -30,9 +30,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     final name = _nameController.text.trim();
     final url = _urlController.text.trim();
     if (name.isEmpty || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.l10n.errorNameUrlRequired)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(widget.l10n.errorNameUrlRequired)));
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
@@ -52,25 +52,21 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
       config['custom_repos'][_type] = List<dynamic>.from(
         config['custom_repos'][_type] ?? [],
       );
-      config['custom_repos'][_type].add({
-        "name": name,
-        "url": url,
-      });
+      config['custom_repos'][_type].add({"name": name, "url": url});
       success = await settings.updateConfig(config);
     } else {
-      final result = await BackendService.instance
-          .addCustomRepo(_type, name, url);
+      final result = await BackendService.instance.addCustomRepo(
+        _type,
+        name,
+        url,
+      );
       success = result;
     }
-
-
 
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          success
-              ? widget.l10n.sourceAddSuccess
-              : widget.l10n.sourceAddFailed,
+          success ? widget.l10n.sourceAddSuccess : widget.l10n.sourceAddFailed,
         ),
       ),
     );
@@ -139,10 +135,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(widget.l10n.cancel),
         ),
-        FilledButton(
-          onPressed: _handleAdd,
-          child: Text(widget.l10n.add),
-        ),
+        FilledButton(onPressed: _handleAdd, child: Text(widget.l10n.add)),
       ],
     );
   }
