@@ -35,57 +35,62 @@ async def safe_subprocess(*args, **kwargs):
                 raise
 
 async def _cleanup_proc(proc):
-    """Murphy-proof: Multi-stage reap sequence with escalation."""
+    """Murphy-proof: Multi-stage reap sequence with escalation for process trees."""
     try:
         if proc.returncode is None:
-            # 1. Attempt graceful group termination (SIGTERM to the process group)
+            # 1. Stage 1: Graceful SIGTERM on the entire process group (POSIX) or terminate (Windows)
             if os.name == 'posix':
                 try:
-                    # Verification: Ensure PID still exists and belongs to us before querying PGID
+                    # Verification: Ensure PID still exists before querying PGID
                     os.kill(proc.pid, 0)
                     try:
                         pgid = os.getpgid(proc.pid)
+                        # Ensure we don't kill our own group or PID 1
                         if pgid != os.getpgrp() and pgid > 1:
-                            for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT]:
-                                try:
-                                    os.killpg(pgid, sig)
-                                except (ProcessLookupError, PermissionError):
-                                    break
-                    except ProcessLookupError:
-                        pass
+                            os.killpg(pgid, signal.SIGTERM)
+                    except (ProcessLookupError, PermissionError):
+                        proc.terminate()
                 except (ProcessLookupError, PermissionError):
                     pass
             else:
-                try: proc.terminate()
-                except Exception: pass
+                try:
+                    proc.terminate()
+                except Exception:
+                    pass
 
             try:
-                # Murphy-proof: Use wait_for with a strict timeout
-                await asyncio.wait_for(proc.wait(), timeout=5)
-            except BaseException as e:
-                # 2. Escalation: Force group kill (SIGKILL to the process group)
+                # Murphy-proof: Wait for graceful termination
+                await asyncio.wait_for(proc.wait(), timeout=3)
+            except BaseException:
+                # 2. Stage 2: Escalation to Forceful SIGKILL (POSIX) or taskkill (Windows)
                 if os.name == 'posix':
                     try:
                         os.kill(proc.pid, 0)
                         pgid = os.getpgid(proc.pid)
                         if pgid != os.getpgrp() and pgid > 1:
                             os.killpg(pgid, signal.SIGKILL)
+                        else:
+                            proc.kill()
                     except (ProcessLookupError, PermissionError):
-                        pass
+                        proc.kill()
+                elif os.name == 'nt':
+                    try:
+                        # Use taskkill tree-kill for absolute reaping on Windows
+                        import subprocess
+                        subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                     capture_output=True, timeout=5)
+                    except Exception:
+                        proc.kill()
                 else:
-                    try: proc.kill()
-                    except Exception: pass
+                    proc.kill()
 
-                # Final wait to reap the zombie
+                # Final fail-safe wait to reap the zombie/handle
                 try:
                     await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
                 except (asyncio.TimeoutError, Exception):
                     pass
-
-                if not isinstance(e, (asyncio.TimeoutError, Exception)):
-                    raise
     except BaseException as e:
         if isinstance(e, Exception):
-            logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid}): {e}")
+            logging.error(f"Murphy-proof: Error Reaping Subprocess (PID {proc.pid}): {e}")
         else:
             raise

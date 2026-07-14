@@ -34,6 +34,9 @@ console = Console(force_terminal=True)
 # Murphy-proof: Context-aware output redirection for async daemon concurrency
 captured_output_var = contextvars.ContextVar("captured_output", default=None)
 
+# Murphy-proof: Track if we are already inside a safe_command to prevent double wrapping
+in_safe_command_var = contextvars.ContextVar("in_safe_command", default=False)
+
 # Force all print statements to flush immediately and support redirection
 _orig_print = print
 
@@ -109,8 +112,9 @@ class ResourceCoordinator:
         self._handles.append(handle)
 
     async def cleanup(self):
-        """Absolute reaping of all tracked resources with multi-stage verification."""
+        """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
         async with self._lock:
+            # 1. Task Cancellation
             if self._tasks:
                 logging.debug(f"ResourceCoordinator: Cancelling {len(self._tasks)} tasks.")
                 for task in list(self._tasks):
@@ -124,28 +128,37 @@ class ResourceCoordinator:
                         timeout=5.0
                     )
                 except asyncio.TimeoutError:
-                    logging.error("ResourceCoordinator: Task cleanup timed out, Proceeding to other resources.")
+                    logging.error("ResourceCoordinator: Task cleanup timed out. Proceeding to other resources.")
+                except Exception as e:
+                    logging.error(f"ResourceCoordinator: Task gather error: {e}")
 
                 self._tasks.clear()
 
+            # 2. Handle Cleanup (Network sessions, DB connections, AI models)
             for handle in self._handles:
                 try:
-                    # Murphy-proof: Handle aiohttp.ClientSession explicitly
+                    # Murphy-proof: Exhaustive check for close/dispose methods
                     if hasattr(handle, "close"):
                         res = handle.close()
                         if inspect.isawaitable(res):
-                            await asyncio.wait_for(res, timeout=2.0)
+                            await asyncio.wait_for(res, timeout=3.0)
+                    elif hasattr(handle, "stop"):
+                        res = handle.stop()
+                        if inspect.isawaitable(res):
+                            await asyncio.wait_for(res, timeout=3.0)
                 except Exception as e:
                     logging.error(f"ResourceCoordinator: Handle cleanup failed: {e}")
             self._handles.clear()
 
-            for path in self._files:
+            # 3. File System Cleanup (Temporary files, lock files)
+            for path in list(self._files):
                 try:
-                    if os.path.exists(path):
-                        if os.path.isdir(path):
-                            shutil.rmtree(path)
+                    p = Path(path)
+                    if p.exists():
+                        if p.is_dir():
+                            shutil.rmtree(p, ignore_errors=True)
                         else:
-                            os.remove(path)
+                            p.unlink(missing_ok=True)
                 except Exception as e:
                     logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
             self._files.clear()
@@ -159,97 +172,114 @@ def safe_command(func):
     @wraps(func)
     async def wrapper(self: 'OmnistoreBackend', *args, **kwargs):
         json_mode = getattr(self, "json_mode", False)
-
-        # 1. State Locking: Reject concurrent duplicate high-frequency commands
-        # Murphy-proof: Protect against rapid re-entry for state-modifying actions.
-        is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
-        if is_action:
-            for active_id in list(self._active_commands.keys()):
-                if active_id.startswith(func.__name__):
-                    error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
-                    logging.warning(error_msg)
-                    if json_mode:
-                        self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
-                    return False
-
-        # 2. Timeout Calculation
-        is_long_running = is_action or func.__name__ in ("run_bootstrap", "run_import_packages", "run_export_packages")
-        timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
-
-        # 3. Execution & Panic Recovery
-        command_id = f"{func.__name__}_{time.time()}"
-        current_task = asyncio.current_task()
-        if current_task:
-            self._active_commands[command_id] = current_task
+        is_top_level = not in_safe_command_var.get()
+        token = in_safe_command_var.set(True)
 
         try:
-            # Murphy-proof: Ensure even the wrapper is shielded from unhandled task leaks
-            result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
+            # 1. State Locking: Reject concurrent duplicate high-frequency or stateful commands
+            # Murphy-proof: Protect against rapid re-entry for state-modifying actions.
+            is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
+            if is_action:
+                for active_id in list(self._active_commands.keys()):
+                    # Improved state locking: match by action name prefix
+                    if active_id.startswith(func.__name__):
+                        error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
+                        logging.warning(error_msg)
+                        if json_mode and is_top_level:
+                            self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
+                        return False
 
-            # Murphy-proof: Consistent return of CommandResponse for IPC
-            if json_mode:
-                # If the function already output a CommandResponse, we avoid double output
-                # but we still want to return a serializable object.
-                from pydantic import BaseModel
-                resp_data = result
-                if isinstance(result, BaseModel):
-                    resp_data = result.model_dump(exclude_none=True)
-                elif isinstance(result, list) and result and isinstance(result[0], BaseModel):
-                    resp_data = [i.model_dump(exclude_none=True) for i in result]
+            # 2. Timeout Calculation
+            is_long_running = is_action or func.__name__ in ("run_bootstrap", "run_import_packages", "run_export_packages")
+            timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
 
-                # If result is already a CommandResponse dict or model, return it.
-                # Otherwise wrap it.
-                if isinstance(resp_data, dict) and "status" in resp_data:
-                    return resp_data
+            # 3. Execution & Panic Recovery
+            command_id = f"{func.__name__}_{time.time()}"
+            current_task = asyncio.current_task()
+            if current_task:
+                self._active_commands[command_id] = current_task
 
-                final_resp = CommandResponse(status="success", response=resp_data, context=func.__name__)
-                return final_resp.model_dump(exclude_none=True)
+            try:
+                # Murphy-proof: Strict parameter validation before execution
+                # This ensures that even if individual methods forget to validate, the boundary is protected.
+                # We only validate known types to avoid interfering with complex objects if needed.
+                for i, arg in enumerate(args):
+                    if isinstance(arg, str):
+                        SecurityValidator.validate_string(arg, f"Argument {i} of {func.__name__}")
+                for k, v in kwargs.items():
+                    if isinstance(v, str):
+                        SecurityValidator.validate_string(v, f"Keyword Argument {k} of {func.__name__}")
 
-            return result
-        except asyncio.TimeoutError:
-            error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
-            logging.error(error_msg)
-            resp = CommandResponse(status="error", error="TimeoutError", message=error_msg, context=func.__name__)
-            if json_mode:
-                self._output_command_response(resp)
-            return resp.model_dump(exclude_none=True) if json_mode else False
-        except asyncio.CancelledError:
-            logging.warning(f"Murphy-proof: Command {func.__name__} was cancelled.")
-            resp = CommandResponse(status="error", error="CancelledError", message=f"Command {func.__name__} was cancelled.", context=func.__name__)
-            if json_mode:
-                self._output_command_response(resp)
-            raise
-        except BaseException as e:
-            import traceback
-            err_trace = traceback.format_exc()
-            error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
-            logging.error(f"{error_msg}\n{err_trace}")
+                # Murphy-proof: Ensure even the wrapper is shielded from unhandled task leaks
+                result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
 
-            resp = CommandResponse(
-                status="error",
-                error=type(e).__name__,
-                message=error_msg,
-                context=func.__name__,
-                traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
-            )
+                # Murphy-proof: Consistent return of CommandResponse for IPC
+                # We only wrap at the top level to avoid breaking boolean checks in nested calls.
+                if json_mode and is_top_level:
+                    # If the function already output a CommandResponse, we avoid double output
+                    # but we still want to return a serializable object.
+                    from pydantic import BaseModel
+                    resp_data = result
+                    if isinstance(result, BaseModel):
+                        resp_data = result.model_dump(exclude_none=True)
+                    elif isinstance(result, list) and result and isinstance(result[0], BaseModel):
+                        resp_data = [i.model_dump(exclude_none=True) for i in result]
 
-            if json_mode:
-                self._output_command_response(resp)
-            else:
-                try:
-                    if isinstance(e, Exception):
-                        await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
-                    else:
-                        hijacked_print(f"[CRITICAL] {error_msg}")
-                except Exception as inner_e:
-                    logging.error(f"Double fault in _handle_error: {inner_e}")
-                    hijacked_print(f"[ERROR] {error_msg}")
+                    # If result is already a CommandResponse dict or model, return it.
+                    # Otherwise wrap it.
+                    if isinstance(resp_data, dict) and "status" in resp_data:
+                        return resp_data
 
-            if not isinstance(e, Exception):
+                    final_resp = CommandResponse(status="success", response=resp_data, context=func.__name__)
+                    return final_resp.model_dump(exclude_none=True)
+
+                return result
+            except asyncio.TimeoutError:
+                error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
+                logging.error(error_msg)
+                resp = CommandResponse(status="error", error="TimeoutError", message=error_msg, context=func.__name__)
+                if json_mode and is_top_level:
+                    self._output_command_response(resp)
+                return resp.model_dump(exclude_none=True) if (json_mode and is_top_level) else False
+            except asyncio.CancelledError:
+                logging.warning(f"Murphy-proof: Command {func.__name__} was cancelled.")
+                resp = CommandResponse(status="error", error="CancelledError", message=f"Command {func.__name__} was cancelled.", context=func.__name__)
+                if json_mode and is_top_level:
+                    self._output_command_response(resp)
                 raise
-            return resp.model_dump(exclude_none=True) if json_mode else False
+            except BaseException as e:
+                import traceback
+                err_trace = traceback.format_exc()
+                error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
+                logging.error(f"{error_msg}\n{err_trace}")
+
+                resp = CommandResponse(
+                    status="error",
+                    error=type(e).__name__,
+                    message=error_msg,
+                    context=func.__name__,
+                    traceback=err_trace if self.config.get("logging.level") == "DEBUG" else None
+                )
+
+                if json_mode and is_top_level:
+                    self._output_command_response(resp)
+                else:
+                    try:
+                        if isinstance(e, Exception):
+                            await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
+                        else:
+                            hijacked_print(f"[CRITICAL] {error_msg}")
+                    except Exception as inner_e:
+                        logging.error(f"Double fault in _handle_error: {inner_e}")
+                        hijacked_print(f"[ERROR] {error_msg}")
+
+                if not isinstance(e, Exception):
+                    raise
+                return resp.model_dump(exclude_none=True) if (json_mode and is_top_level) else False
+            finally:
+                self._active_commands.pop(command_id, None)
         finally:
-            self._active_commands.pop(command_id, None)
+            in_safe_command_var.reset(token)
 
     return wrapper
 

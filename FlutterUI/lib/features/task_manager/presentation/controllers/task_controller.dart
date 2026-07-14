@@ -61,7 +61,41 @@ class TaskController with ChangeNotifier {
     AppLocalizations l10n, {
     String? url,
   }) async {
-    // Murphy-proof: Strict state locking to prevent concurrent tasks
+    return _executeTaskInternal(
+      () => _taskRepository.executeAction(flag, packageName, source, url: url),
+      flag,
+      packageName,
+      source,
+      l10n,
+      errorMapper: (err) => flag == "-U"
+          ? l10n.errorUpdateFailed(err)
+          : flag == "-R"
+              ? l10n.taskError("Uninstall failed: $err")
+              : l10n.errorStartFailed(err),
+    );
+  }
+
+  Future<bool> updateAll(String source, AppLocalizations l10n) async {
+    return _executeTaskInternal(
+      () => _taskRepository.updateAll(source),
+      "-U",
+      "All Packages",
+      source,
+      l10n,
+      errorMapper: (err) => l10n.errorUpdateAll(err),
+    );
+  }
+
+  /// Murphy-proof: Consolidated task execution logic with guaranteed state reset and robust error isolation.
+  Future<bool> _executeTaskInternal(
+    Stream<String> Function() streamFactory,
+    String flag,
+    String packageName,
+    String source,
+    AppLocalizations l10n, {
+    String Function(String)? errorMapper,
+  }) async {
+    // Stage 1: State Locking & Initialization
     if (_isBusy) return false;
     _isBusy = true;
     _packageName = packageName;
@@ -73,12 +107,8 @@ class TaskController with ChangeNotifier {
     notifyListeners();
 
     try {
-      final stream = _taskRepository.executeAction(
-        flag,
-        packageName,
-        source,
-        url: url,
-      );
+      // Stage 2: Stream Consumption with Circuit Breaker Logic
+      final stream = streamFactory();
 
       await for (final line in stream) {
         if (line.contains("errorFatalStream") ||
@@ -94,125 +124,55 @@ class TaskController with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      // Stage 3: Panic Recovery
       hasError = true;
-      _status = l10n.errorFatalStream(e.toString());
-      _logs.add("[ERROR] $e");
+      final errorStr = e.toString();
+      _status = errorMapper != null ? errorMapper(errorStr) : l10n.errorFatalStream(errorStr);
+      _logs.add("[ERROR] Fatal task stream exception: $e");
     } finally {
+      // Stage 4: Absolute State Reset (Murphy-proof)
       _isBusy = false;
       _progress = null;
-    }
 
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: packageName,
-        source: source,
-        status: !hasError ? TaskStatus.success : TaskStatus.failed,
-        progress: !hasError ? 1.0 : 0.0,
-        stage: flag == "-I"
-            ? "Install"
-            : flag == "-R"
-            ? "Uninstall"
-            : "Update",
-        message: !hasError ? "Success" : _status,
-      ),
-    );
+      _completedTasks.insert(
+        0,
+        TaskState(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          packageName: packageName,
+          source: source,
+          status: !hasError ? TaskStatus.success : TaskStatus.failed,
+          progress: !hasError ? 1.0 : 0.0,
+          stage: flag == "-I"
+              ? "Install"
+              : flag == "-R"
+              ? "Uninstall"
+              : "Update",
+          message: !hasError ? "Success" : _status,
+        ),
+      );
 
-    _packageName = null;
-    _flag = null;
-    notifyListeners();
-    return !hasError;
-  }
-
-  Future<bool> updateAll(String source, AppLocalizations l10n) async {
-    if (_isBusy) return false;
-    _isBusy = true;
-    _packageName = "All Packages";
-    _flag = "-U";
-    _progress = null;
-    _status = l10n.taskStarting;
-    _logs.clear();
-    bool hasError = false;
-    notifyListeners();
-
-    try {
-      final stream = _taskRepository.updateAll(source);
-
-      await for (final line in stream) {
-        if (line.contains("errorFatalStream") ||
-            line.contains("errorProcessStart") ||
-            line.contains("errorStartFailed") ||
-            line.contains("errorUpdateFailed") ||
-            line.contains("[ERROR]")) {
-          hasError = true;
-        }
-        _parseLine(line, l10n);
-        notifyListeners();
+      _packageName = null;
+      _flag = null;
+      // Ensure status reflects the final outcome if it hasn't been set by an error
+      if (!hasError && _status == l10n.taskStarting) {
+         _status = l10n.taskSuccess;
       }
-    } catch (e) {
-      hasError = true;
-      _status = l10n.errorUpdateAll(e.toString());
-      _logs.add("[ERROR] $e");
-    } finally {
-      _isBusy = false;
-      _progress = null;
+
+      notifyListeners();
     }
 
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: "Update All Packages",
-        source: source,
-        status: !hasError ? TaskStatus.success : TaskStatus.failed,
-        progress: !hasError ? 1.0 : 0.0,
-        stage: "Update",
-        message: !hasError ? "Success" : _status,
-      ),
-    );
-
-    _packageName = null;
-    _flag = null;
-    _status = !hasError ? l10n.taskSuccess : l10n.taskError("Failed");
-    notifyListeners();
     return !hasError;
   }
 
   Future<void> runCleanSystem(AppLocalizations l10n) async {
-    if (_isBusy) return;
-    _isBusy = true;
-    _progress = null;
-    _status = l10n.systemCleaningStarted;
-    notifyListeners();
-
-    try {
-      final stream = _taskRepository.cleanSystem();
-
-      await for (final line in stream) {
-        _parseLine(line, l10n);
-        notifyListeners();
-      }
-    } catch (e) {
-      _status = l10n.errorCleanFailed(e.toString());
-      _logs.add("[ERROR] $e");
-    } finally {
-      _isBusy = false;
-      _progress = null;
-    }
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: "System Cleanup",
-        source: "System",
-        status: TaskStatus.success,
-        progress: 1.0,
-        stage: "Clean",
-        message: _status,
-      ),
+    await _executeTaskInternal(
+      () => _taskRepository.cleanSystem(),
+      "--clean",
+      "System Cleanup",
+      "System",
+      l10n,
+      errorMapper: (err) => l10n.errorCleanFailed(err),
     );
-    notifyListeners();
   }
 
   void _parseLine(String line, AppLocalizations l10n) {
