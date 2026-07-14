@@ -125,6 +125,7 @@ class AppDetailsHeader extends StatelessWidget {
                             content: Text(
                               AppLocalizations.of(context)!.copiedToClipboard,
                             ),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       },
