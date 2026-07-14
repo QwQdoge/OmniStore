@@ -18,7 +18,7 @@
   "about": "About",
   "details": "Details",
   "source": "Source",
-  "variant": "Versions",
+  "variant": "Variants",
   "@variant": {
     "description": "Label for app variants/versions"
   },

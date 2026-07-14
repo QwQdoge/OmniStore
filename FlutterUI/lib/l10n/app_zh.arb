@@ -128,7 +128,7 @@
       }
     }
   },
-  "trayTooltipUpToDate": "OmniStore：应用已是最新",
+  "trayTooltipUpToDate": "OmniStore：应用已是最新版本",
   "updateReminders": "更新提醒",
   "maintenance": "维护",
   "updateAllPackages": "更新所有应用",
