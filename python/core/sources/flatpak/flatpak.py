@@ -175,7 +175,7 @@ class FlatpakSource(UnifiedSource):
                 try:
                     proc.kill()
                     await proc.wait()
-                except:
+                except Exception:
                     pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:

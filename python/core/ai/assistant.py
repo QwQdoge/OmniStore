@@ -251,7 +251,7 @@ class AIAssistant:
     async def summarize_project(self) -> str:
         try:
             readme = (Path(__file__).resolve().parents[3] / "README.md").read_text(encoding="utf-8")
-        except: readme = ""
+        except Exception: readme = ""
         system = "Summarize the OmniStore project in concise markdown."
         return await self._post_request(system, f"README:\n{readme}" if readme else "OmniStore project summary.")
 

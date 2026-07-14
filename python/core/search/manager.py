@@ -284,14 +284,14 @@ class SearchManager:
                                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
                 stdout, _ = await p.communicate()
                 return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
-        except:
+        except Exception:
             return set()
         finally:
             if p and p.returncode is None:
                 try:
                     p.kill()
                     await p.wait()
-                except: pass
+                except Exception: pass
 
     async def _get_installed_aur(self, cached_set: Optional[set]):
         if cached_set:
@@ -301,14 +301,14 @@ class SearchManager:
             async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
                 stdout, _ = await p.communicate()
                 return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
-        except:
+        except Exception:
             return set()
         finally:
             if p and p.returncode is None:
                 try:
                     p.kill()
                     await p.wait()
-                except: pass
+                except Exception: pass
 
     async def _get_installed_winget(self, cached_set: Optional[set]):
         if cached_set:

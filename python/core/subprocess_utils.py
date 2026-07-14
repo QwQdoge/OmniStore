@@ -57,12 +57,12 @@ async def _cleanup_proc(proc):
                     pass
             else:
                 try: proc.terminate()
-                except: pass
+                except Exception: pass
 
             try:
                 # Murphy-proof: Use wait_for with a strict timeout
                 await asyncio.wait_for(proc.wait(), timeout=5)
-            except (asyncio.TimeoutError, Exception):
+            except BaseException as e:
                 # 2. Escalation: Force group kill (SIGKILL to the process group)
                 if os.name == 'posix':
                     try:
@@ -74,13 +74,16 @@ async def _cleanup_proc(proc):
                         pass
                 else:
                     try: proc.kill()
-                    except: pass
+                    except Exception: pass
 
                 # Final wait to reap the zombie
                 try:
                     await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
                 except (asyncio.TimeoutError, Exception):
                     pass
+
+                if not isinstance(e, (asyncio.TimeoutError, Exception)):
+                    raise
     except BaseException as e:
         if isinstance(e, Exception):
             logging.error(f"Murphy-proof Error Reaping Subprocess (PID {proc.pid}): {e}")

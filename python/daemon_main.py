@@ -183,7 +183,7 @@ async def run_update_check(config):
                 logging.error("Murphy-proof: Update check subprocess timed out.")
                 if proc.returncode is None:
                     try: proc.kill()
-                    except: pass
+                    except Exception: pass
                 return
         
         if proc.returncode == 0:

@@ -238,7 +238,7 @@ class ConfigManager:
                 print(f"[Config] File Write Error: {write_e}")
                 if temp_file.exists():
                     try: temp_file.unlink()
-                    except: pass
+                    except Exception: pass
                 return False
 
         except Exception as e:
