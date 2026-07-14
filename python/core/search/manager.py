@@ -11,6 +11,8 @@ import sys
 import logging
 
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
+# ⚡ Bolt: Hoist source priorities to a module-level constant to avoid redundant dictionary allocations.
+_SOURCE_PRIORITY = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
 
 class SearchManager:
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: Optional[HabitTracker] = None, recommender: Optional[RecommendationManager] = None, cache_manager: Any = None, ai_assistant: Any = None):
@@ -196,9 +198,12 @@ class SearchManager:
         # This reduces per-item scoring overhead significantly for large result sets.
         source_metadata = {}
         for s_id, s_obj in self.sources.items():
-            source_metadata[s_id] = {
+            s_key = s_id.lower()
+            cfg_key = "pacman" if s_key == "native" else s_key
+            source_metadata[s_key] = {
                 "weight": getattr(s_obj, "weight", 1.0),
-                "habit_weight": self.habit_tracker.get_source_weight(s_id) if self.habit_tracker else 0
+                "habit_weight": self.habit_tracker.get_source_weight(s_id) if self.habit_tracker else 0,
+                "prio_score": priority_map.get(cfg_key, 50)
             }
 
         query_re = re.compile(rf"\b{re.escape(query_lower)}")
@@ -208,20 +213,22 @@ class SearchManager:
             raw_name = item.get('name', 'unknown')
             item['_norm_name'] = self._normalize_app_name(raw_name)
 
-            # ⚡ Bolt: Pre-calculate lower-case name and description to avoid redundant work in scoring loop
+            # ⚡ Bolt: Pre-calculate lower-case name and truncated description to avoid redundant work in scoring loop
             name_lower = raw_name.lower()
             description = item.get('description', '')
-            desc_lower = description.lower() if description else ""
+            # Truncate before lowering to avoid processing large strings
+            truncated_desc = description[:200].lower() if description else ""
 
             # ⚡ Bolt: Pass pre-calculated source metadata to avoid internal lookups
             src_key = item.get("source", "").lower()
-            meta = source_metadata.get(src_key, {"weight": 1.0, "habit_weight": 0})
+            meta = source_metadata.get(src_key, {"weight": 1.0, "habit_weight": 0, "prio_score": 50})
 
             # Base smart score
             base_score = self.smart_scoring._calculate_smart_score(
                 item, query_lower, priority_map, query_re=query_re,
-                name_lower=name_lower, desc_lower=desc_lower,
-                source_habit_weight=meta["habit_weight"]
+                name_lower=name_lower, truncated_desc=truncated_desc,
+                source_habit_weight=meta["habit_weight"],
+                source_prio_score=meta["prio_score"]
             )
 
             # Apply manual source weights
@@ -393,8 +400,6 @@ class SearchManager:
 
     def merge_duplicates(self, items: List[Dict]) -> List[Dict]:
         seen: Dict[str, Dict] = {}
-        # Priority mapping: Move outside loop to avoid redundant allocations
-        prio = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
         for item in items:
             # Use pre-calculated _norm_name when available, but keep merge_duplicates
             # safe for tests and direct callers that pass raw result dictionaries.
@@ -404,17 +409,16 @@ class SearchManager:
             source = item.get('source', 'Unknown')
             is_installed = item.get('installed', False)
 
-            # ⚡ Bolt: Inline variant creation to avoid overhead
-            variant = {
-                "source": source,
-                "version": item.get('last_version', 'Unknown'),
-                "installed": is_installed,
-                "description": item.get('description', ''),
-                "id": item.get("id"),
-                "url": item.get("url")
-            }
-
             if norm_key not in seen:
+                # ⚡ Bolt: Lazy variant creation. Only create variant dict once we know we're keeping the item.
+                variant = {
+                    "source": source,
+                    "version": item.get('last_version', 'Unknown'),
+                    "installed": is_installed,
+                    "description": item.get('description', ''),
+                    "id": item.get("id"),
+                    "url": item.get("url")
+                }
                 # ⚡ Bolt: Shallow copy for speed, deep copy of variants is handled below
                 entry = item.copy()
                 entry['primary_source'] = source
@@ -424,12 +428,20 @@ class SearchManager:
             else:
                 target = seen[norm_key]
                 if source not in target['_source_types']:
-                    target['variants'].append(variant)
+                    # ⚡ Bolt: Lazy variant creation for existing entries.
+                    target['variants'].append({
+                        "source": source,
+                        "version": item.get('last_version', 'Unknown'),
+                        "installed": is_installed,
+                        "description": item.get('description', ''),
+                        "id": item.get("id"),
+                        "url": item.get("url")
+                    })
                     target['_source_types'].add(source)
                 if is_installed:
                     target['installed'] = True
 
-                if prio.get(source, 0) > prio.get(target['primary_source'], 0):
+                if _SOURCE_PRIORITY.get(source, 0) > _SOURCE_PRIORITY.get(target['primary_source'], 0):
                     target['name'] = item.get('name', 'unknown')
                     target['primary_source'] = source
                     target['description'] = item.get('description', target['description'])
