@@ -21,16 +21,11 @@ class EmptyResults extends StatefulWidget {
 }
 
 class _EmptyResultsState extends State<EmptyResults> {
-  List<CategoryItem> _categories = [];
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _categories = CategoryService.getCategories(context);
-  }
 
   @override
   Widget build(BuildContext context) {
+    final _categories = CategoryService.getCategories(context);
     return EmptyState(
       icon: Icons.search_off_rounded,
       title: widget.l10n.noResults,
