@@ -15,7 +15,7 @@ abstract final class OmnistoreTheme {
     final theme = Theme.of(context);
     return TextStyle(
       fontSize: 26,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w800,
       color: theme.colorScheme.primary,
       letterSpacing: 0,
     );

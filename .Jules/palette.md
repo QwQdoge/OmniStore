@@ -101,3 +101,9 @@
 **Learning:** `IconButton` widgets in Flutter automatically use their `tooltip` property as their semantic label and mark themselves as buttons in the accessibility tree. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` is redundant and bloats the layout tree.
 
 **Action:** Ensure `IconButton` components provide semantic meaning natively by always passing a localized string to their `tooltip` parameter, rather than wrapping them in custom `Semantics` widgets.
+
+## 2026-07-15 - Standardized Empty States and Hierarchy
+
+**Learning:** Standardizing the typography and hierarchy of empty states across the application significantly improves visual rhythm. Using `theme.textTheme.titleLarge` with `FontWeight.w800` for primary empty state titles follows the MD3 expressive scale. Subordinate headers (like 'Categories') should use `titleMedium` (bold) to maintain a clear contrast with the main empty state message. Using `onSurfaceVariant` for such content ensures better accessibility and theme friendliness compared to the more decorative `outline` token.
+
+**Action:** Standardized `EmptyState` typography to `titleLarge` (w800) using `onSurfaceVariant`. Refined `EmptyResults` header to `titleMedium` (bold) and removed manual `ActionChip` shape overrides to allow global theme tokens to take precedence.
