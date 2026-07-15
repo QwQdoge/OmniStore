@@ -128,11 +128,16 @@ class _AppsPageState extends State<AppsPage> {
                       );
                     }
 
-                    return AnimatedSwitcher(
+                    return AnimatedSize(
                       duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: child,
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.fastOutSlowIn,
+                        child: child,
+                      ),
                     );
                   },
                 );

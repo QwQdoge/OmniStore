@@ -212,11 +212,16 @@ class UpdatesTab extends StatelessWidget {
           );
         }
 
-        return AnimatedSwitcher(
+        return AnimatedSize(
           duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.fastOutSlowIn,
-          child: content,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
+            child: content,
+          ),
         );
       },
     );

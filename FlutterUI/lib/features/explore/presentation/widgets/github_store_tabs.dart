@@ -15,13 +15,17 @@ class GitHubStoreTabs extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return AnimatedSwitcher(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.fastOutSlowIn,
-      child: isSearching
-          ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
-          : Padding(
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.fastOutSlowIn,
+        child: isSearching
+            ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
+            : Padding(
               key: const ValueKey('tabs_padding'),
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -68,6 +72,7 @@ class GitHubStoreTabs extends StatelessWidget {
                 ),
               ),
             ),
+      ),
     );
   }
 }
