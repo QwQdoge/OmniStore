@@ -67,7 +67,10 @@ class AIMarkdownDialog extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOutCubic,
                 switchOutCurve: Curves.fastOutSlowIn,
-                child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+                child: _buildAIMarkdown(
+                  snapshot,
+                  AppLocalizations.of(context)!,
+                ),
               );
             },
           ),
@@ -111,55 +114,52 @@ class AICliDialog extends StatelessWidget {
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,
               child: snapshot.connectionState == ConnectionState.waiting
-                ? const SizedBox(
-                    key: ValueKey('loading'),
-                    height: 100,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      height: 100,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Skeleton(width: double.infinity, height: 24),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      key: const ValueKey('loaded'),
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Skeleton(
-                          width: double.infinity,
-                          height: 24,
-
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            cmd,
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: cmd));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.copiedToClipboard,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_rounded),
+                          label: Text(
+                            AppLocalizations.of(context)!.aiCopyCommand,
+                          ),
                         ),
                       ],
                     ),
-                  )
-                : Column(
-                    key: const ValueKey('loaded'),
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          cmd,
-                          style: const TextStyle(fontFamily: 'monospace'),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: cmd));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(context)!.copiedToClipboard,
-                              ),
-                              duration: const Duration(seconds: 4),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.copy_rounded),
-                        label: Text(
-                          AppLocalizations.of(context)!.aiCopyCommand,
-                        ),
-                      ),
-                    ],
-                  ),
             );
           },
         ),

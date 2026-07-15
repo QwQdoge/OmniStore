@@ -13,11 +13,16 @@ class DaemonIpcService {
 
   DaemonIpcService(this._client);
 
-  Future<DaemonResult?> send(String action, List<dynamic> args, {Map<String, dynamic>? kwargs}) async {
+  Future<DaemonResult?> send(
+    String action,
+    List<dynamic> args, {
+    Map<String, dynamic>? kwargs,
+  }) async {
     // Circuit Breaker Logic
     if (_isCircuitBreakerTripped) {
       final now = DateTime.now();
-      if (_lastFailureTime != null && now.difference(_lastFailureTime!) < const Duration(minutes: 2)) {
+      if (_lastFailureTime != null &&
+          now.difference(_lastFailureTime!) < const Duration(minutes: 2)) {
         debugPrint("DaemonIpcService: Circuit Breaker ACTIVE. Bypassing.");
         return null;
       }
@@ -26,7 +31,9 @@ class DaemonIpcService {
     }
 
     try {
-      final res = await _client.send(action, args, kwargs: kwargs).timeout(const Duration(seconds: 15));
+      final res = await _client
+          .send(action, args, kwargs: kwargs)
+          .timeout(const Duration(seconds: 15));
       if (res != null) {
         _failureStreak = 0;
         return res;

@@ -5,7 +5,12 @@ class Skeleton extends StatefulWidget {
   final double? height;
   final double borderRadius;
 
-  const Skeleton({super.key, this.width, this.height, this.borderRadius = 16.0});
+  const Skeleton({
+    super.key,
+    this.width,
+    this.height,
+    this.borderRadius = 16.0,
+  });
 
   @override
   State<Skeleton> createState() => _SkeletonState();

@@ -128,7 +128,12 @@ class TasksTab extends StatelessWidget {
                   length: c.completedTasks.length,
                   history: c.completedTasks,
                 ),
-                shouldRebuild: (prev, next) => prev.length != next.length || !const IterableEquality().equals(prev.history, next.history),
+                shouldRebuild: (prev, next) =>
+                    prev.length != next.length ||
+                    !const IterableEquality().equals(
+                      prev.history,
+                      next.history,
+                    ),
                 builder: (context, data, child) {
                   final history = data.history;
                   return ListView.builder(

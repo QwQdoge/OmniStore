@@ -20,7 +20,6 @@ class CategoryCard extends StatelessWidget {
       label: AppLocalizations.of(context)!.categorySemantics(category.name),
       button: true,
       child: AppCard(
-
         onTap: () {
           final browse = context.read<BrowseController>();
           final nav = context.read<NavigationController>();

@@ -62,5 +62,4 @@ class BrowseController with ChangeNotifier {
       }
     }
   }
-
 }

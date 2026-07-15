@@ -81,9 +81,9 @@ class TerminalDialog extends StatelessWidget {
                         curve: Curves.easeOutCubic,
                         alignment: Alignment.topCenter,
                         child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.fastOutSlowIn,
+                          duration: const Duration(milliseconds: 300),
                           child: data.progress != null
                               ? TweenAnimationBuilder<double>(
                                   key: const ValueKey('determinate'),
@@ -94,7 +94,9 @@ class TerminalDialog extends StatelessWidget {
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeOutCubic,
                                   builder: (context, value, _) {
-                                    return LinearProgressIndicator(value: value);
+                                    return LinearProgressIndicator(
+                                      value: value,
+                                    );
                                   },
                                 )
                               : const LinearProgressIndicator(

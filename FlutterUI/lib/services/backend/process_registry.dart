@@ -56,11 +56,14 @@ class ProcessRegistry {
           final pgidRes = await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
           final pgid = int.tryParse(pgidRes.stdout.toString().trim());
 
-          if (pgid != null && pgid > 1) {
-            // 1. Stage 1: Graceful SIGTERM on the entire process group
-            await Process.run('kill', ['-TERM', '--', '-$pgid'])
-                .timeout(const Duration(seconds: 2));
-            groupKillAttempted = true;
+          if (pgid != null && pgid > 1 && pgid != pid) {
+            // 1. Attempt SIGTERM on the entire process group
+            await Process.run('kill', [
+              '-TERM',
+              '--',
+              '-$pgid',
+            ]).timeout(const Duration(seconds: 2));
+            groupKillSuccess = true;
           }
         } catch (_) {}
 
@@ -92,13 +95,17 @@ class ProcessRegistry {
         // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows.
         // /T ensures children are also terminated, /F forces termination.
         try {
-          final res = await Process.run('taskkill', ['/F', '/T', '/PID', '$pid'])
-              .timeout(const Duration(seconds: 5));
-          if (res.exitCode != 0) {
-             debugPrint("ProcessRegistry: taskkill exit code ${res.exitCode} for PID $pid");
-          }
+          await Process.run('taskkill', [
+            '/F',
+            '/T',
+            '/PID',
+            '$pid',
+          ]).timeout(const Duration(seconds: 5));
         } catch (e) {
-          debugPrint("ProcessRegistry: Windows taskkill failed for PID $pid: $e");
+          debugPrint(
+            "ProcessRegistry: Windows taskkill failed for PID $pid: $e",
+          );
+          process.kill(ProcessSignal.sigkill);
         }
       } else {
         process.kill(ProcessSignal.sigkill);

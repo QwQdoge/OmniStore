@@ -15,10 +15,8 @@ class TypographySettingsCard extends StatelessWidget {
       SettingsController,
       ({String fontFamily, double fontScale})
     >(
-      selector: (context, s) => (
-        fontFamily: s.fontFamily,
-        fontScale: s.fontScale,
-      ),
+      selector: (context, s) =>
+          (fontFamily: s.fontFamily, fontScale: s.fontScale),
       builder: (context, data, _) {
         return AppCard(
           child: Column(
@@ -27,7 +25,9 @@ class TypographySettingsCard extends StatelessWidget {
                 leading: const Icon(Icons.font_download_rounded),
                 title: Text(l10n.fontFamily),
                 subtitle: Text(
-                  data.fontFamily == 'System' ? l10n.systemDefault : data.fontFamily,
+                  data.fontFamily == 'System'
+                      ? l10n.systemDefault
+                      : data.fontFamily,
                 ),
                 trailing: DropdownButton<String>(
                   value: data.fontFamily,

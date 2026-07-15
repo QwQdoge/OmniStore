@@ -235,18 +235,21 @@ class BackendService {
         return null;
       }
 
-      _daemonProcess = await Process.start(
-        _venvPython,
-        _buildArgs(['--daemon', '--json']),
-        workingDirectory: _workingDir,
-        // Murphy-proof: Ensure new process group for the daemon
-        runInShell: false,
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          throw TimeoutException("Failed to start Python daemon within 15s");
-        },
-      );
+      _daemonProcess =
+          await Process.start(
+            _venvPython,
+            _buildArgs(['--daemon', '--json']),
+            workingDirectory: _workingDir,
+            // Murphy-proof: Ensure new process group for the daemon
+            runInShell: false,
+          ).timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException(
+                "Failed to start Python daemon within 15s",
+              );
+            },
+          );
 
       // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);

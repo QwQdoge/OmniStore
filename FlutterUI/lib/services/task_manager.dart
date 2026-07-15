@@ -345,9 +345,13 @@ class TaskManager {
       } else if (msg.startsWith("[PROGRESS]")) {
         _processProgress(msg.replaceFirst("[PROGRESS] ", ""));
       } else if (msg.startsWith("[SPEED]")) {
-        _updateState(_currentTask?.copyWith(speed: msg.replaceFirst("[SPEED] ", "")));
+        _updateState(
+          _currentTask?.copyWith(speed: msg.replaceFirst("[SPEED] ", "")),
+        );
       } else if (msg.startsWith("[STAGE]")) {
-        _updateState(_currentTask?.copyWith(stage: msg.replaceFirst("[STAGE] ", "")));
+        _updateState(
+          _currentTask?.copyWith(stage: msg.replaceFirst("[STAGE] ", "")),
+        );
       } else {
         _processInfo(msg.replaceFirst("[INFO] ", ""));
       }
@@ -362,7 +366,9 @@ class TaskManager {
     if (line.startsWith("[PROGRESS]")) {
       _processProgress(line.replaceFirst("[PROGRESS] ", ""));
     } else if (line.startsWith("[SPEED]")) {
-      _updateState(_currentTask?.copyWith(speed: line.replaceFirst("[SPEED] ", "")));
+      _updateState(
+        _currentTask?.copyWith(speed: line.replaceFirst("[SPEED] ", "")),
+      );
     } else if (line.startsWith("[INFO]")) {
       _processInfo(line.replaceFirst("[INFO] ", ""));
     } else if (line.startsWith("[ERROR]")) {
@@ -443,7 +449,12 @@ class TaskManager {
       }
 
       if (kIsWeb) {
-        _updateState(_currentTask?.copyWith(status: TaskStatus.failed, messageKey: "taskCancelledByUser"));
+        _updateState(
+          _currentTask?.copyWith(
+            status: TaskStatus.failed,
+            messageKey: "taskCancelledByUser",
+          ),
+        );
         Future.delayed(const Duration(seconds: 3), () {
           if (_currentTask?.id == cancelledTaskId) _updateState(null);
         });
@@ -451,7 +462,9 @@ class TaskManager {
       }
 
       try {
-        await BackendService.cancelCurrentTask().timeout(const Duration(seconds: 10));
+        await BackendService.cancelCurrentTask().timeout(
+          const Duration(seconds: 10),
+        );
       } catch (_) {}
 
       final currentMutex = _mutex;

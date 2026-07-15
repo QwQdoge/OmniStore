@@ -54,55 +54,57 @@ class AppShelf extends StatelessWidget {
                       label: 'App: ${app.name}',
                       button: true,
                       child: AppCard(
-                      borderRadius: 16,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              AppDetailsPage(app: app, heroTag: heroTag),
+                        borderRadius: 16,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AppDetailsPage(app: app, heroTag: heroTag),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            Hero(
+                              tag: heroTag,
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerHigh,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: app.icon != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: app.icon!,
+                                        fit: BoxFit.cover,
+                                        memCacheWidth: 200,
+                                        errorWidget: (c, e, s) =>
+                                            const Icon(Icons.apps),
+                                      )
+                                    : const Icon(Icons.apps, size: 40),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Text(
+                                app.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 12),
-                          Hero(
-                            tag: heroTag,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: app.icon != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: app.icon!,
-                                      fit: BoxFit.cover,
-                                      memCacheWidth: 200,
-                                      errorWidget: (c, e, s) =>
-                                          const Icon(Icons.apps),
-                                    )
-                                  : const Icon(Icons.apps, size: 40),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text(
-                              app.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                     ),
                   ),
                 );

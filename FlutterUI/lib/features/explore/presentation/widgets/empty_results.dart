@@ -43,15 +43,12 @@ class _EmptyResultsState extends State<EmptyResults> {
                 .map(
                   (cat) => ActionChip(
                     onPressed: () {
-                      widget.searchController.text =
-                          '/${cat.id.toLowerCase()}';
+                      widget.searchController.text = '/${cat.id.toLowerCase()}';
                       widget.performSearch(widget.searchController.text);
                     },
                     label: Text(cat.name),
                     avatar: Icon(cat.icon, size: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+
                   ),
                 )
                 .toList(),

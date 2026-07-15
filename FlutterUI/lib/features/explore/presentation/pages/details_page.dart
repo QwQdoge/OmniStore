@@ -215,12 +215,9 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         if (flag == "-R") {
           _isAppInstalled = false;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.success),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.success)));
       } else {
         showDialog(context: context, builder: (ctx) => const TerminalDialog());
       }

@@ -211,7 +211,11 @@ class DaemonClient {
       try {
         // Murphy-proof: Lightweight liveness ping to ensure daemon is still responsive.
         // We use a short timeout to prevent the heartbeat from hanging.
-        final res = await send("run_check_env", [], timeout: const Duration(seconds: 5));
+        final res = await send(
+          "run_check_env",
+          [],
+          timeout: const Duration(seconds: 5),
+        );
         if (res == null || res.status != 'success') {
           debugPrint("DaemonClient: Heartbeat failed. Reconnecting...");
           _cleanupSocket();

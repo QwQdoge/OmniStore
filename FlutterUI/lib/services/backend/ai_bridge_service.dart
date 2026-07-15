@@ -8,7 +8,10 @@ class AiBridgeService {
 
   AiBridgeService(this._backend);
 
-  Future<String> call(List<String> args, {Duration timeout = const Duration(seconds: 60)}) async {
+  Future<String> call(
+    List<String> args, {
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
     try {
       final res = await _backend.runRaw([...args, "--json"], timeout: timeout);
       if (res == null) return "AI_TIMEOUT";
@@ -30,6 +33,9 @@ class AiBridgeService {
   }
 
   Future<String> recommend(String prompt) async {
-    return call(["--ai-recommend", prompt.trim()], timeout: const Duration(seconds: 90));
+    return call([
+      "--ai-recommend",
+      prompt.trim(),
+    ], timeout: const Duration(seconds: 90));
   }
 }

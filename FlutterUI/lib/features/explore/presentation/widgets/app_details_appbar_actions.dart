@@ -66,7 +66,10 @@ class AppDetailsAppBarActions {
     ];
   }
 
-  static Future<void> _showAIExplainDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAIExplainDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiExplain(app.name, app.description);
     showDialog(
@@ -78,7 +81,10 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAICompareDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAICompareDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiCompareVariants(app.name);
     showDialog(
@@ -92,7 +98,11 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAICliDialog(BuildContext context, AppPackage app, String selectedSource) async {
+  static Future<void> _showAICliDialog(
+    BuildContext context,
+    AppPackage app,
+    String selectedSource,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiGenerateCLI(app.name, selectedSource);
     showDialog(
@@ -101,7 +111,10 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAIConflictDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAIConflictDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiDetectConflicts(app.name);
     showDialog(
