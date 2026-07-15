@@ -20,3 +20,13 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 ## Motion Polish: Eliminating UI Layout Jumps
 
 Added `AnimatedSize` wrappers to multiple `AnimatedSwitcher` usages across the app (in `home_page.dart`, `discovery_content.dart`, `search_results_view.dart`, `flatpak_store_page.dart`, `github_store_page.dart`, and `installed_tab.dart`). This effectively eliminates abrupt layout jumps when transitioning between UI states of varying sizes, such as empty states and fully populated item lists. Alignments were set according to the content (e.g. `Alignment.topCenter` for lists). Standard MD3 transitions curves were applied.
+
+## Motion Polish: Fixing Remaining AnimatedSwitcher Layout Jumps
+In continuation of previous work, identified and wrapped several remaining `AnimatedSwitcher` instances across the app with `AnimatedSize` to strictly prevent layout jumps. Specifically, this was applied to:
+- `AppsPage` (list/empty states)
+- `TasksTab` and `UpdatesTab` (content blocks)
+- `FlatpakAppList` and `GitHubAppList` (state transitions)
+- `StorageCleanupCard` (loading vs loaded data)
+- `GitHubStoreTabs` (search vs tab layout)
+- `DownloadPage` (checking updates indicator)
+These wrappers were configured with `Curves.easeOutCubic` for duration and layout transitions, and used alignment specific to the UI context (e.g., `Alignment.topCenter` for lists and `Alignment.topLeft` for settings rows) to maintain consistent MD3 motion patterns across the app.
