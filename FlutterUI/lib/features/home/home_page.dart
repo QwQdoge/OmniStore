@@ -35,10 +35,19 @@ class _HomePageState extends State<HomePage> {
   String? _aiPickBlurb;
   bool _isAILoading = false;
 
+  // ⚡ Bolt: Memoize categories to avoid redundant allocations and L10n lookups on every build
+  List<CategoryItem> _categories = [];
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
   }
 
   @override
@@ -173,7 +182,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final _categories = CategoryService.getCategories(context);
 
     return Scaffold(
       body: RefreshIndicator(
