@@ -414,7 +414,7 @@
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Análisis de esta actualización",
+  "aiExplainUpdate": "Análisis de actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },
