@@ -64,9 +64,7 @@ class AppDetailsActions extends StatelessWidget {
             onPressed: onLocateApp,
             icon: const Icon(Icons.folder_open_rounded),
             tooltip: AppLocalizations.of(context)!.locateInstallation,
-            style: IconButton.styleFrom(
-              minimumSize: const Size(56, 56),
-            ),
+            style: IconButton.styleFrom(minimumSize: const Size(56, 56)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -115,12 +113,6 @@ class AppDetailsActions extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: FilledButton.icon(
-          onPressed: () => onHandleAction("-I"),
-          icon: const Icon(Icons.download_rounded),
-          label: Text(
-            AppLocalizations.of(context)!.install,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
           onPressed: () => onHandleAction("-I"),
           icon: const Icon(Icons.download_rounded),
           label: Text(
