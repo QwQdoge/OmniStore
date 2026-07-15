@@ -115,11 +115,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 
 **Action Taken:** Removed  and the  state variable from these widgets. Updated the  method in each to call  directly, assigning the result to a local  variable.
 
-**Reasoning:** Caching values derived from  (like  used in ) in state variables creates state duplication, adds unnecessary lifecycle complexity, and can lead to incorrect invalidation if the inherited dependency changes. Deriving these lightweight lists directly in  is the idiomatic Flutter approach, as object allocation is highly optimized and ensures the UI is always in sync with the current theme and locale.
-## [$(date +%Y-%m-%d)] - State Duplication Removal
+**Action:**
+- Removed `didChangeDependencies` overrides in `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
+- Refactored category evaluation to evaluate `final _categories = CategoryService.getCategories(context);` directly within the `build` method. This leverages Flutter's built-in reactivity and eliminates unnecessary state fields.
+## 2026-07-15 - Memoize Category Service Calls
 
-**Issue:** Multiple widgets (`HomePage`, `CategoryPage`, `DiscoveryContent`, `EmptyResults`) were caching the result of `CategoryService.getCategories(context)` in a `_categories` state variable during `didChangeDependencies`.
+**Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
 
-**Action Taken:** Removed `didChangeDependencies` and the `_categories` state variable from these widgets. Updated the `build` method in each to call `CategoryService.getCategories(context)` directly, assigning the result to a local `categories` variable.
-
-**Reasoning:** Caching values derived from `InheritedWidgets` (like `AppLocalizations` used in `CategoryService`) in state variables creates state duplication, adds unnecessary lifecycle complexity, and can lead to incorrect invalidation if the inherited dependency changes. Deriving these lightweight lists directly in `build()` is the idiomatic Flutter approach, as object allocation is highly optimized and ensures the UI is always in sync with the current theme and locale.
+**Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.

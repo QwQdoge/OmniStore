@@ -28,6 +28,13 @@ class DiscoveryContent extends StatefulWidget {
 class _DiscoveryContentState extends State<DiscoveryContent> {
   final ScrollController _categoryScrollController = ScrollController();
   final ScrollController _trendingScrollController = ScrollController();
+  late List<CategoryItem> _categories;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
+  }
 
   @override
   void dispose() {
@@ -39,7 +46,6 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final categories = CategoryService.getCategories(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 32),

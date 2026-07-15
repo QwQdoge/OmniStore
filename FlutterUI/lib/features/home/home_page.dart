@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  late List<CategoryItem> _categories;
 
   // ⚡ Bolt: Memoize categories to avoid redundant allocations and L10n lookups on every build
   List<CategoryItem> _categories = [];
@@ -170,6 +171,12 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
   }
 
   @override
