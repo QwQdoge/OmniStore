@@ -84,7 +84,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                 switchOutCurve: Curves.fastOutSlowIn,
                 child: _loadingStorage
                     ? const Column(
-                      key: ValueKey('loading'),
+                        key: ValueKey('loading'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Skeleton(width: double.infinity, height: 14),
@@ -219,11 +219,11 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                         ),
                       ],
                     )
-                  : Text(
-                      key: const ValueKey('empty'),
-                      l10n.systemCleaningSubtitle,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    : Text(
+                        key: const ValueKey('empty'),
+                        l10n.systemCleaningSubtitle,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
               ),
             ),
           ],
