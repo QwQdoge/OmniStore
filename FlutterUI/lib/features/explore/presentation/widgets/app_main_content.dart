@@ -8,6 +8,7 @@ import 'package:frontend/features/explore/presentation/widgets/app_details_actio
 import 'package:frontend/features/explore/presentation/widgets/app_about_section.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_technical_details.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
+import 'package:frontend/core/widgets/skeleton.dart';
 
 class AppMainContent extends StatelessWidget {
   final AppPackage app;
@@ -84,73 +85,74 @@ class AppMainContent extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-              AppAboutSection(
-                isLoading: isLoadingDetails,
-                description: extraDetails?.description,
-                fallbackDescription: app.description,
-              ),
-            ],
-          ),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: AppAboutSection(
-                  key: ValueKey(isLoadingDetails),
-                  isLoading: isLoadingDetails,
-                  description: extraDetails?.description,
-                  fallbackDescription: app.description,
-                ),
-                AppScreenshots(
-                  screenshots: extraDetails!.screenshots!,
-                  scrollController: screenshotScrollController,
-                  onShowScreenshotViewer: onShowScreenshotViewer,
-                ),
-              ],
-            ],
-          ),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              AppDetailsSectionTitle(
-                title: AppLocalizations.of(context)!.details,
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: AppTechnicalDetails(
-                  key: ValueKey(extraDetails != null),
-                  primarySource: app.primarySource,
-                  allSources: app.sources,
-                  version: app.version,
-                  extraDetails: extraDetails,
-                  currentVariant: getVariantForSource(selectedSource),
-                  hasCapability: hasCapability,
-                ),
-              ),
-            ],
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.fastOutSlowIn,
+            child: isLoadingDetails
+                ? Column(
+                    key: const ValueKey('loading'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      AppDetailsSectionTitle(
+                        title: AppLocalizations.of(context)!.about,
+                      ),
+                      const ParagraphSkeleton(key: ValueKey('loading')),
+                      const SizedBox(height: 24),
+                      AppDetailsSectionTitle(
+                        title: AppLocalizations.of(context)!.details,
+                      ),
+                      AppTechnicalDetails(
+                        primarySource: app.primarySource,
+                        allSources: app.sources,
+                        version: app.version,
+                        extraDetails: extraDetails,
+                        currentVariant: getVariantForSource(selectedSource),
+                        hasCapability: hasCapability,
+                      ),
+                    ],
+                  )
+                : Column(
+                    key: const ValueKey('loaded'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      AppDetailsSectionTitle(
+                        title: AppLocalizations.of(context)!.about,
+                      ),
+                      AppAboutSection(
+                        description: extraDetails?.description,
+                        fallbackDescription: app.description,
+                      ),
+                      if (hasCapability('has_screenshots') &&
+                          extraDetails != null &&
+                          extraDetails!.screenshots != null &&
+                          extraDetails!.screenshots!.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        AppDetailsSectionTitle(
+                          title: AppLocalizations.of(context)!.screenshots,
+                        ),
+                        AppScreenshots(
+                          screenshots: extraDetails!.screenshots!,
+                          scrollController: screenshotScrollController,
+                          onShowScreenshotViewer: onShowScreenshotViewer,
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      AppDetailsSectionTitle(
+                        title: AppLocalizations.of(context)!.details,
+                      ),
+                      AppTechnicalDetails(
+                        primarySource: app.primarySource,
+                        allSources: app.sources,
+                        version: app.version,
+                        extraDetails: extraDetails,
+                        currentVariant: getVariantForSource(selectedSource),
+                        hasCapability: hasCapability,
+                      ),
+                    ],
+                  ),
           ),
         ),
       ],

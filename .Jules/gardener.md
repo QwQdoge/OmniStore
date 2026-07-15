@@ -130,3 +130,6 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracted the oversized `ListView.builder` representing the loaded state from `apps_page.dart` into a new stateless widget `InstalledAppList`. Large files with extensive nested list rendering hurt readability and maintainability.
 
 **Action:** Created `FlutterUI/lib/features/apps/widgets/installed_app_list.dart` to encapsulate the list rendering logic, passing only `filteredApps` and `onRefresh` as parameters, preserving exact functionality while cleaning up the parent file.
+## 2026-07-15 - Consolidate Details Layout Transition Logic
+**Learning:** Animated size boundaries combined with AnimatedSwitcher logic become disjointed when spread across multiple small layout sections (like screenshots, details, about), leading to jittery layouts.
+**Action:** Lifted layout transition logic out of individual sub-widgets (like AppAboutSection) into a single unified top-level AnimatedSwitcher within AppMainContent for a cohesive and smoother layout expansion block.
