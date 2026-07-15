@@ -82,6 +82,14 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Spawning a subprocess for every installed package to fetch metadata (like size or description) creates extreme O(N) latency and CPU spikes. Most package managers (pacman, flatpak) support batch retrieval or streaming output that allows fetching metadata for all packages in a single O(1) operation.
 
 **Action:** Optimized `FlatpakSource`, `PacmanSource`, and `AurSource` in the Python backend. Replaced per-package loops with batch commands (`flatpak list --columns=...,size`, `pacman -Qqne | pacman -Qi -`, and `pacman -Qi [foreign_pkgs]`). Implemented a metadata stream parser to extract details efficiently.
-## 2026-07-14 - CachedNetworkImage for Static Assets
-**Learning:** Using `Image.network` for frequently accessed static network images (like the GitHub logo in headers) causes redundant network downloads across app launches, negatively impacting image memory optimization and startup performance.
-**Action:** Replaced `Image.network` with `CachedNetworkImage` in `GitHubStoreHeader` to provide robust disk caching and improve efficiency across app launches.
+
+## 2026-07-14 - Search Scoring & Merging Optimization
+
+**Learning:** Redundant string transformations (truncation and lowercasing) and dictionary lookups inside high-frequency search loops (scoring and merging hundreds of items) create significant CPU and memory allocation overhead. Truncating descriptions before they reach the scoring function not only saves processing time but also drastically improves `lru_cache` hit rates by reducing the key space.
+
+**Action:** Optimized `SearchManager` and `SmartScoring` by pre-calculating source metadata, implementing early description truncation, hoisting static priority maps, and deferring variant dictionary allocations until absolutely necessary.
+## 2026-07-15 - CachedNetworkImage Optimization in Store Header
+
+**Learning:** Using standard `Image.network` for static or frequently accessed network images (like the GitHub logo in the store header) causes redundant network requests on subsequent rebuilds, increasing latency and memory overhead. Replacing it with `CachedNetworkImage` prevents redundant downloads, utilizing disk caching for improved loading performance.
+
+**Action:** Replaced `Image.network` with `CachedNetworkImage` in `github_store_header.dart`.
