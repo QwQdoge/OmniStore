@@ -119,31 +119,41 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                         stop_event.set()
                         return {"status": "success", "response": True}
 
-                    async with backend:
-                        args = cmd_data.args
-                        kwargs = cmd_data.kwargs
-                        obj = backend
-                        parts = action.split('.')
-                        for part in parts:
-                            obj = getattr(obj, part, None)
-                            if obj is None: break
+                    # Murphy-proof: Protect backend initialization
+                    try:
+                        async with backend:
+                            args = cmd_data.args
+                            kwargs = cmd_data.kwargs
+                            obj = backend
+                            parts = action.split('.')
+                            for part in parts:
+                                try:
+                                    obj = getattr(obj, part, None)
+                                except Exception as ge:
+                                    return {"status": "error", "error": f"Attribute access error on '{part}': {str(ge)}"}
+                                if obj is None: break
 
-                        if obj is not None:
-                            if callable(obj):
-                                if inspect.iscoroutinefunction(obj):
-                                    res = await obj(*args, **kwargs)
+                            if obj is not None:
+                                if callable(obj):
+                                    try:
+                                        if inspect.iscoroutinefunction(obj):
+                                            res = await obj(*args, **kwargs)
+                                        else:
+                                            res = obj(*args, **kwargs)
+                                    except TypeError as te:
+                                        return {"status": "error", "error": f"Argument mismatch for '{action}': {str(te)}"}
                                 else:
-                                    res = obj(*args, **kwargs)
-                            else:
-                                res = obj
+                                    res = obj
 
-                            return {
-                                "status": "success",
-                                "response": res,
-                                "stdout": captured_stdout.getvalue()
-                            }
-                        else:
-                            return {"status": "error", "error": f"Method not found: {action}"}
+                                return {
+                                    "status": "success",
+                                    "response": res,
+                                    "stdout": captured_stdout.getvalue()
+                                }
+                            else:
+                                return {"status": "error", "error": f"Method or attribute not found: {action}"}
+                    except Exception as ae:
+                        return {"status": "error", "error": f"Backend context error: {str(ae)}"}
 
                 try:
                     # Murphy-proof: Server-side watchdog to prevent hanging actions

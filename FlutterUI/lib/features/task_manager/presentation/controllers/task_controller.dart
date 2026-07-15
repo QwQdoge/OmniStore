@@ -8,6 +8,21 @@ import 'package:frontend/models/task_state.dart';
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;
 
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
   bool _isBusy = false;
   double? _progress;
   String _status = "Ready";
@@ -127,10 +142,13 @@ class TaskController with ChangeNotifier {
       _status = l10n.errorFatalStream(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
+      // Murphy-proof: Guaranteed busy state reset
       _isBusy = false;
       _progress = null;
+      notifyListeners();
     }
 
+    // Murphy-proof: Record task result before clearing identifiers
     _completedTasks.insert(
       0,
       TaskState(
@@ -178,8 +196,10 @@ class TaskController with ChangeNotifier {
       _status = l10n.errorCleanFailed(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
+      // Murphy-proof: Guaranteed state reset
       _isBusy = false;
       _progress = null;
+      notifyListeners();
     }
 
     _completedTasks.insert(
