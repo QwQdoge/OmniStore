@@ -88,48 +88,44 @@ class AppMainContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 24),
-              AppDetailsSectionTitle(
-                title: AppLocalizations.of(context)!.about,
-              ),
-              AppAboutSection(
-                isLoading: isLoadingDetails,
-                description: extraDetails?.description,
-                fallbackDescription: app.description,
-              ),
-            ],
-          ),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (hasCapability('has_screenshots') &&
-                  extraDetails != null &&
-                  extraDetails!.screenshots != null &&
-                  extraDetails!.screenshots!.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                AppDetailsSectionTitle(
-                  title: AppLocalizations.of(context)!.screenshots,
+              AppDetailsSectionTitle(title: AppLocalizations.of(context)!.about),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: AppAboutSection(
+                  key: ValueKey(isLoadingDetails),
+                  isLoading: isLoadingDetails,
+                  description: extraDetails?.description,
+                  fallbackDescription: app.description,
                 ),
-                AppScreenshots(
-                  screenshots: extraDetails!.screenshots!,
-                  scrollController: screenshotScrollController,
-                  onShowScreenshotViewer: onShowScreenshotViewer,
-                ),
-              ],
-            ],
-          ),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child:
+                    (hasCapability('has_screenshots') &&
+                            extraDetails != null &&
+                            extraDetails!.screenshots != null &&
+                            extraDetails!.screenshots!.isNotEmpty)
+                        ? Column(
+                          key: const ValueKey('screenshots_section'),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            AppDetailsSectionTitle(
+                              title: AppLocalizations.of(context)!.screenshots,
+                            ),
+                            AppScreenshots(
+                              screenshots: extraDetails!.screenshots!,
+                              scrollController: screenshotScrollController,
+                              onShowScreenshotViewer: onShowScreenshotViewer,
+                            ),
+                          ],
+                        )
+                        : const SizedBox.shrink(),
+              ),
               const SizedBox(height: 24),
               AppDetailsSectionTitle(
                 title: AppLocalizations.of(context)!.details,
@@ -139,7 +135,7 @@ class AppMainContent extends StatelessWidget {
                 switchInCurve: Curves.easeOutCubic,
                 switchOutCurve: Curves.fastOutSlowIn,
                 child: AppTechnicalDetails(
-                  key: ValueKey(extraDetails != null ? 'loaded' : 'loading'),
+                  key: ValueKey(extraDetails != null),
                   primarySource: app.primarySource,
                   allSources: app.sources,
                   version: app.version,

@@ -29,9 +29,9 @@ class AppScreenshots extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           // ⚡ Bolt: Use prototypeItem for better scroll virtualization and scrollbar accuracy
-          prototypeItem: const SizedBox(
-            width: 380, // 360 + 2*10 (symmetric horizontal padding)
-            child: SizedBox.shrink(),
+          prototypeItem: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: SizedBox(width: 360),
           ),
           itemCount: screenshots.length,
           itemBuilder: (context, index) {

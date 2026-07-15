@@ -10,13 +10,13 @@ To fix this and maintain smooth, implicit motion, we can wrap the `AnimatedSwitc
 Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using standard MD3 transition curves (`Curves.easeOutCubic`) and appropriate alignments:
 
 1.  **`AppAboutSection`**: Transitioning from a loading `ParagraphSkeleton` to loaded `MarkdownBody`. Set alignment to `Alignment.topLeft`.
-2.  **`AppMainContent`**: Transitioning the `AppTechnicalDetails` block when extra asynchronous details are loaded. Set alignment to `Alignment.topCenter`.
+2.  **`AppMainContent`**: Consolidated multiple `AnimatedSize` wrappers into a single block that handles "About", "Screenshots", and "Details" sections as a unified unit. Set alignment to `Alignment.topLeft`.
 3.  **`AIAppResolver`**: Transitioning from a 32dp `Skeleton`, an empty state, and a horizontal 100dp `ListView`. Set alignment to `Alignment.topCenter`.
-4.  **`AppDetailsActions`**: Transitioning between the static Install/Uninstall buttons and the dynamic `SmoothProgressBar` active task widget. Set alignment to `Alignment.topCenter`.
+4.  **`AppDetailsActions`**: Transitioning between the static Install/Uninstall buttons and the dynamic `SmoothProgressBar` active task widget. Updated alignment to `Alignment.topLeft` for consistency.
 5.  **`AIUpdateSummaryDialog`**: Transitioning from a loading state to a variable-height AI response `MarkdownBody`. Set alignment to `Alignment.topLeft`.
-6.  **`AppDetailsHeader`**: Transitioning the version selector height when asynchronous version data is loaded. Set alignment to `Alignment.topLeft`.
+6.  **`AppDetailsHeader`**: Transitioning the version selector height when asynchronous version data is loaded. Also added an `AnimatedSwitcher` to the app icon for smooth placeholder-to-image transitions. Set alignment to `Alignment.topLeft`.
 
-These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
+These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps.
 ## Motion Polish: Eliminating UI Layout Jumps
 
 Added `AnimatedSize` wrappers to multiple `AnimatedSwitcher` usages across the app (in `home_page.dart`, `discovery_content.dart`, `search_results_view.dart`, `flatpak_store_page.dart`, `github_store_page.dart`, and `installed_tab.dart`). This effectively eliminates abrupt layout jumps when transitioning between UI states of varying sizes, such as empty states and fully populated item lists. Alignments were set according to the content (e.g. `Alignment.topCenter` for lists). Standard MD3 transitions curves were applied.

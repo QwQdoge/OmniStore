@@ -88,3 +88,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Redundant string transformations (truncation and lowercasing) and dictionary lookups inside high-frequency search loops (scoring and merging hundreds of items) create significant CPU and memory allocation overhead. Truncating descriptions before they reach the scoring function not only saves processing time but also drastically improves `lru_cache` hit rates by reducing the key space.
 
 **Action:** Optimized `SearchManager` and `SmartScoring` by pre-calculating source metadata, implementing early description truncation, hoisting static priority maps, and deferring variant dictionary allocations until absolutely necessary.
+
+## 2026-07-15 - AppDetails List & Animation Optimization
+
+**Learning:** Mismatched `prototypeItem` dimensions in a virtualized `ListView` cause inaccurate scrollbar behavior and layout jitter. Additionally, nesting `AnimatedSwitcher` inside multiple `AnimatedSize` wrappers creates redundant layout calculations. Centralizing transitions in a single parent container ensures a smoother, more unified expansion effect.
+
+**Action:** Synchronized `prototypeItem` padding in `AppScreenshots.dart` to match actual list items. Consolidated layout animations in `AppMainContent.dart` into a single `AnimatedSize` wrapper and migrated transition logic from `AppAboutSection.dart` to the parent view.
