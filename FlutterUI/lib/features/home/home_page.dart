@@ -189,9 +189,9 @@ class _HomePageState extends State<HomePage> {
                     !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
                   return AnimatedSize(
+                    alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
@@ -214,9 +214,9 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, isAIEnabled, _) {
                   if (!isAIEnabled) return const SizedBox.shrink();
                   return AnimatedSize(
+                    alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
@@ -266,15 +266,17 @@ class _HomePageState extends State<HomePage> {
                     !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
                   return AnimatedSize(
+                    alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
                       child: trending.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                          ? const SizedBox.shrink(
+                              key: ValueKey('empty_trending'),
+                            )
                           : AppShelf(
                               key: const ValueKey('trending_shelf'),
                               title: l10n.hotApps,
@@ -294,9 +296,9 @@ class _HomePageState extends State<HomePage> {
                     !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
                   return AnimatedSize(
+                    alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    alignment: Alignment.topCenter,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
