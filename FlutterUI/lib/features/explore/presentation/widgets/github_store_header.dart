@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class GitHubStoreHeader extends StatelessWidget {
@@ -57,12 +58,12 @@ class GitHubStoreHeader extends StatelessWidget {
                     color: scheme.outlineVariant.withValues(alpha: 0.3),
                   ),
                 ),
-                child: Image.network(
-                  "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                child: CachedNetworkImage(
+                  imageUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
                   width: 32,
                   height: 32,
                   color: isDark ? Colors.white : Colors.black87,
-                  errorBuilder: (context, error, stackTrace) =>
+                  errorWidget: (context, url, error) =>
                       const Icon(Icons.code_rounded, size: 32),
                 ),
               ),
