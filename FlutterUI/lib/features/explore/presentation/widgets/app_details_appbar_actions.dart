@@ -29,64 +29,47 @@ class AppDetailsAppBarActions {
           },
         ),
       if (isAIEnabled) ...[
-        Semantics(
-          label: l10n.aiPromptExplain,
-          button: true,
-          child: IconButton(
-            icon: const Icon(Icons.auto_awesome_rounded),
-            tooltip: l10n.aiPromptExplain,
-            onPressed: () => _showAIExplainDialog(context, app),
-          ),
+        IconButton(
+          icon: const Icon(Icons.auto_awesome_rounded),
+          tooltip: l10n.aiPromptExplain,
+          onPressed: () => _showAIExplainDialog(context, app),
         ),
         if (app.variants.length > 1)
-          Semantics(
-            label: l10n.aiCompareTitle,
-            button: true,
-            child: IconButton(
-              icon: const Icon(Icons.compare_arrows_rounded),
-              tooltip: l10n.aiCompareTitle,
-              onPressed: () => _showAICompareDialog(context, app),
-            ),
+          IconButton(
+            icon: const Icon(Icons.compare_arrows_rounded),
+            tooltip: l10n.aiCompareTitle,
+            onPressed: () => _showAICompareDialog(context, app),
           ),
-        Semantics(
-          label: l10n.aiCliTitle,
-          button: true,
-          child: IconButton(
-            icon: const Icon(Icons.terminal_rounded),
-            tooltip: l10n.aiCliTitle,
-            onPressed: () => _showAICliDialog(context, app, selectedSource),
-          ),
+        IconButton(
+          icon: const Icon(Icons.terminal_rounded),
+          tooltip: l10n.aiCliTitle,
+          onPressed: () => _showAICliDialog(context, app, selectedSource),
         ),
-        Semantics(
-          label: l10n.aiConflictTitle,
-          button: true,
-          child: IconButton(
-            icon: const Icon(Icons.report_problem_rounded),
-            tooltip: l10n.aiConflictTitle,
-            onPressed: () => _showAIConflictDialog(context, app),
-          ),
+        IconButton(
+          icon: const Icon(Icons.report_problem_rounded),
+          tooltip: l10n.aiConflictTitle,
+          onPressed: () => _showAIConflictDialog(context, app),
         ),
       ],
-      Semantics(
-        label: l10n.terminalOutput,
-        button: true,
-        child: IconButton(
-          icon: Selector<TaskController, bool>(
-            selector: (context, tc) => tc.isBusy,
-            builder: (context, isBusy, child) => Badge(
-              isLabelVisible: isBusy,
-              child: const Icon(Icons.terminal_rounded),
-            ),
+      IconButton(
+        icon: Selector<TaskController, bool>(
+          selector: (context, tc) => tc.isBusy,
+          builder: (context, isBusy, child) => Badge(
+            isLabelVisible: isBusy,
+            child: const Icon(Icons.terminal_rounded),
           ),
-          tooltip: l10n.terminalOutput,
-          onPressed: onShowTerminalDialog,
         ),
+        tooltip: l10n.terminalOutput,
+        onPressed: onShowTerminalDialog,
       ),
       const SizedBox(width: 8),
     ];
   }
 
-  static Future<void> _showAIExplainDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAIExplainDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiExplain(app.name, app.description);
     showDialog(
@@ -98,7 +81,10 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAICompareDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAICompareDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiCompareVariants(app.name);
     showDialog(
@@ -112,7 +98,11 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAICliDialog(BuildContext context, AppPackage app, String selectedSource) async {
+  static Future<void> _showAICliDialog(
+    BuildContext context,
+    AppPackage app,
+    String selectedSource,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiGenerateCLI(app.name, selectedSource);
     showDialog(
@@ -121,7 +111,10 @@ class AppDetailsAppBarActions {
     );
   }
 
-  static Future<void> _showAIConflictDialog(BuildContext context, AppPackage app) async {
+  static Future<void> _showAIConflictDialog(
+    BuildContext context,
+    AppPackage app,
+  ) async {
     final aiRepo = context.read<AIRepository>();
     final future = aiRepo.aiDetectConflicts(app.name);
     showDialog(

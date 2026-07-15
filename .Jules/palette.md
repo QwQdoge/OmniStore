@@ -101,3 +101,9 @@
 **Learning:** `IconButton` widgets in Flutter automatically use their `tooltip` property as their semantic label and mark themselves as buttons in the accessibility tree. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` is redundant and bloats the layout tree.
 
 **Action:** Ensure `IconButton` components provide semantic meaning natively by always passing a localized string to their `tooltip` parameter, rather than wrapping them in custom `Semantics` widgets.
+
+## 2026-07-15 - Semantics Wrappers and Global Button Themes
+
+**Learning:** Unnecessarily wrapping native Material buttons (`IconButton`, `FilledButton`, `OutlinedButton`) in `Semantics(button: true, label: ...)` creates redundant nodes in the semantic tree and bloats layout hierarchy. Material widgets inherently manage their own accessibility traits via their `tooltip` or child labels. Furthermore, declaring inline `shape` styles (e.g., `RoundedRectangleBorder`) on individual buttons fragments the app's visual identity when a unified `OmnistoreTheme` is already enforcing MD3 guidelines globally.
+
+**Action:** Removed redundant `Semantics` wrappers around `IconButton`, `FilledButton`, and `OutlinedButton` components, relying on their native implementations (via `tooltip`). Cleaned up duplicated inline `shape` styling across action buttons in `AppDetailsActions`, falling back to the centralized `OmnistoreTheme` button geometry defaults (14dp radius).
