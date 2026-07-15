@@ -117,3 +117,8 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Action:**
 - Removed `didChangeDependencies` overrides in `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
 - Refactored category evaluation to evaluate `final _categories = CategoryService.getCategories(context);` directly within the `build` method. This leverages Flutter's built-in reactivity and eliminates unnecessary state fields.
+## 2026-07-15 - Memoize Category Service Calls
+
+**Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
+
+**Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.
