@@ -233,6 +233,7 @@ class _ProgressIndicatorStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Stack(
       alignment: Alignment.centerRight,
       children: [
@@ -276,9 +277,12 @@ class _ProgressIndicatorStack extends StatelessWidget {
             taskState.status != TaskStatus.failed)
           Positioned(
             right: 0,
-            child: GestureDetector(
-              onTap: onCancel,
-              child: AnimatedContainer(
+            child: Semantics(
+              label: l10n.cancel,
+              button: true,
+              child: GestureDetector(
+                onTap: onCancel,
+                child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 padding: const EdgeInsets.all(2),
@@ -292,15 +296,16 @@ class _ProgressIndicatorStack extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  taskState.status == TaskStatus.failed ||
-                          taskState.status == TaskStatus.success
-                      ? Icons.check
-                      : Icons.close,
-                  size: 14,
-                  color: taskState.status == TaskStatus.failed
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.primary,
+                  child: Icon(
+                    taskState.status == TaskStatus.failed ||
+                            taskState.status == TaskStatus.success
+                        ? Icons.check
+                        : Icons.close,
+                    size: 14,
+                    color: taskState.status == TaskStatus.failed
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),

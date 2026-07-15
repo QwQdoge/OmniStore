@@ -36,43 +36,38 @@ class AppDetailsActions extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child:
-              Selector<
-                TaskController,
-                ({double? progress, String status, String speed})
-              >(
-                selector: (context, c) =>
-                    (progress: c.progress, status: c.status, speed: c.speed),
-                builder: (context, data, _) => SmoothProgressBar(
-                  taskState: TaskState(
-                    id: "active",
-                    packageName: appName,
-                    status: TaskStatus.downloading,
-                    progress: data.progress ?? 0.0,
-                    stage: data.status,
-                    speed: data.speed,
-                  ),
-                  onCancel: onCancelAction,
-                ),
+          child: Selector<
+            TaskController,
+            ({double? progress, String status, String speed})
+          >(
+            selector: (context, c) =>
+                (progress: c.progress, status: c.status, speed: c.speed),
+            builder: (context, data, _) => SmoothProgressBar(
+              taskState: TaskState(
+                id: "active",
+                packageName: appName,
+                status: TaskStatus.downloading,
+                progress: data.progress ?? 0.0,
+                stage: data.status,
+                speed: data.speed,
               ),
+              onCancel: onCancelAction,
+            ),
+          ),
         ),
       );
     } else if (isAppInstalled) {
       content = Row(
         key: const ValueKey('installed'),
         children: [
-          Semantics(
-            label: AppLocalizations.of(context)!.locateInstallation,
-            button: true,
-            child: IconButton.filledTonal(
-              onPressed: onLocateApp,
-              icon: const Icon(Icons.folder_open_rounded),
-              tooltip: AppLocalizations.of(context)!.locateInstallation,
-              style: IconButton.styleFrom(
-                minimumSize: const Size(56, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+          IconButton.filledTonal(
+            onPressed: onLocateApp,
+            icon: const Icon(Icons.folder_open_rounded),
+            tooltip: AppLocalizations.of(context)!.locateInstallation,
+            style: IconButton.styleFrom(
+              minimumSize: const Size(56, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
           ),
@@ -81,25 +76,21 @@ class AppDetailsActions extends StatelessWidget {
             flex: 2,
             child: SizedBox(
               height: 56,
-              child: Semantics(
-                label: AppLocalizations.of(context)!.uninstall,
-                button: true,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colorScheme.error,
-                    side: BorderSide(
-                      color: colorScheme.error.withValues(alpha: 0.5),
-                      width: 1,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.0),
-                    ),
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(
+                    color: colorScheme.error.withValues(alpha: 0.5),
+                    width: 1,
                   ),
-                  onPressed: () => onHandleAction("-R"),
-                  child: Text(
-                    AppLocalizations.of(context)!.uninstall,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.0),
                   ),
+                ),
+                onPressed: () => onHandleAction("-R"),
+                child: Text(
+                  AppLocalizations.of(context)!.uninstall,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
             ),
@@ -109,23 +100,19 @@ class AppDetailsActions extends StatelessWidget {
             flex: 3,
             child: SizedBox(
               height: 56,
-              child: Semantics(
-                label: AppLocalizations.of(context)!.launch,
-                button: true,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.0),
-                    ),
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.0),
                   ),
-                  onPressed: onLaunchApp,
-                  icon: const Icon(Icons.rocket_launch_rounded),
-                  label: Text(
-                    AppLocalizations.of(context)!.launch,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
+                ),
+                onPressed: onLaunchApp,
+                icon: const Icon(Icons.rocket_launch_rounded),
+                label: Text(
+                  AppLocalizations.of(context)!.launch,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -138,21 +125,17 @@ class AppDetailsActions extends StatelessWidget {
         key: const ValueKey('install'),
         width: double.infinity,
         height: 56,
-        child: Semantics(
-          label: AppLocalizations.of(context)!.install,
-          button: true,
-          child: FilledButton.icon(
-            style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14.0),
-              ),
+        child: FilledButton.icon(
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14.0),
             ),
-            onPressed: () => onHandleAction("-I"),
-            icon: const Icon(Icons.download_rounded),
-            label: Text(
-              AppLocalizations.of(context)!.install,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
+          ),
+          onPressed: () => onHandleAction("-I"),
+          icon: const Icon(Icons.download_rounded),
+          label: Text(
+            AppLocalizations.of(context)!.install,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
         ),
       );

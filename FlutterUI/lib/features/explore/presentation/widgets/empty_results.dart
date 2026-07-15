@@ -42,10 +42,10 @@ class _EmptyResultsState extends State<EmptyResults> {
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: 8,
+            runSpacing: 8,
             alignment: WrapAlignment.center,
             children: _categories
                 .map(
@@ -57,6 +57,9 @@ class _EmptyResultsState extends State<EmptyResults> {
                     },
                     label: Text(cat.name),
                     avatar: Icon(cat.icon, size: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 )
                 .toList(),

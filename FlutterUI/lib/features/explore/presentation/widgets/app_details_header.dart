@@ -121,24 +121,19 @@ class AppDetailsHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Semantics(
-                    label: AppLocalizations.of(context)!.copyName,
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.copy_rounded, size: 18),
-                      tooltip: AppLocalizations.of(context)!.copyName,
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: app.name));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppLocalizations.of(context)!.copiedToClipboard,
-                            ),
-                            duration: const Duration(seconds: 4),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded, size: 18),
+                    tooltip: AppLocalizations.of(context)!.copyName,
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: app.name));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(context)!.copiedToClipboard,
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

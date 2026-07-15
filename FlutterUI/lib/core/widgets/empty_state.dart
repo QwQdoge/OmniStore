@@ -33,7 +33,7 @@ class EmptyState extends StatelessWidget {
             Text(
               title,
               style: theme.textTheme.titleLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.outline,
                 fontWeight: FontWeight.w800,
               ),
               textAlign: TextAlign.center,
