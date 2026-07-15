@@ -31,7 +31,6 @@ class _HomePageState extends State<HomePage> {
   final ScrollController _forYouScrollController = ScrollController();
   // ignore: unused_field
   final Map<String, ScrollController> _shelfControllers = {};
-
   String? _aiPickBlurb;
   bool _isAILoading = false;
 
@@ -42,12 +41,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _categories = CategoryService.getCategories(context);
   }
 
   @override
@@ -244,7 +237,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             CategoryQuickAccess(
-              categories: _categories,
+              categories: CategoryService.getCategories(context),
               scrollController: _quickAccessScrollController,
             ),
             SliverToBoxAdapter(

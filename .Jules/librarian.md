@@ -109,11 +109,17 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 
 **Action:**
 - Modified `github_app_list.dart` to correct the `onRetry` signature from `VoidCallback` to `Future<void> Function()`, preserving async continuation semantics.
+## [2026-07-13] - State Duplication Removal
 
-## 2026-07-12 - State Management: Proper Dependency Evaluation
+**Issue:** Multiple widgets (, , , ) were caching the result of  in a  state variable during .
 
-**Learning:** Caching values derived from `InheritedWidgets` (like localized strings or static category lists using `AppLocalizations.of(context)`) in state fields inside `didChangeDependencies` creates unnecessary state duplication. It requires manual cache invalidation hooks and can lead to stale state if the dependencies update unexpectedly.
+**Action Taken:** Removed  and the  state variable from these widgets. Updated the  method in each to call  directly, assigning the result to a local  variable.
 
-**Action:**
-- Removed `didChangeDependencies` overrides in `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
-- Refactored category evaluation to evaluate `final _categories = CategoryService.getCategories(context);` directly within the `build` method. This leverages Flutter's built-in reactivity and eliminates unnecessary state fields.
+**Reasoning:** Caching values derived from  (like  used in ) in state variables creates state duplication, adds unnecessary lifecycle complexity, and can lead to incorrect invalidation if the inherited dependency changes. Deriving these lightweight lists directly in  is the idiomatic Flutter approach, as object allocation is highly optimized and ensures the UI is always in sync with the current theme and locale.
+## [$(date +%Y-%m-%d)] - State Duplication Removal
+
+**Issue:** Multiple widgets (`HomePage`, `CategoryPage`, `DiscoveryContent`, `EmptyResults`) were caching the result of `CategoryService.getCategories(context)` in a `_categories` state variable during `didChangeDependencies`.
+
+**Action Taken:** Removed `didChangeDependencies` and the `_categories` state variable from these widgets. Updated the `build` method in each to call `CategoryService.getCategories(context)` directly, assigning the result to a local `categories` variable.
+
+**Reasoning:** Caching values derived from `InheritedWidgets` (like `AppLocalizations` used in `CategoryService`) in state variables creates state duplication, adds unnecessary lifecycle complexity, and can lead to incorrect invalidation if the inherited dependency changes. Deriving these lightweight lists directly in `build()` is the idiomatic Flutter approach, as object allocation is highly optimized and ensures the UI is always in sync with the current theme and locale.

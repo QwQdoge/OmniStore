@@ -29,15 +29,6 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
   final ScrollController _categoryScrollController = ScrollController();
   final ScrollController _trendingScrollController = ScrollController();
 
-  // ⚡ Bolt: Memoize categories to avoid redundant allocations and L10n lookups on every build
-  List<CategoryItem> _categories = [];
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _categories = CategoryService.getCategories(context);
-  }
-
   @override
   void dispose() {
     _categoryScrollController.dispose();
@@ -48,6 +39,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final categories = CategoryService.getCategories(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -78,9 +70,9 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                     ),
                   ),
                 ),
-                itemCount: _categories.length,
+                itemCount: categories.length,
                 itemBuilder: (context, index) {
-                  final cat = _categories[index];
+                  final cat = categories[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Semantics(
