@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
-import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 
 class EmptyResults extends StatefulWidget {
@@ -33,7 +32,9 @@ class _EmptyResultsState extends State<EmptyResults> {
         children: [
           Text(
             widget.l10n.categories,
-            style: OmnistoreTheme.standardHeader(context),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 24),
           Wrap(
@@ -50,9 +51,6 @@ class _EmptyResultsState extends State<EmptyResults> {
                     },
                     label: Text(cat.name),
                     avatar: Icon(cat.icon, size: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
                   ),
                 )
                 .toList(),
