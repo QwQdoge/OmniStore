@@ -54,9 +54,14 @@ async def _cleanup_proc(proc):
                     pass
             else:
                 try:
-                    proc.terminate()
-                except Exception:
-                    pass
+                    import subprocess
+                    if os.name == 'nt':
+                        # Murphy-proof: Windows tree kill using taskkill
+                        subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    else:
+                        proc.terminate()
+                except: pass
 
             try:
                 # Murphy-proof: Wait for graceful termination
@@ -82,7 +87,14 @@ async def _cleanup_proc(proc):
                     except Exception:
                         proc.kill()
                 else:
-                    proc.kill()
+                    try:
+                        if os.name == 'nt':
+                             import subprocess
+                             subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        else:
+                            proc.kill()
+                    except: pass
 
                 # Final fail-safe wait to reap the zombie/handle
                 try:
