@@ -33,8 +33,6 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   String? _aiPickBlurb;
   bool _isAILoading = false;
-  late List<CategoryItem> _categories;
-
   // ⚡ Bolt: Memoize categories to avoid redundant allocations and L10n lookups on every build
   List<CategoryItem> _categories = [];
 
@@ -244,7 +242,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             CategoryQuickAccess(
-              categories: CategoryService.getCategories(context),
+              categories: _categories,
               scrollController: _quickAccessScrollController,
             ),
             SliverToBoxAdapter(

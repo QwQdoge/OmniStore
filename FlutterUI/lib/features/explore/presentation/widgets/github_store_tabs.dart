@@ -17,8 +17,7 @@ class GitHubStoreTabs extends StatelessWidget {
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.fastOutSlowIn,
+      curve: Curves.easeOutCubic,
       child: isSearching
           ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
           : Padding(
@@ -44,10 +43,9 @@ class GitHubStoreTabs extends StatelessWidget {
                       text: "推荐",
                       icon: Icon(Icons.recommend_rounded, size: 20),
                     ),
-                    labelColor: scheme.onPrimaryContainer,
-                    unselectedLabelColor: scheme.onSurfaceVariant,
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                    Tab(
+                      text: "排行榜",
+                      icon: Icon(Icons.leaderboard_rounded, size: 20),
                     ),
                     Tab(
                       text: "热度榜",
@@ -60,7 +58,7 @@ class GitHubStoreTabs extends StatelessWidget {
                   ],
                 ),
               ),
-      ),
+            ),
     );
   }
 }

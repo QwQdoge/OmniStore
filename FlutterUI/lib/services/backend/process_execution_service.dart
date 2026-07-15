@@ -103,8 +103,9 @@ class ProcessExecutionService {
               if (!controller.isClosed) controller.add(data);
             },
             onError: (e) {
-              if (!controller.isClosed)
+              if (!controller.isClosed) {
                 controller.add("[CALLBACK] {\"error\": \"$e\"}");
+              }
             },
             onDone: () {
               if (process != null) _registry.remove(process);

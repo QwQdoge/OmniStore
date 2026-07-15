@@ -53,7 +53,12 @@ class ProcessRegistry {
         bool groupKillAttempted = false;
         try {
           // Use 'ps' to get the PGID of the process.
-          final pgidRes = await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+          final pgidRes = await Process.run('ps', [
+            '-o',
+            'pgid=',
+            '-p',
+            '$pid',
+          ]);
           final pgid = int.tryParse(pgidRes.stdout.toString().trim());
 
           if (pgid != null && pgid > 1 && pgid != pid) {
@@ -63,7 +68,7 @@ class ProcessRegistry {
               '--',
               '-$pgid',
             ]).timeout(const Duration(seconds: 2));
-            groupKillSuccess = true;
+            groupKillAttempted = true;
           }
         } catch (_) {}
 
@@ -79,11 +84,19 @@ class ProcessRegistry {
         // 2. Stage 2: Escalation to SIGKILL if still alive
         if (await _isProcessAlive(pid)) {
           try {
-            final pgidRes = await Process.run('ps', ['-o', 'pgid=', '-p', '$pid']);
+            final pgidRes = await Process.run('ps', [
+              '-o',
+              'pgid=',
+              '-p',
+              '$pid',
+            ]);
             final pgid = int.tryParse(pgidRes.stdout.toString().trim());
             if (pgid != null && pgid > 1) {
-              await Process.run('kill', ['-KILL', '--', '-$pgid'])
-                  .timeout(const Duration(seconds: 2));
+              await Process.run('kill', [
+                '-KILL',
+                '--',
+                '-$pgid',
+              ]).timeout(const Duration(seconds: 2));
             } else {
               process.kill(ProcessSignal.sigkill);
             }

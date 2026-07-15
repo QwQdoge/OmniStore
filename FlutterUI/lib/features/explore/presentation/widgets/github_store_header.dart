@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class GitHubStoreHeader extends StatelessWidget {
   final TextEditingController searchController;
@@ -60,7 +59,8 @@ class GitHubStoreHeader extends StatelessWidget {
                   ),
                 ),
                 child: CachedNetworkImage(
-                  imageUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                  imageUrl:
+                      "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
                   width: 32,
                   height: 32,
                   color: isDark ? Colors.white : Colors.black87,

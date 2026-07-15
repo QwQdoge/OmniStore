@@ -73,9 +73,9 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                     child: AppCard(child: const SizedBox.expand()),
                   ),
                 ),
-                itemCount: categories.length,
+                itemCount: _categories.length,
                 itemBuilder: (context, index) {
-                  final cat = categories[index];
+                  final cat = _categories[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Semantics(

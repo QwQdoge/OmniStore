@@ -70,8 +70,8 @@ class TaskController with ChangeNotifier {
       errorMapper: (err) => flag == "-U"
           ? l10n.errorUpdateFailed(err)
           : flag == "-R"
-              ? l10n.taskError("Uninstall failed: $err")
-              : l10n.errorStartFailed(err),
+          ? l10n.taskError("Uninstall failed: $err")
+          : l10n.errorStartFailed(err),
     );
   }
 
@@ -107,12 +107,7 @@ class TaskController with ChangeNotifier {
     notifyListeners();
 
     try {
-      final stream = _taskRepository.executeAction(
-        flag,
-        packageName,
-        source,
-        url: url,
-      );
+      final stream = streamFactory();
 
       await for (final line in stream) {
         if (line.contains("errorFatalStream") ||
@@ -155,59 +150,6 @@ class TaskController with ChangeNotifier {
 
     _packageName = null;
     _flag = null;
-    notifyListeners();
-    return !hasError;
-  }
-
-  Future<bool> updateAll(String source, AppLocalizations l10n) async {
-    _isBusy = true;
-    _packageName = "All Packages";
-    _flag = "-U";
-    _progress = null;
-    _status = l10n.taskStarting;
-    _logs.clear();
-    bool hasError = false;
-    notifyListeners();
-
-    try {
-      final stream = _taskRepository.updateAll(source);
-
-      await for (final line in stream) {
-        if (line.contains("errorFatalStream") ||
-            line.contains("errorProcessStart") ||
-            line.contains("errorStartFailed") ||
-            line.contains("errorUpdateFailed") ||
-            line.contains("[ERROR]")) {
-          hasError = true;
-        }
-        _parseLine(line, l10n);
-        notifyListeners();
-      }
-    } catch (e) {
-      hasError = true;
-      _status = l10n.errorUpdateAll(e.toString());
-      _logs.add("[FATAL] $e");
-    } finally {
-      _isBusy = false;
-      _progress = null;
-    }
-
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: "Update All Packages",
-        source: source,
-        status: !hasError ? TaskStatus.success : TaskStatus.failed,
-        progress: !hasError ? 1.0 : 0.0,
-        stage: "Update",
-        message: !hasError ? "Success" : _status,
-      ),
-    );
-
-    _packageName = null;
-    _flag = null;
-    _status = !hasError ? l10n.taskSuccess : l10n.taskError("Failed");
     notifyListeners();
     return !hasError;
   }
@@ -272,7 +214,9 @@ class TaskController with ChangeNotifier {
 
     // Fallback: Legacy tag-based parsing or raw log lines.
     if (cleanLine.startsWith("[PROGRESS]")) {
-      final val = double.tryParse(cleanLine.replaceFirst("[PROGRESS]", "").trim());
+      final val = double.tryParse(
+        cleanLine.replaceFirst("[PROGRESS]", "").trim(),
+      );
       if (val != null) _progress = val / 100.0;
     } else if (cleanLine.startsWith("[SPEED]")) {
       _speed = cleanLine.replaceFirst("[SPEED]", "").trim();
