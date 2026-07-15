@@ -100,6 +100,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.flatpakBetterDesc),
+          duration: const Duration(seconds: 4),
           action: SnackBarAction(
             label: AppLocalizations.of(context)!.switchSource,
             onPressed: () {
@@ -143,7 +144,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (taskController.isBusy) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
+      ).showSnackBar(SnackBar(
+        content: Text(l10n.taskInProgress),
+        duration: const Duration(seconds: 4),
+      ));
       return;
     }
 
@@ -214,6 +218,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.success),
+            duration: const Duration(seconds: 4),
           ),
         );
       } else {
@@ -324,7 +329,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (!success) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.loadError)));
+      ).showSnackBar(SnackBar(
+        content: Text(l10n.loadError),
+        duration: const Duration(seconds: 4),
+      ));
     }
   }
 
@@ -340,7 +348,10 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     if (!success) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.loadError)));
+      ).showSnackBar(SnackBar(
+        content: Text(l10n.loadError),
+        duration: const Duration(seconds: 4),
+      ));
     }
   }
 

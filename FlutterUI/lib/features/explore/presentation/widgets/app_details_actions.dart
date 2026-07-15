@@ -66,9 +66,6 @@ class AppDetailsActions extends StatelessWidget {
             tooltip: AppLocalizations.of(context)!.locateInstallation,
             style: IconButton.styleFrom(
               minimumSize: const Size(56, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -82,9 +79,6 @@ class AppDetailsActions extends StatelessWidget {
                   side: BorderSide(
                     color: colorScheme.error.withValues(alpha: 0.5),
                     width: 1,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.0),
                   ),
                 ),
                 onPressed: () => onHandleAction("-R"),
@@ -101,11 +95,6 @@ class AppDetailsActions extends StatelessWidget {
             child: SizedBox(
               height: 56,
               child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.0),
-                  ),
-                ),
                 onPressed: onLaunchApp,
                 icon: const Icon(Icons.rocket_launch_rounded),
                 label: Text(
@@ -126,10 +115,11 @@ class AppDetailsActions extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14.0),
-            ),
+          onPressed: () => onHandleAction("-I"),
+          icon: const Icon(Icons.download_rounded),
+          label: Text(
+            AppLocalizations.of(context)!.install,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
           onPressed: () => onHandleAction("-I"),
           icon: const Icon(Icons.download_rounded),
