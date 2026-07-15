@@ -408,10 +408,15 @@ class BackendService {
     bool throwOnError = false,
   }) async {
     if (kIsWeb) {
-      return PackageRepository().searchPackages(
-        query,
-        cancelOngoing: cancelOngoing,
-      );
+      try {
+        return await PackageRepository().searchPackages(
+          query,
+          cancelOngoing: cancelOngoing,
+        );
+      } catch (e) {
+        debugPrint("Web searchPackages Error: $e");
+        return [];
+      }
     }
 
     final trimmedQuery = query.trim();
@@ -446,7 +451,7 @@ class BackendService {
     // Legacy fallback: Raw process execution
     try {
       if (cancelOngoing && activeSearchProcess != null) {
-        await _killProcess(activeSearchProcess);
+        await _killProcess(activeSearchProcess).catchError((_) {});
         activeSearchProcess = null;
       }
 
@@ -564,11 +569,16 @@ class BackendService {
 
   Future<List<AppPackage>> listInstalled() async {
     if (kIsWeb) {
-      final results = await PackageRepository().listInstalled();
-      return results
-          .whereType<Map<String, dynamic>>()
-          .map((e) => AppPackage.fromJson(e))
-          .toList();
+      try {
+        final results = await PackageRepository().listInstalled();
+        return results
+            .whereType<Map<String, dynamic>>()
+            .map((e) => AppPackage.fromJson(e))
+            .toList();
+      } catch (e) {
+        debugPrint("Web listInstalled Error: $e");
+        return [];
+      }
     }
     try {
       final daemonRes = await _sendToDaemon("run_list_installed", [

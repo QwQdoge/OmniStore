@@ -108,13 +108,17 @@ class DaemonClient {
     if (_socket != null) return;
 
     // Murphy-proof: Trigger daemon start/liveness check before connection
-    await onDemandStart();
+    try {
+      await onDemandStart();
+    } catch (e) {
+      debugPrint("DaemonClient: Failed to trigger daemon start: $e");
+    }
 
-    int retryDelay = 200;
-    final int maxRetries = 10; // Increased retries for slow startup
+    int retryDelay = 300;
+    final int maxRetries = 12; // Increased retries for potentially slow backend initialization
     for (int i = 0; i < maxRetries; i++) {
       try {
-        // Murphy-proof: Strict connection timeout
+        // Murphy-proof: Strict connection timeout to prevent hanging the UI thread
         _socket = await Socket.connect(
           host,
           port,
@@ -123,7 +127,7 @@ class DaemonClient {
 
         _socketSub = _socket!
             .cast<List<int>>()
-            .transform(utf8.decoder)
+            .transform(const Utf8Decoder(allowMalformed: true)) // Be resilient to encoding issues
             .transform(const LineSplitter())
             .listen(
               _handleLine,
@@ -135,6 +139,7 @@ class DaemonClient {
                 debugPrint("DaemonClient: Socket Done (Closed)");
                 _cleanupSocket();
               },
+              cancelOnError: true,
             );
 
         _startHeartbeat();
@@ -145,9 +150,9 @@ class DaemonClient {
           debugPrint("DaemonClient: Exhausted connection retries ($i): $e");
           break;
         }
-        // Exponential backoff to avoid hammering while daemon is starting
+        // Murphy-proof: Progressive exponential backoff
         await Future.delayed(Duration(milliseconds: retryDelay));
-        retryDelay = (retryDelay * 1.5).toInt().clamp(200, 2000);
+        retryDelay = (retryDelay * 1.6).toInt().clamp(300, 3000);
       }
     }
     throw Exception(
