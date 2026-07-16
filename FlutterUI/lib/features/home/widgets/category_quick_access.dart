@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/features/explore/presentation/controllers/browse_controller.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/category_service.dart';
 
 class CategoryQuickAccess extends StatelessWidget {
@@ -30,7 +31,9 @@ class CategoryQuickAccess extends StatelessWidget {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Semantics(
-                label: 'Category: ${categories[index].name}',
+                label: AppLocalizations.of(context)!.categorySemantics(
+                  categories[index].name,
+                ),
                 child: ActionChip(
                   avatar: Icon(categories[index].icon, size: 18),
                   label: Text(categories[index].name),

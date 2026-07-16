@@ -227,11 +227,22 @@ class _HomePageState extends State<HomePage> {
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
                       child: _isAILoading
-                          ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
+                          ? const Column(
+                              key: ValueKey('ai_skeleton_wrapper'),
+                              children: [
+                                SizedBox(height: 32),
+                                AIPickSkeleton(),
+                              ],
+                            )
                           : (_aiPickBlurb != null
-                                ? AIPickSection(
-                                    key: const ValueKey('ai_content'),
-                                    aiPickBlurb: _aiPickBlurb!,
+                                ? Column(
+                                    key: const ValueKey('ai_content_wrapper'),
+                                    children: [
+                                      const SizedBox(height: 32),
+                                      AIPickSection(
+                                        aiPickBlurb: _aiPickBlurb!,
+                                      ),
+                                    ],
                                   )
                                 : const SizedBox.shrink(
                                     key: ValueKey('ai_empty'),
@@ -241,13 +252,23 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 32),
+                  SectionHeader(title: l10n.categories),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
             CategoryQuickAccess(
               categories: _categories,
               scrollController: _quickAccessScrollController,
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 40, bottom: 16),
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
                 child: Row(
                   children: [
                     Expanded(child: SectionHeader(title: l10n.essentialTools)),

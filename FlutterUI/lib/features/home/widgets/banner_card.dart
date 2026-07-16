@@ -113,7 +113,7 @@ class BannerCard extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w800,
                               letterSpacing: 0,
                             ),
                             maxLines: 1,
