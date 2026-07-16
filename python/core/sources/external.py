@@ -904,3 +904,277 @@ async def _stream_simple_command(command: List[str], enabled: bool, callback, to
         if callback:
             await callback(f"[ERROR] {tool_name} command failed: {exc}")
         return False
+
+class CommandPackageSource(UnifiedSource):
+    """Generic subprocess-backed package source for platform package managers.
+
+    The source stays disabled until its command exists on the current platform; this
+    lets OmniStore list the plugin as available metadata without enabling unsafe or
+    unavailable package managers by default.
+    """
+
+    manager_id = "command"
+    command = ""
+    platforms: Tuple[str, ...] = ()
+    search_args: Tuple[str, ...] = ("search", "{query}")
+    install_args: Tuple[str, ...] = ("install", "-y", "{id}")
+    uninstall_args: Tuple[str, ...] = ("remove", "-y", "{id}")
+    list_args: Tuple[str, ...] = ()
+    update_args: Tuple[str, ...] = ()
+
+    def __init__(self, name: str, weight: float = 1.0):
+        super().__init__(name=name, weight=weight)
+        platform_ok = not self.platforms or self._platform_key() in self.platforms
+        self.enabled = bool(platform_ok and self.command and shutil.which(self.command))
+
+    def config_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "default": self.command},
+                "repositories": {
+                    "type": "array",
+                    "description": f"Additional {self.name} repositories configured outside OmniStore.",
+                    "items": {"type": "string"},
+                },
+            },
+        }
+
+    @staticmethod
+    def _platform_key() -> str:
+        if sys.platform == "win32":
+            return "windows"
+        if sys.platform == "darwin":
+            return "macos"
+        if sys.platform.startswith("linux"):
+            return "linux"
+        return sys.platform
+
+    def _expand(self, args: Tuple[str, ...], package_id: str = "", query: str = "") -> List[str]:
+        return [arg.format(id=package_id, query=query) for arg in args]
+
+    async def _run_command(self, args: List[str], timeout: int = 30) -> Tuple[int, str]:
+        if not self.enabled:
+            return 127, ""
+        try:
+            async with safe_subprocess(
+                self.command,
+                *args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+                return proc.returncode or 0, _decode_output(stdout or b"")
+        except asyncio.TimeoutError:
+            return 124, ""
+        except FileNotFoundError:
+            self.enabled = False
+            return 127, ""
+
+    def _package_id(self, package: Dict[str, Any]) -> str:
+        return str(package.get("id") or package.get("name") or "").strip()
+
+    def _parse_search_output(self, output: str, query: str) -> List[Dict[str, Any]]:
+        results: List[Dict[str, Any]] = []
+        seen = set()
+        for raw_line in output.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith(("WARNING", "Listing", "Name ", "---")):
+                continue
+            token = re.split(r"\s+", line, maxsplit=1)[0].strip()
+            token = token.split("/")[-1]
+            token = token.strip("*:")
+            if not token or token.lower() in seen:
+                continue
+            if query and query.lower() not in line.lower() and query.lower() not in token.lower():
+                continue
+            seen.add(token.lower())
+            results.append({
+                "id": token,
+                "name": token,
+                "description": line,
+                "source": self.name,
+                "primary_source": self.name.lower(),
+                "last_version": "Unknown",
+                "installed": False,
+                "variants": [{
+                    "source": self.name,
+                    "id": token,
+                    "version": "Unknown",
+                    "installed": False,
+                    "description": line,
+                }],
+            })
+            if len(results) >= 50:
+                break
+        return results
+
+    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
+        if not self.enabled:
+            return []
+        code, output = await self._run_command(self._expand(self.search_args, query=query), timeout=25)
+        if code != 0:
+            return []
+        return self._parse_search_output(output, query)
+
+    async def install(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
+        package_id = self._package_id(package)
+        if not package_id:
+            if callback:
+                await callback(f"[ERROR] {self.name} package id is missing.")
+            return False
+        if callback:
+            await callback(f"[INFO] Running {self.name} install for {package_id}")
+            await callback("[PROGRESS] 10")
+        code, _ = await self._run_command(self._expand(self.install_args, package_id=package_id), timeout=3600)
+        if callback:
+            await callback("[PROGRESS] 100" if code == 0 else f"[ERROR] {self.name} install exited with {code}.")
+        return code == 0
+
+    async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
+        callback = self._async_callback(callback)
+        package_id = self._package_id(package)
+        if not package_id:
+            if callback:
+                await callback(f"[ERROR] {self.name} package id is missing.")
+            return False
+        code, _ = await self._run_command(self._expand(self.uninstall_args, package_id=package_id), timeout=1800)
+        return code == 0
+
+    async def launch(self, package: Dict[str, Any]) -> bool:
+        package_id = self._package_id(package)
+        if not package_id:
+            return False
+        try:
+            async with safe_subprocess(package_id, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+                return True
+        except Exception:
+            return False
+
+    async def locate(self, package: Dict[str, Any]) -> bool:
+        package_id = self._package_id(package)
+        return bool(package_id and shutil.which(package_id))
+
+    async def get_details(self, package_id: str) -> Dict[str, Any]:
+        return {"id": package_id, "name": package_id, "source": self.name, "description": f"{self.name} package {package_id}"}
+
+    async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
+        if not self.enabled or not self.update_args:
+            return None
+        code, output = await self._run_command(self._expand(self.update_args, package_id=package_id), timeout=60)
+        if code == 0 and package_id.lower() in output.lower():
+            return {"name": package_id, "source": self.name, "has_update": True, "raw": output[:500]}
+        return None
+
+    async def list_installed(self) -> List[Dict[str, Any]]:
+        if not self.enabled or not self.list_args:
+            return []
+        code, output = await self._run_command(list(self.list_args), timeout=30)
+        if code != 0:
+            return []
+        return self._parse_search_output(output, "")
+
+
+    async def get_size(self, package: Dict[str, Any]) -> Dict[str, Any]:
+        data = await super().get_size(package)
+        data["size_source"] = self.name
+        data["size_confidence"] = data.get("size_confidence") or "manager_metadata"
+        return data
+
+
+class AptSource(CommandPackageSource):
+    manager_id = "apt"
+    command = "apt-cache"
+    platforms = ("linux",)
+    search_args = ("search", "{query}")
+    install_args = ("apt-get", "install", "-y", "{id}")
+    uninstall_args = ("apt-get", "remove", "-y", "{id}")
+    list_args = ("pkgnames",)
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("APT", weight)
+        self.enabled = self.enabled and shutil.which("apt-get") is not None
+
+    async def _run_command(self, args: List[str], timeout: int = 30) -> Tuple[int, str]:
+        executable = self.command
+        final_args = args
+        if args and args[0] == "apt-get":
+            executable = "apt-get"
+            final_args = args[1:]
+        if not shutil.which(executable):
+            return 127, ""
+        try:
+            async with safe_subprocess(executable, *final_args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+                return proc.returncode or 0, _decode_output(stdout or b"")
+        except asyncio.TimeoutError:
+            return 124, ""
+
+
+class DnfSource(CommandPackageSource):
+    manager_id = "dnf"
+    command = "dnf"
+    platforms = ("linux",)
+    search_args = ("search", "{query}")
+    install_args = ("install", "-y", "{id}")
+    uninstall_args = ("remove", "-y", "{id}")
+    list_args = ("list", "installed")
+    update_args = ("check-update", "{id}")
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("DNF", weight)
+
+
+class ZypperSource(CommandPackageSource):
+    manager_id = "zypper"
+    command = "zypper"
+    platforms = ("linux",)
+    search_args = ("--non-interactive", "search", "{query}")
+    install_args = ("--non-interactive", "install", "{id}")
+    uninstall_args = ("--non-interactive", "remove", "{id}")
+    list_args = ("--non-interactive", "search", "--installed-only")
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("Zypper", weight)
+
+
+class ApkSource(CommandPackageSource):
+    manager_id = "apk"
+    command = "apk"
+    platforms = ("linux",)
+    search_args = ("search", "{query}")
+    install_args = ("add", "{id}")
+    uninstall_args = ("del", "{id}")
+    list_args = ("info",)
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("APK", weight)
+
+
+class ChocolateySource(CommandPackageSource):
+    manager_id = "chocolatey"
+    command = "choco"
+    platforms = ("windows",)
+    search_args = ("search", "{query}", "--limit-output")
+    install_args = ("install", "{id}", "-y", "--no-progress")
+    uninstall_args = ("uninstall", "{id}", "-y")
+    list_args = ("list", "--local-only", "--limit-output")
+    update_args = ("outdated", "--limit-output")
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("Chocolatey", weight)
+
+
+class FdroidSource(CommandPackageSource):
+    manager_id = "fdroid"
+    command = "fdroidcl"
+    platforms = ("linux", "macos", "windows", "android")
+    search_args = ("search", "{query}")
+    install_args = ("install", "{id}")
+    uninstall_args = ("uninstall", "{id}")
+    list_args = ("list", "--installed")
+    update_args = ("update", "{id}")
+
+    def __init__(self, weight: float = 1.0):
+        super().__init__("F-Droid", weight)

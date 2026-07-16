@@ -6,17 +6,23 @@ from copy import deepcopy
 from pydantic import BaseModel, Field
 
 class SearchSourcesModel(BaseModel):
-    pacman: bool = True
-    aur: bool = True
-    flatpak: bool = True
-    appimage: bool = True
-    snap: bool = True
-    github: bool = True
-    bitu: bool = True
-    winget: bool = True
-    scoop: bool = True
-    brew: bool = True
-    ai: bool = True
+    pacman: bool = False
+    aur: bool = False
+    flatpak: bool = False
+    appimage: bool = False
+    snap: bool = False
+    github: bool = False
+    bitu: bool = False
+    winget: bool = False
+    scoop: bool = False
+    brew: bool = False
+    apt: bool = False
+    dnf: bool = False
+    zypper: bool = False
+    apk: bool = False
+    chocolatey: bool = False
+    fdroid: bool = False
+    ai: bool = False
 
 class SearchModel(BaseModel):
     sources: SearchSourcesModel = Field(default_factory=SearchSourcesModel)
@@ -79,17 +85,23 @@ class ConfigManager:
             "first_run": True,
             "search": {
                 "sources": {
-                    "pacman": True,
-                    "aur": True,
-                    "flatpak": True,
-                    "appimage": True,
-                    "snap": True,
-                    "github": True,
-                    "bitu": True,
-                    "winget": True,
-                    "scoop": True,
-                    "brew": True,
-                    "ai": True
+                    "pacman": False,
+                    "aur": False,
+                    "flatpak": False,
+                    "appimage": False,
+                    "snap": False,
+                    "github": False,
+                    "bitu": False,
+                    "winget": False,
+                    "scoop": False,
+                    "brew": False,
+                    "apt": False,
+                    "dnf": False,
+                    "zypper": False,
+                    "apk": False,
+                    "chocolatey": False,
+                    "fdroid": False,
+                    "ai": False
                 },
                 "max_results": 100
             },
@@ -130,7 +142,13 @@ class ConfigManager:
             "custom_repos": {
                 "flatpak": [],
                 "pacman": [],
-                "appimage": []
+                "appimage": [],
+                "apt": [],
+                "dnf": [],
+                "zypper": [],
+                "apk": [],
+                "chocolatey": [],
+                "fdroid": []
             },
             "mirrors": {
                 "pacman": "/etc/pacman.d/mirrorlist",
@@ -147,10 +165,12 @@ class ConfigManager:
                 "config": {}
             },
             "sources": {
-                "order": ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "winget", "scoop", "brew"],
+                "order": ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "apt", "dnf", "zypper", "apk", "winget", "scoop", "chocolatey", "brew", "fdroid"],
                 "priority": {
                     "pacman": 100, "aur": 80, "flatpak": 60, "appimage": 40,
-                    "winget": 90, "scoop": 70, "brew": 70, "github": 30, "bitu": 30
+                    "winget": 90, "scoop": 70, "chocolatey": 70, "brew": 70,
+                    "apt": 85, "dnf": 85, "zypper": 85, "apk": 75, "fdroid": 55,
+                    "github": 30, "bitu": 30
                 }
             }
         }

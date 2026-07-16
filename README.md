@@ -90,6 +90,7 @@ daemon:
 | Document | Contents |
 |----------|----------|
 | [project_architecture.md](project_architecture.md) | Whole-repo diagram, Python/Rust, protocols |
+| [PROJECT_CONTEXT.zh-CN.md](PROJECT_CONTEXT.zh-CN.md) | 中文项目环境说明、模块职责、运行入口、开发注意事项 |
 | [FlutterUI/ARCHITECTURE.md](FlutterUI/ARCHITECTURE.md) | Flutter layers, features, navigation indices |
 | [FlutterUI/lib/README.md](FlutterUI/lib/README.md) | Quick `lib/` tree index |
 

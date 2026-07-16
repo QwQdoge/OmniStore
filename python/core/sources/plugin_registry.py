@@ -38,6 +38,9 @@ class PluginInfo:
     path: str = ""
     error: Optional[str] = None
     config_schema: Dict[str, Any] = field(default_factory=dict)
+    trusted: bool = False
+    default_enabled: bool = False
+    requires_review: bool = True
 
     @classmethod
     def from_manifest(cls, data: Dict[str, Any], path: Path) -> "PluginInfo":
@@ -51,6 +54,9 @@ class PluginInfo:
             capabilities=[str(c) for c in data.get("capabilities", [])],
             permissions=[str(p) for p in data.get("permissions", [])],
             builtin=bool(data.get("builtin", False)),
+            trusted=bool(data.get("trusted", False)),
+            default_enabled=bool(data.get("default_enabled", False)),
+            requires_review=bool(data.get("requires_review", True)),
             path=str(path.parent),
         )
 
@@ -71,6 +77,9 @@ class PluginInfo:
             "path": self.path,
             "error": self.error,
             "config_schema": self.config_schema,
+            "trusted": self.trusted,
+            "default_enabled": self.default_enabled,
+            "requires_review": self.requires_review,
         }
 
 
@@ -194,7 +203,10 @@ class PluginRegistry:
         if not info.builtin:
             return None
         from core.sources import PacmanSource, AurSource, FlatpakSource, AppImageSource, GitHubSource, BituSource
-        from core.sources.external import WingetSource, ScoopSource, BrewSource
+        from core.sources.external import (
+            WingetSource, ScoopSource, BrewSource, AptSource, DnfSource, ZypperSource,
+            ApkSource, ChocolateySource, FdroidSource,
+        )
 
         factories: Dict[str, Callable[[], UnifiedSource]] = {
             "builtin.github": lambda: GitHubSource(self.session, self.cm),
@@ -206,6 +218,12 @@ class PluginRegistry:
             "builtin.winget": WingetSource,
             "builtin.scoop": ScoopSource,
             "builtin.brew": BrewSource,
+            "builtin.apt": AptSource,
+            "builtin.dnf": DnfSource,
+            "builtin.zypper": ZypperSource,
+            "builtin.apk": ApkSource,
+            "builtin.chocolatey": ChocolateySource,
+            "builtin.fdroid": FdroidSource,
         }
         factory = factories.get(info.id)
         return factory() if factory else None
@@ -265,13 +283,14 @@ class PluginRegistry:
                             capabilities=capabilities,
                             permissions=["legacy"],
                             builtin=False,
-                            enabled=True,
+                            enabled=False,
                             available=True,
                             legacy=True,
                             path=str(file_path),
                             config_schema=config_schema,
                         )
                         instance.source_id = plugin_id
+                        instance.enabled = False
                         instance.capabilities = {cap: False for cap in instance.capabilities}
                         instance.capabilities.update({cap: True for cap in capabilities})
                         self.plugins[plugin_id] = info
@@ -317,10 +336,9 @@ class PluginRegistry:
         enabled_map = self._enabled_map()
         if info.id in enabled_map:
             return bool(enabled_map[info.id])
-        legacy_key = self._legacy_source_key(info.id)
-        if legacy_key:
-            return bool(self.cm.get(f"search.sources.{legacy_key}", True))
-        return True
+        if info.legacy:
+            return False
+        return bool(info.default_enabled and info.trusted)
 
     def _enabled_map(self) -> Dict[str, bool]:
         return dict(self.cm.get("plugins.enabled", {}) or {})

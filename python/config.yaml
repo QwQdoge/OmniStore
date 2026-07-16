@@ -10,10 +10,19 @@
 # --- Search Settings ---
 search:
   sources:
-    pacman: true       # Search native repositories
-    aur: true          # Search AUR user repository
-    flatpak: true      # Search Flatpak applications
-    appimage: true     # Search AppImages from AppImage GitHub feed
+    pacman: false       # Search native repositories
+    aur: false          # Search AUR user repository
+    flatpak: false      # Search Flatpak applications
+    appimage: false     # Search AppImages from AppImage GitHub feed
+    apt: false          # Debian/Ubuntu APT source (review before enabling)
+    dnf: false          # Fedora/RHEL DNF source (review before enabling)
+    zypper: false       # openSUSE Zypper source (review before enabling)
+    apk: false          # Alpine APK source (review before enabling)
+    winget: false       # Windows Winget source (review before enabling)
+    scoop: false        # Windows Scoop source (review before enabling)
+    chocolatey: false   # Windows Chocolatey source (review before enabling)
+    brew: false         # macOS/Linux Homebrew source (review before enabling)
+    fdroid: false       # Android/F-Droid source via fdroidcl (review before enabling)
   max_results: 100     # Maximum search results returned by backend
   debounce_ms: 300     # Input debounce delay in milliseconds
 
@@ -26,18 +35,24 @@ priority:
 
 # --- Plugin Registry ---
 plugins:
-  enabled: {}          # Map plugin id to enabled state, e.g. {"builtin.winget": true}
+  enabled: {}          # Plugins are disabled by default; users review available plugins, then enable trusted ids explicitly.
   config: {}           # Plugin-specific config keyed by plugin id
 
 sources:
-  order: ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "winget", "scoop", "brew"]
+  order: ["github", "bitu", "pacman", "aur", "flatpak", "appimage", "apt", "dnf", "zypper", "apk", "winget", "scoop", "chocolatey", "brew", "fdroid"]
   priority:
     pacman: 100
-    winget: 90
     aur: 80
+    apt: 85
+    dnf: 85
+    zypper: 85
+    apk: 75
+    winget: 90
     scoop: 70
+    chocolatey: 70
     brew: 70
     flatpak: 60
+    fdroid: 55
     appimage: 40
     github: 30
     bitu: 30
@@ -87,6 +102,12 @@ custom_repos:
   flatpak: []          # List of maps: e.g. [{"name": "flathub-beta", "url": "https://dl.flathub.org/beta-repo/flathub-beta.flatpakrepo"}]
   pacman: []           # List of maps: e.g. [{"name": "archlinuxcn", "url": "https://mirrors.ustc.edu.cn/archlinuxcn/$arch"}]
   appimage: []         # List of strings: URLs to custom feed.json or local folders
+  apt: []              # Debian/Ubuntu repositories tracked for UI display
+  dnf: []              # Fedora/RHEL repositories tracked for UI display
+  zypper: []           # openSUSE repositories tracked for UI display
+  apk: []              # Alpine repositories tracked for UI display
+  chocolatey: []       # Chocolatey sources tracked for UI display
+  fdroid: []           # F-Droid repositories tracked for UI display
 
 # --- Mirrors Editing (Local Configuration Targets) ---
 mirrors:

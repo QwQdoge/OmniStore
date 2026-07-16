@@ -12,7 +12,11 @@ import logging
 
 _NORM_RE = re.compile(r'-(bin|git|appimage|desktop|flatpak|stable|edge|preview|a|cli|dev|electron|browser)$')
 # ⚡ Bolt: Hoist source priorities to a module-level constant to avoid redundant dictionary allocations.
-_SOURCE_PRIORITY = {"Flatpak": 4, "Winget": 4, "Pacman": 3, "AUR": 2, "AppImage": 1}
+_SOURCE_PRIORITY = {
+    "Winget": 6, "Flatpak": 6, "Pacman": 5, "APT": 5, "DNF": 5, "Zypper": 5,
+    "Scoop": 4, "Chocolatey": 4, "Homebrew": 4,
+    "APK": 3, "F-Droid": 3, "AUR": 2, "AppImage": 1,
+}
 
 class SearchManager:
     def __init__(self, config_manager: Any, session: aiohttp.ClientSession, habit_tracker: Optional[HabitTracker] = None, recommender: Optional[RecommendationManager] = None, cache_manager: Any = None, ai_assistant: Any = None):
