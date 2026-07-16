@@ -93,3 +93,6 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Using standard `Image.network` for static or frequently accessed network images (like the GitHub logo in the store header) causes redundant network requests on subsequent rebuilds, increasing latency and memory overhead. Replacing it with `CachedNetworkImage` prevents redundant downloads, utilizing disk caching for improved loading performance.
 
 **Action:** Replaced `Image.network` with `CachedNetworkImage` in `github_store_header.dart`.
+## 2026-07-28 - Image Memory Optimization and Scroll Virtualization
+**Learning:** `memCacheWidth` and `memCacheHeight` must be set in `CachedNetworkImage` for fixed-size assets like logos to avoid engine decoding full-resolution source images into heap. Mismatched dimensions between `prototypeItem` and `itemBuilder` in `ListView.builder` cause scroll jitter and inaccurate scrollbar sizing during virtualization.
+**Action:** Added missing `memCacheWidth: 64` and `memCacheHeight: 64` to `github_store_header.dart`. Also added missing `prototypeItem`s in `tasks_tab.dart` and `terminal_dialog.dart` to fix virtual scroll rendering issues. Finally, correctly memoized `CategoryService.getCategories` within `didChangeDependencies` in `CategoryPage` to optimize local rebuilds.
