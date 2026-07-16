@@ -133,3 +133,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 ## 2026-07-15 - Consolidate Details Layout Transition Logic
 **Learning:** Animated size boundaries combined with AnimatedSwitcher logic become disjointed when spread across multiple small layout sections (like screenshots, details, about), leading to jittery layouts.
 **Action:** Lifted layout transition logic out of individual sub-widgets (like AppAboutSection) into a single unified top-level AnimatedSwitcher within AppMainContent for a cohesive and smoother layout expansion block.
+## 2026-07-21 - Extract SmoothSizeSwitcher Widget
+
+**Learning:** Across the codebase, the Material Design 3 motion pattern for smooth layout transitions (`AnimatedSize` wrapping an `AnimatedSwitcher` with `easeOutCubic` and `fastOutSlowIn` curves) was duplicated over 20 times. This boilerplate bloated the UI code and made it difficult to maintain consistent motion parameters.
+
+**Action:** Extracted this repeated pattern into a reusable `SmoothSizeSwitcher` widget in `FlutterUI/lib/core/widgets/smooth_size_switcher.dart`. Replaced all occurrences across the `.dart` files, significantly reducing verbosity and improving long-term maintainability.

@@ -8,6 +8,7 @@ import 'package:frontend/core/widgets/smooth_progress_bar.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'terminal_dialog.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class TasksTab extends StatelessWidget {
   const TasksTab({super.key});
@@ -238,16 +239,6 @@ class TasksTab extends StatelessWidget {
       );
     }
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-      alignment: Alignment.topCenter,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: content,
-      ),
-    );
+    return SmoothSizeSwitcher(alignment: Alignment.topCenter, child: content);
   }
 }

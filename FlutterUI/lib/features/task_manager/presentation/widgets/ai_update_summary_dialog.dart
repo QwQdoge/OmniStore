@@ -5,6 +5,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/data/repositories/ai_repository.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AIUpdateSummaryDialog extends StatefulWidget {
   final String name;
@@ -76,19 +77,9 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
         child: FutureBuilder<String>(
           future: _summaryFuture,
           builder: (context, snapshot) {
-            return AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
+            return SmoothSizeSwitcher(
               alignment: Alignment.topLeft,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: _buildAIMarkdown(
-                  snapshot,
-                  AppLocalizations.of(context)!,
-                ),
-              ),
+              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },
         ),

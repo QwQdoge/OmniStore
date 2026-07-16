@@ -8,6 +8,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_shelf.dart';
 import 'package:frontend/core/widgets/section_header.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class DiscoveryContent extends StatefulWidget {
   final AppLocalizations l10n;
@@ -129,23 +130,16 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
             shouldRebuild: (prev, next) =>
                 !const IterableEquality().equals(prev, next),
             builder: (context, trending, _) {
-              return AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
+              return SmoothSizeSwitcher(
                 alignment: Alignment.topCenter,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.fastOutSlowIn,
-                  child: trending.isEmpty
-                      ? const SizedBox.shrink(key: ValueKey('empty_trending'))
-                      : AppShelf(
-                          key: const ValueKey('trending_content'),
-                          title: widget.l10n.hotApps,
-                          apps: trending,
-                          scrollController: _trendingScrollController,
-                        ),
-                ),
+                child: trending.isEmpty
+                    ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                    : AppShelf(
+                        key: const ValueKey('trending_content'),
+                        title: widget.l10n.hotApps,
+                        apps: trending,
+                        scrollController: _trendingScrollController,
+                      ),
               );
             },
           ),
