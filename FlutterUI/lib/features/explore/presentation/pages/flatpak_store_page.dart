@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/explore/presentation/widgets/flatpak_app_list.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class FlatpakStorePage extends StatefulWidget {
   const FlatpakStorePage({super.key});
@@ -83,28 +84,21 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
             const VerticalDivider(width: 1),
             Expanded(
               flex: 6,
-              child: AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
+              child: SmoothSizeSwitcher(
                 alignment: Alignment.topCenter,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.fastOutSlowIn,
-                  child: _selectedApp == null
-                      ? Center(
-                          key: const ValueKey('no_selection'),
-                          child: Text(
-                            AppLocalizations.of(context)!.noResults,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        )
-                      : AppDetailsPage(
-                          app: _selectedApp!,
-                          isEmbedded: true,
-                          key: ValueKey(_selectedApp!.id),
+                child: _selectedApp == null
+                    ? Center(
+                        key: const ValueKey('no_selection'),
+                        child: Text(
+                          AppLocalizations.of(context)!.noResults,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                ),
+                      )
+                    : AppDetailsPage(
+                        app: _selectedApp!,
+                        isEmbedded: true,
+                        key: ValueKey(_selectedApp!.id),
+                      ),
               ),
             ),
           ],

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AIAppResolver extends StatefulWidget {
   final String aiText;
@@ -68,63 +69,56 @@ class _AIAppResolverState extends State<AIAppResolver> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
+    return SmoothSizeSwitcher(
       alignment: Alignment.topCenter,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: _isLoading
-            ? const SizedBox(
-                key: ValueKey('loading'),
+      child: _isLoading
+          ? const SizedBox(
+              key: ValueKey('loading'),
+              height: 32,
+              child: Skeleton(
+                width: double.infinity,
                 height: 32,
-                child: Skeleton(
-                  width: double.infinity,
-                  height: 32,
-                  borderRadius: 16,
+                borderRadius: 16,
+              ),
+            )
+          : _resolvedApps.isEmpty
+          ? const SizedBox.shrink(key: ValueKey('empty'))
+          : Column(
+              key: const ValueKey('loaded'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.relatedApps,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              )
-            : _resolvedApps.isEmpty
-            ? const SizedBox.shrink(key: ValueKey('empty'))
-            : Column(
-                key: const ValueKey('loaded'),
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.relatedApps,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 100,
-                    child: Scrollbar(
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 100,
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    child: ListView.builder(
                       controller: _scrollController,
-                      thumbVisibility: true,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _resolvedApps.length,
-                        itemBuilder: (context, index) => Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: ActionChip(
-                            label: Text(_resolvedApps[index].name),
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    AppDetailsPage(app: _resolvedApps[index]),
-                              ),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _resolvedApps.length,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ActionChip(
+                          label: Text(_resolvedApps[index].name),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AppDetailsPage(app: _resolvedApps[index]),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-      ),
+                ),
+              ],
+            ),
     );
   }
 }

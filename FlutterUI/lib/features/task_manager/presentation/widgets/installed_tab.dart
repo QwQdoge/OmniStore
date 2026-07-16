@@ -8,6 +8,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list_skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class InstalledTab extends StatelessWidget {
   final bool isLoading;
@@ -28,56 +29,49 @@ class InstalledTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filters = _buildFilters();
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
+    return SmoothSizeSwitcher(
       alignment: Alignment.topCenter,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: isLoading
-            ? const InstalledAppListSkeleton(key: ValueKey('loading'))
-            : Column(
-                key: const ValueKey('loaded'),
-                children: [
-                  SizedBox(
-                    height: 66,
-                    child: Scrollbar(
+      child: isLoading
+          ? const InstalledAppListSkeleton(key: ValueKey('loading'))
+          : Column(
+              key: const ValueKey('loaded'),
+              children: [
+                SizedBox(
+                  height: 66,
+                  child: Scrollbar(
+                    controller: filterScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
                       controller: filterScrollController,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: filterScrollController,
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        child: Row(
-                          children: filters
-                              .map(
-                                (s) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: ChoiceChip(
-                                    label: Text(_filterLabel(context, s)),
-                                    selected: selectedSourceFilter == s,
-                                    onSelected: (v) {
-                                      if (v) {
-                                        onSourceFilterSelected(s);
-                                      }
-                                    },
-                                  ),
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: filters
+                            .map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  label: Text(_filterLabel(context, s)),
+                                  selected: selectedSourceFilter == s,
+                                  onSelected: (v) {
+                                    if (v) {
+                                      onSourceFilterSelected(s);
+                                    }
+                                  },
                                 ),
-                              )
-                              .toList(),
-                        ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                   ),
-                  Expanded(child: _buildInstalledList(context)),
-                ],
-              ),
-      ),
+                ),
+                Expanded(child: _buildInstalledList(context)),
+              ],
+            ),
     );
   }
 

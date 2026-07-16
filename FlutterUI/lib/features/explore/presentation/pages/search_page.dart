@@ -8,6 +8,7 @@ import 'package:frontend/models/app_package.dart';
 import "package:frontend/features/explore/presentation/widgets/discovery_content.dart";
 import "package:frontend/features/explore/presentation/widgets/search_filters.dart";
 import "package:frontend/features/explore/presentation/widgets/search_results_view.dart";
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -156,40 +157,33 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: !_showDiscovery
-                  ? Selector<SettingsController, Map<String, bool>>(
-                      key: const ValueKey('source_filters'),
-                      selector: (context, settings) {
-                        final sourcesMap =
-                            settings.config['search']?['sources']
-                                as Map<dynamic, dynamic>? ??
-                            {};
-                        return Map<String, bool>.from(sourcesMap);
+          SmoothSizeSwitcher(
+            child: !_showDiscovery
+                ? Selector<SettingsController, Map<String, bool>>(
+                    key: const ValueKey('source_filters'),
+                    selector: (context, settings) {
+                      final sourcesMap =
+                          settings.config['search']?['sources']
+                              as Map<dynamic, dynamic>? ??
+                          {};
+                      return Map<String, bool>.from(sourcesMap);
+                    },
+                    shouldRebuild: (prev, next) =>
+                        !const MapEquality<String, bool>().equals(prev, next),
+                    builder: (context, sourcesMap, _) => SearchFilters(
+                      sourcesMap: sourcesMap,
+                      selectedSources: _selectedSources,
+                      onSelectedSourcesChanged: (newSources) {
+                        setState(() {
+                          _selectedSources.clear();
+                          _selectedSources.addAll(newSources);
+                        });
+                        _autoSelectFirstApp();
                       },
-                      shouldRebuild: (prev, next) =>
-                          !const MapEquality<String, bool>().equals(prev, next),
-                      builder: (context, sourcesMap, _) => SearchFilters(
-                        sourcesMap: sourcesMap,
-                        selectedSources: _selectedSources,
-                        onSelectedSourcesChanged: (newSources) {
-                          setState(() {
-                            _selectedSources.clear();
-                            _selectedSources.addAll(newSources);
-                          });
-                          _autoSelectFirstApp();
-                        },
-                        scrollController: _sourceFilterScrollController,
-                      ),
-                    )
-                  : const SizedBox.shrink(key: ValueKey('empty_filters')),
-            ),
+                      scrollController: _sourceFilterScrollController,
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty_filters')),
           ),
           Expanded(
             child: AnimatedSwitcher(

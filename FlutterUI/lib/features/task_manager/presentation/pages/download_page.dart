@@ -11,6 +11,7 @@ import 'package:frontend/features/task_manager/presentation/widgets/terminal_dia
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_tab.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -60,7 +61,7 @@ class _DownloadPageState extends State<DownloadPage>
       final newCount = UpdateService().availableUpdates.value.length;
       final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), duration: const Duration(seconds: 4)),
+        SnackBar(content: Text(msg), duration: const Duration(seconds: 3)),
       );
       if (newCount > 0 && prevCount == 0) {
         // 自动跳转到更新标签页
@@ -73,7 +74,6 @@ class _DownloadPageState extends State<DownloadPage>
             content: Text(
               AppLocalizations.of(context)!.checkUpdateFailed(e.toString()),
             ),
-            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -233,38 +233,27 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
+          SmoothSizeSwitcher(
             alignment: Alignment.center,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _isCheckingUpdates
-                  ? const Padding(
-                      key: ValueKey('checking_updates'),
-                      padding: EdgeInsets.all(12.0),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: Skeleton(
-                          width: 20,
-                          height: 20,
-                          borderRadius: 10,
-                        ),
-                      ),
-                    )
-                  : IconButton(
-                      key: const ValueKey('refresh_icon'),
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        _loadInstalledApps();
-                        _checkUpdatesWithFeedback();
-                      },
-                      tooltip: AppLocalizations.of(context)!.refresh,
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Skeleton(width: 20, height: 20, borderRadius: 10),
                     ),
-            ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps();
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
+                  ),
           ),
         ],
       ),

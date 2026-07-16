@@ -16,6 +16,7 @@ import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 import 'package:frontend/core/widgets/section_header.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -109,12 +110,9 @@ class _HomePageState extends State<HomePage> {
 
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
       return;
     }
 
@@ -157,10 +155,7 @@ class _HomePageState extends State<HomePage> {
                 final source = pkg['source'] as String? ?? 'Native';
 
                 scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(appLocalizations.installingPkg(name)),
-                    duration: const Duration(seconds: 4),
-                  ),
+                  SnackBar(content: Text(appLocalizations.installingPkg(name))),
                 );
 
                 await taskController.runTask(
@@ -199,22 +194,15 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: featured.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('empty_hero'))
-                          : HeroSection(
-                              key: const ValueKey('hero_section'),
-                              apps: featured,
-                              scrollController: _heroScrollController,
-                            ),
-                    ),
+                    child: featured.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_hero'))
+                        : HeroSection(
+                            key: const ValueKey('hero_section'),
+                            apps: featured,
+                            scrollController: _heroScrollController,
+                          ),
                   );
                 },
               ),
@@ -224,48 +212,20 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, settings) => settings.isAIEnabled,
                 builder: (context, isAIEnabled, _) {
                   if (!isAIEnabled) return const SizedBox.shrink();
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: _isAILoading
-                          ? const Column(
-                              key: ValueKey('ai_skeleton_wrapper'),
-                              children: [
-                                SizedBox(height: 32),
-                                AIPickSkeleton(),
-                              ],
-                            )
-                          : (_aiPickBlurb != null
-                                ? Column(
-                                    key: const ValueKey('ai_content_wrapper'),
-                                    children: [
-                                      const SizedBox(height: 32),
-                                      AIPickSection(
-                                        aiPickBlurb: _aiPickBlurb!,
-                                      ),
-                                    ],
-                                  )
-                                : const SizedBox.shrink(
-                                    key: ValueKey('ai_empty'),
-                                  )),
-                    ),
+                    child: _isAILoading
+                        ? const AIPickSkeleton(key: ValueKey('ai_skeleton'))
+                        : (_aiPickBlurb != null
+                              ? AIPickSection(
+                                  key: const ValueKey('ai_content'),
+                                  aiPickBlurb: _aiPickBlurb!,
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('ai_empty'),
+                                )),
                   );
                 },
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 32),
-                  SectionHeader(title: l10n.categories),
-                  const SizedBox(height: 16),
-                ],
               ),
             ),
             CategoryQuickAccess(
@@ -274,7 +234,7 @@ class _HomePageState extends State<HomePage> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                padding: const EdgeInsets.only(top: 40, bottom: 16),
                 child: Row(
                   children: [
                     Expanded(child: SectionHeader(title: l10n.essentialTools)),
@@ -297,25 +257,16 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: trending.isEmpty
-                          ? const SizedBox.shrink(
-                              key: ValueKey('empty_trending'),
-                            )
-                          : AppShelf(
-                              key: const ValueKey('trending_shelf'),
-                              title: l10n.hotApps,
-                              apps: trending,
-                              scrollController: _hotAppsScrollController,
-                            ),
-                    ),
+                    child: trending.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_trending'))
+                        : AppShelf(
+                            key: const ValueKey('trending_shelf'),
+                            title: l10n.hotApps,
+                            apps: trending,
+                            scrollController: _hotAppsScrollController,
+                          ),
                   );
                 },
               ),
@@ -327,23 +278,16 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: forYou.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
-                          : AppShelf(
-                              key: const ValueKey('forYou_shelf'),
-                              title: l10n.forYou,
-                              apps: forYou,
-                              scrollController: _forYouScrollController,
-                            ),
-                    ),
+                    child: forYou.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
+                        : AppShelf(
+                            key: const ValueKey('forYou_shelf'),
+                            title: l10n.forYou,
+                            apps: forYou,
+                            scrollController: _forYouScrollController,
+                          ),
                   );
                 },
               ),

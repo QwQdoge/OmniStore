@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class TerminalDialog extends StatelessWidget {
   const TerminalDialog({super.key});
@@ -76,33 +77,24 @@ class TerminalDialog extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
+                      SmoothSizeSwitcher(
                         alignment: Alignment.topCenter,
-                        child: AnimatedSwitcher(
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.fastOutSlowIn,
-                          duration: const Duration(milliseconds: 300),
-                          child: data.progress != null
-                              ? TweenAnimationBuilder<double>(
-                                  key: const ValueKey('determinate'),
-                                  tween: Tween<double>(
-                                    begin: 0,
-                                    end: data.progress!,
-                                  ),
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeOutCubic,
-                                  builder: (context, value, _) {
-                                    return LinearProgressIndicator(
-                                      value: value,
-                                    );
-                                  },
-                                )
-                              : const LinearProgressIndicator(
-                                  key: ValueKey('indeterminate'),
+                        child: data.progress != null
+                            ? TweenAnimationBuilder<double>(
+                                key: const ValueKey('determinate'),
+                                tween: Tween<double>(
+                                  begin: 0,
+                                  end: data.progress!,
                                 ),
-                        ),
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, _) {
+                                  return LinearProgressIndicator(value: value);
+                                },
+                              )
+                            : const LinearProgressIndicator(
+                                key: ValueKey('indeterminate'),
+                              ),
                       ),
                     ],
                   ),
