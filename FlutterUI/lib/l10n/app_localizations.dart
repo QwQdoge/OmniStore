@@ -214,7 +214,7 @@ abstract class AppLocalizations {
   /// Label for app variants/versions
   ///
   /// In en, this message translates to:
-  /// **'Versions'**
+  /// **'Variants'**
   String get variant;
 
   /// No description provided for @version.
