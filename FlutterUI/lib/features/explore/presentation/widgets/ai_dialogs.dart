@@ -150,6 +150,7 @@ class AICliDialog extends StatelessWidget {
                                     context,
                                   )!.copiedToClipboard,
                                 ),
+                                duration: const Duration(seconds: 4),
                               ),
                             );
                           },

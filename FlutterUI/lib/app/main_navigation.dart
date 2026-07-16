@@ -83,7 +83,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.trayInitFailedDisabled),
-              duration: const Duration(seconds: 5),
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -114,7 +114,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.runningInBackground),
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 4),
         ),
       );
       UpdateService().showSimpleNotification(

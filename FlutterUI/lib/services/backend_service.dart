@@ -210,7 +210,9 @@ class BackendService {
         await Future.delayed(backoff);
       }
       if (_daemonRestartCount > 10) {
-        debugPrint("Murphy-proof Fatal: Daemon failed to stabilize after 10 retries.");
+        debugPrint(
+          "Murphy-proof Fatal: Daemon failed to stabilize after 10 retries.",
+        );
         return null;
       }
     } else {

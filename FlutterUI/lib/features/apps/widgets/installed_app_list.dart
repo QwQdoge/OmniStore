@@ -51,10 +51,8 @@ class InstalledAppList extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AppDetailsPage(
-                      app: app,
-                      heroTag: heroTag,
-                    ),
+                    builder: (context) =>
+                        AppDetailsPage(app: app, heroTag: heroTag),
                   ),
                 ),
                 child: ListTile(
@@ -75,9 +73,7 @@ class InstalledAppList extends StatelessWidget {
                   ),
                   title: Text(
                     app.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     app.description,

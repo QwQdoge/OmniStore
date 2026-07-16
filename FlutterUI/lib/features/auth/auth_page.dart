@@ -46,7 +46,10 @@ class _AuthPageState extends State<AuthPage> {
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.githubPatSaved)),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.githubPatSaved),
+          duration: const Duration(seconds: 4),
+        ),
       );
     }
   }

@@ -43,7 +43,9 @@ class EmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.8,
+                  ),
                 ),
                 textAlign: TextAlign.center,
               ),

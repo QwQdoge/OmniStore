@@ -30,9 +30,12 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     final name = _nameController.text.trim();
     final url = _urlController.text.trim();
     if (name.isEmpty || url.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(widget.l10n.errorNameUrlRequired)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(widget.l10n.errorNameUrlRequired),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
@@ -40,7 +43,10 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     Navigator.pop(context);
 
     messenger.showSnackBar(
-      SnackBar(content: Text(widget.l10n.addingCustomSource)),
+      SnackBar(
+        content: Text(widget.l10n.addingCustomSource),
+        duration: const Duration(seconds: 4),
+      ),
     );
 
     bool success = false;
@@ -68,6 +74,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         content: Text(
           success ? widget.l10n.sourceAddSuccess : widget.l10n.sourceAddFailed,
         ),
+        duration: const Duration(seconds: 4),
       ),
     );
   }

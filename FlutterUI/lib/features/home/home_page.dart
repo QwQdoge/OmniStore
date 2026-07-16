@@ -109,9 +109,12 @@ class _HomePageState extends State<HomePage> {
 
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.taskInProgress),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
 
@@ -154,7 +157,10 @@ class _HomePageState extends State<HomePage> {
                 final source = pkg['source'] as String? ?? 'Native';
 
                 scaffoldMessenger.showSnackBar(
-                  SnackBar(content: Text(appLocalizations.installingPkg(name))),
+                  SnackBar(
+                    content: Text(appLocalizations.installingPkg(name)),
+                    duration: const Duration(seconds: 4),
+                  ),
                 );
 
                 await taskController.runTask(
