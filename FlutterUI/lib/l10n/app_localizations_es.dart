@@ -530,7 +530,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiRefineSearch => 'Refinamiento de búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Análisis de esta actualización';
+  String get aiExplainUpdate => 'Análisis de actualización';
 
   @override
   String get windowMinimize => 'Minimizar';
@@ -825,8 +825,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count aplicaciones disponibles para actualizar',
-      one: '1 aplicación disponible para actualizar',
+      other: '$count actualizaciones disponibles',
+      one: '1 actualización disponible',
     );
     return '$_temp0';
   }

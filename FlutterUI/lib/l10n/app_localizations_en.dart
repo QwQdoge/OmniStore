@@ -63,7 +63,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get source => 'Source';
 
   @override
-  String get variant => 'Versions';
+  String get variant => 'Variants';
 
   @override
   String get version => 'Version';

@@ -63,6 +63,7 @@ class GitHubStoreHeader extends StatelessWidget {
                       "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
                   width: 32,
                   height: 32,
+                  memCacheWidth: 64,
                   color: isDark ? Colors.white : Colors.black87,
                   errorWidget: (context, url, error) =>
                       const Icon(Icons.code_rounded, size: 32),
