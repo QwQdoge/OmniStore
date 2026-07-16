@@ -89,9 +89,12 @@ class GeneralSettingsCard extends StatelessWidget {
                 value: data.useSystemTitleBar,
                 onChanged: (val) {
                   context.read<SettingsController>().setUseSystemTitleBar(val);
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(l10n.configSaved)));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.configSaved),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
                 },
               ),
               SwitchListTile(

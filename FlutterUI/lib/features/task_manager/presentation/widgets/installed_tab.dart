@@ -43,37 +43,37 @@ class InstalledTab extends StatelessWidget {
                 children: [
                   SizedBox(
                     height: 66,
-                  child: Scrollbar(
-                    controller: filterScrollController,
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
+                    child: Scrollbar(
                       controller: filterScrollController,
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: filters
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(_filterLabel(context, s)),
-                                  selected: selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      onSourceFilterSelected(s);
-                                    }
-                                  },
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        controller: filterScrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          children: filters
+                              .map(
+                                (s) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    label: Text(_filterLabel(context, s)),
+                                    selected: selectedSourceFilter == s,
+                                    onSelected: (v) {
+                                      if (v) {
+                                        onSourceFilterSelected(s);
+                                      }
+                                    },
+                                  ),
                                 ),
-                              ),
-                            )
-                            .toList(),
+                              )
+                              .toList(),
+                        ),
                       ),
                     ),
                   ),
-                ),
                   Expanded(child: _buildInstalledList(context)),
                 ],
               ),

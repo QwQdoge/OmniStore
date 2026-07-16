@@ -115,7 +115,8 @@ class DaemonClient {
     }
 
     int retryDelay = 300;
-    final int maxRetries = 12; // Increased retries for potentially slow backend initialization
+    final int maxRetries =
+        12; // Increased retries for potentially slow backend initialization
     for (int i = 0; i < maxRetries; i++) {
       try {
         // Murphy-proof: Strict connection timeout to prevent hanging the UI thread
@@ -127,7 +128,9 @@ class DaemonClient {
 
         _socketSub = _socket!
             .cast<List<int>>()
-            .transform(const Utf8Decoder(allowMalformed: true)) // Be resilient to encoding issues
+            .transform(
+              const Utf8Decoder(allowMalformed: true),
+            ) // Be resilient to encoding issues
             .transform(const LineSplitter())
             .listen(
               _handleLine,

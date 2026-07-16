@@ -75,32 +75,30 @@ class AppDetailsHeader extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,
-              child:
-                  iconUrl != null
-                      ? ClipRRect(
-                        key: ValueKey(iconUrl),
-                        borderRadius: BorderRadius.circular(16.0),
-                        child: CachedNetworkImage(
-                          imageUrl: iconUrl,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 240,
-                          placeholder:
-                              (context, url) => const Skeleton(
-                                width: 120,
-                                height: 120,
-                                borderRadius: 16.0,
-                              ),
-                        ),
-                      )
-                      : Text(
-                        key: const ValueKey('text_placeholder'),
-                        app.name[0].toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 56,
-                          color: colorScheme.onPrimary,
-                          fontWeight: FontWeight.w800,
+              child: iconUrl != null
+                  ? ClipRRect(
+                      key: ValueKey(iconUrl),
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: CachedNetworkImage(
+                        imageUrl: iconUrl,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 240,
+                        placeholder: (context, url) => const Skeleton(
+                          width: 120,
+                          height: 120,
+                          borderRadius: 16.0,
                         ),
                       ),
+                    )
+                  : Text(
+                      key: const ValueKey('text_placeholder'),
+                      app.name[0].toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 56,
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
             ),
           ),
         ),

@@ -152,9 +152,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isTestingAI = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.aiTestFailed(e.toString()))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.aiTestFailed(e.toString())),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 

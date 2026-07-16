@@ -59,6 +59,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(success ? l10n.pluginUpdated : l10n.pluginUpdateFailed),
+        duration: const Duration(seconds: 4),
       ),
     );
     await _loadPlugins();
@@ -72,6 +73,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(success ? l10n.pluginRemoved : l10n.pluginRemovalFailed),
+        duration: const Duration(seconds: 4),
       ),
     );
     await _loadPlugins();
@@ -105,9 +107,12 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _autoDetectSources(AppLocalizations l10n) async {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.autoDetectingSources)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.autoDetectingSources),
+        duration: const Duration(seconds: 4),
+      ),
+    );
 
     final settings = context.read<SettingsController>();
     final success = await settings.autoDetectSources();
@@ -117,6 +122,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
           content: Text(
             success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
           ),
+          duration: const Duration(seconds: 4),
         ),
       );
     }

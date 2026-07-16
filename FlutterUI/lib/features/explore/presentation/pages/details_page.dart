@@ -142,12 +142,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final l10n = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(
-        content: Text(l10n.taskInProgress),
-        duration: const Duration(seconds: 4),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.taskInProgress),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
 
@@ -215,9 +215,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         if (flag == "-R") {
           _isAppInstalled = false;
         }
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.success)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.success),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       } else {
         showDialog(context: context, builder: (ctx) => const TerminalDialog());
       }
@@ -324,12 +327,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.launchApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(
-        content: Text(l10n.loadError),
-        duration: const Duration(seconds: 4),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.loadError),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -343,12 +346,12 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.locateApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(
-        content: Text(l10n.loadError),
-        duration: const Duration(seconds: 4),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.loadError),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 

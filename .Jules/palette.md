@@ -107,3 +107,9 @@
 **Learning:** Unnecessarily wrapping native Material buttons (`IconButton`, `FilledButton`, `OutlinedButton`) in `Semantics(button: true, label: ...)` creates redundant nodes in the semantic tree and bloats layout hierarchy. Material widgets inherently manage their own accessibility traits via their `tooltip` or child labels. Furthermore, declaring inline `shape` styles (e.g., `RoundedRectangleBorder`) on individual buttons fragments the app's visual identity when a unified `OmnistoreTheme` is already enforcing MD3 guidelines globally.
 
 **Action:** Removed redundant `Semantics` wrappers around `IconButton`, `FilledButton`, and `OutlinedButton` components, relying on their native implementations (via `tooltip`). Cleaned up duplicated inline `shape` styling across action buttons in `AppDetailsActions`, falling back to the centralized `OmnistoreTheme` button geometry defaults (14dp radius).
+
+## 2026-07-20 - Global SnackBar Duration Standardization
+
+**Learning:** When multiple actions invoke informational `SnackBar` components without a specified `duration`, they fall back to the framework default (which can be overlapping or jarring if rapid). Explicitly setting `duration: const Duration(seconds: 4)` universally across the app creates a consistent, predictable pacing for informational interactions. However, when performing sweeping refactors to enforce this, extreme care must be taken to not mistakenly modify the `duration` parameters of nested or adjacent animation widgets (like `AnimatedSize` or `AnimatedSwitcher`), which typically use milliseconds (e.g., 300ms) rather than seconds.
+
+**Action:** Standardized all informational `SnackBar` widgets across `home_page`, `settings`, `explore`, and `task_manager` to explicitly use a 4-second duration, ensuring overlapping messages are paced correctly and the user interaction loop feels unified.

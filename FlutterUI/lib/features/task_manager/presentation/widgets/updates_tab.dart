@@ -53,7 +53,10 @@ class UpdatesTab extends StatelessWidget {
                         final l10n = AppLocalizations.of(context)!;
                         if (taskController.isBusy) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.taskInProgress)),
+                            SnackBar(
+                              content: Text(l10n.taskInProgress),
+                              duration: const Duration(seconds: 4),
+                            ),
                           );
                           return;
                         }
@@ -181,6 +184,7 @@ class UpdatesTab extends StatelessWidget {
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text(l10n.taskInProgress),
+                                          duration: const Duration(seconds: 4),
                                         ),
                                       );
                                       return;
