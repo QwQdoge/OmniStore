@@ -37,6 +37,11 @@ captured_output_var = contextvars.ContextVar("captured_output", default=None)
 # Murphy-proof: Track if we are already inside a safe_command to prevent double wrapping
 in_safe_command_var = contextvars.ContextVar("in_safe_command", default=False)
 
+# Circuit Breaker state: Maps component names to (failure_count, last_failure_time)
+_circuit_breaker_stats = {}
+_CIRCUIT_THRESHOLD = 5
+_CIRCUIT_RESET_TIMEOUT = 300 # 5 minutes
+
 # Force all print statements to flush immediately and support redirection
 _orig_print = print
 
@@ -114,7 +119,7 @@ class ResourceCoordinator:
     async def cleanup(self):
         """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
         async with self._lock:
-            # 1. Task Cancellation
+            # 1. Task Cancellation: Kill pending async operations immediately
             if self._tasks:
                 logging.debug(f"ResourceCoordinator: Cancelling {len(self._tasks)} tasks.")
                 for task in list(self._tasks):
@@ -123,22 +128,27 @@ class ResourceCoordinator:
 
                 # Murphy-proof: multi-stage gather with timeout to prevent cleanup hang
                 try:
+                    # Using shield to ensure we attempt to gather even if cleanup itself is cancelled
                     await asyncio.wait_for(
-                        asyncio.gather(*self._tasks, return_exceptions=True),
+                        asyncio.shield(asyncio.gather(*self._tasks, return_exceptions=True)),
                         timeout=5.0
                     )
                 except asyncio.TimeoutError:
-                    logging.error("ResourceCoordinator: Task cleanup timed out. Proceeding to other resources.")
+                    logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
                 except Exception as e:
                     logging.error(f"ResourceCoordinator: Task gather error: {e}")
 
                 self._tasks.clear()
 
             # 2. Handle Cleanup (Network sessions, DB connections, AI models)
-            for handle in self._handles:
+            # Murphy-proof: Use reversed order for LIFO cleanup (often safer for dependencies)
+            for handle in reversed(self._handles):
                 try:
-                    # Murphy-proof: Exhaustive check for close/dispose methods
                     if hasattr(handle, "close"):
+                        # Check if session is already closed to avoid redundant errors
+                        if hasattr(handle, "closed") and handle.closed:
+                            continue
+
                         res = handle.close()
                         if inspect.isawaitable(res):
                             await asyncio.wait_for(res, timeout=3.0)
@@ -147,7 +157,7 @@ class ResourceCoordinator:
                         if inspect.isawaitable(res):
                             await asyncio.wait_for(res, timeout=3.0)
                 except Exception as e:
-                    logging.error(f"ResourceCoordinator: Handle cleanup failed: {e}")
+                    logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
             self._handles.clear()
 
             # 3. File System Cleanup (Temporary files, lock files)
@@ -168,6 +178,7 @@ def safe_command(func):
     Murphy-proof decorator with Panic Recovery, Mandatory Resource Tracking,
     and State Locking to prevent concurrent duplicate commands.
     Automatically handles Pydantic model serialization for consistent IPC.
+    Includes Circuit Breaker logic for external service dependencies (AI/Search).
     """
     @wraps(func)
     async def wrapper(self: 'OmnistoreBackend', *args, **kwargs):
@@ -175,13 +186,27 @@ def safe_command(func):
         is_top_level = not in_safe_command_var.get()
         token = in_safe_command_var.set(True)
 
+        component = "ai" if func.__name__.startswith("run_ai") else ("search" if func.__name__ == "run_search" else "core")
+
         try:
-            # 1. State Locking: Reject concurrent duplicate high-frequency or stateful commands
-            # Murphy-proof: Protect against rapid re-entry for state-modifying actions.
+            # 1. Circuit Breaker: Fail fast if the component is in a failure storm
+            if component in ("ai", "search"):
+                fail_count, last_fail = _circuit_breaker_stats.get(component, (0, 0))
+                if fail_count >= _CIRCUIT_THRESHOLD:
+                    if time.time() - last_fail < _CIRCUIT_RESET_TIMEOUT:
+                        error_msg = f"Circuit Breaker Open: {component.upper()} component is temporarily disabled due to frequent failures."
+                        logging.error(error_msg)
+                        if json_mode and is_top_level:
+                            self._output_command_response(CommandResponse(status="error", error="CircuitOpen", message=error_msg))
+                        return False
+                    else:
+                        # Reset if timeout passed
+                        _circuit_breaker_stats[component] = (0, 0)
+
+            # 2. State Locking: Reject concurrent duplicate high-frequency or stateful commands
             is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
             if is_action:
                 for active_id in list(self._active_commands.keys()):
-                    # Improved state locking: match by action name prefix
                     if active_id.startswith(func.__name__):
                         error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
                         logging.warning(error_msg)
@@ -189,11 +214,11 @@ def safe_command(func):
                             self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
                         return False
 
-            # 2. Timeout Calculation
+            # 3. Timeout Calculation
             is_long_running = is_action or func.__name__ in ("run_bootstrap", "run_import_packages", "run_export_packages")
             timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
 
-            # 3. Execution & Panic Recovery
+            # 4. Execution & Panic Recovery
             command_id = f"{func.__name__}_{time.time()}"
             current_task = asyncio.current_task()
             if current_task:
@@ -201,8 +226,6 @@ def safe_command(func):
 
             try:
                 # Murphy-proof: Strict parameter validation before execution
-                # This ensures that even if individual methods forget to validate, the boundary is protected.
-                # We only validate known types to avoid interfering with complex objects if needed.
                 for i, arg in enumerate(args):
                     if isinstance(arg, str):
                         SecurityValidator.validate_string(arg, f"Argument {i} of {func.__name__}")
@@ -210,14 +233,14 @@ def safe_command(func):
                     if isinstance(v, str):
                         SecurityValidator.validate_string(v, f"Keyword Argument {k} of {func.__name__}")
 
-                # Murphy-proof: Ensure even the wrapper is shielded from unhandled task leaks
                 result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
 
+                # Reset circuit breaker on success
+                if component in ("ai", "search"):
+                    _circuit_breaker_stats[component] = (0, 0)
+
                 # Murphy-proof: Consistent return of CommandResponse for IPC
-                # We only wrap at the top level to avoid breaking boolean checks in nested calls.
                 if json_mode and is_top_level:
-                    # If the function already output a CommandResponse, we avoid double output
-                    # but we still want to return a serializable object.
                     from pydantic import BaseModel
                     resp_data = result
                     if isinstance(result, BaseModel):
@@ -225,8 +248,6 @@ def safe_command(func):
                     elif isinstance(result, list) and result and isinstance(result[0], BaseModel):
                         resp_data = [i.model_dump(exclude_none=True) for i in result]
 
-                    # If result is already a CommandResponse dict or model, return it.
-                    # Otherwise wrap it.
                     if isinstance(resp_data, dict) and "status" in resp_data:
                         return resp_data
 
@@ -237,6 +258,10 @@ def safe_command(func):
             except asyncio.TimeoutError:
                 error_msg = f"Murphy-proof: Command {func.__name__} timed out after {timeout}s"
                 logging.error(error_msg)
+                if component in ("ai", "search"):
+                    cnt, _ = _circuit_breaker_stats.get(component, (0, 0))
+                    _circuit_breaker_stats[component] = (cnt + 1, time.time())
+
                 resp = CommandResponse(status="error", error="TimeoutError", message=error_msg, context=func.__name__)
                 if json_mode and is_top_level:
                     self._output_command_response(resp)
@@ -252,6 +277,10 @@ def safe_command(func):
                 err_trace = traceback.format_exc()
                 error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
                 logging.error(f"{error_msg}\n{err_trace}")
+
+                if component in ("ai", "search"):
+                    cnt, _ = _circuit_breaker_stats.get(component, (0, 0))
+                    _circuit_breaker_stats[component] = (cnt + 1, time.time())
 
                 resp = CommandResponse(
                     status="error",

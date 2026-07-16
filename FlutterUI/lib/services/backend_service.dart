@@ -540,7 +540,20 @@ class BackendService {
           }
         }
 
-        // 2. Line-by-line tail recovery
+        // 2. Fragment Stitching: Try to find a JSON object that was split across lines
+        // This is a last-resort for heavily corrupted or streaming output
+        if (cleaned.contains('{') && cleaned.contains('}')) {
+          final firstBrace = cleaned.indexOf('{');
+          final lastBrace = cleaned.lastIndexOf('}');
+          if (lastBrace > firstBrace) {
+            final candidate = cleaned.substring(firstBrace, lastBrace + 1);
+            try {
+              return jsonDecode(candidate);
+            } catch (_) {}
+          }
+        }
+
+        // 3. Line-by-line tail recovery
         final lines = cleaned.split('\n');
         final scanDepth = lines.length.clamp(0, 100);
         final startIdx = (lines.length - scanDepth).clamp(0, lines.length);

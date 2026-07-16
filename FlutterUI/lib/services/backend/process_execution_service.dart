@@ -43,10 +43,10 @@ class ProcessExecutionService {
       _registry.add(process);
 
       final stdoutFuture = process.stdout
-          .transform(const SystemEncoding().decoder)
+          .transform(const Utf8Decoder(allowMalformed: true))
           .join();
       final stderrFuture = process.stderr
-          .transform(const SystemEncoding().decoder)
+          .transform(const Utf8Decoder(allowMalformed: true))
           .join();
 
       final exitCode = await process.exitCode.timeout(timeout);
@@ -96,7 +96,7 @@ class ProcessExecutionService {
       if (onProcessStarted != null) onProcessStarted(process);
 
       process.stdout
-          .transform(const SystemEncoding().decoder)
+          .transform(const Utf8Decoder(allowMalformed: true))
           .transform(const LineSplitter())
           .listen(
             (data) {
@@ -114,7 +114,7 @@ class ProcessExecutionService {
           );
 
       process.stderr
-          .transform(const SystemEncoding().decoder)
+          .transform(const Utf8Decoder(allowMalformed: true))
           .listen((data) => debugPrint("Stderr: $data"));
 
       controller.onCancel = () async {

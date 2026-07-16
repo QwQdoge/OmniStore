@@ -144,6 +144,7 @@ class TaskManager {
       );
       return false;
     } finally {
+      // Murphy-proof: Ensure mutex is ALWAYS released
       if (!currentMutex.isCompleted) currentMutex.complete();
     }
   }
@@ -234,10 +235,12 @@ class TaskManager {
           );
 
           _subscriptions.add(sub);
+          // Murphy-proof: Absolute timeout for any single task (1 hour)
           success = await completer.future.timeout(
             const Duration(minutes: 60),
-            onTimeout: () {
+            onTimeout: () async {
               debugPrint("Murphy-proof: Task timed out. Forcing cleanup.");
+              await BackendService.cancelCurrentTask();
               return false;
             },
           );
