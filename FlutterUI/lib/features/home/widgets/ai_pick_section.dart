@@ -12,7 +12,7 @@ class AIPickSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       borderRadius: 28,
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: const Padding(
@@ -49,7 +49,7 @@ class AIPickSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AppCard(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       borderRadius: 28,
       color: theme.colorScheme.surfaceContainerHigh,
       child: Padding(
