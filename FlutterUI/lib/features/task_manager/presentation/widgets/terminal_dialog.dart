@@ -133,6 +133,14 @@ class TerminalDialog extends StatelessWidget {
                               reverse: true,
                               padding: const EdgeInsets.all(12),
                               itemCount: logs.length,
+                              prototypeItem: const Text(
+                                '',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                  height: 1.5,
+                                ),
+                              ),
                               itemBuilder: (context, i) {
                                 final log = logs[logs.length - 1 - i];
                                 Color textColor = theme.colorScheme.onSurface;
