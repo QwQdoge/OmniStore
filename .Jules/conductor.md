@@ -18,3 +18,10 @@ Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using stand
 
 These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
 7.  **`HomePage`**: Transitioning asynchronous sections (Featured, AI Pick, Trending, For You) between empty/loading states and populated states. Set alignment to `Alignment.topCenter`.
+
+## 2024-07-23 - Smooth Layout Transitions for Discovery Mode and Search Tiles
+**Learning:** When dynamically hiding/showing major sections like Discovery Mode or specific active task states within a search list, utilizing an `AnimatedSwitcher` alone causes layout jumps to the intrinsic heights of children.
+**Action:** Wrapped the `_showDiscovery` ternary switch in `search_page.dart` and the task active state switch in `search_result_tile.dart` with `AnimatedSize` (using MD3 curve `Curves.easeOutCubic`, 300ms, and top/center alignments). This prevents layout jarring and maintains smooth implicit animations globally.
+**Update (Correction):**
+**Learning:** Wrapping an `Expanded` child with `AnimatedSize` when the size should be completely flexible (e.g. `Expanded` -> `AnimatedSize` -> `AnimatedSwitcher`) makes no sense and negates the animation because `Expanded` forces a tight fit.
+**Action:** Replaced the `AnimatedSize` with just `AnimatedSwitcher` around the `_showDiscovery` ternary in `search_page.dart` so cross-fading occurs appropriately. The inner `AnimatedSwitcher` was removed to let the outer one handle the transition between Discovery mode and Search mode.
