@@ -192,21 +192,20 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
           Expanded(
-            child: _showDiscovery
-                ? AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: _buildDiscovery(l10n),
-                  )
-                : Selector<
-                    BrowseController,
-                    ({
-                      List<AppPackage> filteredResults,
-                      bool isSearching,
-                      bool isDesktop,
-                    })
-                  >(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
+              child: _showDiscovery
+                  ? _buildDiscovery(l10n)
+                  : Selector<
+                      BrowseController,
+                      ({
+                        List<AppPackage> filteredResults,
+                        bool isSearching,
+                        bool isDesktop,
+                      })
+                    >(
                     selector: (context, b) {
                       final results = b.searchResults;
                       final isDesktop = MediaQuery.sizeOf(context).width > 900;
@@ -244,6 +243,7 @@ class _SearchPageState extends State<SearchPage> {
                       );
                     },
                   ),
+            ),
           ),
         ],
       ),
