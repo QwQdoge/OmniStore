@@ -4,8 +4,27 @@
   "name": "Bitu",
   "version": "1.0.0",
   "entry": "",
-  "platforms": ["windows", "linux", "macos"],
-  "capabilities": ["search", "install", "uninstall", "details", "size", "launch", "locate"],
-  "permissions": ["network", "filesystem", "subprocess"],
-  "builtin": true
+  "platforms": [
+    "windows",
+    "linux",
+    "macos"
+  ],
+  "capabilities": [
+    "search",
+    "install",
+    "uninstall",
+    "details",
+    "size",
+    "launch",
+    "locate"
+  ],
+  "permissions": [
+    "network",
+    "filesystem",
+    "subprocess"
+  ],
+  "builtin": true,
+  "trusted": true,
+  "default_enabled": false,
+  "requires_review": true
 }

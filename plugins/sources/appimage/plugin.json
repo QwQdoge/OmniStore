@@ -4,8 +4,27 @@
   "name": "AppImage",
   "version": "1.0.0",
   "entry": "",
-  "platforms": ["linux"],
-  "capabilities": ["search", "install", "uninstall", "details", "list_installed", "size", "repositories", "launch", "locate"],
-  "permissions": ["subprocess", "network", "filesystem"],
-  "builtin": true
+  "platforms": [
+    "linux"
+  ],
+  "capabilities": [
+    "search",
+    "install",
+    "uninstall",
+    "details",
+    "list_installed",
+    "size",
+    "repositories",
+    "launch",
+    "locate"
+  ],
+  "permissions": [
+    "subprocess",
+    "network",
+    "filesystem"
+  ],
+  "builtin": true,
+  "trusted": true,
+  "default_enabled": false,
+  "requires_review": true
 }

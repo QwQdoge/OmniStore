@@ -1,11 +1,11 @@
 {
-  "id": "builtin.winget",
+  "id": "builtin.zypper",
   "kind": "source",
-  "name": "Winget",
+  "name": "Zypper",
   "version": "1.0.0",
   "entry": "",
   "platforms": [
-    "windows"
+    "linux"
   ],
   "capabilities": [
     "search",
@@ -16,6 +16,7 @@
     "list_installed",
     "size",
     "repositories",
+    "launch",
     "locate"
   ],
   "permissions": [

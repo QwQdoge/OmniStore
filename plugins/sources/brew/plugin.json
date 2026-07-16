@@ -4,8 +4,29 @@
   "name": "Homebrew",
   "version": "1.0.0",
   "entry": "",
-  "platforms": ["linux", "macos"],
-  "capabilities": ["search", "install", "uninstall", "update", "details", "list_installed", "size", "repositories", "launch", "locate"],
-  "permissions": ["subprocess", "filesystem", "system_package_manager"],
-  "builtin": true
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "capabilities": [
+    "search",
+    "install",
+    "uninstall",
+    "update",
+    "details",
+    "list_installed",
+    "size",
+    "repositories",
+    "launch",
+    "locate"
+  ],
+  "permissions": [
+    "subprocess",
+    "filesystem",
+    "system_package_manager"
+  ],
+  "builtin": true,
+  "trusted": true,
+  "default_enabled": false,
+  "requires_review": true
 }

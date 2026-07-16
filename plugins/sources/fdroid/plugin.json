@@ -1,10 +1,13 @@
 {
-  "id": "builtin.winget",
+  "id": "builtin.fdroid",
   "kind": "source",
-  "name": "Winget",
+  "name": "F-Droid",
   "version": "1.0.0",
   "entry": "",
   "platforms": [
+    "android",
+    "linux",
+    "macos",
     "windows"
   ],
   "capabilities": [
@@ -16,10 +19,12 @@
     "list_installed",
     "size",
     "repositories",
+    "launch",
     "locate"
   ],
   "permissions": [
     "subprocess",
+    "network",
     "filesystem",
     "system_package_manager"
   ],

@@ -6,7 +6,10 @@ import zipfile
 from pathlib import Path
 
 from core.sources.base import UnifiedSource
-from core.sources.external import BrewSource, ScoopSource, WingetSource
+from core.sources.external import (
+    AptSource, ApkSource, BrewSource, ChocolateySource, DnfSource, FdroidSource,
+    ScoopSource, WingetSource, ZypperSource,
+)
 from core.sources.github.github import GitHubSource
 from core.sources.bitu.bitu import BituSource
 from core.sources.pacman import PacmanSource
@@ -34,6 +37,12 @@ CLASS_BY_PLUGIN = {
     "builtin.aur": lambda: AurSource(DummySession()),
     "builtin.bitu": lambda: BituSource(DummySession(), DummyConfig()),
     "builtin.brew": BrewSource,
+    "builtin.apt": AptSource,
+    "builtin.dnf": DnfSource,
+    "builtin.zypper": ZypperSource,
+    "builtin.apk": ApkSource,
+    "builtin.chocolatey": ChocolateySource,
+    "builtin.fdroid": FdroidSource,
     "builtin.flatpak": FlatpakSource,
     "builtin.github": lambda: GitHubSource(DummySession(), DummyConfig()),
     "builtin.pacman": PacmanSource,
@@ -164,3 +173,17 @@ def test_file_backed_plugins_install_size_and_uninstall_with_sync_callbacks(tmp_
         assert logs
 
     asyncio.run(run_cycle())
+
+
+def test_manifest_plugins_are_review_gated_by_default():
+    cm = ConfigManager()
+    registry = PluginRegistry(cm, None)
+    registry.discover()
+    listed = {plugin["id"]: plugin for plugin in registry.list_plugins()}
+
+    manifest_ids = {manifest["id"] for manifest in _plugin_manifests()}
+    enabled_by_default = [plugin_id for plugin_id in manifest_ids if listed[plugin_id]["enabled"]]
+
+    assert enabled_by_default == []
+    assert listed["builtin.aur"]["trusted"] is False
+    assert listed["builtin.aur"]["default_enabled"] is False

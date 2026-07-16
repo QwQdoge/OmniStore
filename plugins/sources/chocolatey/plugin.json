@@ -1,7 +1,7 @@
 {
-  "id": "builtin.winget",
+  "id": "builtin.chocolatey",
   "kind": "source",
-  "name": "Winget",
+  "name": "Chocolatey",
   "version": "1.0.0",
   "entry": "",
   "platforms": [
@@ -16,6 +16,7 @@
     "list_installed",
     "size",
     "repositories",
+    "launch",
     "locate"
   ],
   "permissions": [
