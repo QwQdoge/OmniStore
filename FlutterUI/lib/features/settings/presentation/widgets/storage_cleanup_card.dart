@@ -48,9 +48,12 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
   ) async {
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.taskInProgress),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
 

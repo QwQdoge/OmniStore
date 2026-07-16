@@ -110,9 +110,12 @@ class _HomePageState extends State<HomePage> {
 
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.taskInProgress)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.taskInProgress),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       return;
     }
 
@@ -155,7 +158,10 @@ class _HomePageState extends State<HomePage> {
                 final source = pkg['source'] as String? ?? 'Native';
 
                 scaffoldMessenger.showSnackBar(
-                  SnackBar(content: Text(appLocalizations.installingPkg(name))),
+                  SnackBar(
+                    content: Text(appLocalizations.installingPkg(name)),
+                    duration: const Duration(seconds: 4),
+                  ),
                 );
 
                 await taskController.runTask(
@@ -228,13 +234,23 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 32),
+                  SectionHeader(title: l10n.categories),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
             CategoryQuickAccess(
               categories: _categories,
               scrollController: _quickAccessScrollController,
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 40, bottom: 16),
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
                 child: Row(
                   children: [
                     Expanded(child: SectionHeader(title: l10n.essentialTools)),
