@@ -6,6 +6,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/github_star_badge.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppDetailsHeader extends StatelessWidget {
   final AppPackage app;
@@ -158,11 +159,10 @@ class AppDetailsHeader extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               if (hasCapability('has_versions'))
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
+                SmoothSizeSwitcher(
                   alignment: Alignment.topLeft,
                   child: Scrollbar(
+                    key: const ValueKey('version-selector'),
                     controller: variantScrollController,
                     thumbVisibility: true,
                     child: SingleChildScrollView(
