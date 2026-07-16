@@ -77,7 +77,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get noResults => '暂无搜索结果';
+  String get noResults => '未找到相关结果';
 
   @override
   String get searching => '正在搜索...';
@@ -254,7 +254,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore：应用已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：应用已是最新版本';
 
   @override
   String get updateReminders => '更新提醒';
@@ -545,7 +545,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '正在确保系统已准备就绪';
 
   @override
-  String get envFatalDesc => '当前系统并非 Arch Linux，大部分核心功能将无法使用。';
+  String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
@@ -593,21 +593,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => '如果是 Ollama 则留空，OpenAI 请填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 请留空，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（本地）：下载并运行 Ollama，无需密钥。2. 云端（OpenAI）：前往服务商官网创建 API Key，然后填入此处。';
+      '1. Ollama (本地): 下载并运行即可，无需密钥。2. OpenAI: 前往官网创建 API Key 并填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并设置了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：使用 Ollama 时请确保其在后台运行，并已配置 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '进入商店';
@@ -695,7 +695,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR（Arch User Repository） 是由社区维护的软件源。由于其软件包由用户贡献，可能存在安全风险。在安装之前，建议仔细检查 PKGBUILD。';
+      'AUR 是由社区维护的软件源。由于包由用户贡献，可能存在安全风险。安装前请仔细检查 PKGBUILD。';
 
   @override
   String get continueInstall => '继续安装';
@@ -1239,7 +1239,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get noResults => '暫無搜尋結果';
+  String get noResults => '未找到相關結果';
 
   @override
   String get searching => '搜尋中...';
@@ -1416,7 +1416,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get trayTooltipUpToDate => 'OmniStore：應用程式已是最新';
+  String get trayTooltipUpToDate => 'OmniStore：應用程式已是最新版本';
 
   @override
   String get updateReminders => '更新提醒';
@@ -1707,7 +1707,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '正在確保系統已準備就緒';
 
   @override
-  String get envFatalDesc => '系統並非基於 Arch Linux，核心功能將無法使用。';
+  String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
@@ -1755,21 +1755,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => '如果是 Ollama 則留空，OpenAI 請填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 請留空，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（本地）：下載並執行 Ollama，無需金鑰。2. 雲端（OpenAI）：前往服務商官網建立 API Key，然後填入此處。';
+      '1. Ollama (本地): 下載並執行即可，無需金鑰。2. OpenAI: 前往官網建立 API Key 並填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+      '提示：使用 Ollama 時請確保其在背景執行，並已配置 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '進入商店';
@@ -1857,7 +1857,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR（Arch User Repository） 是由社群維護的軟體存放庫。由於其套件由使用者貢獻，可能存在安全風險。在安裝之前，建議仔細檢查 PKGBUILD。';
+      'AUR 是由社群維護的軟體存放庫。由於套件由使用者貢獻，可能存在安全風險。安裝前請仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
