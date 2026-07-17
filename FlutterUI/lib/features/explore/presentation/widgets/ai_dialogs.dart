@@ -4,6 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AIMarkdownDialog extends StatelessWidget {
   final Future<String> future;
@@ -56,24 +57,17 @@ class AIMarkdownDialog extends StatelessWidget {
       ),
       content: SizedBox(
         width: width,
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          alignment: Alignment.topLeft,
-          child: FutureBuilder<String>(
-            future: future,
-            builder: (context, snapshot) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: _buildAIMarkdown(
-                  snapshot,
-                  AppLocalizations.of(context)!,
-                ),
-              );
-            },
-          ),
+        child: FutureBuilder<String>(
+          future: future,
+          builder: (context, snapshot) {
+            return SmoothSizeSwitcher(
+              alignment: Alignment.topLeft,
+              child: _buildAIMarkdown(
+                snapshot,
+                AppLocalizations.of(context)!,
+              ),
+            );
+          },
         ),
       ),
       actions: [
@@ -101,33 +95,27 @@ class AICliDialog extends StatelessWidget {
           Text(AppLocalizations.of(context)!.aiCliTitle),
         ],
       ),
-      content: AnimatedSize(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        alignment: Alignment.topCenter,
-        child: FutureBuilder<String>(
-          future: future,
-          builder: (context, snapshot) {
-            final cmd = snapshot.data ?? "";
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: snapshot.connectionState == ConnectionState.waiting
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
-                      height: 100,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Skeleton(width: double.infinity, height: 24),
-                        ],
-                      ),
-                    )
-                  : Column(
-                      key: const ValueKey('loaded'),
-                      mainAxisSize: MainAxisSize.min,
+      content: FutureBuilder<String>(
+        future: future,
+        builder: (context, snapshot) {
+          final cmd = snapshot.data ?? "";
+          return SmoothSizeSwitcher(
+            alignment: Alignment.topCenter,
+            child: snapshot.connectionState == ConnectionState.waiting
+                ? const SizedBox(
+                    key: ValueKey('loading'),
+                    height: 100,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Skeleton(width: double.infinity, height: 24),
+                      ],
+                    ),
+                  )
+                : Column(
+                    key: const ValueKey('loaded'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -159,11 +147,10 @@ class AICliDialog extends StatelessWidget {
                             AppLocalizations.of(context)!.aiCopyCommand,
                           ),
                         ),
-                      ],
-                    ),
-            );
-          },
-        ),
+                    ],
+                  ),
+          );
+        },
       ),
       actions: [
         TextButton(

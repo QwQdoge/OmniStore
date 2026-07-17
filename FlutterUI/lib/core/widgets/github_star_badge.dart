@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/network/github_client.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 /// Fetches GitHub stars asynchronously with skeleton + animated count.
 class GitHubStarBadge extends StatefulWidget {
@@ -88,37 +89,30 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
+    Widget content;
     if (_loading) {
-      return _StarChip(
-        compact: widget.compact,
-        child: SizedBox(
-          width: widget.compact ? 48 : 64,
-          height: 14,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-            ),
+      content = SizedBox(
+        key: const ValueKey('loading'),
+        width: widget.compact ? 48 : 64,
+        height: 14,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
       );
-    }
-
-    if (_failed) {
-      return _StarChip(
-        compact: widget.compact,
-        child: Icon(
-          Icons.star_outline_rounded,
-          size: widget.compact ? 16 : 18,
-          color: scheme.onSurfaceVariant,
-        ),
+    } else if (_failed) {
+      content = Icon(
+        Icons.star_outline_rounded,
+        key: const ValueKey('failed'),
+        size: widget.compact ? 16 : 18,
+        color: scheme.onSurfaceVariant,
       );
-    }
-
-    final label = _formatCount(_stars!);
-    return _StarChip(
-      compact: widget.compact,
-      child: Row(
+    } else {
+      final label = _formatCount(_stars!);
+      content = Row(
+        key: const ValueKey('loaded'),
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
@@ -144,6 +138,14 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
             ),
           ),
         ],
+      );
+    }
+
+    return _StarChip(
+      compact: widget.compact,
+      child: SmoothSizeSwitcher(
+        alignment: Alignment.centerLeft,
+        child: content,
       ),
     );
   }
