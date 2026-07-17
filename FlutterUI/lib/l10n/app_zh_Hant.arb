@@ -47,7 +47,7 @@
   "aurUser": "AUR（使用者軟體存放庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "來源優先級（拖曳排序）",
+  "sourcePriority": "軟體存放庫優先級（拖曳排序）",
   "maxResults": "最大結果數",
   "appearance": "介面外觀",
   "themeColor": "主題色",
@@ -473,18 +473,18 @@
   "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
   "enableAur": "啟用 AUR（Arch User Repository）",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
-  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "aurWarning": "安全警告：AUR 套件由使用者貢獻，請確保信任其來源。",
   "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
+  "feedbackDesc": "若遇到問題，請在 GitHub 提交回饋。",
   "aiAssistant": "AI 助手",
   "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
-  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 請留空，OpenAI 填入 sk-xxx",
+  "aiEndpointHelper": "Ollama 預設：http://localhost:11434",
+  "aiApiKeyHelper": "Ollama 留空，OpenAI 填入 sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama (本地): 下載並執行即可，無需金鑰。2. OpenAI: 前往官網建立 API Key 並填入。",
+  "howToGetApiKeyDesc": "1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：使用 Ollama 時請確保其在背景執行，並已配置 OLLAMA_ORIGINS=\"*\"。",
+  "aiOllamaNote": "提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",
@@ -514,7 +514,7 @@
   },
   "allDownloads": "全部下載",
   "importList": "匯入列表",
-  "loadError": "無法載入推薦內容，請檢查背景狀態",
+  "loadError": "無法載入推薦內容，請檢查後端狀態",
   "community": "社群",
   "official": "官方",
   "verified": "官方認證",
@@ -532,7 +532,7 @@
   "analyzeNow": "立即分析",
   "cleanOrphans": "清理無用依賴（孤立套件）",
   "securityWarning": "安全風險提示",
-  "aurSecurityDesc": "AUR 是由社群維護的軟體存放庫。由於套件由使用者貢獻，可能存在安全風險。安裝前請仔細檢查 PKGBUILD。",
+  "aurSecurityDesc": "AUR 是由社群維護的軟體存放庫。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
   "installInfo": "安裝資訊",
   "downloadSize": "下載大小",
@@ -559,7 +559,7 @@
   "logWarning": "警告（WARNING）",
   "logError": "錯誤（ERROR）",
   "notificationTitle": "發現可用更新",
-  "notificationBody": "您的系統中有 {count} 個應用程式可以更新",
+  "notificationBody": "有 {count} 個應用程式可以更新",
   "@notificationBody": {
     "placeholders": {
       "count": {
@@ -772,7 +772,7 @@
   "@appImageFeedType": {
     "description": "AppImage source type option"
   },
-  "sourceName": "來源名稱",
+  "sourceName": "軟體存放庫名稱",
   "@sourceName": {
     "description": "Label for source name"
   },
@@ -800,15 +800,15 @@
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
-  "addingCustomSource": "正在新增自訂存放庫...",
+  "addingCustomSource": "正在新增自訂軟體存放庫...",
   "@addingCustomSource": {
     "description": "Message while adding custom source"
   },
-  "sourceAddSuccess": "來源新增成功！",
+  "sourceAddSuccess": "軟體存放庫新增成功！",
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
-  "sourceAddFailed": "新增來源失敗。",
+  "sourceAddFailed": "新增軟體存放庫失敗。",
   "@sourceAddFailed": {
     "description": "Failure message after adding source"
   },
@@ -842,7 +842,7 @@
   "@languageSubtitle": {
     "description": "Subtitle for language setting"
   },
-  "restartTitleBar": "請重啟應用程式以使標題列設定生效",
+  "restartTitleBar": "重啟應用程式後標題列設定生效",
   "@restartTitleBar": {
     "description": "Message to restart for title bar changes"
   },
@@ -860,7 +860,7 @@
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
   },
-  "checkIntervalSubtitle": "每隔 {hours} 小時檢查一次",
+  "checkIntervalSubtitle": "每隔 {hours} 小時自動檢查一次",
   "@checkIntervalSubtitle": {
     "placeholders": {
       "hours": {
@@ -975,7 +975,7 @@
   "noDescription": "暫無說明",
   "viewDetails": "查看詳情",
   "ok": "確定",
-  "checkNetwork": "請檢查您的網路連線並重試",
+  "checkNetwork": "請檢查網路連線並重試",
   "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用程式",
   "searchGithubHint": "搜尋 GitHub 存放庫...",
   "recommended": "推薦",
