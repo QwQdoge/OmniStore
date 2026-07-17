@@ -27,6 +27,17 @@ class CategoryQuickAccess extends StatelessWidget {
             controller: scrollController,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            prototypeItem: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Semantics(
+                label: 'Prototype',
+                child: const ActionChip(
+                  avatar: Icon(Icons.apps, size: 18),
+                  label: Text('Prototype Category'),
+                  onPressed: null,
+                ),
+              ),
+            ),
             itemCount: categories.length,
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),

@@ -100,6 +100,13 @@ class _AIAppResolverState extends State<AIAppResolver> {
                     child: ListView.builder(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
+                      prototypeItem: const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: ActionChip(
+                          label: Text('Prototype App Name'),
+                          onPressed: null,
+                        ),
+                      ),
                       itemCount: _resolvedApps.length,
                       itemBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.only(right: 8.0),
