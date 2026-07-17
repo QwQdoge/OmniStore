@@ -18,6 +18,7 @@ def test_get_installed_packages_no_cache(cache_manager):
 def test_get_installed_packages_valid_cache(cache_manager):
     packages = [{"name": "test-pkg", "version": "1.0"}]
     data = {
+        "version": cache_manager.INSTALLED_CACHE_VERSION,
         "timestamp": time.time() - 1000, # 1000 seconds ago, valid
         "packages": packages
     }
@@ -32,6 +33,7 @@ def test_get_installed_packages_valid_cache(cache_manager):
 def test_get_installed_packages_expired_cache(cache_manager):
     packages = [{"name": "test-pkg", "version": "1.0"}]
     data = {
+        "version": cache_manager.INSTALLED_CACHE_VERSION,
         "timestamp": time.time() - 4000, # 4000 seconds ago, expired
         "packages": packages
     }
@@ -62,7 +64,19 @@ def test_save_installed_packages(cache_manager):
         data = json.load(f)
 
     assert data["timestamp"] == 12345.0
+    assert data["version"] == cache_manager.INSTALLED_CACHE_VERSION
     assert data["packages"] == packages
+
+def test_get_installed_packages_legacy_cache_is_invalidated(cache_manager):
+    data = {
+        "timestamp": time.time(),
+        "packages": [{"name": "old-source-only-cache"}],
+    }
+
+    with open(cache_manager.installed_cache_path, "w") as f:
+        json.dump(data, f)
+
+    assert cache_manager.get_installed_packages() is None
 
 def test_save_installed_packages_error(cache_manager):
     packages = [{"name": "test-pkg", "version": "1.0"}]

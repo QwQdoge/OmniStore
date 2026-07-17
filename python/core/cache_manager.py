@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 class CacheManager:
+    INSTALLED_CACHE_VERSION = 2
+
     def __init__(self):
         self.cache_dir = Path.home() / ".cache" / "omnistore"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -18,6 +20,11 @@ class CacheManager:
             with open(self.installed_cache_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
+            # Cache v2 includes unmanaged Windows applications.  Discard old
+            # source-only caches so existing users see their system software.
+            if data.get("version") != self.INSTALLED_CACHE_VERSION:
+                return None
+
             # Check expiration (1 hour = 3600 seconds)
             if time.time() - data.get("timestamp", 0) > 3600:
                 return None
@@ -30,6 +37,7 @@ class CacheManager:
         """Save installed packages to cache."""
         try:
             data = {
+                "version": self.INSTALLED_CACHE_VERSION,
                 "timestamp": time.time(),
                 "packages": packages
             }

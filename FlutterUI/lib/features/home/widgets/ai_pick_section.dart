@@ -42,8 +42,15 @@ class AIPickSkeleton extends StatelessWidget {
 
 class AIPickSection extends StatelessWidget {
   final String aiPickBlurb;
+  final VoidCallback? onRefresh;
+  final bool isFallback;
 
-  const AIPickSection({super.key, required this.aiPickBlurb});
+  const AIPickSection({
+    super.key,
+    required this.aiPickBlurb,
+    this.onRefresh,
+    this.isFallback = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +80,29 @@ class AIPickSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            MarkdownBody(data: aiPickBlurb),
-            const SizedBox(height: 16),
-            AIAppResolver(aiText: aiPickBlurb, jsonPrefix: "PICK_JSON:"),
+            const SizedBox(height: 10),
+            Text(
+              '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (isFallback)
+              Text(aiPickBlurb, style: theme.textTheme.bodyMedium)
+            else ...[
+              MarkdownBody(data: aiPickBlurb),
+              const SizedBox(height: 16),
+              AIAppResolver(aiText: aiPickBlurb, jsonPrefix: "PICK_JSON:"),
+            ],
+            if (onRefresh != null) ...[
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: onRefresh,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('换一个推荐'),
+              ),
+            ],
           ],
         ),
       ),

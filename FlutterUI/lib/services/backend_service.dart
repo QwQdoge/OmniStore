@@ -585,7 +585,7 @@ class BackendService {
     return null;
   }
 
-  Future<List<AppPackage>> listInstalled() async {
+  Future<List<AppPackage>> listInstalled({bool forceRefresh = false}) async {
     if (kIsWeb) {
       try {
         final results = await PackageRepository().listInstalled();
@@ -601,16 +601,14 @@ class BackendService {
     try {
       final daemonRes = await _sendToDaemon("run_list_installed", [
         true,
-        false,
+        forceRefresh,
+        true,
       ]);
       if (daemonRes != null && daemonRes.status == 'success') {
-        final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
-        if (data is List) {
-          return data
-              .whereType<Map<String, dynamic>>()
-              .map((e) => AppPackage.fromJson(e))
-              .toList();
-        }
+        final packages = _installedPackagesFromPayload(
+          daemonRes.response ?? _safeJsonDecode(daemonRes.stdout),
+        );
+        if (packages != null) return packages;
       }
     } catch (e) {
       debugPrint("Daemon listInstalled error: $e. Falling back.");
@@ -618,21 +616,34 @@ class BackendService {
     try {
       final res = await _safeRun([
         "-L",
+        if (forceRefresh) "--force-refresh",
         "--json",
       ], timeout: const Duration(seconds: 45));
       if (res == null || res.exitCode != 0) return [];
-      final data = _safeJsonDecode(res.stdout.toString());
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map((e) => AppPackage.fromJson(e))
-            .toList();
-      }
+      final packages = _installedPackagesFromPayload(
+        _safeJsonDecode(res.stdout.toString()),
+      );
+      if (packages != null) return packages;
       return [];
     } catch (e) {
       debugPrint("listInstalled Error: $e");
       return [];
     }
+  }
+
+  /// Accept both daemon lists and the CLI's CommandResponse envelope.
+  /// The CLI wraps JSON output in `{status, response}`, while the daemon
+  /// returns `response` directly.  Keeping this in one place prevents a
+  /// successful Windows registry/Winget scan from being discarded by the UI.
+  List<AppPackage>? _installedPackagesFromPayload(dynamic payload) {
+    final data = payload is Map && payload['response'] is List
+        ? payload['response']
+        : payload;
+    if (data is! List) return null;
+    return data
+        .whereType<Map>()
+        .map((item) => AppPackage.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
   }
 
   Future<List<dynamic>> listPlugins() async {

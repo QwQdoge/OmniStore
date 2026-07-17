@@ -48,7 +48,7 @@ class TaskProgressBar extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${l10n.processing} ${data.status} ${data.speed}',
+                          data.status.isEmpty ? l10n.processing : data.status,
                           style: textTheme.labelSmall?.copyWith(
                             color: scheme.onSurfaceVariant,
                             fontWeight: FontWeight.bold,

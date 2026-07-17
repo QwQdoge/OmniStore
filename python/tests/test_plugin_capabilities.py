@@ -175,7 +175,7 @@ def test_file_backed_plugins_install_size_and_uninstall_with_sync_callbacks(tmp_
     asyncio.run(run_cycle())
 
 
-def test_manifest_plugins_are_review_gated_by_default():
+def test_manifest_plugins_keep_review_gating_except_builtin_winget():
     cm = ConfigManager()
     registry = PluginRegistry(cm, None)
     registry.discover()
@@ -184,6 +184,8 @@ def test_manifest_plugins_are_review_gated_by_default():
     manifest_ids = {manifest["id"] for manifest in _plugin_manifests()}
     enabled_by_default = [plugin_id for plugin_id in manifest_ids if listed[plugin_id]["enabled"]]
 
-    assert enabled_by_default == []
+    assert enabled_by_default == ["builtin.winget"]
+    assert listed["builtin.winget"]["trusted"] is True
+    assert listed["builtin.winget"]["default_enabled"] is True
     assert listed["builtin.aur"]["trusted"] is False
     assert listed["builtin.aur"]["default_enabled"] is False

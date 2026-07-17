@@ -21,7 +21,10 @@ class HeroSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 32),
-        SectionHeader(title: AppLocalizations.of(context)!.featured),
+        SectionHeader(
+          title: '${AppLocalizations.of(context)!.featured} · 编辑推荐',
+          subtitle: '由 OmniStore 维护，离线时也始终可见',
+        ),
         const SizedBox(height: 16),
         SizedBox(
           height: 260,

@@ -197,7 +197,7 @@ class PackageRepository {
     }
   }
 
-  Future<List<AppPackage>> listInstalled() async {
+  Future<List<AppPackage>> listInstalled({bool forceRefresh = false}) async {
     if (kIsWeb) {
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -216,7 +216,7 @@ class PackageRepository {
         return [];
       }
     }
-    return BackendService.instance.listInstalled();
+    return BackendService.instance.listInstalled(forceRefresh: forceRefresh);
   }
 
   Map<String, List<AppPackage>> _parseRecommendationsJson(dynamic data) {

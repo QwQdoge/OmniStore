@@ -240,19 +240,19 @@ class _HomePageState extends State<HomePage> {
                                 AIPickSkeleton(),
                               ],
                             )
-                          : (_aiPickBlurb != null
-                                ? Column(
-                                    key: const ValueKey('ai_content_wrapper'),
-                                    children: [
-                                      const SizedBox(height: 32),
-                                      AIPickSection(
-                                        aiPickBlurb: _aiPickBlurb!,
-                                      ),
-                                    ],
-                                  )
-                                : const SizedBox.shrink(
-                                    key: ValueKey('ai_empty'),
-                                  )),
+                          : Column(
+                              key: const ValueKey('ai_content_wrapper'),
+                              children: [
+                                const SizedBox(height: 32),
+                                AIPickSection(
+                                  aiPickBlurb:
+                                      _aiPickBlurb ??
+                                      '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。',
+                                  isFallback: _aiPickBlurb == null,
+                                  onRefresh: _fetchAIPick,
+                                ),
+                              ],
+                            ),
                     ),
                   );
                 },
@@ -277,7 +277,12 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(top: 32, bottom: 16),
                 child: Row(
                   children: [
-                    Expanded(child: SectionHeader(title: l10n.essentialTools)),
+                    Expanded(
+                      child: SectionHeader(
+                        title: '快速开始',
+                        subtitle: '从列表导入你常用的软件包',
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 20),
                       child: OutlinedButton.icon(
@@ -306,8 +311,9 @@ class _HomePageState extends State<HomePage> {
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
                       child: trending.isEmpty
-                          ? const SizedBox.shrink(
+                          ? const _DynamicSectionEmpty(
                               key: ValueKey('empty_trending'),
+                              message: '暂无热门数据；网络恢复后会自动更新。',
                             )
                           : AppShelf(
                               key: const ValueKey('trending_shelf'),
@@ -336,7 +342,10 @@ class _HomePageState extends State<HomePage> {
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.fastOutSlowIn,
                       child: forYou.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('empty_forYou'))
+                          ? const _DynamicSectionEmpty(
+                              key: ValueKey('empty_forYou'),
+                              message: '继续搜索或安装应用后，这里会显示个性化建议。',
+                            )
                           : AppShelf(
                               key: const ValueKey('forYou_shelf'),
                               title: l10n.forYou,
@@ -354,4 +363,20 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+class _DynamicSectionEmpty extends StatelessWidget {
+  const _DynamicSectionEmpty({super.key, required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+    child: Text(
+      message,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
 }

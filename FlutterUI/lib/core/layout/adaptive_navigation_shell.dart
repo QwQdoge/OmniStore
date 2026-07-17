@@ -4,7 +4,6 @@ import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
-import 'package:frontend/features/auth/auth_page.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/task_progress_bar.dart';
@@ -135,22 +134,6 @@ class AdaptiveNavigationShell extends StatelessWidget {
                         icon: const Icon(Icons.search_rounded),
                       ),
                     ),
-                  Semantics(
-                    label: l10n.githubAuthTitle,
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.account_circle_outlined),
-                      tooltip: l10n.githubAuthTitle,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AuthPage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                   const DownloadAction(compact: true),
                 ],
               ),

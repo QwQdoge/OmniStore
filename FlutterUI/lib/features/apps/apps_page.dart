@@ -65,11 +65,11 @@ class _AppsPageState extends State<AppsPage> {
     _filteredAppsNotifier.value = filtered;
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresh({bool forceRefresh = false}) async {
     if (!mounted) return;
     _isLoadingNotifier.value = true;
     final packageRepo = context.read<PackageRepository>();
-    final results = await packageRepo.listInstalled();
+    final results = await packageRepo.listInstalled(forceRefresh: forceRefresh);
     if (mounted) {
       _apps = results;
       _applyFilter();

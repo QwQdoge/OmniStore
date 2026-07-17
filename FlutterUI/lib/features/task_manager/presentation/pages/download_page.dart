@@ -82,12 +82,12 @@ class _DownloadPageState extends State<DownloadPage>
     }
   }
 
-  Future<void> _loadInstalledApps() async {
+  Future<void> _loadInstalledApps({bool forceRefresh = false}) async {
     if (!mounted) return;
     setState(() => _isLoadingInstalled = true);
     try {
       final packageRepo = context.read<PackageRepository>();
-      final results = await packageRepo.listInstalled();
+      final results = await packageRepo.listInstalled(forceRefresh: forceRefresh);
       if (!mounted) return;
       setState(() {
         _installedApps = results;
@@ -259,7 +259,7 @@ class _DownloadPageState extends State<DownloadPage>
                       key: const ValueKey('refresh_icon'),
                       icon: const Icon(Icons.refresh),
                       onPressed: () {
-                        _loadInstalledApps();
+                        _loadInstalledApps(forceRefresh: true);
                         _checkUpdatesWithFeedback();
                       },
                       tooltip: AppLocalizations.of(context)!.refresh,

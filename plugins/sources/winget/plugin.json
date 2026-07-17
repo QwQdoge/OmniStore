@@ -25,6 +25,6 @@
   ],
   "builtin": true,
   "trusted": true,
-  "default_enabled": false,
+  "default_enabled": true,
   "requires_review": true
 }
