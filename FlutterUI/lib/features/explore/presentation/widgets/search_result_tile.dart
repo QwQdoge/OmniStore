@@ -7,6 +7,7 @@ import 'package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class SearchResultTile extends StatelessWidget {
   final AppPackage app;
@@ -75,33 +76,26 @@ class SearchResultTile extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.apps, size: 40),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
+                  SmoothSizeSwitcher(
                     alignment: Alignment.center,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: isCurrentTask
-                          ? Container(
-                              key: const ValueKey('task_active'),
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(16),
+                    child: isCurrentTask
+                        ? Container(
+                            key: const ValueKey('task_active'),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Skeleton(
+                                width: 24,
+                                height: 24,
+                                borderRadius: 12,
                               ),
-                              child: const Center(
-                                child: Skeleton(
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: 12,
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink(key: ValueKey('task_idle')),
-                    ),
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_idle')),
                   ),
                 ],
               ),
