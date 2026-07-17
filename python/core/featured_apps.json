@@ -1,0 +1,7 @@
+[
+  {"id":"org.mozilla.firefox","source":"Flatpak","name":"Firefox","description":"Fast, private web browsing.","order":1},
+  {"id":"org.libreoffice.LibreOffice","source":"Flatpak","name":"LibreOffice","description":"A complete, free office suite.","order":2},
+  {"id":"org.videolan.VLC","source":"Flatpak","name":"VLC","description":"Play almost any media format.","order":3},
+  {"id":"org.gimp.GIMP","source":"Flatpak","name":"GIMP","description":"Powerful image editing for everyone.","order":4},
+  {"id":"com.visualstudio.code","source":"Flatpak","name":"Visual Studio Code","description":"Code editing, redefined.","order":5}
+]

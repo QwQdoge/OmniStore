@@ -16,12 +16,16 @@ class RecommendationManager:
         self.cache_dir = Path.home() / ".cache" / "omnistore"
         self.cache_path = self.cache_dir / "recommendations.json"
         self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
+        self.featured_config_path = Path(__file__).with_name("featured_apps.json")
         self._metadata_cache = self._load_metadata_cache()
         # ⚡ Optimization: flags for coalesced saving
         self._is_saving = False
         self._needs_another_save = False
         # ⚡ Optimization: track ongoing async tasks to deduplicate concurrent requests
         self._pending_tasks = {}
+        self._recommendations_task = None
+        self.cache_version = 2
+        self.cache_ttl_seconds = 3600
 
     def _load_metadata_cache(self) -> Dict[str, Any]:
         """Load metadata cache from disk"""
@@ -77,8 +81,38 @@ class RecommendationManager:
         import sys
         sys.stderr.write(f"{msg}\n")
 
-    async def _load_cache(self) -> Optional[Dict[str, List[Dict]]]:
-        """Load recommendations from cache if not expired"""
+    def _featured_apps(self) -> List[Dict[str, Any]]:
+        """Repository-owned editorial picks. These never depend on network or AI."""
+        try:
+            entries = json.loads(self.featured_config_path.read_text(encoding="utf-8"))
+            if not isinstance(entries, list):
+                raise ValueError("featured configuration must be a list")
+            seen = set()
+            apps = []
+            for entry in sorted(entries, key=lambda item: item.get("order", 0)):
+                app_id = entry.get("id")
+                if not app_id or app_id in seen:
+                    continue
+                seen.add(app_id)
+                source = entry.get("source", "Flatpak")
+                apps.append({"id": app_id, "name": entry.get("name", app_id),
+                             "description": entry.get("description", ""), "source": source,
+                             "primary_source": source, "version": "N/A", "installed": False,
+                             "variants": [{"id": app_id, "source": source, "version": "N/A"}],
+                             "screenshots": []})
+            return apps
+        except Exception as error:
+            import sys
+            sys.stderr.write(f"[RecommendationManager] Featured configuration error: {error}\\n")
+            return []
+
+    def _compose_recommendations(self, dynamic: Optional[Dict[str, List[Dict]]]) -> Dict[str, List[Dict]]:
+        dynamic = dynamic or {}
+        return {"featured": self._featured_apps(), "trending": list(dynamic.get("trending", [])),
+                "for_you": list(dynamic.get("for_you", []))}
+
+    async def _load_cache(self, include_expired: bool = False) -> Optional[Dict[str, List[Dict]]]:
+        """Load versioned dynamic recommendations, optionally retaining stale data for fallback."""
         if not self.cache_path.exists():
             return None
         try:
@@ -87,9 +121,13 @@ class RecommendationManager:
                     return f.read()
             content = await asyncio.get_event_loop().run_in_executor(None, _read_cache)
             data = json.loads(content)
-            # Cache valid for 1 hour (3600 seconds)
-            if time.time() - data.get("timestamp", 0) < 3600:
-                return data.get("recommendations")
+            if data.get("version") != self.cache_version:
+                return None
+            recommendations = data.get("recommendations")
+            if not isinstance(recommendations, dict):
+                return None
+            if include_expired or time.time() - data.get("timestamp", 0) < self.cache_ttl_seconds:
+                return recommendations
         except Exception:
             pass
         return None
@@ -98,7 +136,9 @@ class RecommendationManager:
         """Save recommendations to cache"""
         try:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
+            # Only dynamic sections are cached. Featured is always read from source control.
             content = json.dumps({
+                "version": self.cache_version,
                 "timestamp": time.time(),
                 "recommendations": recommendations
             }, ensure_ascii=False)
@@ -145,12 +185,21 @@ class RecommendationManager:
         return []
 
     async def get_recommendations(self, force_refresh: bool = False, sources: List = None) -> Dict[str, List[Dict]]:
-        """Fetch categorized recommendations"""
-        if not force_refresh:
-            cached = await self._load_cache()
-            if cached:
-                return cached
+        """Return instant editorial picks and refresh dynamic sections at most once."""
+        cached = await self._load_cache()
+        if cached and not force_refresh:
+            return self._compose_recommendations(cached)
+        stale = await self._load_cache(include_expired=True)
+        if self._recommendations_task:
+            return self._compose_recommendations(await self._recommendations_task)
+        factory = self.backend.create_task if self.backend else asyncio.create_task
+        self._recommendations_task = factory(self._fetch_dynamic_recommendations(sources, stale))
+        try:
+            return self._compose_recommendations(await self._recommendations_task)
+        finally:
+            self._recommendations_task = None
 
+    async def _fetch_dynamic_recommendations(self, sources: List, stale: Optional[Dict[str, List[Dict]]]) -> Dict[str, List[Dict]]:
         try:
             # 1. Fetch collections concurrently
             popular_task = self._fetch_collection(self.flathub_popular_url)
@@ -204,11 +253,7 @@ class RecommendationManager:
             seen_ids = {app['id'] for app in popular + trending}
             for_you = [app for app in for_you if app['id'] not in seen_ids]
 
-            result = {
-                "featured": popular[:10],
-                "trending": trending[:15],
-                "for_you": for_you[:15]
-            }
+            result = {"trending": trending[:15], "for_you": for_you[:15]}
 
             # Merge recommendations from other sources
             if sources:
@@ -216,7 +261,6 @@ class RecommendationManager:
                 source_recs = await asyncio.gather(*tasks, return_exceptions=True)
                 for rec in source_recs:
                     if isinstance(rec, dict):
-                        result["featured"].extend(rec.get("featured", []))
                         result["trending"].extend(rec.get("trending", []))
                         result["for_you"].extend(rec.get("for_you", []))
 
@@ -226,52 +270,7 @@ class RecommendationManager:
         except Exception as e:
             import sys
             sys.stderr.write(f"[RecommendationManager] Error: {e}\n")
-            # Fallback data in the correct structure
-            fallback = {
-                "featured": [
-                    {
-                        "name": "Firefox",
-                        "id": "org.mozilla.firefox",
-                        "description": "Safe, fast, and private web browser.",
-                        "source": "Flatpak",
-                        "icon": "https://dl.flathub.org/media/org/mozilla/firefox/d39c09bd9601d2a138bbdb6a9134015f/icons/128x128@2/org.mozilla.firefox.png",
-                        "installed": False,
-                        "primary_source": "Flatpak",
-                        "version": "N/A",
-                        "variants": [{"source": "Flatpak", "version": "N/A"}],
-                        "screenshots": []
-                    }
-                ],
-                "trending": [
-                    {
-                        "name": "VLC",
-                        "id": "org.videolan.VLC",
-                        "description": "VLC media player, the open source multimedia player.",
-                        "source": "Flatpak",
-                        "icon": "https://dl.flathub.org/media/org/videolan/VLC/d0b904df90e3cd2958742b65109fd268/icons/128x128@2/org.videolan.VLC.png",
-                        "installed": False,
-                        "primary_source": "Flatpak",
-                        "version": "N/A",
-                        "variants": [{"source": "Flatpak", "version": "N/A"}],
-                        "screenshots": []
-                    }
-                ],
-                "for_you": [
-                    {
-                        "name": "Visual Studio Code",
-                        "id": "com.visualstudio.code",
-                        "description": "Visual Studio Code. Code editing. Redefined.",
-                        "source": "Flatpak",
-                        "icon": "https://dl.flathub.org/media/com/visualstudio/code/94318c642646d1bf7fa780d603a110a3/icons/128x128@2/com.visualstudio.code.png",
-                        "installed": False,
-                        "primary_source": "Flatpak",
-                        "version": "N/A",
-                        "variants": [{"source": "Flatpak", "version": "N/A"}],
-                        "screenshots": []
-                    }
-                ]
-            }
-            return fallback
+            return stale or {"trending": [], "for_you": []}
 
     async def get_category_apps(self, category: str) -> List[Dict]:
         """Fetch popular apps for a specific category from Flathub"""

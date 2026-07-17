@@ -9,6 +9,48 @@ import '../../services/backend_service.dart';
 class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
 
+  static final List<AppPackage> _editorialFeatured =
+      [
+            ['Firefox', 'org.mozilla.firefox', 'Fast, private web browsing.'],
+            [
+              'LibreOffice',
+              'org.libreoffice.LibreOffice',
+              'A complete, free office suite.',
+            ],
+            ['VLC', 'org.videolan.VLC', 'Play almost any media format.'],
+            ['GIMP', 'org.gimp.GIMP', 'Powerful image editing for everyone.'],
+            [
+              'Visual Studio Code',
+              'com.visualstudio.code',
+              'Code editing, redefined.',
+            ],
+          ]
+          .map(
+            (entry) => AppPackage(
+              name: entry[0],
+              description: entry[2],
+              id: entry[1],
+              installed: false,
+              primarySource: 'Flatpak',
+              version: 'N/A',
+              screenshots: const [],
+              variants: [
+                AppVariant(
+                  source: 'Flatpak',
+                  id: entry[1],
+                  version: 'N/A',
+                  installed: false,
+                  description: entry[2],
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false);
+
+  Map<String, List<AppPackage>> _withEditorialFeatured(
+    Map<String, List<AppPackage>> dynamic,
+  ) => {...dynamic, 'featured': _editorialFeatured};
+
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
@@ -211,16 +253,19 @@ class PackageRepository {
         final decoded = jsonDecode(cachedJson);
         final parsed = _parseRecommendationsJson(decoded);
         if (parsed.isNotEmpty) {
-          _cachedRecs = parsed;
+          _cachedRecs = _withEditorialFeatured(parsed);
           _refreshRecommendationsCache();
-          return parsed;
+          return _cachedRecs!;
         }
       }
     } catch (e) {
       debugPrint("Error reading recommendations cache: $e");
     }
 
-    return _fetchAndCacheRecommendations();
+    // The first frame never waits for a process or the network.
+    _cachedRecs = _withEditorialFeatured({});
+    _refreshRecommendationsCache();
+    return _cachedRecs!;
   }
 
   Future<Map<String, List<AppPackage>>> _fetchAndCacheRecommendations() async {
@@ -278,7 +323,7 @@ class PackageRepository {
     } else {
       final results = await BackendService.instance.getRecommendations();
       if (results.isNotEmpty) {
-        _cachedRecs = results;
+        _cachedRecs = _withEditorialFeatured(results);
         try {
           final prefs = await SharedPreferences.getInstance();
           final Map<String, dynamic> jsonMap = {};
@@ -293,7 +338,7 @@ class PackageRepository {
           debugPrint("Error writing recommendations cache: $e");
         }
       }
-      return results;
+      return _cachedRecs ?? _withEditorialFeatured(results);
     }
   }
 

@@ -56,7 +56,7 @@ class TaskProgressBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (data.progress != null)
+                      if (data.progress != null && data.progress! >= 0)
                         Text(
                           '${(data.progress! * 100).toInt()}%',
                           style: textTheme.labelSmall?.copyWith(
@@ -67,9 +67,12 @@ class TaskProgressBar extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (data.progress != null)
+                if (data.progress != null && data.progress! >= 0)
                   TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 0, end: data.progress!),
+                    tween: Tween<double>(
+                      begin: data.progress!.clamp(0.0, 1.0),
+                      end: data.progress!.clamp(0.0, 1.0),
+                    ),
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
                     builder: (context, value, _) {

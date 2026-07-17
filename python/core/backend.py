@@ -26,7 +26,7 @@ from core.subprocess_utils import safe_subprocess
 from core.friendly_messages import get_friendly_message
 from core.security_validator import SecurityValidator
 from core.utils.win_utils import scan_windows_unmanaged_installed, format_bytes, get_directory_size
-from core.models import CommandResponse, AppPackage, PackageVariant, UpdateInfo, RecommendationResponse
+from core.models import CommandResponse, AppPackage, PackageVariant, UpdateInfo, RecommendationResponse, InstallationDecision
 
 # Initial rich console
 console = Console(force_terminal=True)
@@ -773,6 +773,16 @@ class OmnistoreBackend:
             if json_mode: self._output_command_response(CommandResponse(status="success", response=res, context="ai_compare"))
             else: hijacked_print(res)
             return res
+
+    @safe_command
+    async def run_ai_install_decision(self, name: str, variants: List[Dict[str, Any]], json_mode: bool = False):
+        v_name = SecurityValidator.validate_string(name, "App Name")
+        safe_variants = [variant for variant in variants[:20] if isinstance(variant, dict)]
+        async with self:
+            decision = await asyncio.wait_for(self.ai.installation_decision(v_name, safe_variants), timeout=12)
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=decision.model_dump(), context="ai_install_decision"))
+            return decision
 
     @safe_command
     async def run_ai_health(self, json_mode: bool = False):

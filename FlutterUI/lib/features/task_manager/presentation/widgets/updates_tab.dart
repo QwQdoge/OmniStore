@@ -189,11 +189,13 @@ class UpdatesTab extends StatelessWidget {
                                       );
                                       return;
                                     }
-                                    UpdateService().startUpdate(
+                                    taskController.runTask(
+                                      '-U',
                                       update['id'] ?? update['name'],
                                       update['source'] == 'Pacman'
                                           ? 'Native'
                                           : update['source'],
+                                      l10n,
                                     );
                                     onUpdateStarted();
                                   },

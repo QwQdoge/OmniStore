@@ -959,6 +959,60 @@ class BackendService {
     }
   }
 
+  Future<Map<String, dynamic>> getInstallationDecision(
+    String appName,
+    List<AppVariant> variants,
+  ) async {
+    final fallback = <String, dynamic>{
+      'recommendedVariant': variants
+          .map((variant) => variant.source)
+          .cast<String?>()
+          .firstWhere(
+            (source) => [
+              'Flatpak',
+              'Native',
+              'Pacman',
+              'AUR',
+              'AppImage',
+            ].contains(source),
+            orElse: () => null,
+          ),
+      'reasons': ['Uses OmniStore\'s deterministic source priority.'],
+      'risks': [
+        'Review the publisher and requested permissions before installing.',
+      ],
+      'alternatives': variants
+          .map((variant) => variant.source)
+          .toSet()
+          .toList(),
+      'preflightChecks': [
+        'Confirm available disk space.',
+        'Confirm the selected source is enabled.',
+      ],
+    };
+    if (kIsWeb || appName.trim().isEmpty) return fallback;
+    try {
+      final payload = variants.map((variant) => variant.toJson()).toList();
+      final daemonRes = await _sendToDaemon('run_ai_install_decision', [
+        appName.trim(),
+        payload,
+        true,
+      ]).timeout(const Duration(seconds: 15));
+      final data = daemonRes?.response;
+      if (daemonRes?.status == 'success' && data is Map) {
+        final recommendation = Map<String, dynamic>.from(data);
+        final sources = variants.map((variant) => variant.source).toSet();
+        if (recommendation['recommendedVariant'] == null ||
+            sources.contains(recommendation['recommendedVariant'])) {
+          return recommendation;
+        }
+      }
+    } catch (e) {
+      debugPrint('Installation decision fallback: $e');
+    }
+    return fallback;
+  }
+
   Map<String, List<AppPackage>> _parseRecommendations(dynamic data) {
     final Map<String, List<AppPackage>> result = {};
     if (data is Map) {

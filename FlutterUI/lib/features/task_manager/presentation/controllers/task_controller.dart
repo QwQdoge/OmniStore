@@ -173,7 +173,10 @@ class TaskController with ChangeNotifier {
   }
 
   Future<void> runCleanSystem(AppLocalizations l10n) async {
+    if (_isBusy) return;
     _isBusy = true;
+    _packageName = 'System Cleanup';
+    _flag = '-C';
     _progress = null;
     _status = l10n.systemCleaningStarted;
     bool hasError = false;
@@ -199,6 +202,8 @@ class TaskController with ChangeNotifier {
       // Murphy-proof: Guaranteed state reset
       _isBusy = false;
       _progress = null;
+      _packageName = null;
+      _flag = null;
       notifyListeners();
     }
 
@@ -237,7 +242,9 @@ class TaskController with ChangeNotifier {
       final val = double.tryParse(
         cleanLine.replaceFirst("[PROGRESS]", "").trim(),
       );
-      if (val != null) _progress = val / 100.0;
+      if (val != null && val.isFinite) {
+        _progress = (val / 100.0).clamp(0.0, 1.0);
+      }
     } else if (cleanLine.startsWith("[SPEED]")) {
       _speed = cleanLine.replaceFirst("[SPEED]", "").trim();
     } else if (cleanLine.startsWith("[ERROR]")) {
@@ -271,7 +278,7 @@ class TaskController with ChangeNotifier {
 
     if (data['progress'] != null) {
       final p = double.tryParse(data['progress'].toString());
-      if (p != null) _progress = p / 100.0;
+      if (p != null && p.isFinite) _progress = (p / 100.0).clamp(0.0, 1.0);
     }
 
     if (message != null) {

@@ -128,3 +128,23 @@ def test_ai_error_redaction():
     redacted = assistant._redact_sensitive("bad key sk-secret123456789 Bearer token123456789")
     assert "sk-secret" not in redacted
     assert "token123" not in redacted
+
+
+@pytest.mark.asyncio
+async def test_installation_decision_falls_back_deterministically_when_disabled():
+    assistant = AIAssistant(DummyConfig({"ai": {"enabled": False}}))
+    decision = await assistant.installation_decision("Example", [{"source": "AUR"}, {"source": "Flatpak"}])
+    assert decision.recommendedVariant == "Flatpak"
+    assert decision.preflightChecks
+
+
+@pytest.mark.asyncio
+async def test_installation_decision_rejects_invalid_ai_json(monkeypatch):
+    assistant = AIAssistant(DummyConfig({"ai": {"enabled": True}}))
+
+    async def invalid_response(*_args):
+        return '{"recommendedVariant":"Untrusted","reasons":"not an array"}'
+
+    monkeypatch.setattr(assistant, "_post_request", invalid_response)
+    decision = await assistant.installation_decision("Example", [{"source": "Flatpak"}])
+    assert decision.recommendedVariant == "Flatpak"

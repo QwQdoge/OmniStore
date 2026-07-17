@@ -51,6 +51,14 @@ class RecommendationResponse(BaseModel):
     trending: List[AppPackage] = Field(default_factory=list)
     for_you: List[AppPackage] = Field(default_factory=list)
 
+class InstallationDecision(BaseModel):
+    """Validated, non-blocking advice displayed before an installation starts."""
+    recommendedVariant: Optional[str] = None
+    reasons: List[str] = Field(default_factory=list, max_length=5)
+    risks: List[str] = Field(default_factory=list, max_length=5)
+    alternatives: List[str] = Field(default_factory=list, max_length=5)
+    preflightChecks: List[str] = Field(default_factory=list, max_length=5)
+
 class UpdateInfo(BaseModel):
     name: str
     source: str

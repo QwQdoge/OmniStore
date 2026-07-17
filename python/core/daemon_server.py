@@ -53,7 +53,7 @@ class DaemonRequest(BaseModel):
             "run_import_packages", "run_export_packages", "run_ai_test",
             "run_ai_explain", "run_ai_recommend", "run_ai_analyze_error", "run_ai_pick",
             "run_ai_changelog", "run_ai_cli", "run_ai_conflicts", "run_ai_correct",
-            "run_ai_compare", "run_ai_health",
+            "run_ai_compare", "run_ai_health", "run_ai_install_decision",
             "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:

@@ -6,6 +6,8 @@ import os
 import re
 from pathlib import Path
 from typing import Dict, List, Optional
+from pydantic import ValidationError
+from core.models import InstallationDecision
 
 
 import time
@@ -216,6 +218,36 @@ class AIAssistant:
         lang = self._get_language()
         system = f"You are OmniStore AI. Language: {lang}. Compare variants (Flatpak vs AUR vs Native) and recommend one."
         return await self._post_request(system, f"App: {app_name}, Variants: {json.dumps(variants)}")
+
+    def _fallback_installation_decision(self, variants: List[Dict]) -> InstallationDecision:
+        """Deterministic source selection used when AI is disabled or unreliable."""
+        names = [str(v.get("source", "")) for v in variants if isinstance(v, dict)]
+        preferred = next((source for source in ("Flatpak", "Native", "Pacman", "AUR", "AppImage") if source in names), None)
+        return InstallationDecision(
+            recommendedVariant=preferred,
+            reasons=["Uses OmniStore's deterministic source priority."],
+            risks=["Review the publisher and requested permissions before installing."],
+            alternatives=[source for source in names if source != preferred][:3],
+            preflightChecks=["Confirm available disk space.", "Confirm the selected source is enabled."],
+        )
+
+    async def installation_decision(self, app_name: str, variants: List[Dict]) -> InstallationDecision:
+        fallback = self._fallback_installation_decision(variants)
+        if not variants or not self._get_ai_config().get("enabled", False):
+            return fallback
+        lang = self._get_language()
+        system = (f"You are OmniStore's install decision assistant. Respond in {lang}. "
+                  "Return only one JSON object with exactly these keys: recommendedVariant, reasons, risks, alternatives, preflightChecks. "
+                  "All values except recommendedVariant must be arrays of short strings. Only recommend a source present in variants.")
+        response = await self._post_request(system, json.dumps({"app": app_name, "variants": variants[:10]}))
+        try:
+            match = re.search(r"\{.*\}", response, re.DOTALL)
+            parsed = InstallationDecision.model_validate(json.loads(match.group(0) if match else response))
+            if parsed.recommendedVariant not in {str(v.get("source")) for v in variants if isinstance(v, dict)}:
+                raise ValueError("AI recommended an unavailable source")
+            return parsed
+        except (ValueError, TypeError, json.JSONDecodeError, ValidationError):
+            return fallback
 
     async def suggest_correction(self, query: str) -> str:
         lang = self._get_language()
