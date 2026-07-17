@@ -405,6 +405,14 @@ class OmnistoreBackend:
                 if self._executor:
                     try: self._executor.stop()
                     except Exception: pass
+                # AIAssistant owns a separate lazy aiohttp session. It is not
+                # part of the shared session tracker, so close it explicitly
+                # before releasing the remaining backend resources.
+                if self._ai:
+                    try:
+                        await self._ai.close()
+                    except Exception as exc:
+                        logging.debug(f"AI session cleanup failed: {exc}")
                 await asyncio.shield(self._resources.cleanup())
             except BaseException as e:
                 if isinstance(e, Exception):
@@ -870,7 +878,10 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_ai_test(self, json_mode: bool = False):
-        res = await self.ai.test_connection()
+        # Use the normal backend lifecycle so the AI client's HTTP session is
+        # closed after a one-shot diagnostics request.
+        async with self:
+            res = await self.ai.test_connection()
         if json_mode: sys.stdout.write(json.dumps({"status": "success" if res == "success" else "error", "response": res}) + "\n"); sys.stdout.flush()
         return res
 

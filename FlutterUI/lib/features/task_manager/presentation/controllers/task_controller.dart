@@ -29,6 +29,7 @@ class TaskController with ChangeNotifier {
   String _speed = "";
   String? _packageName;
   String? _flag;
+  int _taskGeneration = 0;
   final List<String> _logs = [];
   final List<TaskState> _completedTasks = [];
 
@@ -60,6 +61,11 @@ class TaskController with ChangeNotifier {
   }
 
   void cancelTask(AppLocalizations l10n) {
+    if (!_isBusy) return;
+    // Invalidate the active stream before stopping its process. A process can
+    // still emit buffered output after cancellation; those stale events must
+    // never complete or overwrite a newer task.
+    _taskGeneration++;
     _taskRepository.cancelCurrentTask();
     _isBusy = false;
     _packageName = null;
@@ -112,6 +118,7 @@ class TaskController with ChangeNotifier {
   }) async {
     // Stage 1: State Locking & Initialization
     if (_isBusy) return false;
+    final taskGeneration = ++_taskGeneration;
     _isBusy = true;
     _packageName = packageName;
     _flag = flag;
@@ -125,6 +132,7 @@ class TaskController with ChangeNotifier {
       final stream = streamFactory();
 
       await for (final line in stream) {
+        if (taskGeneration != _taskGeneration) break;
         if (line.contains("errorFatalStream") ||
             line.contains("errorProcessStart") ||
             line.contains("errorStartFailed") ||
@@ -138,15 +146,20 @@ class TaskController with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      if (taskGeneration != _taskGeneration) return false;
       hasError = true;
       _status = l10n.errorFatalStream(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
       // Murphy-proof: Guaranteed busy state reset
-      _isBusy = false;
-      _progress = null;
-      notifyListeners();
+      if (taskGeneration == _taskGeneration) {
+        _isBusy = false;
+        _progress = null;
+        notifyListeners();
+      }
     }
+
+    if (taskGeneration != _taskGeneration) return false;
 
     // Murphy-proof: Record task result before clearing identifiers
     _completedTasks.insert(
@@ -174,6 +187,7 @@ class TaskController with ChangeNotifier {
 
   Future<void> runCleanSystem(AppLocalizations l10n) async {
     if (_isBusy) return;
+    final taskGeneration = ++_taskGeneration;
     _isBusy = true;
     _packageName = 'System Cleanup';
     _flag = '-C';
@@ -186,6 +200,7 @@ class TaskController with ChangeNotifier {
       final stream = _taskRepository.cleanSystem();
 
       await for (final line in stream) {
+        if (taskGeneration != _taskGeneration) break;
         if (line.contains("errorCleanFailed") ||
             line.contains("errorFatalStream") ||
             line.contains("[ERROR]")) {
@@ -195,17 +210,22 @@ class TaskController with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      if (taskGeneration != _taskGeneration) return;
       hasError = true;
       _status = l10n.errorCleanFailed(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
       // Murphy-proof: Guaranteed state reset
-      _isBusy = false;
-      _progress = null;
-      _packageName = null;
-      _flag = null;
-      notifyListeners();
+      if (taskGeneration == _taskGeneration) {
+        _isBusy = false;
+        _progress = null;
+        _packageName = null;
+        _flag = null;
+        notifyListeners();
+      }
     }
+
+    if (taskGeneration != _taskGeneration) return;
 
     _completedTasks.insert(
       0,
