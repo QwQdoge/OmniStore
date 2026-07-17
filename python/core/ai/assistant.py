@@ -222,7 +222,23 @@ class AIAssistant:
     def _fallback_installation_decision(self, variants: List[Dict]) -> InstallationDecision:
         """Deterministic source selection used when AI is disabled or unreliable."""
         names = [str(v.get("source", "")) for v in variants if isinstance(v, dict)]
-        preferred = next((source for source in ("Flatpak", "Native", "Pacman", "AUR", "AppImage") if source in names), None)
+        preferred = next(
+            (
+                source
+                for source in (
+                    "Flatpak",
+                    "Winget",
+                    "Native",
+                    "Pacman",
+                    "Scoop",
+                    "Chocolatey",
+                    "AUR",
+                    "AppImage",
+                )
+                if source in names
+            ),
+            None,
+        )
         return InstallationDecision(
             recommendedVariant=preferred,
             reasons=["Uses OmniStore's deterministic source priority."],

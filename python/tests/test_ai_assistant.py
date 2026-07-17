@@ -135,6 +135,16 @@ async def test_installation_decision_falls_back_deterministically_when_disabled(
     assistant = AIAssistant(DummyConfig({"ai": {"enabled": False}}))
     decision = await assistant.installation_decision("Example", [{"source": "AUR"}, {"source": "Flatpak"}])
     assert decision.recommendedVariant == "Flatpak"
+
+
+@pytest.mark.asyncio
+async def test_installation_decision_fallback_prefers_winget_over_scoop():
+    assistant = AIAssistant(DummyConfig({"enabled": False}))
+    decision = await assistant.installation_decision(
+        "Example", [{"source": "Scoop"}, {"source": "Winget"}]
+    )
+
+    assert decision.recommendedVariant == "Winget"
     assert decision.preflightChecks
 
 
