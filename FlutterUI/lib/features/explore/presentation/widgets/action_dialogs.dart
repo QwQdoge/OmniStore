@@ -74,6 +74,61 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
   }
 }
 
+class InstallationDecisionDialog extends StatelessWidget {
+  final Map<String, dynamic> decision;
+
+  const InstallationDecisionDialog({
+    super.key,
+    required this.decision,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final recommended = decision['recommendedVariant']?.toString();
+    return AlertDialog(
+      title: const Text('安装决策助手'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (recommended != null) Text('推荐来源：$recommended'),
+            for (final reason in (decision['reasons'] as List? ?? const []))
+              Text('• $reason'),
+            const SizedBox(height: 12),
+            const Text(
+              '安装前检查',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            for (final check
+                in (decision['preflightChecks'] as List? ?? const []))
+              Text('• $check'),
+            if ((decision['risks'] as List? ?? const []).isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Text(
+                '风险提示',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              for (final risk in (decision['risks'] as List? ?? const []))
+                Text('• $risk'),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('取消'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('继续安装'),
+        ),
+      ],
+    );
+  }
+}
+
 class AurSecurityDialog extends StatelessWidget {
   const AurSecurityDialog({super.key});
 
