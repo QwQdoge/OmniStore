@@ -1,25 +1,10 @@
+# ⚡ Bolt Learning Journal
 
-## 2025-05-15 - Installed List Subprocess Consolidation
+Routine work is never logged. Surprising technical findings, failed optimizations, or architecture-specific bottlenecks must be recorded here using the format: `## YYYY-MM-DD - [Title], **Learning:** [Insight], **Action:** [Future application].`
 
-**Learning:** Retrieving package sizes in a loop for installed lists is a massive O(N) bottleneck due to subprocess spawning overhead. Most modern package managers (Flatpak, Pacman) provide ways to retrieve this metadata in bulk.
+## 2026-06-16 - HomePage Selector Optimization
 
-**Action:** Always prefer batch metadata retrieval (e.g., `flatpak list --columns=...,size` or bulk `pacman -Qi`) over individual per-package queries for list-based UI features.
-
-## 2026-06-15 - MediaQuery Rebuild Optimization
-
-**Learning:** Using `MediaQuery.of(context).size.width` triggers a rebuild of the entire widget whenever ANY property of `MediaQueryData` changes (e.g., keyboard visibility, system theme). Using `MediaQuery.sizeOf(context).width` (available in Flutter 3.10+) ensures the widget only rebuilds when the size specifically changes.
-
-**Action:** Replaced `MediaQuery.of(context).size.width` with `MediaQuery.sizeOf(context).width` in `flatpak_store_page.dart` and `search_page.dart`.
-
-## 2026-06-16 - Search Selection & AppCard Optimization
-
-**Learning:** Managing selection state in a monolithic page using `setState` causes the entire list to rebuild, which is expensive for large datasets. Offloading selection to a `ChangeNotifier` and using `context.select` in list items isolates rebuilds. Additionally, `AppCard` animations can be skipped for non-interactive items by checking for the presence of `onTap`.
-
-**Action:** Refactored `SearchPage` and `SearchResultTile` to use reactive selection via `BrowseController`. Optimized `AppCard` to conditionally enable `MouseRegion` and `ScaleTransition`. Ensure `Selector` in `SearchPage` also listens to local state (filters) and `MediaQuery.sizeOf` to avoid blocking valid UI updates.
-
-## 2026-06-17 - Trending Shelf Rebuild Reduction
-
-**Learning:** `Consumer` widgets rebuild their child tree every time the provided controller's `notifyListeners` is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to `Selector`, we narrow the rebuild trigger to only fire when the specific property changes.
+**Learning:** Using `Consumer<BrowseController>` in a large page like HomePage causes all of its descendants (like multiple `AppShelf` instances) to rebuild their child tree every time the provided controller's `notifyListeners` is called. For a shelf that only cares about one specific list (e.g., 'trending' apps), this causes many unnecessary rebuilds. By switching to `Selector`, we narrow the rebuild trigger to only fire when the specific property changes.
 
 **Action:** Replaced `Consumer<BrowseController>` with `Selector<BrowseController, List<AppPackage>>` in `home_page.dart` for the 'Trending' shelf, successfully isolating its build behavior without altering functionality.
 
@@ -88,17 +73,19 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Redundant string transformations (truncation and lowercasing) and dictionary lookups inside high-frequency search loops (scoring and merging hundreds of items) create significant CPU and memory allocation overhead. Truncating descriptions before they reach the scoring function not only saves processing time but also drastically improves `lru_cache` hit rates by reducing the key space.
 
 **Action:** Optimized `SearchManager` and `SmartScoring` by pre-calculating source metadata, implementing early description truncation, hoisting static priority maps, and deferring variant dictionary allocations until absolutely necessary.
+
 ## 2026-07-15 - CachedNetworkImage Optimization in Store Header
 
 **Learning:** Using standard `Image.network` for static or frequently accessed network images (like the GitHub logo in the store header) causes redundant network requests on subsequent rebuilds, increasing latency and memory overhead. Replacing it with `CachedNetworkImage` prevents redundant downloads, utilizing disk caching for improved loading performance.
 
 **Action:** Replaced `Image.network` with `CachedNetworkImage` in `github_store_header.dart`.
+
 ## 2026-07-28 - Image Memory Optimization and Scroll Virtualization
 **Learning:** `memCacheWidth` and `memCacheHeight` must be set in `CachedNetworkImage` for fixed-size assets like logos to avoid engine decoding full-resolution source images into heap. Mismatched dimensions between `prototypeItem` and `itemBuilder` in `ListView.builder` cause scroll jitter and inaccurate scrollbar sizing during virtualization.
 **Action:** Added missing `memCacheWidth: 64` and `memCacheHeight: 64` to `github_store_header.dart`. Also added missing `prototypeItem`s in `tasks_tab.dart` and `terminal_dialog.dart` to fix virtual scroll rendering issues. Finally, correctly memoized `CategoryService.getCategories` within `didChangeDependencies` in `CategoryPage` to optimize local rebuilds.
 
 ## 2026-07-29 - Horizontal Chips List prototypeItem Limitation
 
-**Learning:** Using `prototypeItem` on horizontal lists containing variable-width elements (like `ActionChip` or `ChoiceChip` with dynamic labels) is a layout trap. In Flutter, `prototypeItem` forces every child element to have the exact same size as the prototype. For variable-width items, this results in severe truncation for long texts and massive empty padding for short ones.
+**Learning:** Using `prototypeItem` on horizontal lists containing variable-width elements (like `ActionChip` or `ChoiceChip` with dynamic labels) is a layout trap. In Flutter, `prototypeItem` forces every child element to have the exact same extent in the scroll direction. For variable-width items, this results in severe truncation for long texts and massive empty padding for short ones.
 
-**Action:** Avoid using `prototypeItem` for lists that rely on dynamic child-width/height intrinsic dimensions, reserving it strictly for lists with fixed-dimension children or vertical layouts with uniform item extents.
+**Action:** Skipped `prototypeItem` in `category_quick_access.dart` and `ai_app_resolver.dart` to preserve variable-width chip layouts, reserving it for fixed-dimension children or vertical layouts with uniform item extents.
