@@ -95,6 +95,8 @@ class ProcessExecutionService {
       _registry.add(process);
       if (onProcessStarted != null) onProcessStarted(process);
 
+      final stderrDone = Completer<void>();
+
       process.stdout
           .transform(const Utf8Decoder(allowMalformed: true))
           .transform(const LineSplitter())
@@ -107,7 +109,8 @@ class ProcessExecutionService {
                 controller.add("[CALLBACK] {\"error\": \"$e\"}");
               }
             },
-            onDone: () {
+            onDone: () async {
+              await stderrDone.future;
               if (process != null) _registry.remove(process);
               if (!controller.isClosed) controller.close();
             },
@@ -115,7 +118,20 @@ class ProcessExecutionService {
 
       process.stderr
           .transform(const Utf8Decoder(allowMalformed: true))
-          .listen((data) => debugPrint("Stderr: $data"));
+          .transform(const LineSplitter())
+          .listen(
+            (data) {
+              debugPrint("Stderr: $data");
+              if (!controller.isClosed) controller.add("[ERROR] $data");
+            },
+            onError: (e) {
+              if (!controller.isClosed) controller.add("[ERROR] $e");
+              if (!stderrDone.isCompleted) stderrDone.complete();
+            },
+            onDone: () {
+              if (!stderrDone.isCompleted) stderrDone.complete();
+            },
+          );
 
       controller.onCancel = () async {
         await _registry.kill(process);

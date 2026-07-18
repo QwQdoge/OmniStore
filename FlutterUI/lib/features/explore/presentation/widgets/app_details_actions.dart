@@ -5,6 +5,7 @@ import 'package:frontend/models/task_state.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppDetailsActions extends StatelessWidget {
   final String appName;
@@ -36,25 +37,24 @@ class AppDetailsActions extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child:
-              Selector<
-                TaskController,
-                ({double? progress, String status, String speed})
-              >(
-                selector: (context, c) =>
-                    (progress: c.progress, status: c.status, speed: c.speed),
-                builder: (context, data, _) => SmoothProgressBar(
-                  taskState: TaskState(
-                    id: "active",
-                    packageName: appName,
-                    status: TaskStatus.downloading,
-                    progress: data.progress ?? 0.0,
-                    stage: data.status,
-                    speed: data.speed,
-                  ),
-                  onCancel: onCancelAction,
-                ),
+          child: Selector<
+            TaskController,
+            ({double? progress, String status, String speed})
+          >(
+            selector: (context, c) =>
+                (progress: c.progress, status: c.status, speed: c.speed),
+            builder: (context, data, _) => SmoothProgressBar(
+              taskState: TaskState(
+                id: "active",
+                packageName: appName,
+                status: TaskStatus.downloading,
+                progress: data.progress ?? 0.0,
+                stage: data.status,
+                speed: data.speed,
               ),
+              onCancel: onCancelAction,
+            ),
+          ),
         ),
       );
     } else if (isAppInstalled) {
@@ -124,16 +124,9 @@ class AppDetailsActions extends StatelessWidget {
       );
     }
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
+    return SmoothSizeSwitcher(
       alignment: Alignment.topLeft,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: content,
-      ),
+      child: content,
     );
   }
 }

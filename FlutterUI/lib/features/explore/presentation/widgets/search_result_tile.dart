@@ -75,28 +75,33 @@ class SearchResultTile extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.apps, size: 40),
-                  AnimatedSwitcher(
+                  AnimatedSize(
                     duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.fastOutSlowIn,
-                    child: isCurrentTask
-                        ? Container(
-                            key: const ValueKey('task_active'),
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Center(
-                              child: Skeleton(
-                                width: 20,
-                                height: 20,
-                                borderRadius: 16,
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.center,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: isCurrentTask
+                          ? Container(
+                              key: const ValueKey('task_active'),
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            ),
-                          )
-                        : const SizedBox.shrink(key: ValueKey('task_idle')),
+                              child: const Center(
+                                child: Skeleton(
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: 12,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(key: ValueKey('task_idle')),
+                    ),
                   ),
                 ],
               ),

@@ -18,3 +18,9 @@ Wrapped the following `AnimatedSwitcher` instances in `AnimatedSize` using stand
 
 These changes preserve responsiveness, apply subtle MD3 motion, and strictly eliminate layout jumps. In `AppMainContent`, I also consolidated the "Details" section into a single `AnimatedSize` block to ensure the title and content animate together.
 7.  **`HomePage`**: Transitioning asynchronous sections (Featured, AI Pick, Trending, For You) between empty/loading states and populated states. Set alignment to `Alignment.topCenter`.
+
+## 2026-07-20 - Standardized Layout Transitions with SmoothSizeSwitcher
+
+**Learning:** Combining `AnimatedSize` and `AnimatedSwitcher` into a single reusable `SmoothSizeSwitcher` component simplifies UI code and ensures that all layout transitions across the app adhere to identical MD3-compliant easing curves (`Curves.easeOutCubic`, `Curves.fastOutSlowIn`) and timing (300ms). Granular application of these switchers to individual conditionally-loaded sections (like Screenshots) prevents massive atomic jumps that occur when a single large switcher is used for an entire page body.
+
+**Action:** Created `SmoothSizeSwitcher` in `lib/core/widgets`. Refactored `AppMainContent` to use granular switchers for About, Screenshots, and Technical Details. Standardized `AppDetailsActions` and `AppDetailsHeader` to use the same component, eliminating boilerplate and unifying the app's motion language.

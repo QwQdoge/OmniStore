@@ -9,6 +9,7 @@ import 'package:frontend/features/explore/presentation/widgets/empty_results.dar
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class SearchResultsView extends StatelessWidget {
   final List<AppPackage> filteredResults;
@@ -149,16 +150,9 @@ class SearchResultsView extends StatelessWidget {
         ],
       );
     } else {
-      return AnimatedSize(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
+      return SmoothSizeSwitcher(
         alignment: Alignment.topCenter,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.fastOutSlowIn,
-          child: resultsContent,
-        ),
+        child: resultsContent,
       );
     }
   }

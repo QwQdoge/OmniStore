@@ -11,6 +11,7 @@ import 'package:frontend/features/task_manager/presentation/widgets/terminal_dia
 import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_tab.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -87,7 +88,9 @@ class _DownloadPageState extends State<DownloadPage>
     setState(() => _isLoadingInstalled = true);
     try {
       final packageRepo = context.read<PackageRepository>();
-      final results = await packageRepo.listInstalled(forceRefresh: forceRefresh);
+      final results = await packageRepo.listInstalled(
+        forceRefresh: forceRefresh,
+      );
       if (!mounted) return;
       setState(() {
         _installedApps = results;
@@ -233,9 +236,7 @@ class _DownloadPageState extends State<DownloadPage>
               return const SizedBox.shrink();
             },
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
+          SmoothSizeSwitcher(
             alignment: Alignment.center,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),

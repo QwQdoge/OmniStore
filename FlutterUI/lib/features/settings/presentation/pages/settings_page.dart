@@ -8,6 +8,7 @@ import '../widgets/settings_section_header.dart';
 import '../widgets/general_settings_card.dart';
 import '../widgets/update_settings_card.dart';
 import '../widgets/typography_settings_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -91,23 +92,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           const SizedBox(height: 24),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
+          SmoothSizeSwitcher(
             alignment: Alignment.topCenter,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _showAdvanced
-                  ? Semantics(
-                      key: const ValueKey('ai_settings'),
-                      label: l10n.aiSettings,
-                      explicitChildNodes: true,
-                      child: const AISettingsSection(),
-                    )
-                  : const SizedBox.shrink(key: ValueKey('empty_advanced')),
-            ),
+            child: _showAdvanced
+                ? Semantics(
+                    key: const ValueKey('ai_settings'),
+                    label: l10n.aiSettings,
+                    explicitChildNodes: true,
+                    child: const AISettingsSection(),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty_advanced')),
           ),
         ],
       ),

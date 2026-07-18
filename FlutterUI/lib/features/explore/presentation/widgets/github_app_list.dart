@@ -9,6 +9,7 @@ import 'package:frontend/core/widgets/github_star_badge.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class GitHubAppList extends StatelessWidget {
   final List<AppPackage> apps;
@@ -215,17 +216,7 @@ class GitHubAppList extends StatelessWidget {
       );
     }
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-      alignment: Alignment.topCenter,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.fastOutSlowIn,
-        child: content,
-      ),
-    );
+    return SmoothSizeSwitcher(alignment: Alignment.topCenter, child: content);
   }
 }
 

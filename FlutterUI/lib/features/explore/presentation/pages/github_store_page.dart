@@ -5,6 +5,7 @@ import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/widgets/github_app_list.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class GitHubStorePage extends StatefulWidget {
   const GitHubStorePage({super.key});
@@ -242,49 +243,42 @@ class _GitHubStorePageState extends State<GitHubStorePage>
           Expanded(
             child: RefreshIndicator(
               onRefresh: _handleRefresh,
-              child: AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
+              child: SmoothSizeSwitcher(
                 alignment: Alignment.topCenter,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.fastOutSlowIn,
-                  child: _isSearching
-                      ? _buildSearchResultsView(
-                          key: const ValueKey('search_results'),
-                        )
-                      : TabBarView(
-                          key: const ValueKey('tab_bar_view'),
-                          controller: _tabController,
-                          children: [
-                            _buildGitHubList(
-                              apps: _recommendedApps,
-                              isLoading: _isLoadingRecommended,
-                              keyPrefix: 'recommended',
-                              error: _recommendedError,
-                            ),
-                            _buildGitHubList(
-                              apps: _rankingApps,
-                              isLoading: _isLoadingRankings,
-                              keyPrefix: 'rankings',
-                              error: _rankingError,
-                            ),
-                            _buildGitHubList(
-                              apps: _trendingApps,
-                              isLoading: _isLoadingTrending,
-                              keyPrefix: 'trending',
-                              error: _trendingError,
-                            ),
-                            _buildGitHubList(
-                              apps: _updatedApps,
-                              isLoading: _isLoadingUpdated,
-                              keyPrefix: 'updated',
-                              error: _updatedError,
-                            ),
-                          ],
-                        ),
-                ),
+                child: _isSearching
+                    ? _buildSearchResultsView(
+                        key: const ValueKey('search_results'),
+                      )
+                    : TabBarView(
+                        key: const ValueKey('tab_bar_view'),
+                        controller: _tabController,
+                        children: [
+                          _buildGitHubList(
+                            apps: _recommendedApps,
+                            isLoading: _isLoadingRecommended,
+                            keyPrefix: 'recommended',
+                            error: _recommendedError,
+                          ),
+                          _buildGitHubList(
+                            apps: _rankingApps,
+                            isLoading: _isLoadingRankings,
+                            keyPrefix: 'rankings',
+                            error: _rankingError,
+                          ),
+                          _buildGitHubList(
+                            apps: _trendingApps,
+                            isLoading: _isLoadingTrending,
+                            keyPrefix: 'trending',
+                            error: _trendingError,
+                          ),
+                          _buildGitHubList(
+                            apps: _updatedApps,
+                            isLoading: _isLoadingUpdated,
+                            keyPrefix: 'updated',
+                            error: _updatedError,
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),

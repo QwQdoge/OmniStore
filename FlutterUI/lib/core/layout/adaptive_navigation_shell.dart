@@ -11,6 +11,7 @@ import 'widgets/download_action.dart';
 import 'widgets/desktop_top_bar.dart';
 import 'widgets/hamburger_button.dart';
 import 'widgets/rail_bottom_actions.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class NavDestination {
   const NavDestination({
@@ -82,17 +83,8 @@ class AdaptiveNavigationShell extends StatelessWidget {
         final taskBar = Selector<TaskController, bool>(
           selector: (context, task) => task.isBusy,
           builder: (context, isBusy, child) {
-            return AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.fastOutSlowIn,
-                child: isBusy
-                    ? const TaskProgressBar()
-                    : const SizedBox.shrink(),
-              ),
+            return SmoothSizeSwitcher(
+              child: isBusy ? const TaskProgressBar() : const SizedBox.shrink(),
             );
           },
         );

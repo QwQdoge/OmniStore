@@ -9,6 +9,7 @@ import 'package:frontend/features/explore/presentation/widgets/app_about_section
 import 'package:frontend/features/explore/presentation/widgets/app_technical_details.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_screenshots.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppMainContent extends StatelessWidget {
   final AppPackage app;
@@ -81,78 +82,57 @@ class AppMainContent extends StatelessWidget {
           onLaunchApp: onLaunchApp,
           onCancelAction: onCancelAction,
         ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
+        const SizedBox(height: 24),
+        AppDetailsSectionTitle(
+          title: AppLocalizations.of(context)!.about,
+        ),
+        SmoothSizeSwitcher(
           alignment: Alignment.topLeft,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: isLoadingDetails
-                ? Column(
-                    key: const ValueKey('loading'),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      AppDetailsSectionTitle(
-                        title: AppLocalizations.of(context)!.about,
-                      ),
-                      const ParagraphSkeleton(key: ValueKey('loading')),
-                      const SizedBox(height: 24),
-                      AppDetailsSectionTitle(
-                        title: AppLocalizations.of(context)!.details,
-                      ),
-                      AppTechnicalDetails(
-                        primarySource: app.primarySource,
-                        allSources: app.sources,
-                        version: app.version,
-                        extraDetails: extraDetails,
-                        currentVariant: getVariantForSource(selectedSource),
-                        hasCapability: hasCapability,
-                      ),
-                    ],
-                  )
-                : Column(
-                    key: const ValueKey('loaded'),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      AppDetailsSectionTitle(
-                        title: AppLocalizations.of(context)!.about,
-                      ),
-                      AppAboutSection(
-                        description: extraDetails?.description,
-                        fallbackDescription: app.description,
-                      ),
-                      if (hasCapability('has_screenshots') &&
-                          extraDetails != null &&
-                          extraDetails!.screenshots != null &&
-                          extraDetails!.screenshots!.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        AppDetailsSectionTitle(
-                          title: AppLocalizations.of(context)!.screenshots,
-                        ),
-                        AppScreenshots(
-                          screenshots: extraDetails!.screenshots!,
-                          scrollController: screenshotScrollController,
-                          onShowScreenshotViewer: onShowScreenshotViewer,
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      AppDetailsSectionTitle(
-                        title: AppLocalizations.of(context)!.details,
-                      ),
-                      AppTechnicalDetails(
-                        primarySource: app.primarySource,
-                        allSources: app.sources,
-                        version: app.version,
-                        extraDetails: extraDetails,
-                        currentVariant: getVariantForSource(selectedSource),
-                        hasCapability: hasCapability,
-                      ),
-                    ],
-                  ),
+          child: isLoadingDetails
+              ? const ParagraphSkeleton(key: ValueKey('about-loading'))
+              : AppAboutSection(
+                  key: const ValueKey('about-loaded'),
+                  description: extraDetails?.description,
+                  fallbackDescription: app.description,
+                ),
+        ),
+        SmoothSizeSwitcher(
+          alignment: Alignment.topLeft,
+          child: (hasCapability('has_screenshots') &&
+                  extraDetails != null &&
+                  extraDetails!.screenshots != null &&
+                  extraDetails!.screenshots!.isNotEmpty)
+              ? Column(
+                  key: const ValueKey('screenshots-visible'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    AppDetailsSectionTitle(
+                      title: AppLocalizations.of(context)!.screenshots,
+                    ),
+                    AppScreenshots(
+                      screenshots: extraDetails!.screenshots!,
+                      scrollController: screenshotScrollController,
+                      onShowScreenshotViewer: onShowScreenshotViewer,
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(key: ValueKey('screenshots-hidden')),
+        ),
+        const SizedBox(height: 24),
+        AppDetailsSectionTitle(
+          title: AppLocalizations.of(context)!.details,
+        ),
+        SmoothSizeSwitcher(
+          alignment: Alignment.topLeft,
+          child: AppTechnicalDetails(
+            key: ValueKey('technical-details-${extraDetails != null}'),
+            primarySource: app.primarySource,
+            allSources: app.sources,
+            version: app.version,
+            extraDetails: extraDetails,
+            currentVariant: getVariantForSource(selectedSource),
+            hasCapability: hasCapability,
           ),
         ),
       ],

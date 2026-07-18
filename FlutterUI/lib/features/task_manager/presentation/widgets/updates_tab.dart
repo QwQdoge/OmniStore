@@ -11,6 +11,7 @@ import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'ai_update_summary_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class UpdatesTab extends StatelessWidget {
   final VoidCallback onUpdateStarted;
@@ -216,16 +217,9 @@ class UpdatesTab extends StatelessWidget {
           );
         }
 
-        return AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
+        return SmoothSizeSwitcher(
           alignment: Alignment.topCenter,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            child: content,
-          ),
+          child: content,
         );
       },
     );

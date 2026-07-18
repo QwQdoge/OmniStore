@@ -16,6 +16,7 @@ import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 import 'package:frontend/core/widgets/section_header.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -199,22 +200,15 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, featured, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: featured.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('empty_hero'))
-                          : HeroSection(
-                              key: const ValueKey('hero_section'),
-                              apps: featured,
-                              scrollController: _heroScrollController,
-                            ),
-                    ),
+                    child: featured.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('empty_hero'))
+                        : HeroSection(
+                            key: const ValueKey('hero_section'),
+                            apps: featured,
+                            scrollController: _heroScrollController,
+                          ),
                   );
                 },
               ),
@@ -224,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                 selector: (context, settings) => settings.isAIEnabled,
                 builder: (context, isAIEnabled, _) {
                   if (!isAIEnabled) return const SizedBox.shrink();
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
@@ -302,7 +296,7 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, trending, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
@@ -333,7 +327,7 @@ class _HomePageState extends State<HomePage> {
                 shouldRebuild: (prev, next) =>
                     !const IterableEquality().equals(prev, next),
                 builder: (context, forYou, _) {
-                  return AnimatedSize(
+                  return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
