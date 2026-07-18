@@ -43,7 +43,7 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "pacmanOfficial": "Pacman（官方存放庫）",
+  "pacmanOfficial": "Pacman（官方軟體存放庫）",
   "aurUser": "AUR（使用者軟體存放庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -463,28 +463,28 @@
   "getStarted": "開始使用",
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
-  "envCheckSubtitle": "正在確保系統已準備就緒",
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
   "envFatalDesc": "系統不是 Arch Linux，核心功能受限。",
-  "envWarningDesc": "系統缺少必要的執行組件，我們可以為您自動設定。",
-  "envOkDesc": "一切就緒！系統環境已完美配置。",
-  "fixProblems": "一鍵修復/設定",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
+  "envOkDesc": "一切就緒！您的系統非常完美。",
+  "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體存放庫設定",
   "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
-  "enableAur": "啟用 AUR（Arch User Repository）",
+  "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
-  "aurWarning": "安全警告：AUR 套件由使用者貢獻，請確保信任其來源。",
-  "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "feedbackDesc": "若遇到問題，請在 GitHub 提交回饋。",
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
+  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
   "aiAssistant": "AI 助手",
   "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
-  "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
-  "aiEndpointHelper": "Ollama 預設：http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 留空，OpenAI 填入 sk-xxx",
+  "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
+  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
+  "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 填入 sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。",
+  "howToGetApiKeyDesc": "1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。",
+  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",
@@ -492,7 +492,7 @@
   "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
   "resetting": "正在重置...",
   "resetSuccess": "快取與歷史記錄已成功清空",
-  "resetFailed": "重置失敗：{error}",
+  "resetFailed": "重置失敗: {error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -500,7 +500,7 @@
       }
     }
   },
-  "ollamaLocal": "Ollama（本地）",
+  "ollamaLocal": "Ollama (本地)",
   "openaiCompatible": "OpenAI 相容",
   "googleGemini": "Google Gemini",
   "importPackages": "匯入套件",
@@ -527,7 +527,7 @@
     }
   },
   "switchSource": "切換",
-  "flatpakBetterDesc": "發現此應用程式有 Flatpak 存放庫，通常更穩定。",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
   "cleanOrphans": "清理無用依賴（孤立套件）",
@@ -747,12 +747,12 @@
   "@autoDetect": {
     "description": "Button to auto detect available sources"
   },
-  "addCustomSource": "新增自訂存放庫",
+  "addCustomSource": "新增自訂軟體存放庫",
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
-  "sourceType": "存放庫類型",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫",
+  "sourceType": "軟體存放庫類型",
   "@sourceType": {
     "description": "Label for source type"
   },
@@ -764,7 +764,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端存放庫",
+  "flatpakRemoteType": "Flatpak 遠端軟體存放庫",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -780,7 +780,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "存放庫地址（owner/repo）",
+  "repoOwnerRepo": "軟體存放庫地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -796,7 +796,7 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名稱和連結/存放庫地址不能為空",
+  "errorNameUrlRequired": "名稱和連結/軟體存放庫地址不能為空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
@@ -1024,5 +1024,116 @@
     "description": "Tooltip for removing a plugin"
   },
   "managed": "已代管",
-  "readOnly": "唯讀"
+  "readOnly": "唯讀",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  }
 }

@@ -542,16 +542,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '正在确保系统已准备就绪';
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
   String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
 
   @override
-  String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！系统环境已完美配置。';
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -566,19 +566,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigSubtitle => '选择您想要启用的软件源';
 
   @override
-  String get enableAur => '启用 AUR（Arch User Repository）';
+  String get enableAur => '启用 AUR (Arch User Repository)';
 
   @override
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 软件包由用户贡献，请确保信任其来源。';
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
 
   @override
-  String get bootstrapNote => '提示：配置过程可能需要多次输入管理员密码。';
+  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '若遇到问题，请在 GitHub 提交反馈。';
+  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -587,26 +587,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistantDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
 
   @override
-  String get aiProviderDesc => '选择您的 AI 模型来源（本地或云端）';
+  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 默认：http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：下载并运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往服务商官网创建 API 密钥并填入。';
+      '1. Ollama (本地)：运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往官网创建并填入密钥。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '提示：使用 Ollama 需确保其在后台运行，并配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -631,11 +632,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return '重置失败：$error';
+    return '重置失败: $error';
   }
 
   @override
-  String get ollamaLocal => 'Ollama（本地）';
+  String get ollamaLocal => 'Ollama (本地)';
 
   @override
   String get openaiCompatible => 'OpenAI 兼容';
@@ -678,7 +679,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get switchSource => '切换';
 
   @override
-  String get flatpakBetterDesc => '发现此应用有 Flatpak 源，通常更稳定。';
+  String get flatpakBetterDesc => '发现此应用有 Flatpak 软件源，通常更稳定。';
 
   @override
   String get aiAnalysisPrompt => '发现错误日志，需要 AI 分析吗？';
@@ -903,11 +904,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoDetect => '自动检测';
 
   @override
-  String get addCustomSource => '添加自定义源';
+  String get addCustomSource => '添加自定义软件源';
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程源、AppImage 订阅或 GitHub/Bitu 仓库';
+      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库';
 
   @override
   String get sourceType => '软件源类型';
@@ -919,7 +920,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bituRepoType => 'Bitu / Bitbucket（工作区/仓库）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 远程源';
+  String get flatpakRemoteType => 'Flatpak 远程软件源';
 
   @override
   String get appImageFeedType => 'AppImage 订阅链接';
@@ -1253,7 +1254,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方存放庫）';
+  String get pacmanOfficial => 'Pacman（官方軟體存放庫）';
 
   @override
   String get aurUser => 'AUR（使用者軟體存放庫）';
@@ -1703,19 +1704,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '正在確保系統已準備就緒';
+  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
   String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
-  String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
 
   @override
-  String get envOkDesc => '一切就緒！系統環境已完美配置。';
+  String get envOkDesc => '一切就緒！您的系統非常完美。';
 
   @override
-  String get fixProblems => '一鍵修復/設定';
+  String get fixProblems => '一鍵修復/配置';
 
   @override
   String get continueAnyway => '仍然繼續';
@@ -1727,19 +1728,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceConfigSubtitle => '選擇您想要啟用的軟體存放庫';
 
   @override
-  String get enableAur => '啟用 AUR（Arch User Repository）';
+  String get enableAur => '啟用 AUR (Arch User Repository)';
 
   @override
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 套件由使用者貢獻，請確保信任其來源。';
+  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
 
   @override
-  String get bootstrapNote => '提示：設定過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
 
   @override
-  String get feedbackDesc => '若遇到問題，請在 GitHub 提交回饋。';
+  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -1748,26 +1749,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiAssistantDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
 
   @override
-  String get aiProviderDesc => '選擇您的 AI 模型來源（本地或雲端）';
+  String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 預設：http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。';
+      '1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
@@ -1792,11 +1794,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resetFailed(String error) {
-    return '重置失敗：$error';
+    return '重置失敗: $error';
   }
 
   @override
-  String get ollamaLocal => 'Ollama（本地）';
+  String get ollamaLocal => 'Ollama (本地)';
 
   @override
   String get openaiCompatible => 'OpenAI 相容';
@@ -1839,7 +1841,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 存放庫，通常更穩定。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -2064,14 +2066,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '新增自訂存放庫';
+  String get addCustomSource => '新增自訂軟體存放庫';
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
+      '設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫';
 
   @override
-  String get sourceType => '存放庫類型';
+  String get sourceType => '軟體存放庫類型';
 
   @override
   String get githubRepoType => 'GitHub 存放庫（owner/repo）';
@@ -2080,7 +2082,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/存放庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端存放庫';
+  String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -2092,7 +2094,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '存放庫地址（owner/repo）';
+  String get repoOwnerRepo => '軟體存放庫地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2104,7 +2106,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
+  String get errorNameUrlRequired => '名稱和連結/軟體存放庫地址不能為空';
 
   @override
   String get addingCustomSource => '正在新增自訂軟體存放庫...';

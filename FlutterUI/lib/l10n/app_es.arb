@@ -461,7 +461,7 @@
   "skip": "Omitir",
   "envCheckTitle": "Comprobación del entorno",
   "envCheckSubtitle": "Asegurando que su sistema esté listo",
-  "envFatalDesc": "Su sistema no está basado en Arch. La mayoría de las funciones no estarán disponibles.",
+  "envFatalDesc": "Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.",
   "envWarningDesc": "Faltan algunos componentes necesarios. Podemos configurarlos por usted.",
   "envOkDesc": "¡Todo listo! Su sistema es perfecto.",
   "fixProblems": "Corregir / Configurar todo",
@@ -476,8 +476,8 @@
   "aiAssistant": "Asistente de IA",
   "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
   "aiProviderDesc": "Seleccione su fuente de modelo de IA (Local o Nube)",
-  "aiEndpointHelper": "Ollama usa por defecto http://localhost:11434",
-  "aiApiKeyHelper": "Deje en blanco para Ollama e introduzca sk-xxx para OpenAI",
+  "aiEndpointHelper": "Ollama por defecto es http://localhost:11434",
+  "aiApiKeyHelper": "Dejar en blanco para Ollama, introducir sk-xxx para OpenAI",
   "howToGetApiKey": "¿Cómo obtener una clave API?",
   "howToGetApiKeyDesc": "1. Ollama (Local): Descargue y ejecute Ollama, no se necesita clave. 2. Nube (OpenAI): Vaya al sitio web del proveedor, cree una clave API e introdúzcala aquí.",
   "gotIt": "Entendido",
@@ -1021,5 +1021,116 @@
     "description": "Tooltip for removing a plugin"
   },
   "managed": "Gestionado",
-  "readOnly": "Solo lectura"
+  "readOnly": "Solo lectura",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  }
 }

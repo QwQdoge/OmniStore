@@ -1021,5 +1021,116 @@
     "description": "Tooltip for removing a plugin"
   },
   "managed": "Managed",
-  "readOnly": "Read-only"
+  "readOnly": "Read-only",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  }
 }
