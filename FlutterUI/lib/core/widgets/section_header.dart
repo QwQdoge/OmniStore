@@ -36,7 +36,7 @@ class SectionHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing case final trailingWidget?) trailingWidget,
+          ?trailing,
         ],
       ),
     );

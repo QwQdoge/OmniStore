@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
+                    sizeCurve: Curves.easeOutCubic,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
@@ -299,7 +299,7 @@ class _HomePageState extends State<HomePage> {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
+                    sizeCurve: Curves.easeOutCubic,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
@@ -330,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
+                    sizeCurve: Curves.easeOutCubic,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOutCubic,
