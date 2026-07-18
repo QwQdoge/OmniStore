@@ -24,3 +24,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Combining `AnimatedSize` and `AnimatedSwitcher` into a single reusable `SmoothSizeSwitcher` component simplifies UI code and ensures that all layout transitions across the app adhere to identical MD3-compliant easing curves (`Curves.easeOutCubic`, `Curves.fastOutSlowIn`) and timing (300ms). Granular application of these switchers to individual conditionally-loaded sections (like Screenshots) prevents massive atomic jumps that occur when a single large switcher is used for an entire page body.
 
 **Action:** Created `SmoothSizeSwitcher` in `lib/core/widgets`. Refactored `AppMainContent` to use granular switchers for About, Screenshots, and Technical Details. Standardized `AppDetailsActions` and `AppDetailsHeader` to use the same component, eliminating boilerplate and unifying the app's motion language.
+## 2024-07-20 - Refactored AnimatedSwitcher usage to SmoothSizeSwitcher
+
+**Learning:** When animating state changes of a `FutureBuilder` using `SmoothSizeSwitcher` (or `AnimatedSwitcher`), place the switcher inside the `FutureBuilder`'s builder function. Wrapping the `FutureBuilder` itself prevents state change detection because the widget type and key remain constant, breaking the animation transitions.
+
+**Action:** Refactored `ai_dialogs.dart`, `search_result_tile.dart`, and `github_star_badge.dart` to properly use `SmoothSizeSwitcher` internally for smoother layout transitions.

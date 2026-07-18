@@ -62,10 +62,7 @@ class AIMarkdownDialog extends StatelessWidget {
           builder: (context, snapshot) {
             return SmoothSizeSwitcher(
               alignment: Alignment.topLeft,
-              child: _buildAIMarkdown(
-                snapshot,
-                AppLocalizations.of(context)!,
-              ),
+              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
             );
           },
         ),
@@ -107,9 +104,7 @@ class AICliDialog extends StatelessWidget {
                     height: 100,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Skeleton(width: double.infinity, height: 24),
-                      ],
+                      children: [Skeleton(width: double.infinity, height: 24)],
                     ),
                   )
                 : Column(
@@ -134,9 +129,7 @@ class AICliDialog extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.copiedToClipboard,
+                                AppLocalizations.of(context)!.copiedToClipboard,
                               ),
                               duration: const Duration(seconds: 4),
                             ),
