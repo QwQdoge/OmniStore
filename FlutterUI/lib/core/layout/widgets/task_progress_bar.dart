@@ -60,7 +60,7 @@ class TaskProgressBar extends StatelessWidget {
                         Text(
                           '${(data.progress! * 100).toInt()}%',
                           style: textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w800,
                             color: scheme.primary,
                           ),
                         ),

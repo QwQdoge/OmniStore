@@ -131,3 +131,9 @@
 **Learning:** Abruptly inserting or removing layout blocks like active tasks or task histories creates visual jarring in a scroll view. Wrapping conditional blocks in `SmoothSizeSwitcher` is an effective pattern to provide organic transition fluidity consistent with MD3 principles without causing layout shifts.
 
 **Action:** Applied `SmoothSizeSwitcher` wrappers around conditionally rendered active task and task history blocks in `TasksTab` (FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart).
+
+## 2026-07-24 - Typography and Accessibility Polish
+
+**Learning:** Maintaining strict adherence to MD3 typographic scales (using `FontWeight.w800` instead of `w900` for expressive headers/labels) ensures visual harmony across components like `AppSourceTag` and `TaskProgressBar`. Additionally, dynamic action lists (like the category chips in `EmptyResults`) must consistently apply localized ARB semantic labels (via `categorySemantics`) to maintain screen reader accessibility parity with primary navigation elements.
+
+**Action:** Standardized font weights to `w800` in `app_source_tag.dart` and `task_progress_bar.dart`. Wrapped category `ActionChip`s in `empty_results.dart` with localized `Semantics` labels.

@@ -120,7 +120,7 @@ class AppSourceTag extends StatelessWidget {
             style: TextStyle(
               fontSize: isSmall ? 10 : 11,
               color: color,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

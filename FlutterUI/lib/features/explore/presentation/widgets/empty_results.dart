@@ -48,13 +48,17 @@ class _EmptyResultsState extends State<EmptyResults> {
             alignment: WrapAlignment.center,
             children: _categories
                 .map(
-                  (cat) => ActionChip(
-                    onPressed: () {
-                      widget.searchController.text = '/${cat.id.toLowerCase()}';
-                      widget.performSearch(widget.searchController.text);
-                    },
-                    label: Text(cat.name),
-                    avatar: Icon(cat.icon, size: 18),
+                  (cat) => Semantics(
+                    label: widget.l10n.categorySemantics(cat.name),
+                    child: ActionChip(
+                      onPressed: () {
+                        widget.searchController.text = '/${cat.id.toLowerCase()}';
+                        widget.performSearch(widget.searchController.text);
+                      },
+                      label: Text(cat.name),
+                      tooltip: cat.name,
+                      avatar: Icon(cat.icon, size: 18),
+                    ),
                   ),
                 )
                 .toList(),
