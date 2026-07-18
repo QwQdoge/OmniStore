@@ -48,7 +48,7 @@ class UpdatesTab extends StatelessWidget {
                       )!.foundUpdates(updates.length),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    ElevatedButton.icon(
+                    FilledButton.icon(
                       onPressed: () {
                         final taskController = context.read<TaskController>();
                         final l10n = AppLocalizations.of(context)!;
@@ -174,7 +174,7 @@ class UpdatesTab extends StatelessWidget {
                                     );
                                   },
                                 ),
-                                ElevatedButton(
+                                FilledButton(
                                   onPressed: () {
                                     final taskController = context
                                         .read<TaskController>();

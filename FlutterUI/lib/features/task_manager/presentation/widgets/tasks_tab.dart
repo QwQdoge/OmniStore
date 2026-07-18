@@ -96,7 +96,7 @@ class TasksTab extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    ElevatedButton.icon(
+                                    FilledButton.icon(
                                       onPressed: () => showDialog(
                                         context: context,
                                         builder: (_) => const TerminalDialog(),
