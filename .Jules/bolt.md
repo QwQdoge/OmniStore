@@ -96,3 +96,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 ## 2026-07-28 - Image Memory Optimization and Scroll Virtualization
 **Learning:** `memCacheWidth` and `memCacheHeight` must be set in `CachedNetworkImage` for fixed-size assets like logos to avoid engine decoding full-resolution source images into heap. Mismatched dimensions between `prototypeItem` and `itemBuilder` in `ListView.builder` cause scroll jitter and inaccurate scrollbar sizing during virtualization.
 **Action:** Added missing `memCacheWidth: 64` and `memCacheHeight: 64` to `github_store_header.dart`. Also added missing `prototypeItem`s in `tasks_tab.dart` and `terminal_dialog.dart` to fix virtual scroll rendering issues. Finally, correctly memoized `CategoryService.getCategories` within `didChangeDependencies` in `CategoryPage` to optimize local rebuilds.
+
+## 2026-07-29 - Horizontal Chips List prototypeItem Limitation
+
+**Learning:** Using `prototypeItem` on horizontal lists containing variable-width elements (like `ActionChip` or `ChoiceChip` with dynamic labels) is a layout trap. In Flutter, `prototypeItem` forces every child element to have the exact same size as the prototype. For variable-width items, this results in severe truncation for long texts and massive empty padding for short ones.
+
+**Action:** Avoid using `prototypeItem` for lists that rely on dynamic child-width/height intrinsic dimensions, reserving it strictly for lists with fixed-dimension children or vertical layouts with uniform item extents.
