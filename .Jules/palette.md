@@ -1,3 +1,9 @@
+## 2026-07-25 - Async FutureBuilder Layout Animations
+
+**Learning:** Wrapping a `FutureBuilder` inside an `AnimatedSize` when its builder returns an `AnimatedSwitcher` prevents correct layout size change detection because the `FutureBuilder` widget's key and type remain constant across states. Scoping layout animation widgets (like `SmoothSizeSwitcher` or standard `AnimatedSize` + `AnimatedSwitcher`) *inside* the `FutureBuilder` builder function allows the subtree state changes to be animated smoothly as they switch between loading/skeleton states and the loaded content, while aligning with Material Design 3 motion pacing.
+
+**Action:** Never wrap `FutureBuilder` itself in a sizing layout animation. Always place layout switchers and sizing transitions (like `SmoothSizeSwitcher`) inside the builder method of `FutureBuilder` to ensure state transition animations trigger reliably.
+
 ## 2026-06-27 - Technical Metadata Grouping and MD3 Interaction
 
 **Learning:** Grouping technical metadata (Version, Source, License, etc.) into a single `Card` with `surfaceContainerLow` significantly improves scan-ability and visual hierarchy on details pages compared to a flat list. Using a standardized `AppCard` wrapper for interactive tiles across the app (Home, Search) ensures consistent Material 3 hover/tap feedback (1.0 to 0.98 scale) and simplifies state layer management.
