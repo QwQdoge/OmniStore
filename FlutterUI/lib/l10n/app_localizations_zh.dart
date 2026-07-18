@@ -572,13 +572,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+  String get aurWarning => '安全警告：AUR 软件包由用户贡献，请确保信任其来源。';
 
   @override
   String get bootstrapNote => '提示：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+  String get feedbackDesc => '若遇到问题，请在 GitHub 提交反馈。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -590,24 +590,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiProviderDesc => '选择您的 AI 模型来源（本地或云端）';
 
   @override
-  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 默认：http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 请留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地): 下载并运行即可，无需密钥。2. OpenAI: 前往官网创建 API Key 并填入。';
+      '1. Ollama (本地)：下载并运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往服务商官网创建 API 密钥并填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：使用 Ollama 时请确保其在后台运行，并已配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote => '提示：使用 Ollama 需确保其在后台运行，并配置 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '进入商店';
@@ -695,7 +694,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aurSecurityDesc =>
-      'AUR 是由社区维护的软件源。由于包由用户贡献，可能存在安全风险。安装前请仔细检查 PKGBUILD。';
+      'AUR 是由社区维护的软件源。由于任何人都可以上传软件包，其中可能包含不安全的代码。建议在安装前仔细检查 PKGBUILD。';
 
   @override
   String get continueInstall => '继续安装';
@@ -715,7 +714,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get runningInBackground => 'OmniStore 正在后台运行，可通过托盘图标打开';
+  String get runningInBackground => 'OmniStore 正在后台运行，可通过系统托盘图标打开';
 
   @override
   String get clearSearch => '清除搜索';
@@ -758,7 +757,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String notificationBody(int count) {
-    return '你的系统中有 $count 个应用可以更新';
+    return '有 $count 个应用可以更新';
   }
 
   @override
@@ -926,7 +925,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appImageFeedType => 'AppImage 订阅链接';
 
   @override
-  String get sourceName => '来源名称';
+  String get sourceName => '软件源名称';
 
   @override
   String get hintCustomAppName => '例如：my-custom-app';
@@ -947,13 +946,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorNameUrlRequired => '名称和链接/仓库地址不能为空';
 
   @override
-  String get addingCustomSource => '正在添加自定义源...';
+  String get addingCustomSource => '正在添加自定义软件源...';
 
   @override
-  String get sourceAddSuccess => '来源添加成功！';
+  String get sourceAddSuccess => '软件源添加成功！';
 
   @override
-  String get sourceAddFailed => '添加来源失败。';
+  String get sourceAddFailed => '添加软件源失败。';
 
   @override
   String get autoDetectingSources => '正在自动检测系统中可用的软件源...';
@@ -983,7 +982,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageSubtitle => '重启应用后生效';
 
   @override
-  String get restartTitleBar => '请重启应用以使标题栏设置生效';
+  String get restartTitleBar => '重启应用后标题栏设置生效';
 
   @override
   String get enableDaemon => '启用后台更新守护进程';
@@ -1002,7 +1001,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return '每隔 $hours 小时检查一次';
+    return '每隔 $hours 小时自动检查一次';
   }
 
   @override
@@ -1106,7 +1105,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ok => '确定';
 
   @override
-  String get checkNetwork => '请检查您的网络连接并重试';
+  String get checkNetwork => '请检查网络连接并重试';
 
   @override
   String get githubStoreSubtitle => '直接从 GitHub Releases 发现并下载应用';
@@ -1266,7 +1265,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '來源優先級（拖曳排序）';
+  String get sourcePriority => '軟體存放庫優先級（拖曳排序）';
 
   @override
   String get maxResults => '最大結果數';
@@ -1734,13 +1733,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
+  String get aurWarning => '安全警告：AUR 套件由使用者貢獻，請確保信任其來源。';
 
   @override
   String get bootstrapNote => '提示：設定過程可能需要多次輸入管理員密碼。';
 
   @override
-  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
+  String get feedbackDesc => '若遇到問題，請在 GitHub 提交回饋。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -1752,24 +1751,23 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiProviderDesc => '選擇您的 AI 模型來源（本地或雲端）';
 
   @override
-  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 預設：http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 請留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地): 下載並執行即可，無需金鑰。2. OpenAI: 前往官網建立 API Key 並填入。';
+      '1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：使用 Ollama 時請確保其在背景執行，並已配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote => '提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '進入商店';
@@ -1821,7 +1819,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get importList => '匯入列表';
 
   @override
-  String get loadError => '無法載入推薦內容，請檢查背景狀態';
+  String get loadError => '無法載入推薦內容，請檢查後端狀態';
 
   @override
   String get community => '社群';
@@ -1857,7 +1855,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR 是由社群維護的軟體存放庫。由於套件由使用者貢獻，可能存在安全風險。安裝前請仔細檢查 PKGBUILD。';
+      'AUR 是由社群維護的軟體存放庫。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -1920,7 +1918,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String notificationBody(int count) {
-    return '您的系統中有 $count 個應用程式可以更新';
+    return '有 $count 個應用程式可以更新';
   }
 
   @override
@@ -2088,7 +2086,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImageFeedType => 'AppImage 訂閱連結';
 
   @override
-  String get sourceName => '來源名稱';
+  String get sourceName => '軟體存放庫名稱';
 
   @override
   String get hintCustomAppName => '例如：my-custom-app';
@@ -2109,13 +2107,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
 
   @override
-  String get addingCustomSource => '正在新增自訂存放庫...';
+  String get addingCustomSource => '正在新增自訂軟體存放庫...';
 
   @override
-  String get sourceAddSuccess => '來源新增成功！';
+  String get sourceAddSuccess => '軟體存放庫新增成功！';
 
   @override
-  String get sourceAddFailed => '新增來源失敗。';
+  String get sourceAddFailed => '新增軟體存放庫失敗。';
 
   @override
   String get autoDetectingSources => '正在自動偵測系統中可用的軟體存放庫...';
@@ -2145,7 +2143,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get languageSubtitle => '重啟應用程式後生效';
 
   @override
-  String get restartTitleBar => '請重啟應用程式以使標題列設定生效';
+  String get restartTitleBar => '重啟應用程式後標題列設定生效';
 
   @override
   String get enableDaemon => '啟用背景更新守護程序';
@@ -2164,7 +2162,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return '每隔 $hours 小時檢查一次';
+    return '每隔 $hours 小時自動檢查一次';
   }
 
   @override
@@ -2268,7 +2266,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get ok => '確定';
 
   @override
-  String get checkNetwork => '請檢查您的網路連線並重試';
+  String get checkNetwork => '請檢查網路連線並重試';
 
   @override
   String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用程式';
