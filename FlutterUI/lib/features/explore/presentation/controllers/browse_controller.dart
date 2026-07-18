@@ -34,8 +34,8 @@ class BrowseController with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchRecommendations() async {
-    _recommendations = await _packageRepository.getRecommendations();
+  Future<void> fetchRecommendations({bool forceRefresh = false}) async {
+    _recommendations = await _packageRepository.getRecommendations(forceRefresh: forceRefresh);
     notifyListeners();
   }
 

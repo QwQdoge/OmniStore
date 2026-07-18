@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refresh() async {
     final browse = context.read<BrowseController>();
-    await browse.fetchRecommendations();
+    await browse.fetchRecommendations(forceRefresh: true);
     if (!mounted) return;
     await _fetchAIPick();
   }

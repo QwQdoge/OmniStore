@@ -96,3 +96,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 ## 2026-07-28 - Image Memory Optimization and Scroll Virtualization
 **Learning:** `memCacheWidth` and `memCacheHeight` must be set in `CachedNetworkImage` for fixed-size assets like logos to avoid engine decoding full-resolution source images into heap. Mismatched dimensions between `prototypeItem` and `itemBuilder` in `ListView.builder` cause scroll jitter and inaccurate scrollbar sizing during virtualization.
 **Action:** Added missing `memCacheWidth: 64` and `memCacheHeight: 64` to `github_store_header.dart`. Also added missing `prototypeItem`s in `tasks_tab.dart` and `terminal_dialog.dart` to fix virtual scroll rendering issues. Finally, correctly memoized `CategoryService.getCategories` within `didChangeDependencies` in `CategoryPage` to optimize local rebuilds.
+
+## 2026-07-29 - Recommendations Fetch Deduplication & Rate Limiting
+
+**Learning:** Frequently navigating back and forth or switching tabs triggers repetitive background network/daemon recommendation updates, causing unnecessary IPC/HTTP overhead and potentially hitting API rate limits. Coalescing simultaneous fetches via a cached `Future` and throttling background updates using a 5-minute cooldown (`_lastFetchTime`) drastically improves startup/navigation responsiveness and network efficiency.
+
+**Action:** Implement cached `Future` deduplication (`_activeFetchFuture`) and timestamp-based throttling (`_lastFetchTime`) for heavy background metadata and recommendation endpoints, while providing a `forceRefresh` option for manual user triggers.
