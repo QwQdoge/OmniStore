@@ -72,10 +72,8 @@ class AppDetailsHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(16.0),
             ),
             alignment: Alignment.center,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
+            child: SmoothSizeSwitcher(
+              alignment: Alignment.center,
               child: iconUrl != null
                   ? ClipRRect(
                       key: ValueKey(iconUrl),

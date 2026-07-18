@@ -220,34 +220,27 @@ class _HomePageState extends State<HomePage> {
                   if (!isAIEnabled) return const SizedBox.shrink();
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    sizeCurve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: _isAILoading
-                          ? const Column(
-                              key: ValueKey('ai_skeleton_wrapper'),
-                              children: [
-                                SizedBox(height: 32),
-                                AIPickSkeleton(),
-                              ],
-                            )
-                          : Column(
-                              key: const ValueKey('ai_content_wrapper'),
-                              children: [
-                                const SizedBox(height: 32),
-                                AIPickSection(
-                                  aiPickBlurb:
-                                      _aiPickBlurb ??
-                                      '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。',
-                                  isFallback: _aiPickBlurb == null,
-                                  onRefresh: _fetchAIPick,
-                                ),
-                              ],
-                            ),
-                    ),
+                    child: _isAILoading
+                        ? const Column(
+                            key: ValueKey('ai_skeleton_wrapper'),
+                            children: [
+                              SizedBox(height: 32),
+                              AIPickSkeleton(),
+                            ],
+                          )
+                        : Column(
+                            key: const ValueKey('ai_content_wrapper'),
+                            children: [
+                              const SizedBox(height: 32),
+                              AIPickSection(
+                                aiPickBlurb:
+                                    _aiPickBlurb ??
+                                    '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。',
+                                isFallback: _aiPickBlurb == null,
+                                onRefresh: _fetchAIPick,
+                              ),
+                            ],
+                          ),
                   );
                 },
               ),
@@ -298,24 +291,17 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, trending, _) {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    sizeCurve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: trending.isEmpty
-                          ? const _DynamicSectionEmpty(
-                              key: ValueKey('empty_trending'),
-                              message: '暂无热门数据；网络恢复后会自动更新。',
-                            )
-                          : AppShelf(
-                              key: const ValueKey('trending_shelf'),
-                              title: l10n.hotApps,
-                              apps: trending,
-                              scrollController: _hotAppsScrollController,
-                            ),
-                    ),
+                    child: trending.isEmpty
+                        ? const _DynamicSectionEmpty(
+                            key: ValueKey('empty_trending'),
+                            message: '暂无热门数据；网络恢复后会自动更新。',
+                          )
+                        : AppShelf(
+                            key: const ValueKey('trending_shelf'),
+                            title: l10n.hotApps,
+                            apps: trending,
+                            scrollController: _hotAppsScrollController,
+                          ),
                   );
                 },
               ),
@@ -329,24 +315,17 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, forYou, _) {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 300),
-                    sizeCurve: Curves.easeOutCubic,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      child: forYou.isEmpty
-                          ? const _DynamicSectionEmpty(
-                              key: ValueKey('empty_forYou'),
-                              message: '继续搜索或安装应用后，这里会显示个性化建议。',
-                            )
-                          : AppShelf(
-                              key: const ValueKey('forYou_shelf'),
-                              title: l10n.forYou,
-                              apps: forYou,
-                              scrollController: _forYouScrollController,
-                            ),
-                    ),
+                    child: forYou.isEmpty
+                        ? const _DynamicSectionEmpty(
+                            key: ValueKey('empty_forYou'),
+                            message: '继续搜索或安装应用后，这里会显示个性化建议。',
+                          )
+                        : AppShelf(
+                            key: const ValueKey('forYou_shelf'),
+                            title: l10n.forYou,
+                            apps: forYou,
+                            scrollController: _forYouScrollController,
+                          ),
                   );
                 },
               ),
