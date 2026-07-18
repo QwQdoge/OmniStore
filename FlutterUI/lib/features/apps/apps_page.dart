@@ -9,6 +9,7 @@ import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/features/apps/widgets/apps_page_skeleton.dart';
 import 'package:frontend/features/apps/widgets/apps_page_empty_state.dart';
 import 'package:frontend/features/apps/widgets/installed_app_list.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppsPage extends StatefulWidget {
   const AppsPage({super.key});
@@ -128,10 +129,8 @@ class _AppsPageState extends State<AppsPage> {
                       );
                     }
 
-                    return AnimatedSwitcher(
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.fastOutSlowIn,
-                      duration: const Duration(milliseconds: 300),
+                    return SmoothSizeSwitcher(
+                      alignment: Alignment.topCenter,
                       child: child,
                     );
                   },

@@ -89,3 +89,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Using `prototypeItem` on horizontal lists containing variable-width elements (like `ActionChip` or `ChoiceChip` with dynamic labels) is a layout trap. In Flutter, `prototypeItem` forces every child element to have the exact same extent in the scroll direction. For variable-width items, this results in severe truncation for long texts and massive empty padding for short ones.
 
 **Action:** Skipped `prototypeItem` in `category_quick_access.dart` and `ai_app_resolver.dart` to preserve variable-width chip layouts, reserving it for fixed-dimension children or vertical layouts with uniform item extents.
+
+## 2026-07-29 - Recommendations Fetch Deduplication & Rate Limiting
+
+**Learning:** Frequently navigating back and forth or switching tabs triggers repetitive background network/daemon recommendation updates, causing unnecessary IPC/HTTP overhead and potentially hitting API rate limits. Coalescing simultaneous fetches via a cached `Future` and throttling background updates using a 5-minute cooldown (`_lastFetchTime`) drastically improves startup/navigation responsiveness and network efficiency.
+
+**Action:** Implement cached `Future` deduplication (`_activeFetchFuture`) and timestamp-based throttling (`_lastFetchTime`) for heavy background metadata and recommendation endpoints, while providing a `forceRefresh` option for manual user triggers.

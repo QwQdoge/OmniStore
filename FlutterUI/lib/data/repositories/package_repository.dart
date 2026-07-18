@@ -8,6 +8,9 @@ import '../../services/backend_service.dart';
 
 class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
+  // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
+  Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
+  DateTime? _lastFetchTime;
 
   static final List<AppPackage> _editorialFeatured =
       [
@@ -240,26 +243,44 @@ class PackageRepository {
     return {};
   }
 
-  Future<Map<String, List<AppPackage>>> getRecommendations() async {
-    if (_cachedRecs != null) {
-      _refreshRecommendationsCache();
+  Future<Map<String, List<AppPackage>>> getRecommendations({
+    bool forceRefresh = false,
+  }) async {
+    if (_cachedRecs != null && !forceRefresh) {
+      final now = DateTime.now();
+      if (_activeFetchFuture == null &&
+          (_lastFetchTime == null ||
+              now.difference(_lastFetchTime!).inMinutes >= 5)) {
+        _refreshRecommendationsCache();
+      }
       return _cachedRecs!;
     }
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cachedJson = prefs.getString('omnistore_recommendations_cache');
-      if (cachedJson != null) {
-        final decoded = jsonDecode(cachedJson);
-        final parsed = _parseRecommendationsJson(decoded);
-        if (parsed.isNotEmpty) {
-          _cachedRecs = _withEditorialFeatured(parsed);
-          _refreshRecommendationsCache();
-          return _cachedRecs!;
+    if (!forceRefresh) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedJson = prefs.getString('omnistore_recommendations_cache');
+        if (cachedJson != null) {
+          final decoded = jsonDecode(cachedJson);
+          final parsed = _parseRecommendationsJson(decoded);
+          if (parsed.isNotEmpty) {
+            _cachedRecs = _withEditorialFeatured(parsed);
+            final now = DateTime.now();
+            if (_activeFetchFuture == null &&
+                (_lastFetchTime == null ||
+                    now.difference(_lastFetchTime!).inMinutes >= 5)) {
+              _refreshRecommendationsCache();
+            }
+            return _cachedRecs!;
+          }
         }
+      } catch (e) {
+        debugPrint("Error reading recommendations cache: $e");
       }
-    } catch (e) {
-      debugPrint("Error reading recommendations cache: $e");
+    }
+
+    if (forceRefresh) {
+      return _fetchAndCacheRecommendations();
     }
 
     // The first frame never waits for a process or the network.
@@ -268,77 +289,94 @@ class PackageRepository {
     return _cachedRecs!;
   }
 
-  Future<Map<String, List<AppPackage>>> _fetchAndCacheRecommendations() async {
-    if (kIsWeb) {
-      try {
-        // Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
-        final githubUri = Uri.parse(
-          'https://api.github.com/search/repositories?q=stars:>5000+OR+topic:flatpak+OR+topic:aur&sort=stars&order=desc',
-        );
-        final response = await http
-            .get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'})
-            .timeout(const Duration(seconds: 10));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final items = data['items'] as List<dynamic>? ?? [];
+  Future<Map<String, List<AppPackage>>> _fetchAndCacheRecommendations() {
+    if (_activeFetchFuture != null) {
+      return _activeFetchFuture!;
+    }
+    _activeFetchFuture = _fetchAndCacheRecommendationsImpl();
+    return _activeFetchFuture!;
+  }
 
-          final prefs = await SharedPreferences.getInstance();
-          final installedRaw =
-              prefs.getStringList('omnistore_installed_ids') ?? [];
-
-          final apps = items.map((item) {
-            final fullName = item['full_name'] as String;
-            final isInstalled = installedRaw.contains(fullName);
-            return AppPackage(
-              name: item['name'] ?? '',
-              description: item['description'] ?? '',
-              installed: isInstalled,
-              primarySource: "GitHub",
-              url: item['html_url'] ?? '',
-              version: "Latest",
-              icon: item['owner']?['avatar_url'],
-              variants: [
-                AppVariant(
-                  source: "GitHub",
-                  version: "Latest",
-                  installed: isInstalled,
-                  id: fullName,
-                  description: item['description'] ?? '',
-                ),
-              ],
-              screenshots: [],
-            );
-          }).toList();
-
-          return {
-            "featured": apps.take(5).toList(),
-            "trending": apps.skip(5).take(5).toList(),
-            "for_you": apps.skip(10).take(5).toList(),
-          };
-        }
-      } catch (e) {
-        debugPrint("getRecommendations Web Exception: $e");
-      }
-      return {};
-    } else {
-      final results = await BackendService.instance.getRecommendations();
-      if (results.isNotEmpty) {
-        _cachedRecs = _withEditorialFeatured(results);
+  Future<Map<String, List<AppPackage>>>
+  _fetchAndCacheRecommendationsImpl() async {
+    try {
+      if (kIsWeb) {
         try {
-          final prefs = await SharedPreferences.getInstance();
-          final Map<String, dynamic> jsonMap = {};
-          results.forEach((key, list) {
-            jsonMap[key] = list.map((app) => app.toJson()).toList();
-          });
-          await prefs.setString(
-            'omnistore_recommendations_cache',
-            jsonEncode(jsonMap),
+          // Expand web recommendation sources beyond GitHub stars search (e.g. AUR, Flatpak web repositories).
+          final githubUri = Uri.parse(
+            'https://api.github.com/search/repositories?q=stars:>5000+OR+topic:flatpak+OR+topic:aur&sort=stars&order=desc',
           );
+          final response = await http
+              .get(githubUri, headers: {'User-Agent': 'Omnistore/0.1'})
+              .timeout(const Duration(seconds: 10));
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final items = data['items'] as List<dynamic>? ?? [];
+
+            final prefs = await SharedPreferences.getInstance();
+            final installedRaw =
+                prefs.getStringList('omnistore_installed_ids') ?? [];
+
+            final apps = items.map((item) {
+              final fullName = item['full_name'] as String;
+              final isInstalled = installedRaw.contains(fullName);
+              return AppPackage(
+                name: item['name'] ?? '',
+                description: item['description'] ?? '',
+                installed: isInstalled,
+                primarySource: "GitHub",
+                url: item['html_url'] ?? '',
+                version: "Latest",
+                icon: item['owner']?['avatar_url'],
+                variants: [
+                  AppVariant(
+                    source: "GitHub",
+                    version: "Latest",
+                    installed: isInstalled,
+                    id: fullName,
+                    description: item['description'] ?? '',
+                  ),
+                ],
+                screenshots: [],
+              );
+            }).toList();
+
+            final results = {
+              "featured": apps.take(5).toList(),
+              "trending": apps.skip(5).take(5).toList(),
+              "for_you": apps.skip(10).take(5).toList(),
+            };
+            _cachedRecs = _withEditorialFeatured(results);
+            _lastFetchTime = DateTime.now();
+            return _cachedRecs!;
+          }
         } catch (e) {
-          debugPrint("Error writing recommendations cache: $e");
+          debugPrint("getRecommendations Web Exception: $e");
         }
+        return _cachedRecs ?? _withEditorialFeatured({});
+      } else {
+        final results = await BackendService.instance.getRecommendations();
+        if (results.isNotEmpty) {
+          _cachedRecs = _withEditorialFeatured(results);
+          _lastFetchTime = DateTime.now();
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final Map<String, dynamic> jsonMap = {};
+            results.forEach((key, list) {
+              jsonMap[key] = list.map((app) => app.toJson()).toList();
+            });
+            await prefs.setString(
+              'omnistore_recommendations_cache',
+              jsonEncode(jsonMap),
+            );
+          } catch (e) {
+            debugPrint("Error writing recommendations cache: $e");
+          }
+        }
+        return _cachedRecs ?? _withEditorialFeatured(results);
       }
-      return _cachedRecs ?? _withEditorialFeatured(results);
+    } finally {
+      _activeFetchFuture = null;
     }
   }
 
