@@ -120,3 +120,8 @@
 **Learning:** When multiple actions invoke informational `SnackBar` components without a specified `duration`, they fall back to the framework default (which can be overlapping or jarring if rapid). Explicitly setting `duration: const Duration(seconds: 4)` universally across the app creates a consistent, predictable pacing for informational interactions. However, when performing sweeping refactors to enforce this, extreme care must be taken to not mistakenly modify the `duration` parameters of nested or adjacent animation widgets (like `AnimatedSize` or `AnimatedSwitcher`), which typically use milliseconds (e.g., 300ms) rather than seconds.
 
 **Action:** Standardized all informational `SnackBar` widgets across `home_page`, `settings`, `explore`, and `task_manager` to explicitly use a 4-second duration, ensuring overlapping messages are paced correctly and the user interaction loop feels unified.
+## 2026-07-22 - Task Progress Layout Consistency
+
+**Learning:** Abruptly inserting or removing layout blocks like active tasks or task histories creates visual jarring in a scroll view. Wrapping conditional blocks in `SmoothSizeSwitcher` is an effective pattern to provide organic transition fluidity consistent with MD3 principles without causing layout shifts.
+
+**Action:** Applied `SmoothSizeSwitcher` wrappers around conditionally rendered active task and task history blocks in `TasksTab` (FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart).
