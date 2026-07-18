@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class GitHubStoreTabs extends StatelessWidget {
   final TabController tabController;
@@ -15,9 +16,7 @@ class GitHubStoreTabs extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
+    return SmoothSizeSwitcher(
       child: isSearching
           ? const SizedBox.shrink(key: ValueKey('empty_tabs'))
           : Padding(

@@ -138,3 +138,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Across the codebase, the Material Design 3 motion pattern for smooth layout transitions (`AnimatedSize` wrapping an `AnimatedSwitcher` with `easeOutCubic` and `fastOutSlowIn` curves) was duplicated over 20 times. This boilerplate bloated the UI code and made it difficult to maintain consistent motion parameters.
 
 **Action:** Extracted this repeated pattern into a reusable `SmoothSizeSwitcher` widget in `FlutterUI/lib/core/widgets/smooth_size_switcher.dart`. Replaced all occurrences across the `.dart` files, significantly reducing verbosity and improving long-term maintainability.
+## 2024-05-24 - Replace AnimatedSize/AnimatedSwitcher with SmoothSizeSwitcher
+
+**Learning:** The Material Design 3 motion pattern for smooth layout transitions (`AnimatedSize` wrapping an `AnimatedSwitcher` with specific curves) was duplicated in several exploration widgets. Using a unified widget prevents code duplication.
+
+**Action:** Replaced instances of `AnimatedSize` and `AnimatedSwitcher` combinations with the reusable `SmoothSizeSwitcher` widget in `search_result_tile.dart`, `ai_dialogs.dart`, and `github_store_tabs.dart`.
