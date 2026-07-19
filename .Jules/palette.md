@@ -10,6 +10,12 @@
 
 **Action:** Never wrap `FutureBuilder` itself in a sizing layout animation. Always place layout switchers and sizing transitions (like `SmoothSizeSwitcher`) inside the builder method of `FutureBuilder` to ensure state transition animations trigger reliably.
 
+## 2026-07-27 - MD3 Layout Resizing inside FutureBuilder
+
+**Learning:** When intrinsic size changes are involved inside a `FutureBuilder` (for example, switching from a large skeleton loading state to the final UI or vice versa), wrapping the state check in a plain `AnimatedSwitcher` causes abrupt resizing because `AnimatedSwitcher` only animates the cross-fade, not the layout boundaries. Using `SmoothSizeSwitcher` (which encapsulates both `AnimatedSize` and `AnimatedSwitcher` with correct MD3 curves) inside the `FutureBuilder`'s builder method ensures fluid layout resizing that aligns with MD3 motion standards.
+
+**Action:** Replace `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the builder method of `FutureBuilder`s where the loading state and loaded state have differing intrinsic sizes (e.g., in `_AppDetailsRouteLoader`).
+
 ## 2026-06-27 - Technical Metadata Grouping and MD3 Interaction
 
 **Learning:** Grouping technical metadata (Version, Source, License, etc.) into a single `Card` with `surfaceContainerLow` significantly improves scan-ability and visual hierarchy on details pages compared to a flat list. Using a standardized `AppCard` wrapper for interactive tiles across the app (Home, Search) ensures consistent Material 3 hover/tap feedback (1.0 to 0.98 scale) and simplifies state layer management.
