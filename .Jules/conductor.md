@@ -34,3 +34,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
 
 **Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
+## 2024-08-01 - Avoid breaking explicit transitionBuilders
+
+**Learning:** `SmoothSizeSwitcher` is designed for standard layout and cross-fade transitions. It does not accept a custom `transitionBuilder`. Therefore, if an existing `AnimatedSwitcher` uses a specific custom `transitionBuilder` (like `RotationTransition` for a Hamburger button), replacing it with `SmoothSizeSwitcher` will silently strip away that intended motion design, causing a UX regression.
+
+**Action:** Reverted the `HamburgerButton` replacement. When auditing codebase for `AnimatedSwitcher` refactoring, first check if `transitionBuilder` is defined. If so, leave the widget untouched unless redesigning the transition itself.
