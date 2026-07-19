@@ -95,3 +95,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Frequently navigating back and forth or switching tabs triggers repetitive background network/daemon recommendation updates, causing unnecessary IPC/HTTP overhead and potentially hitting API rate limits. Coalescing simultaneous fetches via a cached `Future` and throttling background updates using a 5-minute cooldown (`_lastFetchTime`) drastically improves startup/navigation responsiveness and network efficiency.
 
 **Action:** Implement cached `Future` deduplication (`_activeFetchFuture`) and timestamp-based throttling (`_lastFetchTime`) for heavy background metadata and recommendation endpoints, while providing a `forceRefresh` option for manual user triggers.
+
+## 2026-07-30 - Category Apps Cache & Fetch Deduplication
+
+**Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
+
+**Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.

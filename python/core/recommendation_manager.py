@@ -29,13 +29,21 @@ class RecommendationManager:
 
     def _load_metadata_cache(self) -> Dict[str, Any]:
         """Load metadata cache from disk"""
+        default_structure = {"app_details": {}, "name_mapping": {}, "category_apps": {}}
         if not self.metadata_cache_path.exists():
-            return {"app_details": {}, "name_mapping": {}}
+            return default_structure
         try:
             with open(self.metadata_cache_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                cache = json.load(f)
+                if not isinstance(cache, dict):
+                    return default_structure
+                # Ensure all required keys exist
+                for key, val in default_structure.items():
+                    if key not in cache or not isinstance(cache[key], dict):
+                        cache[key] = val
+                return cache
         except Exception:
-            return {"app_details": {}, "name_mapping": {}}
+            return default_structure
 
     async def _save_metadata_cache(self):
         """Save metadata cache to disk asynchronously with coalescing"""
@@ -61,7 +69,8 @@ class RecommendationManager:
             # We use a deeper snapshot for the inner dictionaries as well.
             data_snapshot = {
                 "app_details": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("app_details", {}).items()},
-                "name_mapping": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("name_mapping", {}).items()}
+                "name_mapping": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("name_mapping", {}).items()},
+                "category_apps": {k: v.copy() if isinstance(v, dict) else v for k, v in self._metadata_cache.get("category_apps", {}).items()}
             }
 
             await asyncio.get_event_loop().run_in_executor(None, _write, data_snapshot)
@@ -272,13 +281,46 @@ class RecommendationManager:
             sys.stderr.write(f"[RecommendationManager] Error: {e}\n")
             return stale or {"trending": [], "for_you": []}
 
-    async def get_category_apps(self, category: str) -> List[Dict]:
-        """Fetch popular apps for a specific category from Flathub"""
+    async def get_category_apps(self, category: str, use_network: bool = True) -> List[Dict]:
+        """Fetch popular apps for a specific category from Flathub with caching and deduplication"""
+        # 1. Check cache (TTL 24 hours)
+        cache_entry = self._metadata_cache.get("category_apps", {}).get(category)
+        if cache_entry and time.time() - cache_entry.get("timestamp", 0) < 86400:
+            return cache_entry.get("data", [])
+
+        if not use_network:
+            return []
+
+        # 2. Deduplicate concurrent requests for the same category
+        task_key = f"category:{category}"
+        if task_key in self._pending_tasks:
+            return await self._pending_tasks[task_key]
+
+        if self.backend:
+            task = self.backend.create_task(self._get_category_apps_impl(category))
+        else:
+            task = asyncio.create_task(self._get_category_apps_impl(category))
+
+        self._pending_tasks[task_key] = task
+        try:
+            return await task
+        finally:
+            self._pending_tasks.pop(task_key, None)
+
+    async def _get_category_apps_impl(self, category: str) -> List[Dict]:
+        """Internal implementation for network fetch of category apps"""
         url = f"https://flathub.org/api/v2/collection/category/{category}"
         try:
             apps = await self._fetch_collection(url)
             # Enrich the top 10 for better UI display
             await asyncio.gather(*[self._enrich_item(item) for item in apps[:10]])
+
+            # Save to cache
+            self._metadata_cache.setdefault("category_apps", {})[category] = {
+                "timestamp": time.time(),
+                "data": apps
+            }
+            await self._save_metadata_cache()
             return apps
         except Exception as e:
             import sys
