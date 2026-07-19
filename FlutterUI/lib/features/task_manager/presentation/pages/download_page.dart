@@ -238,34 +238,29 @@ class _DownloadPageState extends State<DownloadPage>
           ),
           SmoothSizeSwitcher(
             alignment: Alignment.center,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _isCheckingUpdates
-                  ? const Padding(
-                      key: ValueKey('checking_updates'),
-                      padding: EdgeInsets.all(12.0),
-                      child: SizedBox(
+            child: _isCheckingUpdates
+                ? const Padding(
+                    key: ValueKey('checking_updates'),
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Skeleton(
                         width: 20,
                         height: 20,
-                        child: Skeleton(
-                          width: 20,
-                          height: 20,
-                          borderRadius: 10,
-                        ),
+                        borderRadius: 10,
                       ),
-                    )
-                  : IconButton(
-                      key: const ValueKey('refresh_icon'),
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        _loadInstalledApps(forceRefresh: true);
-                        _checkUpdatesWithFeedback();
-                      },
-                      tooltip: AppLocalizations.of(context)!.refresh,
                     ),
-            ),
+                  )
+                : IconButton(
+                    key: const ValueKey('refresh_icon'),
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      _loadInstalledApps(forceRefresh: true);
+                      _checkUpdatesWithFeedback();
+                    },
+                    tooltip: AppLocalizations.of(context)!.refresh,
+                  ),
           ),
         ],
       ),

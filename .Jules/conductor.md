@@ -29,3 +29,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** When animating state changes of a `FutureBuilder` using `SmoothSizeSwitcher` (or `AnimatedSwitcher`), place the switcher inside the `FutureBuilder`'s builder function. Wrapping the `FutureBuilder` itself prevents state change detection because the widget type and key remain constant, breaking the animation transitions.
 
 **Action:** Refactored `ai_dialogs.dart`, `search_result_tile.dart`, and `github_star_badge.dart` to properly use `SmoothSizeSwitcher` internally for smoother layout transitions.
+## 2024-08-01 - Avoid nesting AnimatedSwitcher in SmoothSizeSwitcher
+
+**Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
+
+**Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
