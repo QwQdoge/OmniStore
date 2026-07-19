@@ -143,3 +143,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** The Material Design 3 motion pattern for smooth layout transitions (`AnimatedSize` wrapping an `AnimatedSwitcher` with specific curves) was duplicated in several exploration widgets. Using a unified widget prevents code duplication.
 
 **Action:** Replaced instances of `AnimatedSize` and `AnimatedSwitcher` combinations with the reusable `SmoothSizeSwitcher` widget in `search_result_tile.dart`, `ai_dialogs.dart`, and `github_store_tabs.dart`.
+## 2024-05-24 - Extract InstallationDecisionDialog in AppDetailsPage
+
+**Learning:** Extracting oversized inline dialog builders (like the `AlertDialog` used for AI installation decisions) into standalone stateless widgets significantly reduces the size of complex stateful presentation files (`details_page.dart`) and improves maintainability without changing behavior.
+
+**Action:** Extracted the "安装决策助手" `AlertDialog` from the `_handleAction` method in `details_page.dart` into a new `InstallationDecisionDialog` widget located in `FlutterUI/lib/features/explore/presentation/widgets/action_dialogs.dart`.
