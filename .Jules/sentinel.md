@@ -132,7 +132,7 @@ Even after capturing services before shutdown awaits, the final window-manager c
 
 Action:
 Added a final `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `FlutterUI/lib/app/main_navigation.dart`. Rechecked nearby home and storage cleanup paths; they already had the mounted guards recommended by the audit.
-## $(date +%Y-%m-%d) - [Zombie Process Leak on Async Cancellation]
+## 2026-07-18 - [Zombie Process Leak on Async Cancellation]
 
 Learning:
 In Python 3.8+, `asyncio.CancelledError` inherits from `BaseException` rather than `Exception`. Therefore, error handling blocks catching `Exception` will be bypassed during task cancellation. If a process is being reaped inside an `asyncio.wait_for(...)` block and the task is cancelled, the standard timeout/exception block is skipped, skipping the escalation to `SIGKILL` and leaving zombie processes if the process ignored `SIGTERM`.
@@ -155,3 +155,10 @@ When modifying `except Exception:` to `except BaseException:` to catch `asyncio.
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py` to properly re-raise `BaseException` variants (like `CancelledError` or `KeyboardInterrupt`) without logging them as critical errors, and ensured inner `try-except` blocks don't swallow `BaseException`. Used `asyncio.shield` correctly to allow the cancellation cleanup sequence to run without leaving zombies, while maintaining the correct propagation of `asyncio.CancelledError`.
+## 2026-07-18 - [Zombie Process Leak on Async Cancellation - Fix Refinement]
+
+Learning:
+When catching `BaseException` to properly handle `asyncio.CancelledError` during subprocess cleanup, it is critical not to accidentally swallow the exception or skip subsequent cleanup steps. In `_cleanup_proc`, a cancelled `wait_for` during stage 1 should not skip the stage 2 escalation (SIGKILL). In `OmnistoreBackend.__aexit__`, a cancelled AI session closure must not skip the final resource cleanup.
+
+Action:
+Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.

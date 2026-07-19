@@ -408,12 +408,14 @@ class OmnistoreBackend:
                 # AIAssistant owns a separate lazy aiohttp session. It is not
                 # part of the shared session tracker, so close it explicitly
                 # before releasing the remaining backend resources.
-                if self._ai:
-                    try:
-                        await self._ai.close()
-                    except Exception as exc:
-                        logging.debug(f"AI session cleanup failed: {exc}")
-                await asyncio.shield(self._resources.cleanup())
+                try:
+                    if self._ai:
+                        try:
+                            await asyncio.shield(self._ai.close())
+                        except Exception as exc:
+                            logging.debug(f"AI session cleanup failed: {exc}")
+                finally:
+                    await asyncio.shield(self._resources.cleanup())
             except BaseException as e:
                 if isinstance(e, Exception):
                     logging.error(f"Murphy-proof Critical Cleanup Failure: {e}")

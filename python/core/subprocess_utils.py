@@ -65,8 +65,8 @@ async def _cleanup_proc(proc):
 
             try:
                 # Murphy-proof: Wait for graceful termination
-                await asyncio.wait_for(proc.wait(), timeout=3)
-            except BaseException:
+                await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=3)
+            except BaseException as _exc:
                 # 2. Stage 2: Escalation to Forceful SIGKILL (POSIX) or taskkill (Windows)
                 if os.name == 'posix':
                     try:
@@ -101,6 +101,8 @@ async def _cleanup_proc(proc):
                     await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
                 except (asyncio.TimeoutError, Exception):
                     pass
+                if not isinstance(_exc, Exception):
+                    raise _exc
     except BaseException as e:
         if isinstance(e, Exception):
             logging.error(f"Murphy-proof: Error Reaping Subprocess (PID {proc.pid}): {e}")
