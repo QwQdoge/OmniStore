@@ -593,14 +593,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => '如果是 Ollama 则留空，OpenAI 请填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。';
+      '1. Ollama (本地)：运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往官网创建并填入密钥。';
 
   @override
   String get gotIt => '知道了';
@@ -679,7 +679,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get switchSource => '切换';
 
   @override
-  String get flatpakBetterDesc => '发现此应用有 Flatpak 源，通常更稳定。';
+  String get flatpakBetterDesc => '发现此应用有 Flatpak 软件源，通常更稳定。';
 
   @override
   String get aiAnalysisPrompt => '发现错误日志，需要 AI 分析吗？';
@@ -904,11 +904,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoDetect => '自动检测';
 
   @override
-  String get addCustomSource => '添加自定义源';
+  String get addCustomSource => '添加自定义软件源';
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程源、AppImage 订阅或 GitHub/Bitu 仓库';
+      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库';
 
   @override
   String get sourceType => '软件源类型';
@@ -920,7 +920,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bituRepoType => 'Bitu / Bitbucket（工作区/仓库）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 远程源';
+  String get flatpakRemoteType => 'Flatpak 远程软件源';
 
   @override
   String get appImageFeedType => 'AppImage 订阅链接';
@@ -1271,7 +1271,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方存放庫）';
+  String get pacmanOfficial => 'Pacman（官方軟體存放庫）';
 
   @override
   String get aurUser => 'AUR（使用者軟體存放庫）';
@@ -1772,14 +1772,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => '如果是 Ollama 則留空，OpenAI 請填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。';
+      '1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。';
 
   @override
   String get gotIt => '知道了';
@@ -1858,7 +1858,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 存放庫，通常更穩定。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -2083,14 +2083,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '新增自訂存放庫';
+  String get addCustomSource => '新增自訂軟體存放庫';
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫';
+      '設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫';
 
   @override
-  String get sourceType => '存放庫類型';
+  String get sourceType => '軟體存放庫類型';
 
   @override
   String get githubRepoType => 'GitHub 存放庫（owner/repo）';
@@ -2099,7 +2099,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/存放庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端存放庫';
+  String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -2111,7 +2111,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '存放庫地址（owner/repo）';
+  String get repoOwnerRepo => '軟體存放庫地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2123,7 +2123,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名稱和連結/存放庫地址不能為空';
+  String get errorNameUrlRequired => '名稱和連結/軟體存放庫地址不能為空';
 
   @override
   String get addingCustomSource => '正在新增自訂軟體存放庫...';
