@@ -545,7 +545,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
+  String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
@@ -560,10 +560,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continueAnyway => '仍然继续';
 
   @override
-  String get sourceConfigTitle => '应用源配置';
+  String get sourceConfigTitle => '软件源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
+  String get sourceConfigSubtitle => '选择您想要启用的软件源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
@@ -584,7 +584,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
+  String get aiAssistantDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
 
   @override
   String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
@@ -1724,7 +1724,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
-  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
+  String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
@@ -1739,10 +1739,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '應用程式來源配置';
+  String get sourceConfigTitle => '軟體存放庫設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
+  String get sourceConfigSubtitle => '選擇您想要啟用的軟體存放庫';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
@@ -1763,7 +1763,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。';
+  String get aiAssistantDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
 
   @override
   String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';

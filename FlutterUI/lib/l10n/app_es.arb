@@ -1132,5 +1132,10 @@
   },
   "@googleGemini": {
     "description": "Description for googleGemini"
-  }
+  },
+  "installationDecisionTitle": "Asistente de decisión de instalación",
+  "recommendedSource": "Fuente recomendada: {source}",
+  "preflightChecks": "Comprobaciones previas",
+  "potentialRisks": "Riesgos potenciales",
+  "continueInstallation": "Continuar"
 }

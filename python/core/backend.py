@@ -121,22 +121,34 @@ class ResourceCoordinator:
         async with self._lock:
             # 1. Task Cancellation: Kill pending async operations immediately
             if self._tasks:
-                logging.debug(f"ResourceCoordinator: Cancelling {len(self._tasks)} tasks.")
-                for task in list(self._tasks):
+                # The command currently unwinding its context manager is already
+                # being cancelled by its caller. Cancelling it again interrupts
+                # this cleanup coroutine before it can close network handles.
+                current_task = asyncio.current_task()
+                tasks_to_reap = [
+                    task for task in self._tasks
+                    if task is not current_task
+                ]
+                logging.debug(
+                    "ResourceCoordinator: Cancelling %s tracked background tasks.",
+                    len(tasks_to_reap),
+                )
+                for task in tasks_to_reap:
                     if not task.done():
                         task.cancel()
 
                 # Murphy-proof: multi-stage gather with timeout to prevent cleanup hang
-                try:
-                    # Using shield to ensure we attempt to gather even if cleanup itself is cancelled
-                    await asyncio.wait_for(
-                        asyncio.shield(asyncio.gather(*self._tasks, return_exceptions=True)),
-                        timeout=5.0
-                    )
-                except asyncio.TimeoutError:
-                    logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                if tasks_to_reap:
+                    try:
+                        # Using shield to ensure we attempt to gather even if cleanup itself is cancelled.
+                        await asyncio.wait_for(
+                            asyncio.shield(asyncio.gather(*tasks_to_reap, return_exceptions=True)),
+                            timeout=5.0
+                        )
+                    except asyncio.TimeoutError:
+                        logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
+                    except Exception as e:
+                        logging.error(f"ResourceCoordinator: Task gather error: {e}")
 
                 self._tasks.clear()
 
@@ -415,7 +427,15 @@ class OmnistoreBackend:
                         except Exception as exc:
                             logging.debug(f"AI session cleanup failed: {exc}")
                 finally:
-                    await asyncio.shield(self._resources.cleanup())
+                    cleanup_task = asyncio.create_task(self._resources.cleanup())
+                    try:
+                        await asyncio.shield(cleanup_task)
+                    except asyncio.CancelledError:
+                        # A caller can cancel the command while its context is
+                        # unwinding. Let resource cleanup finish before passing
+                        # that cancellation back to the caller.
+                        await asyncio.shield(cleanup_task)
+                        raise
             except BaseException as e:
                 if isinstance(e, Exception):
                     logging.error(f"Murphy-proof Critical Cleanup Failure: {e}")
@@ -475,10 +495,6 @@ class OmnistoreBackend:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Installing [bold green]{v_name}[/bold green] from [cyan]{v_source}[/cyan]", border_style="green"))
 
-            # Explicit tracking for the installation task
-            install_task = asyncio.current_task()
-            if install_task: self._resources.track_task(install_task)
-
             success = await self.executor.install({"name": v_name, "id": v_name, "source": v_source, "url": v_url}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()
@@ -495,10 +511,6 @@ class OmnistoreBackend:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Uninstalling [bold red]{v_name}[/bold red] from [cyan]{v_source}[/cyan]", border_style="red"))
 
-            # Explicit tracking
-            uninstall_task = asyncio.current_task()
-            if uninstall_task: self._resources.track_task(uninstall_task)
-
             success = await self.executor.uninstall({"name": v_name, "id": v_name, "source": v_source, "flag": v_flag}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()
@@ -513,10 +525,6 @@ class OmnistoreBackend:
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Updating [bold blue]{v_name}[/bold blue] via [cyan]{v_source}[/cyan]", border_style="blue"))
-
-            # Explicit tracking
-            update_task = asyncio.current_task()
-            if update_task: self._resources.track_task(update_task)
 
             success = await self.executor.update({"name": v_name, "id": v_name, "source": v_source}, callback=cb)
             if success:

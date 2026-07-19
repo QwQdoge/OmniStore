@@ -1136,5 +1136,29 @@
   },
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "installationDecisionTitle": "安装决策助手",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "推荐来源：{source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "安装前检查",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "风险提示",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "继续安装",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
   }
 }

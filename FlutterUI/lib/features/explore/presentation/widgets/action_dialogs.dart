@@ -84,20 +84,22 @@ class InstallationDecisionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final recommended = decision['recommendedVariant']?.toString();
     return AlertDialog(
-      title: const Text('安装决策助手'),
+      title: Text(localizations.installationDecisionTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (recommended != null) Text('推荐来源：$recommended'),
+            if (recommended != null)
+              Text(localizations.recommendedSource(recommended)),
             for (final reason in (decision['reasons'] as List? ?? const []))
               Text('• $reason'),
             const SizedBox(height: 12),
-            const Text(
-              '安装前检查',
+            Text(
+              localizations.preflightChecks,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             for (final check
@@ -105,8 +107,8 @@ class InstallationDecisionDialog extends StatelessWidget {
               Text('• $check'),
             if ((decision['risks'] as List? ?? const []).isNotEmpty) ...[
               const SizedBox(height: 12),
-              const Text(
-                '风险提示',
+              Text(
+                localizations.potentialRisks,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               for (final risk in (decision['risks'] as List? ?? const []))
@@ -118,11 +120,11 @@ class InstallationDecisionDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
+          child: Text(localizations.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('继续安装'),
+          child: Text(localizations.continueInstallation),
         ),
       ],
     );

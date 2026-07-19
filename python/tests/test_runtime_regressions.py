@@ -1,5 +1,6 @@
-import json
 import inspect
+import asyncio
+import json
 
 import pytest
 from pydantic import ValidationError
@@ -65,3 +66,26 @@ def test_details_cli_routes_source_to_plugin_details():
 
     assert "backend.run_app_details(validated_args.details, validated_args.json_mode, validated_args.source)" in handler_source
     assert "source" in backend_signature.parameters
+
+
+def test_resource_cleanup_does_not_cancel_its_own_task():
+    class ClosableHandle:
+        closed = False
+
+        def __init__(self):
+            self.close_calls = 0
+
+        async def close(self):
+            self.close_calls += 1
+            self.closed = True
+
+    async def cleanup_current_task():
+        coordinator = backend_module.ResourceCoordinator()
+        handle = ClosableHandle()
+        coordinator.track_task(asyncio.current_task())
+        coordinator.track_handle(handle)
+
+        await coordinator.cleanup()
+        return handle.close_calls
+
+    assert asyncio.run(cleanup_current_task()) == 1

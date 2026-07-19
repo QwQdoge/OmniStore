@@ -1132,5 +1132,29 @@
   },
   "@googleGemini": {
     "description": "Description for googleGemini"
+  },
+  "installationDecisionTitle": "Installation Decision Helper",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "Recommended Source: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "Preflight Checks",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "Potential Risks",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "Continue",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
   }
 }

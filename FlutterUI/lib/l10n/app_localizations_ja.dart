@@ -1172,7 +1172,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get readOnly => '読み取り専用';
 
   @override
-  String get installationDecisionTitle => 'インストール決定ヘルパー';
+  String get installationDecisionTitle => 'インストール判断アシスタント';
 
   @override
   String recommendedSource(String source) {
@@ -1183,8 +1183,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get preflightChecks => '事前チェック';
 
   @override
-  String get potentialRisks => '潜在的なリスク';
+  String get potentialRisks => '想定されるリスク';
 
   @override
-  String get continueInstallation => 'インストールを続行';
+  String get continueInstallation => '続行';
 }
