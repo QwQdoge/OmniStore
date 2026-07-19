@@ -1,3 +1,9 @@
+## 2026-07-26 - Material Design 3 Dialog Extraction and Refinement
+
+**Learning:** Keeping large, complex dialog structures as inline code inside stateful pages/controllers bloats the file size, reduces readability, and violates clean separation of concerns. Furthermore, hardcoding user-facing strings within these inline builders breaks internationalization. Extracting these structures to dedicated, self-contained widgets (like `InstallationDecisionDialog` in `action_dialogs.dart`) paired with robust `AppLocalizations` support ensures consistent localization across languages. Utilizing Material 3 design features—such as 28dp rounded corners, w800 headline typography, clean semantic lists with icons, and contextual color-coded containers (like errorContainer for risks)—dramatically elevates overall interaction clarity and accessibility.
+
+**Action:** Extract oversized inline dialog builders into standalone `StatelessWidget`s in cohesive widget modules. Enforce complete localization, avoid inline hardcoded text, and design complex warning panels using explicit MD3 geometric and semantic color-scheme tokens.
+
 ## 2026-07-25 - Async FutureBuilder Layout Animations
 
 **Learning:** Wrapping a `FutureBuilder` inside an `AnimatedSize` when its builder returns an `AnimatedSwitcher` prevents correct layout size change detection because the `FutureBuilder` widget's key and type remain constant across states. Scoping layout animation widgets (like `SmoothSizeSwitcher` or standard `AnimatedSize` + `AnimatedSwitcher`) *inside* the `FutureBuilder` builder function allows the subtree state changes to be animated smoothly as they switch between loading/skeleton states and the loaded content, while aligning with Material Design 3 motion pacing.

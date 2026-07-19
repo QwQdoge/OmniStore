@@ -542,16 +542,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '正在确保系统已准备就绪';
+  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
 
   @override
-  String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
+  String get envFatalDesc => '您的系统似乎不是基于 Arch 的，这会导致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '系统缺少必要的运行组件，我们可以为您自动配置。';
+  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！系统环境已完美配置。';
+  String get envOkDesc => '一切就绪！您的系统非常完美。';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -560,53 +560,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continueAnyway => '仍然继续';
 
   @override
-  String get sourceConfigTitle => '软件源配置';
+  String get sourceConfigTitle => '应用源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择您想要启用的软件源';
+  String get sourceConfigSubtitle => '选择您想要启用的应用来源';
 
   @override
-  String get enableAur => '启用 AUR（Arch User Repository）';
+  String get enableAur => '启用 AUR (Arch User Repository)';
 
   @override
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 软件包由用户贡献，请确保信任其来源。';
+  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
 
   @override
-  String get bootstrapNote => '提示：配置过程可能需要多次输入管理员密码。';
+  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '若遇到问题，请在 GitHub 提交反馈。';
+  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
 
   @override
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
+  String get aiAssistantDesc => '开启 AI 辅助搜索、应用解释与错误诊断。';
 
   @override
-  String get aiProviderDesc => '选择您的 AI 模型来源（本地或云端）';
+  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 默认：http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => '如果是 Ollama 则留空，OpenAI 请填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：下载并运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往服务商官网创建 API 密钥并填入。';
+      '1. Ollama (本地): 下载并运行 Ollama，无需密钥。2. 云端 (OpenAI): 前往服务商官网创建 API Key，然后填入此处。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '提示：使用 Ollama 需确保其在后台运行，并配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -631,11 +632,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return '重置失败：$error';
+    return '重置失败: $error';
   }
 
   @override
-  String get ollamaLocal => 'Ollama（本地）';
+  String get ollamaLocal => 'Ollama (本地)';
 
   @override
   String get openaiCompatible => 'OpenAI 兼容';
@@ -1163,6 +1164,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get readOnly => '只读';
+
+  @override
+  String get installationDecisionTitle => '安装决策助手';
+
+  @override
+  String recommendedSource(String source) {
+    return '推荐来源：$source';
+  }
+
+  @override
+  String get preflightChecks => '安装前检查';
+
+  @override
+  String get potentialRisks => '风险提示';
+
+  @override
+  String get continueInstallation => '继续安装';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1703,71 +1721,72 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '正在確保系統已準備就緒';
+  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
 
   @override
-  String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
+  String get envFatalDesc => '您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。';
 
   @override
-  String get envWarningDesc => '系統缺少必要的執行組件，我們可以為您自動設定。';
+  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
 
   @override
-  String get envOkDesc => '一切就緒！系統環境已完美配置。';
+  String get envOkDesc => '一切就緒！您的系統非常完美。';
 
   @override
-  String get fixProblems => '一鍵修復/設定';
+  String get fixProblems => '一鍵修復/配置';
 
   @override
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '軟體存放庫設定';
+  String get sourceConfigTitle => '應用程式來源配置';
 
   @override
-  String get sourceConfigSubtitle => '選擇您想要啟用的軟體存放庫';
+  String get sourceConfigSubtitle => '選擇您想要啟用的應用程式來源';
 
   @override
-  String get enableAur => '啟用 AUR（Arch User Repository）';
+  String get enableAur => '啟用 AUR (Arch User Repository)';
 
   @override
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 套件由使用者貢獻，請確保信任其來源。';
+  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
 
   @override
-  String get bootstrapNote => '提示：設定過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
 
   @override
-  String get feedbackDesc => '若遇到問題，請在 GitHub 提交回饋。';
+  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
 
   @override
   String get aiAssistant => 'AI 助手';
 
   @override
-  String get aiAssistantDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
+  String get aiAssistantDesc => '開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。';
 
   @override
-  String get aiProviderDesc => '選擇您的 AI 模型來源（本地或雲端）';
+  String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 預設：http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => '如果是 Ollama 則留空，OpenAI 請填入 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。';
+      '1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。';
+  String get aiOllamaNote =>
+      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
@@ -1792,11 +1811,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resetFailed(String error) {
-    return '重置失敗：$error';
+    return '重置失敗: $error';
   }
 
   @override
-  String get ollamaLocal => 'Ollama（本地）';
+  String get ollamaLocal => 'Ollama (本地)';
 
   @override
   String get openaiCompatible => 'OpenAI 相容';
@@ -2324,4 +2343,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get readOnly => '唯讀';
+
+  @override
+  String get installationDecisionTitle => '安裝決策助手';
+
+  @override
+  String recommendedSource(String source) {
+    return '推薦來源：$source';
+  }
+
+  @override
+  String get preflightChecks => '安裝前檢查';
+
+  @override
+  String get potentialRisks => '風險提示';
+
+  @override
+  String get continueInstallation => '繼續安裝';
 }

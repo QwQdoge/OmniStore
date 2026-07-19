@@ -1099,205 +1099,205 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get delete;
 
-  /// No description provided for @welcomeTitle.
+  /// Description for welcomeTitle
   ///
   /// In en, this message translates to:
   /// **'Welcome to OmniStore'**
   String get welcomeTitle;
 
-  /// No description provided for @welcomeSubtitle.
+  /// Description for welcomeSubtitle
   ///
   /// In en, this message translates to:
   /// **'Providing a simple and elegant software management experience for Arch Linux'**
   String get welcomeSubtitle;
 
-  /// No description provided for @getStarted.
+  /// Description for getStarted
   ///
   /// In en, this message translates to:
   /// **'Get Started'**
   String get getStarted;
 
-  /// No description provided for @skip.
+  /// Description for skip
   ///
   /// In en, this message translates to:
   /// **'Skip'**
   String get skip;
 
-  /// No description provided for @envCheckTitle.
+  /// Description for envCheckTitle
   ///
   /// In en, this message translates to:
   /// **'Environment Check'**
   String get envCheckTitle;
 
-  /// No description provided for @envCheckSubtitle.
+  /// Description for envCheckSubtitle
   ///
   /// In en, this message translates to:
   /// **'Ensuring your system is ready'**
   String get envCheckSubtitle;
 
-  /// No description provided for @envFatalDesc.
+  /// Description for envFatalDesc
   ///
   /// In en, this message translates to:
   /// **'Your system doesn\'t seem to be Arch-based. Most features will be unavailable.'**
   String get envFatalDesc;
 
-  /// No description provided for @envWarningDesc.
+  /// Description for envWarningDesc
   ///
   /// In en, this message translates to:
   /// **'Some necessary components are missing. We can configure them for you.'**
   String get envWarningDesc;
 
-  /// No description provided for @envOkDesc.
+  /// Description for envOkDesc
   ///
   /// In en, this message translates to:
   /// **'Everything is ready! Your system is perfect.'**
   String get envOkDesc;
 
-  /// No description provided for @fixProblems.
+  /// Description for fixProblems
   ///
   /// In en, this message translates to:
   /// **'Fix / Configure All'**
   String get fixProblems;
 
-  /// No description provided for @continueAnyway.
+  /// Description for continueAnyway
   ///
   /// In en, this message translates to:
   /// **'Continue Anyway'**
   String get continueAnyway;
 
-  /// No description provided for @sourceConfigTitle.
+  /// Description for sourceConfigTitle
   ///
   /// In en, this message translates to:
   /// **'Software Sources'**
   String get sourceConfigTitle;
 
-  /// No description provided for @sourceConfigSubtitle.
+  /// Description for sourceConfigSubtitle
   ///
   /// In en, this message translates to:
   /// **'Choose the sources you want to enable'**
   String get sourceConfigSubtitle;
 
-  /// No description provided for @enableAur.
+  /// Description for enableAur
   ///
   /// In en, this message translates to:
   /// **'Enable AUR (Arch User Repository)'**
   String get enableAur;
 
-  /// No description provided for @yayDesc.
+  /// Description for yayDesc
   ///
   /// In en, this message translates to:
   /// **'Enabling AUR requires installing the yay helper.'**
   String get yayDesc;
 
-  /// No description provided for @aurWarning.
+  /// Description for aurWarning
   ///
   /// In en, this message translates to:
   /// **'Security Warning: AUR packages are user-contributed. Ensure you trust the source.'**
   String get aurWarning;
 
-  /// No description provided for @bootstrapNote.
+  /// Description for bootstrapNote
   ///
   /// In en, this message translates to:
   /// **'Note: Setup may require entering your password multiple times.'**
   String get bootstrapNote;
 
-  /// No description provided for @feedbackDesc.
+  /// Description for feedbackDesc
   ///
   /// In en, this message translates to:
   /// **'If you encounter issues, please report them on GitHub.'**
   String get feedbackDesc;
 
-  /// No description provided for @aiAssistant.
+  /// Description for aiAssistant
   ///
   /// In en, this message translates to:
   /// **'AI Assistant'**
   String get aiAssistant;
 
-  /// No description provided for @aiAssistantDesc.
+  /// Description for aiAssistantDesc
   ///
   /// In en, this message translates to:
   /// **'Enable AI-powered search, app explanation, and error diagnosis.'**
   String get aiAssistantDesc;
 
-  /// No description provided for @aiProviderDesc.
+  /// Description for aiProviderDesc
   ///
   /// In en, this message translates to:
   /// **'Select your AI model source (Local or Cloud)'**
   String get aiProviderDesc;
 
-  /// No description provided for @aiEndpointHelper.
+  /// Description for aiEndpointHelper
   ///
   /// In en, this message translates to:
   /// **'Ollama defaults to http://localhost:11434'**
   String get aiEndpointHelper;
 
-  /// No description provided for @aiApiKeyHelper.
+  /// Description for aiApiKeyHelper
   ///
   /// In en, this message translates to:
   /// **'Leave blank for Ollama, enter sk-xxx for OpenAI'**
   String get aiApiKeyHelper;
 
-  /// No description provided for @howToGetApiKey.
+  /// Description for howToGetApiKey
   ///
   /// In en, this message translates to:
   /// **'How to get an API key?'**
   String get howToGetApiKey;
 
-  /// No description provided for @howToGetApiKeyDesc.
+  /// Description for howToGetApiKeyDesc
   ///
   /// In en, this message translates to:
   /// **'1. Ollama (Local): Download and run Ollama, no key needed. 2. Cloud (OpenAI): Go to the provider\'s website, create an API Key, and enter it here.'**
   String get howToGetApiKeyDesc;
 
-  /// No description provided for @gotIt.
+  /// Description for gotIt
   ///
   /// In en, this message translates to:
   /// **'Got it'**
   String get gotIt;
 
-  /// No description provided for @aiOllamaNote.
+  /// Description for aiOllamaNote
   ///
   /// In en, this message translates to:
   /// **'Note: If using Ollama, ensure it\'s running with OLLAMA_ORIGINS=\"*\".'**
   String get aiOllamaNote;
 
-  /// No description provided for @enterStore.
+  /// Description for enterStore
   ///
   /// In en, this message translates to:
   /// **'Enter Store'**
   String get enterStore;
 
-  /// No description provided for @nextStep.
+  /// Description for nextStep
   ///
   /// In en, this message translates to:
   /// **'Next Step'**
   String get nextStep;
 
-  /// No description provided for @resetCache.
+  /// Description for resetCache
   ///
   /// In en, this message translates to:
   /// **'Reset Cache and History'**
   String get resetCache;
 
-  /// No description provided for @resetCacheDesc.
+  /// Description for resetCacheDesc
   ///
   /// In en, this message translates to:
   /// **'Clear search history and local recommendations cache'**
   String get resetCacheDesc;
 
-  /// No description provided for @resetCacheConfirm.
+  /// Description for resetCacheConfirm
   ///
   /// In en, this message translates to:
   /// **'This will clear your search history and recommendations cache. Proceed?'**
   String get resetCacheConfirm;
 
-  /// No description provided for @resetting.
+  /// Description for resetting
   ///
   /// In en, this message translates to:
   /// **'Resetting...'**
   String get resetting;
 
-  /// No description provided for @resetSuccess.
+  /// Description for resetSuccess
   ///
   /// In en, this message translates to:
   /// **'Cache and History cleared successfully'**
@@ -1309,19 +1309,19 @@ abstract class AppLocalizations {
   /// **'Reset failed: {error}'**
   String resetFailed(String error);
 
-  /// No description provided for @ollamaLocal.
+  /// Description for ollamaLocal
   ///
   /// In en, this message translates to:
   /// **'Ollama (Local)'**
   String get ollamaLocal;
 
-  /// No description provided for @openaiCompatible.
+  /// Description for openaiCompatible
   ///
   /// In en, this message translates to:
   /// **'OpenAI Compatible'**
   String get openaiCompatible;
 
-  /// No description provided for @googleGemini.
+  /// Description for googleGemini
   ///
   /// In en, this message translates to:
   /// **'Google Gemini'**
@@ -2280,6 +2280,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read-only'**
   String get readOnly;
+
+  /// Description for installationDecisionTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Decision Helper'**
+  String get installationDecisionTitle;
+
+  /// No description provided for @recommendedSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Source: {source}'**
+  String recommendedSource(String source);
+
+  /// Description for preflightChecks
+  ///
+  /// In en, this message translates to:
+  /// **'Preflight Checks'**
+  String get preflightChecks;
+
+  /// Description for potentialRisks
+  ///
+  /// In en, this message translates to:
+  /// **'Potential Risks'**
+  String get potentialRisks;
+
+  /// Description for continueInstallation
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueInstallation;
 }
 
 class _AppLocalizationsDelegate

@@ -461,27 +461,27 @@
   "skip": "スキップ",
   "envCheckTitle": "環境チェック",
   "envCheckSubtitle": "システムの準備が整っていることを確認します",
-  "envFatalDesc": "お使いのシステムは Arch ベースではありません。ほとんどの機能が利用できなくなります。",
+  "envFatalDesc": "お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。",
   "envWarningDesc": "いくつかの必要なコンポーネントが不足しています。自動的に設定できます。",
   "envOkDesc": "準備完了です！お使いのシステムは完璧です。",
   "fixProblems": "すべて修正 / 設定",
   "continueAnyway": "とにかく続行",
   "sourceConfigTitle": "ソフトウェアソース",
   "sourceConfigSubtitle": "有効にするソースを選択してください",
-  "enableAur": "AUR（Arch User Repository） を有効にする",
+  "enableAur": "AUR (Arch User Repository) を有効にする",
   "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
-  "aurWarning": "セキュリティ警告：AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
-  "bootstrapNote": "注意：セットアップにはパスワードの入力が数回必要な場合があります。",
+  "aurWarning": "セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
+  "bootstrapNote": "注意: セットアップにはパスワードの入力が数回必要な場合があります。",
   "feedbackDesc": "問題が発生した場合は、GitHub で報告してください。",
   "aiAssistant": "AI アシスタント",
   "aiAssistantDesc": "AI による検索補助、アプリの説明、エラー診断を有効にします。",
-  "aiProviderDesc": "AI モデルのソースを選択してください（ローカルまたはクラウド）",
+  "aiProviderDesc": "AI モデルのソースを選択してください (ローカルまたはクラウド)",
   "aiEndpointHelper": "Ollama のデフォルトは http://localhost:11434 です",
   "aiApiKeyHelper": "Ollama の場合は空欄、OpenAI の場合は sk-xxx を入力してください",
   "howToGetApiKey": "API キーを取得するには？",
-  "howToGetApiKeyDesc": "1. Ollama（ローカル）：Ollama をダウンロードして実行します。キーは不要です。2. クラウド（OpenAI）：プロバイダーのウェブサイトで API キーを作成し、ここに入力します。",
+  "howToGetApiKeyDesc": "1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。",
   "gotIt": "了解",
-  "aiOllamaNote": "注意：Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。",
+  "aiOllamaNote": "注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。",
   "enterStore": "ストアに入る",
   "nextStep": "次へ",
   "resetCache": "キャッシュと履歴をリセット",
@@ -489,7 +489,7 @@
   "resetCacheConfirm": "検索履歴とおすすめキャッシュがクリアされます。続行しますか？",
   "resetting": "リセット中...",
   "resetSuccess": "キャッシュと履歴が正常にクリアされました",
-  "resetFailed": "リセットに失敗しました：{error}",
+  "resetFailed": "リセットに失敗しました: {error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -497,7 +497,7 @@
       }
     }
   },
-  "ollamaLocal": "Ollama（ローカル）",
+  "ollamaLocal": "Ollama (ローカル)",
   "openaiCompatible": "OpenAI 互換",
   "googleGemini": "Google Gemini",
   "importPackages": "パッケージをインポート",
@@ -1021,5 +1021,140 @@
     "description": "Tooltip for removing a plugin"
   },
   "managed": "管理対象",
-  "readOnly": "読み取り専用"
+  "readOnly": "読み取り専用",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  },
+  "installationDecisionTitle": "インストール決定ヘルパー",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "推奨ソース: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "事前チェック",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "潜在的なリスク",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "インストールを続行",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  }
 }

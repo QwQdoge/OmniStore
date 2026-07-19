@@ -1251,4 +1251,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readOnly => 'Read-only';
+
+  @override
+  String get installationDecisionTitle => 'Installation Decision Helper';
+
+  @override
+  String recommendedSource(String source) {
+    return 'Recommended Source: $source';
+  }
+
+  @override
+  String get preflightChecks => 'Preflight Checks';
+
+  @override
+  String get potentialRisks => 'Potential Risks';
+
+  @override
+  String get continueInstallation => 'Continue';
 }
