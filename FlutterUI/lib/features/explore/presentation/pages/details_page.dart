@@ -161,10 +161,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       final recommended = decision['recommendedVariant']?.toString();
       final accepted = await showDialog<bool>(
         context: context,
-        builder: (context) => InstallationDecisionDialog(
-          decision: decision,
-          recommended: recommended,
-        ),
+        builder: (context) => InstallationDecisionDialog(decision: decision),
       );
       if (accepted != true) return;
       if (!mounted) return;
