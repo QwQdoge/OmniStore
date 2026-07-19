@@ -547,7 +547,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get envCheckSubtitle => 'システムの準備が整っていることを確認します';
 
   @override
-  String get envFatalDesc => 'お使いのシステムは Arch ベースではありません。ほとんどの機能が利用できなくなります。';
+  String get envFatalDesc => 'お使いのシステムは Arch ベースではないようです。ほとんどの機能が利用できなくなります。';
 
   @override
   String get envWarningDesc => 'いくつかの必要なコンポーネントが不足しています。自動的に設定できます。';
@@ -568,17 +568,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceConfigSubtitle => '有効にするソースを選択してください';
 
   @override
-  String get enableAur => 'AUR（Arch User Repository） を有効にする';
+  String get enableAur => 'AUR (Arch User Repository) を有効にする';
 
   @override
   String get yayDesc => 'AUR を有効にするには yay ヘルパーのインストールが必要です。';
 
   @override
   String get aurWarning =>
-      'セキュリティ警告：AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
+      'セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
 
   @override
-  String get bootstrapNote => '注意：セットアップにはパスワードの入力が数回必要な場合があります。';
+  String get bootstrapNote => '注意: セットアップにはパスワードの入力が数回必要な場合があります。';
 
   @override
   String get feedbackDesc => '問題が発生した場合は、GitHub で報告してください。';
@@ -590,7 +590,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiAssistantDesc => 'AI による検索補助、アプリの説明、エラー診断を有効にします。';
 
   @override
-  String get aiProviderDesc => 'AI モデルのソースを選択してください（ローカルまたはクラウド）';
+  String get aiProviderDesc => 'AI モデルのソースを選択してください (ローカルまたはクラウド)';
 
   @override
   String get aiEndpointHelper => 'Ollama のデフォルトは http://localhost:11434 です';
@@ -603,14 +603,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama（ローカル）：Ollama をダウンロードして実行します。キーは不要です。2. クラウド（OpenAI）：プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
+      '1. Ollama (ローカル): Ollama をダウンロードして実行します。キーは不要です。2. クラウド (OpenAI): プロバイダーのウェブサイトで API キーを作成し、ここに入力します。';
 
   @override
   String get gotIt => '了解';
 
   @override
   String get aiOllamaNote =>
-      '注意：Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
+      '注意: Ollama を使用する場合は、OLLAMA_ORIGINS=\"*\" で実行されていることを確認してください。';
 
   @override
   String get enterStore => 'ストアに入る';
@@ -635,11 +635,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return 'リセットに失敗しました：$error';
+    return 'リセットに失敗しました: $error';
   }
 
   @override
-  String get ollamaLocal => 'Ollama（ローカル）';
+  String get ollamaLocal => 'Ollama (ローカル)';
 
   @override
   String get openaiCompatible => 'OpenAI 互換';
@@ -1170,4 +1170,21 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get readOnly => '読み取り専用';
+
+  @override
+  String get installationDecisionTitle => 'インストール決定ヘルパー';
+
+  @override
+  String recommendedSource(String source) {
+    return '推奨ソース: $source';
+  }
+
+  @override
+  String get preflightChecks => '事前チェック';
+
+  @override
+  String get potentialRisks => '潜在的なリスク';
+
+  @override
+  String get continueInstallation => 'インストールを続行';
 }

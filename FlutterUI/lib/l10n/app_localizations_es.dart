@@ -583,7 +583,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get envFatalDesc =>
-      'Su sistema no está basado en Arch. La mayoría de las funciones no estarán disponibles.';
+      'Su sistema no parece estar basado en Arch. La mayoría de las funciones no estarán disponibles.';
 
   @override
   String get envWarningDesc =>
@@ -634,12 +634,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Seleccione su fuente de modelo de IA (Local o Nube)';
 
   @override
-  String get aiEndpointHelper =>
-      'Ollama usa por defecto http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama por defecto es http://localhost:11434';
 
   @override
   String get aiApiKeyHelper =>
-      'Deje en blanco para Ollama e introduzca sk-xxx para OpenAI';
+      'Dejar en blanco para Ollama, introducir sk-xxx para OpenAI';
 
   @override
   String get howToGetApiKey => '¿Cómo obtener una clave API?';
@@ -1260,4 +1259,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get readOnly => 'Solo lectura';
+
+  @override
+  String get installationDecisionTitle =>
+      'Asistente de Decisión de Instalación';
+
+  @override
+  String recommendedSource(String source) {
+    return 'Fuente Recomendada: $source';
+  }
+
+  @override
+  String get preflightChecks => 'Comprobaciones Previas';
+
+  @override
+  String get potentialRisks => 'Riesgos Potenciales';
+
+  @override
+  String get continueInstallation => 'Continuar Instalación';
 }

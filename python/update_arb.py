@@ -41,7 +41,12 @@ NEW_KEYS_EN = {
     "resetFailed": "Reset failed: {error}",
     "ollamaLocal": "Ollama (Local)",
     "openaiCompatible": "OpenAI Compatible",
-    "googleGemini": "Google Gemini"
+    "googleGemini": "Google Gemini",
+    "installationDecisionTitle": "Installation Decision Helper",
+    "recommendedSource": "Recommended Source: {source}",
+    "preflightChecks": "Preflight Checks",
+    "potentialRisks": "Potential Risks",
+    "continueInstallation": "Continue"
 }
 
 NEW_KEYS_ZH = {
@@ -82,7 +87,12 @@ NEW_KEYS_ZH = {
     "resetFailed": "重置失败: {error}",
     "ollamaLocal": "Ollama (本地)",
     "openaiCompatible": "OpenAI 兼容",
-    "googleGemini": "Google Gemini"
+    "googleGemini": "Google Gemini",
+    "installationDecisionTitle": "安装决策助手",
+    "recommendedSource": "推荐来源：{source}",
+    "preflightChecks": "安装前检查",
+    "potentialRisks": "风险提示",
+    "continueInstallation": "继续安装"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -123,7 +133,12 @@ NEW_KEYS_ZH_HANT = {
     "resetFailed": "重置失敗: {error}",
     "ollamaLocal": "Ollama (本地)",
     "openaiCompatible": "OpenAI 相容",
-    "googleGemini": "Google Gemini"
+    "googleGemini": "Google Gemini",
+    "installationDecisionTitle": "安裝決策助手",
+    "recommendedSource": "推薦來源：{source}",
+    "preflightChecks": "安裝前檢查",
+    "potentialRisks": "風險提示",
+    "continueInstallation": "繼續安裝"
 }
 
 NEW_KEYS_JA = {
@@ -164,7 +179,12 @@ NEW_KEYS_JA = {
     "resetFailed": "リセットに失敗しました: {error}",
     "ollamaLocal": "Ollama (ローカル)",
     "openaiCompatible": "OpenAI 互換",
-    "googleGemini": "Google Gemini"
+    "googleGemini": "Google Gemini",
+    "installationDecisionTitle": "インストール決定ヘルパー",
+    "recommendedSource": "推奨ソース: {source}",
+    "preflightChecks": "事前チェック",
+    "potentialRisks": "潜在的なリスク",
+    "continueInstallation": "インストールを続行"
 }
 
 NEW_KEYS_ES = {
@@ -205,7 +225,12 @@ NEW_KEYS_ES = {
     "resetFailed": "Error al restablecer: {error}",
     "ollamaLocal": "Ollama (Local)",
     "openaiCompatible": "Compatible con OpenAI",
-    "googleGemini": "Google Gemini"
+    "googleGemini": "Google Gemini",
+    "installationDecisionTitle": "Asistente de Decisión de Instalación",
+    "recommendedSource": "Fuente Recomendada: {source}",
+    "preflightChecks": "Comprobaciones Previas",
+    "potentialRisks": "Riesgos Potenciales",
+    "continueInstallation": "Continuar Instalación"
 }
 
 MAPPINGS = {
@@ -229,6 +254,8 @@ def add_placeholder_metadata(data, key, value):
         data[f'@{key}'] = {"placeholders": {"count": {"type": "int"}}}
     elif '{name}' in value:
         data[f'@{key}'] = {"placeholders": {"name": {"type": "String"}}}
+    elif '{source}' in value:
+        data[f'@{key}'] = {"placeholders": {"source": {"type": "String"}}}
     elif '{message}' in value:
         data[f'@{key}'] = {"placeholders": {"message": {"type": "String"}}}
     elif '{error}' in value:
@@ -247,6 +274,8 @@ def ensure_en_keys_have_metadata(en_data, new_keys):
         if f'@{k}' not in en_data:
              if '{count}' in v:
                 en_data[f'@{k}'] = {"placeholders": {"count": {"type": "int"}}}
+             elif '{source}' in v:
+                en_data[f'@{k}'] = {"placeholders": {"source": {"type": "String"}}}
              else:
                 en_data[f'@{k}'] = {"description": f"Description for {k}"}
 

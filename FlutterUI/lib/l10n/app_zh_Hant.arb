@@ -463,28 +463,28 @@
   "getStarted": "開始使用",
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
-  "envCheckSubtitle": "正在確保系統已準備就緒",
-  "envFatalDesc": "系統不是 Arch Linux，核心功能受限。",
-  "envWarningDesc": "系統缺少必要的執行組件，我們可以為您自動設定。",
-  "envOkDesc": "一切就緒！系統環境已完美配置。",
-  "fixProblems": "一鍵修復/設定",
+  "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
+  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
+  "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
+  "envOkDesc": "一切就緒！您的系統非常完美。",
+  "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
-  "sourceConfigTitle": "軟體存放庫設定",
-  "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
-  "enableAur": "啟用 AUR（Arch User Repository）",
+  "sourceConfigTitle": "應用程式來源配置",
+  "sourceConfigSubtitle": "選擇您想要啟用的應用程式來源",
+  "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
-  "aurWarning": "安全警告：AUR 套件由使用者貢獻，請確保信任其來源。",
-  "bootstrapNote": "提示：設定過程可能需要多次輸入管理員密碼。",
-  "feedbackDesc": "若遇到問題，請在 GitHub 提交回饋。",
+  "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
+  "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
+  "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
   "aiAssistant": "AI 助手",
-  "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
-  "aiProviderDesc": "選擇您的 AI 模型來源（本地或雲端）",
-  "aiEndpointHelper": "Ollama 預設：http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 留空，OpenAI 填入 sk-xxx",
+  "aiAssistantDesc": "開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。",
+  "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
+  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
+  "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama (本地)：下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往服務商官網建立 API 金鑰並填入。",
+  "howToGetApiKeyDesc": "1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：使用 Ollama 需確保其在背景執行，並配置 OLLAMA_ORIGINS=\"*\"。",
+  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",
@@ -492,7 +492,7 @@
   "resetCacheConfirm": "這將清空您的搜尋歷史和推薦快取。是否繼續？",
   "resetting": "正在重置...",
   "resetSuccess": "快取與歷史記錄已成功清空",
-  "resetFailed": "重置失敗：{error}",
+  "resetFailed": "重置失敗: {error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -500,7 +500,7 @@
       }
     }
   },
-  "ollamaLocal": "Ollama（本地）",
+  "ollamaLocal": "Ollama (本地)",
   "openaiCompatible": "OpenAI 相容",
   "googleGemini": "Google Gemini",
   "importPackages": "匯入套件",
@@ -1024,5 +1024,140 @@
     "description": "Tooltip for removing a plugin"
   },
   "managed": "已代管",
-  "readOnly": "唯讀"
+  "readOnly": "唯讀",
+  "@welcomeTitle": {
+    "description": "Description for welcomeTitle"
+  },
+  "@welcomeSubtitle": {
+    "description": "Description for welcomeSubtitle"
+  },
+  "@getStarted": {
+    "description": "Description for getStarted"
+  },
+  "@skip": {
+    "description": "Description for skip"
+  },
+  "@envCheckTitle": {
+    "description": "Description for envCheckTitle"
+  },
+  "@envCheckSubtitle": {
+    "description": "Description for envCheckSubtitle"
+  },
+  "@envFatalDesc": {
+    "description": "Description for envFatalDesc"
+  },
+  "@envWarningDesc": {
+    "description": "Description for envWarningDesc"
+  },
+  "@envOkDesc": {
+    "description": "Description for envOkDesc"
+  },
+  "@fixProblems": {
+    "description": "Description for fixProblems"
+  },
+  "@continueAnyway": {
+    "description": "Description for continueAnyway"
+  },
+  "@sourceConfigTitle": {
+    "description": "Description for sourceConfigTitle"
+  },
+  "@sourceConfigSubtitle": {
+    "description": "Description for sourceConfigSubtitle"
+  },
+  "@enableAur": {
+    "description": "Description for enableAur"
+  },
+  "@yayDesc": {
+    "description": "Description for yayDesc"
+  },
+  "@aurWarning": {
+    "description": "Description for aurWarning"
+  },
+  "@bootstrapNote": {
+    "description": "Description for bootstrapNote"
+  },
+  "@feedbackDesc": {
+    "description": "Description for feedbackDesc"
+  },
+  "@aiAssistant": {
+    "description": "Description for aiAssistant"
+  },
+  "@aiAssistantDesc": {
+    "description": "Description for aiAssistantDesc"
+  },
+  "@aiProviderDesc": {
+    "description": "Description for aiProviderDesc"
+  },
+  "@aiEndpointHelper": {
+    "description": "Description for aiEndpointHelper"
+  },
+  "@aiApiKeyHelper": {
+    "description": "Description for aiApiKeyHelper"
+  },
+  "@howToGetApiKey": {
+    "description": "Description for howToGetApiKey"
+  },
+  "@howToGetApiKeyDesc": {
+    "description": "Description for howToGetApiKeyDesc"
+  },
+  "@gotIt": {
+    "description": "Description for gotIt"
+  },
+  "@aiOllamaNote": {
+    "description": "Description for aiOllamaNote"
+  },
+  "@enterStore": {
+    "description": "Description for enterStore"
+  },
+  "@nextStep": {
+    "description": "Description for nextStep"
+  },
+  "@resetCache": {
+    "description": "Description for resetCache"
+  },
+  "@resetCacheDesc": {
+    "description": "Description for resetCacheDesc"
+  },
+  "@resetCacheConfirm": {
+    "description": "Description for resetCacheConfirm"
+  },
+  "@resetting": {
+    "description": "Description for resetting"
+  },
+  "@resetSuccess": {
+    "description": "Description for resetSuccess"
+  },
+  "@ollamaLocal": {
+    "description": "Description for ollamaLocal"
+  },
+  "@openaiCompatible": {
+    "description": "Description for openaiCompatible"
+  },
+  "@googleGemini": {
+    "description": "Description for googleGemini"
+  },
+  "installationDecisionTitle": "安裝決策助手",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "推薦來源：{source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "安裝前檢查",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "風險提示",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "繼續安裝",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  }
 }
