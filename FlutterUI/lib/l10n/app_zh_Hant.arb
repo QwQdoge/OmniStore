@@ -43,7 +43,7 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "pacmanOfficial": "Pacman（官方存放庫）",
+  "pacmanOfficial": "Pacman（官方軟體存放庫）",
   "aurUser": "AUR（使用者軟體存放庫）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -464,25 +464,25 @@
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
   "envCheckSubtitle": "我們需要確保您的系統已準備就緒",
-  "envFatalDesc": "您的系統似乎不是基於 Arch 的，這會導致大部分功能不可用。",
+  "envFatalDesc": "系統不是 Arch Linux，核心功能受限。",
   "envWarningDesc": "缺少一些必要的組件，我們可以為您自動配置。",
   "envOkDesc": "一切就緒！您的系統非常完美。",
   "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
-  "sourceConfigTitle": "應用程式來源配置",
-  "sourceConfigSubtitle": "選擇您想要啟用的應用程式來源",
+  "sourceConfigTitle": "軟體存放庫設定",
+  "sourceConfigSubtitle": "選擇您想要啟用的軟體存放庫",
   "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。",
   "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
   "feedbackDesc": "如果您遇到問題，請透過 GitHub 反饋給我們。",
   "aiAssistant": "AI 助手",
-  "aiAssistantDesc": "開啟 AI 輔助搜尋、應用程式說明與錯誤診斷。",
+  "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
   "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiApiKeyHelper": "如果是 Ollama 則留空，OpenAI 請填入 sk-xxx",
+  "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 填入 sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
-  "howToGetApiKeyDesc": "1. Ollama (本地): 下載並執行 Ollama，無需金鑰。2. 雲端 (OpenAI): 前往服務商官網建立 API Key，然後填入此處。",
+  "howToGetApiKeyDesc": "1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。",
   "gotIt": "知道了",
   "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
@@ -527,7 +527,7 @@
     }
   },
   "switchSource": "切換",
-  "flatpakBetterDesc": "發現此應用程式有 Flatpak 存放庫，通常更穩定。",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
   "cleanOrphans": "清理無用依賴（孤立套件）",
@@ -747,12 +747,12 @@
   "@autoDetect": {
     "description": "Button to auto detect available sources"
   },
-  "addCustomSource": "新增自訂存放庫",
+  "addCustomSource": "新增自訂軟體存放庫",
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端存放庫、AppImage 訂閱或 GitHub/Bitu 存放庫",
-  "sourceType": "存放庫類型",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫",
+  "sourceType": "軟體存放庫類型",
   "@sourceType": {
     "description": "Label for source type"
   },
@@ -764,7 +764,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端存放庫",
+  "flatpakRemoteType": "Flatpak 遠端軟體存放庫",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -780,7 +780,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "存放庫地址（owner/repo）",
+  "repoOwnerRepo": "軟體存放庫地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -796,7 +796,7 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名稱和連結/存放庫地址不能為空",
+  "errorNameUrlRequired": "名稱和連結/軟體存放庫地址不能為空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
@@ -1135,29 +1135,5 @@
   },
   "@googleGemini": {
     "description": "Description for googleGemini"
-  },
-  "installationDecisionTitle": "安裝決策助手",
-  "@installationDecisionTitle": {
-    "description": "Description for installationDecisionTitle"
-  },
-  "recommendedSource": "推薦來源：{source}",
-  "@recommendedSource": {
-    "placeholders": {
-      "source": {
-        "type": "String"
-      }
-    }
-  },
-  "preflightChecks": "安裝前檢查",
-  "@preflightChecks": {
-    "description": "Description for preflightChecks"
-  },
-  "potentialRisks": "風險提示",
-  "@potentialRisks": {
-    "description": "Description for potentialRisks"
-  },
-  "continueInstallation": "繼續安裝",
-  "@continueInstallation": {
-    "description": "Description for continueInstallation"
   }
 }
