@@ -463,6 +463,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiPickDaySubtitle => 'OmniStore AI による提供';
 
   @override
+  String get anotherPick => '別の推奨事項';
+
+  @override
+  String get aiPickDesc =>
+      '検索履歴、インストール履歴、および現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。';
+
+  @override
   String get aiCompareTitle => 'AI バリアント比較';
 
   @override
@@ -1172,7 +1179,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get readOnly => '読み取り専用';
 
   @override
-  String get installationDecisionTitle => 'インストール判断アシスタント';
+  String get installationDecisionTitle => 'インストール決定ヘルパー';
 
   @override
   String recommendedSource(String source) {
@@ -1183,8 +1190,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get preflightChecks => '事前チェック';
 
   @override
-  String get potentialRisks => '想定されるリスク';
+  String get potentialRisks => '潜在的なリスク';
 
   @override
-  String get continueInstallation => '続行';
+  String get continueInstallation => 'インストールを続行';
 }

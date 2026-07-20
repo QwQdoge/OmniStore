@@ -92,7 +92,9 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐来源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "anotherPick": "换一个推荐",
+    "aiPickDesc": "根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -138,7 +140,9 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦來源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "anotherPick": "換一個推薦",
+    "aiPickDesc": "根據你的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +188,9 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "anotherPick": "別の推奨事項",
+    "aiPickDesc": "検索履歴、インストール履歴、および現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +236,9 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "anotherPick": "Otra recomendación",
+    "aiPickDesc": "Generado en base a su búsqueda, historial de instalación y fuentes actualmente disponibles; no afecta las opciones de instalación."
 }
 
 MAPPINGS = {

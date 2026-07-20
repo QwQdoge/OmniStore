@@ -370,6 +370,14 @@
     "description": "Title for daily AI pick card"
   },
   "aiPickDaySubtitle": "由 OmniStore AI 提供支援",
+  "anotherPick": "換一個推薦",
+  "aiPickDesc": "根據你的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。",
+  "@aiPickDesc": {
+    "description": "aiPickDesc"
+  },
+  "@anotherPick": {
+    "description": "anotherPick"
+  },
   "@aiPickDaySubtitle": {
     "description": "Subtitle for daily AI pick card"
   },

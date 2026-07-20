@@ -461,6 +461,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPickDaySubtitle => '由 OmniStore AI 提供支持';
 
   @override
+  String get anotherPick => '换一个推荐';
+
+  @override
+  String get aiPickDesc => '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。';
+
+  @override
   String get aiCompareTitle => 'AI 版本对比';
 
   @override
@@ -1638,6 +1644,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiPickDaySubtitle => '由 OmniStore AI 提供支援';
+
+  @override
+  String get anotherPick => '換一個推薦';
+
+  @override
+  String get aiPickDesc => '根據你的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。';
 
   @override
   String get aiCompareTitle => 'AI 版本比較';
