@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-08-01 - TasksTab Sliver Virtualization
+
+**Learning:** Nesting a `ListView.builder` with `shrinkWrap: true` and `NeverScrollableScrollPhysics` inside a `SingleChildScrollView` completely disables Flutter's scroll virtualization. The framework is forced to lay out and paint every item in the list immediately, even if they are far off-screen. By converting the parent scrollable to a `CustomScrollView` and using `SliverList.builder` for the history items, we restore true O(1) layout and painting virtualization.
+
+**Action:** Replaced the `SingleChildScrollView` + `Column` + `ListView.builder(shrinkWrap: true)` layout in `tasks_tab.dart` with a `CustomScrollView` utilizing native slivers (`SliverPadding` and `SliverList.builder`).
