@@ -118,39 +118,48 @@ class ResourceCoordinator:
 
     async def cleanup(self):
         """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
+        cancel_exc = None
         async with self._lock:
             # 1. Task Cancellation: Kill pending async operations immediately
-            if self._tasks:
-                # The command currently unwinding its context manager is already
-                # being cancelled by its caller. Cancelling it again interrupts
-                # this cleanup coroutine before it can close network handles.
-                current_task = asyncio.current_task()
-                tasks_to_reap = [
-                    task for task in self._tasks
-                    if task is not current_task
-                ]
-                logging.debug(
-                    "ResourceCoordinator: Cancelling %s tracked background tasks.",
-                    len(tasks_to_reap),
-                )
-                for task in tasks_to_reap:
-                    if not task.done():
-                        task.cancel()
+            try:
+                if self._tasks:
+                    # The command currently unwinding its context manager is already
+                    # being cancelled by its caller. Cancelling it again interrupts
+                    # this cleanup coroutine before it can close network handles.
+                    current_task = asyncio.current_task()
+                    tasks_to_reap = [
+                        task for task in self._tasks
+                        if task is not current_task
+                    ]
+                    logging.debug(
+                        "ResourceCoordinator: Cancelling %s tracked background tasks.",
+                        len(tasks_to_reap),
+                    )
+                    for task in tasks_to_reap:
+                        if not task.done():
+                            task.cancel()
 
-                # Murphy-proof: multi-stage gather with timeout to prevent cleanup hang
-                if tasks_to_reap:
-                    try:
-                        # Using shield to ensure we attempt to gather even if cleanup itself is cancelled.
-                        await asyncio.wait_for(
-                            asyncio.shield(asyncio.gather(*tasks_to_reap, return_exceptions=True)),
-                            timeout=5.0
-                        )
-                    except asyncio.TimeoutError:
-                        logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
-                    except Exception as e:
-                        logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                    # Murphy-proof: multi-stage gather with timeout to prevent cleanup hang
+                    if tasks_to_reap:
+                        try:
+                            # Using shield to ensure we attempt to gather even if cleanup itself is cancelled.
+                            await asyncio.wait_for(
+                                asyncio.shield(asyncio.gather(*tasks_to_reap, return_exceptions=True)),
+                                timeout=5.0
+                            )
+                        except asyncio.TimeoutError:
+                            logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
+                        except BaseException as e:
+                            if isinstance(e, Exception):
+                                logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                            else:
+                                cancel_exc = e
 
-                self._tasks.clear()
+                    self._tasks.clear()
+            except BaseException as e:
+                cancel_exc = e
+                if isinstance(e, Exception):
+                    logging.error(f"ResourceCoordinator: Task cleanup error: {e}")
 
             # 2. Handle Cleanup (Network sessions, DB connections, AI models)
             # Murphy-proof: Use reversed order for LIFO cleanup (often safer for dependencies)
@@ -163,13 +172,16 @@ class ResourceCoordinator:
 
                         res = handle.close()
                         if inspect.isawaitable(res):
-                            await asyncio.wait_for(res, timeout=3.0)
+                            await asyncio.wait_for(asyncio.shield(res), timeout=3.0)
                     elif hasattr(handle, "stop"):
                         res = handle.stop()
                         if inspect.isawaitable(res):
-                            await asyncio.wait_for(res, timeout=3.0)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                            await asyncio.wait_for(asyncio.shield(res), timeout=3.0)
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                    else:
+                        cancel_exc = e
             self._handles.clear()
 
             # 3. File System Cleanup (Temporary files, lock files)
@@ -181,9 +193,15 @@ class ResourceCoordinator:
                             shutil.rmtree(p, ignore_errors=True)
                         else:
                             p.unlink(missing_ok=True)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                    else:
+                        cancel_exc = e
             self._files.clear()
+
+        if cancel_exc is not None:
+            raise cancel_exc
 
 def safe_command(func):
     """
