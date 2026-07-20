@@ -497,6 +497,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiPickDaySubtitle => 'Impulsado por OmniStore AI';
 
   @override
+  String get anotherPick => 'Otra recomendación';
+
+  @override
+  String get aiPickDesc =>
+      'Generado en base a su búsqueda, historial de instalación y fuentes actualmente disponibles; no afecta las opciones de instalación.';
+
+  @override
   String get aiCompareTitle => 'Comparación de variantes por IA';
 
   @override
@@ -1262,19 +1269,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get installationDecisionTitle =>
-      'Asistente de decisión de instalación';
+      'Asistente de Decisión de Instalación';
 
   @override
   String recommendedSource(String source) {
-    return 'Fuente recomendada: $source';
+    return 'Fuente Recomendada: $source';
   }
 
   @override
-  String get preflightChecks => 'Comprobaciones previas';
+  String get preflightChecks => 'Comprobaciones Previas';
 
   @override
-  String get potentialRisks => 'Riesgos potenciales';
+  String get potentialRisks => 'Riesgos Potenciales';
 
   @override
-  String get continueInstallation => 'Continuar';
+  String get continueInstallation => 'Continuar Instalación';
 }

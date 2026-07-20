@@ -69,3 +69,7 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-06-29 - Terminology Consistency: AI Pick Section
+- Replaced hardcoded strings `'换一个推荐'` and `'根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。'` in `FlutterUI/lib/features/home/widgets/ai_pick_section.dart` with localized keys (`anotherPick`, `aiPickDesc`).
+- Added `anotherPick` and `aiPickDesc` keys to `python/update_arb.py` and updated all language files to ensure terminology consistency across the app.

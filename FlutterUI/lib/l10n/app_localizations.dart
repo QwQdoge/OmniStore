@@ -967,6 +967,18 @@ abstract class AppLocalizations {
   /// **'Powered by OmniStore AI'**
   String get aiPickDaySubtitle;
 
+  /// anotherPick
+  ///
+  /// In en, this message translates to:
+  /// **'Another Pick'**
+  String get anotherPick;
+
+  /// aiPickDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Generated based on your search, installation history, and currently available sources; it does not affect installation choices.'**
+  String get aiPickDesc;
+
   /// aiCompareTitle
   ///
   /// In en, this message translates to:

@@ -367,6 +367,14 @@
     "description": "aiPickDay"
   },
   "aiPickDaySubtitle": "Powered by OmniStore AI",
+  "anotherPick": "Another Pick",
+  "aiPickDesc": "Generated based on your search, installation history, and currently available sources; it does not affect installation choices.",
+  "@aiPickDesc": {
+    "description": "aiPickDesc"
+  },
+  "@anotherPick": {
+    "description": "anotherPick"
+  },
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },

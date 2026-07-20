@@ -497,6 +497,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiPickDaySubtitle => 'Powered by OmniStore AI';
 
   @override
+  String get anotherPick => 'Another Pick';
+
+  @override
+  String get aiPickDesc =>
+      'Generated based on your search, installation history, and currently available sources; it does not affect installation choices.';
+
+  @override
   String get aiCompareTitle => 'AI Variant Comparison';
 
   @override

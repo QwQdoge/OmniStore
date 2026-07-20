@@ -367,6 +367,14 @@
     "description": "aiPickDay"
   },
   "aiPickDaySubtitle": "OmniStore AI による提供",
+  "anotherPick": "別の推奨事項",
+  "aiPickDesc": "検索履歴、インストール履歴、および現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。",
+  "@aiPickDesc": {
+    "description": "aiPickDesc"
+  },
+  "@anotherPick": {
+    "description": "anotherPick"
+  },
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
@@ -1133,9 +1141,28 @@
   "@googleGemini": {
     "description": "Description for googleGemini"
   },
-  "installationDecisionTitle": "インストール判断アシスタント",
+  "installationDecisionTitle": "インストール決定ヘルパー",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
   "recommendedSource": "推奨ソース: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "preflightChecks": "事前チェック",
-  "potentialRisks": "想定されるリスク",
-  "continueInstallation": "続行"
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "潜在的なリスク",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "インストールを続行",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  }
 }
