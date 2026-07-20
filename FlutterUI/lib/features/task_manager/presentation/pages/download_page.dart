@@ -1,6 +1,7 @@
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/update_service.dart';
@@ -31,6 +32,7 @@ class _DownloadPageState extends State<DownloadPage>
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _installedFilterScrollController = ScrollController();
 
   @override
@@ -124,6 +126,7 @@ class _DownloadPageState extends State<DownloadPage>
     _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _installedFilterScrollController.dispose();
     super.dispose();
   }
@@ -149,24 +152,40 @@ class _DownloadPageState extends State<DownloadPage>
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: SearchBar(
-                  controller: _searchController,
-                  hintText: AppLocalizations.of(context)!.searchInstalledHint,
-                  leading: const Icon(Icons.search_rounded),
-                  trailing: [
-                    if (_searchQuery.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: AppLocalizations.of(context)!.clear,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = "";
-                            _applyFilters();
-                          });
-                        },
-                      ),
-                  ],
+                child: CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.escape): () {
+                      if (_searchController.text.isNotEmpty) {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = "";
+                          _applyFilters();
+                        });
+                      } else if (_searchFocusNode.hasFocus) {
+                        _searchFocusNode.unfocus();
+                      }
+                    },
+                  },
+                  child: SearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    hintText: AppLocalizations.of(context)!.searchInstalledHint,
+                    leading: const Icon(Icons.search_rounded),
+                    trailing: [
+                      if (_searchQuery.isNotEmpty)
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          tooltip: AppLocalizations.of(context)!.clear,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = "";
+                              _applyFilters();
+                            });
+                          },
+                        ),
+                    ],
+                  ),
                 ),
               ),
               TabBar(

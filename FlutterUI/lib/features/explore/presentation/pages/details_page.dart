@@ -4,6 +4,7 @@ import "package:provider/provider.dart";
 import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
@@ -250,7 +251,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       (s) => s.isAIEnabled,
     );
 
-    return Scaffold(
+    final scaffold = Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
@@ -330,6 +331,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
             ),
           ),
         ),
+      ),
+    );
+
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          if (!widget.isEmbedded && Navigator.canPop(context)) {
+            Navigator.maybePop(context);
+          }
+        },
+      },
+      child: Focus(
+        autofocus: !widget.isEmbedded,
+        child: scaffold,
       ),
     );
   }
