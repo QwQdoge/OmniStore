@@ -34,3 +34,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
 
 **Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
+## 2024-07-20 - Standardizing Loading Transitions with SmoothSizeSwitcher
+
+**Learning:** Replacing boilerplate `AnimatedSwitcher` usages with `SmoothSizeSwitcher` inside `FutureBuilder` blocks (such as in route loaders or dynamic buttons) standardizes MD3 motion consistency and ensures smooth cross-fading and layout boundary resizing without manual curves or duration setup.
+
+**Action:** Always prefer `SmoothSizeSwitcher` over raw `AnimatedSwitcher` when transitioning between loading and loaded states in `FutureBuilder`, unless the widget is inside an `Expanded` parent or uses a custom `transitionBuilder`.
