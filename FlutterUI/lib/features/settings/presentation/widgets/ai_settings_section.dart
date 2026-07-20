@@ -7,6 +7,7 @@ import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
+import 'ai_test_result_dialog.dart';
 
 class AISettingsSection extends StatefulWidget {
   const AISettingsSection({super.key});
@@ -130,23 +131,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
       showDialog(
         context: context,
-        builder: (c) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                isSuccess ? Icons.check_circle : Icons.error,
-                color: isSuccess ? Colors.green : Colors.red,
-              ),
-              const SizedBox(width: 8),
-              Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
-            ],
-          ),
-          content: msg.toString().isNotEmpty
-              ? SelectableText(msg.toString())
-              : null,
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(c), child: Text(l10n.ok)),
-          ],
+        builder: (c) => AITestResultDialog(
+          isSuccess: isSuccess,
+          msg: msg.toString(),
         ),
       );
     } catch (e) {
