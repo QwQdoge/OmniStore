@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/core/layout/breakpoints.dart';
 import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
@@ -59,8 +60,30 @@ class AdaptiveNavigationShell extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
+    return Focus(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final logicalKey = event.logicalKey;
+          final isSlash = logicalKey == LogicalKeyboardKey.slash;
+          final isCtrlF = logicalKey == LogicalKeyboardKey.keyF && HardwareKeyboard.instance.isControlPressed;
+          final isMetaF = logicalKey == LogicalKeyboardKey.keyF && HardwareKeyboard.instance.isMetaPressed;
+
+          if (isSlash || isCtrlF || isMetaF) {
+            final primaryFocus = FocusManager.instance.primaryFocus;
+            final isTextFieldFocused = primaryFocus != null &&
+                (primaryFocus.context?.findAncestorWidgetOfExactType<EditableText>() != null ||
+                 primaryFocus.context?.widget is EditableText);
+
+            if (!isTextFieldFocused) {
+              context.read<NavigationController>().setIndex(2);
+              return KeyEventResult.handled;
+            }
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
         final compact = Breakpoints.isCompact(constraints.maxWidth);
 
         final content = AnimatedSwitcher(
@@ -256,7 +279,8 @@ class AdaptiveNavigationShell extends StatelessWidget {
             ],
           ),
         );
-      },
+        },
+      ),
     );
   }
 

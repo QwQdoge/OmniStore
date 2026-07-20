@@ -1,5 +1,7 @@
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +29,7 @@ class _SearchPageState extends State<SearchPage> {
   final List<String> _selectedSources = [];
   final ValueNotifier<bool> _hasSearchText = ValueNotifier<bool>(false);
   BrowseController? _browseController;
+  NavigationController? _navigationController;
   List<AppPackage>? _lastResults;
 
   @override
@@ -41,6 +44,9 @@ class _SearchPageState extends State<SearchPage> {
     _browseController = context.read<BrowseController>();
     _browseController?.addListener(_onBrowseChanged);
 
+    _navigationController = context.read<NavigationController>();
+    _navigationController?.addListener(_onNavigationChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final browse = _browseController!;
       if (browse.pendingSearchQuery != null) {
@@ -52,9 +58,21 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  void _onNavigationChanged() {
+    if (!mounted) return;
+    if (_navigationController?.selectedIndex == 2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     _browseController?.removeListener(_onBrowseChanged);
+    _navigationController?.removeListener(_onNavigationChanged);
     _hasSearchText.dispose();
     _searchController.dispose();
     _quickFilterScrollController.dispose();
@@ -117,9 +135,27 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          if (_searchController.text.isNotEmpty) {
+            _searchController.clear();
+            _hasSearchText.value = false;
+            if (!_showDiscovery || _selectedSources.isNotEmpty) {
+              setState(() {
+                _showDiscovery = true;
+                _selectedSources.clear();
+              });
+            }
+            context.read<BrowseController>().selectedApp = null;
+          } else if (_focusNode.hasFocus) {
+            _focusNode.unfocus();
+          }
+        },
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
@@ -241,6 +277,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ],
       ),
+    ),
     );
   }
 
