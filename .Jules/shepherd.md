@@ -69,3 +69,8 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-07-16 - Chinese (zh/zh_Hant) Localization Consistency & Optimization
+- Audited all AI configuration instructions and general strings in `python/update_arb.py` and `python/sync_l10n.py`.
+- Optimized conditional/if-then helper messages and removed conversational fillers (e.g. "Ollama 无需密钥", "如果您遇到问题", "我们需要确保您") to be more direct, clear, and professional.
+- Synchronized terminology, aligning "software repository" to "软件源" (zh) / "軟體存放庫" (zh_Hant), "orphan packages" to "孤立软件包" (zh) / "孤立套件" (zh_Hant), and "tray" to "系统托盘" (zh) / "系統匣" (zh_Hant).

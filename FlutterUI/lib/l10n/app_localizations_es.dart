@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Variantes disponibles';
+  String get variant => 'Fuente de instalación';
 
   @override
   String get version => 'Versión';
@@ -151,7 +151,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String confirmActionMsg(String name) {
-    return '¿Deseas realizar esta acción en $name?';
+    return '¿Confirmas que deseas realizar esta acción en $name?';
   }
 
   @override
@@ -218,7 +218,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updates => 'Actualizaciones';
 
   @override
-  String get upToDate => 'Todas las aplicaciones están al día';
+  String get upToDate => 'Todas las aplicaciones están actualizadas';
 
   @override
   String get checkUpdates => 'Buscar actualizaciones';
@@ -1262,19 +1262,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get installationDecisionTitle =>
-      'Asistente de decisión de instalación';
+      'Asistente de Decisión de Instalación';
 
   @override
   String recommendedSource(String source) {
-    return 'Fuente recomendada: $source';
+    return 'Fuente Recomendada: $source';
   }
 
   @override
-  String get preflightChecks => 'Comprobaciones previas';
+  String get preflightChecks => 'Comprobaciones Previas';
 
   @override
-  String get potentialRisks => 'Riesgos potenciales';
+  String get potentialRisks => 'Riesgos Potenciales';
 
   @override
-  String get continueInstallation => 'Continuar';
+  String get continueInstallation => 'Continuar Instalación';
 }
