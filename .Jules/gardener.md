@@ -148,3 +148,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracting oversized inline dialog builders (like the `AlertDialog` used for AI installation decisions) into standalone stateless widgets significantly reduces the size of complex stateful presentation files (`details_page.dart`) and improves maintainability without changing behavior.
 
 **Action:** Extracted the "安装决策助手" `AlertDialog` from the `_handleAction` method in `details_page.dart` into a new `InstallationDecisionDialog` widget located in `FlutterUI/lib/features/explore/presentation/widgets/action_dialogs.dart`.
+## 2024-05-18 - Extract Inline Dialogs and Reusable Layouts
+
+**Learning:** Duplicated logic like the `Selector` wrappers for app shelves and oversized inline dialogs add unnecessary verbosity and hinder readability in complex `build` methods.
+
+**Action:** Created `RecommendationShelf` to deduplicate app shelf layouts, and extracted `AITestConnectionDialog` into a standalone widget, improving modularity.

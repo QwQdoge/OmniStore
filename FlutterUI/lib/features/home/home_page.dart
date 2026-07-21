@@ -10,11 +10,11 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/services/category_service.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:frontend/core/widgets/app_shelf.dart';
 import 'package:frontend/features/home/widgets/category_quick_access.dart';
 import 'package:frontend/features/home/widgets/ai_pick_section.dart';
 import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
+import 'package:frontend/features/home/widgets/recommendation_shelf.dart';
 import 'package:frontend/core/widgets/section_header.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
@@ -283,51 +283,19 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Selector<BrowseController, List<AppPackage>>(
-                selector: (context, browse) =>
-                    browse.recommendations['trending'] ?? [],
-                shouldRebuild: (prev, next) =>
-                    !const IterableEquality().equals(prev, next),
-                builder: (context, trending, _) {
-                  return SmoothSizeSwitcher(
-                    alignment: Alignment.topCenter,
-                    child: trending.isEmpty
-                        ? const _DynamicSectionEmpty(
-                            key: ValueKey('empty_trending'),
-                            message: '暂无热门数据；网络恢复后会自动更新。',
-                          )
-                        : AppShelf(
-                            key: const ValueKey('trending_shelf'),
-                            title: l10n.hotApps,
-                            apps: trending,
-                            scrollController: _hotAppsScrollController,
-                          ),
-                  );
-                },
+              child: RecommendationShelf(
+                recommendationKey: 'trending',
+                title: l10n.hotApps,
+                emptyMessage: '暂无热门数据；网络恢复后会自动更新。',
+                scrollController: _hotAppsScrollController,
               ),
             ),
             SliverToBoxAdapter(
-              child: Selector<BrowseController, List<AppPackage>>(
-                selector: (context, browse) =>
-                    browse.recommendations['for_you'] ?? [],
-                shouldRebuild: (prev, next) =>
-                    !const IterableEquality().equals(prev, next),
-                builder: (context, forYou, _) {
-                  return SmoothSizeSwitcher(
-                    alignment: Alignment.topCenter,
-                    child: forYou.isEmpty
-                        ? const _DynamicSectionEmpty(
-                            key: ValueKey('empty_forYou'),
-                            message: '继续搜索或安装应用后，这里会显示个性化建议。',
-                          )
-                        : AppShelf(
-                            key: const ValueKey('forYou_shelf'),
-                            title: l10n.forYou,
-                            apps: forYou,
-                            scrollController: _forYouScrollController,
-                          ),
-                  );
-                },
+              child: RecommendationShelf(
+                recommendationKey: 'for_you',
+                title: l10n.forYou,
+                emptyMessage: '继续搜索或安装应用后，这里会显示个性化建议。',
+                scrollController: _forYouScrollController,
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
@@ -336,20 +304,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
-
-class _DynamicSectionEmpty extends StatelessWidget {
-  const _DynamicSectionEmpty({super.key, required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-    child: Text(
-      message,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-    ),
-  );
 }
