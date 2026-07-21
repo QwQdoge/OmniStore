@@ -118,6 +118,7 @@ class ResourceCoordinator:
 
     async def cleanup(self):
         """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
+        cancel_exc = None
         async with self._lock:
             # 1. Task Cancellation: Kill pending async operations immediately
             if self._tasks:
@@ -147,8 +148,12 @@ class ResourceCoordinator:
                         )
                     except asyncio.TimeoutError:
                         logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
-                    except Exception as e:
-                        logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                    except BaseException as e:
+                        if isinstance(e, Exception):
+                            logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                        else:
+                            if cancel_exc is None:
+                                cancel_exc = e
 
                 self._tasks.clear()
 
@@ -163,13 +168,17 @@ class ResourceCoordinator:
 
                         res = handle.close()
                         if inspect.isawaitable(res):
-                            await asyncio.wait_for(res, timeout=3.0)
+                            await asyncio.wait_for(asyncio.shield(res), timeout=3.0)
                     elif hasattr(handle, "stop"):
                         res = handle.stop()
                         if inspect.isawaitable(res):
-                            await asyncio.wait_for(res, timeout=3.0)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                            await asyncio.wait_for(asyncio.shield(res), timeout=3.0)
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                    else:
+                        if cancel_exc is None:
+                            cancel_exc = e
             self._handles.clear()
 
             # 3. File System Cleanup (Temporary files, lock files)
@@ -181,9 +190,16 @@ class ResourceCoordinator:
                             shutil.rmtree(p, ignore_errors=True)
                         else:
                             p.unlink(missing_ok=True)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                    else:
+                        if cancel_exc is None:
+                            cancel_exc = e
             self._files.clear()
+
+        if cancel_exc is not None:
+            raise cancel_exc
 
 def safe_command(func):
     """
