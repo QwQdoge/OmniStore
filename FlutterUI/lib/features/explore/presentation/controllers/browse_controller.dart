@@ -37,6 +37,18 @@ class BrowseController with ChangeNotifier {
   Future<void> fetchRecommendations({bool forceRefresh = false}) async {
     _recommendations = await _packageRepository.getRecommendations(forceRefresh: forceRefresh);
     notifyListeners();
+
+    // If there is an active background fetch task running, await it as well
+    // and trigger notifyListeners() again when it finishes so the UI receives fresh data.
+    final backgroundFuture = _packageRepository.activeFetchFuture;
+    if (backgroundFuture != null) {
+      try {
+        _recommendations = await backgroundFuture;
+        notifyListeners();
+      } catch (e) {
+        debugPrint("Background recommendations sync failed: $e");
+      }
+    }
   }
 
   /// Performs an asynchronous search for packages.
