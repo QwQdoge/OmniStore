@@ -1,5 +1,6 @@
 import "package:frontend/features/explore/presentation/controllers/browse_controller.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
@@ -117,129 +118,167 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-            child: SearchBar(
-              controller: _searchController,
-              focusNode: _focusNode,
-              hintText: l10n.searchHint,
-              onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
-              onSubmitted: _performSearch,
-              leading: const Icon(Icons.search_rounded),
-              trailing: [
-                ValueListenableBuilder<bool>(
-                  valueListenable: _hasSearchText,
-                  builder: (context, hasText, child) {
-                    if (hasText) {
-                      return IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: l10n.clearSearch,
-                        onPressed: () {
-                          _searchController.clear();
-                          _hasSearchText.value = false;
-                          if (!_showDiscovery || _selectedSources.isNotEmpty) {
-                            setState(() {
-                              _showDiscovery = true;
-                              _selectedSources.clear();
-                            });
-                          }
-                          context.read<BrowseController>().selectedApp = null;
-                        },
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ],
-            ),
-          ),
-          SmoothSizeSwitcher(
-            child: !_showDiscovery
-                ? Selector<SettingsController, Map<String, bool>>(
-                    key: const ValueKey('source_filters'),
-                    selector: (context, settings) {
-                      final sourcesMap =
-                          settings.config['search']?['sources']
-                              as Map<dynamic, dynamic>? ??
-                          {};
-                      return Map<String, bool>.from(sourcesMap);
-                    },
-                    shouldRebuild: (prev, next) =>
-                        !const MapEquality<String, bool>().equals(prev, next),
-                    builder: (context, sourcesMap, _) => SearchFilters(
-                      sourcesMap: sourcesMap,
-                      selectedSources: _selectedSources,
-                      onSelectedSourcesChanged: (newSources) {
-                        setState(() {
-                          _selectedSources.clear();
-                          _selectedSources.addAll(newSources);
-                        });
-                        _autoSelectFirstApp();
-                      },
-                      scrollController: _sourceFilterScrollController,
-                    ),
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty_filters')),
-          ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.fastOutSlowIn,
-              child: _showDiscovery
-                  ? _buildDiscovery(l10n)
-                  : Selector<
-                      BrowseController,
-                      ({
-                        List<AppPackage> filteredResults,
-                        bool isSearching,
-                        bool isDesktop,
-                      })
-                    >(
-                    selector: (context, b) {
-                      final results = b.searchResults;
-                      final isDesktop = MediaQuery.sizeOf(context).width > 900;
-
-                      final filtered = _selectedSources.isEmpty
-                          ? results
-                          : results.where((app) {
-                              return _selectedSources.contains(
-                                app.primarySource.toLowerCase(),
-                              );
-                            }).toList();
-
-                      return (
-                        filteredResults: filtered,
-                        isSearching: b.isSearching,
-                        isDesktop: isDesktop,
-                      );
-                    },
-                    shouldRebuild: (prev, next) {
-                      return prev.isSearching != next.isSearching ||
-                          prev.isDesktop != next.isDesktop ||
-                          !const IterableEquality().equals(
-                            prev.filteredResults,
-                            next.filteredResults,
-                          );
-                    },
-                    builder: (context, data, _) {
-                      return SearchResultsView(
-                        filteredResults: data.filteredResults,
-                        isSearching: data.isSearching,
-                        isDesktop: data.isDesktop,
-                        searchController: _searchController,
-                        performSearch: _performSearch,
-                        l10n: l10n,
-                      );
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final key = event.logicalKey;
+          if (key == LogicalKeyboardKey.escape) {
+            if (_searchController.text.isNotEmpty) {
+              _searchController.clear();
+              _hasSearchText.value = false;
+              if (!_showDiscovery || _selectedSources.isNotEmpty) {
+                setState(() {
+                  _showDiscovery = true;
+                  _selectedSources.clear();
+                });
+              }
+              context.read<BrowseController>().selectedApp = null;
+              return KeyEventResult.handled;
+            } else if (_focusNode.hasFocus) {
+              _focusNode.unfocus();
+              return KeyEventResult.handled;
+            }
+          } else {
+            final isCtrl = HardwareKeyboard.instance.isControlPressed;
+            final isMeta = HardwareKeyboard.instance.isMetaPressed;
+            if (key == LogicalKeyboardKey.slash ||
+                ((isCtrl || isMeta) && key == LogicalKeyboardKey.keyF)) {
+              if (!_focusNode.hasFocus) {
+                _focusNode.requestFocus();
+                return KeyEventResult.handled;
+              }
+            }
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              child: SearchBar(
+                controller: _searchController,
+                focusNode: _focusNode,
+                hintText: l10n.searchHint,
+                onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
+                onSubmitted: _performSearch,
+                leading: const Icon(Icons.search_rounded),
+                trailing: [
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _hasSearchText,
+                    builder: (context, hasText, child) {
+                      if (hasText) {
+                        return IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          tooltip: l10n.clearSearch,
+                          onPressed: () {
+                            _searchController.clear();
+                            _hasSearchText.value = false;
+                            if (!_showDiscovery ||
+                                _selectedSources.isNotEmpty) {
+                              setState(() {
+                                _showDiscovery = true;
+                                _selectedSources.clear();
+                              });
+                            }
+                            context.read<BrowseController>().selectedApp = null;
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
+                ],
+              ),
             ),
-          ),
-        ],
+            SmoothSizeSwitcher(
+              child: !_showDiscovery
+                  ? Selector<SettingsController, Map<String, bool>>(
+                      key: const ValueKey('source_filters'),
+                      selector: (context, settings) {
+                        final sourcesMap =
+                            settings.config['search']?['sources']
+                                as Map<dynamic, dynamic>? ??
+                            {};
+                        return Map<String, bool>.from(sourcesMap);
+                      },
+                      shouldRebuild: (prev, next) =>
+                          !const MapEquality<String, bool>().equals(prev, next),
+                      builder: (context, sourcesMap, _) => SearchFilters(
+                        sourcesMap: sourcesMap,
+                        selectedSources: _selectedSources,
+                        onSelectedSourcesChanged: (newSources) {
+                          setState(() {
+                            _selectedSources.clear();
+                            _selectedSources.addAll(newSources);
+                          });
+                          _autoSelectFirstApp();
+                        },
+                        scrollController: _sourceFilterScrollController,
+                      ),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty_filters')),
+            ),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.fastOutSlowIn,
+                child: _showDiscovery
+                    ? _buildDiscovery(l10n)
+                    : Selector<
+                        BrowseController,
+                        ({
+                          List<AppPackage> filteredResults,
+                          bool isSearching,
+                          bool isDesktop,
+                        })
+                      >(
+                        selector: (context, b) {
+                          final results = b.searchResults;
+                          final isDesktop =
+                              MediaQuery.sizeOf(context).width > 900;
+
+                          final filtered = _selectedSources.isEmpty
+                              ? results
+                              : results.where((app) {
+                                  return _selectedSources.contains(
+                                    app.primarySource.toLowerCase(),
+                                  );
+                                }).toList();
+
+                          return (
+                            filteredResults: filtered,
+                            isSearching: b.isSearching,
+                            isDesktop: isDesktop,
+                          );
+                        },
+                        shouldRebuild: (prev, next) {
+                          return prev.isSearching != next.isSearching ||
+                              prev.isDesktop != next.isDesktop ||
+                              !const IterableEquality().equals(
+                                prev.filteredResults,
+                                next.filteredResults,
+                              );
+                        },
+                        builder: (context, data, _) {
+                          return SearchResultsView(
+                            filteredResults: data.filteredResults,
+                            isSearching: data.isSearching,
+                            isDesktop: data.isDesktop,
+                            searchController: _searchController,
+                            performSearch: _performSearch,
+                            l10n: l10n,
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
