@@ -12,6 +12,9 @@ class PackageRepository {
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
   DateTime? _lastFetchTime;
 
+  /// Exposes the active fetch future for other components to await background updates
+  Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
+
   static final List<AppPackage> _editorialFeatured =
       [
             ['Firefox', 'org.mozilla.firefox', 'Fast, private web browsing.'],
