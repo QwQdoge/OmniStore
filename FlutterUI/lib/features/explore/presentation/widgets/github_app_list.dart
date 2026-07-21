@@ -126,6 +126,7 @@ class GitHubAppList extends StatelessWidget {
                                     width: 56,
                                     height: 56,
                                     memCacheWidth: 112,
+                                    memCacheHeight: 112,
                                     fit: BoxFit.cover,
                                     errorWidget: (c, e, s) => const Icon(
                                       Icons.code_rounded,

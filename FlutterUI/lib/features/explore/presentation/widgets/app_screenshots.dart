@@ -52,6 +52,7 @@ class AppScreenshots extends StatelessWidget {
                         width: 360,
                         fit: BoxFit.cover,
                         memCacheWidth: 720,
+                        memCacheHeight: 720,
                         placeholder: (context, url) => const Skeleton(
                           width: 360,
                           height: 220,

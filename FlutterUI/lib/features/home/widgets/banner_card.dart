@@ -42,6 +42,7 @@ class BannerCard extends StatelessWidget {
                     imageUrl: screenshot,
                     fit: BoxFit.cover,
                     memCacheWidth: 880,
+                    memCacheHeight: 880,
                     errorWidget: (c, e, s) => const Icon(Icons.image, size: 48),
                   ),
                 )
@@ -96,6 +97,7 @@ class BannerCard extends StatelessWidget {
                                 imageUrl: app.icon!,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 108,
+                                memCacheHeight: 108,
                                 errorWidget: (c, e, s) =>
                                     const Icon(Icons.apps, color: Colors.black),
                               )
