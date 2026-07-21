@@ -1262,19 +1262,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get installationDecisionTitle =>
-      'Asistente de decisión de instalación';
+      'Asistente de Decisión de Instalación';
 
   @override
   String recommendedSource(String source) {
-    return 'Fuente recomendada: $source';
+    return 'Fuente Recomendada: $source';
   }
 
   @override
-  String get preflightChecks => 'Comprobaciones previas';
+  String get preflightChecks => 'Comprobaciones Previas';
 
   @override
-  String get potentialRisks => 'Riesgos potenciales';
+  String get potentialRisks => 'Riesgos Potenciales';
 
   @override
-  String get continueInstallation => 'Continuar';
+  String get continueInstallation => 'Continuar Instalación';
 }
