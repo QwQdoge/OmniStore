@@ -123,3 +123,9 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
 
 **Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.
+
+## 2024-07-21 - [Async State Safety]
+
+**Learning:** High-frequency controllers can trigger `notifyListeners()` after they have been unmounted during async operations, leading to crashes.
+
+**Action:** Overrode `dispose()` and `notifyListeners()` to include a `_disposed` check for `NavigationController`, `BrowseController`, and `SettingsController` to ensure safe async state flow.
