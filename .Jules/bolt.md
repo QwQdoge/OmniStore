@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-08-01 - List Virtualization and Image Memory Optimization
+
+**Learning:** `memCacheWidth` and `memCacheHeight` must be set in `CachedNetworkImage` for fixed-size assets like logos to avoid engine decoding full-resolution source images into heap. Mismatched dimensions between `prototypeItem` and `itemBuilder` in `ListView.builder` cause scroll jitter and inaccurate scrollbar sizing during virtualization.
+
+**Action:** Added missing `memCacheHeight` parameters to `CachedNetworkImage` usages across the app matching their `memCacheWidth` value. Also added missing `prototypeItem` to `FlatpakAppListSkeleton` to fix virtual scroll rendering issues.
