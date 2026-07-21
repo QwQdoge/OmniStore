@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2024-05-24 - [Python Async Multi-Stage Cleanup Safety]
+
+Learning:
+To prevent resource leaks (like zombie processes or orphaned files) during task cancellation in multi-stage cleanup blocks, `BaseException` must be caught at each stage. If it's a `CancelledError` (or similar non-standard exception), it should be stored in a variable, allowing execution to continue to the next cleanup stage to ensure all stages execute, and then re-raised at the end of the sequence.
+
+Action:
+Updated `ResourceCoordinator.cleanup` in `python/core/backend.py` to catch `BaseException` during Task Cancellation, Handle Cleanup, and File System Cleanup stages. Non-standard exceptions are stored in `cancel_exc` and re-raised at the end of the cleanup sequence. Handled awaitables are wrapped in `asyncio.shield` to protect against immediate cancellation.
