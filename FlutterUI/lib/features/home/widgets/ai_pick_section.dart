@@ -74,7 +74,7 @@ class AIPickSection extends StatelessWidget {
                 Text(
                   AppLocalizations.of(context)!.aiPickDay,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     color: theme.colorScheme.tertiary,
                   ),
                 ),

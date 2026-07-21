@@ -158,7 +158,7 @@ class _TaskHeaderRow extends StatelessWidget {
                 taskState.stage.toUpperCase(),
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   color: theme.colorScheme.primary,
                 ),
               ),
