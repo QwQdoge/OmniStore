@@ -143,3 +143,9 @@
 **Learning:** Maintaining strict adherence to MD3 typographic scales (using `FontWeight.w800` instead of `w900` for expressive headers/labels) ensures visual harmony across components like `AppSourceTag` and `TaskProgressBar`. Additionally, dynamic action lists (like the category chips in `EmptyResults`) must consistently apply localized ARB semantic labels (via `categorySemantics`) to maintain screen reader accessibility parity with primary navigation elements.
 
 **Action:** Standardized font weights to `w800` in `app_source_tag.dart` and `task_progress_bar.dart`. Wrapped category `ActionChip`s in `empty_results.dart` with localized `Semantics` labels.
+
+## 2026-07-28 - Unified Details Layout Animation
+
+**Learning:** When conditionally displaying large bottom sections of a layout (like `AppScreenshots` and `AppTechnicalDetails`) where parts of the section might change their intrinsic height simultaneously, using separate `SmoothSizeSwitcher` widgets for each can lead to uncoordinated transitions and statically hanging title widgets. Wrapping the entire block in a single `SmoothSizeSwitcher` unifies the animation and provides a cleaner MD3 feel.
+
+**Action:** Combined the `AppScreenshots` and `AppTechnicalDetails` sections (along with their structural titles and spacing) in `app_main_content.dart` under a single `SmoothSizeSwitcher`.
