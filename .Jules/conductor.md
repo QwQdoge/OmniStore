@@ -34,3 +34,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
 
 **Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
+## 2024-08-01 - Replaced AnimatedSwitcher with SmoothSizeSwitcher for FutureBuilder and Dynamic Buttons
+
+**Learning:** When transitioning between loading skeletons and loaded UIs (e.g., route loaders like `_AppDetailsRouteLoaderState`) or animating dynamic buttons (like the AI test button icon), wrapping the conditional children with `SmoothSizeSwitcher` eliminates layout jumps. Raw `AnimatedSwitcher` only cross-fades, causing abrupt resizing.
+
+**Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` in `FlutterUI/lib/app/omnistore_app.dart` (inside the `FutureBuilder`) and `FlutterUI/lib/features/settings/presentation/widgets/ai_settings_section.dart` (for the AI connection test button icon).
