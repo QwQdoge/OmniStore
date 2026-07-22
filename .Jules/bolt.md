@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-08-01 - AppPackage Lazy Lowercase Caching & DownloadPage Search Debouncing
+
+**Learning:** Case-insensitive list filtering on hundreds of items (e.g. searching installed apps) on every keystroke causes excessive CPU load due to repeated `.toLowerCase()` string allocations. Introducing lazy `late final` lowercase fields on immutable `AppPackage` models caches results on first access, rendering subsequent searches O(1) in allocation overhead. Furthermore, adding a lightweight 200ms debounce to DownloadPage's search listener prevents redundant setState calls and refiltering on rapid sequential typing.
+
+**Action:** Implemented `nameLower`, `descriptionLower`, and `primarySourceLower` lazy properties on `AppPackage`. Refactored `AppsPage`, `DownloadPage`, and `SearchPage` to use these cached strings. Added a 200ms search debounce timer in `DownloadPage`.

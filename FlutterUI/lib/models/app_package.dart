@@ -80,6 +80,10 @@ class AppPackage {
   final String? downloadSize;
   final String? license;
 
+  late final String nameLower = name.toLowerCase();
+  late final String descriptionLower = description.toLowerCase();
+  late final String primarySourceLower = primarySource.toLowerCase();
+
   AppPackage({
     required this.name,
     required this.description,
