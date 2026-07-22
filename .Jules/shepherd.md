@@ -69,3 +69,31 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-07-31 - Chinese Localization Polish & MD3 Terminology Synchronization
+
+**Learning:** Static onboarding localization keys should never carry unnecessary conversational fillers, subjective remarks, or conditional 'If...then' clauses. Refining literal translation paths into direct, professional, active statements unifies the app interface consistency. Moreover, when polishing localization strings, updating the primary onboarding script generator `python/update_arb.py` prior to regenerating ARB files is mandatory to avoid config overwriting.
+
+**Action:** Polished translations in `python/update_arb.py` (for `NEW_KEYS_ZH` and `NEW_KEYS_ZH_HANT`) to eliminate fillers ("提示：", "我们", "如果您...") and conditional clauses ("如果您使用...", "填入..."). Regenerated and sorted `.arb` files via `update_arb.py` and compiled via `flutter gen-l10n`.
+
+| 类型 | 原始文本 | 旧翻译 | 优化后翻译 | 修改原因 |
+| --- | --- | --- | --- | --- |
+| zh | feedbackDesc | 如果您遇到问题，请通过 GitHub 反馈给我们。 | 遇到问题请通过 GitHub 提交反馈。 | 移除“如果您”条件从句与冗余字词 |
+| zh | aiOllamaNote | 提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS="*" 环境变量。 | Ollama 需在后台运行并启用 OLLAMA_ORIGINS="*" 环境变量。 | 移除“提示：”和“如果您使用”等冗余 filler/条件语气 |
+| zh | envCheckSubtitle | 我们需要确保您的系统已准备就绪 | 确保系统已准备就绪 | 移除人称代词和多余语气 |
+| zh | envWarningDesc | 缺少一些必要的组件，我们可以为您自动配置。 | 缺少必要组件，将进行自动配置。 | 移除冗余字眼，使其更具确定性 |
+| zh | envOkDesc | 一切就绪！您的系统非常完美。 | 一切就绪！系统环境完整。 | 移除偏口语化和主观的描述，使其更专业 |
+| zh | aiProviderDesc | 选择您的 AI 模型来源 (本地或云端) | 选择 AI 模型来源（本地或云端） | 移除人称代词及规范括号 |
+| zh | aiEndpointHelper | Ollama 默认为 http://localhost:11434 | Ollama 默认地址为 http://localhost:11434 | 精确描述配置项 |
+| zh | aiApiKeyHelper | Ollama 无需密钥，OpenAI 填入 sk-xxx | Ollama 无需密钥，OpenAI 密钥格式如 sk-xxx | 移除“填入”命令式口吻及 conditional 暗示 |
+| zh | howToGetApiKeyDesc | 1. Ollama (本地)：运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往官网创建并填入密钥。 | 1. Ollama（本地）：运行服务即可，无需密钥。2. 云端服务（OpenAI）：需前往官网创建并输入密钥。 | 精简用词并统一中文括号与术语 |
+| zh_Hant | feedbackDesc | 如果您遇到問題，請透過 GitHub 反饋給我們。 | 遇到問題請透過 GitHub 提交反饋。 | 移除“如果您”條件從句與冗餘字詞 |
+| zh_Hant | aiOllamaNote | 提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS="*" 環境變數。 | Ollama 需在背景執行並啟用 OLLAMA_ORIGINS="*" 環境變數。 | 移除“提示：”和“如果您使用”等冗餘 filler/條件語氣 |
+| zh_Hant | envCheckSubtitle | 我們需要確保您的系統已準備就緒 | 確保系統已準備就緒 | 移除人稱代詞和多餘語氣 |
+| zh_Hant | envWarningDesc | 缺少一些必要的組件，我們可以為您自動配置。 | 缺少必要組件，將進行自動配置。 | 移除冗餘字眼，使其更具確定性 |
+| zh_Hant | envOkDesc | 一切就緒！您的系統非常完美。 | 一切就緒！系統環境完整。 | 移除偏口語化和主觀的描述，使其更專業 |
+| zh_Hant | sourceConfigSubtitle | 選擇您想要啟用的軟體存放庫 | 選擇欲啟用的軟體存放庫 | 精簡傳統語境下的語意 |
+| zh_Hant | aiProviderDesc | 選擇您的 AI 模型來源 (本地或雲端) | 選擇 AI 模型來源（本地或雲端） | 移除人稱代詞及規範括號 |
+| zh_Hant | aiEndpointHelper | Ollama 預設為 http://localhost:11434 | Ollama 預設地址為 http://localhost:11434 | 精確描述配置项 |
+| zh_Hant | aiApiKeyHelper | Ollama 無需金鑰，OpenAI 填入 sk-xxx | Ollama 無需金鑰，OpenAI 金鑰格式如 sk-xxx | 移除“填入”命令式口吻及 conditional 暗示 |
+| zh_Hant | howToGetApiKeyDesc | 1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。 | 1. Ollama（本地）：執行服務即可，無需金鑰。2. 雲端服務（OpenAI）：需前往官網建立並輸入金鑰。 | 精簡用詞並統一中文括號與術語 |
