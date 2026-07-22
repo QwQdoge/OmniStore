@@ -235,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                               AIPickSection(
                                 aiPickBlurb:
                                     _aiPickBlurb ??
-                                    '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。',
+                                    l10n.aiPickFallbackBlurb,
                                 isFallback: _aiPickBlurb == null,
                                 onRefresh: _fetchAIPick,
                               ),
@@ -266,8 +266,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Expanded(
                       child: SectionHeader(
-                        title: '快速开始',
-                        subtitle: '从列表导入你常用的软件包',
+                        title: l10n.quickStart,
+                        subtitle: l10n.importListSubtitle,
                       ),
                     ),
                     Padding(
@@ -292,9 +292,9 @@ class _HomePageState extends State<HomePage> {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     child: trending.isEmpty
-                        ? const _DynamicSectionEmpty(
-                            key: ValueKey('empty_trending'),
-                            message: '暂无热门数据；网络恢复后会自动更新。',
+                        ? _DynamicSectionEmpty(
+                            key: const ValueKey('empty_trending'),
+                            message: l10n.emptyTrendingMessage,
                           )
                         : AppShelf(
                             key: const ValueKey('trending_shelf'),
@@ -316,9 +316,9 @@ class _HomePageState extends State<HomePage> {
                   return SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     child: forYou.isEmpty
-                        ? const _DynamicSectionEmpty(
-                            key: ValueKey('empty_forYou'),
-                            message: '继续搜索或安装应用后，这里会显示个性化建议。',
+                        ? _DynamicSectionEmpty(
+                            key: const ValueKey('empty_forYou'),
+                            message: l10n.emptyForYouMessage,
                           )
                         : AppShelf(
                             key: const ValueKey('forYou_shelf'),

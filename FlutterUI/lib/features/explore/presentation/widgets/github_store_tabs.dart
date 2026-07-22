@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class GitHubStoreTabs extends StatelessWidget {
   final TabController tabController;
@@ -15,6 +16,7 @@ class GitHubStoreTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SmoothSizeSwitcher(
       child: isSearching
@@ -37,22 +39,22 @@ class GitHubStoreTabs extends StatelessWidget {
                   labelColor: scheme.onPrimaryContainer,
                   unselectedLabelColor: scheme.onSurfaceVariant,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  tabs: const [
+                  tabs: [
                     Tab(
-                      text: "推荐",
-                      icon: Icon(Icons.recommend_rounded, size: 20),
+                      text: l10n.recommended,
+                      icon: const Icon(Icons.recommend_rounded, size: 20),
                     ),
                     Tab(
-                      text: "排行榜",
-                      icon: Icon(Icons.leaderboard_rounded, size: 20),
+                      text: l10n.rankings,
+                      icon: const Icon(Icons.leaderboard_rounded, size: 20),
                     ),
                     Tab(
-                      text: "热度榜",
-                      icon: Icon(Icons.local_fire_department_rounded, size: 20),
+                      text: l10n.trending,
+                      icon: const Icon(Icons.local_fire_department_rounded, size: 20),
                     ),
                     Tab(
-                      text: "最新更新",
-                      icon: Icon(Icons.update_rounded, size: 20),
+                      text: l10n.latestUpdates,
+                      icon: const Icon(Icons.update_rounded, size: 20),
                     ),
                   ],
                 ),

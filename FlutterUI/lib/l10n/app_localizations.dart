@@ -2310,6 +2310,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueInstallation;
+
+  /// Description for quickStart
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start'**
+  String get quickStart;
+
+  /// Description for importListSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Import your commonly used packages from a list'**
+  String get importListSubtitle;
+
+  /// Description for aiPickSubtitleDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Generated based on your search, install history, and current active sources; does not affect installation choices.'**
+  String get aiPickSubtitleDesc;
+
+  /// Description for aiPickFallbackBlurb
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily unable to generate personalized recommendations. You can still browse featured apps, or try again later.'**
+  String get aiPickFallbackBlurb;
+
+  /// Description for changeRecommendation
+  ///
+  /// In en, this message translates to:
+  /// **'Change Recommendation'**
+  String get changeRecommendation;
+
+  /// Description for emptyTrendingMessage
+  ///
+  /// In en, this message translates to:
+  /// **'No trending data available; will automatically update when network is restored.'**
+  String get emptyTrendingMessage;
+
+  /// Description for emptyForYouMessage
+  ///
+  /// In en, this message translates to:
+  /// **'Continue searching or installing apps to see personalized suggestions here.'**
+  String get emptyForYouMessage;
+
+  /// Description for featuredEditorsChoice
+  ///
+  /// In en, this message translates to:
+  /// **'Editors\' Choice'**
+  String get featuredEditorsChoice;
+
+  /// Description for featuredSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Maintained by OmniStore, always visible even offline'**
+  String get featuredSubtitle;
 }
 
 class _AppLocalizationsDelegate

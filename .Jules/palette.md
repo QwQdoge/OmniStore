@@ -1,3 +1,9 @@
+## 2026-07-27 - Localization and Internationalization Alignment
+
+**Learning:** Hardcoding user-facing texts inside layout widgets (like `home_page.dart` or custom tabs) breaks accessibility, violates professional MD3 internationalization guidelines, and limits adaptive layout capabilities across multiple locales. Ensuring all user-facing strings—including labels, subtitles, tabs, and fallback states—are fully localized using centralized `.arb` resource structures combined with the automated `update_arb.py` workflow provides a native and flawless user experience regardless of the user's system language settings.
+
+**Action:** Avoid hardcoding inline user-facing strings. Always define and manage localization keys through `python/update_arb.py` first, compile the ARB definitions into Dart classes via `flutter gen-l10n`, and retrieve them inside presentation layers dynamically using `AppLocalizations` context-aware getters.
+
 ## 2026-07-26 - Material Design 3 Dialog Extraction and Refinement
 
 **Learning:** Keeping large, complex dialog structures as inline code inside stateful pages/controllers bloats the file size, reduces readability, and violates clean separation of concerns. Furthermore, hardcoding user-facing strings within these inline builders breaks internationalization. Extracting these structures to dedicated, self-contained widgets (like `InstallationDecisionDialog` in `action_dialogs.dart`) paired with robust `AppLocalizations` support ensures consistent localization across languages. Utilizing Material 3 design features—such as 28dp rounded corners, w800 headline typography, clean semantic lists with icons, and contextual color-coded containers (like errorContainer for risks)—dramatically elevates overall interaction clarity and accessibility.
