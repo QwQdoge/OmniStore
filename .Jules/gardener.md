@@ -148,3 +148,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracting oversized inline dialog builders (like the `AlertDialog` used for AI installation decisions) into standalone stateless widgets significantly reduces the size of complex stateful presentation files (`details_page.dart`) and improves maintainability without changing behavior.
 
 **Action:** Extracted the "安装决策助手" `AlertDialog` from the `_handleAction` method in `details_page.dart` into a new `InstallationDecisionDialog` widget located in `FlutterUI/lib/features/explore/presentation/widgets/action_dialogs.dart`.
+## 2024-05-15 - Refactoring to improve maintainability
+
+**Learning:** Duplicated logic in `_getVariantForSource`, `_launchApp`, and `_locateApp` can be centralized and simplified. Extracted redundant widget blocks in `home_page.dart` to a new widget `RecommendationShelf`.
+
+**Action:** Reduced codebase size and improved maintainability by creating `RecommendationShelf` and deduplicating data access and action handling in `details_page.dart`.
