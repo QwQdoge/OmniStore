@@ -200,15 +200,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
 
     final variantMap = _getVariantForSource(_selectedSource);
-    String? variantId = variantMap?.id;
-    if (variantId == null || variantId.isEmpty) {
-      try {
-        final v = widget.app.variants.firstWhere(
-          (v) => v.source == _selectedSource,
-        );
-        variantId = v.id;
-      } catch (_) {}
-    }
+    final String? variantId = variantMap?.id;
     final String targetIdentifier = (variantId != null && variantId.isNotEmpty)
         ? variantId
         : widget.app.name;
@@ -334,14 +326,15 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     );
   }
 
-  Future<void> _launchApp() async {
+  Future<void> _executeAppAction(
+    Future<bool> Function(String target, String source) action,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final variant = _getVariantForSource(_selectedSource);
     String target = (variant?.id != null && _selectedSource == "Flatpak")
         ? variant!.id!
         : widget.app.name.trim();
-    final packageRepo = context.read<PackageRepository>();
-    final success = await packageRepo.launchApp(target, _selectedSource);
+    final success = await action(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -353,23 +346,14 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
   }
 
-  Future<void> _locateApp() async {
-    final l10n = AppLocalizations.of(context)!;
-    final variant = _getVariantForSource(_selectedSource);
-    String target = (variant?.id != null && _selectedSource == "Flatpak")
-        ? variant!.id!
-        : widget.app.name.trim();
+  Future<void> _launchApp() async {
     final packageRepo = context.read<PackageRepository>();
-    final success = await packageRepo.locateApp(target, _selectedSource);
-    if (!mounted) return;
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.loadError),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-    }
+    await _executeAppAction(packageRepo.launchApp);
+  }
+
+  Future<void> _locateApp() async {
+    final packageRepo = context.read<PackageRepository>();
+    await _executeAppAction(packageRepo.locateApp);
   }
 
   String? get _githubRepositoryUrl {
@@ -395,39 +379,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         }
       }
     }
+    for (var v in widget.app.variants) {
+      if (v.source == source) {
+        return v;
+      }
+    }
     return null;
   }
 
   String? _getVersionForSource(String source) {
-    if (_extraDetails != null) {
-      for (var v in _extraDetails!.variants) {
-        if (v.source == source) {
-          return v.version;
-        }
-      }
-    }
-    for (var v in widget.app.variants) {
-      if (v.source == source) {
-        return v.version;
-      }
-    }
-    return null;
+    return _getVariantForSource(source)?.version;
   }
 
   bool _isSourceInstalled(String source) {
-    if (_extraDetails != null) {
-      for (var v in _extraDetails!.variants) {
-        if (v.source == source) {
-          return v.installed;
-        }
-      }
-    }
-    for (var v in widget.app.variants) {
-      if (v.source == source) {
-        return v.installed;
-      }
-    }
-    return false;
+    return _getVariantForSource(source)?.installed ?? false;
   }
 
   void _showScreenshotViewer(String url) {
