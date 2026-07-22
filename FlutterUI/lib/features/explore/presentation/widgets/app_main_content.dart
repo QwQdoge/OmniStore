@@ -98,12 +98,15 @@ class AppMainContent extends StatelessWidget {
         ),
         SmoothSizeSwitcher(
           alignment: Alignment.topLeft,
-          child: (hasCapability('has_screenshots') &&
+          child: Column(
+            key: ValueKey('bottom-half-${extraDetails != null}'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasCapability('has_screenshots') &&
                   extraDetails != null &&
                   extraDetails!.screenshots != null &&
                   extraDetails!.screenshots!.isNotEmpty)
-              ? Column(
-                  key: const ValueKey('screenshots-visible'),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
@@ -116,23 +119,20 @@ class AppMainContent extends StatelessWidget {
                       onShowScreenshotViewer: onShowScreenshotViewer,
                     ),
                   ],
-                )
-              : const SizedBox.shrink(key: ValueKey('screenshots-hidden')),
-        ),
-        const SizedBox(height: 24),
-        AppDetailsSectionTitle(
-          title: AppLocalizations.of(context)!.details,
-        ),
-        SmoothSizeSwitcher(
-          alignment: Alignment.topLeft,
-          child: AppTechnicalDetails(
-            key: ValueKey('technical-details-${extraDetails != null}'),
-            primarySource: app.primarySource,
-            allSources: app.sources,
-            version: app.version,
-            extraDetails: extraDetails,
-            currentVariant: getVariantForSource(selectedSource),
-            hasCapability: hasCapability,
+                ),
+              const SizedBox(height: 24),
+              AppDetailsSectionTitle(
+                title: AppLocalizations.of(context)!.details,
+              ),
+              AppTechnicalDetails(
+                primarySource: app.primarySource,
+                allSources: app.sources,
+                version: app.version,
+                extraDetails: extraDetails,
+                currentVariant: getVariantForSource(selectedSource),
+                hasCapability: hasCapability,
+              ),
+            ],
           ),
         ),
       ],
