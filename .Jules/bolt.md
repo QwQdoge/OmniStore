@@ -101,3 +101,6 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+## 2024-05-13 - TasksTab Scroll Virtualization Optimization
+**Learning:** The use of `ListView.builder` with `shrinkWrap: true` inside a `SingleChildScrollView` disables scroll virtualization, causing performance issues with large lists.
+**Action:** Refactored `TasksTab` to use a `CustomScrollView` with slivers (`SliverToBoxAdapter`, `SliverPadding`, `SliverList.builder`) to restore proper lazy-rendering virtualization. Removed `prototypeItem` as it forced static heights which caused issues with dynamic content lengths.
