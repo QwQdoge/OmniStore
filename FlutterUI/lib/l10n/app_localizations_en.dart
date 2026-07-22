@@ -1268,4 +1268,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueInstallation => 'Continue';
+
+  @override
+  String get quickStart => 'Quick Start';
+
+  @override
+  String get importListSubtitle =>
+      'Import your commonly used packages from a list';
+
+  @override
+  String get aiPickSubtitleDesc =>
+      'Generated based on your search, install history, and current active sources; does not affect installation choices.';
+
+  @override
+  String get aiPickFallbackBlurb =>
+      'Temporarily unable to generate personalized recommendations. You can still browse featured apps, or try again later.';
+
+  @override
+  String get changeRecommendation => 'Change Recommendation';
+
+  @override
+  String get emptyTrendingMessage =>
+      'No trending data available; will automatically update when network is restored.';
+
+  @override
+  String get emptyForYouMessage =>
+      'Continue searching or installing apps to see personalized suggestions here.';
+
+  @override
+  String get featuredEditorsChoice => 'Editors\' Choice';
+
+  @override
+  String get featuredSubtitle =>
+      'Maintained by OmniStore, always visible even offline';
 }

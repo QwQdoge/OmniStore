@@ -1159,5 +1159,41 @@
   "continueInstallation": "繼續安裝",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "quickStart": "快速開始",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importListSubtitle": "從列表匯入您常用的套件",
+  "@importListSubtitle": {
+    "description": "Description for importListSubtitle"
+  },
+  "aiPickSubtitleDesc": "根據您的搜尋、安裝歷史和目前可用軟體存放庫生成；不會影響安裝選擇。",
+  "@aiPickSubtitleDesc": {
+    "description": "Description for aiPickSubtitleDesc"
+  },
+  "aiPickFallbackBlurb": "暫時無法產生個性化推薦。您仍可瀏覽精選應用程式，或稍後重試。",
+  "@aiPickFallbackBlurb": {
+    "description": "Description for aiPickFallbackBlurb"
+  },
+  "changeRecommendation": "換一個推薦",
+  "@changeRecommendation": {
+    "description": "Description for changeRecommendation"
+  },
+  "emptyTrendingMessage": "暫無熱門資料；網路恢復後會自動更新。",
+  "@emptyTrendingMessage": {
+    "description": "Description for emptyTrendingMessage"
+  },
+  "emptyForYouMessage": "繼續搜尋或安裝應用程式後，這裡會顯示個性化建議。",
+  "@emptyForYouMessage": {
+    "description": "Description for emptyForYouMessage"
+  },
+  "featuredEditorsChoice": "編輯推薦",
+  "@featuredEditorsChoice": {
+    "description": "Description for featuredEditorsChoice"
+  },
+  "featuredSubtitle": "由 OmniStore 維護，離線時也始終可見",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
   }
 }

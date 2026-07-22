@@ -22,8 +22,8 @@ class HeroSection extends StatelessWidget {
       children: [
         const SizedBox(height: 32),
         SectionHeader(
-          title: '${AppLocalizations.of(context)!.featured} · 编辑推荐',
-          subtitle: '由 OmniStore 维护，离线时也始终可见',
+          title: '${AppLocalizations.of(context)!.featured} · ${AppLocalizations.of(context)!.featuredEditorsChoice}',
+          subtitle: AppLocalizations.of(context)!.featuredSubtitle,
         ),
         const SizedBox(height: 16),
         SizedBox(

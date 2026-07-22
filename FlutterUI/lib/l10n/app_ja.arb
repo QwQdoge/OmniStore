@@ -1133,9 +1133,64 @@
   "@googleGemini": {
     "description": "Description for googleGemini"
   },
-  "installationDecisionTitle": "インストール判断アシスタント",
+  "installationDecisionTitle": "インストール決定ヘルパー",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
   "recommendedSource": "推奨ソース: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "preflightChecks": "事前チェック",
-  "potentialRisks": "想定されるリスク",
-  "continueInstallation": "続行"
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "潜在的なリスク",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "インストールを続行",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  },
+  "quickStart": "クイックスタート",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importListSubtitle": "リストからよく使うパッケージをインポートします",
+  "@importListSubtitle": {
+    "description": "Description for importListSubtitle"
+  },
+  "aiPickSubtitleDesc": "検索、インストール履歴、および現在アクティブなソースに基づいて生成されます。インストール選択には影響しません。",
+  "@aiPickSubtitleDesc": {
+    "description": "Description for aiPickSubtitleDesc"
+  },
+  "aiPickFallbackBlurb": "パーソナライズされたおすすめを一時的に生成できません。おすすめアプリを参照するか、後でもう一度お試しください。",
+  "@aiPickFallbackBlurb": {
+    "description": "Description for aiPickFallbackBlurb"
+  },
+  "changeRecommendation": "おすすめを変更",
+  "@changeRecommendation": {
+    "description": "Description for changeRecommendation"
+  },
+  "emptyTrendingMessage": "トレンドデータはありません。ネットワークが回復すると自動的に更新されます。",
+  "@emptyTrendingMessage": {
+    "description": "Description for emptyTrendingMessage"
+  },
+  "emptyForYouMessage": "検索やアプリのインストールを続けると、ここにパーソナライズされた提案が表示されます。",
+  "@emptyForYouMessage": {
+    "description": "Description for emptyForYouMessage"
+  },
+  "featuredEditorsChoice": "編集者の選択",
+  "@featuredEditorsChoice": {
+    "description": "Description for featuredEditorsChoice"
+  },
+  "featuredSubtitle": "OmniStore によって維持され、オフラインでも常に表示されます",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  }
 }

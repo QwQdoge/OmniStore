@@ -1262,19 +1262,52 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get installationDecisionTitle =>
-      'Asistente de decisión de instalación';
+      'Asistente de Decisión de Instalación';
 
   @override
   String recommendedSource(String source) {
-    return 'Fuente recomendada: $source';
+    return 'Fuente Recomendada: $source';
   }
 
   @override
-  String get preflightChecks => 'Comprobaciones previas';
+  String get preflightChecks => 'Comprobaciones Previas';
 
   @override
-  String get potentialRisks => 'Riesgos potenciales';
+  String get potentialRisks => 'Riesgos Potenciales';
 
   @override
-  String get continueInstallation => 'Continuar';
+  String get continueInstallation => 'Continuar Instalación';
+
+  @override
+  String get quickStart => 'Inicio rápido';
+
+  @override
+  String get importListSubtitle =>
+      'Importe sus paquetes de uso común desde una lista';
+
+  @override
+  String get aiPickSubtitleDesc =>
+      'Generado en función de su historial de búsqueda, instalación y fuentes activas actuales; no afecta las opciones de instalación.';
+
+  @override
+  String get aiPickFallbackBlurb =>
+      'Temporalmente no se pueden generar recomendaciones personalizadas. Aún puede explorar aplicaciones destacadas o intentarlo de nuevo más tarde.';
+
+  @override
+  String get changeRecommendation => 'Cambiar recomendación';
+
+  @override
+  String get emptyTrendingMessage =>
+      'No hay datos de tendencias disponibles; se actualizarán automáticamente cuando se restablezca la red.';
+
+  @override
+  String get emptyForYouMessage =>
+      'Continúe buscando o instalando aplicaciones para ver sugerencias personalizadas aquí.';
+
+  @override
+  String get featuredEditorsChoice => 'Elección de los editores';
+
+  @override
+  String get featuredSubtitle =>
+      'Mantenido por OmniStore, siempre visible incluso sin conexión';
 }

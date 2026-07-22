@@ -82,7 +82,7 @@ class AIPickSection extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。',
+              AppLocalizations.of(context)!.aiPickSubtitleDesc,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -100,7 +100,7 @@ class AIPickSection extends StatelessWidget {
               TextButton.icon(
                 onPressed: onRefresh,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('换一个推荐'),
+                label: Text(AppLocalizations.of(context)!.changeRecommendation),
               ),
             ],
           ],

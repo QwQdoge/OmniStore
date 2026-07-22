@@ -1133,9 +1133,64 @@
   "@googleGemini": {
     "description": "Description for googleGemini"
   },
-  "installationDecisionTitle": "Asistente de decisión de instalación",
-  "recommendedSource": "Fuente recomendada: {source}",
-  "preflightChecks": "Comprobaciones previas",
-  "potentialRisks": "Riesgos potenciales",
-  "continueInstallation": "Continuar"
+  "installationDecisionTitle": "Asistente de Decisión de Instalación",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "Fuente Recomendada: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "Comprobaciones Previas",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "Riesgos Potenciales",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "Continuar Instalación",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  },
+  "quickStart": "Inicio rápido",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importListSubtitle": "Importe sus paquetes de uso común desde una lista",
+  "@importListSubtitle": {
+    "description": "Description for importListSubtitle"
+  },
+  "aiPickSubtitleDesc": "Generado en función de su historial de búsqueda, instalación y fuentes activas actuales; no afecta las opciones de instalación.",
+  "@aiPickSubtitleDesc": {
+    "description": "Description for aiPickSubtitleDesc"
+  },
+  "aiPickFallbackBlurb": "Temporalmente no se pueden generar recomendaciones personalizadas. Aún puede explorar aplicaciones destacadas o intentarlo de nuevo más tarde.",
+  "@aiPickFallbackBlurb": {
+    "description": "Description for aiPickFallbackBlurb"
+  },
+  "changeRecommendation": "Cambiar recomendación",
+  "@changeRecommendation": {
+    "description": "Description for changeRecommendation"
+  },
+  "emptyTrendingMessage": "No hay datos de tendencias disponibles; se actualizarán automáticamente cuando se restablezca la red.",
+  "@emptyTrendingMessage": {
+    "description": "Description for emptyTrendingMessage"
+  },
+  "emptyForYouMessage": "Continúe buscando o instalando aplicaciones para ver sugerencias personalizadas aquí.",
+  "@emptyForYouMessage": {
+    "description": "Description for emptyForYouMessage"
+  },
+  "featuredEditorsChoice": "Elección de los editores",
+  "@featuredEditorsChoice": {
+    "description": "Description for featuredEditorsChoice"
+  },
+  "featuredSubtitle": "Mantenido por OmniStore, siempre visible incluso sin conexión",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  }
 }

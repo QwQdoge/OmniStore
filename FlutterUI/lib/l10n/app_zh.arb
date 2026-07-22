@@ -1160,5 +1160,41 @@
   "continueInstallation": "继续安装",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "quickStart": "快速开始",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importListSubtitle": "从列表导入您常用的软件包",
+  "@importListSubtitle": {
+    "description": "Description for importListSubtitle"
+  },
+  "aiPickSubtitleDesc": "根据您的搜索、安装历史和当前可用软件源生成；不会影响安装选择。",
+  "@aiPickSubtitleDesc": {
+    "description": "Description for aiPickSubtitleDesc"
+  },
+  "aiPickFallbackBlurb": "暂时无法生成个性化推荐。您仍可浏览编辑精选，或稍后重试。",
+  "@aiPickFallbackBlurb": {
+    "description": "Description for aiPickFallbackBlurb"
+  },
+  "changeRecommendation": "换一个推荐",
+  "@changeRecommendation": {
+    "description": "Description for changeRecommendation"
+  },
+  "emptyTrendingMessage": "暂无热门数据；网络恢复后会自动更新。",
+  "@emptyTrendingMessage": {
+    "description": "Description for emptyTrendingMessage"
+  },
+  "emptyForYouMessage": "继续搜索或安装应用后，这里会显示个性化建议。",
+  "@emptyForYouMessage": {
+    "description": "Description for emptyForYouMessage"
+  },
+  "featuredEditorsChoice": "编辑推荐",
+  "@featuredEditorsChoice": {
+    "description": "Description for featuredEditorsChoice"
+  },
+  "featuredSubtitle": "由 OmniStore 维护，离线时也始终可见",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
   }
 }

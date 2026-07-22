@@ -1156,5 +1156,41 @@
   "continueInstallation": "Continue",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "quickStart": "Quick Start",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importListSubtitle": "Import your commonly used packages from a list",
+  "@importListSubtitle": {
+    "description": "Description for importListSubtitle"
+  },
+  "aiPickSubtitleDesc": "Generated based on your search, install history, and current active sources; does not affect installation choices.",
+  "@aiPickSubtitleDesc": {
+    "description": "Description for aiPickSubtitleDesc"
+  },
+  "aiPickFallbackBlurb": "Temporarily unable to generate personalized recommendations. You can still browse featured apps, or try again later.",
+  "@aiPickFallbackBlurb": {
+    "description": "Description for aiPickFallbackBlurb"
+  },
+  "changeRecommendation": "Change Recommendation",
+  "@changeRecommendation": {
+    "description": "Description for changeRecommendation"
+  },
+  "emptyTrendingMessage": "No trending data available; will automatically update when network is restored.",
+  "@emptyTrendingMessage": {
+    "description": "Description for emptyTrendingMessage"
+  },
+  "emptyForYouMessage": "Continue searching or installing apps to see personalized suggestions here.",
+  "@emptyForYouMessage": {
+    "description": "Description for emptyForYouMessage"
+  },
+  "featuredEditorsChoice": "Editors' Choice",
+  "@featuredEditorsChoice": {
+    "description": "Description for featuredEditorsChoice"
+  },
+  "featuredSubtitle": "Maintained by OmniStore, always visible even offline",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
   }
 }

@@ -46,7 +46,16 @@ NEW_KEYS_EN = {
     "recommendedSource": "Recommended Source: {source}",
     "preflightChecks": "Preflight Checks",
     "potentialRisks": "Potential Risks",
-    "continueInstallation": "Continue"
+    "continueInstallation": "Continue",
+    "quickStart": "Quick Start",
+    "importListSubtitle": "Import your commonly used packages from a list",
+    "aiPickSubtitleDesc": "Generated based on your search, install history, and current active sources; does not affect installation choices.",
+    "aiPickFallbackBlurb": "Temporarily unable to generate personalized recommendations. You can still browse featured apps, or try again later.",
+    "changeRecommendation": "Change Recommendation",
+    "emptyTrendingMessage": "No trending data available; will automatically update when network is restored.",
+    "emptyForYouMessage": "Continue searching or installing apps to see personalized suggestions here.",
+    "featuredEditorsChoice": "Editors' Choice",
+    "featuredSubtitle": "Maintained by OmniStore, always visible even offline"
 }
 
 NEW_KEYS_ZH = {
@@ -92,7 +101,16 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐来源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "quickStart": "快速开始",
+    "importListSubtitle": "从列表导入您常用的软件包",
+    "aiPickSubtitleDesc": "根据您的搜索、安装历史和当前可用软件源生成；不会影响安装选择。",
+    "aiPickFallbackBlurb": "暂时无法生成个性化推荐。您仍可浏览编辑精选，或稍后重试。",
+    "changeRecommendation": "换一个推荐",
+    "emptyTrendingMessage": "暂无热门数据；网络恢复后会自动更新。",
+    "emptyForYouMessage": "继续搜索或安装应用后，这里会显示个性化建议。",
+    "featuredEditorsChoice": "编辑推荐",
+    "featuredSubtitle": "由 OmniStore 维护，离线时也始终可见"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -138,7 +156,16 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦來源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "quickStart": "快速開始",
+    "importListSubtitle": "從列表匯入您常用的套件",
+    "aiPickSubtitleDesc": "根據您的搜尋、安裝歷史和目前可用軟體存放庫生成；不會影響安裝選擇。",
+    "aiPickFallbackBlurb": "暫時無法產生個性化推薦。您仍可瀏覽精選應用程式，或稍後重試。",
+    "changeRecommendation": "換一個推薦",
+    "emptyTrendingMessage": "暫無熱門資料；網路恢復後會自動更新。",
+    "emptyForYouMessage": "繼續搜尋或安裝應用程式後，這裡會顯示個性化建議。",
+    "featuredEditorsChoice": "編輯推薦",
+    "featuredSubtitle": "由 OmniStore 維護，離線時也始終可見"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +211,16 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "quickStart": "クイックスタート",
+    "importListSubtitle": "リストからよく使うパッケージをインポートします",
+    "aiPickSubtitleDesc": "検索、インストール履歴、および現在アクティブなソースに基づいて生成されます。インストール選択には影響しません。",
+    "aiPickFallbackBlurb": "パーソナライズされたおすすめを一時的に生成できません。おすすめアプリを参照するか、後でもう一度お試しください。",
+    "changeRecommendation": "おすすめを変更",
+    "emptyTrendingMessage": "トレンドデータはありません。ネットワークが回復すると自動的に更新されます。",
+    "emptyForYouMessage": "検索やアプリのインストールを続けると、ここにパーソナライズされた提案が表示されます。",
+    "featuredEditorsChoice": "編集者の選択",
+    "featuredSubtitle": "OmniStore によって維持され、オフラインでも常に表示されます"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +266,16 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "quickStart": "Inicio rápido",
+    "importListSubtitle": "Importe sus paquetes de uso común desde una lista",
+    "aiPickSubtitleDesc": "Generado en función de su historial de búsqueda, instalación y fuentes activas actuales; no afecta las opciones de instalación.",
+    "aiPickFallbackBlurb": "Temporalmente no se pueden generar recomendaciones personalizadas. Aún puede explorar aplicaciones destacadas o intentarlo de nuevo más tarde.",
+    "changeRecommendation": "Cambiar recomendación",
+    "emptyTrendingMessage": "No hay datos de tendencias disponibles; se actualizarán automáticamente cuando se restablezca la red.",
+    "emptyForYouMessage": "Continúe buscando o instalando aplicaciones para ver sugerencias personalizadas aquí.",
+    "featuredEditorsChoice": "Elección de los editores",
+    "featuredSubtitle": "Mantenido por OmniStore, siempre visible incluso sin conexión"
 }
 
 MAPPINGS = {

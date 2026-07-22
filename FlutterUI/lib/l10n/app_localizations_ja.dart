@@ -1172,7 +1172,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get readOnly => '読み取り専用';
 
   @override
-  String get installationDecisionTitle => 'インストール判断アシスタント';
+  String get installationDecisionTitle => 'インストール決定ヘルパー';
 
   @override
   String recommendedSource(String source) {
@@ -1183,8 +1183,37 @@ class AppLocalizationsJa extends AppLocalizations {
   String get preflightChecks => '事前チェック';
 
   @override
-  String get potentialRisks => '想定されるリスク';
+  String get potentialRisks => '潜在的なリスク';
 
   @override
-  String get continueInstallation => '続行';
+  String get continueInstallation => 'インストールを続行';
+
+  @override
+  String get quickStart => 'クイックスタート';
+
+  @override
+  String get importListSubtitle => 'リストからよく使うパッケージをインポートします';
+
+  @override
+  String get aiPickSubtitleDesc =>
+      '検索、インストール履歴、および現在アクティブなソースに基づいて生成されます。インストール選択には影響しません。';
+
+  @override
+  String get aiPickFallbackBlurb =>
+      'パーソナライズされたおすすめを一時的に生成できません。おすすめアプリを参照するか、後でもう一度お試しください。';
+
+  @override
+  String get changeRecommendation => 'おすすめを変更';
+
+  @override
+  String get emptyTrendingMessage => 'トレンドデータはありません。ネットワークが回復すると自動的に更新されます。';
+
+  @override
+  String get emptyForYouMessage => '検索やアプリのインストールを続けると、ここにパーソナライズされた提案が表示されます。';
+
+  @override
+  String get featuredEditorsChoice => '編集者の選択';
+
+  @override
+  String get featuredSubtitle => 'OmniStore によって維持され、オフラインでも常に表示されます';
 }
