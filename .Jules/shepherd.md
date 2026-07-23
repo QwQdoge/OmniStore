@@ -69,3 +69,6 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-07-23 - Global SnackBar Consistency: Clipboard Feedback Duration
+- Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to 2 seconds (instead of the framework default 4s) to unify interaction flow and prevent overlapping feedback messages.
