@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2026-07-19 - [Authentication Service and Page Robustness Hardening]
+
+Learning:
+Missing stream subscription disposal leads to severe memory leaks in long-running services. Furthermore, lacking concurrency state locks (like `_isBusy` flags) and input parameter limits on text controllers allows duplicate execution requests, and risks buffer/injection vulnerabilities. Unhandled asynchronous operations on uninitialized third-party components (e.g., Supabase, AppLinks) can lead to application crashes (avalanche) during initialization or network errors.
+
+Action:
+Refactored `AuthService` and `AuthPage` for maximum stability. In `AuthService`, added `_authSubscription` and properly cancelled all streams in `dispose()`, implemented an explicit `_isBusy` state lock with `finally` block resetting, added a `_disposed` check in `notifyListeners()`, and wrapped Supabase and AppLinks initialization and callbacks in defensive try-catch blocks. In `AuthPage`, added robust token length and character validations on input PAT, added complete try-catch blocks to state operations, standardized SnackBar durations to 2 seconds, and strictly verified `mounted` checks across all asynchronous gaps.
