@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-08-01 - High-Frequency Controller State Safety & State Resets
+
+**Learning:** High-frequency controllers that execute asynchronous tasks (such as `BrowseController` and `SettingsController`) can easily trigger "setState() or notifyListeners() called after dispose()" crashes if their underlying views are unmounted/disposed while asynchronous requests are still in-flight. Ensuring all such controllers override `notifyListeners` to include a dynamic `_disposed` check prevents these memory-safety/lifecycle crashes. Furthermore, when managing critical task execution states, resetting busy variables and recording task results must be strictly wrapped inside `finally` blocks to guarantee robust UI state restoration.
+
+**Action:** Added `_disposed` lifecycle flags and overrode `dispose`/`notifyListeners` across `NavigationController`, `BrowseController`, and `SettingsController`. Restructured `_executeTaskInternal` and `runCleanSystem` in `TaskController` to ensure task result recording and state resets are reliably completed inside `finally` blocks.

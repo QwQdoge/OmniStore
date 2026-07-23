@@ -151,37 +151,32 @@ class TaskController with ChangeNotifier {
       _status = l10n.errorFatalStream(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
-      // Murphy-proof: Guaranteed busy state reset
+      // Murphy-proof: Guaranteed busy state reset and task result recording
       if (taskGeneration == _taskGeneration) {
+        _completedTasks.insert(
+          0,
+          TaskState(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            packageName: packageName,
+            source: source,
+            status: !hasError ? TaskStatus.success : TaskStatus.failed,
+            progress: !hasError ? 1.0 : 0.0,
+            stage: flag == "-I"
+                ? "Install"
+                : flag == "-R"
+                ? "Uninstall"
+                : "Update",
+            message: !hasError ? "Success" : _status,
+          ),
+        );
         _isBusy = false;
         _progress = null;
+        _packageName = null;
+        _flag = null;
         notifyListeners();
       }
     }
 
-    if (taskGeneration != _taskGeneration) return false;
-
-    // Murphy-proof: Record task result before clearing identifiers
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: packageName,
-        source: source,
-        status: !hasError ? TaskStatus.success : TaskStatus.failed,
-        progress: !hasError ? 1.0 : 0.0,
-        stage: flag == "-I"
-            ? "Install"
-            : flag == "-R"
-            ? "Uninstall"
-            : "Update",
-        message: !hasError ? "Success" : _status,
-      ),
-    );
-
-    _packageName = null;
-    _flag = null;
-    notifyListeners();
     return !hasError;
   }
 
@@ -215,8 +210,20 @@ class TaskController with ChangeNotifier {
       _status = l10n.errorCleanFailed(e.toString());
       _logs.add("[FATAL] $e");
     } finally {
-      // Murphy-proof: Guaranteed state reset
+      // Murphy-proof: Guaranteed state reset and task result recording
       if (taskGeneration == _taskGeneration) {
+        _completedTasks.insert(
+          0,
+          TaskState(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            packageName: "System Cleanup",
+            source: "System",
+            status: !hasError ? TaskStatus.success : TaskStatus.failed,
+            progress: !hasError ? 1.0 : 0.0,
+            stage: "Clean",
+            message: !hasError ? "Success" : _status,
+          ),
+        );
         _isBusy = false;
         _progress = null;
         _packageName = null;
@@ -224,21 +231,6 @@ class TaskController with ChangeNotifier {
         notifyListeners();
       }
     }
-
-    if (taskGeneration != _taskGeneration) return;
-
-    _completedTasks.insert(
-      0,
-      TaskState(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: "System Cleanup",
-        source: "System",
-        status: !hasError ? TaskStatus.success : TaskStatus.failed,
-        progress: !hasError ? 1.0 : 0.0,
-        stage: "Clean",
-        message: !hasError ? "Success" : _status,
-      ),
-    );
   }
 
   void _parseLine(String line, AppLocalizations l10n) {
