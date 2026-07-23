@@ -4,6 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 
 class AuthService extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
@@ -83,6 +91,7 @@ class AuthService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _linkSubscription?.cancel();
     super.dispose();
   }

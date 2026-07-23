@@ -7,6 +7,21 @@ import 'package:frontend/services/update_service.dart';
 import 'package:frontend/services/backend_service.dart';
 
 class SettingsController with ChangeNotifier {
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
   final ConfigRepository _configRepository;
   Map<String, dynamic> _config = {};
   bool _isAIEnabled = false;

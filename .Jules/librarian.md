@@ -123,3 +123,8 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
 
 **Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.
+## 2025-02-23 - Async Lifecycle Clarity
+
+**Learning:** High-frequency controllers that execute asynchronous tasks can trigger crashes if they invoke `notifyListeners()` after being unmounted (disposed).
+
+**Action:** Overrode `notifyListeners()` and `dispose()` with a `_disposed` check in `BrowseController`, `SettingsController`, `NavigationController`, and `AuthService` to prevent stale UI updates and lifecycle crashes.
