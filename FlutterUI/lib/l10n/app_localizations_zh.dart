@@ -578,7 +578,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+  String get feedbackDesc => '遇到问题请通过 GitHub 反馈给我们。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -607,7 +607,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '使用 Ollama 时请确保其已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -1649,7 +1649,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
 
   @override
-  String get aiCorrection => '您是指：';
+  String get aiCorrection => '您是指？';
 
   @override
   String get aiThinking => 'AI 正在思考...';
@@ -1757,7 +1757,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
 
   @override
-  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
+  String get feedbackDesc => '遇到問題請透過 GitHub 反饋給我們。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -1786,7 +1786,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+      '使用 Ollama 時請確保其已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
