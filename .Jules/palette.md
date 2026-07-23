@@ -143,3 +143,9 @@
 **Learning:** Maintaining strict adherence to MD3 typographic scales (using `FontWeight.w800` instead of `w900` for expressive headers/labels) ensures visual harmony across components like `AppSourceTag` and `TaskProgressBar`. Additionally, dynamic action lists (like the category chips in `EmptyResults`) must consistently apply localized ARB semantic labels (via `categorySemantics`) to maintain screen reader accessibility parity with primary navigation elements.
 
 **Action:** Standardized font weights to `w800` in `app_source_tag.dart` and `task_progress_bar.dart`. Wrapped category `ActionChip`s in `empty_results.dart` with localized `Semantics` labels.
+
+## 2026-07-27 - Clipboard Feedback SnackBar Duration
+
+**Learning:** SnackBar duration for clipboard feedback should be 2 seconds (instead of the framework default 4s) to unify interaction flow and prevent overlapping feedback messages.
+
+**Action:** Standardize the duration of SnackBar widgets used for clipboard copy feedback across the application to `const Duration(seconds: 2)`.
