@@ -31,16 +31,18 @@ class TasksTab extends StatelessWidget {
         title: l10n.noActiveTasks,
       );
     } else {
-      content = SingleChildScrollView(
+      content = CustomScrollView(
         key: const ValueKey('list'),
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SmoothSizeSwitcher(
-              alignment: Alignment.topCenter,
-              child: isBusy
-                  ? Column(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(24.0),
+            sliver: SliverMainAxisGroup(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SmoothSizeSwitcher(
+                    alignment: Alignment.topCenter,
+                    child: isBusy
+                        ? Column(
                       key: const ValueKey('active_task_block'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -114,19 +116,21 @@ class TasksTab extends StatelessWidget {
                       ],
                     )
                   : const SizedBox.shrink(key: ValueKey('active_task_hidden')),
-            ),
-            SmoothSizeSwitcher(
-              alignment: Alignment.topCenter,
-              child: historyLength > 0
-                  ? Column(
-                      key: const ValueKey('task_history_block'),
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              l10n.taskHistory,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SmoothSizeSwitcher(
+                    alignment: Alignment.topCenter,
+                    child: historyLength > 0
+                        ? Column(
+                            key: const ValueKey('task_history_block'),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    l10n.taskHistory,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
@@ -143,11 +147,17 @@ class TasksTab extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Selector<
-                          TaskController,
-                          ({int length, List<TaskState> history})
-                        >(
+                              const SizedBox(height: 12),
+                            ],
+                          )
+                        : const SizedBox.shrink(key: ValueKey('task_history_hidden')),
+                  ),
+                ),
+                if (historyLength > 0)
+                  Selector<
+                    TaskController,
+                    ({int length, List<TaskState> history})
+                  >(
                           selector: (context, c) => (
                             length: c.completedTasks.length,
                             history: c.completedTasks,
@@ -160,31 +170,8 @@ class TasksTab extends StatelessWidget {
                               ),
                           builder: (context, data, child) {
                             final history = data.history;
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
+                            return SliverList.builder(
                               itemCount: data.length,
-                              prototypeItem: AppCard(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                borderRadius: 12.0,
-                                child: ListTile(
-                                  leading: const CircleAvatar(),
-                                  title: Row(
-                                    children: [
-                                      const Text(''),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  subtitle: const Text(''),
-                                  trailing: const Text(''),
-                                ),
-                              ),
                               itemBuilder: (context, index) {
                                 final task = history[index];
                                 final isSuccess =
@@ -265,12 +252,10 @@ class TasksTab extends StatelessWidget {
                             );
                           },
                         ),
-                      ],
-                    )
-                  : const SizedBox.shrink(key: ValueKey('task_history_hidden')),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
