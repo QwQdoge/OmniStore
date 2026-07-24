@@ -18,7 +18,7 @@
   "about": "Acerca de",
   "details": "Detalles",
   "source": "Fuente",
-  "variant": "Variantes disponibles",
+  "variant": "Fuente de instalación",
   "@variant": {
     "description": "Label for app variants/versions"
   },
@@ -60,7 +60,7 @@
   "configSaveFailed": "Error al guardar la configuración",
   "confirmUninstall": "Confirmar desinstalación",
   "confirmInstall": "Confirmar instalación",
-  "confirmActionMsg": "¿Deseas realizar esta acción en {name}?",
+  "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
   "@confirmActionMsg": {
     "placeholders": {
       "name": {
@@ -101,7 +101,7 @@
     "description": "Tooltip for visiting website"
   },
   "updates": "Actualizaciones",
-  "upToDate": "Todas las aplicaciones están al día",
+  "upToDate": "Todas las aplicaciones están actualizadas",
   "checkUpdates": "Buscar actualizaciones",
   "foundUpdates": "{count, plural, =1{1 actualización encontrada} other{{count} actualizaciones encontradas}}",
   "@foundUpdates": {
@@ -1133,9 +1133,28 @@
   "@googleGemini": {
     "description": "Description for googleGemini"
   },
-  "installationDecisionTitle": "Asistente de decisión de instalación",
-  "recommendedSource": "Fuente recomendada: {source}",
-  "preflightChecks": "Comprobaciones previas",
-  "potentialRisks": "Riesgos potenciales",
-  "continueInstallation": "Continuar"
+  "installationDecisionTitle": "Asistente de Decisión de Instalación",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
+  "recommendedSource": "Fuente Recomendada: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "preflightChecks": "Comprobaciones Previas",
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "Riesgos Potenciales",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "Continuar Instalación",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  }
 }
