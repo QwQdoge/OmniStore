@@ -143,3 +143,9 @@
 **Learning:** Maintaining strict adherence to MD3 typographic scales (using `FontWeight.w800` instead of `w900` for expressive headers/labels) ensures visual harmony across components like `AppSourceTag` and `TaskProgressBar`. Additionally, dynamic action lists (like the category chips in `EmptyResults`) must consistently apply localized ARB semantic labels (via `categorySemantics`) to maintain screen reader accessibility parity with primary navigation elements.
 
 **Action:** Standardized font weights to `w800` in `app_source_tag.dart` and `task_progress_bar.dart`. Wrapped category `ActionChip`s in `empty_results.dart` with localized `Semantics` labels.
+
+## 2026-07-24 - MD3 Typography Standardization
+
+**Learning:** Always use `FontWeight.w800` (instead of `w900` or `FontWeight.bold`) for expressive UI labels, headers, tags (like `AppSourceTag`), and progress indicators to ensure visual harmony with MD3 standards.
+
+**Action:** Standardized font weights to `w800` across the application.

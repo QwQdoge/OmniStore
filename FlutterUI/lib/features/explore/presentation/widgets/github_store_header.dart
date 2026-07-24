@@ -78,7 +78,7 @@ class GitHubStoreHeader extends StatelessWidget {
                     Text(
                       "GitHub App Store",
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         letterSpacing: 0,
                       ),
                     ),

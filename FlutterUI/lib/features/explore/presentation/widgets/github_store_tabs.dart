@@ -36,7 +36,7 @@ class GitHubStoreTabs extends StatelessWidget {
                   ),
                   labelColor: scheme.onPrimaryContainer,
                   unselectedLabelColor: scheme.onSurfaceVariant,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w800),
                   tabs: const [
                     Tab(
                       text: "推荐",

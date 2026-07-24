@@ -98,7 +98,7 @@ class AppShelf extends StatelessWidget {
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),

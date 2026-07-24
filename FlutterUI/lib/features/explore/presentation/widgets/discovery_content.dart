@@ -110,7 +110,7 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
                                 cat.name,
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                 ),
                                 textAlign: TextAlign.center,
                               ),

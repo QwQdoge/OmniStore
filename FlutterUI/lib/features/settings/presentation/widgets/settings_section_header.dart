@@ -23,7 +23,7 @@ class SettingsSectionHeader extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: color,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

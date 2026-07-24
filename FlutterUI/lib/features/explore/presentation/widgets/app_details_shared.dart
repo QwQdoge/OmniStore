@@ -17,7 +17,7 @@ class AppDetailsSectionTitle extends StatelessWidget {
     final theme = Theme.of(context);
     final style = isSubSection
         ? theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w800,
             color: theme.colorScheme.secondary,
           )
         : theme.textTheme.titleLarge?.copyWith(

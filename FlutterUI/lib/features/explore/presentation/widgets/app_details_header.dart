@@ -192,7 +192,7 @@ class AppDetailsHeader extends StatelessWidget {
                                         source,
                                         style: const TextStyle(
                                           fontSize: 12,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                       if (version != null)

@@ -102,7 +102,7 @@ class SearchResultTile extends StatelessWidget {
             ),
             title: Text(
               app.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             subtitle: isCurrentTask
                 ? Selector<TaskController, ({String status, double? progress})>(
@@ -115,7 +115,7 @@ class SearchResultTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                       );
                     },
