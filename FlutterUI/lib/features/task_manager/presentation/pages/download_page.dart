@@ -113,8 +113,10 @@ class _DownloadPageState extends State<DownloadPage>
           app.primarySource == _selectedSourceFilter;
       final matchesSearch =
           _searchQuery.isEmpty ||
-          app.name.toLowerCase().contains(_searchQuery) ||
-          (app.description.toLowerCase().contains(_searchQuery));
+          // ⚡ Bolt: Use the lazy-cached lowercased properties of AppPackage
+          // to avoid expensive redundant conversions inside hot path filtering loops.
+          app.nameLower.contains(_searchQuery) ||
+          (app.descriptionLower.contains(_searchQuery));
       return matchesSource && matchesSearch;
     }).toList();
   }
