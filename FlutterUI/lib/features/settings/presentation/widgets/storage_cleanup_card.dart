@@ -182,7 +182,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                        ?.copyWith(fontWeight: FontWeight.w800),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(

@@ -47,7 +47,7 @@ class TasksTab extends StatelessWidget {
                         Text(
                           l10n.currentTask,
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                             fontSize: 18,
                           ),
                         ),
@@ -128,7 +128,7 @@ class TasksTab extends StatelessWidget {
                             Text(
                               l10n.taskHistory,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                                 fontSize: 18,
                               ),
                             ),
@@ -211,7 +211,7 @@ class TasksTab extends StatelessWidget {
                                         Text(
                                           task.packageName ?? l10n.unknownApp,
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -232,7 +232,7 @@ class TasksTab extends StatelessWidget {
                                             task.stage,
                                             style: TextStyle(
                                               fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w800,
                                               color: theme
                                                   .colorScheme
                                                   .onPrimaryContainer,
@@ -256,7 +256,7 @@ class TasksTab extends StatelessWidget {
                                       task.source ?? "",
                                       style: const TextStyle(
                                         fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),

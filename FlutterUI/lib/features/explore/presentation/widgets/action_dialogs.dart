@@ -100,7 +100,7 @@ class InstallationDecisionDialog extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               localizations.preflightChecks,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
             for (final check
                 in (decision['preflightChecks'] as List? ?? const []))
@@ -109,7 +109,7 @@ class InstallationDecisionDialog extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 localizations.potentialRisks,
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
               for (final risk in (decision['risks'] as List? ?? const []))
                 Text('• $risk'),

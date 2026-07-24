@@ -73,7 +73,7 @@ class InstalledAppList extends StatelessWidget {
                   ),
                   title: Text(
                     app.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   subtitle: Text(
                     app.description,

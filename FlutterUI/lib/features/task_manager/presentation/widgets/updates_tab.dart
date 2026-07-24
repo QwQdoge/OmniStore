@@ -46,7 +46,7 @@ class UpdatesTab extends StatelessWidget {
                       AppLocalizations.of(
                         context,
                       )!.foundUpdates(updates.length),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                     FilledButton.icon(
                       onPressed: () {
@@ -119,7 +119,7 @@ class UpdatesTab extends StatelessWidget {
                             title: Text(
                               update['name'],
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             subtitle: Padding(

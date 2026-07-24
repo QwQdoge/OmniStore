@@ -138,7 +138,7 @@ class _DownloadPageState extends State<DownloadPage>
         elevation: 0,
         title: Text(
           AppLocalizations.of(context)!.downloads,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(100),
@@ -198,7 +198,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               ),

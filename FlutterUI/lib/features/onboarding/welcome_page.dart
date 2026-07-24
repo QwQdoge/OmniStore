@@ -67,7 +67,7 @@ class _WelcomePageState extends State<WelcomePage> {
     return Center(
       child: Text(
         l10n.welcomeTitle,
-        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
       ),
     );
   }

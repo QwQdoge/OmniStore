@@ -57,7 +57,7 @@ class GitHubAppList extends StatelessWidget {
               emptyText ?? l10n.noPackagesAvailable,
               style: Theme.of(
                 context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             if (emptySubtitle.isNotEmpty) ...[
@@ -150,7 +150,7 @@ class GitHubAppList extends StatelessWidget {
                                     app.name,
                                     style: const TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w800,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -191,7 +191,7 @@ class GitHubAppList extends StatelessWidget {
                                   l10n.viewDetails,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w800,
                                     color: scheme.primary,
                                   ),
                                 ),

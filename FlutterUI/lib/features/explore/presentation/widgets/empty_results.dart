@@ -39,7 +39,7 @@ class _EmptyResultsState extends State<EmptyResults> {
             widget.l10n.categories,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 16),
           Wrap(

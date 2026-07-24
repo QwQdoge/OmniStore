@@ -163,7 +163,7 @@ class InstalledTab extends StatelessWidget {
                     : const Icon(Icons.apps, size: 40),
                 title: Text(
                   app.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 4.0),
@@ -189,7 +189,7 @@ class InstalledTab extends StatelessWidget {
                           sizeText.toString(),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.outline,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],

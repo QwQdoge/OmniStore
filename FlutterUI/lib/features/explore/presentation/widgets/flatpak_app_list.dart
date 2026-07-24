@@ -51,7 +51,7 @@ class FlatpakAppList extends StatelessWidget {
               AppLocalizations.of(context)!.noResults,
               style: Theme.of(
                 context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             Text(
@@ -128,7 +128,7 @@ class FlatpakAppList extends StatelessWidget {
                         : const Icon(Icons.shopping_bag_rounded, size: 44),
                     title: Text(
                       app.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                     subtitle: Text(
                       app.description,

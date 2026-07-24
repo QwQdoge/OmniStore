@@ -89,7 +89,7 @@ class _AIAppResolverState extends State<AIAppResolver> {
               children: [
                 Text(
                   AppLocalizations.of(context)!.relatedApps,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
