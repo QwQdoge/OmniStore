@@ -123,3 +123,11 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
 
 **Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.
+
+## 2026-07-24 - Async State Synchronization
+**Learning:** In `BrowseController`, failing to await the background `activeFetchFuture` from `PackageRepository` causes stale recommendations data to be displayed since the UI doesn't know when to invalidate and rebuild.
+**Action:** Always await background data-fetch futures inside controllers and correctly call `notifyListeners()` to ensure proper synchronization with the UI.
+
+## 2026-07-24 - AuthService Concurrency & Lifecycle
+**Learning:** Exposing long-running listeners like `onAuthStateChange` without saving subscriptions or checking `_disposed` before calling `notifyListeners()` causes memory leaks and invalidation errors. Unprotected async invocations like `signIn` allow duplicate requests.
+**Action:** Cancel all subscriptions in `dispose()`, guard `notifyListeners()` with a `_disposed` check, and use `_isBusy` state mutexes to prevent concurrent executions of sensitive auth methods.

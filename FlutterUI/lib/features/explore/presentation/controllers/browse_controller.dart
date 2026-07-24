@@ -37,6 +37,12 @@ class BrowseController with ChangeNotifier {
   Future<void> fetchRecommendations({bool forceRefresh = false}) async {
     _recommendations = await _packageRepository.getRecommendations(forceRefresh: forceRefresh);
     notifyListeners();
+
+    final fetchFuture = _packageRepository.activeFetchFuture;
+    if (fetchFuture != null) {
+      _recommendations = await fetchFuture;
+      notifyListeners();
+    }
   }
 
   /// Performs an asynchronous search for packages.
