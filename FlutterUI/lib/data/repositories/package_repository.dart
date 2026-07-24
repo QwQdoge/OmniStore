@@ -10,6 +10,7 @@ class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
+  Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
   DateTime? _lastFetchTime;
 
   static final List<AppPackage> _editorialFeatured =
