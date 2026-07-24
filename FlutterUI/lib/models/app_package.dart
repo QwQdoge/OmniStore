@@ -102,6 +102,12 @@ class AppPackage {
     this.license,
   });
 
+  // ⚡ Bolt: Lazy-cache lowercased string properties to avoid expensive redundant
+  // string conversions in high-frequency list filtering and search loop hot paths.
+  late final String nameLower = name.toLowerCase();
+  late final String descriptionLower = description.toLowerCase();
+  late final String primarySourceLower = primarySource.toLowerCase();
+
   List<String> get sources => variants.map((v) => v.source).toList();
 
   factory AppPackage.fromJson(Map<String, dynamic> json) {
