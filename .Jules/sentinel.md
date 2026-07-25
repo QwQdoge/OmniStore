@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2026-07-25 - [AuthPage & AuthService Concurrency, Initialization and Input Security Validation]
+
+Learning:
+Unprotected authentication flows and initialization logic are prone to concurrent state modification crashes and memory leaks if stream subscriptions are left un-disposed, or if `notifyListeners()` triggers post-dispose. Additionally, incoming user parameters (like personal access tokens) require strict length and character validation to prevent unhandled I/O pipeline failures or shell injections.
+
+Action:
+Refactored `AuthService` in `auth_service.dart` to introduce state-mutex guards (`_isBusy`), lifecycle checks (`_disposed`), and explicit subscription tracking (`_authSubscription`, `_linkSubscription`). Added robust try-catch boundaries on Supabase and AppLinks initialization. Enhanced `AuthPage` in `auth_page.dart` with robust input validation (max 255 chars and regex control-character rejection) and standardized SnackBar duration to 2 seconds.

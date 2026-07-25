@@ -27,30 +27,79 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _loadPat() async {
-    final configRepo = context.read<ConfigRepository>();
-    final config = await configRepo.loadConfig();
-    if (!mounted) return;
-    setState(() {
-      _patController.text = config['github']?['pat'] ?? '';
-    });
+    try {
+      final configRepo = context.read<ConfigRepository>();
+      final config = await configRepo.loadConfig();
+      if (!mounted) return;
+      setState(() {
+        _patController.text = config['github']?['pat'] ?? '';
+      });
+    } catch (e) {
+      debugPrint('Murphy-proof Error: Failed to load PAT: $e');
+    }
   }
 
   Future<void> _savePat() async {
+    if (_isSaving) return; // Mutex protection
+
+    final token = _patController.text.trim();
+
+    // Foolproof Input Validation: Limit maximum length to 255 characters
+    if (token.length > 255) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid token: maximum length is 255 characters.'),
+            duration: Duration(seconds: 2), // Standardized to 2 seconds for visual UX consistency
+          ),
+        );
+      }
+      return;
+    }
+
+    // Foolproof Input Validation: Strictly deny control characters to prevent shell injection/pipe breaking
+    if (RegExp(r'[\x00-\x1F\x7F]').hasMatch(token)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid token: contains illegal control characters.'),
+            duration: Duration(seconds: 2), // Standardized to 2 seconds for visual UX consistency
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isSaving = true);
-    final configRepo = context.read<ConfigRepository>();
-    final config = await configRepo.loadConfig();
-    if (!mounted) return;
-    config['github'] ??= {};
-    config['github']['pat'] = _patController.text.trim();
-    await configRepo.saveConfig(config);
-    if (mounted) {
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.githubPatSaved),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+    try {
+      final configRepo = context.read<ConfigRepository>();
+      final config = await configRepo.loadConfig();
+      if (!mounted) return;
+      config['github'] ??= {};
+      config['github']['pat'] = token;
+      await configRepo.saveConfig(config);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.githubPatSaved),
+            duration: const Duration(seconds: 2), // Standardized to 2 seconds for visual UX consistency
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Murphy-proof Error: Failed to save PAT: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save PAT: $e'),
+            duration: const Duration(seconds: 2), // Standardized to 2 seconds for visual UX consistency
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
