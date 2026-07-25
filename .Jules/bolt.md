@@ -101,3 +101,7 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2024-05-24 - Lazy Caching of Model Field Conversions
+**Learning:** Performing string conversions like `.toLowerCase()` inside hot-path list filtering loops causes redundant allocations and stuttering.
+**Action:** Added `late final String nameLower = name.toLowerCase();` and similar fields to `AppPackage` model to cache conversions O(1).
