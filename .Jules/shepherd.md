@@ -69,3 +69,10 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-06-29 - Localization Consistency: Refining AI Configurations and Onboarding Texts
+- Refined several onboarding and AI assistant configuration translations in `python/update_arb.py` (`NEW_KEYS_ZH` and `NEW_KEYS_ZH_HANT`) to remove conversational fillers and "If...then" clauses.
+- Replaced verbose "我们需要确保..." with "确保..." for environment check subtitle.
+- Replaced conversational "Ollama 无需密钥，OpenAI 填入 sk-xxx" with direct "Ollama 留空，OpenAI 填入 sk-xxx".
+- Replaced "如果您使用 Ollama..." with "使用 Ollama 时请确保..." to remove conditional "如果" (if) phrasing.
+- Regenerated localization `.arb` files and compiled them to Dart classes using `flutter gen-l10n`.
