@@ -56,6 +56,12 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Action:** Removed 300ms debounce from `BrowseController.search`, added race condition handling via `_activeSearchId`, and refactored `AppShelf` to use `ListView.builder` with `prototypeItem`.
 - Refactored `AppShelf` (FlutterUI/lib/core/widgets/app_shelf.dart) to replace `ListView.separated` with `ListView.builder` utilizing `prototypeItem` for list virtualization. Adjusted padding to maintain exact pixel layout.
 
+## 2026-07-31 - Background Recommendations Sync Propagation
+
+**Learning:** When retrieving recommendations, returning cached results instantly prevents startup/page navigation lag. However, the background fetch that triggers asynchronously updates the cache but never updates the UI since the controller has already completed its call. Bridging this async background update by exposing and awaiting the in-flight future in the controller layer ensures the UI dynamically refreshes with the latest data once the fetch completes.
+
+**Action:** Added a public getter `activeFetchFuture` in `PackageRepository` and updated `BrowseController.fetchRecommendations` to await this future if present, triggering a second `notifyListeners()` call when fresh data arrives.
+
 ## 2026-07-05 - Hot-path String & Repaint Optimization
 
 **Learning:** Redundant string transformations (like `.lower()`) and dictionary allocations inside hot search loops (e.g., scoring hundreds of items) create significant CPU overhead. Additionally, hover-triggered animations in common list items (like `AppCard`) can trigger expensive repaints of the entire list if not isolated.
