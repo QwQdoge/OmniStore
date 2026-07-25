@@ -21,6 +21,7 @@ class ScreenshotViewer extends StatelessWidget {
                   imageUrl: url,
                   fit: BoxFit.contain,
                   memCacheWidth: 1080,
+                  memCacheHeight: 1080,
                 ),
               ),
             ),

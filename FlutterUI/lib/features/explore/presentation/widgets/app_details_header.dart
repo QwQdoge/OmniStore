@@ -82,6 +82,7 @@ class AppDetailsHeader extends StatelessWidget {
                         imageUrl: iconUrl,
                         fit: BoxFit.cover,
                         memCacheWidth: 240,
+                        memCacheHeight: 240,
                         placeholder: (context, url) => const Skeleton(
                           width: 120,
                           height: 120,
