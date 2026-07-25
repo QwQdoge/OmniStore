@@ -69,3 +69,9 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-07-27 - Localization Refinement and Terminology Alignment
+
+**Learning:** When localizing user-facing elements, especially AI-related settings or environmental notifications, keeping translations free of polite/filler word structures (such as "我们需要" or "您可以") and conditional structures (such as "If...then") ensures standard UI conciseness and native professional fluency. Additionally, Traditional Chinese has distinct localization standards compared to Simplified Chinese; for instance, "background update" must be localized as "背景更新" rather than "後台更新", and "software source/repository" must be consistently mapped to "軟體存放庫" (Traditional Chinese) and "软件源" (Simplified Chinese).
+
+**Action:** Updated `python/update_arb.py` to refine and optimize onboarding and AI assistant translations for both Simplified and Traditional Chinese. Updated `python/polish_l10n.py` to override and align `enableSystemdService` in Traditional Chinese to `"啟用 systemd 背景更新服務"`.

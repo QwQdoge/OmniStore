@@ -31,5 +31,6 @@ polish('es', {
 polish('zh_Hant', {
     "forYou": "為您推薦",
     "aiThinking": "AI 正在思考...",
-    "aiCorrection": "您是指？"
+    "aiCorrection": "您是指？",
+    "enableSystemdService": "啟用 systemd 背景更新服務"
 })
