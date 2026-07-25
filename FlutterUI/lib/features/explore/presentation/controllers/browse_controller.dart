@@ -6,7 +6,21 @@ import 'package:frontend/models/app_package.dart';
 class BrowseController with ChangeNotifier {
   final PackageRepository _packageRepository;
 
+  bool _disposed = false;
   Map<String, List<AppPackage>> _recommendations = {};
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
   List<AppPackage> _searchResults = [];
   bool _isSearching = false;
   String? _pendingSearchQuery;
