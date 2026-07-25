@@ -4,6 +4,7 @@ import "package:provider/provider.dart";
 import "package:frontend/features/settings/presentation/controllers/settings_controller.dart";
 import "package:frontend/features/task_manager/presentation/controllers/task_controller.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
@@ -250,82 +251,95 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       (s) => s.isAIEnabled,
     );
 
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            pinned: true,
-            title: AnimatedOpacity(
-              opacity: innerBoxIsScrolled ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              child: Text(
-                widget.app.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0,
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.escape) {
+          if (!widget.isEmbedded) {
+            Navigator.maybePop(context);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              pinned: true,
+              title: AnimatedOpacity(
+                opacity: innerBoxIsScrolled ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                child: Text(
+                  widget.app.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0,
+                  ),
                 ),
               ),
-            ),
-            leading: widget.isEmbedded
-                ? null
-                : IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).backButtonTooltip,
-                    onPressed: () => Navigator.pop(context),
-                  ),
-            actions: AppDetailsAppBarActions.buildActions(
-              context: context,
-              app: widget.app,
-              isAIEnabled: isAIEnabled,
-              selectedSource: _selectedSource,
-              onShowTerminalDialog: _showTerminalDialog,
-            ),
-          ),
-        ],
-        body: SelectionArea(
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(0, 30 * (1 - value)),
-                  child: child,
-                ),
-              );
-            },
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: AppMainContent(
+              leading: widget.isEmbedded
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).backButtonTooltip,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+              actions: AppDetailsAppBarActions.buildActions(
+                context: context,
                 app: widget.app,
-                extraDetails: _extraDetails,
+                isAIEnabled: isAIEnabled,
                 selectedSource: _selectedSource,
-                isAppInstalled: _isAppInstalled,
-                githubRepositoryUrl: _githubRepositoryUrl,
-                variantScrollController: _variantScrollController,
-                heroTag: widget.heroTag,
-                hasCapability: _hasCapability,
-                getVersionForSource: _getVersionForSource,
-                isSourceInstalled: _isSourceInstalled,
-                onSourceSelected: (String newValue) {
-                  setState(() {
-                    _selectedSource = newValue;
-                    _isAppInstalled = _isSourceInstalled(newValue);
-                  });
-                },
-                onLocateApp: _locateApp,
-                onHandleAction: _handleAction,
-                onLaunchApp: _launchApp,
-                onCancelAction: _cancelAction,
-                isLoadingDetails: _isLoadingDetails,
-                screenshotScrollController: _screenshotScrollController,
-                onShowScreenshotViewer: _showScreenshotViewer,
-                getVariantForSource: _getVariantForSource,
+                onShowTerminalDialog: _showTerminalDialog,
+              ),
+            ),
+          ],
+          body: SelectionArea(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(0, 30 * (1 - value)),
+                    child: child,
+                  ),
+                );
+              },
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: AppMainContent(
+                  app: widget.app,
+                  extraDetails: _extraDetails,
+                  selectedSource: _selectedSource,
+                  isAppInstalled: _isAppInstalled,
+                  githubRepositoryUrl: _githubRepositoryUrl,
+                  variantScrollController: _variantScrollController,
+                  heroTag: widget.heroTag,
+                  hasCapability: _hasCapability,
+                  getVersionForSource: _getVersionForSource,
+                  isSourceInstalled: _isSourceInstalled,
+                  onSourceSelected: (String newValue) {
+                    setState(() {
+                      _selectedSource = newValue;
+                      _isAppInstalled = _isSourceInstalled(newValue);
+                    });
+                  },
+                  onLocateApp: _locateApp,
+                  onHandleAction: _handleAction,
+                  onLaunchApp: _launchApp,
+                  onCancelAction: _cancelAction,
+                  isLoadingDetails: _isLoadingDetails,
+                  screenshotScrollController: _screenshotScrollController,
+                  onShowScreenshotViewer: _showScreenshotViewer,
+                  getVariantForSource: _getVariantForSource,
+                ),
               ),
             ),
           ),

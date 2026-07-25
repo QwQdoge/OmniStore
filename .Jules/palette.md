@@ -1,3 +1,9 @@
+## 2026-07-27 - Desktop Keyboard Navigation & Focus State Safety
+
+**Learning:** True desktop and web Material Design 3 consistency requires highly accessible, responsive keyboard-driven navigation patterns. For example, hotkeys like `/` or `Ctrl+F`/`Cmd+F` should globally focus/redirect to search inputs automatically, but must strictly ignore requests if the user is already typing inside an `EditableText` (e.g., via `FocusManager.instance.primaryFocus`) to avoid swallowing intended keyboard input. Additionally, providing organic `Escape` key handlers on pages (to clear inputs, unfocus text fields, or close/pop non-embedded pages) aligns beautifully with premium keyboard accessibility standards and satisfies MD3 interaction design principles.
+
+**Action:** Wrap root adaptive layouts and standalone pages in semantic `Focus` widgets with `onKeyEvent` handlers (rather than restrictive `CallbackShortcuts`). Always inspect `primaryFocus` for `EditableText` context before triggering global hotkeys, and provide context-aware `Escape` handlers across input fields and overlay paths to elevate interaction fluidity.
+
 ## 2026-07-26 - Material Design 3 Dialog Extraction and Refinement
 
 **Learning:** Keeping large, complex dialog structures as inline code inside stateful pages/controllers bloats the file size, reduces readability, and violates clean separation of concerns. Furthermore, hardcoding user-facing strings within these inline builders breaks internationalization. Extracting these structures to dedicated, self-contained widgets (like `InstallationDecisionDialog` in `action_dialogs.dart`) paired with robust `AppLocalizations` support ensures consistent localization across languages. Utilizing Material 3 design features—such as 28dp rounded corners, w800 headline typography, clean semantic lists with icons, and contextual color-coded containers (like errorContainer for risks)—dramatically elevates overall interaction clarity and accessibility.

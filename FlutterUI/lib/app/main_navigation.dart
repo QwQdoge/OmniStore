@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:frontend/core/layout/adaptive_navigation_shell.dart';
 import 'package:frontend/core/navigation_controller.dart';
 import 'package:frontend/core/platform/desktop_window_service.dart';
@@ -32,7 +33,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
   static const _pages = <Widget>[
     HomePage(),
     CategoryPage(),
-    SearchPage(autoFocus: false),
+    SearchPage(autoFocus: true),
     SettingsPage(),
     DownloadPage(),
     AppsPage(),
@@ -212,14 +213,40 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       7: l10n.flatpakStore,
     };
 
-    return AdaptiveNavigationShell(
-      destinations: primary,
-      secondaryDestinations: secondary,
-      pageTitle: titles[selectedIndex] ?? '',
-      pageChild: _pages[selectedIndex],
-      showSearch: selectedIndex != 2,
-      onSearch: () => context.read<NavigationController>().setIndex(2),
-      useWindowTitleBar: DesktopWindowService.isSupported,
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final primaryFocus = FocusManager.instance.primaryFocus;
+          if (primaryFocus != null && primaryFocus.context != null) {
+            final isEditable =
+                primaryFocus.context!
+                    .findAncestorWidgetOfExactType<EditableText>() !=
+                null;
+            if (isEditable) return KeyEventResult.ignored;
+          }
+
+          final isCtrl = HardwareKeyboard.instance.isControlPressed;
+          final isMeta = HardwareKeyboard.instance.isMetaPressed;
+          final key = event.logicalKey;
+
+          if (key == LogicalKeyboardKey.slash ||
+              ((isCtrl || isMeta) && key == LogicalKeyboardKey.keyF)) {
+            context.read<NavigationController>().setIndex(2);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: AdaptiveNavigationShell(
+        destinations: primary,
+        secondaryDestinations: secondary,
+        pageTitle: titles[selectedIndex] ?? '',
+        pageChild: _pages[selectedIndex],
+        showSearch: selectedIndex != 2,
+        onSearch: () => context.read<NavigationController>().setIndex(2),
+        useWindowTitleBar: DesktopWindowService.isSupported,
+      ),
     );
   }
 }
