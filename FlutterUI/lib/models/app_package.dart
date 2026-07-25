@@ -80,6 +80,11 @@ class AppPackage {
   final String? downloadSize;
   final String? license;
 
+  // Lazily evaluation caches for hot-path search/filter performance
+  late final String nameLower = name.toLowerCase();
+  late final String descriptionLower = description.toLowerCase();
+  late final String primarySourceLower = primarySource.toLowerCase();
+
   AppPackage({
     required this.name,
     required this.description,
