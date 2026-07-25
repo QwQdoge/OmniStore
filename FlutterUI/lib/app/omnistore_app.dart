@@ -10,6 +10,7 @@ import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class OmnistoreApp extends StatefulWidget {
   const OmnistoreApp({super.key, required this.initialConfig});
@@ -131,7 +132,7 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
     return FutureBuilder<AppPackage?>(
       future: _appDetailsFuture,
       builder: (context, snapshot) {
-        return AnimatedSwitcher(
+        return SmoothSizeSwitcher(
           duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.fastOutSlowIn,

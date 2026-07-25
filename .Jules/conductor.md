@@ -34,3 +34,6 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
 
 **Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
+## 2026-07-25 - Replace AnimatedSwitcher with SmoothSizeSwitcher for Loading Transitions
+**Learning:** `SmoothSizeSwitcher` should be preferred over `AnimatedSwitcher` for transitions between loading and loaded states (like route loaders or dynamic button icons), as it combines size animation with fading to prevent layout jumps, unless the widget is inside an `Expanded` parent or uses a custom `transitionBuilder`.
+**Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` in `_AppDetailsRouteLoader` (`omnistore_app.dart`) and the AI connection test button (`ai_settings_section.dart`).
