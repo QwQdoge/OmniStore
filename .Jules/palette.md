@@ -1,3 +1,9 @@
+## 2026-07-27 - Clipboard Copy SnackBar Duration Standardization
+
+**Learning:** Clipboard copy confirmation SnackBars are highly repetitive, lightweight background confirmations rather than critical system errors or action prompts. Retaining the framework default 4-second duration for such transient UI feedback leads to visual crowding and delayed dismissed states when multiple text fields are copied in rapid succession. Standardizing clipboard copy feedback SnackBars globally to `const Duration(seconds: 2)` makes the UI feel significantly snappier and aligns with lightweight Material Design 3 transient notification timing patterns.
+
+**Action:** Ensure all SnackBars used for copy-to-clipboard actions (such as copying package names, command lines, or metadata values) explicitly set their `duration` to `const Duration(seconds: 2)` instead of defaulting to 4 seconds.
+
 ## 2026-07-26 - Material Design 3 Dialog Extraction and Refinement
 
 **Learning:** Keeping large, complex dialog structures as inline code inside stateful pages/controllers bloats the file size, reduces readability, and violates clean separation of concerns. Furthermore, hardcoding user-facing strings within these inline builders breaks internationalization. Extracting these structures to dedicated, self-contained widgets (like `InstallationDecisionDialog` in `action_dialogs.dart`) paired with robust `AppLocalizations` support ensures consistent localization across languages. Utilizing Material 3 design features—such as 28dp rounded corners, w800 headline typography, clean semantic lists with icons, and contextual color-coded containers (like errorContainer for risks)—dramatically elevates overall interaction clarity and accessibility.
