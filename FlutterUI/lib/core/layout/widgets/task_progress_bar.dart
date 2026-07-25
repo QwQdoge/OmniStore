@@ -51,7 +51,7 @@ class TaskProgressBar extends StatelessWidget {
                           data.status.isEmpty ? l10n.processing : data.status,
                           style: textTheme.labelSmall?.copyWith(
                             color: scheme.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
