@@ -36,6 +36,7 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _savePat() async {
+    if (_isSaving) return;
     setState(() => _isSaving = true);
     final configRepo = context.read<ConfigRepository>();
     final config = await configRepo.loadConfig();

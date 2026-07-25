@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2024-05-24 - [AuthService Concurrency & Resource Leaks]
+
+Learning:
+Missing mutex flags on async operations can lead to concurrent execution of sensitive methods (like login/logout), causing race conditions. Uncancelled stream subscriptions in `dispose()` create memory leaks in long-lived services. Additionally, third-party initializations (e.g., Supabase, AppLinks) must be guarded with `try-catch` blocks to prevent initialization failures from crashing the application or service, and `notifyListeners` must be protected by a `_disposed` check.
+
+Action:
+Implemented a `_isBusy` mutex flag in `AuthService`'s `signIn` and `signOut` methods, and added `if (_isSaving) return;` in `AuthPage`. Added a `_disposed` flag to guard all `notifyListeners()` calls. Safely stored and cancelled `_authSubscription` and `_linkSubscription` in the `dispose()` callback. Wrapped Supabase and AppLinks external initializations in `try-catch` blocks.
