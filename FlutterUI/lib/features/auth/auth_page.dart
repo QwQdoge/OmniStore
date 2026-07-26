@@ -36,19 +36,30 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _savePat() async {
+    final pat = _patController.text.trim();
+    if (pat.length > 255 || RegExp(r'[\x00-\x1F\x7F]').hasMatch(pat)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid Personal Access Token'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
     final configRepo = context.read<ConfigRepository>();
     final config = await configRepo.loadConfig();
     if (!mounted) return;
     config['github'] ??= {};
-    config['github']['pat'] = _patController.text.trim();
+    config['github']['pat'] = pat;
     await configRepo.saveConfig(config);
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.githubPatSaved),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
     }

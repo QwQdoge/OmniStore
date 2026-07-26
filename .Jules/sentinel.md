@@ -162,3 +162,10 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+## 2024-07-26 - [Flutter Security & Stability]
+
+Learning:
+Missing state-mutex flags in `AuthService` can lead to duplicate executions of sensitive methods. Not checking a `_disposed` flag before calling `notifyListeners()` and failing to cancel subscriptions in `dispose()` can cause memory leaks and crashes. Failing to validate input parameters like tokens against maximum lengths and control characters can cause unexpected behavior.
+
+Action:
+Implemented `_isBusy` flags for `signIn`/`signOut` in `AuthService`. Added a `_disposed` check before `notifyListeners()` and properly canceled `_authSubscription` and `_linkSubscription` in `dispose()`. Added `try-catch` blocks around `Supabase.initialize` and `_initDeepLinks` to prevent avalanche failures. Added input validation in `AuthPage` for token length (>255) and control characters (`[\x00-\x1F\x7F]`) and standardized `SnackBar` durations to 2 seconds.

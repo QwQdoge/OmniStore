@@ -10,8 +10,11 @@ class AuthService extends ChangeNotifier {
 
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
+  StreamSubscription<AuthState>? _authSubscription;
 
   bool _isInitialized = false;
+  bool _isBusy = false;
+  bool _disposed = false;
   User? _currentUser;
 
   bool get isAuthenticated => _currentUser != null;
@@ -20,28 +23,34 @@ class AuthService extends ChangeNotifier {
   Future<void> initialize(String supabaseUrl, String supabaseAnonKey) async {
     if (_isInitialized) return;
 
-    await Supabase.initialize(
-      url: supabaseUrl,
-      publishableKey: supabaseAnonKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-      ),
-    );
+    try {
+      await Supabase.initialize(
+        url: supabaseUrl,
+        publishableKey: supabaseAnonKey,
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+        ),
+      );
 
-    _currentUser = Supabase.instance.client.auth.currentUser;
+      _currentUser = Supabase.instance.client.auth.currentUser;
 
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
+      _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        final AuthChangeEvent event = data.event;
+        final Session? session = data.session;
 
-      _currentUser = session?.user;
-      notifyListeners();
+        _currentUser = session?.user;
+        if (!_disposed) {
+          notifyListeners();
+        }
 
-      debugPrint('Auth event: $event, User: ${_currentUser?.id}');
-    });
+        debugPrint('Auth event: $event, User: ${_currentUser?.id}');
+      });
 
-    _initDeepLinks();
-    _isInitialized = true;
+      _initDeepLinks();
+      _isInitialized = true;
+    } catch (e) {
+      debugPrint('Error initializing AuthService: $e');
+    }
   }
 
   void _initDeepLinks() {
@@ -65,6 +74,8 @@ class AuthService extends ChangeNotifier {
   /// Initiates the login flow.
   /// This will open the default browser to account.meoarch.org
   Future<void> signIn() async {
+    if (_isBusy) return;
+    _isBusy = true;
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider
@@ -74,15 +85,25 @@ class AuthService extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('Error signing in: $e');
+    } finally {
+      _isBusy = false;
     }
   }
 
   Future<void> signOut() async {
-    await Supabase.instance.client.auth.signOut();
+    if (_isBusy) return;
+    _isBusy = true;
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } finally {
+      _isBusy = false;
+    }
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _authSubscription?.cancel();
     _linkSubscription?.cancel();
     super.dispose();
   }
