@@ -479,12 +479,12 @@
   "aiAssistant": "AI 助手",
   "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
-  "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 填入 sk-xxx",
+  "aiEndpointHelper": "Ollama：http://localhost:11434",
+  "aiApiKeyHelper": "Ollama：無需金鑰；OpenAI：sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
   "howToGetApiKeyDesc": "1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+  "aiOllamaNote": "使用 Ollama 時，確保其已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",
@@ -756,11 +756,11 @@
   "@sourceType": {
     "description": "Label for source type"
   },
-  "githubRepoType": "GitHub 存放庫（owner/repo）",
+  "githubRepoType": "GitHub 軟體存放庫（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
-  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
+  "bituRepoType": "Bitu / Bitbucket（工作區/軟體存放庫）",
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
@@ -958,7 +958,7 @@
   "@temperatureRangeError": {
     "description": "Error message for invalid temperature value"
   },
-  "enableSystemdService": "啟用 systemd 後台更新服務",
+  "enableSystemdService": "啟用 systemd 背景更新服務",
   "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新",
   "taskHistory": "任務歷史記錄",
   "unknownApp": "未知應用程式",
@@ -977,7 +977,7 @@
   "ok": "確定",
   "checkNetwork": "請檢查網路連線並重試",
   "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用程式",
-  "searchGithubHint": "搜尋 GitHub 存放庫...",
+  "searchGithubHint": "搜尋 GitHub 軟體存放庫...",
   "recommended": "推薦",
   "rankings": "排行榜",
   "trending": "熱度榜",

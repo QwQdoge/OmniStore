@@ -590,10 +590,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama：http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama：无需密钥；OpenAI：sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
@@ -607,7 +607,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '使用 Ollama 时，确保其已在后台运行并开启 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -908,16 +908,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库';
+      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源';
 
   @override
   String get sourceType => '软件源类型';
 
   @override
-  String get githubRepoType => 'GitHub 仓库（owner/repo）';
+  String get githubRepoType => 'GitHub 软件源（owner/repo）';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket（工作区/仓库）';
+  String get bituRepoType => 'Bitu / Bitbucket（工作区/软件源）';
 
   @override
   String get flatpakRemoteType => 'Flatpak 远程软件源';
@@ -932,7 +932,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '仓库地址（owner/repo）';
+  String get repoOwnerRepo => '软件源地址（owner/repo）';
 
   @override
   String get sourceUrl => '链接';
@@ -944,7 +944,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名称和链接/仓库地址不能为空';
+  String get errorNameUrlRequired => '名称和链接/软件源地址不能为空';
 
   @override
   String get addingCustomSource => '正在添加自定义软件源...';
@@ -1112,7 +1112,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubStoreSubtitle => '直接从 GitHub Releases 发现并下载应用';
 
   @override
-  String get searchGithubHint => '搜索 GitHub 仓库...';
+  String get searchGithubHint => '搜索 GitHub 软件源...';
 
   @override
   String get recommended => '推荐';
@@ -1769,10 +1769,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
 
   @override
-  String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
+  String get aiEndpointHelper => 'Ollama：http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama：無需金鑰；OpenAI：sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
@@ -1786,7 +1786,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+      '使用 Ollama 時，確保其已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
@@ -2093,10 +2093,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceType => '軟體存放庫類型';
 
   @override
-  String get githubRepoType => 'GitHub 存放庫（owner/repo）';
+  String get githubRepoType => 'GitHub 軟體存放庫（owner/repo）';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket（工作區/存放庫）';
+  String get bituRepoType => 'Bitu / Bitbucket（工作區/軟體存放庫）';
 
   @override
   String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
@@ -2253,7 +2253,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get temperatureRangeError => '值必須在 0.0 到 2.0 之間';
 
   @override
-  String get enableSystemdService => '啟用 systemd 後台更新服務';
+  String get enableSystemdService => '啟用 systemd 背景更新服務';
 
   @override
   String get enableSystemdServiceDesc => '允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新';
@@ -2291,7 +2291,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用程式';
 
   @override
-  String get searchGithubHint => '搜尋 GitHub 存放庫...';
+  String get searchGithubHint => '搜尋 GitHub 軟體存放庫...';
 
   @override
   String get recommended => '推薦';

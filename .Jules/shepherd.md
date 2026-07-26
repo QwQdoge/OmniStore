@@ -69,3 +69,9 @@
 - Standardized the duration across the application by adding `duration: const Duration(seconds: 2)` to the `SnackBar` instantiations in both `ai_dialogs.dart` and `app_details_header.dart`. This ensures a unified interaction flow and prevents overlapping or lingering feedback messages.
 ## 2026-06-28 - Button Consistency: Standardizing Primary Actions
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
+
+## 2026-07-20 - Terminology Consistency: Localization Harmonization
+- Performed comprehensive localization review of Simplified Chinese (`app_zh.arb`) and Traditional Chinese (`app_zh_Hant.arb`) translations under the Localization Review Protocol.
+- Standardized the term "repository/software source" to "软件源" in Simplified Chinese and "軟體存放庫" in Traditional Chinese. Updated `addCustomSourceDesc`, `githubRepoType`, `bituRepoType`, `repoOwnerRepo`, `errorNameUrlRequired`, and `searchGithubHint` to strictly adhere to this rule.
+- Standardized the term "background" to "背景" in Traditional Chinese and "后台" in Simplified Chinese. Corrected `enableSystemdService` in `app_zh_Hant.arb` from "後台" to "背景".
+- Harmonized AI configuration keys (`aiEndpointHelper`, `aiApiKeyHelper`, `aiOllamaNote`) in `python/update_arb.py` and regenerated `.arb` files. This eliminated conditional "If-then" structures and removed redundant conversational fillers ("提示：", "如果您使用...", "默认为", "預設為") to provide a direct, professional, and consistent user interface.
