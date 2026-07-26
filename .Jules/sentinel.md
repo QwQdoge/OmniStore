@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2026-07-20 - [Daemon Process Tracking and Context-Aware API Parameter Validation]
+
+Learning:
+Blindly validating string arguments in APIs (e.g. `safe_command`) as generic strings can restrict valid Windows paths or query URLs while also missing path traversal checks. It is critical to use `inspect.signature` to map both positional and keyword arguments to their parameter names, and then apply targeted validators (`validate_url`, `validate_path`, `validate_search_query`) recursively. In background daemons, missing pre-checks on optional system binaries (like `notify-send`) can cause FileNotFoundError, and failing to track subprocesses and tasks globally can result in zombie/orphaned processes upon daemon shutdown.
+
+Action:
+Refined `safe_command` in `python/core/backend.py` to use `inspect.signature` for context-aware string validation and recursive validation of nested parameters. Refined `python/daemon_main.py` by importing `shutil`, fixing undefined notification variables, implementing an `asyncio.Lock` for update checks, sanitizing configuration variables dynamically, and adding robust task and subprocess tracking to terminate all resources on exit.
