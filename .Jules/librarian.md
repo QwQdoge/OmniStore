@@ -123,3 +123,9 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 **Learning:** Calling services that generate objects based on `BuildContext` (like localizations or themes) directly inside the `build()` method causes unnecessary object re-allocation and garbage collection every time the widget calls `setState`.
 
 **Action:** Moved `CategoryService.getCategories(context)` calls in high-visibility pages (`HomePage`, `DiscoveryContent`, `CategoryPage`, `EmptyResults`) to `didChangeDependencies()`. This ensures the category list is only regenerated when the underlying `InheritedWidget` (like `AppLocalizations`) updates, optimizing local rebuilds without breaking reactivity.
+## 2026-07-20 - Coordinated Layout Animations
+
+**Learning:** When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), using separate switchers for each section causes uncoordinated transitions and statically hanging UI elements.
+
+**Action:**
+- Wrapped the entire combined block (including structural titles and spacing) of `AppScreenshots` and `AppTechnicalDetails` in `app_main_content.dart` in a single `SmoothSizeSwitcher`.
