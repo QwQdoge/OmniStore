@@ -60,9 +60,12 @@ class AppVariant {
 
 class AppPackage {
   final String name;
+  late final String nameLower = name.toLowerCase();
   final String description;
+  late final String descriptionLower = description.toLowerCase();
   final bool installed;
   final String primarySource;
+  late final String primarySourceLower = primarySource.toLowerCase();
   final String version;
   final List<AppVariant> variants;
   final String? url;
