@@ -186,9 +186,11 @@ class GitHubSource(UnifiedSource):
         return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        repo_id = package.get("id")
+        repo_id = package.get("id") or ""
         repo_safe_name = repo_id.replace("/", "_")
         install_dir = self._managed_base_dir() / repo_safe_name
+        if not install_dir.exists():
+            return False
         from core.subprocess_utils import safe_subprocess
         # Find the executable (usually the biggest file that isn't a zip/tar)
         executables = [f for f in install_dir.iterdir() if f.is_file() and os.access(f, os.X_OK)]

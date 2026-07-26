@@ -173,6 +173,22 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   ],
                 ),
                 const Divider(),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('跳过 AUR PKGBUILD 源码审核'),
+                  subtitle: const Text('开启后，在安装 AUR 软件包时将不再弹出 PKGBUILD 代码审核窗口'),
+                  value: context.select<SettingsController, bool>(
+                    (s) => s.config['sources']?['skip_pkgbuild_review'] ?? false,
+                  ),
+                  onChanged: (val) {
+                    final settings = context.read<SettingsController>();
+                    final config = Map<String, dynamic>.from(settings.config);
+                    config['sources'] = Map<String, dynamic>.from(config['sources'] ?? {});
+                    config['sources']['skip_pkgbuild_review'] = val;
+                    settings.updateConfig(config);
+                  },
+                ),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,

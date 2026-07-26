@@ -177,6 +177,7 @@ def test_file_backed_plugins_install_size_and_uninstall_with_sync_callbacks(tmp_
 
 def test_manifest_plugins_keep_review_gating_except_builtin_winget():
     cm = ConfigManager()
+    cm.set("plugins.enabled", {})
     registry = PluginRegistry(cm, None)
     registry.discover()
     listed = {plugin["id"]: plugin for plugin in registry.list_plugins()}

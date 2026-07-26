@@ -98,6 +98,13 @@ class InstallExecutor:
                 if source_name == "native":
                     source_name = "pacman"
 
+                # Check pacman database lock (CachyOS & Shelly style safety check)
+                if source_name in ("pacman", "aur"):
+                    db_lock = os.path.exists("/var/lib/pacman/db.lck")
+                    if db_lock:
+                        if callback: await callback("[ERROR] Pacman database is currently locked by another process (/var/lib/pacman/db.lck exists). Please complete or close other package operations and try again.")
+                        return False
+
                 # 4. Environment & Platform Guard
                 if not self._check_environment(source_name):
                     if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools are installed and supported on this platform.")

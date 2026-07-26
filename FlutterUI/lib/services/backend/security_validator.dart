@@ -8,9 +8,10 @@ class SecurityValidator {
     if (trimmed.length > 1024) {
       throw ArgumentError("$name is too long (max 1024 characters)");
     }
-    // Allow alphanumeric, dots, underscores, dashes, slashes, and spaces.
-    // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+    if (trimmed.contains('\x00')) {
+      throw ArgumentError("Null bytes forbidden in $name");
+    }
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError(
         "Invalid characters in $name: Security policy forbids shell metacharacters.",
       );
@@ -27,14 +28,12 @@ class SecurityValidator {
     if (trimmed.length > 500) {
       throw ArgumentError("$name is too long (max 500 characters)");
     }
+    if (trimmed.contains('\x00')) {
+      throw ArgumentError("Null bytes forbidden in $name");
+    }
     if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError(
         "Security: $name contains forbidden shell metacharacters.",
-      );
-    }
-    if (!RegExp(r'^[a-zA-Z0-9._/ +\-@:<>~=]+$').hasMatch(trimmed)) {
-      throw ArgumentError(
-        "Security: $name contains invalid search characters.",
       );
     }
   }
@@ -48,20 +47,7 @@ class SecurityValidator {
     if (trimmed.length > 2048) {
       throw ArgumentError("URL is too long");
     }
-    // Allow basic URL characters, but strictly forbid shell metacharacters.
-    if (!RegExp(r'^[a-zA-Z0-9._/:\-?=&%+#]+$').hasMatch(trimmed)) {
-      throw ArgumentError("Invalid characters in URL");
-    }
-    // Explicitly check for dangerous characters even if the regex missed them
-    if (trimmed.contains(';') ||
-        trimmed.contains('|') ||
-        trimmed.contains('`') ||
-        trimmed.contains('\$') ||
-        trimmed.contains('(') ||
-        trimmed.contains(')') ||
-        trimmed.contains('<') ||
-        trimmed.contains('>') ||
-        trimmed.contains('\\')) {
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError("Security: Shell metacharacters detected in URL");
     }
   }
@@ -75,13 +61,15 @@ class SecurityValidator {
     if (trimmed.length > 1024) {
       throw ArgumentError("Path is too long");
     }
+    if (trimmed.contains('\x00')) {
+      throw ArgumentError("Null bytes forbidden in path");
+    }
     if (trimmed.contains('..')) {
       throw ArgumentError(
         "Security: Relative path traversal ('..') is strictly forbidden.",
       );
     }
-    // Cross-platform support: Allow Windows-style paths (C:\...)
-    if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError(
         "Invalid characters in path: Security policy forbids shell metacharacters.",
       );

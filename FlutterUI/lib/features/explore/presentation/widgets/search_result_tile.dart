@@ -139,9 +139,24 @@ class SearchResultTile extends StatelessWidget {
                       );
                     },
                   )
-                : AppSourceTag(
-                    source: app.primarySource,
-                    mode: AppSourceTagMode.source,
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (app.variants.isNotEmpty)
+                        for (final v in app.variants.take(3))
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: AppSourceTag(
+                              source: v.source,
+                              mode: AppSourceTagMode.source,
+                            ),
+                          )
+                      else
+                        AppSourceTag(
+                          source: app.primarySource,
+                          mode: AppSourceTagMode.source,
+                        ),
+                    ],
                   ),
           ),
         ),

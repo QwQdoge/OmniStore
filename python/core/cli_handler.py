@@ -37,12 +37,14 @@ class CLIArguments(BaseModel):
     ai_analyze_error: Optional[str] = None
     ai_compare: Optional[str] = None
     ai_health: bool = False
+    get_pkgbuild: Optional[str] = None
     ai_test: bool = False
     ai_pick: bool = False
     ai_correct: Optional[str] = None
     ai_changelog: Optional[str] = None
     ai_cli: Optional[str] = None
     ai_conflicts: Optional[str] = None
+    ai_install_decision: Optional[str] = None
     essentials: bool = False
     import_packages: Optional[str] = None
     export_packages: Optional[str] = None
@@ -59,19 +61,13 @@ class CLIArguments(BaseModel):
     @field_validator(
         "install", "remove", "update", "details",
         "ai_explain", "ai_recommend", "ai_analyze_error", "ai_compare",
-        "ai_correct", "ai_conflicts", "launch", "locate"
+        "ai_correct", "ai_conflicts", "ai_install_decision", "launch", "locate"
     )
     @classmethod
     def validate_safe_input(cls, v: Optional[str]) -> Optional[str]:
-        """Murphy-proof: Strict alphanumeric/symbol check to prevent shell injection."""
+        """Murphy-proof: Strict check using SecurityValidator."""
         if v is not None:
-            v_stripped = v.strip()
-            if not v_stripped: raise ValueError("Argument cannot be empty.")
-            # Boundary Defense: Forbid shell metacharacters: ; & | ` $ ( ) < > \ ' "
-            # Allow: letters, numbers, dots, dashes, underscores, slashes, pluses, at-signs, and spaces.
-            if not re.match(r'^[a-zA-Z0-9._/ +\-@]+$', v_stripped):
-                raise ValueError("Security violation: Argument contains forbidden shell metacharacters.")
-            return v_stripped
+            return SecurityValidator.validate_string(v)
         return v
 
     @field_validator("search")
@@ -86,12 +82,7 @@ class CLIArguments(BaseModel):
     def validate_safe_path(cls, v: Optional[str]) -> Optional[str]:
         """Murphy-proof: Path validation to prevent traversal attacks."""
         if v is not None:
-            v_stripped = v.strip()
-            if not v_stripped: raise ValueError("Path cannot be empty.")
-            if ".." in v_stripped: raise ValueError("Security violation: Path traversal ('..') is forbidden.")
-            if not re.match(r'^[a-zA-Z0-9._/\\: -]+$', v_stripped):
-                raise ValueError("Security violation: Path contains illegal characters.")
-            return v_stripped
+            return SecurityValidator.validate_path(v)
         return v
 
     @field_validator("add_custom_repo")
@@ -99,7 +90,7 @@ class CLIArguments(BaseModel):
     def validate_add_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             v_stripped = v.strip()
-            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+            if any(c in v_stripped for c in ";&|`$<>'\"\\"):
                 raise ValueError("Security violation: Repo string contains forbidden characters.")
             parts = [p.strip() for p in v_stripped.split(',', 2)]
             if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
@@ -112,7 +103,7 @@ class CLIArguments(BaseModel):
     def validate_remove_custom_repo(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             v_stripped = v.strip()
-            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+            if any(c in v_stripped for c in ";&|`$<>'\"\\"):
                 raise ValueError("Security violation: Repo string contains forbidden characters.")
             parts = [p.strip() for p in v_stripped.split(',', 1)]
             if len(parts) < 2: raise ValueError("Invalid format: type,name")
@@ -143,7 +134,7 @@ class CLIArguments(BaseModel):
     def validate_ai_changelog(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             v_stripped = v.strip()
-            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+            if any(c in v_stripped for c in ";&|`$<>'\"\\"):
                 raise ValueError("Security violation: Argument contains forbidden characters.")
             parts = v_stripped.split(',')
             if len(parts) < 3: raise ValueError("Changelog format: name,current,next")
@@ -154,7 +145,7 @@ class CLIArguments(BaseModel):
     def validate_ai_cli(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
             v_stripped = v.strip()
-            if not re.match(r'^[a-zA-Z0-9._/ +\-@,:]+$', v_stripped):
+            if any(c in v_stripped for c in ";&|`$<>'\"\\"):
                 raise ValueError("Security violation: Argument contains forbidden characters.")
             parts = v_stripped.split(',')
             if len(parts) < 2: raise ValueError("AI CLI format: name,summary")
@@ -166,7 +157,11 @@ async def handle_cli(backend: OmnistoreBackend, args):
         validated_args = CLIArguments(**vars(args))
     except ValidationError as ve:
         errors = [f"Argument '{e['loc'][0]}' invalid: {e['msg']}" for e in ve.errors()]
-        await backend._handle_error("Validation Failure", ValueError("; ".join(errors)), args.json)
+        err_msg = "; ".join(errors)
+        if getattr(args, 'json', False):
+            backend._output_command_response(backend.models.CommandResponse(status="error", error=err_msg))
+        else:
+            sys.stderr.write(f"[ERROR] {err_msg}\n")
         sys.exit(1)
 
     async def _save_config_handler():
@@ -239,6 +234,7 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "check_updates": lambda: backend.run_check_updates(validated_args.json_mode),
         "list_installed": lambda: backend.run_list_installed(validated_args.json_mode, validated_args.force_refresh),
         "details": lambda: backend.run_app_details(validated_args.details, validated_args.json_mode, validated_args.source),
+        "get_pkgbuild": lambda: backend.run_get_pkgbuild(validated_args.get_pkgbuild, validated_args.json_mode),
         "recommend": lambda: backend.run_recommendations(validated_args.json_mode),
         "clean_system": lambda: backend.run_clean_system(validated_args.json_mode),
         "ai_summary": lambda: backend.run_ai_summary(validated_args.json_mode),
@@ -259,6 +255,7 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "ai_cli": lambda: _handle_ai_cli(validated_args.ai_cli),
         "ai_conflicts": lambda: _handle_ai_conflicts(validated_args.ai_conflicts),
         "ai_compare": lambda: _handle_ai_compare(validated_args.ai_compare),
+        "ai_install_decision": lambda: backend.run_ai_install_decision(validated_args.ai_install_decision, [], validated_args.json_mode),
         "add_custom_repo": lambda: _handle_add_custom_repo(validated_args.add_custom_repo),
         "remove_custom_repo": lambda: _handle_remove_custom_repo(validated_args.remove_custom_repo),
         "essentials": lambda: backend.run_get_essentials(),

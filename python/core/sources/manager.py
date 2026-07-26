@@ -7,9 +7,16 @@ from core.sources.base import UnifiedSource
 class PluginLoader:
     def __init__(self, search_manager):
         self.sm = search_manager
-        self.plugin_dir = os.path.join(os.getcwd(), "plugins")
+        # Resolve project root robustly regardless of current working directory
+        cur_file = os.path.abspath(__file__)
+        # __file__ is python/core/sources/manager.py -> project_root is 3 levels up
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(cur_file))))
+        self.plugin_dir = os.path.join(project_root, "plugins")
         if not os.path.exists(self.plugin_dir):
-            os.makedirs(self.plugin_dir)
+            try:
+                os.makedirs(self.plugin_dir, exist_ok=True)
+            except Exception:
+                pass
 
     def load_plugins(self):
         """

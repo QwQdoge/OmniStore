@@ -318,14 +318,7 @@ def safe_command(func):
                 if json_mode and is_top_level:
                     self._output_command_response(resp)
                 else:
-                    try:
-                        if isinstance(e, Exception):
-                            await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
-                        else:
-                            hijacked_print(f"[CRITICAL] {error_msg}")
-                    except Exception as inner_e:
-                        logging.error(f"Double fault in _handle_error: {inner_e}")
-                        hijacked_print(f"[ERROR] {error_msg}")
+                    hijacked_print(f"[ERROR] {error_msg}")
 
                 if not isinstance(e, Exception):
                     raise
@@ -391,6 +384,10 @@ class OmnistoreBackend:
             from core.search.custom_repo import CustomRepoManager
             self._repo_manager = CustomRepoManager(self.config, self.executor)
         return self._repo_manager
+
+    @property
+    def sources(self):
+        return self.manager.sources if self.manager else {}
 
     @property
     def essentials(self):
@@ -515,6 +512,20 @@ class OmnistoreBackend:
             return CommandResponse(status="success" if success else "error", response=success)
 
     @safe_command
+    async def run_get_pkgbuild(self, package_name: str, json_mode: bool = False) -> Any:
+        v_name = SecurityValidator.validate_string(package_name or "", "Package Name")
+        async with self:
+            aur_source = self.sources.get("aur")
+            content = ""
+            if aur_source and hasattr(aur_source, "get_pkgbuild"):
+                content = await aur_source.get_pkgbuild(v_name)
+            else:
+                content = f"# PKGBUILD for {v_name}\n# AUR source unavailable."
+            if json_mode:
+                self._output_command_response(CommandResponse(status="success", response=content))
+            return CommandResponse(status="success", response=content)
+
+    @safe_command
     async def run_uninstall(self, package_name: str, source: str, json_mode: bool = False, flag: str = "-R") -> Any:
         v_name = SecurityValidator.validate_string(package_name or "", "Package Name")
         v_source = SecurityValidator.validate_string(source or "Native", "Source")
@@ -622,6 +633,9 @@ class OmnistoreBackend:
                                     if (m := re.search(r"Download Size\s+:\s+(.*)", info)): variant["download_size"] = m.group(1).strip()
                                     if (m := re.search(r"Installed Size\s+:\s+(.*)", info)): variant["installed_size"] = m.group(1).strip()
                         except Exception: pass
+            if isinstance(details, dict):
+                if not details.get("id"): details["id"] = v_id
+                if not details.get("name"): details["name"] = v_id
             typed_details = AppPackage(**details)
             if json_mode: self._output_command_response(CommandResponse(status="success", response=typed_details.model_dump(exclude_none=True), context="run_app_details"))
             return typed_details

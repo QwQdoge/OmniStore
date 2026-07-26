@@ -10,18 +10,15 @@ class SecurityValidator:
     and malformed inputs using a Whitelist-only (Positive Security) model.
     """
 
-    # Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
-    # Allowing alphanumeric, dots, underscores, dashes, slashes, and spaces.
-    # Murphy-proof: Added explicit character class exclusion for additional safety.
-    SAFE_STRING_RE = re.compile(r'^[a-zA-Z0-9._/ \-]+$')
+    # Strictly forbid shell control characters like ; & | ` $ < > \ ' "
+    # Allowing alphanumeric, dots, underscores, dashes, slashes, spaces, @, :, +, (), and unicode characters.
+    SAFE_STRING_RE = re.compile(r'^[^\x00-\x1f;&|`$<>\'"\\]+$')
 
     # Search queries need source filters and GitHub qualifiers.
-    # Murphy-proof: Expanded to support complex GitHub/AI search syntax (filters,
-    # globbing) while still excluding dangerous shell delimiters like ; & | $ ( ) \ `
     SAFE_SEARCH_QUERY_RE = re.compile(r'^[a-zA-Z0-9._/ +\-@:<>~=!#%^*\[\]{}]+$')
 
-    # Cross-platform path regex
-    SAFE_PATH_RE = re.compile(r'^[a-zA-Z0-9._/\\: -]+$')
+    # Cross-platform path regex (allows unicode, spaces, tildes, dots, slashes, colons, dashes, etc.)
+    SAFE_PATH_RE = re.compile(r'^[^\x00-\x1f;&|`$<>\'"]+$')
 
     # Strict URL whitelist (No shell metacharacters allowed)
     SAFE_URL_RE = re.compile(r'^https?://[a-zA-Z0-9._/:\-?=&%+#@]+$')
@@ -31,7 +28,7 @@ class SecurityValidator:
 
     @classmethod
     def validate_string(cls, val: Optional[str], name: str = "Input", max_length: int = 1024) -> str:
-        """Murphy-proof string validation (Whitelist-only)."""
+        """Murphy-proof string validation (Sanitization & Whitelist)."""
         if val is None:
             raise ValueError(f"{name} cannot be null")
 
@@ -43,8 +40,11 @@ class SecurityValidator:
         if len(trimmed) > max_length:
             raise ValueError(f"{name} exceeds max length of {max_length}")
 
+        if any(c in trimmed for c in ";&|`$<>'\"\\"):
+            raise ValueError(f"Security Policy Violation: {name} contains forbidden shell control characters.")
+
         if not cls.SAFE_STRING_RE.match(trimmed):
-            raise ValueError(f"Security Policy Violation: {name} contains forbidden characters. Only alphanumeric and safe symbols (. _ / + - @ :) are allowed.")
+            raise ValueError(f"Security Policy Violation: {name} contains invalid characters.")
 
         return trimmed
 

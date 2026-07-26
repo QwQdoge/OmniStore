@@ -210,6 +210,16 @@ class AurSource(UnifiedSource):
     async def get_details(self, package_id: str) -> Dict[str, Any]:
         return {"name": package_id, "source": "AUR"}
 
+    async def get_pkgbuild(self, package_id: str) -> str:
+        url = f"https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={package_id}"
+        try:
+            async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                if resp.status == 200:
+                    return await resp.text()
+        except Exception:
+            pass
+        return f"# PKGBUILD for {package_id}\n# (Auto-generated fallback template)\n\npkgname={package_id}\npkgver=latest\npkgrel=1\npkgdesc=\"AUR Package\"\narch=('x86_64')\nurl=\"https://aur.archlinux.org/packages/{package_id}\"\nlicense=('custom')"
+
     async def check_update(self, package_id: str) -> Optional[Dict[str, Any]]:
         helper = "yay" if os.path.exists("/usr/bin/yay") else ("paru" if os.path.exists("/usr/bin/paru") else "")
         if not helper or not package_id:

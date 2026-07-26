@@ -95,14 +95,17 @@ class PluginRegistry:
         self.errors: Dict[str, str] = {}
 
     def _find_project_root(self) -> Path:
-        candidates = [Path.cwd(), Path(__file__).resolve()]
-        for start in candidates:
-            directory = start if start.is_dir() else start.parent
-            for parent in [directory, *directory.parents]:
-                if (parent / "python" / "main.py").exists() and (parent / "plugins").exists():
-                    return parent
-                if parent.name == "python" and (parent / "main.py").exists():
-                    return parent.parent
+        file_path = Path(__file__).resolve()
+        for parent in [file_path.parent, *file_path.parents]:
+            if (parent / "python" / "main.py").exists() or (parent / "plugins").exists():
+                return parent
+            if parent.name == "python" and (parent / "main.py").exists():
+                return parent.parent
+        # Fallback to CWD search
+        directory = Path.cwd()
+        for parent in [directory, *directory.parents]:
+            if (parent / "python" / "main.py").exists() or (parent / "plugins").exists():
+                return parent
         return Path.cwd()
 
     def discover(self) -> None:

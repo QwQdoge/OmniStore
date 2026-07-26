@@ -10,10 +10,12 @@
 # --- Search Settings ---
 search:
   sources:
-    pacman: false       # Search native repositories
-    aur: false          # Search AUR user repository
-    flatpak: false      # Search Flatpak applications
-    appimage: false     # Search AppImages from AppImage GitHub feed
+    pacman: true        # Search native repositories
+    aur: true           # Search AUR user repository
+    flatpak: true       # Search Flatpak applications
+    appimage: true      # Search AppImages from AppImage GitHub feed
+    github: true        # Search GitHub releases & repositories
+    bitu: true          # Search Bitu/Bitbucket repositories
     apt: false          # Debian/Ubuntu APT source (review before enabling)
     dnf: false          # Fedora/RHEL DNF source (review before enabling)
     zypper: false       # openSUSE Zypper source (review before enabling)
@@ -35,7 +37,12 @@ priority:
 
 # --- Plugin Registry ---
 plugins:
-  enabled: {}          # Plugins are disabled by default; users review available plugins, then enable trusted ids explicitly.
+  enabled:
+    builtin.pacman: true
+    builtin.aur: true
+    builtin.flatpak: true
+    builtin.appimage: true
+    builtin.github: true
   config: {}           # Plugin-specific config keyed by plugin id
 
 sources:

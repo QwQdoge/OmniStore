@@ -10,6 +10,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/network/github_client.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/terminal_dialog.dart';
 import 'package:frontend/features/explore/presentation/widgets/action_dialogs.dart';
+import 'package:frontend/features/explore/presentation/widgets/pkgbuild_dialog.dart';
 
 import 'package:frontend/features/explore/presentation/widgets/app_details_appbar_actions.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_main_content.dart';
@@ -190,13 +191,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     cleanOrphans = cleanOrphansResult;
 
     if (_selectedSource == "AUR") {
-      final aurConfirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => const AurSecurityDialog(),
-      );
-      if (!mounted) return;
-      if (aurConfirmed != true) {
-        return;
+      final settings = context.read<SettingsController>();
+      final skipReview = settings.config['sources']?['skip_pkgbuild_review'] ?? false;
+      if (!skipReview) {
+        final reviewConfirmed = await PKGBUILDReviewDialog.show(context, widget.app.name);
+        if (!mounted || reviewConfirmed != true) return;
       }
     }
 

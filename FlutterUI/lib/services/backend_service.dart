@@ -81,9 +81,10 @@ class BackendService {
     if (trimmed.length > 1024) {
       throw ArgumentError("$name is too long (max 1024 characters)");
     }
-    // Allow alphanumeric, dots, underscores, dashes, slashes, and spaces.
-    // Strictly forbid characters like ; & | ` $ ( ) < > \ ' "
-    if (!RegExp(r'^[a-zA-Z0-9._/ -]+$').hasMatch(trimmed)) {
+    if (trimmed.contains('\x00')) {
+      throw ArgumentError("Null bytes forbidden in $name");
+    }
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError(
         "Invalid characters in $name: Security policy forbids shell metacharacters.",
       );
@@ -99,13 +100,15 @@ class BackendService {
     if (trimmed.length > 1024) {
       throw ArgumentError("Path is too long");
     }
+    if (trimmed.contains('\x00')) {
+      throw ArgumentError("Null bytes forbidden in path");
+    }
     if (trimmed.contains('..')) {
       throw ArgumentError(
         "Security: Relative path traversal ('..') is strictly forbidden.",
       );
     }
-    // Cross-platform support: Allow Windows-style paths (C:\...)
-    if (!RegExp(r'^[a-zA-Z0-9._/\\: -]+$').hasMatch(trimmed)) {
+    if (RegExp(r'''[;&|`$()\\'"]''').hasMatch(trimmed)) {
       throw ArgumentError(
         "Invalid characters in path: Security policy forbids shell metacharacters.",
       );
@@ -849,6 +852,10 @@ class BackendService {
 
   Future<String> aiAnalyzeError(String log) => _aiBridge.analyzeError(log);
 
+  Future<String> aiProjectSummary() async {
+    return _aiBridge.call(["--ai-summary"]);
+  }
+
   Future<String> aiRecommend(String p) async {
     try {
       _validateString(p, "AI Prompt");
@@ -1144,6 +1151,26 @@ class BackendService {
     } catch (e) {
       debugPrint("getAppDetails Error: $e");
       return null;
+    }
+  }
+
+  Future<String> getPkgbuild(String pkgName) async {
+    if (kIsWeb) return "# PKGBUILD review is unavailable in web mode.";
+    try {
+      _validateString(pkgName, "Package Name");
+      final res = await _safeRun([
+        "--get-pkgbuild",
+        pkgName.trim(),
+        "--json",
+      ], timeout: const Duration(seconds: 15));
+      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
+      if (data is Map && data['response'] != null) {
+        return data['response'].toString();
+      }
+      return "# Failed to fetch PKGBUILD.";
+    } catch (e) {
+      debugPrint("getPkgbuild Error: $e");
+      return "# Error fetching PKGBUILD: $e";
     }
   }
 

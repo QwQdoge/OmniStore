@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
+import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class TerminalDialog extends StatelessWidget {
@@ -36,7 +37,44 @@ class TerminalDialog extends StatelessWidget {
                       fontFamily: 'monospace',
                     ),
                   ),
-                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final logs = context.read<TaskController>().logs;
+                      if (logs.isEmpty) return;
+                      showDialog(
+                        context: context,
+                        builder: (context) => FutureBuilder<String>(
+                          future: BackendService.instance.aiAnalyzeError(logs.join('\n')),
+                          builder: (context, snapshot) {
+                            return AlertDialog(
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Colors.amber),
+                                  SizedBox(width: 8),
+                                  Text('AI 错误日志诊断分析'),
+                                ],
+                              ),
+                              content: SingleChildScrollView(
+                                child: Text(
+                                  snapshot.data ?? (snapshot.hasError ? '诊断时出现错误: ${snapshot.error}' : '正在分析错误日志并生成排查建议...'),
+                                  style: const TextStyle(height: 1.4),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('关闭'),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.auto_awesome, size: 16, color: Colors.amber),
+                    label: const Text('AI 诊断'),
+                  ),
+                  const SizedBox(width: 8),
                   Semantics(
                     label: AppLocalizations.of(context)!.windowClose,
                     button: true,

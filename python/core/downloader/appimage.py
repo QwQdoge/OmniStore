@@ -1,5 +1,7 @@
 import os
 import asyncio
+from pathlib import Path
+import aiohttp
 from core.subprocess_utils import safe_subprocess
 
 
@@ -72,19 +74,32 @@ class AppImageDownloader:
                     self._create_desktop_entry(name, dest_path)
                     if callback:
                         await callback("[PROGRESS] 100")
+                    return True
                 else:
                     if callback:
                         await callback(f"[ERROR] Download failed (Code: {ret_code})")
+                    return False
 
         except Exception as e:
             if callback:
-                await callback("[PROGRESS] 100")
-            return True
-    except Exception as e:
-        if callback:
-            await callback(f"[ERROR] AppImage install failed: {e}")
+                await callback(f"[ERROR] AppImage install failed: {e}")
+            return False
 
-    return False
+    def _create_desktop_entry(self, name: str, exec_path: Path):
+        self.desktop_dir.mkdir(parents=True, exist_ok=True)
+        desktop_file = self.desktop_dir / f"{name.lower()}.desktop"
+        content = f"""[Desktop Entry]
+Version=1.0
+Type=Application
+Name={name}
+Comment=Installed via Omnistore
+Exec="{exec_path}" %U
+Icon={name.lower()}
+Terminal=false
+Categories=Utility;Application;
+"""
+        desktop_file.write_text(content, encoding="utf-8")
+
 
 async def uninstall_appimage(package, callback=None):
     url = package.get("url")

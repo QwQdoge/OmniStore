@@ -60,11 +60,16 @@ class InstallationDecision(BaseModel):
     preflightChecks: List[str] = Field(default_factory=list, max_length=5)
 
 class UpdateInfo(BaseModel):
+    id: Optional[str] = None
     name: str
     source: str
+    primary_source: Optional[str] = None
     current_version: Optional[str] = None
     new_version: str
     description: Optional[str] = None
+    installed: bool = True
+    managed: bool = True
+    update_available: bool = True
 
 class CommandResponse(BaseModel):
     status: str = "success"
