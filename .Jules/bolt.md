@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-08-01 - CachedNetworkImage Square Icon Memory Optimization
+
+**Learning:** Specifying both `memCacheWidth` and `memCacheHeight` on CachedNetworkImage is highly beneficial for strictly 1:1 square assets (like app icons/logos) to optimize decoder heap footprints. However, for variable aspect ratio images (such as screenshots or custom banners), specifying both forcing dimensions causes the decoder to stretch or squish the content, introducing visual distortion. For non-square assets, specifying only `memCacheWidth` is the safest option as the decoder automatically scales the height proportionally.
+
+**Action:** Optimized strictly square app icons and logos in lists and headers across `AppShelf`, `BannerCard` (icon), `FlatpakAppList`, `GitHubAppList`, `SearchResultTile`, `AppDetailsHeader`, `InstalledAppList`, and `InstalledTab` by setting matching `memCacheWidth` and `memCacheHeight` parameters to limit memory usage. Left variable aspect-ratio screenshots and banners with proportional width scaling only to preserve original visual layouts.
