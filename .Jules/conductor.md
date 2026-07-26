@@ -34,3 +34,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. We should apply `SmoothSizeSwitcher` directly to the conditional children, even for small constrained components like `AppDetailsHeader` icon, for cleaner and more performant motion transitions.
 
 **Action:** Refactored `AppDetailsHeader` to use `SmoothSizeSwitcher` instead of manual `AnimatedSwitcher`. Removed redundant nested `AnimatedSwitcher` widgets from `HomePage` sections and `DownloadPage`.
+## 2024-05-18 - Coordinated Layout Animations and Switcher Optimization
+**Learning:**
+1. When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., about, screenshots, details), wrapping the entire combined block (including structural titles) in a single `SmoothSizeSwitcher` is much smoother and prevents uncoordinated transitions and statically hanging UI elements compared to separate switchers for each section.
+2. For small dynamic component transitions (like icons in buttons) and full-route loaders nested in `FutureBuilder`, using `SmoothSizeSwitcher` provides cleaner dimension shifts than a bare `AnimatedSwitcher`, avoiding abrupt layout resizing.
+**Action:** Always prefer `SmoothSizeSwitcher` for dynamic content sections, button content changes, and loading skeleton swaps unless a specific non-size-related transition (like rotation) is explicitly required. Unify adjacent dynamic blocks into single transitions.

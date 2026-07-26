@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
 
@@ -279,10 +280,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       alignment: Alignment.centerLeft,
                       child: FilledButton.icon(
                         onPressed: _isTestingAI ? null : _testAIConnection,
-                        icon: AnimatedSwitcher(
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.fastOutSlowIn,
-                          duration: const Duration(milliseconds: 300),
+                        icon: SmoothSizeSwitcher(
                           child: _isTestingAI
                               ? SizedBox(
                                   key: const ValueKey('loading'),
