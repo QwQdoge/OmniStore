@@ -8,6 +8,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AISettingsSection extends StatefulWidget {
   const AISettingsSection({super.key});
