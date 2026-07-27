@@ -101,3 +101,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2024-07-27 - Task Manager List Virtualization
+- **Optimization**: Removed `SingleChildScrollView` + `ListView.builder(shrinkWrap: true)` anti-pattern in `tasks_tab.dart`.
+- **Implementation**: Replaced with `CustomScrollView`, separating static elements into `SliverToBoxAdapter`s wrapped in `SmoothSizeSwitcher` and keeping the reactive list as `SliverList.builder`. Padding was applied via `Padding` inside adapters and `SliverPadding`.
+- **Result**: Restored O(1) lazy-rendering virtualization for the completed tasks list, significantly improving performance when the task history grows large, without altering layout visually.
