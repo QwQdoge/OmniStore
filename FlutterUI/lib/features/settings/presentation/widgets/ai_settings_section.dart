@@ -281,9 +281,6 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       child: FilledButton.icon(
                         onPressed: _isTestingAI ? null : _testAIConnection,
                         icon: SmoothSizeSwitcher(
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.fastOutSlowIn,
-                          duration: const Duration(milliseconds: 300),
                           child: _isTestingAI
                               ? SizedBox(
                                   key: const ValueKey('loading'),

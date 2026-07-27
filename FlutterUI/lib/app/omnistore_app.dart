@@ -133,9 +133,6 @@ class _AppDetailsRouteLoaderState extends State<_AppDetailsRouteLoader> {
       future: _appDetailsFuture,
       builder: (context, snapshot) {
         return SmoothSizeSwitcher(
-          duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.fastOutSlowIn,
           child: snapshot.connectionState == ConnectionState.waiting
               ? const Scaffold(
                   key: ValueKey('loading'),
