@@ -797,7 +797,7 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名称和链接/仓库地址不能为空",
+  "errorNameUrlRequired": "名称和链接/软件源地址不能为空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },

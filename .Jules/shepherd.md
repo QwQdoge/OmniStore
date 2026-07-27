@@ -71,3 +71,8 @@
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
 ## 2026-06-29 - Global SnackBar Consistency: Clipboard Feedback Duration
 - Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to const Duration(seconds: 2) in ai_dialogs.dart, app_details_header.dart, and app_details_shared.dart to unify interaction flow and prevent overlapping feedback messages.
+
+## 2026-07-28 - Terminology Consistency: Repository/Software Source Alignment
+- Standardized 'repository/software source' terms across Simplified and Traditional Chinese locales to strictly adhere to localization guidelines.
+- Updated `errorNameUrlRequired` in `FlutterUI/lib/l10n/app_zh.arb` to use `软件源` instead of `仓库`.
+- Refactored `new_keys` in `python/sync_l10n.py` to map `repositories` to `软件源` (zh) and `軟體存放庫` (zh_Hant), and `aurFull` to `AUR (Arch 用户软件源)` (zh) and `AUR (Arch 使用者軟體存放庫)` (zh_Hant) to prevent future out-of-sync regressions.
