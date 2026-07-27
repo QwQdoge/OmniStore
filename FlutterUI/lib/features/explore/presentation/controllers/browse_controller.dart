@@ -14,6 +14,20 @@ class BrowseController with ChangeNotifier {
 
   // Race condition handler: ensures only the latest search results update the UI
   int _activeSearchId = 0;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   BrowseController(this._packageRepository);
 
@@ -37,6 +51,16 @@ class BrowseController with ChangeNotifier {
   Future<void> fetchRecommendations({bool forceRefresh = false}) async {
     _recommendations = await _packageRepository.getRecommendations(forceRefresh: forceRefresh);
     notifyListeners();
+
+    if (_packageRepository.activeFetchFuture != null) {
+      try {
+        final freshRecs = await _packageRepository.activeFetchFuture!;
+        _recommendations = freshRecs;
+        notifyListeners();
+      } catch (_) {
+        // Ignore background fetch errors as they are handled in the repository
+      }
+    }
   }
 
   /// Performs an asynchronous search for packages.
