@@ -237,13 +237,34 @@ def safe_command(func):
                 self._active_commands[command_id] = current_task
 
             try:
-                # Murphy-proof: Strict parameter validation before execution
-                for i, arg in enumerate(args):
-                    if isinstance(arg, str):
-                        SecurityValidator.validate_string(arg, f"Argument {i} of {func.__name__}")
-                for k, v in kwargs.items():
-                    if isinstance(v, str):
-                        SecurityValidator.validate_string(v, f"Keyword Argument {k} of {func.__name__}")
+                # Murphy-proof: Strict and context-aware parameter validation using inspect.signature
+                import inspect
+                sig = inspect.signature(func)
+                bound_args = sig.bind(self, *args, **kwargs)
+                bound_args.apply_defaults()
+
+                def validate_value(val: Any, name: str):
+                    if isinstance(val, str):
+                        if "url" in name.lower():
+                            SecurityValidator.validate_url(val, name)
+                        elif "path" in name.lower():
+                            SecurityValidator.validate_path(val, name)
+                        elif name in ("query", "prompt"):
+                            SecurityValidator.validate_search_query(val, name)
+                        elif name == "flag":
+                            SecurityValidator.validate_action_flag(val)
+                        else:
+                            SecurityValidator.validate_string(val, name)
+                    elif isinstance(val, dict):
+                        for k, v in val.items():
+                            validate_value(v, f"{name}.{k}")
+                    elif isinstance(val, list):
+                        for idx, item in enumerate(val):
+                            validate_value(item, f"{name}[{idx}]")
+
+                for param_name, param_val in bound_args.arguments.items():
+                    if param_name != "self":
+                        validate_value(param_val, param_name)
 
                 result = await asyncio.wait_for(func(self, *args, **kwargs), timeout=timeout)
 

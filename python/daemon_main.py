@@ -5,6 +5,7 @@ import yaml
 import asyncio
 import logging
 import re
+import shutil
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
@@ -14,6 +15,72 @@ from core.security_validator import SecurityValidator
 
 # Murphy-proof: Event for graceful shutdown signaling
 stop_event = asyncio.Event()
+
+# Track active tasks and subprocesses to prevent orphans/zombies on shutdown.
+_active_processes = set()
+_active_tasks = set()
+_shutdown_lock = asyncio.Lock()
+
+def register_process(proc):
+    _active_processes.add(proc)
+
+def unregister_process(proc):
+    _active_processes.discard(proc)
+
+def register_task(task):
+    _active_tasks.add(task)
+    task.add_done_callback(_active_tasks.discard)
+
+def create_daemon_task(coro):
+    task = asyncio.create_task(coro)
+    register_task(task)
+    return task
+
+async def cleanup_daemon_resources():
+    """Murphy-proof: Clean up all tracked daemon tasks and subprocesses safely."""
+    async with _shutdown_lock:
+        logging.info("Cleaning up daemon resources...")
+
+        # 1. Cancel tasks
+        current = asyncio.current_task()
+        tasks_to_cancel = [t for t in _active_tasks if t is not current and not t.done()]
+        if tasks_to_cancel:
+            logging.info(f"Cancelling {len(tasks_to_cancel)} active daemon background tasks...")
+            for t in tasks_to_cancel:
+                t.cancel()
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(*tasks_to_cancel, return_exceptions=True),
+                    timeout=5.0
+                )
+            except Exception as e:
+                logging.error(f"Error gathering cancelled tasks: {e}")
+            _active_tasks.clear()
+
+        # 2. Terminate subprocesses
+        if _active_processes:
+            logging.info(f"Terminating {len(_active_processes)} active subprocesses...")
+            for proc in list(_active_processes):
+                if proc.returncode is None:
+                    try:
+                        proc.terminate()
+                    except Exception as e:
+                        logging.debug(f"Failed to terminate process {proc.pid}: {e}")
+
+            # Wait briefly for termination
+            for _ in range(10):
+                if all(proc.returncode is not None for proc in _active_processes):
+                    break
+                await asyncio.sleep(0.1)
+
+            # Force kill if still alive
+            for proc in list(_active_processes):
+                if proc.returncode is None:
+                    try:
+                        proc.kill()
+                    except Exception as e:
+                        logging.debug(f"Failed to kill process {proc.pid}: {e}")
+            _active_processes.clear()
 
 # Setup logging
 logging.basicConfig(
@@ -47,11 +114,21 @@ def load_config():
         with open(config_path, "r", encoding="utf-8") as f:
             cfg = yaml.safe_load(f) or {}
             daemon_cfg = cfg.get("daemon", {})
+
+            # Sanitization and bounds checking to prevent invalid values
+            enabled = bool(daemon_cfg.get("enabled", True))
+            check_interval_hours = daemon_cfg.get("check_interval_hours", 4)
+            if not isinstance(check_interval_hours, (int, float)) or check_interval_hours <= 0:
+                check_interval_hours = 4
+            # Cap the check interval to 168 hours (1 week) to avoid excessively long delays
+            if check_interval_hours > 168:
+                check_interval_hours = 168
+
             return {
-                "enabled": daemon_cfg.get("enabled", True),
-                "check_interval_hours": daemon_cfg.get("check_interval_hours", 4),
-                "auto_update": daemon_cfg.get("auto_update", False),
-                "notifications": daemon_cfg.get("notifications", True)
+                "enabled": enabled,
+                "check_interval_hours": check_interval_hours,
+                "auto_update": bool(daemon_cfg.get("auto_update", False)),
+                "notifications": bool(daemon_cfg.get("notifications", True))
             }
     except Exception as e:
         logging.error(f"Murphy-proof: Failed to load/parse config, falling back to defaults: {e}")
@@ -60,14 +137,21 @@ def load_config():
 async def send_notification(summary: str, body: str):
     """Murphy-proof: notification with strict timeout and error isolation."""
     logging.info(f"Sending notification: {summary} - {body}")
+    if not shutil.which("notify-send"):
+        logging.warning("Murphy-proof: 'notify-send' command not found. Notification skipped.")
+        return
     try:
         # Use notify-send which is standard on Linux desktops
         async with safe_subprocess(
-            "notify-send", "-a", "OmniStore", "-t", "5000", v_summary, v_body,
+            "notify-send", "-a", "OmniStore", "-t", "5000", summary, body,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL
         ) as proc:
-            await asyncio.wait_for(proc.wait(), timeout=10.0)
+            register_process(proc)
+            try:
+                await asyncio.wait_for(proc.wait(), timeout=10.0)
+            finally:
+                unregister_process(proc)
     except asyncio.TimeoutError:
         logging.error("Murphy-proof: Notification timed out.")
     except Exception as e:
@@ -139,7 +223,11 @@ async def run_auto_updates(updates):
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL
             ) as proc:
-                await asyncio.wait_for(proc.wait(), timeout=1800.0) # 30 min timeout
+                register_process(proc)
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=1800.0) # 30 min timeout
+                finally:
+                    unregister_process(proc)
         except Exception as e:
             logging.error(f"Flatpak auto-update failed: {e}")
 
@@ -159,72 +247,84 @@ async def run_auto_updates(updates):
                     stdout=asyncio.subprocess.DEVNULL,
                     stderr=asyncio.subprocess.DEVNULL
                 ) as proc:
-                    await asyncio.wait_for(proc.wait(), timeout=3600.0) # 60 min timeout
+                    register_process(proc)
+                    try:
+                        await asyncio.wait_for(proc.wait(), timeout=3600.0) # 60 min timeout
+                    finally:
+                        unregister_process(proc)
             except Exception as e:
                 logging.error(f"Pacman auto-update failed: {e}")
     else:
         logging.info("Not running as root. Skipping native pacman/aur auto-updates.")
 
+# Prevent concurrent run_update_check executions
+update_check_lock = asyncio.Lock()
+
 async def run_update_check(config):
     """Murphy-proof: Update check with execution watchdog and atomic status write."""
-    logging.info("Running update check...")
-    cmd = get_python_cmd()
-    cmd_args = cmd + ["-C", "--json"]
-    
-    try:
-        async with safe_subprocess(
-            *cmd_args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        ) as proc:
-            try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300.0) # 5 min timeout
-            except asyncio.TimeoutError:
-                logging.error("Murphy-proof: Update check subprocess timed out.")
-                if proc.returncode is None:
-                    try: proc.kill()
-                    except Exception: pass
-                return
+    async with update_check_lock:
+        logging.info("Running update check...")
+        cmd = get_python_cmd()
+        cmd_args = cmd + ["-C", "--json"]
         
-        if proc.returncode == 0:
-            try:
-                updates = parse_json_output(stdout.decode(errors="replace"))
-                if not isinstance(updates, list):
-                    raise ValueError("Update check output is not a list")
-
-                count = len(updates)
-                logging.info(f"Found {count} updates")
-
-                status = {
-                    "last_checked": datetime.now(timezone.utc).isoformat(),
-                    "updates_count": count,
-                    "updates": updates
-                }
-
-                status_path = get_status_path()
+        try:
+            async with safe_subprocess(
+                *cmd_args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            ) as proc:
+                register_process(proc)
                 try:
-                    status_path.parent.mkdir(parents=True, exist_ok=True)
-                    # Murphy-proof: Atomic write using temporary file
-                    tmp_path = status_path.with_suffix(".tmp")
-                    with open(tmp_path, "w", encoding="utf-8") as f:
-                        json.dump(status, f, indent=2)
-                    tmp_path.replace(status_path)
+                    try:
+                        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300.0) # 5 min timeout
+                    except asyncio.TimeoutError:
+                        logging.error("Murphy-proof: Update check subprocess timed out.")
+                        if proc.returncode is None:
+                            try: proc.kill()
+                            except Exception: pass
+                        return
+                finally:
+                    unregister_process(proc)
+
+            if proc.returncode == 0:
+                try:
+                    updates = parse_json_output(stdout.decode(errors="replace"))
+                    if not isinstance(updates, list):
+                        raise ValueError("Update check output is not a list")
+
+                    count = len(updates)
+                    logging.info(f"Found {count} updates")
+
+                    status = {
+                        "last_checked": datetime.now(timezone.utc).isoformat(),
+                        "updates_count": count,
+                        "updates": updates
+                    }
+
+                    status_path = get_status_path()
+                    try:
+                        status_path.parent.mkdir(parents=True, exist_ok=True)
+                        # Murphy-proof: Atomic write using temporary file
+                        tmp_path = status_path.with_suffix(".tmp")
+                        with open(tmp_path, "w", encoding="utf-8") as f:
+                            json.dump(status, f, indent=2)
+                        tmp_path.replace(status_path)
+                    except Exception as e:
+                        logging.error(f"Murphy-proof: Failed to write status file: {e}")
+
+                    if count > 0 and config.get("notifications"):
+                        msg = f"您有 {count} 个可用的软件更新项目，点击进入商店查看并更新。"
+                        await send_notification("OmniStore 软件更新提示", msg)
+
+                    if count > 0 and config.get("auto_update"):
+                        await run_auto_updates(updates)
+
                 except Exception as e:
-                    logging.error(f"Murphy-proof: Failed to write status file: {e}")
-
-                if count > 0 and config.get("notifications"):
-                    msg = f"您有 {count} 个可用的软件更新项目，点击进入商店查看并更新。"
-                    await send_notification("OmniStore 软件更新提示", msg)
-
-                if count > 0 and config.get("auto_update"):
-                    await run_auto_updates(updates)
-
-            except Exception as e:
-                logging.error(f"Failed to parse update check JSON or write status: {e}")
-        else:
-            logging.error(f"Update check failed with code {proc.returncode}: {stderr.decode(errors='replace')}")
-    except Exception as e:
-        logging.error(f"Failed to execute update check: {e}")
+                    logging.error(f"Failed to parse update check JSON or write status: {e}")
+            else:
+                logging.error(f"Update check failed with code {proc.returncode}: {stderr.decode(errors='replace')}")
+        except Exception as e:
+            logging.error(f"Failed to execute update check: {e}")
 
 async def main():
     logging.info("====================================================")
@@ -241,12 +341,13 @@ async def main():
         logging.info("Daemon is disabled in configuration. Exiting.")
         return
 
-    logging.info("Running initial update check...")
-    await run_update_check(config)
-
-    logging.info(f"Starting background loop. Checking every {config['check_interval_hours']} hour(s).")
-    
     try:
+        logging.info("Running initial update check...")
+        initial_check_task = create_daemon_task(run_update_check(config))
+        await initial_check_task
+
+        logging.info(f"Starting background loop. Checking every {config['check_interval_hours']} hour(s).")
+
         while not stop_event.is_set():
             # Sleep in small chunks so we can check for shutdown or config reload/disabled sooner
             sleep_hours = config.get("check_interval_hours", 4)
@@ -281,11 +382,14 @@ async def main():
                 if not config.get("enabled"):
                     logging.info("Daemon was disabled in configuration. Stopping.")
                     return
-                await run_update_check(config)
+                loop_check_task = create_daemon_task(run_update_check(config))
+                await loop_check_task
     except asyncio.CancelledError:
         logging.info("Background loop cancelled.")
     except Exception as e:
         logging.error(f"Murphy-proof: Fatal error in main loop: {e}")
+    finally:
+        await cleanup_daemon_resources()
 
 if __name__ == "__main__":
     # Signal handlers for graceful shutdown
