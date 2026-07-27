@@ -170,3 +170,10 @@ Blindly validating string arguments in APIs (e.g. `safe_command`) as generic str
 
 Action:
 Refined `safe_command` in `python/core/backend.py` to use `inspect.signature` for context-aware string validation and recursive validation of nested parameters. Refined `python/daemon_main.py` by importing `shutil`, fixing undefined notification variables, implementing an `asyncio.Lock` for update checks, sanitizing configuration variables dynamically, and adding robust task and subprocess tracking to terminate all resources on exit.
+## 2026-07-25 - [Async Lifecycle Crashes in Dialogs]
+
+Learning:
+Missing `if (!mounted) return;` checks after awaiting futures before accessing state, widget properties or BuildContext can lead to crashes if the widget is disposed before the future resolves. However, adding these checks at the very end of a function (where no further state is accessed) is unnecessary and violates the directive against "theoretical paranoia fixes". Adding them before vital cleanup tasks (like window closing/exiting) can cause regressions where cleanup is skipped entirely if the widget unmounts.
+
+Action:
+Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.

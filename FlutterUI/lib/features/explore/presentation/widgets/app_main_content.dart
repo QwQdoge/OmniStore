@@ -83,56 +83,51 @@ class AppMainContent extends StatelessWidget {
           onCancelAction: onCancelAction,
         ),
         const SizedBox(height: 24),
-        AppDetailsSectionTitle(
-          title: AppLocalizations.of(context)!.about,
-        ),
         SmoothSizeSwitcher(
           alignment: Alignment.topLeft,
-          child: isLoadingDetails
-              ? const ParagraphSkeleton(key: ValueKey('about-loading'))
-              : AppAboutSection(
+          child: Column(
+            key: ValueKey('details-block-$isLoadingDetails-${extraDetails != null}'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppDetailsSectionTitle(
+                title: AppLocalizations.of(context)!.about,
+              ),
+              if (isLoadingDetails)
+                const ParagraphSkeleton(key: ValueKey('about-loading'))
+              else
+                AppAboutSection(
                   key: const ValueKey('about-loaded'),
                   description: extraDetails?.description,
                   fallbackDescription: app.description,
                 ),
-        ),
-        SmoothSizeSwitcher(
-          alignment: Alignment.topLeft,
-          child: (hasCapability('has_screenshots') &&
+              if (hasCapability('has_screenshots') &&
                   extraDetails != null &&
                   extraDetails!.screenshots != null &&
-                  extraDetails!.screenshots!.isNotEmpty)
-              ? Column(
-                  key: const ValueKey('screenshots-visible'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    AppDetailsSectionTitle(
-                      title: AppLocalizations.of(context)!.screenshots,
-                    ),
-                    AppScreenshots(
-                      screenshots: extraDetails!.screenshots!,
-                      scrollController: screenshotScrollController,
-                      onShowScreenshotViewer: onShowScreenshotViewer,
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink(key: ValueKey('screenshots-hidden')),
-        ),
-        const SizedBox(height: 24),
-        AppDetailsSectionTitle(
-          title: AppLocalizations.of(context)!.details,
-        ),
-        SmoothSizeSwitcher(
-          alignment: Alignment.topLeft,
-          child: AppTechnicalDetails(
-            key: ValueKey('technical-details-${extraDetails != null}'),
-            primarySource: app.primarySource,
-            allSources: app.sources,
-            version: app.version,
-            extraDetails: extraDetails,
-            currentVariant: getVariantForSource(selectedSource),
-            hasCapability: hasCapability,
+                  extraDetails!.screenshots!.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                AppDetailsSectionTitle(
+                  title: AppLocalizations.of(context)!.screenshots,
+                ),
+                AppScreenshots(
+                  screenshots: extraDetails!.screenshots!,
+                  scrollController: screenshotScrollController,
+                  onShowScreenshotViewer: onShowScreenshotViewer,
+                ),
+              ],
+              const SizedBox(height: 24),
+              AppDetailsSectionTitle(
+                title: AppLocalizations.of(context)!.details,
+              ),
+              AppTechnicalDetails(
+                key: ValueKey('technical-details-${extraDetails != null}'),
+                primarySource: app.primarySource,
+                allSources: app.sources,
+                version: app.version,
+                extraDetails: extraDetails,
+                currentVariant: getVariantForSource(selectedSource),
+                hasCapability: hasCapability,
+              ),
+            ],
           ),
         ),
       ],

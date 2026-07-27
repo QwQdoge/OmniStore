@@ -578,7 +578,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
 
   @override
-  String get feedbackDesc => '如果您遇到问题，请通过 GitHub 反馈给我们。';
+  String get feedbackDesc => '通过 GitHub 反馈遇到的问题。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -593,21 +593,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填写 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：运行 Ollama，无需密钥。2. 云端 (OpenAI)：前往官网创建并填入密钥。';
+      '1. Ollama (本地)：直接运行，无需密钥。2. 云端 (OpenAI)：前往官网创建并填写密钥。';
 
   @override
   String get gotIt => '知道了';
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，请确保它已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+      '提示：确保 Ollama 已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -1757,7 +1757,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
 
   @override
-  String get feedbackDesc => '如果您遇到問題，請透過 GitHub 反饋給我們。';
+  String get feedbackDesc => '透過 GitHub 回報遇到的問題。';
 
   @override
   String get aiAssistant => 'AI 助手';
@@ -1772,21 +1772,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 填入 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填寫 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：執行 Ollama，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填入金鑰。';
+      '1. Ollama (本地)：直接執行，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填寫金鑰。';
 
   @override
   String get gotIt => '知道了';
 
   @override
   String get aiOllamaNote =>
-      '提示：如果您使用 Ollama，請確保它已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+      '提示：確保 Ollama 已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
@@ -2253,7 +2253,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get temperatureRangeError => '值必須在 0.0 到 2.0 之間';
 
   @override
-  String get enableSystemdService => '啟用 systemd 後台更新服務';
+  String get enableSystemdService => '啟用 systemd 背景更新服務';
 
   @override
   String get enableSystemdServiceDesc => '允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新';

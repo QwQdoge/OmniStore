@@ -1133,9 +1133,28 @@
   "@googleGemini": {
     "description": "Description for googleGemini"
   },
-  "installationDecisionTitle": "インストール判断アシスタント",
+  "installationDecisionTitle": "インストール決定ヘルパー",
+  "@installationDecisionTitle": {
+    "description": "Description for installationDecisionTitle"
+  },
   "recommendedSource": "推奨ソース: {source}",
+  "@recommendedSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "preflightChecks": "事前チェック",
-  "potentialRisks": "想定されるリスク",
-  "continueInstallation": "続行"
+  "@preflightChecks": {
+    "description": "Description for preflightChecks"
+  },
+  "potentialRisks": "潜在的なリスク",
+  "@potentialRisks": {
+    "description": "Description for potentialRisks"
+  },
+  "continueInstallation": "インストールを続行",
+  "@continueInstallation": {
+    "description": "Description for continueInstallation"
+  }
 }
