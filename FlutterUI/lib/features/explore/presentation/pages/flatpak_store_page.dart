@@ -59,53 +59,95 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.sizeOf(context).width > 900;
+    // ⚡ Bolt: Use a self-contained responsive layout builder that caches its child
+    // to isolate MediaQuery changes. On parent state updates, didUpdateWidget clears the cache.
+    // On resize, it only rebuilds the subtree if the 900px desktop threshold is actually crossed.
+    return ResponsiveLayoutBuilder(
+      builder: (context, isDesktop) {
+        Widget bodyContent = FlatpakAppList(
+          apps: _apps,
+          isLoading: _isLoading,
+          isDesktop: isDesktop,
+          selectedApp: _selectedApp,
+          loadError: _loadError,
+          onRetry: _refresh,
+          onAppSelected: (app) {
+            setState(() {
+              _selectedApp = app;
+            });
+          },
+        );
 
-    Widget bodyContent = FlatpakAppList(
-      apps: _apps,
-      isLoading: _isLoading,
-      isDesktop: isDesktop,
-      selectedApp: _selectedApp,
-      loadError: _loadError,
-      onRetry: _refresh,
-      onAppSelected: (app) {
-        setState(() {
-          _selectedApp = app;
-        });
+        if (isDesktop) {
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Row(
+              children: [
+                Expanded(flex: 4, child: bodyContent),
+                const VerticalDivider(width: 1),
+                Expanded(
+                  flex: 6,
+                  child: SmoothSizeSwitcher(
+                    alignment: Alignment.topCenter,
+                    child: _selectedApp == null
+                        ? Center(
+                            key: const ValueKey('no_selection'),
+                            child: Text(
+                              AppLocalizations.of(context)!.noResults,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          )
+                        : AppDetailsPage(
+                            app: _selectedApp!,
+                            isEmbedded: true,
+                            key: ValueKey(_selectedApp!.id),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: bodyContent,
+          );
+        }
       },
     );
+  }
+}
 
-    if (isDesktop) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Row(
-          children: [
-            Expanded(flex: 4, child: bodyContent),
-            const VerticalDivider(width: 1),
-            Expanded(
-              flex: 6,
-              child: SmoothSizeSwitcher(
-                alignment: Alignment.topCenter,
-                child: _selectedApp == null
-                    ? Center(
-                        key: const ValueKey('no_selection'),
-                        child: Text(
-                          AppLocalizations.of(context)!.noResults,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      )
-                    : AppDetailsPage(
-                        app: _selectedApp!,
-                        isEmbedded: true,
-                        key: ValueKey(_selectedApp!.id),
-                      ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Scaffold(backgroundColor: Colors.transparent, body: bodyContent);
+/// A self-contained widget that caches its built child to isolate MediaQuery rebuilding.
+class ResponsiveLayoutBuilder extends StatefulWidget {
+  final Widget Function(BuildContext context, bool isDesktop) builder;
+
+  const ResponsiveLayoutBuilder({super.key, required this.builder});
+
+  @override
+  State<ResponsiveLayoutBuilder> createState() => _ResponsiveLayoutBuilderState();
+}
+
+class _ResponsiveLayoutBuilderState extends State<ResponsiveLayoutBuilder> {
+  bool? _lastIsDesktop;
+  Widget? _cachedChild;
+
+  @override
+  void didUpdateWidget(covariant ResponsiveLayoutBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Parent state changed (e.g. apps loaded, details changed). Clear cache to rebuild.
+    _cachedChild = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.sizeOf(context).width > 900;
+
+    if (_cachedChild == null || _lastIsDesktop != isDesktop) {
+      _lastIsDesktop = isDesktop;
+      _cachedChild = widget.builder(context, isDesktop);
     }
+
+    return _cachedChild!;
   }
 }

@@ -101,3 +101,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Accessing categories (like Development, Games, AudioVideo) repeatedly triggers heavy network calls to Flathub and results in high latency for the user. Adding a 24-hour cache TTL and in-flight request deduplication on the backend daemon prevents duplicate network roundtrips, resulting in instantaneous, O(1) page loads on repeat access.
 
 **Action:** Implemented category app caching and task coalescing inside `RecommendationManager`, including proper JSON state loading and async snapshot preservation on disk.
+
+## 2026-07-30 - FlatpakStorePage Rebuild Reduction
+
+**Learning:** Invoking `MediaQuery.sizeOf(context)` directly inside a stateful page's build method forces the entire page, including its heavy list views and details subtrees, to rebuild on every pixel of window resizing. Implementing a self-contained caching `ResponsiveLayoutBuilder` that clears its cache on `didUpdateWidget` but retains it during media query updates isolates the resize recalculation, skipping all subtree rebuilds unless the desktop/mobile threshold (900px) is crossed.
+
+**Action:** Replaced direct `MediaQuery` lookup in `flatpak_store_page.dart` with a custom `ResponsiveLayoutBuilder` to completely isolate resize rebuilds from parent state updates.
