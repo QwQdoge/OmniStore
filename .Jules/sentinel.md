@@ -162,3 +162,11 @@ When catching `BaseException` to properly handle `asyncio.CancelledError` during
 
 Action:
 Refined exception handling in `_cleanup_proc` within `python/core/subprocess_utils.py` and `OmnistoreBackend.__aexit__` in `python/core/backend.py`. Used `asyncio.shield` correctly in `_cleanup_proc` stage 1 to allow the cancellation cleanup sequence to run without leaving zombies, and explicitly re-raised `_exc` if it's not a standard `Exception`. In `backend.py`, wrapped the AI session closure in a `try...finally` block to guarantee execution of `await asyncio.shield(self._resources.cleanup())` even if the former is cancelled, maintaining the correct propagation of `asyncio.CancelledError`.
+
+## 2026-07-25 - [Async Lifecycle Crashes in Dialogs]
+
+Learning:
+Missing `if (!mounted) return;` checks after awaiting futures before accessing state, widget properties or BuildContext can lead to crashes if the widget is disposed before the future resolves. However, adding these checks at the very end of a function (where no further state is accessed) is unnecessary and violates the directive against "theoretical paranoia fixes". Adding them before vital cleanup tasks (like window closing/exiting) can cause regressions where cleanup is skipped entirely if the widget unmounts.
+
+Action:
+Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.

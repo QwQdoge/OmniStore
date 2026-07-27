@@ -4,9 +4,11 @@ import 'package:collection/collection.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
+import 'package:frontend/features/settings/presentation/widgets/ai_test_result_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AISettingsSection extends StatefulWidget {
   const AISettingsSection({super.key});
@@ -130,23 +132,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
       showDialog(
         context: context,
-        builder: (c) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                isSuccess ? Icons.check_circle : Icons.error,
-                color: isSuccess ? Colors.green : Colors.red,
-              ),
-              const SizedBox(width: 8),
-              Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
-            ],
-          ),
-          content: msg.toString().isNotEmpty
-              ? SelectableText(msg.toString())
-              : null,
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(c), child: Text(l10n.ok)),
-          ],
+        builder: (c) => AITestResultDialog(
+          isSuccess: isSuccess,
+          msg: msg.toString(),
         ),
       );
     } catch (e) {
@@ -279,10 +267,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       alignment: Alignment.centerLeft,
                       child: FilledButton.icon(
                         onPressed: _isTestingAI ? null : _testAIConnection,
-                        icon: AnimatedSwitcher(
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.fastOutSlowIn,
-                          duration: const Duration(milliseconds: 300),
+                        icon: SmoothSizeSwitcher(
                           child: _isTestingAI
                               ? SizedBox(
                                   key: const ValueKey('loading'),

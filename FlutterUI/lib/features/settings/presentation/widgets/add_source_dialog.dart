@@ -69,6 +69,8 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
       success = result;
     }
 
+    if (!mounted) return;
+
     messenger.showSnackBar(
       SnackBar(
         content: Text(
