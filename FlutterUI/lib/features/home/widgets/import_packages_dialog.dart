@@ -22,9 +22,26 @@ class ImportPackagesDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Text(titleText),
-      content: Text(contentText),
+      icon: Icon(
+        Icons.file_upload_rounded,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
+      title: Text(
+        titleText,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      content: Text(
+        contentText,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
       actions: [
         TextButton(onPressed: onCancel, child: Text(cancelText)),
         FilledButton(onPressed: onConfirm, child: Text(confirmText)),
