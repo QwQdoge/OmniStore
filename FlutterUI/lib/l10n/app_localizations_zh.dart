@@ -593,7 +593,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填写 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 需填写 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
@@ -606,8 +606,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：确保 Ollama 已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+  String get aiOllamaNote => '确保 Ollama 已在后台运行并开启 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -1649,7 +1648,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
 
   @override
-  String get aiCorrection => '您是指：';
+  String get aiCorrection => '您是指？';
 
   @override
   String get aiThinking => 'AI 正在思考...';
@@ -1772,7 +1771,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 留空，OpenAI 填寫 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 需填寫 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
@@ -1785,8 +1784,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：確保 Ollama 已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+  String get aiOllamaNote => '確保 Ollama 已在背景執行並開啟 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';

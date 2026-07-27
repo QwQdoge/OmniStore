@@ -71,3 +71,8 @@
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
 ## 2026-06-29 - Global SnackBar Consistency: Clipboard Feedback Duration
 - Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to const Duration(seconds: 2) in ai_dialogs.dart, app_details_header.dart, and app_details_shared.dart to unify interaction flow and prevent overlapping feedback messages.
+
+## 2026-06-30 - Chinese Localization (zh/zh_Hant) Standards Alignment
+- Modified `python/sync_l10n.py` to ensure localization entries 'repositories' and 'aurFull' map 'zh' to '软件源' and 'zh_Hant' to '軟體存放庫' in sync with standard Chinese terminology.
+- Polished helper instructions in `app_zh.arb` and `app_zh_Hant.arb` to remove conversational fillers and conditional clauses, changing `aiApiKeyHelper` to directly state `"Ollama 无需密钥，OpenAI 需填写 sk-xxx"` / `"Ollama 無需金鑰，OpenAI 需填寫 sk-xxx"`, and removing `"提示："` from `aiOllamaNote`.
+- Synchronized and regenerated all localization classes using `flutter gen-l10n` while avoiding any unintended modifications to other repository configurations.
