@@ -106,3 +106,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 - **Optimization**: Removed `SingleChildScrollView` + `ListView.builder(shrinkWrap: true)` anti-pattern in `tasks_tab.dart`.
 - **Implementation**: Replaced with `CustomScrollView`, separating static elements into `SliverToBoxAdapter`s wrapped in `SmoothSizeSwitcher` and keeping the reactive list as `SliverList.builder`. Padding was applied via `Padding` inside adapters and `SliverPadding`.
 - **Result**: Restored O(1) lazy-rendering virtualization for the completed tasks list, significantly improving performance when the task history grows large, without altering layout visually.
+
+## 2026-07-30 - FlatpakStorePage Rebuild Reduction
+
+**Learning:** Invoking `MediaQuery.sizeOf(context)` directly inside a stateful page's build method forces the entire page, including its heavy list views and details subtrees, to rebuild on every pixel of window resizing. Implementing a self-contained caching `ResponsiveLayoutBuilder` that clears its cache on `didUpdateWidget` but retains it during media query updates isolates the resize recalculation, skipping all subtree rebuilds unless the desktop/mobile threshold (900px) is crossed.
+
+**Action:** Replaced direct `MediaQuery` lookup in `flatpak_store_page.dart` with a custom `ResponsiveLayoutBuilder` to completely isolate resize rebuilds from parent state updates.
