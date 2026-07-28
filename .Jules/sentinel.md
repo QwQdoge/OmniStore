@@ -177,3 +177,11 @@ Missing `if (!mounted) return;` checks after awaiting futures before accessing s
 
 Action:
 Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.
+
+## 2026-07-29 - [AuthService Safety, Concurrency, and Input Validation Hardening]
+
+Learning:
+Unmanaged state streams and listener notifications after disposal can leak resources or crash the application in state-management frameworks. High-frequency or sensitive actions like sign-in/sign-out require strict concurrency locks (_isBusy mutex flags) to prevent avalanche operations. In addition, external or platform integration setups must be isolated with try-catch boundaries, and user input fields must validate strings against length limits and control characters prior to configuration persistence to ensure robust system behavior.
+
+Action:
+Refactored `AuthService` (`FlutterUI/lib/features/auth/auth_service.dart`) to introduce `_authSubscription` to cleanly dispose of the Supabase onAuthStateChange listener stream, guard `notifyListeners()` with a `_disposed` flag, prevent parallel logins/logouts via a `_isBusy` state-mutex, and safely wrap initialization calls in `try-catch` boundaries. Refactored `AuthPage` (`FlutterUI/lib/features/auth/auth_page.dart`) to execute parameter validation for token length (<= 255 chars) and reject ASCII control characters (`[\x00-\x1F\x7F]`), while standardizing its SnackBar duration to 2 seconds.

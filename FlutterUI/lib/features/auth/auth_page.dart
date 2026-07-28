@@ -27,30 +27,71 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _loadPat() async {
-    final configRepo = context.read<ConfigRepository>();
-    final config = await configRepo.loadConfig();
-    if (!mounted) return;
-    setState(() {
-      _patController.text = config['github']?['pat'] ?? '';
-    });
+    try {
+      final configRepo = context.read<ConfigRepository>();
+      final config = await configRepo.loadConfig();
+      if (!mounted) return;
+      setState(() {
+        _patController.text = config['github']?['pat'] ?? '';
+      });
+    } catch (e) {
+      debugPrint('Error loading PAT config: $e');
+    }
   }
 
   Future<void> _savePat() async {
-    setState(() => _isSaving = true);
-    final configRepo = context.read<ConfigRepository>();
-    final config = await configRepo.loadConfig();
-    if (!mounted) return;
-    config['github'] ??= {};
-    config['github']['pat'] = _patController.text.trim();
-    await configRepo.saveConfig(config);
-    if (mounted) {
-      setState(() => _isSaving = false);
+    final String token = _patController.text.trim();
+
+    // Input security validation: check length limit and control characters
+    if (token.length > 255) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.githubPatSaved),
-          duration: const Duration(seconds: 4),
+          content: const Text('Token is too long (maximum 255 characters).'),
+          duration: const Duration(seconds: 2),
         ),
       );
+      return;
+    }
+
+    final RegExp controlCharPattern = RegExp(r'[\x00-\x1F\x7F]');
+    if (controlCharPattern.hasMatch(token)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Token contains invalid control characters.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final configRepo = context.read<ConfigRepository>();
+      final config = await configRepo.loadConfig();
+      if (!mounted) return;
+      config['github'] ??= {};
+      config['github']['pat'] = token;
+      await configRepo.saveConfig(config);
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.githubPatSaved),
+            duration: const Duration(seconds: 2), // Standardized to 2 seconds
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving PAT config: $e');
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save Personal Access Token.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
