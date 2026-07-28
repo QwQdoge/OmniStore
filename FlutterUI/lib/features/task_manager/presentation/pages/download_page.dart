@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
@@ -32,6 +34,7 @@ class _DownloadPageState extends State<DownloadPage>
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _installedFilterScrollController = ScrollController();
+  Timer? _searchDebounceTimer;
 
   @override
   void initState() {
@@ -40,10 +43,25 @@ class _DownloadPageState extends State<DownloadPage>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInstalledApps());
 
-    _searchController.addListener(() {
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _searchDebounceTimer?.cancel();
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
       if (mounted) {
         setState(() {
-          _searchQuery = _searchController.text.toLowerCase();
+          _searchQuery = "";
+          _applyFilters();
+        });
+      }
+      return;
+    }
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {
+          _searchQuery = query;
           _applyFilters();
         });
       }
@@ -113,16 +131,18 @@ class _DownloadPageState extends State<DownloadPage>
           app.primarySource == _selectedSourceFilter;
       final matchesSearch =
           _searchQuery.isEmpty ||
-          app.name.toLowerCase().contains(_searchQuery) ||
-          (app.description.toLowerCase().contains(_searchQuery));
+          app.nameLower.contains(_searchQuery) ||
+          app.descriptionLower.contains(_searchQuery);
       return matchesSource && matchesSearch;
     }).toList();
   }
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _filterScrollController.dispose();
     _tabController.dispose();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _installedFilterScrollController.dispose();
     super.dispose();
