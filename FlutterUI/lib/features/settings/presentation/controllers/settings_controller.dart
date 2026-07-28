@@ -11,8 +11,22 @@ class SettingsController with ChangeNotifier {
   Map<String, dynamic> _config = {};
   bool _isAIEnabled = false;
   bool _isRailExpanded = true;
+  bool _disposed = false;
 
   SettingsController(this._configRepository);
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   Map<String, dynamic> get config => _config;
   bool get isAIEnabled => _isAIEnabled;

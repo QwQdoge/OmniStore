@@ -127,3 +127,12 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 
 Learning: Stale-while-revalidate caching patterns can leave the UI out of sync if the controller does not explicitly await the background fetch triggered by the cache hit. Furthermore, async updates can trigger `notifyListeners` after a controller has been disposed, leading to lifecycle crashes.
 Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it inside `BrowseController.fetchRecommendations` to push fresh data to the UI. Added standard `_disposed` checks in `BrowseController` overriding `dispose()` and `notifyListeners()` to ensure safe async state updates.
+## 2026-07-28 - State Management: Disposed Check and Async Leak Prevention
+
+**Learning:** When using globally persistent controllers or services (like `AuthService`, `NavigationController`, or `SettingsController`), missing `_disposed` checks in `notifyListeners` or failing to cancel stream subscriptions in `dispose()` causes asynchronous lifecycle crashes and memory leaks. Furthermore, parallel invocations of non-reentrant external services (like OAuth login) without a mutex lock create duplicate execution state corruption.
+
+**Action:**
+- Universally added the `bool _disposed = false` guard, overrode `dispose()` to set `_disposed = true`, and overrode `notifyListeners()` with an `if (!_disposed)` check in `AuthService`, `SettingsController`, and `NavigationController`.
+- Wrapped potentially destructive or avalanching initialization methods (e.g., `Supabase.initialize` and `AppLinks.uriLinkStream.listen`) in `try-catch` blocks inside `AuthService`.
+- Added a `_isBusy` mutex lock inside `signIn` and `signOut` in `AuthService` to block concurrent execution of authentication flows.
+- Ensured all active stream subscriptions (`_linkSubscription`, `_authSubscription`) are explicitly cancelled inside `dispose()`.
