@@ -14,18 +14,32 @@ class AITestResultDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return AlertDialog(
-      title: Row(
-        children: [
-          Icon(
-            isSuccess ? Icons.check_circle : Icons.error,
-            color: isSuccess ? Colors.green : Colors.red,
-          ),
-          const SizedBox(width: 8),
-          Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
-        ],
+      icon: Icon(
+        isSuccess ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+        color: isSuccess ? Colors.green : theme.colorScheme.error,
+        size: 32,
       ),
-      content: msg.isNotEmpty ? SelectableText(msg) : null,
+      title: Text(
+        isSuccess ? l10n.aiTestSuccess : l10n.failed,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      content: msg.isNotEmpty
+          ? Card(
+              color: theme.colorScheme.surfaceContainerLow,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SelectableText(msg),
+              ),
+            )
+          : null,
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),

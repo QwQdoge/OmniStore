@@ -164,3 +164,7 @@
 ## $(date +%Y-%m-%d) - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
+
+## YYYY-MM-DD - Consistent MD3 Dialog Structural Layout
+Learning: Custom Material Design 3 dialogs were structured inconsistently across the app, with some using `Row` inside the `title` instead of the native `icon` property, and standardizing titles using `headlineSmall` with `FontWeight.w800`.
+Action: Unified dialog presentations in `ai_test_result_dialog.dart`, `ai_update_summary_dialog.dart`, `ai_dialogs.dart`, and `add_source_dialog.dart` by moving icons to the `icon` property (size 32), formatting titles to `headlineSmall` (w800), and encapsulating technical text output inside zero-elevation `surfaceContainerLow` cards with 16dp rounded corners for clean visual blocks.
