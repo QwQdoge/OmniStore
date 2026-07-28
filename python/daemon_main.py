@@ -38,6 +38,7 @@ def create_daemon_task(coro):
 
 async def cleanup_daemon_resources():
     """Murphy-proof: Clean up all tracked daemon tasks and subprocesses safely."""
+    cancel_exc = None
     async with _shutdown_lock:
         logging.info("Cleaning up daemon resources...")
 
@@ -50,37 +51,49 @@ async def cleanup_daemon_resources():
                 t.cancel()
             try:
                 await asyncio.wait_for(
-                    asyncio.gather(*tasks_to_cancel, return_exceptions=True),
+                    asyncio.shield(asyncio.gather(*tasks_to_cancel, return_exceptions=True)),
                     timeout=5.0
                 )
-            except Exception as e:
-                logging.error(f"Error gathering cancelled tasks: {e}")
+            except BaseException as e:
+                if not isinstance(e, Exception):
+                    cancel_exc = e
+                else:
+                    logging.error(f"Error gathering cancelled tasks: {e}")
             _active_tasks.clear()
 
         # 2. Terminate subprocesses
-        if _active_processes:
-            logging.info(f"Terminating {len(_active_processes)} active subprocesses...")
-            for proc in list(_active_processes):
-                if proc.returncode is None:
-                    try:
-                        proc.terminate()
-                    except Exception as e:
-                        logging.debug(f"Failed to terminate process {proc.pid}: {e}")
+        try:
+            if _active_processes:
+                logging.info(f"Terminating {len(_active_processes)} active subprocesses...")
+                for proc in list(_active_processes):
+                    if proc.returncode is None:
+                        try:
+                            proc.terminate()
+                        except Exception as e:
+                            logging.debug(f"Failed to terminate process {proc.pid}: {e}")
 
-            # Wait briefly for termination
-            for _ in range(10):
-                if all(proc.returncode is not None for proc in _active_processes):
-                    break
-                await asyncio.sleep(0.1)
+                # Wait briefly for termination
+                for _ in range(10):
+                    if all(proc.returncode is not None for proc in _active_processes):
+                        break
+                    await asyncio.sleep(0.1)
 
-            # Force kill if still alive
-            for proc in list(_active_processes):
-                if proc.returncode is None:
-                    try:
-                        proc.kill()
-                    except Exception as e:
-                        logging.debug(f"Failed to kill process {proc.pid}: {e}")
-            _active_processes.clear()
+                # Force kill if still alive
+                for proc in list(_active_processes):
+                    if proc.returncode is None:
+                        try:
+                            proc.kill()
+                        except Exception as e:
+                            logging.debug(f"Failed to kill process {proc.pid}: {e}")
+                _active_processes.clear()
+        except BaseException as e:
+            if not isinstance(e, Exception):
+                if cancel_exc is None: cancel_exc = e
+            else:
+                logging.error(f"Error terminating subprocesses: {e}")
+
+        if cancel_exc is not None:
+            raise cancel_exc
 
 # Setup logging
 logging.basicConfig(

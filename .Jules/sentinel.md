@@ -177,3 +177,10 @@ Missing `if (!mounted) return;` checks after awaiting futures before accessing s
 
 Action:
 Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.
+## 2024-05-18 - [Python Async Multi-Stage Cleanup Resource Leak]
+
+Learning:
+If a cancellation (`CancelledError`, descending from `BaseException`) occurs during a multi-stage `cleanup()` process, simply ignoring `Exception` will bypass subsequent critical cleanup stages (like closing file handles, terminating zombie processes), creating leaks.
+
+Action:
+Modified `ResourceCoordinator.cleanup` in `python/core/backend.py` and `cleanup_daemon_resources` in `python/daemon_main.py`. Both now catch `BaseException`, stash the `CancelledError` locally (using a `cancel_exc` variable), and proceed to subsequent cleanup stages. The stashed exception is finally re-raised at the end of the procedure.
