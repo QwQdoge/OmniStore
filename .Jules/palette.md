@@ -79,7 +79,7 @@
 
 **Learning:** `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts. Using this around conditionally rendered sections like the active task block and task history lists prevents sudden jumps in the UI.
 
-**Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
+**Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `TasksTab` (FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart).
 
 ## 2026-06-25 - Standardized Geometry and Accessibility for MD3
 
@@ -164,3 +164,9 @@
 ## $(date +%Y-%m-%d) - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
+
+## 2026-07-29 - Settings Dialogs MD3 and Interaction Polish
+
+**Learning:** Settings-related dialogs (like `AddSourceDialog` and `AITestResultDialog`) are prominent interaction entry points that need to align with core MD3 typographic, geometric, and visual hierarchy standards to establish a unified design language. Upgrading these dialogs to feature a w800 headline weight, prominent leading top icons, comfortable spacing, and wrapping technical feedback strings (such as AI test output logs) inside a card using the `surfaceContainerLow` color token and a 16dp rounded border radius dramatically improves readable structure and screen-reader accessibility.
+
+**Action:** Standardize all custom settings dialogs to use w800 headline typography, prominent semantic top icons, and wrap nested technical or selectable texts inside structured, zero-elevation card components with MD3 medium (16dp) corners.
