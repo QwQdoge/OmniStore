@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/task_state.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 /// A premium progress bar that supports smooth transitions, customizable theme styling,
 /// and color seed mapping. Includes micro-animations/transitions for state changes.
@@ -241,7 +242,7 @@ class _ProgressIndicatorStack extends StatelessWidget {
           height: height,
           child: ClipRRect(
             borderRadius: borderRadius,
-            child: AnimatedSwitcher(
+            child: SmoothSizeSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,

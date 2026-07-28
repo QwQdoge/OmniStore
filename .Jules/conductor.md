@@ -39,3 +39,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Replacing `AnimatedSwitcher` with `SmoothSizeSwitcher` for typical UI state transitions (like route loaders and dynamic button states) unifies the app's motion language and fixes potential layout jumping without redundant wrapper constraints.
 
 **Action:** Replaced plain `AnimatedSwitcher` with `SmoothSizeSwitcher` in `OmnistoreApp` and `AISettingsSection`.
+## 2024-09-10 - Standardize SmoothProgressBar Transitions
+
+**Learning:** Replacing `AnimatedSwitcher` with `SmoothSizeSwitcher` for transitions between loading and loaded states (like the indeterminate and determinate states in `SmoothProgressBar`) unifies the app's motion language and fixes potential layout jumping.
+
+**Action:** Replaced plain `AnimatedSwitcher` with `SmoothSizeSwitcher` in `SmoothProgressBar`.
