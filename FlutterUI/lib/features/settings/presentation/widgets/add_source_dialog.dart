@@ -33,7 +33,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(widget.l10n.errorNameUrlRequired),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -45,7 +45,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(widget.l10n.addingCustomSource),
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 2),
       ),
     );
 
@@ -76,7 +76,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         content: Text(
           success ? widget.l10n.sourceAddSuccess : widget.l10n.sourceAddFailed,
         ),
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

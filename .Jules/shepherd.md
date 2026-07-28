@@ -71,3 +71,6 @@
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
 ## 2026-06-29 - Global SnackBar Consistency: Clipboard Feedback Duration
 - Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to const Duration(seconds: 2) in ai_dialogs.dart, app_details_header.dart, and app_details_shared.dart to unify interaction flow and prevent overlapping feedback messages.
+
+## 2026-06-30 - Global SnackBar Consistency: All SnackBars Duration
+- Standardized the duration of all SnackBar widgets across the application to `const Duration(seconds: 2)` to unify interaction flow, preventing overlapping feedback messages and creating a consistent user experience. This affects files across auth, settings, home, explore, task_manager, and the main navigation.

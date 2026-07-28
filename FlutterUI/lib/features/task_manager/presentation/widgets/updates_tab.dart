@@ -56,7 +56,7 @@ class UpdatesTab extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(l10n.taskInProgress),
-                              duration: const Duration(seconds: 4),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                           return;
@@ -185,7 +185,7 @@ class UpdatesTab extends StatelessWidget {
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text(l10n.taskInProgress),
-                                          duration: const Duration(seconds: 4),
+                                          duration: const Duration(seconds: 2),
                                         ),
                                       );
                                       return;

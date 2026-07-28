@@ -100,7 +100,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.flatpakBetterDesc),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
           action: SnackBarAction(
             label: AppLocalizations.of(context)!.switchSource,
             onPressed: () {
@@ -145,7 +145,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -235,7 +235,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.success),
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 2),
           ),
         );
       } else {
@@ -347,7 +347,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.loadError),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -366,7 +366,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.loadError),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
     }

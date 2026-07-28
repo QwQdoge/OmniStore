@@ -51,7 +51,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;

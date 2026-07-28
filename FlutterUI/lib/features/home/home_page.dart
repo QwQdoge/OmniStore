@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text(appLocalizations.installingPkg(name)),
-                    duration: const Duration(seconds: 4),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
 
