@@ -118,6 +118,7 @@ class ResourceCoordinator:
 
     async def cleanup(self):
         """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
+        cancel_exc = None
         async with self._lock:
             # 1. Task Cancellation: Kill pending async operations immediately
             if self._tasks:
@@ -147,8 +148,11 @@ class ResourceCoordinator:
                         )
                     except asyncio.TimeoutError:
                         logging.error("ResourceCoordinator: Task cleanup timed out. Some tasks may be orphaned.")
-                    except Exception as e:
-                        logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                    except BaseException as e:
+                        if isinstance(e, Exception):
+                            logging.error(f"ResourceCoordinator: Task gather error: {e}")
+                        else:
+                            cancel_exc = e
 
                 self._tasks.clear()
 
@@ -168,8 +172,11 @@ class ResourceCoordinator:
                         res = handle.stop()
                         if inspect.isawaitable(res):
                             await asyncio.wait_for(res, timeout=3.0)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: Handle cleanup failed for {type(handle).__name__}: {e}")
+                    else:
+                        if cancel_exc is None: cancel_exc = e
             self._handles.clear()
 
             # 3. File System Cleanup (Temporary files, lock files)
@@ -181,9 +188,15 @@ class ResourceCoordinator:
                             shutil.rmtree(p, ignore_errors=True)
                         else:
                             p.unlink(missing_ok=True)
-                except Exception as e:
-                    logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                except BaseException as e:
+                    if isinstance(e, Exception):
+                        logging.error(f"ResourceCoordinator: File cleanup failed for {path}: {e}")
+                    else:
+                        if cancel_exc is None: cancel_exc = e
             self._files.clear()
+
+            if cancel_exc is not None:
+                raise cancel_exc
 
 def safe_command(func):
     """
@@ -306,6 +319,10 @@ def safe_command(func):
                     self._output_command_response(resp)
                 raise
             except BaseException as e:
+                # Let CancelledError and other non-Exceptions bypass panic recovery to ensure tasks actually cancel.
+                if not isinstance(e, Exception):
+                    raise
+
                 import traceback
                 err_trace = traceback.format_exc()
                 error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
@@ -327,16 +344,11 @@ def safe_command(func):
                     self._output_command_response(resp)
                 else:
                     try:
-                        if isinstance(e, Exception):
-                            await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
-                        else:
-                            hijacked_print(f"[CRITICAL] {error_msg}")
+                        await self._handle_error(f"Command Error ({func.__name__})", e, json_mode)
                     except Exception as inner_e:
                         logging.error(f"Double fault in _handle_error: {inner_e}")
                         hijacked_print(f"[ERROR] {error_msg}")
 
-                if not isinstance(e, Exception):
-                    raise
                 return resp.model_dump(exclude_none=True) if (json_mode and is_top_level) else False
             finally:
                 self._active_commands.pop(command_id, None)
@@ -445,8 +457,11 @@ class OmnistoreBackend:
                     if self._ai:
                         try:
                             await asyncio.shield(self._ai.close())
-                        except Exception as exc:
-                            logging.debug(f"AI session cleanup failed: {exc}")
+                        except BaseException as exc:
+                            if isinstance(exc, Exception):
+                                logging.debug(f"AI session cleanup failed: {exc}")
+                            else:
+                                raise
                 finally:
                     cleanup_task = asyncio.create_task(self._resources.cleanup())
                     try:

@@ -101,6 +101,7 @@ async def _cleanup_proc(proc):
                     await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
                 except (asyncio.TimeoutError, Exception):
                     pass
+
                 if not isinstance(_exc, Exception):
                     raise _exc
     except BaseException as e:

@@ -177,3 +177,10 @@ Missing `if (!mounted) return;` checks after awaiting futures before accessing s
 
 Action:
 Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.
+## 2026-07-29 - [Zombie Process Leak on Async Cancellation]
+
+Learning:
+In Python 3.8+, `asyncio.CancelledError` inherits from `BaseException` rather than `Exception`. Therefore, error handling blocks catching `Exception` will be bypassed during task cancellation. If a process is being reaped inside an `asyncio.wait_for(...)` block and the task is cancelled, the standard timeout/exception block is skipped, skipping the escalation to `SIGKILL` and leaving zombie processes if the process ignored `SIGTERM`.
+
+Action:
+Modified `safe_subprocess` in `python/core/subprocess_utils.py` and `OmnistoreBackend` in `python/core/backend.py` to explicitly catch `BaseException` during shutdown/reaping blocks. Used `asyncio.shield` to protect the final `wait()` from the same cancellation event. Re-raised `BaseException` (like `CancelledError`) after completing the necessary zombie cleanup to ensure standard async propagation.
