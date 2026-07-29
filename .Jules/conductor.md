@@ -39,3 +39,14 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Replacing `AnimatedSwitcher` with `SmoothSizeSwitcher` for typical UI state transitions (like route loaders and dynamic button states) unifies the app's motion language and fixes potential layout jumping without redundant wrapper constraints.
 
 **Action:** Replaced plain `AnimatedSwitcher` with `SmoothSizeSwitcher` in `OmnistoreApp` and `AISettingsSection`.
+## 2024-08-01 - Avoid nesting AnimatedSwitcher in SmoothSizeSwitcher (Refinement)
+
+**Learning:** When a child widget inside `SmoothSizeSwitcher` updates (like a text label changing in `github_star_badge.dart`), do not wrap that text in an inner `AnimatedSwitcher`. Instead, apply a dynamic key to the containing widget (e.g., `ValueKey('loaded-$label')` on the parent `Row`). This signals the outer `SmoothSizeSwitcher` to handle the cross-fade animation natively, preventing redundant widget nesting and reducing layout overhead.
+
+**Action:** Removed nested `AnimatedSwitcher` from `github_star_badge.dart` and assigned a dynamic label-dependent key to its parent `Row` to preserve cross-fade transitions.
+
+## 2024-08-01 - Replace Raw AnimatedSwitcher in Route Loader
+
+**Learning:** Route loaders and top-level navigation shells (`adaptive_navigation_shell.dart`) should leverage `SmoothSizeSwitcher` instead of raw `AnimatedSwitcher`. This ensures any dynamic size changes across navigated pages are properly animated via implicit `AnimatedSize`, aligning with the app's established motion consistency rules.
+
+**Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` in the `LayoutBuilder` of `adaptive_navigation_shell.dart`.

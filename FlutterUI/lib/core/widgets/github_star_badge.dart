@@ -112,7 +112,7 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
     } else {
       final label = _formatCount(_stars!);
       content = Row(
-        key: const ValueKey('loaded'),
+        key: ValueKey('loaded-$label'),
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
@@ -121,20 +121,12 @@ class _GitHubStarBadgeState extends State<GitHubStarBadge> {
             color: scheme.tertiary,
           ),
           const SizedBox(width: 4),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            transitionBuilder: (child, animation) =>
-                ScaleTransition(scale: animation, child: child),
-            child: Text(
-              label,
-              key: ValueKey<String>(label),
-              style: TextStyle(
-                fontSize: widget.compact ? 12 : 13,
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurface,
-              ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: widget.compact ? 12 : 13,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
             ),
           ),
         ],

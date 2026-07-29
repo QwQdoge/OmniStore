@@ -9,6 +9,8 @@ class SmoothSizeSwitcher extends StatelessWidget {
   final Curve switchInCurve;
   final Curve switchOutCurve;
   final Curve sizeCurve;
+  final AnimatedSwitcherTransitionBuilder? transitionBuilder;
+  final AnimatedSwitcherLayoutBuilder? layoutBuilder;
 
   const SmoothSizeSwitcher({
     super.key,
@@ -18,6 +20,8 @@ class SmoothSizeSwitcher extends StatelessWidget {
     this.switchInCurve = Curves.easeOutCubic,
     this.switchOutCurve = Curves.fastOutSlowIn,
     this.sizeCurve = Curves.easeOutCubic,
+    this.transitionBuilder,
+    this.layoutBuilder,
   });
 
   @override
@@ -30,6 +34,8 @@ class SmoothSizeSwitcher extends StatelessWidget {
         duration: duration,
         switchInCurve: switchInCurve,
         switchOutCurve: switchOutCurve,
+        transitionBuilder: transitionBuilder ?? AnimatedSwitcher.defaultTransitionBuilder,
+        layoutBuilder: layoutBuilder ?? AnimatedSwitcher.defaultLayoutBuilder,
         child: child,
       ),
     );
