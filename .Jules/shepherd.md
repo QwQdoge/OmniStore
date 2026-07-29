@@ -71,3 +71,8 @@
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
 ## 2026-06-29 - Global SnackBar Consistency: Clipboard Feedback Duration
 - Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to const Duration(seconds: 2) in ai_dialogs.dart, app_details_header.dart, and app_details_shared.dart to unify interaction flow and prevent overlapping feedback messages.
+## 2026-06-30 - Global Dialog Consistency: Alert Dialog Content Standard
+- Identified inconsistency in how various custom `AlertDialog` widgets structure their internal content, leading to fragmented dialog presentations.
+- Updated `AITestResultDialog`, `AddSourceDialog`, `AIMarkdownDialog`, `AICliDialog` and `AIUpdateSummaryDialog` to enforce reliance on the globally consistent `DialogTheme` and standardize the structural layout.
+- For all mentioned dialogs, correctly mapped the primary display icon to the native `icon` parameter in `AlertDialog` (at size 32) and applied `headlineSmall` style with `FontWeight.w800` to the `title` parameter to guarantee prominence.
+- Enclosed technical textual outputs or logs within a `Card` utilizing the `surfaceContainerLow` color scheme, rounded at 16dp and styled with an `outlineVariant` border to present interactive information cleanly across the app.

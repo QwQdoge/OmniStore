@@ -40,6 +40,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
   Widget _buildAIMarkdown(
     AsyncSnapshot<String> snapshot,
     AppLocalizations l10n,
+    ThemeData theme,
   ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const SizedBox(
@@ -56,21 +57,38 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
       data = l10n.aiCallFailed(data.replaceFirst("AI_CALL_FAILED:", ""));
     }
 
-    return SingleChildScrollView(
+    return Card(
       key: const ValueKey('loaded'),
-      child: MarkdownBody(data: data, selectable: true),
+      color: theme.colorScheme.surfaceContainerLow,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: MarkdownBody(data: data, selectable: true),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiChangelogTitle),
-        ],
+      icon: const MagicPulseIcon(
+        icon: Icons.auto_awesome_rounded,
+        size: 32,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.aiChangelogTitle,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: SizedBox(
         width: 500,
@@ -79,7 +97,11 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
           builder: (context, snapshot) {
             return SmoothSizeSwitcher(
               alignment: Alignment.topLeft,
-              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
+              child: _buildAIMarkdown(
+                snapshot,
+                AppLocalizations.of(context)!,
+                theme,
+              ),
             );
           },
         ),
