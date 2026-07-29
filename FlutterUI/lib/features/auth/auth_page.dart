@@ -36,21 +36,26 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _savePat() async {
+    if (_isSaving) return;
     setState(() => _isSaving = true);
-    final configRepo = context.read<ConfigRepository>();
-    final config = await configRepo.loadConfig();
-    if (!mounted) return;
-    config['github'] ??= {};
-    config['github']['pat'] = _patController.text.trim();
-    await configRepo.saveConfig(config);
-    if (mounted) {
-      setState(() => _isSaving = false);
+    try {
+      final configRepo = context.read<ConfigRepository>();
+      final config = await configRepo.loadConfig();
+      if (!mounted) return;
+      config['github'] ??= {};
+      config['github']['pat'] = _patController.text.trim();
+      await configRepo.saveConfig(config);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.githubPatSaved),
           duration: const Duration(seconds: 4),
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
