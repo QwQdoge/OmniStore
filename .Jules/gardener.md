@@ -153,3 +153,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracting oversized inline dialog builders (like the `AlertDialog` used for AI connection tests) into standalone stateless widgets reduces the size of complex stateful presentation files (`ai_settings_section.dart`) and improves readability without changing behavior.
 
 **Action:** Extracted the connection test result `AlertDialog` from the `_testAIConnection` method in `ai_settings_section.dart` into a new `AITestResultDialog` widget located in `FlutterUI/lib/features/settings/presentation/widgets/ai_test_result_dialog.dart`.
+## 2024-05-24 - Extract Widgets in TasksTab
+
+**Learning:** Extracting large inline widget blocks (like the active task section, history header, and history list) into separate stateless widgets (`ActiveTaskSection`, `TaskHistoryHeader`, `TaskHistoryList`) significantly improves maintainability and readability of `tasks_tab.dart`. By using `Selector` internally within the extracted widgets, we maintain efficient rebuilds while keeping the parent file concise.
+
+**Action:** Created `active_task_section.dart`, `task_history_header.dart`, and `task_history_list.dart` in `FlutterUI/lib/features/task_manager/presentation/widgets/`. Updated `tasks_tab.dart` to compose these new widgets, greatly reducing its file size without altering behavior.
