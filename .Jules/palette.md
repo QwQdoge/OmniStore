@@ -164,3 +164,9 @@
 ## $(date +%Y-%m-%d) - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
+
+## 2026-07-29 - Material Design 3 Dialog Consistency and Layout Refinement
+
+**Learning:** When displaying status or dynamic generated messages in custom dialogs (such as AI test connections and update summaries), using standard Flutter Row layouts or text blocks can look cramped, lack vertical pacing, and violate the MD3 design standard. To align cleanly with Material 3, the native `icon` and `title` properties of `AlertDialog` should be used instead of inline layout overrides. Furthermore, wrapping technical logs or AI summaries in a zero-elevation `Card` featuring `surfaceContainerLow` and 16dp rounded corners provides comfortable visual structure and clean content boundaries.
+
+**Action:** Update custom informational and AI-based dialogs to follow native MD3 dialog layouts, keeping headings structured with `FontWeight.w800` and technical details encapsulated inside cards themed with `surfaceContainerLow`.

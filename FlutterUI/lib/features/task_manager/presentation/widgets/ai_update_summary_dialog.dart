@@ -64,30 +64,50 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiChangelogTitle),
-        ],
+      icon: MagicPulseIcon(
+        icon: Icons.auto_awesome_rounded,
+        size: 32,
+        color: theme.colorScheme.tertiary,
+      ),
+      title: Text(
+        l10n.aiChangelogTitle,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: SizedBox(
         width: 500,
-        child: FutureBuilder<String>(
-          future: _summaryFuture,
-          builder: (context, snapshot) {
-            return SmoothSizeSwitcher(
-              alignment: Alignment.topLeft,
-              child: _buildAIMarkdown(snapshot, AppLocalizations.of(context)!),
-            );
-          },
+        child: Card(
+          color: theme.colorScheme.surfaceContainerLow,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: FutureBuilder<String>(
+              future: _summaryFuture,
+              builder: (context, snapshot) {
+                return SmoothSizeSwitcher(
+                  alignment: Alignment.topLeft,
+                  child: _buildAIMarkdown(snapshot, l10n),
+                );
+              },
+            ),
+          ),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context)!.ok),
+          child: Text(l10n.ok),
         ),
       ],
     );
