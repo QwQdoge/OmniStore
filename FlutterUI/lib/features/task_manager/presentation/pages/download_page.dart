@@ -111,10 +111,12 @@ class _DownloadPageState extends State<DownloadPage>
           (_selectedSourceFilter == "unmanaged" && !app.managed) ||
           app.sources.contains(_selectedSourceFilter) ||
           app.primarySource == _selectedSourceFilter;
+      // ⚡ Bolt: Used lazy-cached lowercase fields on AppPackage to avoid
+      // redundant .toLowerCase() conversions on every keystroke/iteration
       final matchesSearch =
           _searchQuery.isEmpty ||
-          app.name.toLowerCase().contains(_searchQuery) ||
-          (app.description.toLowerCase().contains(_searchQuery));
+          app.nameLower.contains(_searchQuery) ||
+          app.descriptionLower.contains(_searchQuery);
       return matchesSource && matchesSearch;
     }).toList();
   }

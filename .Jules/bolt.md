@@ -112,3 +112,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Invoking `MediaQuery.sizeOf(context)` directly inside a stateful page's build method forces the entire page, including its heavy list views and details subtrees, to rebuild on every pixel of window resizing. Implementing a self-contained caching `ResponsiveLayoutBuilder` that clears its cache on `didUpdateWidget` but retains it during media query updates isolates the resize recalculation, skipping all subtree rebuilds unless the desktop/mobile threshold (900px) is crossed.
 
 **Action:** Replaced direct `MediaQuery` lookup in `flatpak_store_page.dart` with a custom `ResponsiveLayoutBuilder` to completely isolate resize rebuilds from parent state updates.
+
+## 2026-07-31 - AppPackage Lazy Caching Optimization
+
+**Learning:** Repeatedly calling `.toLowerCase()` on properties like name, description, and primarySource inside high-frequency search/filtering loops across list widgets (such as AppsPage, DownloadPage, and SearchPage) causes massive string allocation overhead and CPU churn. Pre-computing and caching these fields lazily on first access using Dart's `late final` keyword on the model avoids redundant calculations and yields instantaneous O(1) matching during active keystroke filtering.
+
+**Action:** Added `nameLower`, `descriptionLower`, and `primarySourceLower` lazy cached fields to `AppPackage` model and integrated them across `apps_page.dart`, `download_page.dart`, and `search_page.dart`.

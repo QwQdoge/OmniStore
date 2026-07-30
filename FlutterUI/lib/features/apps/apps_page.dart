@@ -59,9 +59,11 @@ class _AppsPageState extends State<AppsPage> {
   void _applyFilter() {
     if (!mounted) return;
     final query = _searchController.text.toLowerCase();
+    // ⚡ Bolt: Used lazy-cached lowercase fields on AppPackage to avoid
+    // redundant .toLowerCase() conversions on every keystroke/iteration
     final filtered = _apps.where((app) {
-      return app.name.toLowerCase().contains(query) ||
-          app.description.toLowerCase().contains(query);
+      return app.nameLower.contains(query) ||
+          app.descriptionLower.contains(query);
     }).toList();
     _filteredAppsNotifier.value = filtered;
   }

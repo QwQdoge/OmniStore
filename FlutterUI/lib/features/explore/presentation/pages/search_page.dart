@@ -81,8 +81,10 @@ class _SearchPageState extends State<SearchPage> {
     final browse = context.read<BrowseController>();
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
+      // ⚡ Bolt: Used lazy-cached lowercase fields on AppPackage to avoid
+      // redundant .toLowerCase() conversions on every keystroke/iteration
       filteredResults = browse.searchResults.where((app) {
-        return _selectedSources.contains(app.primarySource.toLowerCase());
+        return _selectedSources.contains(app.primarySourceLower);
       }).toList();
     }
 
@@ -207,8 +209,10 @@ class _SearchPageState extends State<SearchPage> {
                       final filtered = _selectedSources.isEmpty
                           ? results
                           : results.where((app) {
+                              // ⚡ Bolt: Used lazy-cached lowercase fields on AppPackage to avoid
+                              // redundant .toLowerCase() conversions on every keystroke/iteration
                               return _selectedSources.contains(
-                                app.primarySource.toLowerCase(),
+                                app.primarySourceLower,
                               );
                             }).toList();
 
