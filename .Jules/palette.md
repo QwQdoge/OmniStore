@@ -164,3 +164,9 @@
 ## $(date +%Y-%m-%d) - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
+
+## $(date +%Y-%m-%d) - Semantics Wrappers and Dialog Styling Polish
+
+**Learning:** Unnecessarily wrapping native Material buttons (like `IconButton`) in `Semantics(button: true, label: ...)` creates redundant nodes in the semantic tree because Material widgets inherently manage their own accessibility traits via their `tooltip`. Furthermore, custom dialogs containing top-anchored child widgets with background colors must explicitly set `clipBehavior: Clip.antiAlias` on the `Dialog` widget. Failing to do so causes the inner container's square corners to bleed over the dialog's themed rounded corners.
+
+**Action:** Removed redundant `Semantics` wrappers around `IconButton` in `TerminalDialog` and added `clipBehavior: Clip.antiAlias` to prevent corner clipping artifacts, aligning with Material Design 3 guidelines.
