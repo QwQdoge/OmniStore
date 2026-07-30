@@ -152,7 +152,6 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
       debugPrint('Process cleanup error: $e');
     }
 
-    if (!mounted) return;
     await wm.windowManager.setPreventClose(false);
     await wm.windowManager.close();
     exit(0);
