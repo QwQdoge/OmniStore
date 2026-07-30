@@ -39,3 +39,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Replacing `AnimatedSwitcher` with `SmoothSizeSwitcher` for typical UI state transitions (like route loaders and dynamic button states) unifies the app's motion language and fixes potential layout jumping without redundant wrapper constraints.
 
 **Action:** Replaced plain `AnimatedSwitcher` with `SmoothSizeSwitcher` in `OmnistoreApp` and `AISettingsSection`.
+
+## 2024-08-01 - Avoid nesting AnimatedSwitcher inside SmoothSizeSwitcher
+
+**Learning:** Since `SmoothSizeSwitcher` encapsulates both `AnimatedSize` and `AnimatedSwitcher`, nesting another `AnimatedSwitcher` inside it is redundant and adds unnecessary layout overhead. To handle inner transitions (like text changes or scaling), we can pass a `transitionBuilder` directly to the `SmoothSizeSwitcher` and use dynamic keys on parent container elements (like `Row`) rather than creating inner nested Switchers.
+
+**Action:** Added `transitionBuilder` parameter to `SmoothSizeSwitcher`. Refactored `GitHubStarBadge` to remove nested `AnimatedSwitcher` by applying `transitionBuilder` to the parent `SmoothSizeSwitcher` and using a dynamic key (`ValueKey('loaded-$label')`) on the loaded state's `Row`. Also applied an `AnimatedSwitcher` to the desktop results content in `search_results_view.dart` to prevent abrupt layout jumps when switching search states.

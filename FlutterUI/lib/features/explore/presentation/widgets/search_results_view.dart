@@ -126,7 +126,15 @@ class SearchResultsView extends StatelessWidget {
     if (isDesktop) {
       return Row(
         children: [
-          Expanded(flex: 4, child: resultsContent),
+          Expanded(
+            flex: 4,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.fastOutSlowIn,
+              child: resultsContent,
+            ),
+          ),
           const VerticalDivider(width: 1),
           Expanded(
             flex: 6,
