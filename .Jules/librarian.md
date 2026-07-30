@@ -127,3 +127,6 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 
 Learning: Stale-while-revalidate caching patterns can leave the UI out of sync if the controller does not explicitly await the background fetch triggered by the cache hit. Furthermore, async updates can trigger `notifyListeners` after a controller has been disposed, leading to lifecycle crashes.
 Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it inside `BrowseController.fetchRecommendations` to push fresh data to the UI. Added standard `_disposed` checks in `BrowseController` overriding `dispose()` and `notifyListeners()` to ensure safe async state updates.
+## 2024-05-24 - Async lifecycle safety and State mutex
+Learning: Applied _disposed check in notifyListeners and dispose methods across NavigationController, SettingsController, and AuthService. Implemented _isBusy state mutex in AuthService to prevent duplicate execution of signIn and signOut. Added error handling around Supabase initialization to avoid avalanche failures.
+Action: Always check if the object is disposed before calling notifyListeners. Wrap external library initializations in try-catch. Use state mutex for sensitive async operations.

@@ -11,6 +11,7 @@ class SettingsController with ChangeNotifier {
   Map<String, dynamic> _config = {};
   bool _isAIEnabled = false;
   bool _isRailExpanded = true;
+  bool _disposed = false;
 
   SettingsController(this._configRepository);
 
@@ -293,5 +294,18 @@ class SettingsController with ChangeNotifier {
     config['ui'] = Map<String, dynamic>.from(config['ui'] ?? {});
     config['ui']['font_scale'] = value;
     await updateConfig(config);
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }
