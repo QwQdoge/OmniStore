@@ -164,3 +164,9 @@
 ## $(date +%Y-%m-%d) - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
+
+## 2026-07-28 - Custom Dialogs MD3 Polish (Terminal & AI Testing)
+
+**Learning:** Custom dialogs that display complex status messages or logging info (e.g., terminal output or connection testing summaries) should conform strictly to Material Design 3 guidelines. Instead of custom header bars, rely on the native `icon` and `title` properties of `AlertDialog` for semantic alignment, pair them with leading icons, and wrap the terminal/message output inside zero-elevation `Card` elements using `surfaceContainerLow` and a consistent 16dp rounded border radius. This establishes unified product consistency and predictable layout pacing across all dialog modules.
+
+**Action:** Ensure all status-reporting, logging, or AI test-result dialogs utilize the native `icon`/`title` fields of `AlertDialog`, with logs/messages structured inside a rounded (16dp) `Card` using the MD3 `surfaceContainerLow` color scheme token.
