@@ -112,3 +112,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Invoking `MediaQuery.sizeOf(context)` directly inside a stateful page's build method forces the entire page, including its heavy list views and details subtrees, to rebuild on every pixel of window resizing. Implementing a self-contained caching `ResponsiveLayoutBuilder` that clears its cache on `didUpdateWidget` but retains it during media query updates isolates the resize recalculation, skipping all subtree rebuilds unless the desktop/mobile threshold (900px) is crossed.
 
 **Action:** Replaced direct `MediaQuery` lookup in `flatpak_store_page.dart` with a custom `ResponsiveLayoutBuilder` to completely isolate resize rebuilds from parent state updates.
+## 2026-08-01 - SearchPage Selector & MediaQuery Optimization (Extracted ResponsiveLayoutBuilder)
+
+**Learning:** Placing `MediaQuery.sizeOf(context)` inside the `selector` function of a `Selector` widget forces the entire `Selector` (and the `search_page` itself indirectly) to rebuild on every pixel of window resizing, bypassing the intended optimization.
+
+**Action:** Extracted `ResponsiveLayoutBuilder` into `core/widgets/` for reusability. Wrapped the `Selector` in `SearchPage` with `ResponsiveLayoutBuilder`, effectively isolating the MediaQuery dependency from the Selector's state checks.

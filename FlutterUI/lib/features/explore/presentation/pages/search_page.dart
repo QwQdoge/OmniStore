@@ -9,6 +9,7 @@ import "package:frontend/features/explore/presentation/widgets/discovery_content
 import "package:frontend/features/explore/presentation/widgets/search_filters.dart";
 import "package:frontend/features/explore/presentation/widgets/search_results_view.dart";
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/widgets/responsive_layout_builder.dart';
 
 class SearchPage extends StatefulWidget {
   final bool autoFocus;
@@ -192,51 +193,51 @@ class _SearchPageState extends State<SearchPage> {
               switchOutCurve: Curves.fastOutSlowIn,
               child: _showDiscovery
                   ? _buildDiscovery(l10n)
-                  : Selector<
-                      BrowseController,
-                      ({
-                        List<AppPackage> filteredResults,
-                        bool isSearching,
-                        bool isDesktop,
-                      })
-                    >(
-                    selector: (context, b) {
-                      final results = b.searchResults;
-                      final isDesktop = MediaQuery.sizeOf(context).width > 900;
+                  : ResponsiveLayoutBuilder(
+                      builder: (context, isDesktop) {
+                        return Selector<
+                            BrowseController,
+                            ({
+                              List<AppPackage> filteredResults,
+                              bool isSearching,
+                            })
+                          >(
+                          selector: (context, b) {
+                            final results = b.searchResults;
 
-                      final filtered = _selectedSources.isEmpty
-                          ? results
-                          : results.where((app) {
-                              return _selectedSources.contains(
-                                app.primarySource.toLowerCase(),
-                              );
-                            }).toList();
+                            final filtered = _selectedSources.isEmpty
+                                ? results
+                                : results.where((app) {
+                                    return _selectedSources.contains(
+                                      app.primarySource.toLowerCase(),
+                                    );
+                                  }).toList();
 
-                      return (
-                        filteredResults: filtered,
-                        isSearching: b.isSearching,
-                        isDesktop: isDesktop,
-                      );
-                    },
-                    shouldRebuild: (prev, next) {
-                      return prev.isSearching != next.isSearching ||
-                          prev.isDesktop != next.isDesktop ||
-                          !const IterableEquality().equals(
-                            prev.filteredResults,
-                            next.filteredResults,
-                          );
-                    },
-                    builder: (context, data, _) {
-                      return SearchResultsView(
-                        filteredResults: data.filteredResults,
-                        isSearching: data.isSearching,
-                        isDesktop: data.isDesktop,
-                        searchController: _searchController,
-                        performSearch: _performSearch,
-                        l10n: l10n,
-                      );
-                    },
-                  ),
+                            return (
+                              filteredResults: filtered,
+                              isSearching: b.isSearching,
+                            );
+                          },
+                          shouldRebuild: (prev, next) {
+                            return prev.isSearching != next.isSearching ||
+                                !const IterableEquality().equals(
+                                  prev.filteredResults,
+                                  next.filteredResults,
+                                );
+                          },
+                          builder: (context, data, _) {
+                            return SearchResultsView(
+                              filteredResults: data.filteredResults,
+                              isSearching: data.isSearching,
+                              isDesktop: isDesktop,
+                              searchController: _searchController,
+                              performSearch: _performSearch,
+                              l10n: l10n,
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
           ),
         ],
