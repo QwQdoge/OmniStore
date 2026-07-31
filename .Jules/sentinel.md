@@ -177,3 +177,10 @@ Missing `if (!mounted) return;` checks after awaiting futures before accessing s
 
 Action:
 Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.
+## 2026-07-31 - [SettingsController Async Lifecycle Safety]
+
+Learning:
+ChangeNotifier controllers that perform asynchronous operations and subsequently call `notifyListeners()` (e.g. `updateConfig` in `SettingsController`) are vulnerable to lifecycle crashes if the controller is disposed before the async operation completes and attempts to notify.
+
+Action:
+Implemented a `_disposed` flag in `SettingsController`, setting it to true by overriding `dispose()`. Overrode `notifyListeners()` to wrap the `super.notifyListeners()` call in an `if (!_disposed)` check to safely drop state updates for disposed instances, preventing "A [ChangeNotifier] was used after being disposed" errors.
