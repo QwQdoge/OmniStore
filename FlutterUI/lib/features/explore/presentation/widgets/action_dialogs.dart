@@ -103,6 +103,94 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
   }
 }
 
+class _DecisionSectionCard extends StatelessWidget {
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final BorderSide? borderSide;
+  final IconData icon;
+  final String title;
+  final List<dynamic> items;
+
+  const _DecisionSectionCard({
+    required this.backgroundColor,
+    required this.foregroundColor,
+    this.borderSide,
+    required this.icon,
+    required this.title,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty && title.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      color: backgroundColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: borderSide ?? BorderSide.none,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  color: foregroundColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: foregroundColor,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (items.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              for (final item in items)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '• ',
+                        style: TextStyle(
+                          color: foregroundColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          item.toString(),
+                          style: TextStyle(
+                            color: foregroundColor,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class InstallationDecisionDialog extends StatelessWidget {
   final Map<String, dynamic> decision;
 
@@ -135,198 +223,38 @@ class InstallationDecisionDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (recommended != null) ...[
-              Card(
-                color: theme.colorScheme.primaryContainer,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.recommend_rounded,
-                            color: theme.colorScheme.onPrimaryContainer,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              localizations.recommendedSource(recommended),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: theme.colorScheme.onPrimaryContainer,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if ((decision['reasons'] as List? ?? const []).isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        for (final reason in (decision['reasons'] as List? ?? const []))
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4, left: 4),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '• ',
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    reason.toString(),
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onPrimaryContainer,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
+              _DecisionSectionCard(
+                backgroundColor: theme.colorScheme.primaryContainer,
+                foregroundColor: theme.colorScheme.onPrimaryContainer,
+                icon: Icons.recommend_rounded,
+                title: localizations.recommendedSource(recommended),
+                items: decision['reasons'] as List? ?? const [],
               ),
             ],
             if ((decision['preflightChecks'] as List? ?? const []).isNotEmpty) ...[
               const SizedBox(height: 16),
-              Card(
-                color: theme.colorScheme.surfaceContainerLow,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-                  ),
+              _DecisionSectionCard(
+                backgroundColor: theme.colorScheme.surfaceContainerLow,
+                foregroundColor: theme.colorScheme.onSurface,
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.playlist_add_check_rounded,
-                            color: theme.colorScheme.onSurface,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            localizations.preflightChecks,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.onSurface,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      for (final check in (decision['preflightChecks'] as List? ?? const []))
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4, left: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '• ',
-                                style: TextStyle(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  check.toString(),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                icon: Icons.playlist_add_check_rounded,
+                title: localizations.preflightChecks,
+                items: decision['preflightChecks'] as List? ?? const [],
               ),
             ],
             if ((decision['risks'] as List? ?? const []).isNotEmpty) ...[
               const SizedBox(height: 16),
-              Card(
-                color: theme.colorScheme.errorContainer,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: theme.colorScheme.error.withValues(alpha: 0.3),
-                  ),
+              _DecisionSectionCard(
+                backgroundColor: theme.colorScheme.errorContainer,
+                foregroundColor: theme.colorScheme.onErrorContainer,
+                borderSide: BorderSide(
+                  color: theme.colorScheme.error.withValues(alpha: 0.3),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: theme.colorScheme.onErrorContainer,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            localizations.potentialRisks,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.onErrorContainer,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      for (final risk in (decision['risks'] as List? ?? const []))
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4, left: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '• ',
-                                style: TextStyle(
-                                  color: theme.colorScheme.onErrorContainer,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  risk.toString(),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onErrorContainer,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                icon: Icons.warning_amber_rounded,
+                title: localizations.potentialRisks,
+                items: decision['risks'] as List? ?? const [],
               ),
             ],
           ],

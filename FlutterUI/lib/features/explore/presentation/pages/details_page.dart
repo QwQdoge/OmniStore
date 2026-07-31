@@ -201,14 +201,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     final variantMap = _getVariantForSource(_selectedSource);
     String? variantId = variantMap?.id;
-    if (variantId == null || variantId.isEmpty) {
-      try {
-        final v = widget.app.variants.firstWhere(
-          (v) => v.source == _selectedSource,
-        );
-        variantId = v.id;
-      } catch (_) {}
-    }
     final String targetIdentifier = (variantId != null && variantId.isNotEmpty)
         ? variantId
         : widget.app.name;
@@ -395,39 +387,20 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         }
       }
     }
+    for (var v in widget.app.variants) {
+      if (v.source == source) {
+        return v;
+      }
+    }
     return null;
   }
 
   String? _getVersionForSource(String source) {
-    if (_extraDetails != null) {
-      for (var v in _extraDetails!.variants) {
-        if (v.source == source) {
-          return v.version;
-        }
-      }
-    }
-    for (var v in widget.app.variants) {
-      if (v.source == source) {
-        return v.version;
-      }
-    }
-    return null;
+    return _getVariantForSource(source)?.version;
   }
 
   bool _isSourceInstalled(String source) {
-    if (_extraDetails != null) {
-      for (var v in _extraDetails!.variants) {
-        if (v.source == source) {
-          return v.installed;
-        }
-      }
-    }
-    for (var v in widget.app.variants) {
-      if (v.source == source) {
-        return v.installed;
-      }
-    }
-    return false;
+    return _getVariantForSource(source)?.installed ?? false;
   }
 
   void _showScreenshotViewer(String url) {
