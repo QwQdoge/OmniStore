@@ -177,3 +177,11 @@ Missing `if (!mounted) return;` checks after awaiting futures before accessing s
 
 Action:
 Only ensure that async gaps in StatefulWidgets are immediately followed by `if (!mounted) return;` checks *when* they are followed by mutating state or accessing the context. Added a missing `if (!mounted) return;` check before using `ScaffoldMessenger.of(context)` in `add_source_dialog.dart` to prevent potential lifecycle crashes when adding a custom source.
+
+## 2026-07-26 - [Exit Flow Async Lifecycle Tail Guard Refinement]
+
+Learning:
+Adding `if (!mounted) return;` at the very end of a function or right before vital cleanup tasks (like window closing/exiting) can cause regressions where cleanup is skipped entirely if the widget unmounts. This is an unnecessary "paranoia fix". Async gaps should only be followed by `mounted` checks when mutating state or accessing the context.
+
+Action:
+Removed the unnecessary `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `_handleFullExit` within `FlutterUI/lib/app/main_navigation.dart`. This ensures that final window destruction and exit commands are executed even if the widget unmounts during the backend shutdown awaits.
