@@ -1156,5 +1156,13 @@
   "continueInstallation": "Continue",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "changeRecommendation": "Change recommendation",
+  "@changeRecommendation": {
+    "description": "Label for changing AI recommendation"
+  },
+  "aiPickDisclaimer": "Generated based on your search, installation history, and currently available sources; will not affect your installation choices.",
+  "@aiPickDisclaimer": {
+    "description": "Disclaimer for AI recommendations"
   }
 }

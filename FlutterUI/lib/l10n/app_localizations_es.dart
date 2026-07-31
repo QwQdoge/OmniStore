@@ -1277,4 +1277,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get continueInstallation => 'Continuar Instalación';
+
+  @override
+  String get changeRecommendation => 'Cambiar recomendación';
+
+  @override
+  String get aiPickDisclaimer =>
+      'Generado en función de su búsqueda, historial de instalación y fuentes disponibles actualmente; no afectará sus opciones de instalación.';
 }

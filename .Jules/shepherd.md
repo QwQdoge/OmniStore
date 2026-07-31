@@ -71,3 +71,8 @@
 - Replaced all instances of `ElevatedButton` and `ElevatedButton.icon` in `TasksTab` and `UpdatesTab` with `FilledButton` and `FilledButton.icon`. This unifies the primary action button style across the app since `FilledButton` is explicitly themed in `omnistore_theme.dart` and `ElevatedButton` is not.
 ## 2026-06-29 - Global SnackBar Consistency: Clipboard Feedback Duration
 - Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to const Duration(seconds: 2) in ai_dialogs.dart, app_details_header.dart, and app_details_shared.dart to unify interaction flow and prevent overlapping feedback messages.
+## 2026-06-30 - Terminology Consistency: AI Pick Section Standardization
+- Replaced hardcoded Chinese strings in `FlutterUI/lib/features/home/widgets/ai_pick_section.dart` with localized keys to ensure terminology consistency and proper internationalization.
+- Replaced `"换一个推荐"` with `AppLocalizations.of(context)!.changeRecommendation`.
+- Replaced `"根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。"` with `AppLocalizations.of(context)!.aiPickDisclaimer`.
+- Ensured these new keys were added to all `.arb` files and generated correctly via `flutter gen-l10n`.

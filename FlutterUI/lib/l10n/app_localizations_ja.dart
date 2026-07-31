@@ -1187,4 +1187,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get continueInstallation => 'インストールを続行';
+
+  @override
+  String get changeRecommendation => '推奨事項を変更する';
+
+  @override
+  String get aiPickDisclaimer =>
+      '検索、インストール履歴、現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。';
 }
