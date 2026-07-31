@@ -385,7 +385,7 @@
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
-  "aiCorrection": "您是指：",
+  "aiCorrection": "您是指？",
   "@aiCorrection": {
     "description": "Suggestion text for AI correction"
   },
@@ -480,11 +480,11 @@
   "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
   "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
   "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 留空，OpenAI 填寫 sk-xxx",
+  "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 需填寫 sk-xxx",
   "howToGetApiKey": "如何獲取 API 金鑰？",
   "howToGetApiKeyDesc": "1. Ollama (本地)：直接執行，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填寫金鑰。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：確保 Ollama 已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+  "aiOllamaNote": "確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",

@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Variantes disponibles';
+  String get variant => 'Fuente de instalación';
 
   @override
   String get version => 'Versión';
@@ -151,7 +151,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String confirmActionMsg(String name) {
-    return '¿Deseas realizar esta acción en $name?';
+    return '¿Confirmas que deseas realizar esta acción en $name?';
   }
 
   @override
@@ -218,7 +218,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updates => 'Actualizaciones';
 
   @override
-  String get upToDate => 'Todas las aplicaciones están al día';
+  String get upToDate => 'Todas las aplicaciones están actualizadas';
 
   @override
   String get checkUpdates => 'Buscar actualizaciones';

@@ -27,9 +27,17 @@ polish('es', {
     "variant": "Fuente de instalación"
 })
 
+# Simplified Chinese Polishing
+polish('zh', {
+    "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
+    "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。"
+})
+
 # Traditional Chinese Polishing (Consistency with zh)
 polish('zh_Hant', {
     "forYou": "為您推薦",
     "aiThinking": "AI 正在思考...",
-    "aiCorrection": "您是指？"
+    "aiCorrection": "您是指？",
+    "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 需填寫 sk-xxx",
+    "aiOllamaNote": "確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。"
 })
