@@ -39,3 +39,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** Replacing `AnimatedSwitcher` with `SmoothSizeSwitcher` for typical UI state transitions (like route loaders and dynamic button states) unifies the app's motion language and fixes potential layout jumping without redundant wrapper constraints.
 
 **Action:** Replaced plain `AnimatedSwitcher` with `SmoothSizeSwitcher` in `OmnistoreApp` and `AISettingsSection`.
+
+## 2024-09-12 - Exposing transitionBuilder in SmoothSizeSwitcher
+
+**Learning:** `SmoothSizeSwitcher` can fully replace `AnimatedSwitcher` across the entire app if it exposes the `transitionBuilder` property. This allows for custom transitions (like `RotationTransition` or `ScaleTransition`) while maintaining the unified MD3 layout-sizing wrapper provided by `SmoothSizeSwitcher`.
+
+**Action:** Updated `SmoothSizeSwitcher` to accept an optional `transitionBuilder` parameter (defaulting to `AnimatedSwitcher.defaultTransitionBuilder`). Replaced all remaining raw `AnimatedSwitcher` instances in `github_star_badge.dart`, `smooth_progress_bar.dart`, `hamburger_button.dart`, `adaptive_navigation_shell.dart`, and `search_page.dart` with `SmoothSizeSwitcher`.

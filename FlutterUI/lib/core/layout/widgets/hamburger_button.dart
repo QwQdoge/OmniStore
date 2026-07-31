@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class HamburgerButton extends StatelessWidget {
   const HamburgerButton({
@@ -35,7 +36,7 @@ class HamburgerButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          icon: AnimatedSwitcher(
+          icon: SmoothSizeSwitcher(
             duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.fastOutSlowIn,
