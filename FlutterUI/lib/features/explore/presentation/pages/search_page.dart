@@ -186,7 +186,7 @@ class _SearchPageState extends State<SearchPage> {
                 : const SizedBox.shrink(key: ValueKey('empty_filters')),
           ),
           Expanded(
-            child: AnimatedSwitcher(
+            child: SmoothSizeSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,

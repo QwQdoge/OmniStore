@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/task_state.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 /// A premium progress bar that supports smooth transitions, customizable theme styling,
@@ -165,7 +166,7 @@ class _TaskHeaderRow extends StatelessWidget {
             ),
           ),
         Expanded(
-          child: AnimatedSwitcher(
+          child: SmoothSizeSwitcher(
             duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.fastOutSlowIn,
@@ -241,7 +242,7 @@ class _ProgressIndicatorStack extends StatelessWidget {
           height: height,
           child: ClipRRect(
             borderRadius: borderRadius,
-            child: AnimatedSwitcher(
+            child: SmoothSizeSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.fastOutSlowIn,
