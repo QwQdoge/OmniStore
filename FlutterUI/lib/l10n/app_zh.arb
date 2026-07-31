@@ -531,7 +531,7 @@
   "flatpakBetterDesc": "发现此应用有 Flatpak 软件源，通常更稳定。",
   "aiAnalysisPrompt": "发现错误日志，需要 AI 分析吗？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理无用依赖（孤立软件包）",
+  "cleanOrphans": "清理孤立软件包",
   "securityWarning": "安全风险提示",
   "aurSecurityDesc": "AUR 是由社区维护的软件源。由于任何人都可以上传软件包，其中可能包含不安全的代码。建议在安装前仔细检查 PKGBUILD。",
   "continueInstall": "继续安装",

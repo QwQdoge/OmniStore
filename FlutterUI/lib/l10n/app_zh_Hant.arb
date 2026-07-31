@@ -530,7 +530,7 @@
   "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理無用依賴（孤立套件）",
+  "cleanOrphans": "清理孤立套件",
   "securityWarning": "安全風險提示",
   "aurSecurityDesc": "AUR 是由社群維護的軟體存放庫。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
