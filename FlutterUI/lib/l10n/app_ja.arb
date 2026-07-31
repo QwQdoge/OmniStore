@@ -1156,5 +1156,13 @@
   "continueInstallation": "インストールを続行",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "changeRecommendation": "推奨事項を変更する",
+  "@changeRecommendation": {
+    "description": "Label for changing AI recommendation"
+  },
+  "aiPickDisclaimer": "検索、インストール履歴、現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。",
+  "@aiPickDisclaimer": {
+    "description": "Disclaimer for AI recommendations"
   }
 }

@@ -2310,6 +2310,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueInstallation;
+
+  /// Label for changing AI recommendation
+  ///
+  /// In en, this message translates to:
+  /// **'Change recommendation'**
+  String get changeRecommendation;
+
+  /// Disclaimer for AI recommendations
+  ///
+  /// In en, this message translates to:
+  /// **'Generated based on your search, installation history, and currently available sources; will not affect your installation choices.'**
+  String get aiPickDisclaimer;
 }
 
 class _AppLocalizationsDelegate

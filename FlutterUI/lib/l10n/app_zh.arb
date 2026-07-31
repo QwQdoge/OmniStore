@@ -1160,5 +1160,13 @@
   "continueInstallation": "继续安装",
   "@continueInstallation": {
     "description": "Description for continueInstallation"
+  },
+  "changeRecommendation": "换一个推荐",
+  "@changeRecommendation": {
+    "description": "Label for changing AI recommendation"
+  },
+  "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。",
+  "@aiPickDisclaimer": {
+    "description": "Disclaimer for AI recommendations"
   }
 }

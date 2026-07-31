@@ -1181,6 +1181,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get continueInstallation => '继续安装';
+
+  @override
+  String get changeRecommendation => '换一个推荐';
+
+  @override
+  String get aiPickDisclaimer => '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2360,4 +2366,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get continueInstallation => '繼續安裝';
+
+  @override
+  String get changeRecommendation => '換一個推薦';
+
+  @override
+  String get aiPickDisclaimer => '根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。';
 }
