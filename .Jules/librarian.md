@@ -127,3 +127,12 @@ Similar to navigation and settings controllers, using `context.watch<TaskControl
 
 Learning: Stale-while-revalidate caching patterns can leave the UI out of sync if the controller does not explicitly await the background fetch triggered by the cache hit. Furthermore, async updates can trigger `notifyListeners` after a controller has been disposed, leading to lifecycle crashes.
 Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it inside `BrowseController.fetchRecommendations` to push fresh data to the UI. Added standard `_disposed` checks in `BrowseController` overriding `dispose()` and `notifyListeners()` to ensure safe async state updates.
+## 2026-07-20 - State Management: Auth Service Async Safety and Memory Leak Prevention
+
+**Learning:** When using long-lived `StreamSubscription`s (like Supabase auth streams or deep link streams) inside a `ChangeNotifier` service, these must be strictly saved as properties and cancelled during `dispose()` to prevent memory leaks and "dirty" listeners. Additionally, invoking `notifyListeners()` within async callbacks after a service has been disposed causes lifecycle exceptions, and asynchronous state methods like `signIn()` and `signOut()` must utilize mutex flags (`_isBusy`) to avoid duplicate executions.
+
+**Action:**
+- Introduced a `_isBusy` boolean mutex to `signIn()` and `signOut()` inside `AuthService`.
+- Added a `_disposed` boolean flag, setting it to `true` inside `dispose()`, and overrode `notifyListeners()` to guard against async updates after disposal.
+- Captured `Supabase.instance.client.auth.onAuthStateChange.listen` into `_authSubscription` and properly cancelled both `_authSubscription` and `_linkSubscription` inside `dispose()`.
+- Guarded external stream and plugin initializations (Supabase, AppLinks) with `try-catch` blocks to prevent initialization avalanche failures.
