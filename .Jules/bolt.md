@@ -117,3 +117,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Placing `MediaQuery.sizeOf(context)` inside the `selector` function of a `Selector` widget forces the entire `Selector` (and the `search_page` itself indirectly) to rebuild on every pixel of window resizing, bypassing the intended optimization.
 
 **Action:** Extracted `ResponsiveLayoutBuilder` into `core/widgets/` for reusability. Wrapped the `Selector` in `SearchPage` with `ResponsiveLayoutBuilder`, effectively isolating the MediaQuery dependency from the Selector's state checks.
+
+## 2026-07-30 - Flutter Performance: AppPackage Lazy Caching & Selector Rebuild Optimizations
+
+**Learning:** Invoking string manipulation methods like `toLowerCase()` on every keystroke/character typed in hot-path search and filtering loops (such as in `AppsPage`, `SearchPage`, and `DownloadPage`) introduces unnecessary CPU cycles and can lead to UI jank. Utilizing lazy computation with Dart's `late final` fields in immutable models (e.g., `AppPackage.nameLower`, `descriptionLower`, and `primarySourceLower`) pre-computes these values on demand and caches them permanently, avoiding redundant string allocations. Additionally, when returning a filtered list from a `Selector`, using a type-specific equality matcher (like `const ListEquality<AppPackage>().equals`) prevents unnecessary widget subtree rebuilds when the underlying lists remain identical.
+
+**Action:** Standardize lazy caching of lowercase representation fields in all list models where search/filtering are frequently executed. Implement exact list equality checks in Providers' Selectors when yielding filtered sublists.

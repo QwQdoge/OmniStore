@@ -104,6 +104,10 @@ class AppPackage {
 
   List<String> get sources => variants.map((v) => v.source).toList();
 
+  late final String nameLower = name.toLowerCase();
+  late final String descriptionLower = description.toLowerCase();
+  late final String primarySourceLower = primarySource.toLowerCase();
+
   factory AppPackage.fromJson(Map<String, dynamic> json) {
     var variantsData = json['variants'] is List ? json['variants'] as List : [];
     List<AppVariant> parsedVariants = variantsData
