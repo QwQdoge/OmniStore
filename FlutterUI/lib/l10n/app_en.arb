@@ -1164,5 +1164,76 @@
   "aiPickDisclaimer": "Generated based on your search, installation history, and currently available sources; will not affect your installation choices.",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "checkingEnvironment": "Checking environment status...",
+  "@checkingEnvironment": {
+    "description": "Description for checkingEnvironment"
+  },
+  "failedToFetchEnv": "Failed to fetch environment details.",
+  "@failedToFetchEnv": {
+    "description": "Description for failedToFetchEnv"
+  },
+  "bootstrapProgress": "Bootstrap progress:",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "System details:",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiEnableDesc": "Enable intelligence integration features",
+  "@aiEnableDesc": {
+    "description": "Description for aiEnableDesc"
+  },
+  "ollamaLocalOffline": "Ollama (Local / Offline)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (Cloud)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "endpointHint": "e.g. https://api.openai.com/v1",
+  "@endpointHint": {
+    "description": "Description for endpointHint"
+  },
+  "onboardingStep": "Step {current} of {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecommendationFallback": "Unable to generate personalized recommendations at the moment. You can still browse featured selections or try again later.",
+  "@aiRecommendationFallback": {
+    "description": "Description for aiRecommendationFallback"
+  },
+  "quickStart": "Quick Start",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importPackagesSubtitle": "Import your favorite packages from a list",
+  "@importPackagesSubtitle": {
+    "description": "Description for importPackagesSubtitle"
+  },
+  "noTrendingData": "No trending data available; it will automatically update after the network recovers.",
+  "@noTrendingData": {
+    "description": "Description for noTrendingData"
+  },
+  "noForYouData": "Personalized recommendations will appear here after you search or install apps.",
+  "@noForYouData": {
+    "description": "Description for noForYouData"
+  },
+  "editorsChoice": "Editors' Choice",
+  "@editorsChoice": {
+    "description": "Description for editorsChoice"
+  },
+  "maintainedByOmniStore": "Maintained by OmniStore, always visible offline",
+  "@maintainedByOmniStore": {
+    "description": "Description for maintainedByOmniStore"
   }
 }

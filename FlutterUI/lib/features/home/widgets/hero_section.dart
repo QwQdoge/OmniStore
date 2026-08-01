@@ -17,13 +17,14 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (apps.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 32),
         SectionHeader(
-          title: '${AppLocalizations.of(context)!.featured} · 编辑推荐',
-          subtitle: '由 OmniStore 维护，离线时也始终可见',
+          title: '${l10n.featured} · ${l10n.editorsChoice}',
+          subtitle: l10n.maintainedByOmniStore,
         ),
         const SizedBox(height: 16),
         SizedBox(

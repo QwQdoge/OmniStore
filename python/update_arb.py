@@ -46,7 +46,23 @@ NEW_KEYS_EN = {
     "recommendedSource": "Recommended Source: {source}",
     "preflightChecks": "Preflight Checks",
     "potentialRisks": "Potential Risks",
-    "continueInstallation": "Continue"
+    "continueInstallation": "Continue",
+    "checkingEnvironment": "Checking environment status...",
+    "failedToFetchEnv": "Failed to fetch environment details.",
+    "bootstrapProgress": "Bootstrap progress:",
+    "systemDetails": "System details:",
+    "aiEnableDesc": "Enable intelligence integration features",
+    "ollamaLocalOffline": "Ollama (Local / Offline)",
+    "openaiCloud": "OpenAI API (Cloud)",
+    "endpointHint": "e.g. https://api.openai.com/v1",
+    "onboardingStep": "Step {current} of {total}",
+    "aiRecommendationFallback": "Unable to generate personalized recommendations at the moment. You can still browse featured selections or try again later.",
+    "quickStart": "Quick Start",
+    "importPackagesSubtitle": "Import your favorite packages from a list",
+    "noTrendingData": "No trending data available; it will automatically update after the network recovers.",
+    "noForYouData": "Personalized recommendations will appear here after you search or install apps.",
+    "editorsChoice": "Editors' Choice",
+    "maintainedByOmniStore": "Maintained by OmniStore, always visible offline"
 }
 
 NEW_KEYS_ZH = {
@@ -72,11 +88,11 @@ NEW_KEYS_ZH = {
     "aiAssistantDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
     "aiProviderDesc": "选择您的 AI 模型来源 (本地或云端)",
     "aiEndpointHelper": "Ollama 默认为 http://localhost:11434",
-    "aiApiKeyHelper": "Ollama 留空，OpenAI 填写 sk-xxx",
+    "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
     "howToGetApiKey": "如何获取 API 密钥？",
     "howToGetApiKeyDesc": "1. Ollama (本地)：直接运行，无需密钥。2. 云端 (OpenAI)：前往官网创建并填写密钥。",
     "gotIt": "知道了",
-    "aiOllamaNote": "提示：确保 Ollama 已在后台运行并开启了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+    "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。",
     "enterStore": "进入商店",
     "nextStep": "下一步",
     "resetCache": "重置缓存与历史记录",
@@ -92,7 +108,23 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐来源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "checkingEnvironment": "正在检查环境状态...",
+    "failedToFetchEnv": "获取环境详情失败。",
+    "bootstrapProgress": "配置进度：",
+    "systemDetails": "系统详情：",
+    "aiEnableDesc": "启用智能集成功能",
+    "ollamaLocalOffline": "Ollama (本地 / 离线)",
+    "openaiCloud": "OpenAI API (云端)",
+    "endpointHint": "例如：https://api.openai.com/v1",
+    "onboardingStep": "第 {current} / {total} 步",
+    "aiRecommendationFallback": "暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。",
+    "quickStart": "快速开始",
+    "importPackagesSubtitle": "从列表导入你常用的软件包",
+    "noTrendingData": "暂无热门数据；网络恢复后会自动更新。",
+    "noForYouData": "继续搜索或安装应用后，这里会显示个性化建议。",
+    "editorsChoice": "编辑推荐",
+    "maintainedByOmniStore": "由 OmniStore 维护，离线时也始终可见"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -118,11 +150,11 @@ NEW_KEYS_ZH_HANT = {
     "aiAssistantDesc": "啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷",
     "aiProviderDesc": "選擇您的 AI 模型來源 (本地或雲端)",
     "aiEndpointHelper": "Ollama 預設為 http://localhost:11434",
-    "aiApiKeyHelper": "Ollama 留空，OpenAI 填寫 sk-xxx",
+    "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 需填寫 sk-xxx",
     "howToGetApiKey": "如何獲取 API 金鑰？",
     "howToGetApiKeyDesc": "1. Ollama (本地)：直接執行，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填寫金鑰。",
     "gotIt": "知道了",
-    "aiOllamaNote": "提示：確保 Ollama 已在背景執行並開啟了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+    "aiOllamaNote": "確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。",
     "enterStore": "進入商店",
     "nextStep": "下一步",
     "resetCache": "重置快取與歷史記錄",
@@ -138,7 +170,23 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦來源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "checkingEnvironment": "正在檢查環境狀態...",
+    "failedToFetchEnv": "獲取環境詳情失敗。",
+    "bootstrapProgress": "配置進度：",
+    "systemDetails": "系統詳情：",
+    "aiEnableDesc": "啟用智慧整合功能",
+    "ollamaLocalOffline": "Ollama (本地 / 離線)",
+    "openaiCloud": "OpenAI API (雲端)",
+    "endpointHint": "例如：https://api.openai.com/v1",
+    "onboardingStep": "第 {current} / {total} 步",
+    "aiRecommendationFallback": "暫時無法生成個性化推薦。您仍可瀏覽編輯精選，或稍後重試。",
+    "quickStart": "快速開始",
+    "importPackagesSubtitle": "從列表匯入您常用的套件",
+    "noTrendingData": "暫無熱門數據；網路恢復後會自動更新。",
+    "noForYouData": "繼續搜尋或安裝應用程式後，這裡會顯示個性化建議。",
+    "editorsChoice": "編輯推薦",
+    "maintainedByOmniStore": "由 OmniStore 維護，離線時也始終可見"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +232,23 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "checkingEnvironment": "環境ステータスを確認中...",
+    "failedToFetchEnv": "環境の詳細の取得に失敗しました。",
+    "bootstrapProgress": "セットアップの進行状況:",
+    "systemDetails": "システム詳細:",
+    "aiEnableDesc": "インテリジェント統合機能を有効にする",
+    "ollamaLocalOffline": "Ollama (ローカル / オフライン)",
+    "openaiCloud": "OpenAI API (クラウド)",
+    "endpointHint": "例: https://api.openai.com/v1",
+    "onboardingStep": "ステップ {current} / {total}",
+    "aiRecommendationFallback": "現在、パーソナライズされたおすすめを生成できません。引き続きおすすめのセレクションを閲覧するか、後でもう一度お試しください。",
+    "quickStart": "クイックスタート",
+    "importPackagesSubtitle": "リストからお気に入りのパッケージをインポート",
+    "noTrendingData": "急上昇データはありません。ネットワークが回復すると自動的に更新されます。",
+    "noForYouData": "アプリを検索またはインストールすると、ここにパーソナライズされたおすすめが表示されます。",
+    "editorsChoice": "編集者のおすすめ",
+    "maintainedByOmniStore": "OmniStore によって維持され、オフラインでも常に表示されます"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +294,23 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "checkingEnvironment": "Comprobando el estado del entorno...",
+    "failedToFetchEnv": "Error al obtener los detalles del entorno.",
+    "bootstrapProgress": "Progreso de la configuración:",
+    "systemDetails": "Detalles del sistema:",
+    "aiEnableDesc": "Habilitar funciones de integración inteligente",
+    "ollamaLocalOffline": "Ollama (Local / Desconectado)",
+    "openaiCloud": "OpenAI API (Nube)",
+    "endpointHint": "p. ej. https://api.openai.com/v1",
+    "onboardingStep": "Paso {current} de {total}",
+    "aiRecommendationFallback": "No se pueden generar recomendaciones personalizadas en este momento. Aún puede explorar las selecciones destacadas o volver a intentarlo más tarde.",
+    "quickStart": "Inicio rápido",
+    "importPackagesSubtitle": "Importar tus paquetes favoritos desde una lista",
+    "noTrendingData": "No hay datos de tendencias disponibles; se actualizarán automáticamente después de que se recupere la red.",
+    "noForYouData": "Las recomendaciones personalizadas aparecerán aquí después de buscar o instalar aplicaciones.",
+    "editorsChoice": "Selección del editor",
+    "maintainedByOmniStore": "Mantenido por OmniStore, siempre visible sin conexión"
 }
 
 MAPPINGS = {
@@ -250,7 +330,9 @@ def save_arb_data(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def add_placeholder_metadata(data, key, value):
-    if '{count}' in value:
+    if '{current}' in value and '{total}' in value:
+        data[f'@{key}'] = {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}}
+    elif '{count}' in value:
         data[f'@{key}'] = {"placeholders": {"count": {"type": "int"}}}
     elif '{name}' in value:
         data[f'@{key}'] = {"placeholders": {"name": {"type": "String"}}}
@@ -272,12 +354,7 @@ def ensure_en_keys_have_metadata(en_data, new_keys):
     for k, v in new_keys.items():
         en_data[k] = v
         if f'@{k}' not in en_data:
-             if '{count}' in v:
-                en_data[f'@{k}'] = {"placeholders": {"count": {"type": "int"}}}
-             elif '{source}' in v:
-                en_data[f'@{k}'] = {"placeholders": {"source": {"type": "String"}}}
-             else:
-                en_data[f'@{k}'] = {"description": f"Description for {k}"}
+            add_placeholder_metadata(en_data, k, v)
 
 def sort_keys_by_english(data, en_data):
     sorted_keys = list(en_data.keys())

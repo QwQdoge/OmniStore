@@ -1168,5 +1168,76 @@
   "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "checkingEnvironment": "正在检查环境状态...",
+  "@checkingEnvironment": {
+    "description": "Description for checkingEnvironment"
+  },
+  "failedToFetchEnv": "获取环境详情失败。",
+  "@failedToFetchEnv": {
+    "description": "Description for failedToFetchEnv"
+  },
+  "bootstrapProgress": "配置进度：",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "系统详情：",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiEnableDesc": "启用智能集成功能",
+  "@aiEnableDesc": {
+    "description": "Description for aiEnableDesc"
+  },
+  "ollamaLocalOffline": "Ollama (本地 / 离线)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (云端)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "endpointHint": "例如：https://api.openai.com/v1",
+  "@endpointHint": {
+    "description": "Description for endpointHint"
+  },
+  "onboardingStep": "第 {current} / {total} 步",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecommendationFallback": "暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。",
+  "@aiRecommendationFallback": {
+    "description": "Description for aiRecommendationFallback"
+  },
+  "quickStart": "快速开始",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importPackagesSubtitle": "从列表导入你常用的软件包",
+  "@importPackagesSubtitle": {
+    "description": "Description for importPackagesSubtitle"
+  },
+  "noTrendingData": "暂无热门数据；网络恢复后会自动更新。",
+  "@noTrendingData": {
+    "description": "Description for noTrendingData"
+  },
+  "noForYouData": "继续搜索或安装应用后，这里会显示个性化建议。",
+  "@noForYouData": {
+    "description": "Description for noForYouData"
+  },
+  "editorsChoice": "编辑推荐",
+  "@editorsChoice": {
+    "description": "Description for editorsChoice"
+  },
+  "maintainedByOmniStore": "由 OmniStore 维护，离线时也始终可见",
+  "@maintainedByOmniStore": {
+    "description": "Description for maintainedByOmniStore"
   }
 }

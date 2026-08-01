@@ -207,6 +207,7 @@ class _WelcomePageState extends State<WelcomePage> {
     testConfig['ai']['api_key'] = _aiApiKeyController.text.trim();
 
     await settings.updateConfig(testConfig);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       final result = await BackendService.instance.testAiConnection();
@@ -216,16 +217,16 @@ class _WelcomePageState extends State<WelcomePage> {
       setState(() {
         if (status == 'success' || response.toLowerCase().contains('ok') || response.toLowerCase().contains('success')) {
           _aiTestSuccess = true;
-          _aiTestResult = 'Connection successful!';
+          _aiTestResult = l10n.aiTestSuccess;
         } else {
           _aiTestSuccess = false;
-          _aiTestResult = 'Connection failed: $response';
+          _aiTestResult = l10n.aiTestFailed(response);
         }
       });
     } catch (e) {
       setState(() {
         _aiTestSuccess = false;
-        _aiTestResult = 'Error: $e';
+        _aiTestResult = l10n.aiTestFailed(e.toString());
       });
     } finally {
       await settings.updateConfig(originalConfig);
@@ -394,7 +395,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           const CircularProgressIndicator(),
                           const SizedBox(height: 16),
                           Text(
-                            'Checking environment status...',
+                            l10n.checkingEnvironment,
                             style: theme.textTheme.bodyMedium,
                           ),
                         ],
@@ -415,14 +416,14 @@ class _WelcomePageState extends State<WelcomePage> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Failed to fetch environment details.',
+                                l10n.failedToFetchEnv,
                                 style: theme.textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 12),
                               FilledButton.icon(
                                 onPressed: _checkEnvironment,
                                 icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Retry'),
+                                label: Text(l10n.retry),
                               ),
                             ],
                           ),
@@ -478,7 +479,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           ],
                           if (_isBootstrapping || _bootstrapLogs.isNotEmpty) ...[
                             Text(
-                              'Bootstrap progress:',
+                              l10n.bootstrapProgress,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -515,7 +516,7 @@ class _WelcomePageState extends State<WelcomePage> {
                             const SizedBox(height: 16),
                           ],
                           Text(
-                            'System details:',
+                            l10n.systemDetails,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -740,7 +741,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: const Text('Enable intelligence integration features'),
+              subtitle: Text(l10n.aiEnableDesc),
               value: _enableAI,
               onChanged: (val) {
                 setState(() {
@@ -776,14 +777,14 @@ class _WelcomePageState extends State<WelcomePage> {
                                   border: OutlineInputBorder(),
                                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 ),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: 'ollama',
-                                    child: Text('Ollama (Local / Offline)'),
+                                    child: Text(l10n.ollamaLocalOffline),
                                   ),
                                   DropdownMenuItem(
                                     value: 'openai',
-                                    child: Text('OpenAI API (Cloud)'),
+                                    child: Text(l10n.openaiCloud),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -803,10 +804,10 @@ class _WelcomePageState extends State<WelcomePage> {
                               TextField(
                                 controller: _aiEndpointController,
                                 decoration: InputDecoration(
-                                  labelText: 'Endpoint URL',
+                                  labelText: l10n.aiEndpoint,
                                   hintText: _aiProvider == 'ollama'
                                       ? l10n.aiEndpointHelper
-                                      : 'e.g. https://api.openai.com/v1',
+                                      : l10n.endpointHint,
                                   border: const OutlineInputBorder(),
                                 ),
                               ),
@@ -815,7 +816,7 @@ class _WelcomePageState extends State<WelcomePage> {
                                 controller: _aiApiKeyController,
                                 obscureText: true,
                                 decoration: InputDecoration(
-                                  labelText: 'API Key',
+                                  labelText: l10n.aiApiKey,
                                   hintText: l10n.aiApiKeyHelper,
                                   border: const OutlineInputBorder(),
                                 ),
@@ -840,7 +841,7 @@ class _WelcomePageState extends State<WelcomePage> {
                                       : FilledButton.tonalIcon(
                                           onPressed: _testAIConnection,
                                           icon: const Icon(Icons.network_ping_rounded, size: 18),
-                                          label: const Text('Test Connection'),
+                                          label: Text(l10n.aiTestButton),
                                         ),
                                 ],
                               ),
@@ -978,7 +979,7 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
           const Spacer(),
           Text(
-            'Step ${_currentPage + 1} of 4',
+            l10n.onboardingStep(_currentPage + 1, 4),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.outline,
             ),

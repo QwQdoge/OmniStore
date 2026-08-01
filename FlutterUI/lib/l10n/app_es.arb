@@ -1164,5 +1164,76 @@
   "aiPickDisclaimer": "Generado en función de su búsqueda, historial de instalación y fuentes disponibles actualmente; no afectará sus opciones de instalación.",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "checkingEnvironment": "Comprobando el estado del entorno...",
+  "@checkingEnvironment": {
+    "description": "Description for checkingEnvironment"
+  },
+  "failedToFetchEnv": "Error al obtener los detalles del entorno.",
+  "@failedToFetchEnv": {
+    "description": "Description for failedToFetchEnv"
+  },
+  "bootstrapProgress": "Progreso de la configuración:",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "Detalles del sistema:",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiEnableDesc": "Habilitar funciones de integración inteligente",
+  "@aiEnableDesc": {
+    "description": "Description for aiEnableDesc"
+  },
+  "ollamaLocalOffline": "Ollama (Local / Desconectado)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (Nube)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "endpointHint": "p. ej. https://api.openai.com/v1",
+  "@endpointHint": {
+    "description": "Description for endpointHint"
+  },
+  "onboardingStep": "Paso {current} de {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecommendationFallback": "No se pueden generar recomendaciones personalizadas en este momento. Aún puede explorar las selecciones destacadas o volver a intentarlo más tarde.",
+  "@aiRecommendationFallback": {
+    "description": "Description for aiRecommendationFallback"
+  },
+  "quickStart": "Inicio rápido",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importPackagesSubtitle": "Importar tus paquetes favoritos desde una lista",
+  "@importPackagesSubtitle": {
+    "description": "Description for importPackagesSubtitle"
+  },
+  "noTrendingData": "No hay datos de tendencias disponibles; se actualizarán automáticamente después de que se recupere la red.",
+  "@noTrendingData": {
+    "description": "Description for noTrendingData"
+  },
+  "noForYouData": "Las recomendaciones personalizadas aparecerán aquí después de buscar o instalar aplicaciones.",
+  "@noForYouData": {
+    "description": "Description for noForYouData"
+  },
+  "editorsChoice": "Selección del editor",
+  "@editorsChoice": {
+    "description": "Description for editorsChoice"
+  },
+  "maintainedByOmniStore": "Mantenido por OmniStore, siempre visible sin conexión",
+  "@maintainedByOmniStore": {
+    "description": "Description for maintainedByOmniStore"
   }
 }

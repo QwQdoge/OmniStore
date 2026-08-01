@@ -1023,7 +1023,7 @@
   "@removePlugin": {
     "description": "Tooltip for removing a plugin"
   },
-  "managed": "已代管",
+  "managed": "已託管",
   "readOnly": "唯讀",
   "@welcomeTitle": {
     "description": "Description for welcomeTitle"
@@ -1167,5 +1167,76 @@
   "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "checkingEnvironment": "正在檢查環境狀態...",
+  "@checkingEnvironment": {
+    "description": "Description for checkingEnvironment"
+  },
+  "failedToFetchEnv": "獲取環境詳情失敗。",
+  "@failedToFetchEnv": {
+    "description": "Description for failedToFetchEnv"
+  },
+  "bootstrapProgress": "配置進度：",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "系統詳情：",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiEnableDesc": "啟用智慧整合功能",
+  "@aiEnableDesc": {
+    "description": "Description for aiEnableDesc"
+  },
+  "ollamaLocalOffline": "Ollama (本地 / 離線)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (雲端)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "endpointHint": "例如：https://api.openai.com/v1",
+  "@endpointHint": {
+    "description": "Description for endpointHint"
+  },
+  "onboardingStep": "第 {current} / {total} 步",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecommendationFallback": "暫時無法生成個性化推薦。您仍可瀏覽編輯精選，或稍後重試。",
+  "@aiRecommendationFallback": {
+    "description": "Description for aiRecommendationFallback"
+  },
+  "quickStart": "快速開始",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importPackagesSubtitle": "從列表匯入您常用的套件",
+  "@importPackagesSubtitle": {
+    "description": "Description for importPackagesSubtitle"
+  },
+  "noTrendingData": "暫無熱門數據；網路恢復後會自動更新。",
+  "@noTrendingData": {
+    "description": "Description for noTrendingData"
+  },
+  "noForYouData": "繼續搜尋或安裝應用程式後，這裡會顯示個性化建議。",
+  "@noForYouData": {
+    "description": "Description for noForYouData"
+  },
+  "editorsChoice": "編輯推薦",
+  "@editorsChoice": {
+    "description": "Description for editorsChoice"
+  },
+  "maintainedByOmniStore": "由 OmniStore 維護，離線時也始終可見",
+  "@maintainedByOmniStore": {
+    "description": "Description for maintainedByOmniStore"
   }
 }

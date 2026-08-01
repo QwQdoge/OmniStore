@@ -1164,5 +1164,76 @@
   "aiPickDisclaimer": "検索、インストール履歴、現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "checkingEnvironment": "環境ステータスを確認中...",
+  "@checkingEnvironment": {
+    "description": "Description for checkingEnvironment"
+  },
+  "failedToFetchEnv": "環境の詳細の取得に失敗しました。",
+  "@failedToFetchEnv": {
+    "description": "Description for failedToFetchEnv"
+  },
+  "bootstrapProgress": "セットアップの進行状況:",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "システム詳細:",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiEnableDesc": "インテリジェント統合機能を有効にする",
+  "@aiEnableDesc": {
+    "description": "Description for aiEnableDesc"
+  },
+  "ollamaLocalOffline": "Ollama (ローカル / オフライン)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (クラウド)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "endpointHint": "例: https://api.openai.com/v1",
+  "@endpointHint": {
+    "description": "Description for endpointHint"
+  },
+  "onboardingStep": "ステップ {current} / {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aiRecommendationFallback": "現在、パーソナライズされたおすすめを生成できません。引き続きおすすめのセレクションを閲覧するか、後でもう一度お試しください。",
+  "@aiRecommendationFallback": {
+    "description": "Description for aiRecommendationFallback"
+  },
+  "quickStart": "クイックスタート",
+  "@quickStart": {
+    "description": "Description for quickStart"
+  },
+  "importPackagesSubtitle": "リストからお気に入りのパッケージをインポート",
+  "@importPackagesSubtitle": {
+    "description": "Description for importPackagesSubtitle"
+  },
+  "noTrendingData": "急上昇データはありません。ネットワークが回復すると自動的に更新されます。",
+  "@noTrendingData": {
+    "description": "Description for noTrendingData"
+  },
+  "noForYouData": "アプリを検索またはインストールすると、ここにパーソナライズされたおすすめが表示されます。",
+  "@noForYouData": {
+    "description": "Description for noForYouData"
+  },
+  "editorsChoice": "編集者のおすすめ",
+  "@editorsChoice": {
+    "description": "Description for editorsChoice"
+  },
+  "maintainedByOmniStore": "OmniStore によって維持され、オフラインでも常に表示されます",
+  "@maintainedByOmniStore": {
+    "description": "Description for maintainedByOmniStore"
   }
 }
