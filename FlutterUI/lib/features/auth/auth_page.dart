@@ -36,12 +36,23 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _savePat() async {
+    final pat = _patController.text.trim();
+    if (pat.length > 255 || pat.contains(RegExp(r'[\x00-\x1F\x7F]'))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invalidToken),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
     final configRepo = context.read<ConfigRepository>();
     final config = await configRepo.loadConfig();
     if (!mounted) return;
     config['github'] ??= {};
-    config['github']['pat'] = _patController.text.trim();
+    config['github']['pat'] = pat;
     await configRepo.saveConfig(config);
     if (mounted) {
       setState(() => _isSaving = false);

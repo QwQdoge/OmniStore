@@ -185,3 +185,11 @@ Adding `if (!mounted) return;` at the very end of a function or right before vit
 
 Action:
 Removed the unnecessary `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `_handleFullExit` within `FlutterUI/lib/app/main_navigation.dart`. This ensures that final window destruction and exit commands are executed even if the widget unmounts during the backend shutdown awaits.
+
+## 2026-08-01 - [Input Validation Missing for PAT Configuration]
+
+Learning:
+Unvalidated incoming text parameters (e.g., Personal Access Tokens from user input) used directly to update configurations or invoke pipelines pose security and functional risks, as they might exceed expected max lengths or contain control-character anomalies `[\x00-\x1F\x7F]`.
+
+Action:
+Added strict input validation on `pat` within `FlutterUI/lib/features/auth/auth_page.dart`. Tokens are now evaluated for a maximum length (255 characters) and scanned for control characters prior to updating configuration state, returning early with a generic validation error message if constraints are failed.

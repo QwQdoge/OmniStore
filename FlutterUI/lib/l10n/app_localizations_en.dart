@@ -1035,6 +1035,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoDetectFailed => 'Failed to save auto-detected settings.';
 
   @override
+  String get invalidToken => 'Invalid token format';
+
+  @override
   String get personalAccessToken => 'Personal Access Token';
 
   @override

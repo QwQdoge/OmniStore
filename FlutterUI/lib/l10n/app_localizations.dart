@@ -1903,6 +1903,12 @@ abstract class AppLocalizations {
   /// **'Failed to save auto-detected settings.'**
   String get autoDetectFailed;
 
+  /// Error message for invalid PAT token
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid token format'**
+  String get invalidToken;
+
   /// Label for personal access token
   ///
   /// In en, this message translates to:

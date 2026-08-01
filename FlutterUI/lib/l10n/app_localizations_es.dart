@@ -1040,6 +1040,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get autoDetectFailed => 'Error al guardar los ajustes autodetectados.';
 
   @override
+  String get invalidToken => 'Formato de token no válido';
+
+  @override
   String get personalAccessToken => 'Token de acceso personal';
 
   @override

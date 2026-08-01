@@ -821,6 +821,10 @@
   "@autoDetectFailed": {
     "description": "Failure message after auto detection"
   },
+  "invalidToken": "無効なトークン形式",
+  "@invalidToken": {
+    "description": "Error message for invalid PAT token"
+  },
   "personalAccessToken": "個人用アクセストークン",
   "@personalAccessToken": {
     "description": "Label for personal access token"

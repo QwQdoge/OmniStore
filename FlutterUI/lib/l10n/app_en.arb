@@ -821,6 +821,10 @@
   "@autoDetectFailed": {
     "description": "Failure message after auto detection"
   },
+  "invalidToken": "Invalid token format",
+  "@invalidToken": {
+    "description": "Error message for invalid PAT token"
+  },
   "personalAccessToken": "Personal Access Token",
   "@personalAccessToken": {
     "description": "Label for personal access token"

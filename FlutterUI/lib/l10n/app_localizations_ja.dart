@@ -970,6 +970,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autoDetectFailed => '自動検出設定の保存に失敗しました。';
 
   @override
+  String get invalidToken => '無効なトークン形式';
+
+  @override
   String get personalAccessToken => '個人用アクセストークン';
 
   @override

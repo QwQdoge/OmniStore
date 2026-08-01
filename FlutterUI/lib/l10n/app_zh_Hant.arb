@@ -824,6 +824,10 @@
   "@autoDetectFailed": {
     "description": "Failure message after auto detection"
   },
+  "invalidToken": "無效的權杖格式",
+  "@invalidToken": {
+    "description": "Error message for invalid PAT token"
+  },
   "personalAccessToken": "個人存取權杖",
   "@personalAccessToken": {
     "description": "Label for personal access token"

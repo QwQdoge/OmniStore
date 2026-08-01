@@ -964,6 +964,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoDetectFailed => '保存自动检测结果失败。';
 
   @override
+  String get invalidToken => '无效的令牌格式';
+
+  @override
   String get personalAccessToken => '个人访问令牌';
 
   @override
@@ -2146,6 +2149,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autoDetectFailed => '儲存自動偵測結果失敗。';
+
+  @override
+  String get invalidToken => '無效的權杖格式';
 
   @override
   String get personalAccessToken => '個人存取權杖';
