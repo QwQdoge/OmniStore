@@ -185,3 +185,14 @@ Adding `if (!mounted) return;` at the very end of a function or right before vit
 
 Action:
 Removed the unnecessary `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `_handleFullExit` within `FlutterUI/lib/app/main_navigation.dart`. This ensures that final window destruction and exit commands are executed even if the widget unmounts during the backend shutdown awaits.
+
+## 2026-07-28 - [AuthService/AuthPage Safety, Concurrency, and Input Validation Hardening]
+
+Learning:
+Un-guarded asynchronous configuration loading and saving on the UI boundary can cause interface locks and memory leaks if not wrapped in robust try-catch blocks and state-mutex transitions. Also, third-party authentication services like Supabase can trigger cascade/avalanche failures during initialization or deep link stream allocation if not isolated in local try-catch blocks. Extreme input validation (e.g., max length, character pattern constraints) is critical at the entry boundary before invoking I/O or repository pipelines to ensure security.
+
+Action:
+1. Hardened `AuthPage` (`auth_page.dart`) by adding strict parameter length (max 255 chars) and control-character checks (`[\x00-\x1F\x7F]`) to the Personal Access Token (PAT).
+2. Wrapped load/save configuration futures with 5-second timeouts and defensive try-catch blocks to prevent UI freezes, and ensured the `_isSaving` state-mutex flag is always unlocked under failure conditions.
+3. Hardened `AuthService` (`auth_service.dart`) by adding a state-mutex guard `_isInitializing` and defensive checks to prevent duplicate/concurrent Supabase initialization and subsequent event listener leaks.
+4. Wrapped Supabase initialization and deep links setup in isolated try-catch blocks to ensure that failure in external systems does not crash the overall application shell.
