@@ -45,3 +45,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** `SmoothSizeSwitcher` can fully replace `AnimatedSwitcher` across the entire app if it exposes the `transitionBuilder` property. This allows for custom transitions (like `RotationTransition` or `ScaleTransition`) while maintaining the unified MD3 layout-sizing wrapper provided by `SmoothSizeSwitcher`.
 
 **Action:** Updated `SmoothSizeSwitcher` to accept an optional `transitionBuilder` parameter (defaulting to `AnimatedSwitcher.defaultTransitionBuilder`). Replaced all remaining raw `AnimatedSwitcher` instances in `github_star_badge.dart`, `smooth_progress_bar.dart`, `hamburger_button.dart`, `adaptive_navigation_shell.dart`, and `search_page.dart` with `SmoothSizeSwitcher`.
+
+## 2024-11-20 - Adding SmoothSizeSwitcher to AppDependencySection
+
+**Learning:** When navigating between different application variants (e.g., from Flatpak to AUR), the dependencies and metadata sizes dynamically change. A lack of transition wrapping for this content causes an abrupt layout jump since different variants have different amounts of text and dependencies.
+
+**Action:** Refactored `AppDependencySection` to wrap its internal `Column` with a `SmoothSizeSwitcher`. Used `ValueKey(variant.toString())` to ensure Flutter recognizes data changes and animates the crossfade and resize transitions smoothly.

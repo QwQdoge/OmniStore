@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppDependencySection extends StatelessWidget {
   final Map<String, dynamic>? variant;
@@ -31,71 +32,75 @@ class AppDependencySection extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: AppDetailsSectionTitle(
-            title: l10n.installInfo,
-            isSubSection: true,
-          ),
-        ),
-        if (hasCapability('has_size') && dlSize != null)
-          AppDetailsInfoRow(
-            icon: Icons.downloading_rounded,
-            label: AppLocalizations.of(context)!.downloadSize,
-            value: dlSize.toString(),
-          ),
-        if (hasCapability('has_size') && insSize != null)
-          AppDetailsInfoRow(
-            icon: Icons.storage_rounded,
-            label: AppLocalizations.of(context)!.installedSize,
-            value: insSize.toString(),
-          ),
-        if (hasCapability('has_size') && diskSize != null)
-          AppDetailsInfoRow(
-            icon: Icons.folder_copy_rounded,
-            label: confidence == null
-                ? 'Disk size'
-                : 'Disk size (${confidence.toString()})',
-            value: _formatBytes(diskSize),
-          ),
-        if (deps != null && deps.isNotEmpty) ...[
+    return SmoothSizeSwitcher(
+      alignment: Alignment.topLeft,
+      child: Column(
+        key: ValueKey(variant.toString()),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.dependenciesCount(deps.length),
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: deps
-                      .map(
-                        (d) => Chip(
-                          label: Text(
-                            d.toString(),
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: AppDetailsSectionTitle(
+              title: l10n.installInfo,
+              isSubSection: true,
             ),
           ),
+          if (hasCapability('has_size') && dlSize != null)
+            AppDetailsInfoRow(
+              icon: Icons.downloading_rounded,
+              label: AppLocalizations.of(context)!.downloadSize,
+              value: dlSize.toString(),
+            ),
+          if (hasCapability('has_size') && insSize != null)
+            AppDetailsInfoRow(
+              icon: Icons.storage_rounded,
+              label: AppLocalizations.of(context)!.installedSize,
+              value: insSize.toString(),
+            ),
+          if (hasCapability('has_size') && diskSize != null)
+            AppDetailsInfoRow(
+              icon: Icons.folder_copy_rounded,
+              label: confidence == null
+                  ? 'Disk size'
+                  : 'Disk size (${confidence.toString()})',
+              value: _formatBytes(diskSize),
+            ),
+          if (deps != null && deps.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.dependenciesCount(deps.length),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: deps
+                        .map(
+                          (d) => Chip(
+                            label: Text(
+                              d.toString(),
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
