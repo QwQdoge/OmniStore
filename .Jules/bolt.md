@@ -117,3 +117,5 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Placing `MediaQuery.sizeOf(context)` inside the `selector` function of a `Selector` widget forces the entire `Selector` (and the `search_page` itself indirectly) to rebuild on every pixel of window resizing, bypassing the intended optimization.
 
 **Action:** Extracted `ResponsiveLayoutBuilder` into `core/widgets/` for reusability. Wrapped the `Selector` in `SearchPage` with `ResponsiveLayoutBuilder`, effectively isolating the MediaQuery dependency from the Selector's state checks.
+
+## YYYY-MM-DD - [Optimization], Learning: [Image Memory Constraints for 1:1 Assets], Action: [When using CachedNetworkImage for strictly 1:1 square assets like app icons or logos, specify both memCacheWidth and memCacheHeight to fully restrict decoder memory allocation and prevent heap bloat. Only use a single dimension for variable aspect ratio images to allow proportional scaling.]
