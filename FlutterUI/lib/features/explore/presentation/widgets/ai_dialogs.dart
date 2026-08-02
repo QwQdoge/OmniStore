@@ -47,13 +47,15 @@ class AIMarkdownDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(title),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        title,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: SizedBox(
         width: width,
@@ -84,13 +86,15 @@ class AICliDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiCliTitle),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        AppLocalizations.of(context)!.aiCliTitle,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: FutureBuilder<String>(
         future: future,
@@ -111,15 +115,27 @@ class AICliDialog extends StatelessWidget {
                     key: const ValueKey('loaded'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
+                      Card(
+                        color: theme.colorScheme.surfaceContainerLow,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          ),
                         ),
-                        child: Text(
-                          cmd,
-                          style: const TextStyle(fontFamily: 'monospace'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: SelectableText(
+                              cmd,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),

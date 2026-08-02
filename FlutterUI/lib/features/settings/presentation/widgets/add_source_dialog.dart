@@ -83,14 +83,26 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Text(widget.l10n.addCustomSource),
+      icon: Icon(
+        Icons.add_link_rounded,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
+      title: Text(
+        widget.l10n.addCustomSource,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              initialValue: _type,
+              value: _type,
               decoration: InputDecoration(labelText: widget.l10n.sourceType),
               items: [
                 DropdownMenuItem(

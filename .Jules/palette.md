@@ -170,3 +170,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** When creating multi-step onboarding wizard screens in desktop-adapted Flutter applications, constraining the center width to 650px ensures comfortable visual scan-ability. Furthermore, integrating live environment check procedures (via Python backend execution) and streaming live setup bootstrap console logs directly into a specialized, zero-elevation card (featuring `surfaceContainerLow` decoration and 16dp rounded corners) builds outstanding visual trust and interaction clarity compared to static, plain-text mock pages.
 
 **Action:** Standardize multi-page adaptive onboarding flows inside a center-constrained layout (650px max width), utilizing Card-wrapped Form fields, interactive bootstrap terminals, and live connection verification checks.
+
+## 2026-07-31 - MD3 Dialog Structure & Icon Alignment
+
+**Learning:** Material Design 3 guidelines specify that custom dialogs should utilize native `icon` and `title` properties of `AlertDialog` for proper structural symmetry, rather than row-based custom title layouts. Pairing a prominent top icon with a `headlineSmall` title using `FontWeight.w800` ensures visual prominence. Additionally, wrapping dense technical output or terminal logs in a zero-elevation `Card` featuring `surfaceContainerLow` decoration, 16dp rounded corners, and a semi-transparent `outlineVariant` border improves contextual scannability and focus.
+
+**Action:** Standardize all informational/test dialogs (like `AITestResultDialog` and `AICliDialog`) to use native `AlertDialog` structural properties and group output text inside clean, padded `Card` surfaces.
