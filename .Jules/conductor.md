@@ -45,3 +45,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** `SmoothSizeSwitcher` can fully replace `AnimatedSwitcher` across the entire app if it exposes the `transitionBuilder` property. This allows for custom transitions (like `RotationTransition` or `ScaleTransition`) while maintaining the unified MD3 layout-sizing wrapper provided by `SmoothSizeSwitcher`.
 
 **Action:** Updated `SmoothSizeSwitcher` to accept an optional `transitionBuilder` parameter (defaulting to `AnimatedSwitcher.defaultTransitionBuilder`). Replaced all remaining raw `AnimatedSwitcher` instances in `github_star_badge.dart`, `smooth_progress_bar.dart`, `hamburger_button.dart`, `adaptive_navigation_shell.dart`, and `search_page.dart` with `SmoothSizeSwitcher`.
+## 2024-09-15 - Applied SmoothSizeSwitcher to AppTechnicalDetails
+
+**Learning:** When navigating between app variants that load different versions or dependency sizes, replacing a static `Column` in `AppTechnicalDetails` with `SmoothSizeSwitcher` and a `ValueKey` mapped to the selected `variant.source` ensures changes animate smoothly.
+
+**Action:** Wrapped the internal `Column` inside `AppCard` in `AppTechnicalDetails` with a `SmoothSizeSwitcher` and assigned it a dynamic `ValueKey(currentVariant?.source ?? primarySource)`.
