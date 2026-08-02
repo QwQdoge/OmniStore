@@ -117,3 +117,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Placing `MediaQuery.sizeOf(context)` inside the `selector` function of a `Selector` widget forces the entire `Selector` (and the `search_page` itself indirectly) to rebuild on every pixel of window resizing, bypassing the intended optimization.
 
 **Action:** Extracted `ResponsiveLayoutBuilder` into `core/widgets/` for reusability. Wrapped the `Selector` in `SearchPage` with `ResponsiveLayoutBuilder`, effectively isolating the MediaQuery dependency from the Selector's state checks.
+
+## 2026-08-03 - AppPackage Lazy Caching Optimization
+
+**Learning:** During search/filter operations on large package lists (such as on the AppsPage, DownloadPage, and SearchPage), performing string lowercase conversions (`.toLowerCase()`) inside filter loops triggers extensive string allocations and CPU overhead on every keystroke or selection. By utilizing Dart's lazy evaluation mechanism (`late final`) on the `AppPackage` model class, we can memoize case-insensitive versions of hot properties like `name`, `description`, and `primarySource`. This converts O(N) lowercase calculations on every filter pass to instantaneous, O(1) property lookups with zero heap-allocation overhead.
+
+**Action:** Added lazy properties (`nameLower`, `descriptionLower`, `primarySourceLower`) to `AppPackage` and refactored the search/filter loops in `AppsPage`, `DownloadPage`, and `SearchPage` to utilize them.

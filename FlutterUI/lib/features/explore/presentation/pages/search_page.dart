@@ -82,8 +82,10 @@ class _SearchPageState extends State<SearchPage> {
     final browse = context.read<BrowseController>();
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
+      // Memoized because source filtering was recalculated
+      // on every keystroke/selection for large package lists (~2000 apps)
       filteredResults = browse.searchResults.where((app) {
-        return _selectedSources.contains(app.primarySource.toLowerCase());
+        return _selectedSources.contains(app.primarySourceLower);
       }).toList();
     }
 
@@ -208,8 +210,10 @@ class _SearchPageState extends State<SearchPage> {
                             final filtered = _selectedSources.isEmpty
                                 ? results
                                 : results.where((app) {
+                                    // Memoized because source filtering was recalculated
+                                    // on every keystroke/selection for large package lists (~2000 apps)
                                     return _selectedSources.contains(
-                                      app.primarySource.toLowerCase(),
+                                      app.primarySourceLower,
                                     );
                                   }).toList();
 
