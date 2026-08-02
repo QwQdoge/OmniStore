@@ -155,3 +155,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Action:** Extracted the connection test result `AlertDialog` from the `_testAIConnection` method in `ai_settings_section.dart` into a new `AITestResultDialog` widget located in `FlutterUI/lib/features/settings/presentation/widgets/ai_test_result_dialog.dart`.
 ## 2025-05-24 - [Duplicated Layout Blocks], Learning: [Extracting repeated structural blocks like MD3 cards into a private stateless widget significantly reduces build method verbosity and makes future layout changes localized], Action: [Created `_DecisionSectionCard` to consolidate duplicated Card layouts in `InstallationDecisionDialog`].
 ## 2025-05-24 - [Duplicated List Iteration], Learning: [Instead of duplicating identical iterations over different lists across multiple helper methods (`_getVersionForSource`, `_isSourceInstalled`), centralize the search logic in one core method (`_getVariantForSource`) and reuse it by safely mapping its properties], Action: [Consolidated variant extraction logic in `details_page.dart` to prevent divergent fallback states].
+## 2026-07-25 - Extract Widgets in WelcomePage
+
+**Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. `welcome_page.dart` had monolithic internal widget builders (`_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, `_buildAiPage`, etc.) that made the file structure hard to parse.
+
+**Action:** Extracted `_buildConfigCard`, `_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, and `_buildAiPage` into standalone stateless widgets in `FlutterUI/lib/features/onboarding/widgets/`. This decoupled the UI layout logic from the core onboarding state management.
