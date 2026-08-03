@@ -1284,4 +1284,23 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get aiPickDisclaimer =>
       'Generado en función de su búsqueda, historial de instalación y fuentes disponibles actualmente; no afectará sus opciones de instalación.';
+
+  @override
+  String get quickStart => 'Inicio rápido';
+
+  @override
+  String get importListSubtitle =>
+      'Importa tus paquetes de uso frecuente desde una lista';
+
+  @override
+  String get emptyTrendingMessage =>
+      'No hay datos de tendencias disponibles; se actualizarán automáticamente cuando se restablezca la conexión.';
+
+  @override
+  String get emptyRecommendationsMessage =>
+      'Las sugerencias personalizadas aparecerán aquí después de buscar o instalar aplicaciones.';
+
+  @override
+  String get aiPickFallbackMessage =>
+      'No se pueden generar recomendaciones personalizadas en este momento. Aún puedes explorar las selecciones de los editores o volver a intentarlo más tarde.';
 }
