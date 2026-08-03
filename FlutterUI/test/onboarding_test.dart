@@ -8,7 +8,7 @@ import 'package:frontend/data/repositories/config_repository.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
-  testWidgets('Onboarding WelcomePage renders intro correctly and navigates steps', (WidgetTester tester) async {
+  testWidgets('Onboarding WelcomePage renders intro correctly and navigates steps',  (WidgetTester tester) async {
     final configRepo = ConfigRepository();
     final settingsController = SettingsController(configRepo);
 
