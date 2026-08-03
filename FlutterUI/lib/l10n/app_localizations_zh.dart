@@ -687,7 +687,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理无用依赖（孤立软件包）';
+  String get cleanOrphans => '清理孤立软件包';
 
   @override
   String get securityWarning => '安全风险提示';
@@ -1886,7 +1886,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理無用依賴（孤立套件）';
+  String get cleanOrphans => '清理孤立套件';
 
   @override
   String get securityWarning => '安全風險提示';
