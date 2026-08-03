@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_details_shared.dart';
 import 'package:frontend/features/explore/presentation/widgets/app_dependency_section.dart';
 
@@ -27,41 +28,44 @@ class AppTechnicalDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppDetailsInfoRow(
-            icon: Icons.source_rounded,
-            label: l10n.source,
-            value: primarySource,
-          ),
-          AppDetailsInfoRow(
-            icon: Icons.all_inclusive_rounded,
-            label: l10n.variant,
-            value: allSources.join(", "),
-          ),
-          AppDetailsInfoRow(
-            icon: Icons.verified_rounded,
-            label: l10n.version,
-            value: version,
-          ),
-          if (extraDetails?.developer != null)
+      child: SmoothSizeSwitcher(
+        child: Column(
+          key: ValueKey(currentVariant?.source ?? 'default'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             AppDetailsInfoRow(
-              icon: Icons.person_rounded,
-              label: l10n.developer,
-              value: extraDetails!.developer!,
+              icon: Icons.source_rounded,
+              label: l10n.source,
+              value: primarySource,
             ),
-          if (extraDetails?.license != null)
             AppDetailsInfoRow(
-              icon: Icons.description_rounded,
-              label: l10n.license,
-              value: extraDetails!.license!,
+              icon: Icons.all_inclusive_rounded,
+              label: l10n.variant,
+              value: allSources.join(", "),
             ),
-          AppDependencySection(
-            variant: currentVariant?.toJson(),
-            hasCapability: hasCapability,
-          ),
-        ],
+            AppDetailsInfoRow(
+              icon: Icons.verified_rounded,
+              label: l10n.version,
+              value: version,
+            ),
+            if (extraDetails?.developer != null)
+              AppDetailsInfoRow(
+                icon: Icons.person_rounded,
+                label: l10n.developer,
+                value: extraDetails!.developer!,
+              ),
+            if (extraDetails?.license != null)
+              AppDetailsInfoRow(
+                icon: Icons.description_rounded,
+                label: l10n.license,
+                value: extraDetails!.license!,
+              ),
+            AppDependencySection(
+              variant: currentVariant?.toJson(),
+              hasCapability: hasCapability,
+            ),
+          ],
+        ),
       ),
     );
   }
