@@ -117,3 +117,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Placing `MediaQuery.sizeOf(context)` inside the `selector` function of a `Selector` widget forces the entire `Selector` (and the `search_page` itself indirectly) to rebuild on every pixel of window resizing, bypassing the intended optimization.
 
 **Action:** Extracted `ResponsiveLayoutBuilder` into `core/widgets/` for reusability. Wrapped the `Selector` in `SearchPage` with `ResponsiveLayoutBuilder`, effectively isolating the MediaQuery dependency from the Selector's state checks.
+## 2026-08-01 - AppPackage Lazy Caching Optimization
+
+**Learning:** Redundant `.toLowerCase()` string transformations inside hot-path UI filtering loops (such as search inputs parsing hundreds of items in AppsPage, DownloadPage, and SearchPage) create unnecessary CPU overhead. Pre-computing these fields lazily on the model drastically improves performance.
+
+**Action:** Added lazy `nameLower`, `descriptionLower`, and `primarySourceLower` fields to `AppPackage` and updated all corresponding `toLowerCase()` UI usage to reference the cached fields.
