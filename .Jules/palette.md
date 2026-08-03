@@ -170,3 +170,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** When creating multi-step onboarding wizard screens in desktop-adapted Flutter applications, constraining the center width to 650px ensures comfortable visual scan-ability. Furthermore, integrating live environment check procedures (via Python backend execution) and streaming live setup bootstrap console logs directly into a specialized, zero-elevation card (featuring `surfaceContainerLow` decoration and 16dp rounded corners) builds outstanding visual trust and interaction clarity compared to static, plain-text mock pages.
 
 **Action:** Standardize multi-page adaptive onboarding flows inside a center-constrained layout (650px max width), utilizing Card-wrapped Form fields, interactive bootstrap terminals, and live connection verification checks.
+
+## 2026-07-30 - Standardized Multi-Language HomePage Localization
+
+**Learning:** Relying on hardcoded strings within primary screens and layout sections degrades user experience, breaks internationalization across varied desktop environments, and leads to inconsistent multi-language visual presentation. Standardizing empty messages, section headers, and error or fallback strings using Flutter's `AppLocalizations` system combined with robust synchronization scripts ensures seamless UI consistency for native Simplified Chinese, Traditional Chinese, Japanese, and Spanish users alike, fully satisfying Material Design 3 and global accessibility expectations.
+
+**Action:** Extract all hardcoded Chinese UI strings and empty state descriptions on major page views (like `HomePage` and AI Recommendation blocks) into standard `.arb` resource keys, and run localized generation scripts (`sync_l10n.py` and `flutter gen-l10n`) to provide native internationalization.

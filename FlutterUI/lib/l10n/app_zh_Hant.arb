@@ -1167,5 +1167,25 @@
   "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "quickStart": "快速開始",
+  "@quickStart": {
+    "description": "Label for Quick Start section"
+  },
+  "importListSubtitle": "從列表匯入您常用的套件",
+  "@importListSubtitle": {
+    "description": "Subtitle for importing packages from a list"
+  },
+  "emptyTrendingMessage": "暫無熱門資料；網路恢復後會自動更新。",
+  "@emptyTrendingMessage": {
+    "description": "Message shown when trending section is empty"
+  },
+  "emptyRecommendationsMessage": "繼續搜尋或安裝應用程式後，這裡會顯示個人化建議。",
+  "@emptyRecommendationsMessage": {
+    "description": "Message shown when recommendations section is empty"
+  },
+  "aiPickFallbackMessage": "暫時無法產生個人化推薦。您仍可瀏覽編輯精選，或稍后重試。",
+  "@aiPickFallbackMessage": {
+    "description": "Fallback message shown when AI recommendation fails to generate"
   }
 }

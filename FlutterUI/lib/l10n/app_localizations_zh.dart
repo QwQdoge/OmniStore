@@ -1186,6 +1186,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPickDisclaimer => '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。';
+
+  @override
+  String get quickStart => '快速开始';
+
+  @override
+  String get importListSubtitle => '从列表导入你常用的软件包';
+
+  @override
+  String get emptyTrendingMessage => '暂无热门数据；网络恢复后会自动更新。';
+
+  @override
+  String get emptyRecommendationsMessage => '继续搜索或安装应用后，这里会显示个性化建议。';
+
+  @override
+  String get aiPickFallbackMessage => '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2370,4 +2385,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiPickDisclaimer => '根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。';
+
+  @override
+  String get quickStart => '快速開始';
+
+  @override
+  String get importListSubtitle => '從列表匯入您常用的套件';
+
+  @override
+  String get emptyTrendingMessage => '暫無熱門資料；網路恢復後會自動更新。';
+
+  @override
+  String get emptyRecommendationsMessage => '繼續搜尋或安裝應用程式後，這裡會顯示個人化建議。';
+
+  @override
+  String get aiPickFallbackMessage => '暫時無法產生個人化推薦。您仍可瀏覽編輯精選，或稍后重試。';
 }
