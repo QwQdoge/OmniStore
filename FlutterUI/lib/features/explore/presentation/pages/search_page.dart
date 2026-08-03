@@ -83,7 +83,9 @@ class _SearchPageState extends State<SearchPage> {
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
       filteredResults = browse.searchResults.where((app) {
-        return _selectedSources.contains(app.primarySource.toLowerCase());
+        // Memoized because app filtering was recalculated
+        // on every render / search query keystroke
+        return _selectedSources.contains(app.primarySourceLower);
       }).toList();
     }
 
@@ -208,8 +210,10 @@ class _SearchPageState extends State<SearchPage> {
                             final filtered = _selectedSources.isEmpty
                                 ? results
                                 : results.where((app) {
+                                    // Memoized because app filtering was recalculated
+                                    // on every render / search query keystroke
                                     return _selectedSources.contains(
-                                      app.primarySource.toLowerCase(),
+                                      app.primarySourceLower,
                                     );
                                   }).toList();
 
