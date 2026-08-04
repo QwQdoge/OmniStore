@@ -1,15 +1,10 @@
-## What
-Fixed Provider contract violations where `context.read<GitHubClient>()` was improperly called directly within the `build()` methods of `GitHubAppList` and `AppDetailsHeader`.
+🎯 **What:**
+Added unit tests for the missing `Backend` service method `OmnistoreBackend.run_ai_health` to improve overall backend test coverage and reliability.
 
-## Why
-Calling `context.read<T>()` inside a widget's `build` method is considered an anti-pattern by the `provider` package and throws assertion errors in debug mode. It prevents widgets from listening for and rebuilding correctly if the provided object (like the GitHub client instance) were to ever update. Using `context.watch<T>()` ensures safe and consistent behavior across the app.
+📊 **Coverage:**
+- **Plain Mode Execution:** Verifies that when `json_mode=False`, the AI generates a correct health report, the environment check is appropriately triggered, and the result is piped to stdout via `hijacked_print`.
+- **JSON Mode Execution:** Ensures that when `json_mode=True`, the response payload correctly wraps the health report and sends it over standard IPC via `_output_command_response`.
+- **Error Handling:** Asserts that thrown exceptions are correctly intercepted, dispatched to the backend's panic recovery `_handle_error` flow, and safely swallowed without crashing the main process thread.
 
-## Impact
-Improved state management robustness and removed runtime assertion risks without altering the intended UX.
-
-## Verification
-- Ran frontend test suite (`cd FlutterUI && flutter test`) — all tests passed.
-- Analyzed and verified through code review.
-
-## Accessibility
-No changes to accessible elements.
+✨ **Result:**
+Solidified code health with automated deterministic safety checks. The Backend service now correctly handles tests using properly mocked resources, bypassing unclosed Session lifecycle leaks while exercising `AIAssistant` behaviors.
