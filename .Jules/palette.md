@@ -167,7 +167,7 @@
 **Learning:** Custom alert dialogs (such as ActionConfirmDialog and ImportPackagesDialog) must align with Material Design 3 guidelines to establish unified product consistency. Applying w800 headline typography, pairing dialogs with highly semantic leading icons (e.g. primary for downloads/imports, error for uninstall/warning prompts), and wrapping option structures (such as checkbox tiles) or details (such as preflight risks and suggestions) inside custom cards with explicit radii (16dp) and color-scheme context tokens (like errorContainer and primaryContainer) drastically increases readable visual flow and screen-reader context.
 
 **Action:** Standardize all dialog titles with w800 headline styles and semantic MD3 icons. Wrap warning elements in errorContainer cards, recommended pathways in primaryContainer cards, and nested list tiles in surfaceContainerLow cards to preserve vertical rhythm.
-## $(date +%Y-%m-%d) - Coordinated Layout Animations
+## 2026-07-29 - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
 
@@ -176,6 +176,12 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** When creating multi-step onboarding wizard screens in desktop-adapted Flutter applications, constraining the center width to 650px ensures comfortable visual scan-ability. Furthermore, integrating live environment check procedures (via Python backend execution) and streaming live setup bootstrap console logs directly into a specialized, zero-elevation card (featuring `surfaceContainerLow` decoration and 16dp rounded corners) builds outstanding visual trust and interaction clarity compared to static, plain-text mock pages.
 
 **Action:** Standardize multi-page adaptive onboarding flows inside a center-constrained layout (650px max width), utilizing Card-wrapped Form fields, interactive bootstrap terminals, and live connection verification checks.
+
+## 2026-07-29 - Semantics Wrappers and Dialog Corner Clipping
+
+**Learning:** `IconButton` elements inherently provide semantic meaning to screen readers through their `tooltip` property. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` in dialog headers (like `TerminalDialog`) creates redundant nodes in the semantic tree and bloats the layout hierarchy. Furthermore, when creating a custom `Dialog` containing child containers with rounded corners (like top header containers), it is crucial to apply `clipBehavior: Clip.antiAlias` to the `Dialog` itself to prevent the inner container's corners from bleeding over the dialogue's MD3 bounds.
+
+**Action:** Removed redundant `Semantics` wrappers around native action buttons like `IconButton` in `TerminalDialog`. Enforced `clipBehavior: Clip.antiAlias` on custom dialog roots containing clipped sub-containers to ensure visual harmony with Material Design 3 guidelines.
 
 ## 2026-07-30 - Standardized Multi-Language HomePage Localization
 
