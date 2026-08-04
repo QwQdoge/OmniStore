@@ -121,6 +121,7 @@ class FlatpakAppList extends StatelessWidget {
                               width: 44,
                               height: 44,
                               memCacheWidth: 88,
+                              memCacheHeight: 88,
                               errorWidget: (c, e, s) =>
                                   const Icon(Icons.shopping_bag_rounded),
                             ),

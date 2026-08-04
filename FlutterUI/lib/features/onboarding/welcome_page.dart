@@ -5,10 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/services/backend_service.dart';
-import 'widgets/intro_page.dart';
-import 'widgets/env_check_page.dart';
-import 'widgets/sources_page.dart';
-import 'widgets/ai_config_page.dart';
+import 'package:frontend/features/onboarding/widgets/welcome_intro_page.dart';
+import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
+import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
+import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
+import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -81,10 +82,10 @@ class _WelcomePageState extends State<WelcomePage> {
     });
     try {
       final env = await BackendService.instance.checkEnv();
+      if (!mounted) return;
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
-        // Determine whether yay/AUR helpers are missing, and auto-toggle enableAur if ok
         final level = _evaluateEnvLevel(env);
         _enableAur = level == 'ok';
       });
@@ -218,6 +219,7 @@ class _WelcomePageState extends State<WelcomePage> {
       final status = result['status']?.toString();
       final response = result['response']?.toString() ?? '';
 
+      if (!mounted) return;
       setState(() {
         if (status == 'success' ||
             response.toLowerCase().contains('ok') ||
@@ -230,15 +232,18 @@ class _WelcomePageState extends State<WelcomePage> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _aiTestSuccess = false;
         _aiTestResult = 'Error: $e';
       });
     } finally {
       await settings.updateConfig(originalConfig);
-      setState(() {
-        _isTestingAI = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isTestingAI = false;
+        });
+      }
     }
   }
 
@@ -259,6 +264,7 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai']['api_key'] = _aiApiKeyController.text.trim();
 
     await settingsController.updateConfig(config);
+    if (!mounted) return;
     widget.onFinish();
   }
 
@@ -287,17 +293,18 @@ class _WelcomePageState extends State<WelcomePage> {
                   controller: _pageController,
                   onPageChanged: _onPageChanged,
                   children: [
-                    const IntroPage(),
-                    EnvCheckPage(
+                    const WelcomeIntroPage(),
+                    WelcomeEnvCheckPage(
                       envData: _envData,
                       isCheckingEnv: _isCheckingEnv,
+                      level: _envData != null ? _evaluateEnvLevel(_envData!) : 'unknown',
+                      onCheckEnvironment: _checkEnvironment,
                       isBootstrapping: _isBootstrapping,
                       bootstrapLogs: _bootstrapLogs,
-                      onCheckEnvironment: _checkEnvironment,
                       onStartBootstrap: _startBootstrap,
                       terminalScrollController: _terminalScrollController,
                     ),
-                    SourcesPage(
+                    WelcomeSourcesPage(
                       enableAur: _enableAur,
                       onAurChanged: (val) {
                         setState(() {
@@ -305,7 +312,7 @@ class _WelcomePageState extends State<WelcomePage> {
                         });
                       },
                     ),
-                    AiConfigPage(
+                    WelcomeAiPage(
                       enableAI: _enableAI,
                       onEnableAIChanged: (val) {
                         setState(() {
@@ -318,21 +325,22 @@ class _WelcomePageState extends State<WelcomePage> {
                           setState(() {
                             _aiProvider = val;
                             if (val == 'ollama') {
-                              _aiEndpointController.text =
-                                  'http://localhost:11434';
+                              _aiEndpointController.text = 'http://localhost:11434';
                             } else {
-                              _aiEndpointController.text =
-                                  'https://api.openai.com/v1';
+                              _aiEndpointController.text = 'https://api.openai.com/v1';
                             }
                           });
                         }
                       },
-                      aiEndpointController: _aiEndpointController,
-                      aiApiKeyController: _aiApiKeyController,
+                      endpointController: _aiEndpointController,
+                      apiKeyController: _aiApiKeyController,
                       isTestingAI: _isTestingAI,
-                      aiTestResult: _aiTestResult,
-                      aiTestSuccess: _aiTestSuccess,
-                      onTestAIConnection: _testAIConnection,
+                      onTestAI: _testAIConnection,
+                      testResult: _aiTestResult,
+                      testSuccess: _aiTestSuccess,
+                      onShowApiKeyInstructions: () {
+                        _showApiKeyInstructions(l10n, theme);
+                      },
                     ),
                   ],
                 ),
@@ -342,6 +350,15 @@ class _WelcomePageState extends State<WelcomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showApiKeyInstructions(AppLocalizations l10n, ThemeData theme) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const ApiKeyInstructionsDialog();
+      },
     );
   }
 

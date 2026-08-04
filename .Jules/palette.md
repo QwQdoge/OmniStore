@@ -1,3 +1,9 @@
+## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
+
+**Learning:** Standardizing interactive full-screen screenshot viewers by adding a backdrop `GestureDetector` with `HitTestBehavior.opaque` enables comfortable single-tap dismissal anywhere on the screen (reducing visual search friction for dismiss actions). Accompanying this with native `MaterialLocalizations.of(context).closeButtonTooltip` on the close button ensures native accessibility. In horizontal galleries, wrapping preview cards in a `Tooltip` and `Semantics` widget using a localized index label (e.g., `"${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}"`) provides robust hover discovery and screen-reader context.
+
+**Action:** Wrap full-screen media/screenshot viewers with a full-screen backdrop `GestureDetector(behavior: HitTestBehavior.opaque, onTap: ...)` to enable fluid tap-to-dismiss behavior. Ensure close/action buttons use pre-localized localizations when possible, and wrap gallery items in localized `Tooltip` and `Semantics` wrappers.
+
 ## 2026-07-27 - Clipboard Copy SnackBar Duration Standardization
 
 **Learning:** Clipboard copy confirmation SnackBars are highly repetitive, lightweight background confirmations rather than critical system errors or action prompts. Retaining the framework default 4-second duration for such transient UI feedback leads to visual crowding and delayed dismissed states when multiple text fields are copied in rapid succession. Standardizing clipboard copy feedback SnackBars globally to `const Duration(seconds: 2)` makes the UI feel significantly snappier and aligns with lightweight Material Design 3 transient notification timing patterns.
@@ -161,7 +167,7 @@
 **Learning:** Custom alert dialogs (such as ActionConfirmDialog and ImportPackagesDialog) must align with Material Design 3 guidelines to establish unified product consistency. Applying w800 headline typography, pairing dialogs with highly semantic leading icons (e.g. primary for downloads/imports, error for uninstall/warning prompts), and wrapping option structures (such as checkbox tiles) or details (such as preflight risks and suggestions) inside custom cards with explicit radii (16dp) and color-scheme context tokens (like errorContainer and primaryContainer) drastically increases readable visual flow and screen-reader context.
 
 **Action:** Standardize all dialog titles with w800 headline styles and semantic MD3 icons. Wrap warning elements in errorContainer cards, recommended pathways in primaryContainer cards, and nested list tiles in surfaceContainerLow cards to preserve vertical rhythm.
-## $(date +%Y-%m-%d) - Coordinated Layout Animations
+## 2026-07-29 - Coordinated Layout Animations
 Learning: When conditionally displaying multiple adjacent sections of a layout that may change intrinsic height simultaneously (e.g., screenshots and technical details), wrap the entire combined block (including structural titles and spacing) in a single SmoothSizeSwitcher. Avoid using separate switchers for each section to prevent uncoordinated transitions and statically hanging UI elements.
 Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwitcher in AppMainContent.
 
@@ -170,3 +176,15 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** When creating multi-step onboarding wizard screens in desktop-adapted Flutter applications, constraining the center width to 650px ensures comfortable visual scan-ability. Furthermore, integrating live environment check procedures (via Python backend execution) and streaming live setup bootstrap console logs directly into a specialized, zero-elevation card (featuring `surfaceContainerLow` decoration and 16dp rounded corners) builds outstanding visual trust and interaction clarity compared to static, plain-text mock pages.
 
 **Action:** Standardize multi-page adaptive onboarding flows inside a center-constrained layout (650px max width), utilizing Card-wrapped Form fields, interactive bootstrap terminals, and live connection verification checks.
+
+## 2026-07-29 - Semantics Wrappers and Dialog Corner Clipping
+
+**Learning:** `IconButton` elements inherently provide semantic meaning to screen readers through their `tooltip` property. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` in dialog headers (like `TerminalDialog`) creates redundant nodes in the semantic tree and bloats the layout hierarchy. Furthermore, when creating a custom `Dialog` containing child containers with rounded corners (like top header containers), it is crucial to apply `clipBehavior: Clip.antiAlias` to the `Dialog` itself to prevent the inner container's corners from bleeding over the dialogue's MD3 bounds.
+
+**Action:** Removed redundant `Semantics` wrappers around native action buttons like `IconButton` in `TerminalDialog`. Enforced `clipBehavior: Clip.antiAlias` on custom dialog roots containing clipped sub-containers to ensure visual harmony with Material Design 3 guidelines.
+
+## 2026-07-30 - Standardized Multi-Language HomePage Localization
+
+**Learning:** Relying on hardcoded strings within primary screens and layout sections degrades user experience, breaks internationalization across varied desktop environments, and leads to inconsistent multi-language visual presentation. Standardizing empty messages, section headers, and error or fallback strings using Flutter's `AppLocalizations` system combined with robust synchronization scripts ensures seamless UI consistency for native Simplified Chinese, Traditional Chinese, Japanese, and Spanish users alike, fully satisfying Material Design 3 and global accessibility expectations.
+
+**Action:** Extract all hardcoded Chinese UI strings and empty state descriptions on major page views (like `HomePage` and AI Recommendation blocks) into standard `.arb` resource keys, and run localized generation scripts (`sync_l10n.py` and `flutter gen-l10n`) to provide native internationalization.

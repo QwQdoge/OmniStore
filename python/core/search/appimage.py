@@ -72,6 +72,12 @@ class AppImageSearch(SearchSource):
                 return link.get("url", "")
         return ""
 
+    def get_installed_appimages(self) -> set:
+        apps_dir = Path.home() / "Applications"
+        if not apps_dir.exists():
+            return set()
+        return {f.name.lower() for f in apps_dir.glob("*.AppImage")}
+
     def is_installed(self, app_name: str) -> bool:
         apps_dir = Path.home() / "Applications"
         if not apps_dir.exists():
@@ -95,13 +101,15 @@ class AppImageSearch(SearchSource):
             return []
 
         loop = asyncio.get_event_loop()
-        tasks = [
-            loop.run_in_executor(
-                self.executor, self.is_installed, item.get("name", ""))
-            for item in matched_items
-        ]
+        installed_files = await loop.run_in_executor(
+            self.executor, self.get_installed_appimages
+        )
 
-        installed_statuses = await asyncio.gather(*tasks)
+        installed_statuses = []
+        for item in matched_items:
+            app_name = item.get("name", "").lower()
+            is_inst = any(app_name in f for f in installed_files)
+            installed_statuses.append(is_inst)
 
         results = []
         for item, is_inst in zip(matched_items, installed_statuses):

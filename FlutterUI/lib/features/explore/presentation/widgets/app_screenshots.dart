@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 
@@ -36,31 +37,39 @@ class AppScreenshots extends StatelessWidget {
           itemCount: screenshots.length,
           itemBuilder: (context, index) {
             final imageUrl = screenshots[index];
+            final labelText = "${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}";
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Hero(
-                tag: 'screenshot-$imageUrl',
-                child: SizedBox(
-                  width: 360,
-                  child: AppCard(
-                    onTap: () => onShowScreenshotViewer(imageUrl),
-                    borderRadius: 16.0,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0),
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        width: 360,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 720,
-                        placeholder: (context, url) => const Skeleton(
-                          width: 360,
-                          height: 220,
-                          borderRadius: 16.0,
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          width: 360,
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.broken_image_rounded),
+              child: Tooltip(
+                message: labelText,
+                child: Semantics(
+                  label: labelText,
+                  button: true,
+                  child: Hero(
+                    tag: 'screenshot-$imageUrl',
+                    child: SizedBox(
+                      width: 360,
+                      child: AppCard(
+                        onTap: () => onShowScreenshotViewer(imageUrl),
+                        borderRadius: 16.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16.0),
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            width: 360,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 720,
+                            placeholder: (context, url) => const Skeleton(
+                              width: 360,
+                              height: 220,
+                              borderRadius: 16.0,
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              width: 360,
+                              color: colorScheme.surfaceContainerHighest,
+                              child: const Icon(Icons.broken_image_rounded),
+                            ),
+                          ),
                         ),
                       ),
                     ),

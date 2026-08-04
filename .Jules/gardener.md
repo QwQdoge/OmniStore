@@ -158,3 +158,15 @@ This drastically simplified the main page builds while ensuring exact behavioral
 - **Widget Extraction without State Regression**: When breaking down an oversized `StatefulWidget` (like a 1000+ line `WelcomePage`) into smaller `StatelessWidget`s, meticulously maintain behavioral parity by lifting up `setState` operations as properly typed `ValueChanged` (e.g. `ValueChanged<bool>`) callbacks or parameter bindings to the parent, preventing compilation errors and UI dead-states.
 - **Null Safety Promotion in Extracted Widgets**: Extracted stateless widgets that conditionally render elements based on potentially null state (like `_envData`) must carefully handle Dart's flow analysis. Alias nullable constructor arguments to local, `final` variables within the `build()` method (e.g. `final envDataVal = envData;`) so that `if (envDataVal != null)` type-promotes the variable, averting `!` assertion compiler errors.
 - **Respect Test Infrastructure during Refactors**: When structural refactoring breaks a test framework's integration assumption (like `pumpAndSettle` timing out), do not globally mask the failure by commenting out test assertions or marking the test `skip: true`. Diagnose the lifecycle discrepancy (or restore the file if unmodified code failed arbitrarily due to environmental mocks) to guarantee refactoring has not unintentionally regressed behavior.
+
+## 2026-07-25 - Extract Widgets in WelcomePage
+
+**Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. `welcome_page.dart` had monolithic internal widget builders (`_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, `_buildAiPage`, etc.) that made the file structure hard to parse.
+
+**Action:** Extracted `_buildConfigCard`, `_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, and `_buildAiPage` into standalone stateless widgets in `FlutterUI/lib/features/onboarding/widgets/`. This decoupled the UI layout logic from the core onboarding state management.
+
+## 2026-07-28 - Extract ApiKeyInstructionsDialog in WelcomePage
+
+**Learning:** When extracting inline `showDialog` builder widgets into standalone stateless components, retrieve dependencies like `Theme` and `AppLocalizations` directly within the new widget's `build` method using `BuildContext`, rather than passing them down via constructors, to keep the calling methods clean.
+
+**Action:** Extracted the inline `AlertDialog` from `_showApiKeyInstructions` in `welcome_page.dart` into a new `ApiKeyInstructionsDialog` widget located in `FlutterUI/lib/features/onboarding/widgets/api_key_instructions_dialog.dart`.

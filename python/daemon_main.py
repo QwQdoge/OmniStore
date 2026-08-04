@@ -8,7 +8,6 @@ import re
 import shutil
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional
 
 from core.subprocess_utils import safe_subprocess
 from core.security_validator import SecurityValidator

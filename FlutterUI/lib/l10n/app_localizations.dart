@@ -2322,6 +2322,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generated based on your search, installation history, and currently available sources; will not affect your installation choices.'**
   String get aiPickDisclaimer;
+
+  /// Label for Quick Start section
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start'**
+  String get quickStart;
+
+  /// Subtitle for importing packages from a list
+  ///
+  /// In en, this message translates to:
+  /// **'Import your frequently used packages from a list'**
+  String get importListSubtitle;
+
+  /// Message shown when trending section is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No trending data available; it will automatically update when connection is restored.'**
+  String get emptyTrendingMessage;
+
+  /// Message shown when recommendations section is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized suggestions will appear here after you search or install apps.'**
+  String get emptyRecommendationsMessage;
+
+  /// Fallback message shown when AI recommendation fails to generate
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to generate personalized recommendations at this time. You can still browse editor picks or try again later.'**
+  String get aiPickFallbackMessage;
 }
 
 class _AppLocalizationsDelegate
