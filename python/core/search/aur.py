@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from core.subprocess_utils import safe_subprocess
 import aiohttp
 from aiohttp import ClientTimeout
@@ -52,17 +53,17 @@ class AurSearch(SearchSource):
 
             # 确保 installed_set 永远是集合，即使本地 pacman 命令执行失败
             if isinstance(installed_set, Exception):
-                print(f"Local package check failed: {installed_set}")
+                logging.warning(f"Local package check failed: {installed_set}")
                 installed_set = set()
 
             # 处理 API 响应，提取 AUR 包信息
             if isinstance(resp, Exception):
-                print(f"AUR Search API Exception: {resp}")
+                logging.error(f"AUR Search API Exception: {resp}")
                 return []
 
             # 确保响应是 aiohttp.ClientResponse 对象
             if not isinstance(resp, aiohttp.ClientResponse):
-                print("AUR Search: Invalid response type")
+                logging.error("AUR Search: Invalid response type")
                 return []
 
             data = await resp.json()
@@ -93,5 +94,5 @@ class AurSearch(SearchSource):
             return final_results
 
         except Exception as e:
-            print(f"AUR Search Exception: {e}")
+            logging.error(f"AUR Search Exception: {e}")
             return []
