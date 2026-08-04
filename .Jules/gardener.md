@@ -160,3 +160,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. `welcome_page.dart` had monolithic internal widget builders (`_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, `_buildAiPage`, etc.) that made the file structure hard to parse.
 
 **Action:** Extracted `_buildConfigCard`, `_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, and `_buildAiPage` into standalone stateless widgets in `FlutterUI/lib/features/onboarding/widgets/`. This decoupled the UI layout logic from the core onboarding state management.
+## 2026-07-28 - Extract ApiKeyInstructionsDialog in WelcomePage
+
+**Learning:** When extracting inline `showDialog` builder widgets into standalone stateless components, retrieve dependencies like `Theme` and `AppLocalizations` directly within the new widget's `build` method using `BuildContext`, rather than passing them down via constructors, to keep the calling methods clean.
+
+**Action:** Extracted the inline `AlertDialog` from `_showApiKeyInstructions` in `welcome_page.dart` into a new `ApiKeyInstructionsDialog` widget located in `FlutterUI/lib/features/onboarding/widgets/api_key_instructions_dialog.dart`.

@@ -9,6 +9,7 @@ import 'package:frontend/features/onboarding/widgets/welcome_intro_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
+import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -347,28 +348,7 @@ class _WelcomePageState extends State<WelcomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
-              const SizedBox(width: 12),
-              Text(
-                l10n.howToGetApiKey,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ],
-          ),
-          content: Text(
-            l10n.howToGetApiKeyDesc,
-            style: const TextStyle(height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.ok),
-            ),
-          ],
-        );
+        return const ApiKeyInstructionsDialog();
       },
     );
   }
