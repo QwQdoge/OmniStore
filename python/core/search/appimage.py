@@ -72,11 +72,11 @@ class AppImageSearch(SearchSource):
                 return link.get("url", "")
         return ""
 
-    def is_installed(self, app_name: str) -> bool:
+    def _get_installed_appimages(self) -> list[str]:
         apps_dir = Path.home() / "Applications"
         if not apps_dir.exists():
-            return False
-        return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
+            return []
+        return [f.name.lower() for f in apps_dir.glob("*.AppImage")]
 
     async def search(self, query: str) -> List[Dict]:
         if not query or len(query) < 2:
@@ -95,16 +95,13 @@ class AppImageSearch(SearchSource):
             return []
 
         loop = asyncio.get_event_loop()
-        tasks = [
-            loop.run_in_executor(
-                self.executor, self.is_installed, item.get("name", ""))
-            for item in matched_items
-        ]
-
-        installed_statuses = await asyncio.gather(*tasks)
+        installed_appimages = await loop.run_in_executor(
+            self.executor, self._get_installed_appimages)
 
         results = []
-        for item, is_inst in zip(matched_items, installed_statuses):
+        for item in matched_items:
+            app_name = item.get("name", "").lower()
+            is_inst = any(app_name in f for f in installed_appimages)
             results.append({
                 "name": item.get("name", ""),
                 "last_version": item.get("version", ""),

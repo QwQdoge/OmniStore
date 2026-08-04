@@ -76,20 +76,25 @@ class AppImageSource(UnifiedSource):
             self.cache_timestamp = current_time
             return merged_items
 
-    def _is_installed(self, app_name: str) -> bool:
+    def _get_installed_appimages(self) -> List[str]:
         apps_dir = Path.home() / "Applications"
-        if not apps_dir.exists(): return False
-        return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
+        if not apps_dir.exists(): return []
+        return [f.name.lower() for f in apps_dir.glob("*.AppImage")]
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         feed_items = await self._fetch_feed()
         query_lower = query.lower()
         results = []
+
+        loop = asyncio.get_event_loop()
+        installed_appimages = await loop.run_in_executor(None, self._get_installed_appimages)
+
         for item in feed_items:
             name = item.get("name", "")
             desc = item.get("description", "")
             if query_lower in name.lower() or query_lower in desc.lower():
-                is_inst = self._is_installed(name)
+                name_lower = name.lower()
+                is_inst = any(name_lower in f for f in installed_appimages)
                 download_url = ""
                 links = item.get("links") or []
                 for link in links:
