@@ -76,7 +76,16 @@ class AppImageSource(UnifiedSource):
             self.cache_timestamp = current_time
             return merged_items
 
-    def _is_installed(self, app_name: str) -> bool:
+    def _get_installed_appimages(self) -> set:
+        apps_dir = Path.home() / "Applications"
+        if not apps_dir.exists(): return set()
+        return {f.name.lower() for f in apps_dir.glob("*.AppImage")}
+
+    def _is_installed(self, app_name: str, installed_files: set = None) -> bool:
+        if installed_files is not None:
+            app_name_lower = app_name.lower()
+            return any(app_name_lower in fname for fname in installed_files)
+
         apps_dir = Path.home() / "Applications"
         if not apps_dir.exists(): return False
         return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
@@ -85,11 +94,15 @@ class AppImageSource(UnifiedSource):
         feed_items = await self._fetch_feed()
         query_lower = query.lower()
         results = []
+
+        loop = asyncio.get_event_loop()
+        installed_files = await loop.run_in_executor(None, self._get_installed_appimages)
+
         for item in feed_items:
             name = item.get("name", "")
             desc = item.get("description", "")
             if query_lower in name.lower() or query_lower in desc.lower():
-                is_inst = self._is_installed(name)
+                is_inst = self._is_installed(name, installed_files)
                 download_url = ""
                 links = item.get("links") or []
                 for link in links:
