@@ -1,0 +1,13 @@
+🧹 [Code Health] Replace print statements with logging in python/core/search/
+
+🎯 **What:** The code health issue addressed
+Replaced `print()` statements with `logging.error()` and `logging.warning()` in `python/core/search/aur.py`, `python/core/search/appimage.py`, and `python/core/search/pacman.py`. Added `import logging` where missing.
+
+💡 **Why:** How this improves maintainability
+Using the standard `logging` module instead of `print` standardizes output formatting, enables proper log leveling, and improves overall code maintainability and traceability.
+
+✅ **Verification:** How you confirmed the change is safe
+Ran the full python test suite locally (pytest tests/); all tests passed with no regressions.
+
+✨ **Result:** The improvement achieved
+Eliminated unstructured `print` statements in the core search modules, improving code health without changing behavior.
