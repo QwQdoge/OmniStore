@@ -29,7 +29,9 @@ class _WelcomePageState extends State<WelcomePage> {
   // AI assistant configuration
   bool _enableAI = false;
   String _aiProvider = 'ollama';
-  final TextEditingController _aiEndpointController = TextEditingController(text: 'http://localhost:11434');
+  final TextEditingController _aiEndpointController = TextEditingController(
+    text: 'http://localhost:11434',
+  );
   final TextEditingController _aiApiKeyController = TextEditingController();
 
   // Environment check state
@@ -84,7 +86,6 @@ class _WelcomePageState extends State<WelcomePage> {
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
-        // Determine whether yay/AUR helpers are missing, and auto-toggle enableAur if ok
         final level = _evaluateEnvLevel(env);
         _enableAur = level == 'ok';
       });
@@ -220,7 +221,9 @@ class _WelcomePageState extends State<WelcomePage> {
 
       if (!mounted) return;
       setState(() {
-        if (status == 'success' || response.toLowerCase().contains('ok') || response.toLowerCase().contains('success')) {
+        if (status == 'success' ||
+            response.toLowerCase().contains('ok') ||
+            response.toLowerCase().contains('success')) {
           _aiTestSuccess = true;
           _aiTestResult = 'Connection successful!';
         } else {
@@ -399,15 +402,17 @@ class _WelcomePageState extends State<WelcomePage> {
                     }
                   },
             icon: Icon(
-              _currentPage < 3 ? Icons.arrow_forward_rounded : Icons.login_rounded,
+              _currentPage < 3
+                  ? Icons.arrow_forward_rounded
+                  : Icons.login_rounded,
               size: 18,
             ),
             label: Text(
               _currentPage == 0
                   ? l10n.getStarted
                   : _currentPage < 3
-                      ? l10n.next
-                      : l10n.enterStore,
+                  ? l10n.next
+                  : l10n.enterStore,
             ),
           ),
         ],
