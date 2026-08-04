@@ -1,6 +1,7 @@
 import re  # 用于处理和解析 pacman 输出的正则表达式
 import asyncio  # 用于异步操作
 import shutil
+import logging
 from .base import SearchSource  # 导入基类
 from core.subprocess_utils import safe_subprocess
 
@@ -10,18 +11,21 @@ from core.subprocess_utils import safe_subprocess
 _PKG_HEADER_RE = re.compile(r'^([^\s/]+)/([^\s]+)\s+([^\s]+)(.*)$')
 
 
+logger = logging.getLogger(__name__)
+
+
 class PacmanSearch(SearchSource):
     def __init__(self, session=None):
         super().__init__(name="Pacman")
         self.session = session
         # 初始化时检查系统环境，确保 pacman 可用
         if shutil.which("pacman") is None:
-            print("No pacman found. Please ensure you are running this on an Arch-based Linux distribution.")
+            logger.warning("No pacman found. Please ensure you are running this on an Arch-based Linux distribution.")
 
     # 搜索软件包，返回搜索结果字符串
     async def search(self, query: str) -> list:
         if not query or not isinstance(query, str):
-            print("error: query must be a non-empty string")
+            logger.error("error: query must be a non-empty string")
             return []
         # 这里我使用 safe_subprocess 来调用系统的 pacman 搜索命令
         try:
@@ -33,7 +37,7 @@ class PacmanSearch(SearchSource):
                 stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=10)
                 if proc.returncode != 0 and proc.returncode != 1:
                     if stderr:
-                        print(f"Pacman error: {stderr.decode().strip()}")
+                        logger.error(f"Pacman error: {stderr.decode().strip()}")
                     return []
 
                 raw_output = stdout.decode().strip()
@@ -82,8 +86,8 @@ class PacmanSearch(SearchSource):
             return packages
 
         except asyncio.TimeoutError:
-            print(f"Error: Searching for {query} timed out. Please try again later.")
+            logger.error(f"Error: Searching for {query} timed out. Please try again later.")
             return []
         except Exception as e:
-            print(f"An unexpected error occurred: {str(e)}")
+            logger.error(f"An unexpected error occurred: {str(e)}")
             return []
