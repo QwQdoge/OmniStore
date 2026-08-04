@@ -59,6 +59,9 @@ class AppVariant {
 }
 
 class AppPackage {
+  late final String nameLower = name.toLowerCase();
+  late final String descriptionLower = description.toLowerCase();
+  late final String primarySourceLower = primarySource.toLowerCase();
   final String name;
   final String description;
   final bool installed;

@@ -445,11 +445,13 @@ class TaskManager {
 
       final subs = List<StreamSubscription>.from(_subscriptions);
       _subscriptions.clear();
-      for (final sub in subs) {
-        try {
-          await sub.cancel();
-        } catch (_) {}
-      }
+      await Future.wait(
+        subs.map((sub) async {
+          try {
+            await sub.cancel();
+          } catch (_) {}
+        }),
+      );
 
       if (kIsWeb) {
         _updateState(

@@ -139,9 +139,7 @@ class ProcessRegistry {
     _reaperTimer = null;
     final processes = List<Process>.from(_activeProcesses);
     _activeProcesses.clear();
-    for (final p in processes) {
-      await kill(p);
-    }
+    await Future.wait(processes.map((p) => kill(p)));
   }
 
   Future<bool> _isProcessAlive(int pid) async {

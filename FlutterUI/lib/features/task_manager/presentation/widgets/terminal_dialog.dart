@@ -12,6 +12,7 @@ class TerminalDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Dialog(
+      clipBehavior: Clip.antiAlias,
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
       child: SizedBox(
         width: 600,
@@ -37,14 +38,10 @@ class TerminalDialog extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Semantics(
-                    label: AppLocalizations.of(context)!.windowClose,
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      tooltip: AppLocalizations.of(context)!.windowClose,
-                      onPressed: () => Navigator.pop(context),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    tooltip: AppLocalizations.of(context)!.windowClose,
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),

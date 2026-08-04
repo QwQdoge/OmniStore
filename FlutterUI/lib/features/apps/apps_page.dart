@@ -60,8 +60,6 @@ class _AppsPageState extends State<AppsPage> {
     if (!mounted) return;
     final query = _searchController.text.toLowerCase();
     final filtered = _apps.where((app) {
-      // Memoized because app filtering was recalculated
-      // on every render / search query keystroke
       return app.nameLower.contains(query) ||
           app.descriptionLower.contains(query);
     }).toList();

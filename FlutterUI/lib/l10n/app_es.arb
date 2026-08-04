@@ -350,7 +350,7 @@
       }
     }
   },
-  "aiPromptExplain": "Análisis",
+  "aiPromptExplain": "Explicar con IA",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
@@ -358,15 +358,15 @@
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "Análisis de errores",
+  "aiPromptError": "Analizar error con IA",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPickDay": "Selección del día de la IA",
+  "aiPickDay": "Recomendación diaria de la IA",
   "@aiPickDay": {
     "description": "aiPickDay"
   },
-  "aiPickDaySubtitle": "Impulsado por OmniStore AI",
+  "aiPickDaySubtitle": "Con la tecnología de OmniStore AI",
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
@@ -378,7 +378,7 @@
   "@aiHealthTitle": {
     "description": "aiHealthTitle"
   },
-  "aiHealthSubtitle": "Diagnóstico inteligente para su Arch Linux",
+  "aiHealthSubtitle": "Diagnóstico inteligente para Arch Linux",
   "@aiHealthSubtitle": {
     "description": "aiHealthSubtitle"
   },
@@ -410,11 +410,11 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiRefineSearch": "Refinamiento de búsqueda con IA",
+  "aiRefineSearch": "Refinar búsqueda con IA",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Análisis de actualización",
+  "aiExplainUpdate": "Explicar esta actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },

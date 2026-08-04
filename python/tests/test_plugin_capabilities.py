@@ -175,7 +175,8 @@ def test_file_backed_plugins_install_size_and_uninstall_with_sync_callbacks(tmp_
     asyncio.run(run_cycle())
 
 
-def test_manifest_plugins_keep_review_gating_except_builtin_winget():
+def test_manifest_plugins_keep_review_gating_except_builtin_winget(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     cm = ConfigManager()
     registry = PluginRegistry(cm, None)
     registry.discover()

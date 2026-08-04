@@ -10,34 +10,39 @@ class ScreenshotViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black.withValues(alpha: 0.9),
-      body: Stack(
-        children: [
-          Center(
-            child: Hero(
-              tag: 'screenshot-$url',
-              child: InteractiveViewer(
-                maxScale: 4.0,
-                child: CachedNetworkImage(
-                  imageUrl: url,
-                  fit: BoxFit.contain,
-                  memCacheWidth: 1080,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => Navigator.pop(context),
+        child: Stack(
+          children: [
+            Center(
+              child: Hero(
+                tag: 'screenshot-$url',
+                child: InteractiveViewer(
+                  maxScale: 4.0,
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    fit: BoxFit.contain,
+                    memCacheWidth: 1080,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            top: 40,
-            right: 20,
-            child: IconButton.filled(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close_rounded),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black.withValues(alpha: 0.3),
-                foregroundColor: Colors.white,
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton.filled(
+                onPressed: () => Navigator.pop(context),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                icon: const Icon(Icons.close_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: 0.3),
+                  foregroundColor: Colors.white,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

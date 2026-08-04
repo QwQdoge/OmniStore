@@ -136,9 +136,11 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 - Added a `_disposed` boolean flag, setting it to `true` inside `dispose()`, and overrode `notifyListeners()` to guard against async updates after disposal.
 - Captured `Supabase.instance.client.auth.onAuthStateChange.listen` into `_authSubscription` and properly cancelled both `_authSubscription` and `_linkSubscription` inside `dispose()`.
 - Guarded external stream and plugin initializations (Supabase, AppLinks) with `try-catch` blocks to prevent initialization avalanche failures.
-## 2026-08-04 - Controller Async Lifecycle Standardization
+## 2026-07-21 - State Management: Async Lifecycle Safety for Controllers
 
-**Learning:** To ensure safe async state updates and prevent lifecycle crashes when controllers are disposed during long-running async operations, a standard `_disposed` flag must be implemented across all `ChangeNotifier` subclasses.
+**Learning:** Controllers that inherit from `ChangeNotifier` (`NavigationController`, `SettingsController`) can trigger `notifyListeners()` after being disposed, particularly when involved in asynchronous operations (like saving/loading config or handling navigation delays). This leads to lifecycle exceptions in Flutter ("A [ChangeNotifier] was used after being disposed").
 
 **Action:**
-- Universally implemented a `_disposed` flag by overriding `dispose()` and `notifyListeners()` in `NavigationController` and `SettingsController` to wrap the `super.notifyListeners()` call inside an `if (!_disposed)` check, ensuring async lifecycle clarity.
+- Added standard `_disposed` flag checks across `NavigationController` and `SettingsController`.
+- Overrode `dispose()` to set `_disposed = true` before calling `super.dispose()`.
+- Overrode `notifyListeners()` to wrap the `super.notifyListeners()` call in an `if (!_disposed)` check, standardizing async lifecycle safety across all providers in the codebase.

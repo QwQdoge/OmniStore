@@ -9,6 +9,7 @@ import 'package:frontend/features/onboarding/widgets/welcome_intro_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
+import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -28,7 +29,9 @@ class _WelcomePageState extends State<WelcomePage> {
   // AI assistant configuration
   bool _enableAI = false;
   String _aiProvider = 'ollama';
-  final TextEditingController _aiEndpointController = TextEditingController(text: 'http://localhost:11434');
+  final TextEditingController _aiEndpointController = TextEditingController(
+    text: 'http://localhost:11434',
+  );
   final TextEditingController _aiApiKeyController = TextEditingController();
 
   // Environment check state
@@ -79,10 +82,10 @@ class _WelcomePageState extends State<WelcomePage> {
     });
     try {
       final env = await BackendService.instance.checkEnv();
+      if (!mounted) return;
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
-        // Determine whether yay/AUR helpers are missing, and auto-toggle enableAur if ok
         final level = _evaluateEnvLevel(env);
         _enableAur = level == 'ok';
       });
@@ -216,8 +219,11 @@ class _WelcomePageState extends State<WelcomePage> {
       final status = result['status']?.toString();
       final response = result['response']?.toString() ?? '';
 
+      if (!mounted) return;
       setState(() {
-        if (status == 'success' || response.toLowerCase().contains('ok') || response.toLowerCase().contains('success')) {
+        if (status == 'success' ||
+            response.toLowerCase().contains('ok') ||
+            response.toLowerCase().contains('success')) {
           _aiTestSuccess = true;
           _aiTestResult = 'Connection successful!';
         } else {
@@ -226,15 +232,18 @@ class _WelcomePageState extends State<WelcomePage> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _aiTestSuccess = false;
         _aiTestResult = 'Error: $e';
       });
     } finally {
       await settings.updateConfig(originalConfig);
-      setState(() {
-        _isTestingAI = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isTestingAI = false;
+        });
+      }
     }
   }
 
@@ -255,6 +264,7 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai']['api_key'] = _aiApiKeyController.text.trim();
 
     await settingsController.updateConfig(config);
+    if (!mounted) return;
     widget.onFinish();
   }
 
@@ -347,28 +357,7 @@ class _WelcomePageState extends State<WelcomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
-              const SizedBox(width: 12),
-              Text(
-                l10n.howToGetApiKey,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ],
-          ),
-          content: Text(
-            l10n.howToGetApiKeyDesc,
-            style: const TextStyle(height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.ok),
-            ),
-          ],
-        );
+        return const ApiKeyInstructionsDialog();
       },
     );
   }
@@ -413,15 +402,17 @@ class _WelcomePageState extends State<WelcomePage> {
                     }
                   },
             icon: Icon(
-              _currentPage < 3 ? Icons.arrow_forward_rounded : Icons.login_rounded,
+              _currentPage < 3
+                  ? Icons.arrow_forward_rounded
+                  : Icons.login_rounded,
               size: 18,
             ),
             label: Text(
               _currentPage == 0
                   ? l10n.getStarted
                   : _currentPage < 3
-                      ? l10n.next
-                      : l10n.enterStore,
+                  ? l10n.next
+                  : l10n.enterStore,
             ),
           ),
         ],
