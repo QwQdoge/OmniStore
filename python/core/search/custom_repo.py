@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import asyncio
@@ -34,7 +35,7 @@ class CustomRepoManager:
                     if len(parts) >= 2:
                         remotes.append({"name": parts[0].strip(), "url": parts[1].strip()})
                 return remotes
-        except Exception:
+        except Exception as e:
             return []
 
     async def add_flatpak_remote(self, name: str, url: str, callback=None) -> bool:
@@ -134,8 +135,8 @@ class CustomRepoManager:
                 url = server_match.group(1).strip() if server_match else ""
                 
                 repos.append({"name": repo_name, "url": url})
-        except Exception:
-            pass
+        except Exception as e:
+            logging.error(f"Failed to parse pacman custom repos: {e}")
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback=None) -> bool:
