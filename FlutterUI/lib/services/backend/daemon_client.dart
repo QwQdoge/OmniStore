@@ -56,7 +56,9 @@ class DaemonClient {
         onTimeout: () =>
             debugPrint("DaemonClient: Mutex bottlenecked for $action"),
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint("DaemonClient: Mutex exception for $action: $e");
+    }
 
     try {
       await _ensureConnected();
