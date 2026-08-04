@@ -68,7 +68,8 @@ class SearchManager:
             try:
                 results = await self.recommender.get_category_apps(standard_id)
                 if results: return results
-            except Exception: pass
+            except Exception as e:
+                logging.warning(f"Failed to get category apps for {standard_id}: {e}")
             query = f"category:{standard_id}"
 
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
@@ -97,7 +98,8 @@ class SearchManager:
                                         flat.extend(v)
                                 return flat
                             return recs if isinstance(recs, list) else []
-                        except Exception:
+                        except Exception as e:
+                            logging.warning(f"Failed to get recommendations for flatpak: {e}")
                             return []
                     else:
                         if hasattr(source_obj, "get_recommendations"):
@@ -111,7 +113,8 @@ class SearchManager:
                                             flat2.extend(v)
                                     return flat2
                                 return recs if isinstance(recs, list) else []
-                            except Exception:
+                            except Exception as e:
+                                logging.warning(f"Failed to get recommendations for source: {e}")
                                 return []
                         return []
                 # Non‑empty term: limit search to this source only
@@ -266,7 +269,8 @@ class SearchManager:
                         logging.warning("Murphy-proof: AI Ranking timed out (1.5s). Falling back to smart score.")
                     except Exception as e:
                         logging.error(f"Murphy-proof: AI Ranking panic: {e}. Falling back to smart score.")
-            except Exception: pass
+            except Exception as e:
+                logging.warning(f"AI ranking setup failed: {e}")
 
         exact_match_idx = -1
         for idx, item in enumerate(merged):
@@ -300,14 +304,16 @@ class SearchManager:
                                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
                 stdout, _ = await p.communicate()
                 return {line.strip() for line in stdout.decode().strip().splitlines() if line.strip()}
-        except Exception:
+        except Exception as e:
+            logging.debug(f"Failed to get installed apps: {e}")
             return set()
         finally:
             if p and p.returncode is None:
                 try:
                     p.kill()
                     await p.wait()
-                except Exception: pass
+                except Exception as e:
+                    logging.debug(f"Failed to kill subprocess: {e}")
 
     async def _get_installed_aur(self, cached_set: Optional[set]):
         if cached_set:
@@ -317,14 +323,16 @@ class SearchManager:
             async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
                 stdout, _ = await p.communicate()
                 return {line.split()[0] for line in stdout.decode().strip().splitlines() if line.strip()}
-        except Exception:
+        except Exception as e:
+            logging.debug(f"Failed to get installed apps: {e}")
             return set()
         finally:
             if p and p.returncode is None:
                 try:
                     p.kill()
                     await p.wait()
-                except Exception: pass
+                except Exception as e:
+                    logging.debug(f"Failed to kill subprocess: {e}")
 
     async def _get_installed_winget(self, cached_set: Optional[set]):
         if cached_set:
@@ -333,7 +341,8 @@ class SearchManager:
         if source and hasattr(source, "_get_installed_ids"):
             try:
                 return await source._get_installed_ids()
-            except Exception:
+            except Exception as e:
+                logging.debug(f"Failed to get installed winget apps: {e}")
                 return set()
         return set()
 

@@ -122,3 +122,5 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Redundant `.toLowerCase()` string transformations inside hot-path UI filtering loops (such as search inputs parsing hundreds of items in AppsPage, DownloadPage, and SearchPage) create unnecessary CPU overhead. Pre-computing these fields lazily on the model drastically improves performance.
 
 **Action:** Added lazy `nameLower`, `descriptionLower`, and `primarySourceLower` fields to `AppPackage` and updated all corresponding `toLowerCase()` UI usage to reference the cached fields.
+
+- Added memCacheHeight to 1:1 app icons in various files to restrict decoder memory allocation inside the heap, following the memory optimization guideline.

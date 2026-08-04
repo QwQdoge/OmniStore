@@ -111,6 +111,8 @@ class _DownloadPageState extends State<DownloadPage>
           (_selectedSourceFilter == "unmanaged" && !app.managed) ||
           app.sources.contains(_selectedSourceFilter) ||
           app.primarySource == _selectedSourceFilter;
+      // Memoized because app filtering was recalculated
+      // on every render / search query keystroke
       final matchesSearch =
           _searchQuery.isEmpty ||
           app.nameLower.contains(_searchQuery) ||

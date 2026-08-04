@@ -350,23 +350,23 @@
       }
     }
   },
-  "aiPromptExplain": "解析",
+  "aiPromptExplain": "AIで解説",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
-  "aiPromptRecommend": "AI 提案",
+  "aiPromptRecommend": "AIおすすめ提案",
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "AI エラー分析",
+  "aiPromptError": "AIでエラーを分析",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPickDay": "本日の一押し（AI）",
+  "aiPickDay": "AIによる本日のおすすめ",
   "@aiPickDay": {
     "description": "aiPickDay"
   },
-  "aiPickDaySubtitle": "OmniStore AI による提供",
+  "aiPickDaySubtitle": "OmniStore AI 提供",
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
@@ -374,11 +374,11 @@
   "@aiCompareTitle": {
     "description": "aiCompareTitle"
   },
-  "aiHealthTitle": "AI システム健康診断レポート",
+  "aiHealthTitle": "AI システムヘルスレポート",
   "@aiHealthTitle": {
     "description": "aiHealthTitle"
   },
-  "aiHealthSubtitle": "Arch Linux 向けインテリジェント診断",
+  "aiHealthSubtitle": "Arch Linux のためのインテリジェント診断",
   "@aiHealthSubtitle": {
     "description": "aiHealthSubtitle"
   },
@@ -1157,12 +1157,32 @@
   "@continueInstallation": {
     "description": "Description for continueInstallation"
   },
-  "changeRecommendation": "推奨事項を変更する",
+  "changeRecommendation": "推奨を変更する",
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "検索、インストール履歴、現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。",
+  "aiPickDisclaimer": "この推奨は、検索履歴、インストール履歴、および現在利用可能なソースに基づいて生成されたものであり、実際のインストール選択には影響しません。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "quickStart": "クイックスタート",
+  "@quickStart": {
+    "description": "Label for Quick Start section"
+  },
+  "importListSubtitle": "リストからよく使うパッケージをインポート",
+  "@importListSubtitle": {
+    "description": "Subtitle for importing packages from a list"
+  },
+  "emptyTrendingMessage": "トレンドデータがありません。接続が回復すると自動的に更新されます。",
+  "@emptyTrendingMessage": {
+    "description": "Message shown when trending section is empty"
+  },
+  "emptyRecommendationsMessage": "アプリの検索やインストールを行うと、ここにパーソナライズされたおすすめが表示されます。",
+  "@emptyRecommendationsMessage": {
+    "description": "Message shown when recommendations section is empty"
+  },
+  "aiPickFallbackMessage": "現在、パーソナライズされたおすすめ情報を生成できません。編集部のおすすめを閲覧するか、後ほどもう一度お試しください。",
+  "@aiPickFallbackMessage": {
+    "description": "Fallback message shown when AI recommendation fails to generate"
   }
 }

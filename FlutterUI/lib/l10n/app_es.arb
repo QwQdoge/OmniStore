@@ -350,7 +350,7 @@
       }
     }
   },
-  "aiPromptExplain": "Análisis",
+  "aiPromptExplain": "Explicar con IA",
   "@aiPromptExplain": {
     "description": "aiPromptExplain"
   },
@@ -358,15 +358,15 @@
   "@aiPromptRecommend": {
     "description": "aiPromptRecommend"
   },
-  "aiPromptError": "Análisis de errores",
+  "aiPromptError": "Analizar error con IA",
   "@aiPromptError": {
     "description": "aiPromptError"
   },
-  "aiPickDay": "Selección del día de la IA",
+  "aiPickDay": "Recomendación diaria de la IA",
   "@aiPickDay": {
     "description": "aiPickDay"
   },
-  "aiPickDaySubtitle": "Impulsado por OmniStore AI",
+  "aiPickDaySubtitle": "Con la tecnología de OmniStore AI",
   "@aiPickDaySubtitle": {
     "description": "aiPickDaySubtitle"
   },
@@ -378,7 +378,7 @@
   "@aiHealthTitle": {
     "description": "aiHealthTitle"
   },
-  "aiHealthSubtitle": "Diagnóstico inteligente para su Arch Linux",
+  "aiHealthSubtitle": "Diagnóstico inteligente para Arch Linux",
   "@aiHealthSubtitle": {
     "description": "aiHealthSubtitle"
   },
@@ -410,11 +410,11 @@
   "@aiCopyCommand": {
     "description": "aiCopyCommand"
   },
-  "aiRefineSearch": "Refinamiento de búsqueda con IA",
+  "aiRefineSearch": "Refinar búsqueda con IA",
   "@aiRefineSearch": {
     "description": "aiRefineSearch"
   },
-  "aiExplainUpdate": "Análisis de actualización",
+  "aiExplainUpdate": "Explicar esta actualización",
   "@aiExplainUpdate": {
     "description": "aiExplainUpdate"
   },
@@ -1164,5 +1164,25 @@
   "aiPickDisclaimer": "Generado en función de su búsqueda, historial de instalación y fuentes disponibles actualmente; no afectará sus opciones de instalación.",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
+  },
+  "quickStart": "Inicio rápido",
+  "@quickStart": {
+    "description": "Label for Quick Start section"
+  },
+  "importListSubtitle": "Importa tus paquetes de uso frecuente desde una lista",
+  "@importListSubtitle": {
+    "description": "Subtitle for importing packages from a list"
+  },
+  "emptyTrendingMessage": "No hay datos de tendencias disponibles; se actualizarán automáticamente cuando se restablezca la conexión.",
+  "@emptyTrendingMessage": {
+    "description": "Message shown when trending section is empty"
+  },
+  "emptyRecommendationsMessage": "Las sugerencias personalizadas aparecerán aquí después de buscar o instalar aplicaciones.",
+  "@emptyRecommendationsMessage": {
+    "description": "Message shown when recommendations section is empty"
+  },
+  "aiPickFallbackMessage": "No se pueden generar recomendaciones personalizadas en este momento. Aún puedes explorar las selecciones de los editores o volver a intentarlo más tarde.",
+  "@aiPickFallbackMessage": {
+    "description": "Fallback message shown when AI recommendation fails to generate"
   }
 }

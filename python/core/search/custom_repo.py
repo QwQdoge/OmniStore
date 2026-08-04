@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import asyncio
@@ -34,7 +35,7 @@ class CustomRepoManager:
                     if len(parts) >= 2:
                         remotes.append({"name": parts[0].strip(), "url": parts[1].strip()})
                 return remotes
-        except Exception:
+        except Exception as e:
             return []
 
     async def add_flatpak_remote(self, name: str, url: str, callback=None) -> bool:
@@ -53,7 +54,10 @@ class CustomRepoManager:
                 if success:
                     # Sync into config.yaml
                     custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
-                    if not any(r.get("name") == name for r in custom_flatpaks):
+                    for r in custom_flatpaks:
+                        if r.get("name") == name:
+                            break
+                    else:
                         custom_flatpaks.append({"name": name, "url": url})
                         self.cm.set("custom_repos.flatpak", custom_flatpaks)
                     if callback:
@@ -134,8 +138,8 @@ class CustomRepoManager:
                 url = server_match.group(1).strip() if server_match else ""
                 
                 repos.append({"name": repo_name, "url": url})
-        except Exception:
-            pass
+        except Exception as e:
+            logging.error(f"Failed to parse pacman custom repos: {e}")
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback=None) -> bool:
@@ -187,7 +191,10 @@ class CustomRepoManager:
             if proc.returncode == 0:
                 # Sync config.yaml
                 custom_pacman = self.cm.get("custom_repos.pacman", [])
-                if not any(r.get("name") == name for r in custom_pacman):
+                for r in custom_pacman:
+                    if r.get("name") == name:
+                        break
+                else:
                     custom_pacman.append({"name": name, "url": url})
                     self.cm.set("custom_repos.pacman", custom_pacman)
                 

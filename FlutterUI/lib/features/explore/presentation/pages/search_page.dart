@@ -208,6 +208,8 @@ class _SearchPageState extends State<SearchPage> {
                             final filtered = _selectedSources.isEmpty
                                 ? results
                                 : results.where((app) {
+                                    // Memoized because app filtering was recalculated
+                                    // on every render / search query keystroke
                                     return _selectedSources.contains(
                                       app.primarySourceLower,
                                     );
