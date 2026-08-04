@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 import asyncio
 from core.subprocess_utils import safe_subprocess
 import tempfile
@@ -134,8 +135,8 @@ class CustomRepoManager:
                 url = server_match.group(1).strip() if server_match else ""
                 
                 repos.append({"name": repo_name, "url": url})
-        except Exception:
-            pass
+        except Exception as e:
+            logging.warning("Failed to parse /etc/pacman.conf for custom repositories: %s", e)
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback=None) -> bool:
