@@ -1,4 +1,5 @@
 import os
+import logging
 import re
 import asyncio
 from core.subprocess_utils import safe_subprocess
@@ -6,6 +7,8 @@ import tempfile
 import shutil
 from typing import Dict, List, Any
 from core.downloader.manager import InstallExecutor
+
+logger = logging.getLogger(__name__)
 
 
 class CustomRepoManager:
@@ -34,7 +37,8 @@ class CustomRepoManager:
                     if len(parts) >= 2:
                         remotes.append({"name": parts[0].strip(), "url": parts[1].strip()})
                 return remotes
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error listing flatpak remotes: {e}")
             return []
 
     async def add_flatpak_remote(self, name: str, url: str, callback=None) -> bool:
@@ -134,8 +138,8 @@ class CustomRepoManager:
                 url = server_match.group(1).strip() if server_match else ""
                 
                 repos.append({"name": repo_name, "url": url})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Error parsing /etc/pacman.conf: {e}")
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback=None) -> bool:
