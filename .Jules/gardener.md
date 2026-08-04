@@ -160,3 +160,6 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Oversized presentation files containing complex logic and multiple inline widgets hurt readability and maintainability. `welcome_page.dart` had monolithic internal widget builders (`_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, `_buildAiPage`, etc.) that made the file structure hard to parse.
 
 **Action:** Extracted `_buildConfigCard`, `_buildIntroPage`, `_buildEnvCheckPage`, `_buildSourcesPage`, and `_buildAiPage` into standalone stateless widgets in `FlutterUI/lib/features/onboarding/widgets/`. This decoupled the UI layout logic from the core onboarding state management.
+## 2026-08-04 - Fix empty exception blocks
+**Learning:** Empty exception blocks (e.g. `except Exception:` without logging or assignment) hide underlying errors and make debugging difficult. Catching and logging exceptions ensures errors are visible without breaking control flow.
+**Action:** Updated empty `except Exception:` blocks in `python/core/search/custom_repo.py` to capture the exception as `e` and log it using `logger.error` before returning empty results or passing.
