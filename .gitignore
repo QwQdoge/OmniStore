@@ -116,3 +116,4 @@ bin/
 /src/
 /omnistore-bin-0.1.0.beta-1-x86_64.pkg.tar.zst
 /omnistore-v0.1.0.beta-linux-x64.tar.gz
+.test_venv
