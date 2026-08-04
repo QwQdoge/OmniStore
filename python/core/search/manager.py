@@ -68,7 +68,8 @@ class SearchManager:
             try:
                 results = await self.recommender.get_category_apps(standard_id)
                 if results: return results
-            except Exception: pass
+            except Exception as e:
+                logging.error(f"Failed to fetch category apps for {standard_id}: {e}")
             query = f"category:{standard_id}"
 
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
