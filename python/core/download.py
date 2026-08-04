@@ -1,4 +1,3 @@
-import asyncio
 from typing import Dict, Any, List, Optional, Callable
 
 async def unified_install(source_name: str, package: Dict[str, Any], callback: Callable = None) -> bool:

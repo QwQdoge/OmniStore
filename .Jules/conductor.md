@@ -45,3 +45,14 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** `SmoothSizeSwitcher` can fully replace `AnimatedSwitcher` across the entire app if it exposes the `transitionBuilder` property. This allows for custom transitions (like `RotationTransition` or `ScaleTransition`) while maintaining the unified MD3 layout-sizing wrapper provided by `SmoothSizeSwitcher`.
 
 **Action:** Updated `SmoothSizeSwitcher` to accept an optional `transitionBuilder` parameter (defaulting to `AnimatedSwitcher.defaultTransitionBuilder`). Replaced all remaining raw `AnimatedSwitcher` instances in `github_star_badge.dart`, `smooth_progress_bar.dart`, `hamburger_button.dart`, `adaptive_navigation_shell.dart`, and `search_page.dart` with `SmoothSizeSwitcher`.
+## 2024-10-27 - Smooth layout transitions for Data-Driven Layouts
+
+**Learning:** When substituting complex data objects that dynamically alter layout height (e.g., app variants or dependency lists), wrapping the internal layout structure (like a `Column`) with a `SmoothSizeSwitcher` and assigning a `ValueKey` based on a specific, identifying data property (e.g., `ValueKey(variant.source ?? default)`) ensures Flutter recognizes the data change and smoothly animates both the crossfade and resize transitions instead of creating an abrupt visual jump.
+
+**Action:** Refactored `AppTechnicalDetails` to wrap its internal `Column` with `SmoothSizeSwitcher` and assigned `ValueKey(currentVariant?.source ?? 'default')` to the `Column`.
+
+## 2024-11-20 - Granular vs. Coordinated Switchers
+
+**Learning:** While adjacent sections that share the same state trigger (e.g., screenshots and technical details appearing simultaneously) should be coordinated in a single `SmoothSizeSwitcher`, unrelated sections with independent loading states (e.g., an 'About' section versus conditionally loaded 'Extra Details') must use separate, granular switchers. Wrapping an entire page body or unrelated blocks in one massive switcher causes jarring atomic jumps where static elements unnecessarily cross-fade.
+
+**Action:** Refactored `AppMainContent` to split the massive `SmoothSizeSwitcher` into granular switchers for the 'About' section, and a coordinated block for 'Screenshots' and 'Technical Details'.

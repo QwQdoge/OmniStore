@@ -83,23 +83,25 @@ class AppMainContent extends StatelessWidget {
           onCancelAction: onCancelAction,
         ),
         const SizedBox(height: 24),
+        AppDetailsSectionTitle(
+          title: AppLocalizations.of(context)!.about,
+        ),
         SmoothSizeSwitcher(
           alignment: Alignment.topLeft,
-          child: Column(
-            key: ValueKey('details-block-$isLoadingDetails-${extraDetails != null}'),
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppDetailsSectionTitle(
-                title: AppLocalizations.of(context)!.about,
-              ),
-              if (isLoadingDetails)
-                const ParagraphSkeleton(key: ValueKey('about-loading'))
-              else
-                AppAboutSection(
+          child: isLoadingDetails
+              ? const ParagraphSkeleton(key: ValueKey('about-loading'))
+              : AppAboutSection(
                   key: const ValueKey('about-loaded'),
                   description: extraDetails?.description,
                   fallbackDescription: app.description,
                 ),
+        ),
+        SmoothSizeSwitcher(
+          alignment: Alignment.topLeft,
+          child: Column(
+            key: ValueKey('coordinated-block-${extraDetails != null}'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               if (hasCapability('has_screenshots') &&
                   extraDetails != null &&
                   extraDetails!.screenshots != null &&

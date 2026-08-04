@@ -1,3 +1,9 @@
+## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
+
+**Learning:** Standardizing interactive full-screen screenshot viewers by adding a backdrop `GestureDetector` with `HitTestBehavior.opaque` enables comfortable single-tap dismissal anywhere on the screen (reducing visual search friction for dismiss actions). Accompanying this with native `MaterialLocalizations.of(context).closeButtonTooltip` on the close button ensures native accessibility. In horizontal galleries, wrapping preview cards in a `Tooltip` and `Semantics` widget using a localized index label (e.g., `"${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}"`) provides robust hover discovery and screen-reader context.
+
+**Action:** Wrap full-screen media/screenshot viewers with a full-screen backdrop `GestureDetector(behavior: HitTestBehavior.opaque, onTap: ...)` to enable fluid tap-to-dismiss behavior. Ensure close/action buttons use pre-localized localizations when possible, and wrap gallery items in localized `Tooltip` and `Semantics` wrappers.
+
 ## 2026-07-27 - Clipboard Copy SnackBar Duration Standardization
 
 **Learning:** Clipboard copy confirmation SnackBars are highly repetitive, lightweight background confirmations rather than critical system errors or action prompts. Retaining the framework default 4-second duration for such transient UI feedback leads to visual crowding and delayed dismissed states when multiple text fields are copied in rapid succession. Standardizing clipboard copy feedback SnackBars globally to `const Duration(seconds: 2)` makes the UI feel significantly snappier and aligns with lightweight Material Design 3 transient notification timing patterns.
@@ -176,3 +182,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** `IconButton` elements inherently provide semantic meaning to screen readers through their `tooltip` property. Unnecessarily wrapping them in `Semantics(button: true, label: ...)` in dialog headers (like `TerminalDialog`) creates redundant nodes in the semantic tree and bloats the layout hierarchy. Furthermore, when creating a custom `Dialog` containing child containers with rounded corners (like top header containers), it is crucial to apply `clipBehavior: Clip.antiAlias` to the `Dialog` itself to prevent the inner container's corners from bleeding over the dialogue's MD3 bounds.
 
 **Action:** Removed redundant `Semantics` wrappers around native action buttons like `IconButton` in `TerminalDialog`. Enforced `clipBehavior: Clip.antiAlias` on custom dialog roots containing clipped sub-containers to ensure visual harmony with Material Design 3 guidelines.
+
+## 2026-07-30 - Standardized Multi-Language HomePage Localization
+
+**Learning:** Relying on hardcoded strings within primary screens and layout sections degrades user experience, breaks internationalization across varied desktop environments, and leads to inconsistent multi-language visual presentation. Standardizing empty messages, section headers, and error or fallback strings using Flutter's `AppLocalizations` system combined with robust synchronization scripts ensures seamless UI consistency for native Simplified Chinese, Traditional Chinese, Japanese, and Spanish users alike, fully satisfying Material Design 3 and global accessibility expectations.
+
+**Action:** Extract all hardcoded Chinese UI strings and empty state descriptions on major page views (like `HomePage` and AI Recommendation blocks) into standard `.arb` resource keys, and run localized generation scripts (`sync_l10n.py` and `flutter gen-l10n`) to provide native internationalization.

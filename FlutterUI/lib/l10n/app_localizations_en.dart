@@ -1275,4 +1275,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiPickDisclaimer =>
       'Generated based on your search, installation history, and currently available sources; will not affect your installation choices.';
+
+  @override
+  String get quickStart => 'Quick Start';
+
+  @override
+  String get importListSubtitle =>
+      'Import your frequently used packages from a list';
+
+  @override
+  String get emptyTrendingMessage =>
+      'No trending data available; it will automatically update when connection is restored.';
+
+  @override
+  String get emptyRecommendationsMessage =>
+      'Personalized suggestions will appear here after you search or install apps.';
+
+  @override
+  String get aiPickFallbackMessage =>
+      'Unable to generate personalized recommendations at this time. You can still browse editor picks or try again later.';
 }
