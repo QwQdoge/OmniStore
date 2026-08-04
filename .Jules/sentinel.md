@@ -185,3 +185,10 @@ Adding `if (!mounted) return;` at the very end of a function or right before vit
 
 Action:
 Removed the unnecessary `if (!mounted) return;` guard immediately before `windowManager.setPreventClose(false)` and `windowManager.close()` in `_handleFullExit` within `FlutterUI/lib/app/main_navigation.dart`. This ensures that final window destruction and exit commands are executed even if the widget unmounts during the backend shutdown awaits.
+## 2026-08-04 - [Async Lifecycle Crashes in Onboarding]
+
+Learning:
+Extensive audit revealed asynchronous gaps where state (`setState`) or context (`widget`) was accessed after an `await` without verifying `mounted` status in `FlutterUI/lib/features/onboarding/welcome_page.dart`. This is a classic async lifecycle violation that can result in errors if the onboarding screen is navigated away from or disposed before the async operations (e.g. backend checking, AI connection testing) complete. Care must also be taken within `finally` blocks to use `if (mounted)` rather than `if (!mounted) return;` so that the method doesn't exit prematurely or silently swallow other cleanup code, although `mounted` checks should still be applied.
+
+Action:
+Implemented a strict `if (!mounted) return;` guard immediately before `setState` in `_checkEnvironment` and `_testAIConnection` (including `try`, `catch` and an `if (mounted)` within `finally`). Added a `if (!mounted) return;` guard before `widget.onFinish()` in `_finishOnboarding`.
