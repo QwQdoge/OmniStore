@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import aiohttp
 from aiohttp import ClientTimeout
 from pathlib import Path
@@ -30,10 +31,10 @@ class AppImageSearch(SearchSource):
                     data = await resp.json()
                     return data.get("items", [])
                 else:
-                    print(f"Failed to fetch AppImage feed {url}: HTTP {resp.status}")
+                    logging.error(f"Failed to fetch AppImage feed {url}: HTTP {resp.status}")
                     return []
         except Exception as e:
-            print(f"Exception while fetching AppImage feed {url}: {e}")
+            logging.error(f"Exception while fetching AppImage feed {url}: {e}")
             return []
 
     async def _fetch_feed(self) -> List[Dict]:
