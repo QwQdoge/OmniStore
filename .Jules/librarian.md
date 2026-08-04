@@ -136,3 +136,9 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 - Added a `_disposed` boolean flag, setting it to `true` inside `dispose()`, and overrode `notifyListeners()` to guard against async updates after disposal.
 - Captured `Supabase.instance.client.auth.onAuthStateChange.listen` into `_authSubscription` and properly cancelled both `_authSubscription` and `_linkSubscription` inside `dispose()`.
 - Guarded external stream and plugin initializations (Supabase, AppLinks) with `try-catch` blocks to prevent initialization avalanche failures.
+## 2026-08-04 - Controller Async Lifecycle Standardization
+
+**Learning:** To ensure safe async state updates and prevent lifecycle crashes when controllers are disposed during long-running async operations, a standard `_disposed` flag must be implemented across all `ChangeNotifier` subclasses.
+
+**Action:**
+- Universally implemented a `_disposed` flag by overriding `dispose()` and `notifyListeners()` in `NavigationController` and `SettingsController` to wrap the `super.notifyListeners()` call inside an `if (!_disposed)` check, ensuring async lifecycle clarity.
