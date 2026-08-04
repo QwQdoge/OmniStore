@@ -1,5 +1,5 @@
 import json
-import os
+
 
 def check_missing(base_file, target_file):
     with open(base_file, 'r', encoding='utf-8') as f:
@@ -7,8 +7,8 @@ def check_missing(base_file, target_file):
     with open(target_file, 'r', encoding='utf-8') as f:
         target = json.load(f)
 
-    base_keys = set(k for k in base.keys() if not k.startswith('@'))
-    target_keys = set(k for k in target.keys() if not k.startswith('@'))
+    base_keys = {k for k in base if not k.startswith('@')}
+    target_keys = {k for k in target if not k.startswith('@')}
 
     missing = base_keys - target_keys
     return missing
