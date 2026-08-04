@@ -79,6 +79,7 @@ class _WelcomePageState extends State<WelcomePage> {
     });
     try {
       final env = await BackendService.instance.checkEnv();
+      if (!mounted) return;
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
@@ -216,6 +217,7 @@ class _WelcomePageState extends State<WelcomePage> {
       final status = result['status']?.toString();
       final response = result['response']?.toString() ?? '';
 
+      if (!mounted) return;
       setState(() {
         if (status == 'success' || response.toLowerCase().contains('ok') || response.toLowerCase().contains('success')) {
           _aiTestSuccess = true;
@@ -226,15 +228,18 @@ class _WelcomePageState extends State<WelcomePage> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _aiTestSuccess = false;
         _aiTestResult = 'Error: $e';
       });
     } finally {
       await settings.updateConfig(originalConfig);
-      setState(() {
-        _isTestingAI = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isTestingAI = false;
+        });
+      }
     }
   }
 
@@ -255,6 +260,7 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai']['api_key'] = _aiApiKeyController.text.trim();
 
     await settingsController.updateConfig(config);
+    if (!mounted) return;
     widget.onFinish();
   }
 
