@@ -54,7 +54,10 @@ class CustomRepoManager:
                 if success:
                     # Sync into config.yaml
                     custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
-                    if not any(r.get("name") == name for r in custom_flatpaks):
+                    for r in custom_flatpaks:
+                        if r.get("name") == name:
+                            break
+                    else:
                         custom_flatpaks.append({"name": name, "url": url})
                         self.cm.set("custom_repos.flatpak", custom_flatpaks)
                     if callback:
@@ -188,7 +191,10 @@ class CustomRepoManager:
             if proc.returncode == 0:
                 # Sync config.yaml
                 custom_pacman = self.cm.get("custom_repos.pacman", [])
-                if not any(r.get("name") == name for r in custom_pacman):
+                for r in custom_pacman:
+                    if r.get("name") == name:
+                        break
+                else:
                     custom_pacman.append({"name": name, "url": url})
                     self.cm.set("custom_repos.pacman", custom_pacman)
                 
