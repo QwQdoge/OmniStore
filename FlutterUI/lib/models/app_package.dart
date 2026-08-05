@@ -70,9 +70,6 @@ class AppPackage {
   final List<AppVariant> variants;
   final String? url;
 
-  late final String nameLower = name.toLowerCase();
-  late final String descriptionLower = description.toLowerCase();
-  late final String primarySourceLower = primarySource.toLowerCase();
   final String? id;
 
   final String? icon;
