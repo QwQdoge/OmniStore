@@ -7,6 +7,7 @@ import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import "add_source_dialog.dart";
+import '../pages/github_integration_page.dart';
 import '../controllers/settings_controller.dart';
 
 class SourcesConfigCard extends StatefulWidget {
@@ -187,6 +188,19 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.code_rounded),
+                  title: const Text("GitHub Integration"),
+                  subtitle: const Text("Configure Personal Access Token"),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const GitHubIntegrationPage()),
+                    );
+                  },
+                ),
                 if (!kIsWeb) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

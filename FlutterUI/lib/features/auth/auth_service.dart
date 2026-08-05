@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
+import 'package:frontend/core/config/meoarch_environment.dart';
 
 /// [AuthService] manages the integration with Supabase for user authentication
 /// and handles deep links. It is designed defensively to guarantee zero memory leaks,
@@ -23,9 +24,15 @@ class AuthService extends ChangeNotifier {
   User? _currentUser;
 
   bool get isAuthenticated => _currentUser != null;
+  bool get isSignedIn => _currentUser != null;
   User? get currentUser => _currentUser;
   bool get isInitialized => _isInitialized;
   bool get isBusy => _isBusy;
+
+  SupabaseClient get client => Supabase.instance.client;
+  Session? get currentSession => _isInitialized ? client.auth.currentSession : null;
+  String? get accessToken => currentSession?.accessToken;
+  Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
 
   @override
   void notifyListeners() {
@@ -37,43 +44,42 @@ class AuthService extends ChangeNotifier {
 
   /// Defensive initialization of Supabase and deep link listeners.
   /// Prevents duplicate execution and ensures any failures do not crash the main thread.
-  Future<void> initialize(String supabaseUrl, String supabaseAnonKey) async {
+  Future<void> initialize() async {
     if (_disposed) return;
     if (_isInitialized || _isInitializing) return;
 
     _isInitializing = true;
     try {
-      // Input parameters validation
-      if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-        throw ArgumentError('Supabase URL or Anon Key cannot be empty');
+      if (!MeoArchEnvironment.isConfigured) {
+        debugPrint('Warning: Supabase environment variables not configured. Auth will not work.');
+      } else {
+        await Supabase.initialize(
+          url: MeoArchEnvironment.supabaseUrl,
+          publishableKey: MeoArchEnvironment.supabasePublishableKey,
+          authOptions: const FlutterAuthClientOptions(
+            authFlowType: AuthFlowType.pkce,
+          ),
+        );
+
+        _currentUser = Supabase.instance.client.auth.currentUser;
+
+        _authSubscription =
+            Supabase.instance.client.auth.onAuthStateChange.listen(
+          (data) {
+            if (_disposed) return;
+            final AuthChangeEvent event = data.event;
+            final Session? session = data.session;
+
+            _currentUser = session?.user;
+            notifyListeners();
+
+            debugPrint('Auth event: $event, User: ${_currentUser?.id}');
+          },
+          onError: (err) {
+            debugPrint('Auth state subscription encountered error: $err');
+          },
+        );
       }
-
-      await Supabase.initialize(
-        url: supabaseUrl,
-        publishableKey: supabaseAnonKey,
-        authOptions: const FlutterAuthClientOptions(
-          authFlowType: AuthFlowType.pkce,
-        ),
-      );
-
-      _currentUser = Supabase.instance.client.auth.currentUser;
-
-      _authSubscription =
-          Supabase.instance.client.auth.onAuthStateChange.listen(
-        (data) {
-          if (_disposed) return;
-          final AuthChangeEvent event = data.event;
-          final Session? session = data.session;
-
-          _currentUser = session?.user;
-          notifyListeners();
-
-          debugPrint('Auth event: $event, User: ${_currentUser?.id}');
-        },
-        onError: (err) {
-          debugPrint('Auth state subscription encountered error: $err');
-        },
-      );
 
       _initDeepLinks();
       _isInitialized = true;
@@ -111,12 +117,20 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  Future<void> signInWithGitHub() async {
+    await _signInWithOAuth(OAuthProvider.github);
+  }
+
+  Future<void> signInWithGoogle() async {
+    await _signInWithOAuth(OAuthProvider.google);
+  }
+
   /// Initiates the OAuth sign-in process with a state lock flag.
   /// This will open the default browser to complete authentication.
-  Future<void> signIn() async {
+  Future<void> _signInWithOAuth(OAuthProvider provider) async {
     if (_disposed) return;
-    if (!_isInitialized) {
-      debugPrint('AuthService.signIn: Supabase is not initialized. Operation ignored.');
+    if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
+      debugPrint('AuthService._signInWithOAuth: Supabase is not initialized. Operation ignored.');
       return;
     }
     if (_isBusy) return;
@@ -124,13 +138,13 @@ class AuthService extends ChangeNotifier {
     _isBusy = true;
     notifyListeners();
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.github,
-        redirectTo: 'omnistore://auth/callback',
+      await client.auth.signInWithOAuth(
+        provider,
+        redirectTo: MeoArchEnvironment.authCallback,
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
     } catch (e, stackTrace) {
-      debugPrint('Error signing in via Supabase: $e\n$stackTrace');
+      debugPrint('Error signing in via $provider: $e\n$stackTrace');
     } finally {
       if (!_disposed) {
         _isBusy = false;
@@ -139,10 +153,51 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  Future<AuthResponse?> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    if (_disposed) return null;
+    if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
+      debugPrint('AuthService.signInWithPassword: Supabase is not initialized. Operation ignored.');
+      return null;
+    }
+    if (_isBusy) return null;
+
+    _isBusy = true;
+    notifyListeners();
+    try {
+      return await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Error signing in via password: $e\n$stackTrace');
+      rethrow;
+    } finally {
+      if (!_disposed) {
+        _isBusy = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> refreshSession() async {
+    if (_disposed) return;
+    if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
+      return;
+    }
+    try {
+      await client.auth.refreshSession();
+    } catch (e) {
+      debugPrint('Error refreshing session: $e');
+    }
+  }
+
   /// Standard signOut flow with safety guards.
   Future<void> signOut() async {
     if (_disposed) return;
-    if (!_isInitialized) {
+    if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
       debugPrint('AuthService.signOut: Supabase is not initialized. Operation ignored.');
       return;
     }
@@ -151,7 +206,7 @@ class AuthService extends ChangeNotifier {
     _isBusy = true;
     notifyListeners();
     try {
-      await Supabase.instance.client.auth.signOut();
+      await client.auth.signOut();
     } catch (e, stackTrace) {
       debugPrint('Error signing out via Supabase: $e\n$stackTrace');
     } finally {

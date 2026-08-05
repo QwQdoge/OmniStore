@@ -3,17 +3,17 @@ import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
-/// [AuthPage] provides a fail-safe user interface for modifying the GitHub personal
+/// [GitHubIntegrationPage] provides a fail-safe user interface for modifying the GitHub personal
 /// access token (PAT). It employs defensive try-catch-finally flows, input sanitization
 /// and validation, and state mutex locks to guarantee robustness under bad environment conditions.
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class GitHubIntegrationPage extends StatefulWidget {
+  const GitHubIntegrationPage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  State<GitHubIntegrationPage> createState() => _GitHubIntegrationPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
   final TextEditingController _patController = TextEditingController();
   bool _isSaving = false;
   bool _isLoading = false;
@@ -161,7 +161,7 @@ class _AuthPageState extends State<AuthPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.githubAuthTitle),
+        title: const Text("GitHub Integration"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),

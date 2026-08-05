@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/auth/auth_page.dart';
+import 'package:frontend/features/auth/presentation/pages/account_page.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 class DesktopTopBar extends StatelessWidget {
@@ -56,7 +56,7 @@ class DesktopTopBar extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AuthPage()),
+                  MaterialPageRoute(builder: (context) => const AccountPage()),
                 );
               },
             ),

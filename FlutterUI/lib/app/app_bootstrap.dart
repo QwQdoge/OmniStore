@@ -1,3 +1,4 @@
+import 'package:frontend/features/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/app/omnistore_app.dart';
 import 'package:frontend/data/repositories/ai_repository.dart';
@@ -32,11 +33,12 @@ Future<void> bootstrapOmniStore() async {
     // 始终使用系统标题栏，忽略配置中的 use_system_title_bar 选项
     const useSystemTitleBar = true;
 
-    final results = await Future.wait([
+        final results = await Future.wait([
       DesktopWindowService.initialize(
         useSystemTitleBar: useSystemTitleBar,
       ).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
+      AuthService().initialize().timeout(const Duration(seconds: 5)),
     ]);
     prefs = results[1] as SharedPreferences;
   } catch (e) {
