@@ -144,3 +144,10 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 - Added standard `_disposed` flag checks across `NavigationController` and `SettingsController`.
 - Overrode `dispose()` to set `_disposed = true` before calling `super.dispose()`.
 - Overrode `notifyListeners()` to wrap the `super.notifyListeners()` call in an `if (!_disposed)` check, standardizing async lifecycle safety across all providers in the codebase.
+## 2026-07-22 - State Management: Verification of Async Lifecycle Safety
+
+**Learning:** It is crucial to verify that all classes extending or mixing in `ChangeNotifier` implement the `_disposed` flag pattern. This includes checking `AuthService`, `TaskController`, `BrowseController`, `SettingsController`, and `NavigationController`.
+
+**Action:**
+- Audited all controllers and services using `ChangeNotifier`.
+- Confirmed that `_disposed` is consistently tracked and `notifyListeners()` safely guards against `_disposed` state across all implementations.
