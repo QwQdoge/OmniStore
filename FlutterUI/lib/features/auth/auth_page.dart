@@ -1,6 +1,7 @@
 import "package:frontend/data/repositories/config_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 /// [AuthPage] provides a fail-safe user interface for modifying the GitHub personal
@@ -183,15 +184,19 @@ class _AuthPageState extends State<AuthPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (_isLoading || _isSaving)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 16),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
+                SmoothSizeSwitcher(
+                  child: (_isLoading || _isSaving)
+                      ? const Padding(
+                          key: ValueKey('loading'),
+                          padding: EdgeInsets.only(right: 16),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : const SizedBox.shrink(key: ValueKey('idle')),
+                ),
                 FilledButton.icon(
                   onPressed: isInteractive ? _savePat : null,
                   icon: const Icon(Icons.save_rounded),
