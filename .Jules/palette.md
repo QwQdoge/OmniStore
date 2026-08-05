@@ -188,3 +188,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** Relying on hardcoded strings within primary screens and layout sections degrades user experience, breaks internationalization across varied desktop environments, and leads to inconsistent multi-language visual presentation. Standardizing empty messages, section headers, and error or fallback strings using Flutter's `AppLocalizations` system combined with robust synchronization scripts ensures seamless UI consistency for native Simplified Chinese, Traditional Chinese, Japanese, and Spanish users alike, fully satisfying Material Design 3 and global accessibility expectations.
 
 **Action:** Extract all hardcoded Chinese UI strings and empty state descriptions on major page views (like `HomePage` and AI Recommendation blocks) into standard `.arb` resource keys, and run localized generation scripts (`sync_l10n.py` and `flutter gen-l10n`) to provide native internationalization.
+
+## 2026-07-31 - Redundant Semantics Wrappers Clean Up
+
+**Learning:** Unnecessarily wrapping native Material buttons (`IconButton`, `FilledButton`, `OutlinedButton`) in `Semantics(button: true, label: ...)` creates redundant nodes in the semantic tree and bloats layout hierarchy. Material widgets inherently manage their own accessibility traits via their `tooltip` or child labels.
+
+**Action:** Cleaned up redundant `Semantics` wrappers specifically around `IconButton` components across navigation bars, dialog headers, settings cards, and layout widgets. Relied purely on `tooltip` property to provide semantic labeling.

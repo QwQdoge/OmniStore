@@ -18,10 +18,7 @@ class HamburgerButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Semantics(
-        label: isExpanded ? l10n.collapse : l10n.expand,
-        button: true,
-        child: IconButton.filledTonal(
+      child: IconButton.filledTonal(
           onPressed: onToggle,
           tooltip: isExpanded ? l10n.collapse : l10n.expand,
           style: IconButton.styleFrom(
@@ -50,7 +47,6 @@ class HamburgerButton extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
