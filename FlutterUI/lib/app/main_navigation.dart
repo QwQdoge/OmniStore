@@ -18,6 +18,7 @@ import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart' as wm;
+import 'package:frontend/core/utils/toast.dart';
 
 /// Root shell after onboarding: adaptive nav + tray/window lifecycle.
 class MainNavigationEntry extends StatefulWidget {
@@ -80,12 +81,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
           await settings.setCloseToTray(false);
           if (!mounted) return;
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.trayInitFailedDisabled),
-              duration: const Duration(seconds: 4),
-            ),
-          );
+          Toast.show(context, l10n.trayInitFailedDisabled);
         }
       }
     } catch (e) {
@@ -111,12 +107,7 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     if (closeToTray) {
       await wm.windowManager.hide();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.runningInBackground),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.runningInBackground);
       UpdateService().showSimpleNotification(
         l10n.omnistore,
         l10n.runningInBackground,

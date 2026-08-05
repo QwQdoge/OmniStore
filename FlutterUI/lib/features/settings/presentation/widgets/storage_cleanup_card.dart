@@ -7,6 +7,7 @@ import 'package:frontend/features/task_manager/presentation/widgets/terminal_dia
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class StorageCleanupCard extends StatefulWidget {
   const StorageCleanupCard({super.key});
@@ -48,12 +49,7 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
   ) async {
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.taskInProgress);
       return;
     }
 

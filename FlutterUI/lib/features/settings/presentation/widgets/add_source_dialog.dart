@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import '../controllers/settings_controller.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AddSourceDialog extends StatefulWidget {
   final AppLocalizations l10n;
@@ -30,24 +31,14 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     final name = _nameController.text.trim();
     final url = _urlController.text.trim();
     if (name.isEmpty || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(widget.l10n.errorNameUrlRequired),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, widget.l10n.errorNameUrlRequired);
       return;
     }
-    final messenger = ScaffoldMessenger.of(context);
+
     final settings = context.read<SettingsController>();
     Navigator.pop(context);
 
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(widget.l10n.addingCustomSource),
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    Toast.show(context, widget.l10n.addingCustomSource);
 
     bool success = false;
     if (kIsWeb) {
@@ -71,13 +62,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
 
     if (!mounted) return;
 
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          success ? widget.l10n.sourceAddSuccess : widget.l10n.sourceAddFailed,
-        ),
-        duration: const Duration(seconds: 4),
-      ),
+    Toast.show(
+      context,
+      success ? widget.l10n.sourceAddSuccess : widget.l10n.sourceAddFailed,
     );
   }
 
