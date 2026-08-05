@@ -136,17 +136,21 @@ class WelcomeAiPage extends StatelessWidget {
                                     label: Text(l10n.howToGetApiKey),
                                   ),
                                   const Spacer(),
-                                  isTestingAI
-                                      ? const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : FilledButton.tonalIcon(
-                                          onPressed: onTestAI,
-                                          icon: const Icon(Icons.network_ping_rounded, size: 18),
-                                          label: const Text('Test Connection'),
-                                        ),
+                                  SmoothSizeSwitcher(
+                                    child: isTestingAI
+                                        ? const SizedBox(
+                                            key: ValueKey('testing'),
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          )
+                                        : FilledButton.tonalIcon(
+                                            key: const ValueKey('idle'),
+                                            onPressed: onTestAI,
+                                            icon: const Icon(Icons.network_ping_rounded, size: 18),
+                                            label: const Text('Test Connection'),
+                                          ),
+                                  ),
                                 ],
                               ),
                               if (testResult != null) ...[
