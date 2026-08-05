@@ -76,7 +76,9 @@ class AppImageSource(UnifiedSource):
             self.cache_timestamp = current_time
             return merged_items
 
-    def _is_installed(self, app_name: str) -> bool:
+    def _is_installed(self, app_name: str, installed_filenames: Optional[List[str]] = None) -> bool:
+        if installed_filenames is not None:
+            return any(app_name.lower() in f for f in installed_filenames)
         apps_dir = Path.home() / "Applications"
         if not apps_dir.exists(): return False
         return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
@@ -85,11 +87,21 @@ class AppImageSource(UnifiedSource):
         feed_items = await self._fetch_feed()
         query_lower = query.lower()
         results = []
+
+        # ⚡ Optimization: Pre-scan the Applications directory once per search call to avoid O(N) synchronous glob scans.
+        apps_dir = Path.home() / "Applications"
+        installed_filenames = []
+        if apps_dir.exists():
+            try:
+                installed_filenames = [f.name.lower() for f in apps_dir.glob("*.AppImage")]
+            except Exception:
+                pass
+
         for item in feed_items:
             name = item.get("name", "")
             desc = item.get("description", "")
             if query_lower in name.lower() or query_lower in desc.lower():
-                is_inst = self._is_installed(name)
+                is_inst = self._is_installed(name, installed_filenames)
                 download_url = ""
                 links = item.get("links") or []
                 for link in links:

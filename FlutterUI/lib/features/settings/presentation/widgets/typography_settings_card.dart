@@ -10,6 +10,7 @@ class TypographySettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Selector<
       SettingsController,
@@ -29,33 +30,52 @@ class TypographySettingsCard extends StatelessWidget {
                       ? l10n.systemDefault
                       : data.fontFamily,
                 ),
-                trailing: DropdownButton<String>(
-                  value: data.fontFamily,
-                  underline: const SizedBox(),
-                  borderRadius: BorderRadius.circular(12),
-                  items: [
-                    DropdownMenuItem(
-                      value: 'System',
-                      child: Text(l10n.systemDefault),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      width: 1,
                     ),
-                    const DropdownMenuItem(
-                      value: 'Inter',
-                      child: Text('Inter'),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: data.fontFamily,
+                      borderRadius: BorderRadius.circular(12),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'System',
+                          child: Text(l10n.systemDefault),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'Inter',
+                          child: Text('Inter'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'Roboto',
+                          child: Text('Roboto'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'Outfit',
+                          child: Text('Outfit'),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<SettingsController>().setFontFamily(val);
+                        }
+                      },
                     ),
-                    const DropdownMenuItem(
-                      value: 'Roboto',
-                      child: Text('Roboto'),
-                    ),
-                    const DropdownMenuItem(
-                      value: 'Outfit',
-                      child: Text('Outfit'),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      context.read<SettingsController>().setFontFamily(val);
-                    }
-                  },
+                  ),
                 ),
               ),
               ListTile(

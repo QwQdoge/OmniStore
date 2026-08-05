@@ -11,6 +11,7 @@ class UpdateSettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Selector<
       SettingsController,
@@ -67,23 +68,42 @@ class UpdateSettingsCard extends StatelessWidget {
                 subtitle: Text(
                   l10n.checkIntervalSubtitle(data.checkIntervalHours),
                 ),
-                trailing: DropdownButton<int>(
-                  value: data.checkIntervalHours,
-                  underline: const SizedBox(),
-                  borderRadius: BorderRadius.circular(12),
-                  items: [1, 2, 4, 8, 12, 24].map((h) {
-                    return DropdownMenuItem(
-                      value: h,
-                      child: Text(l10n.hourValue(h)),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      context.read<SettingsController>().setCheckIntervalHours(
-                        val,
-                      );
-                    }
-                  },
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: data.checkIntervalHours,
+                      borderRadius: BorderRadius.circular(12),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      items: [1, 2, 4, 8, 12, 24].map((h) {
+                        return DropdownMenuItem(
+                          value: h,
+                          child: Text(l10n.hourValue(h)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<SettingsController>().setCheckIntervalHours(
+                            val,
+                          );
+                        }
+                      },
+                    ),
+                  ),
                 ),
               ),
             ],

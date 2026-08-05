@@ -69,7 +69,6 @@ class AppPackage {
   final String version;
   final List<AppVariant> variants;
   final String? url;
-
   final String? id;
 
   final String? icon;
