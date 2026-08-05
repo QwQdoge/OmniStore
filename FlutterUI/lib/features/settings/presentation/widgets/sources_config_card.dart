@@ -9,6 +9,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import "add_source_dialog.dart";
 import '../pages/github_integration_page.dart';
 import '../controllers/settings_controller.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class SourcesConfigCard extends StatefulWidget {
   const SourcesConfigCard({super.key});
@@ -50,32 +51,23 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _togglePlugin(SourcePluginInfo plugin, bool enabled) async {
-    final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final success = await BackendService.instance.setPluginEnabled(
       plugin.id,
       enabled,
     );
     if (!mounted) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(success ? l10n.pluginUpdated : l10n.pluginUpdateFailed),
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    Toast.show(context, success ? l10n.pluginUpdated : l10n.pluginUpdateFailed);
     await _loadPlugins();
   }
 
   Future<void> _removePlugin(SourcePluginInfo plugin) async {
-    final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final success = await BackendService.instance.removePlugin(plugin.id);
     if (!mounted) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(success ? l10n.pluginRemoved : l10n.pluginRemovalFailed),
-        duration: const Duration(seconds: 4),
-      ),
+    Toast.show(
+      context,
+      success ? l10n.pluginRemoved : l10n.pluginRemovalFailed,
     );
     await _loadPlugins();
   }
@@ -108,23 +100,14 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _autoDetectSources(AppLocalizations l10n) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.autoDetectingSources),
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    Toast.show(context, l10n.autoDetectingSources);
 
     final settings = context.read<SettingsController>();
     final success = await settings.autoDetectSources();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
-          ),
-          duration: const Duration(seconds: 4),
-        ),
+      Toast.show(
+        context,
+        success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
       );
     }
   }

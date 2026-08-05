@@ -170,3 +170,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** When extracting inline `showDialog` builder widgets into standalone stateless components, retrieve dependencies like `Theme` and `AppLocalizations` directly within the new widget's `build` method using `BuildContext`, rather than passing them down via constructors, to keep the calling methods clean.
 
 **Action:** Extracted the inline `AlertDialog` from `_showApiKeyInstructions` in `welcome_page.dart` into a new `ApiKeyInstructionsDialog` widget located in `FlutterUI/lib/features/onboarding/widgets/api_key_instructions_dialog.dart`.
+## 2026-07-31 - Consolidate Duplicated Variant Iteration Logic
+
+**Learning:** Instead of duplicating identical iterations over variant lists across multiple helper methods (`_getVersionForSource`, `_isSourceInstalled`), centralizing the search logic in one core method (`_getVariantForSource`) and reusing it by safely mapping its properties prevents divergent fallback states and improves maintainability.
+
+**Action:** Replaced `getVersionForSource` and `isSourceInstalled` callbacks in `app_details_header.dart`, `app_main_content.dart`, and `details_page.dart` with a single `getVariantForSource` callback. Removed redundant helper methods and updated inline logic to use the consolidated method.

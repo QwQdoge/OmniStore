@@ -12,6 +12,7 @@ import 'ai_update_summary_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class UpdatesTab extends StatelessWidget {
   final VoidCallback onUpdateStarted;
@@ -53,12 +54,7 @@ class UpdatesTab extends StatelessWidget {
                         final taskController = context.read<TaskController>();
                         final l10n = AppLocalizations.of(context)!;
                         if (taskController.isBusy) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.taskInProgress),
-                              duration: const Duration(seconds: 4),
-                            ),
-                          );
+                          Toast.show(context, l10n.taskInProgress);
                           return;
                         }
                         taskController.updateAll('all', l10n);
@@ -180,14 +176,7 @@ class UpdatesTab extends StatelessWidget {
                                         .read<TaskController>();
                                     final l10n = AppLocalizations.of(context)!;
                                     if (taskController.isBusy) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(l10n.taskInProgress),
-                                          duration: const Duration(seconds: 4),
-                                        ),
-                                      );
+                                      Toast.show(context, l10n.taskInProgress);
                                       return;
                                     }
                                     taskController.runTask(

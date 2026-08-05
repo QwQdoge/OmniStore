@@ -1,3 +1,4 @@
+import 'package:frontend/core/utils/toast.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:frontend/services/backend_service.dart";
 import "package:provider/provider.dart";
@@ -97,18 +98,16 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
       if (!mounted || _isAppInstalled) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.flatpakBetterDesc),
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: AppLocalizations.of(context)!.switchSource,
-            onPressed: () {
-              setState(() {
-                _selectedSource = "Flatpak";
-              });
-            },
-          ),
+      Toast.show(
+        context,
+        AppLocalizations.of(context)!.flatpakBetterDesc,
+        action: SnackBarAction(
+          label: AppLocalizations.of(context)!.switchSource,
+          onPressed: () {
+            setState(() {
+              _selectedSource = "Flatpak";
+            });
+          },
         ),
       );
     }
@@ -142,12 +141,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final l10n = AppLocalizations.of(context)!;
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.taskInProgress);
       return;
     }
 
@@ -224,12 +218,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
         if (flag == "-R") {
           _isAppInstalled = false;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.success),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        Toast.show(context, l10n.success);
       } else {
         showDialog(context: context, builder: (ctx) => const TerminalDialog());
       }
@@ -302,12 +291,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 variantScrollController: _variantScrollController,
                 heroTag: widget.heroTag,
                 hasCapability: _hasCapability,
-                getVersionForSource: _getVersionForSource,
-                isSourceInstalled: _isSourceInstalled,
+
                 onSourceSelected: (String newValue) {
                   setState(() {
                     _selectedSource = newValue;
-                    _isAppInstalled = _isSourceInstalled(newValue);
+                    _isAppInstalled = _getVariantForSource(newValue)?.installed ?? false;
                   });
                 },
                 onLocateApp: _locateApp,
@@ -336,12 +324,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.launchApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.loadError),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.loadError);
     }
   }
 
@@ -355,12 +338,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     final success = await packageRepo.locateApp(target, _selectedSource);
     if (!mounted) return;
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.loadError),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.loadError);
     }
   }
 
@@ -395,13 +373,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return null;
   }
 
-  String? _getVersionForSource(String source) {
-    return _getVariantForSource(source)?.version;
-  }
 
-  bool _isSourceInstalled(String source) {
-    return _getVariantForSource(source)?.installed ?? false;
-  }
 
   void _showScreenshotViewer(String url) {
     showDialog(

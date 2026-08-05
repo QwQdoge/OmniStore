@@ -20,8 +20,7 @@ class AppMainContent extends StatelessWidget {
   final ScrollController variantScrollController;
   final String? heroTag;
   final bool Function(String) hasCapability;
-  final String? Function(String) getVersionForSource;
-  final bool Function(String) isSourceInstalled;
+
   final ValueChanged<String> onSourceSelected;
   final VoidCallback onLocateApp;
   final Future<void> Function(String) onHandleAction;
@@ -42,8 +41,7 @@ class AppMainContent extends StatelessWidget {
     required this.variantScrollController,
     this.heroTag,
     required this.hasCapability,
-    required this.getVersionForSource,
-    required this.isSourceInstalled,
+
     required this.onSourceSelected,
     required this.onLocateApp,
     required this.onHandleAction,
@@ -69,8 +67,7 @@ class AppMainContent extends StatelessWidget {
           variantScrollController: variantScrollController,
           heroTag: heroTag,
           hasCapability: hasCapability,
-          getVersionForSource: getVersionForSource,
-          isSourceInstalled: isSourceInstalled,
+          getVariantForSource: getVariantForSource,
           onSourceSelected: onSourceSelected,
         ),
         const SizedBox(height: 24),

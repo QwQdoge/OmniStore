@@ -355,6 +355,7 @@ class OmnistoreBackend:
         self.manager: Optional[SearchManager] = None
         self.recommender: Optional[RecommendationManager] = None
         self._resources = ResourceCoordinator()
+        self._background_tasks = set()
         self._updater = None
         self._executor = None
         self._ai = None
@@ -444,7 +445,10 @@ class OmnistoreBackend:
                 try:
                     if self._ai:
                         try:
-                            await asyncio.shield(self._ai.close())
+                            close_task = asyncio.create_task(self._ai.close())
+                            self._background_tasks.add(close_task)
+                            close_task.add_done_callback(self._background_tasks.discard)
+                            await asyncio.shield(close_task)
                         except Exception as exc:
                             logging.debug(f"AI session cleanup failed: {exc}")
                 finally:
