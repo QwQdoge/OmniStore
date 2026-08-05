@@ -177,6 +177,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Selector<SettingsController, Map<dynamic, dynamic>>(
       selector: (context, s) => s.config['ai'] as Map<dynamic, dynamic>? ?? {},
@@ -199,29 +200,48 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(l10n.aiProvider),
-                      trailing: DropdownButton<String>(
-                        value: aiConfig['provider'] ?? 'ollama',
-                        underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'ollama',
-                            child: Text(l10n.ollamaLocal),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                            width: 1,
                           ),
-                          DropdownMenuItem(
-                            value: 'openai',
-                            child: Text(l10n.openaiCompatible),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: aiConfig['provider'] ?? 'ollama',
+                            borderRadius: BorderRadius.circular(12),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            items: [
+                              DropdownMenuItem(
+                                value: 'ollama',
+                                child: Text(l10n.ollamaLocal),
+                              ),
+                              DropdownMenuItem(
+                                value: 'openai',
+                                child: Text(l10n.openaiCompatible),
+                              ),
+                              DropdownMenuItem(
+                                value: 'gemini',
+                                child: Text(l10n.googleGemini),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                _updateAIConfig('provider', val);
+                              }
+                            },
                           ),
-                          DropdownMenuItem(
-                            value: 'gemini',
-                            child: Text(l10n.googleGemini),
-                          ),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) {
-                            _updateAIConfig('provider', val);
-                          }
-                        },
+                        ),
                       ),
                     ),
                     _buildTextField(

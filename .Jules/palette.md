@@ -188,3 +188,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** Relying on hardcoded strings within primary screens and layout sections degrades user experience, breaks internationalization across varied desktop environments, and leads to inconsistent multi-language visual presentation. Standardizing empty messages, section headers, and error or fallback strings using Flutter's `AppLocalizations` system combined with robust synchronization scripts ensures seamless UI consistency for native Simplified Chinese, Traditional Chinese, Japanese, and Spanish users alike, fully satisfying Material Design 3 and global accessibility expectations.
 
 **Action:** Extract all hardcoded Chinese UI strings and empty state descriptions on major page views (like `HomePage` and AI Recommendation blocks) into standard `.arb` resource keys, and run localized generation scripts (`sync_l10n.py` and `flutter gen-l10n`) to provide native internationalization.
+
+## 2026-08-05 - Material Design 3 Inline Dropdowns
+
+**Learning:** To align legacy inline DropdownButton widgets with Material Design 3 guidelines (such as trailing elements in ListTiles), wrap the DropdownButton with DropdownButtonHideUnderline inside a Container styled with MD3 tokens (e.g., color `theme.colorScheme.surfaceContainerHigh`, 12dp rounded corners, and a subtle border using `theme.colorScheme.outlineVariant` at 0.5 opacity). Override the standard dropdown icon with `Icons.keyboard_arrow_down_rounded` for softer, native-feeling MD3 transitions.
+
+**Action:** Standardize the visual styling of Settings and Configuration inline DropdownButtons globally by wrapping them in matching M3 styled container boundaries and using soft keyboard arrow down icons to improve click targets, affordance, and visual harmony.
