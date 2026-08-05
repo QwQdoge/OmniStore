@@ -7,6 +7,7 @@ import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/github_star_badge.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AppDetailsHeader extends StatelessWidget {
   final AppPackage app;
@@ -124,13 +125,9 @@ class AppDetailsHeader extends StatelessWidget {
                     tooltip: AppLocalizations.of(context)!.copyName,
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: app.name));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.copiedToClipboard,
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      Toast.show(
+                        context,
+                        AppLocalizations.of(context)!.copiedToClipboard,
                       );
                     },
                   ),

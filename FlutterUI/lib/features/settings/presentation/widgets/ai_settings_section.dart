@@ -9,6 +9,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AISettingsSection extends StatefulWidget {
   const AISettingsSection({super.key});
@@ -132,20 +133,13 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
       showDialog(
         context: context,
-        builder: (c) => AITestResultDialog(
-          isSuccess: isSuccess,
-          msg: msg.toString(),
-        ),
+        builder: (c) =>
+            AITestResultDialog(isSuccess: isSuccess, msg: msg.toString()),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _isTestingAI = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.aiTestFailed(e.toString())),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.aiTestFailed(e.toString()));
     }
   }
 
@@ -201,12 +195,17 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(l10n.aiProvider),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surfaceContainerHigh,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                            color: theme.colorScheme.outlineVariant.withValues(
+                              alpha: 0.5,
+                            ),
                             width: 1,
                           ),
                         ),

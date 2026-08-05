@@ -12,6 +12,7 @@ import 'package:frontend/features/task_manager/presentation/widgets/tasks_tab.da
 import 'package:frontend/features/task_manager/presentation/widgets/updates_tab.dart';
 import 'package:frontend/features/task_manager/presentation/widgets/installed_tab.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -60,22 +61,16 @@ class _DownloadPageState extends State<DownloadPage>
       if (!mounted) return;
       final newCount = UpdateService().availableUpdates.value.length;
       final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), duration: const Duration(seconds: 4)),
-      );
+      Toast.show(context, msg);
       if (newCount > 0 && prevCount == 0) {
         // 自动跳转到更新标签页
         _tabController.animateTo(1);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.checkUpdateFailed(e.toString()),
-            ),
-            duration: const Duration(seconds: 4),
-          ),
+        Toast.show(
+          context,
+          AppLocalizations.of(context)!.checkUpdateFailed(e.toString()),
         );
       }
     } finally {
@@ -247,11 +242,7 @@ class _DownloadPageState extends State<DownloadPage>
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: Skeleton(
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                      ),
+                      child: Skeleton(width: 20, height: 20, borderRadius: 10),
                     ),
                   )
                 : IconButton(

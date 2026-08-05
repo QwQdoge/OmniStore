@@ -5,6 +5,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AIMarkdownDialog extends StatelessWidget {
   final Future<String> future;
@@ -126,13 +127,9 @@ class AICliDialog extends StatelessWidget {
                       FilledButton.icon(
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: cmd));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(context)!.copiedToClipboard,
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
+                          Toast.show(
+                            context,
+                            AppLocalizations.of(context)!.copiedToClipboard,
                           );
                         },
                         icon: const Icon(Icons.copy_rounded),

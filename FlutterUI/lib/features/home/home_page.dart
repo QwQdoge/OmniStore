@@ -17,6 +17,7 @@ import 'package:frontend/features/home/widgets/hero_section.dart';
 import 'package:frontend/features/home/widgets/import_packages_dialog.dart';
 import 'package:frontend/core/widgets/section_header.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -110,12 +111,7 @@ class _HomePageState extends State<HomePage> {
 
     final taskController = context.read<TaskController>();
     if (taskController.isBusy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.taskInProgress),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      Toast.show(context, l10n.taskInProgress);
       return;
     }
 
@@ -146,23 +142,18 @@ class _HomePageState extends State<HomePage> {
               Navigator.pop(context);
 
               // Capture context properties before async gaps
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
+
               final appLocalizations = AppLocalizations.of(context);
 
               if (appLocalizations == null) return;
 
               for (var pkg in packages) {
-                if (!mounted) break;
+                if (!context.mounted) break;
 
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
 
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(appLocalizations.installingPkg(name)),
-                    duration: const Duration(seconds: 4),
-                  ),
-                );
+                Toast.show(context, appLocalizations.installingPkg(name));
 
                 await taskController.runTask(
                   "-I",
@@ -223,10 +214,7 @@ class _HomePageState extends State<HomePage> {
                     child: _isAILoading
                         ? const Column(
                             key: ValueKey('ai_skeleton_wrapper'),
-                            children: [
-                              SizedBox(height: 32),
-                              AIPickSkeleton(),
-                            ],
+                            children: [SizedBox(height: 32), AIPickSkeleton()],
                           )
                         : Column(
                             key: const ValueKey('ai_content_wrapper'),
@@ -234,8 +222,7 @@ class _HomePageState extends State<HomePage> {
                               const SizedBox(height: 32),
                               AIPickSection(
                                 aiPickBlurb:
-                                    _aiPickBlurb ??
-                                    l10n.aiPickFallbackMessage,
+                                    _aiPickBlurb ?? l10n.aiPickFallbackMessage,
                                 isFallback: _aiPickBlurb == null,
                                 onRefresh: _fetchAIPick,
                               ),

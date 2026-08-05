@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AppDetailsSectionTitle extends StatelessWidget {
   final String title;
@@ -49,12 +50,7 @@ class AppDetailsInfoRow extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: value));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.copiedToClipboard),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    Toast.show(context, AppLocalizations.of(context)!.copiedToClipboard);
   }
 
   @override
