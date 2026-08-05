@@ -5,17 +5,17 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/utils/toast.dart';
 
-/// [AuthPage] provides a fail-safe user interface for modifying the GitHub personal
+/// [GitHubIntegrationPage] provides a fail-safe user interface for modifying the GitHub personal
 /// access token (PAT). It employs defensive try-catch-finally flows, input sanitization
 /// and validation, and state mutex locks to guarantee robustness under bad environment conditions.
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class GitHubIntegrationPage extends StatefulWidget {
+  const GitHubIntegrationPage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  State<GitHubIntegrationPage> createState() => _GitHubIntegrationPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
   final TextEditingController _patController = TextEditingController();
   bool _isSaving = false;
   bool _isLoading = false;

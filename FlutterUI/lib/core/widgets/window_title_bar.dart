@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:frontend/features/auth/auth_page.dart';
+import 'package:frontend/features/auth/presentation/pages/account_page.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 class WindowTitleBar extends StatefulWidget {
@@ -196,12 +196,12 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                             icon: const Icon(Icons.account_circle_outlined),
                             tooltip: AppLocalizations.of(
                               context,
-                            )!.githubAuthTitle,
+                            )!.userAccount,
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const AuthPage(),
+                                  builder: (context) => const AccountPage(),
                                 ),
                               );
                             },

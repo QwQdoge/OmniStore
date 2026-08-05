@@ -1,4 +1,16 @@
 <<<<<<< HEAD
+## What
+- Replaced the standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth (Option A: Shared Identity).
+- Implemented `MeoArchEnvironment` logic mapping `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_URL` via `--dart-define`.
+- Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
+- Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
+- Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
+- Refactored `DesktopWindowService` to rely on `MeoArchEnvironment` configs.
+- Initialized Supabase on app boot via `bootstrapOmniStore`.
+- Enabled and verified Linux Deep Linking handling logic (`omnistore://` uri scheme support).
+- Assured Sync mechanisms rely correctly on Supabase UUIDs (`auth.uid()`).
+=======
+<<<<<<< HEAD
 # Refactoring & Optimization PR
 
 ## 🎯 **What:**
@@ -15,9 +27,17 @@
 OmniStore is now completely compile-clean, with zero regressions, and fully protected against crashes caused by post-disposal state notifications.
 =======
 # 🎨 Palette: Standardized Settings Dropdowns for Material Design 3
+>>>>>>> origin/main
 
-### 💡 What
+## Coverage
+- Refactored `AuthService` and mapped `desktop_top_bar.dart` and `window_title_bar.dart` UI bindings.
+- Linux Application C++ bootstrap file modifications to delegate URI Scheme `command-line` processing.
+- Verified widget and flutter runtime builds correctly without compile-time anomalies.
 
+<<<<<<< HEAD
+## Result
+OmniStore now acts natively as an extension of the MeoArch Account Identity system (through shared Supabase instances). Auth and Session properties are automatically saved via standard Supabase persistence. GitHub REST API connections are unblocked and properly segmented into the Settings integrations layer, allowing offline behavior to function as usual when Supabase instances are unreachable.
+=======
 Refined the styling of all configuration dropdown selectors (`DropdownButton`) within the application settings pages, including:
 1. **GeneralSettingsCard:** Language selector dropdown.
 2. **TypographySettingsCard:** Font family selector dropdown.
@@ -43,4 +63,5 @@ The legacy dropdown implementation rendered dropdowns as flat, unstyled floating
 * Follows standard surface hierarchy by utilizing Material 3 `surfaceContainerHigh` for interactive elements nested inside `AppCard`'s `surfaceContainerLow`.
 * Employs soft geometry (12dp corners) and a subtle, semi-opaque border (`outlineVariant` at 0.5 opacity) in line with native M3 selection inputs.
 * Modernizes iconography using rounded material design symbols (`keyboard_arrow_down_rounded`).
+>>>>>>> origin/main
 >>>>>>> origin/main
