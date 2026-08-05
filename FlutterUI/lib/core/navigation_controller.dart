@@ -17,20 +17,6 @@ class NavigationController with ChangeNotifier {
   }
 
   int _selectedIndex = 0;
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
-    }
-  }
 
   int get selectedIndex => _selectedIndex;
 

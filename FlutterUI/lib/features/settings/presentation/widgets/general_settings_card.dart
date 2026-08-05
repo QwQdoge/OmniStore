@@ -17,6 +17,7 @@ class GeneralSettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Selector<
       SettingsController,
@@ -41,37 +42,56 @@ class GeneralSettingsCard extends StatelessWidget {
                 leading: const Icon(Icons.translate_rounded),
                 title: Text(l10n.language),
                 subtitle: Text(l10n.languageSubtitle),
-                trailing: DropdownButton<String>(
-                  value: data.language,
-                  underline: const SizedBox(),
-                  borderRadius: BorderRadius.circular(12),
-                  items: [
-                    DropdownMenuItem(
-                      value: 'en-US',
-                      child: Text(l10n.langEnglish),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      width: 1,
                     ),
-                    DropdownMenuItem(
-                      value: 'zh-CN',
-                      child: Text(l10n.langSimplifiedChinese),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: data.language,
+                      borderRadius: BorderRadius.circular(12),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'en-US',
+                          child: Text(l10n.langEnglish),
+                        ),
+                        DropdownMenuItem(
+                          value: 'zh-CN',
+                          child: Text(l10n.langSimplifiedChinese),
+                        ),
+                        DropdownMenuItem(
+                          value: 'zh-TW',
+                          child: Text(l10n.langTraditionalChinese),
+                        ),
+                        DropdownMenuItem(
+                          value: 'ja-JP',
+                          child: Text(l10n.langJapanese),
+                        ),
+                        DropdownMenuItem(
+                          value: 'es-ES',
+                          child: Text(l10n.langSpanish),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          context.read<SettingsController>().setLanguage(val);
+                        }
+                      },
                     ),
-                    DropdownMenuItem(
-                      value: 'zh-TW',
-                      child: Text(l10n.langTraditionalChinese),
-                    ),
-                    DropdownMenuItem(
-                      value: 'ja-JP',
-                      child: Text(l10n.langJapanese),
-                    ),
-                    DropdownMenuItem(
-                      value: 'es-ES',
-                      child: Text(l10n.langSpanish),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      context.read<SettingsController>().setLanguage(val);
-                    }
-                  },
+                  ),
                 ),
               ),
               SwitchListTile(
