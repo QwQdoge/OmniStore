@@ -5,6 +5,8 @@ import os
 import signal
 import time
 
+_background_tasks = set()
+
 @contextlib.asynccontextmanager
 async def safe_subprocess(*args, **kwargs):
     """
@@ -65,7 +67,10 @@ async def _cleanup_proc(proc):
 
             try:
                 # Murphy-proof: Wait for graceful termination
-                await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=3)
+                wait_task = asyncio.create_task(proc.wait())
+                _background_tasks.add(wait_task)
+                wait_task.add_done_callback(_background_tasks.discard)
+                await asyncio.wait_for(asyncio.shield(wait_task), timeout=3)
             except BaseException as _exc:
                 # 2. Stage 2: Escalation to Forceful SIGKILL (POSIX) or taskkill (Windows)
                 if os.name == 'posix':
@@ -98,7 +103,10 @@ async def _cleanup_proc(proc):
 
                 # Final fail-safe wait to reap the zombie/handle
                 try:
-                    await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=2)
+                    wait_task_2 = asyncio.create_task(proc.wait())
+                    _background_tasks.add(wait_task_2)
+                    wait_task_2.add_done_callback(_background_tasks.discard)
+                    await asyncio.wait_for(asyncio.shield(wait_task_2), timeout=2)
                 except (asyncio.TimeoutError, Exception):
                     pass
                 if not isinstance(_exc, Exception):
