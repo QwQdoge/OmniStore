@@ -18,8 +18,7 @@ class AppDetailsHeader extends StatelessWidget {
   final ScrollController variantScrollController;
   final String? heroTag;
   final bool Function(String) hasCapability;
-  final String? Function(String) getVersionForSource;
-  final bool Function(String) isSourceInstalled;
+  final AppVariant? Function(String) getVariantForSource;
   final ValueChanged<String> onSourceSelected;
 
   const AppDetailsHeader({
@@ -32,8 +31,7 @@ class AppDetailsHeader extends StatelessWidget {
     required this.variantScrollController,
     this.heroTag,
     required this.hasCapability,
-    required this.getVersionForSource,
-    required this.isSourceInstalled,
+    required this.getVariantForSource,
     required this.onSourceSelected,
   });
 
@@ -176,7 +174,7 @@ class AppDetailsHeader extends StatelessWidget {
                                 for (var v in extraDetails!.variants) v.source,
                               selectedSource,
                             }.map((String source) {
-                              final version = getVersionForSource(source);
+                              final version = getVariantForSource(source)?.version;
                               return ButtonSegment<String>(
                                 value: source,
                                 label: Padding(

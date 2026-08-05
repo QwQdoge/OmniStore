@@ -291,12 +291,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 variantScrollController: _variantScrollController,
                 heroTag: widget.heroTag,
                 hasCapability: _hasCapability,
-                getVersionForSource: _getVersionForSource,
-                isSourceInstalled: _isSourceInstalled,
+
                 onSourceSelected: (String newValue) {
                   setState(() {
                     _selectedSource = newValue;
-                    _isAppInstalled = _isSourceInstalled(newValue);
+                    _isAppInstalled = _getVariantForSource(newValue)?.installed ?? false;
                   });
                 },
                 onLocateApp: _locateApp,
@@ -374,13 +373,7 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     return null;
   }
 
-  String? _getVersionForSource(String source) {
-    return _getVariantForSource(source)?.version;
-  }
 
-  bool _isSourceInstalled(String source) {
-    return _getVariantForSource(source)?.installed ?? false;
-  }
 
   void _showScreenshotViewer(String url) {
     showDialog(
