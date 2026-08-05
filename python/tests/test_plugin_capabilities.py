@@ -1,5 +1,6 @@
 import ast
 import asyncio
+import pytest
 import json
 import sys
 import zipfile
@@ -190,3 +191,52 @@ def test_manifest_plugins_keep_review_gating_except_builtin_winget(tmp_path, mon
     assert listed["builtin.winget"]["default_enabled"] is True
     assert listed["builtin.aur"]["trusted"] is False
     assert listed["builtin.aur"]["default_enabled"] is False
+
+
+@pytest.mark.asyncio
+async def test_appimage_search_pre_scan_optimization(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / ".local" / "share"))
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+    config = DummyConfig()
+    appimage = AppImageSource(DummySession(), config)
+
+    # Mock _fetch_feed
+    async def dummy_fetch_feed():
+        return [
+            {
+                "name": "SuperTool",
+                "description": "An awesome utility tool",
+                "version": "1.0",
+                "links": [{"type": "Download", "url": "https://example.com/supertool.AppImage"}]
+            },
+            {
+                "name": "NonInstalledTool",
+                "description": "Another utility",
+                "version": "2.0",
+                "links": [{"type": "Download", "url": "https://example.com/noninstalled.AppImage"}]
+            }
+        ]
+    monkeypatch.setattr(appimage, "_fetch_feed", dummy_fetch_feed)
+
+    # 1. Test when Applications folder is empty
+    results = await appimage.search("tool")
+    assert len(results) == 2
+    assert results[0]["installed"] is False
+    assert results[1]["installed"] is False
+
+    # 2. Test when Applications folder has SuperTool.AppImage installed
+    apps_dir = tmp_path / "Applications"
+    apps_dir.mkdir(parents=True, exist_ok=True)
+    super_tool_file = apps_dir / "SuperTool.AppImage"
+    super_tool_file.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    results_installed = await appimage.search("tool")
+    assert len(results_installed) == 2
+
+    # Confirm SuperTool is found as installed, and NonInstalledTool is not installed
+    super_tool_res = next(r for r in results_installed if r["name"] == "SuperTool")
+    non_inst_res = next(r for r in results_installed if r["name"] == "NonInstalledTool")
+    assert super_tool_res["installed"] is True
+    assert non_inst_res["installed"] is False

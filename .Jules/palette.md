@@ -194,3 +194,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** Unnecessarily wrapping native Material buttons (`IconButton`, `FilledButton`, `OutlinedButton`) in `Semantics(button: true, label: ...)` creates redundant nodes in the semantic tree and bloats layout hierarchy. Material widgets inherently manage their own accessibility traits via their `tooltip` or child labels.
 
 **Action:** Cleaned up redundant `Semantics` wrappers specifically around `IconButton` components across navigation bars, dialog headers, settings cards, and layout widgets. Relied purely on `tooltip` property to provide semantic labeling.
+
+## 2026-08-05 - Material Design 3 Inline Dropdowns
+
+**Learning:** To align legacy inline DropdownButton widgets with Material Design 3 guidelines (such as trailing elements in ListTiles), wrap the DropdownButton with DropdownButtonHideUnderline inside a Container styled with MD3 tokens (e.g., color `theme.colorScheme.surfaceContainerHigh`, 12dp rounded corners, and a subtle border using `theme.colorScheme.outlineVariant` at 0.5 opacity). Override the standard dropdown icon with `Icons.keyboard_arrow_down_rounded` for softer, native-feeling MD3 transitions.
+
+**Action:** Standardize the visual styling of Settings and Configuration inline DropdownButtons globally by wrapping them in matching M3 styled container boundaries and using soft keyboard arrow down icons to improve click targets, affordance, and visual harmony.

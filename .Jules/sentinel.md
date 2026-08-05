@@ -192,3 +192,10 @@ Extensive audit revealed asynchronous gaps where state (`setState`) or context (
 
 Action:
 Implemented a strict `if (!mounted) return;` guard immediately before `setState` in `_checkEnvironment` and `_testAIConnection` (including `try`, `catch` and an `if (mounted)` within `finally`). Added a `if (!mounted) return;` guard before `widget.onFinish()` in `_finishOnboarding`.
+## $(date +%Y-%m-%d) - [Zombie Process Leak on Async Cancellation - Fix Refinement 2]
+
+Learning:
+While explicitly creating tasks and shielding them (`asyncio.shield(task)`) correctly prevents the task from being destroyed mid-execution *during* a timeout catch block, it fails to protect the task if the outer function exits entirely (e.g. from an `asyncio.CancelledError` unwinding the stack). Because local variables go out of scope, the tasks lose their strong references and are still garbage-collected. To ensure true async lifecycle safety for background shielded tasks, a strong reference must be maintained in a persistent collection (e.g. a class-level `set` or a global module-level `set`) until completion.
+
+Action:
+Modified `OmnistoreBackend` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded AI closure calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. Applied the same fix in `python/core/subprocess_utils.py`, adding a global `_background_tasks = set()` to persist the subprocess `wait()` tasks if `_cleanup_proc` is cancelled.
