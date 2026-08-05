@@ -36,6 +36,7 @@ class UpdateService {
   final SystemTray _systemTray = SystemTray();
 
   final ValueNotifier<List<dynamic>> availableUpdates = ValueNotifier([]);
+  final ValueNotifier<bool> isCheckingUpdates = ValueNotifier(false);
   Timer? _updateTimer;
   Map<String, dynamic> _config = {};
   DateTime? _lastNotificationTime;
@@ -521,6 +522,8 @@ WantedBy=timers.target
   }
 
   Future<void> checkNow() async {
+    if (isCheckingUpdates.value) return;
+    isCheckingUpdates.value = true;
     debugPrint("Checking for updates...");
     try {
       final updates = await BackendService.instance.checkUpdates().timeout(
@@ -580,6 +583,8 @@ WantedBy=timers.target
       }
     } catch (e) {
       debugPrint("Update check failed: $e");
+    } finally {
+      isCheckingUpdates.value = false;
     }
   }
 

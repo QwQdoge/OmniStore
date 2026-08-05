@@ -124,3 +124,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Action:** Added lazy `nameLower`, `descriptionLower`, and `primarySourceLower` fields to `AppPackage` and updated all corresponding `toLowerCase()` UI usage to reference the cached fields.
 
 - Added memCacheHeight to 1:1 app icons in various files to restrict decoder memory allocation inside the heap, following the memory optimization guideline.
+
+## 2024-08-01 - UpdatesTab List Virtualization & Loading Optimization
+
+**Learning:** Skeletons should use `ListView.builder` with `prototypeItem` for better scroll virtualization, and state should be managed carefully to ensure loaders properly display and hide. The `UpdateService` was previously checking updates without exposing its loading state properly to the UI, leading to glitches. Also, ensuring that `finally { isCheckingUpdates.value = false; }` prevents permanent loading state locks.
+
+**Action:** Created `UpdatesTabSkeleton` with a `ListView.builder` and `prototypeItem`. Integrated `UpdateService.isCheckingUpdates` `ValueNotifier` to properly switch between loading skeleton, empty state, and list data. Fixed missing `finally` cleanup block in `UpdateService.checkNow()`.
