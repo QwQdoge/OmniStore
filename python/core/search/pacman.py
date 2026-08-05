@@ -18,10 +18,8 @@ class PacmanSearch(SearchSource):
     def __init__(self, session=None):
         super().__init__(name="Pacman")
         self.session = session
-        # 初始化时检查系统环境，确保 pacman 可用
         if shutil.which("pacman") is None:
             logger.warning("No pacman found. Please ensure you are running this on an Arch-based Linux distribution.")
-
     # 搜索软件包，返回搜索结果字符串
     async def search(self, query: str) -> list:
         if not query or not isinstance(query, str):

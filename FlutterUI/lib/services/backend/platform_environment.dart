@@ -16,12 +16,16 @@ class PlatformEnvironment {
     try {
       final script = Platform.script.toFilePath();
       if (script.isNotEmpty) searchRoots.add(p.dirname(script));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to resolve script path: $e');
+    }
 
     try {
       final exec = Platform.resolvedExecutable;
       if (exec.isNotEmpty) searchRoots.add(p.dirname(exec));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to resolve executable path: $e');
+    }
 
     for (final root in searchRoots) {
       var dir = Directory(root);
