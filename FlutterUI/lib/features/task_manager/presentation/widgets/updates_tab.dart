@@ -9,6 +9,7 @@ import 'package:frontend/features/task_manager/presentation/controllers/task_con
 import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'ai_update_summary_dialog.dart';
+import 'updates_tab_skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
@@ -21,13 +22,19 @@ class UpdatesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: UpdateService().availableUpdates,
+      listenable: Listenable.merge([
+        UpdateService().availableUpdates,
+        UpdateService().isCheckingUpdates,
+      ]),
       builder: (context, _) {
         final updates = UpdateService().availableUpdates.value;
+        final isLoading = UpdateService().isCheckingUpdates.value;
 
         Widget content;
 
-        if (updates.isEmpty) {
+        if (isLoading && updates.isEmpty) {
+          content = const UpdatesTabSkeleton(key: ValueKey('loading'));
+        } else if (updates.isEmpty) {
           content = EmptyState(
             key: const ValueKey('empty'),
             icon: Icons.check_circle_outline,

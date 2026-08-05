@@ -56,7 +56,8 @@ class _DownloadPageState extends State<DownloadPage>
     final l10n = AppLocalizations.of(context)!;
     try {
       final prevCount = UpdateService().availableUpdates.value.length;
-      await UpdateService().checkUpdates();
+      UpdateService().availableUpdates.value = [];
+      await UpdateService().checkNow();
       if (!mounted) return;
       final newCount = UpdateService().availableUpdates.value.length;
       final msg = newCount == 0 ? l10n.allUpdated : l10n.foundUpdates(newCount);
@@ -247,11 +248,7 @@ class _DownloadPageState extends State<DownloadPage>
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: Skeleton(
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                      ),
+                      child: Skeleton(width: 20, height: 20, borderRadius: 10),
                     ),
                   )
                 : IconButton(
