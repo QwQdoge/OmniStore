@@ -130,3 +130,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Skeletons should use `ListView.builder` with `prototypeItem` for better scroll virtualization, and state should be managed carefully to ensure loaders properly display and hide. The `UpdateService` was previously checking updates without exposing its loading state properly to the UI, leading to glitches. Also, ensuring that `finally { isCheckingUpdates.value = false; }` prevents permanent loading state locks.
 
 **Action:** Created `UpdatesTabSkeleton` with a `ListView.builder` and `prototypeItem`. Integrated `UpdateService.isCheckingUpdates` `ValueNotifier` to properly switch between loading skeleton, empty state, and list data. Fixed missing `finally` cleanup block in `UpdateService.checkNow()`.
+
+## 2026-08-01 - FlatpakAppListSkeleton List Virtualization Optimization
+
+**Learning:** `ListView.builder` widgets inside Skeleton loading states should always include a `prototypeItem` matching the dimensions of the skeleton items to ensure efficient scroll virtualization and avoid redundant layout calculations across the view port.
+
+**Action:** Added `prototypeItem` to `FlatpakAppListSkeleton` in `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart` to optimize scroll layout overhead.
