@@ -17,8 +17,8 @@
   "launch": "启动",
   "about": "关于",
   "details": "详情",
-  "source": "来源",
-  "variant": "可用版本",
+  "source": "软件源",
+  "variant": "分发版本",
   "@variant": {
     "description": "Label for app variants/versions"
   },
@@ -34,7 +34,7 @@
   },
   "noResults": "未找到相关结果",
   "searching": "正在搜索...",
-  "activity": "活动",
+  "activity": "任务动态",
   "@activity": {
     "description": "Activity tab label"
   },
@@ -54,7 +54,7 @@
   "followSystem": "跟随系统",
   "lightMode": "浅色模式",
   "darkMode": "深色模式",
-  "loggingLevel": "日志详细程度",
+  "loggingLevel": "日志级别",
   "saveAndApply": "保存并应用",
   "configSaved": "配置已保存，部分更改将在重启后生效",
   "configSaveFailed": "保存配置失败",
@@ -74,7 +74,7 @@
   "waitingForOutput": "等待终端输出...",
   "screenshots": "应用截图",
   "developer": "开发者",
-  "license": "许可",
+  "license": "许可证",
   "success": "成功",
   "failed": "失败",
   "taskCancelled": "任务已取消",
@@ -538,7 +538,7 @@
   "installInfo": "安装信息",
   "downloadSize": "下载大小",
   "installedSize": "安装后大小",
-  "dependenciesCount": "依赖软件包（{count}）",
+  "dependenciesCount": "依赖项（{count}）",
   "@dependenciesCount": {
     "placeholders": {
       "count": {
@@ -752,7 +752,7 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库",
+  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
   "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"

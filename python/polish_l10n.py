@@ -25,11 +25,18 @@ polish('ja', {
 polish('es', {
     "upToDate": "Todas las aplicaciones están actualizadas",
     "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
-    "variant": "Fuente de instalación"
+    "variant": "Variantes"
 })
 
 # Simplified Chinese Polishing
 polish('zh', {
+    "activity": "任务动态",
+    "source": "软件源",
+    "variant": "分发版本",
+    "loggingLevel": "日志级别",
+    "license": "许可证",
+    "dependenciesCount": "依赖项（{count}）",
+    "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
     "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
     "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。",
     "importListSubtitle": "从列表导入常用软件包",
@@ -40,6 +47,29 @@ polish('zh', {
 
 # Traditional Chinese Polishing (Consistency with zh)
 polish('zh_Hant', {
+    "activity": "任務動態",
+    "source": "軟體源",
+    "variant": "分發版本",
+    "loggingLevel": "日誌級別",
+    "license": "授權條款",
+    "dependenciesCount": "依賴項（{count}）",
+    "pacmanOfficial": "Pacman（官方軟體源）",
+    "aurUser": "AUR（使用者軟體源）",
+    "sourcePriority": "軟體源優先級（拖曳排序）",
+    "repositories": "軟體源",
+    "sourceConfigTitle": "軟體源設定",
+    "sourceConfigSubtitle": "選擇要啟用的軟體源",
+    "activeSources": "已啟用軟體源",
+    "addCustomSource": "新增自訂軟體源",
+    "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源",
+    "sourceType": "軟體源類型",
+    "sourceName": "軟體源名稱",
+    "addingCustomSource": "正在新增自訂軟體源...",
+    "sourceAddSuccess": "軟體源新增成功！",
+    "sourceAddFailed": "新增軟體源失敗。",
+    "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+    "pluginsAndSources": "外掛程式與軟體源",
+    "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體源，通常更穩定。",
     "forYou": "為您推薦",
     "aiThinking": "AI 正在思考...",
     "aiCorrection": "您是指？",

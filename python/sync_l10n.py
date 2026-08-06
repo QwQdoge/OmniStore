@@ -13,8 +13,8 @@ def sync_locale(loc):
     new_keys = {
         "advanced": {"zh": "高级", "zh_Hant": "進階", "ja": "詳細設定", "es": "Avanzado"},
         "general": {"zh": "常规", "zh_Hant": "一般", "ja": "全般", "es": "General"},
-        "repositories": {"zh": "软件源", "zh_Hant": "軟體存放庫", "ja": "リポジトリ", "es": "Repositorios"},
-        "aurFull": {"zh": "AUR（Arch 用户软件源）", "zh_Hant": "AUR（Arch 使用者軟體存放庫）", "ja": "AUR (Arch User Repository)", "es": "AUR (Arch User Repository)"},
+        "repositories": {"zh": "软件源", "zh_Hant": "軟體源", "ja": "リポジトリ", "es": "Repositorios"},
+        "aurFull": {"zh": "AUR（Arch 用户软件源）", "zh_Hant": "AUR（Arch 使用者軟體源）", "ja": "AUR (Arch User Repository)", "es": "AUR (Arch User Repository)"},
         "flatpakFull": {"zh": "Flatpak (Flathub)", "zh_Hant": "Flatpak (Flathub)", "ja": "Flatpak (Flathub)", "es": "Flatpak (Flathub)"},
         "quickStart": {
             "zh": "快速开始",
