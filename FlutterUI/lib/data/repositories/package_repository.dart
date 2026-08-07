@@ -55,24 +55,59 @@ class PackageRepository {
     Map<String, List<AppPackage>> dynamic,
   ) => {...dynamic, 'featured': _editorialFeatured};
 
+  final Map<String, Map<String, dynamic>> _searchCache = {};
+  static const int _maxCacheSize = 20;
+
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
     bool throwOnError = false,
+    bool forceRefresh = false,
     int? limit,
     int? offset,
   }) async {
+    final bool isSourceSearch = query.trim().startsWith('source:');
+
+    if (isSourceSearch && !forceRefresh) {
+      final cached = _searchCache[query];
+      if (cached != null) {
+        final time = cached['time'] as DateTime;
+        if (DateTime.now().difference(time).inMinutes < 5) {
+          return List<AppPackage>.from(cached['results'] as List);
+        }
+      }
+    }
+
+    List<AppPackage> results;
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
-      return webResults
+      results = webResults
           .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
           .toList();
+    } else {
+      results = await BackendService.instance.searchPackages(
+        query,
+        cancelOngoing: cancelOngoing,
+        throwOnError: throwOnError,
+      );
     }
-    return BackendService.instance.searchPackages(
-      query,
-      cancelOngoing: cancelOngoing,
-      throwOnError: throwOnError,
-    );
+
+    if (isSourceSearch) {
+      _searchCache[query] = {
+        'results': results,
+        'time': DateTime.now(),
+      };
+
+      // Prevent unbounded memory growth (LRU-like behavior by removing oldest first if over limit)
+      if (_searchCache.length > _maxCacheSize) {
+        final oldestKey = _searchCache.entries
+            .reduce((a, b) => (a.value['time'] as DateTime).isBefore(b.value['time'] as DateTime) ? a : b)
+            .key;
+        _searchCache.remove(oldestKey);
+      }
+    }
+
+    return results;
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {
