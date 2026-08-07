@@ -15,6 +15,7 @@ class AITestResultDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           Icon(
@@ -22,7 +23,12 @@ class AITestResultDialog extends StatelessWidget {
             color: isSuccess ? Colors.green : Colors.red,
           ),
           const SizedBox(width: 8),
-          Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
+          Text(
+            isSuccess ? l10n.aiTestSuccess : l10n.failed,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
       content: msg.isNotEmpty ? SelectableText(msg) : null,

@@ -71,37 +71,81 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.l10n.addCustomSource),
+      clipBehavior: Clip.antiAlias,
+      icon: Icon(
+        Icons.add_circle_outline_rounded,
+        color: Theme.of(context).colorScheme.primary,
+        size: 32,
+      ),
+      title: Text(
+        widget.l10n.addCustomSource,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            DropdownButtonFormField<String>(
-              initialValue: _type,
-              decoration: InputDecoration(labelText: widget.l10n.sourceType),
-              items: [
-                DropdownMenuItem(
-                  value: "github",
-                  child: Text(widget.l10n.githubRepoType),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.l10n.sourceType,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                DropdownMenuItem(
-                  value: "bitu",
-                  child: Text(widget.l10n.bituRepoType),
-                ),
-                DropdownMenuItem(
-                  value: "flatpak",
-                  child: Text(widget.l10n.flatpakRemoteType),
-                ),
-                DropdownMenuItem(
-                  value: "appimage",
-                  child: Text(widget.l10n.appImageFeedType),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _type,
+                      borderRadius: BorderRadius.circular(12),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: "github",
+                          child: Text(widget.l10n.githubRepoType),
+                        ),
+                        DropdownMenuItem(
+                          value: "bitu",
+                          child: Text(widget.l10n.bituRepoType),
+                        ),
+                        DropdownMenuItem(
+                          value: "flatpak",
+                          child: Text(widget.l10n.flatpakRemoteType),
+                        ),
+                        DropdownMenuItem(
+                          value: "appimage",
+                          child: Text(widget.l10n.appImageFeedType),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _type = val);
+                        }
+                      },
+                    ),
+                  ),
                 ),
               ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => _type = val);
-                }
-              },
             ),
             const SizedBox(height: 12),
             TextField(
