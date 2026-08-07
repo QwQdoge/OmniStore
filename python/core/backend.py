@@ -105,6 +105,7 @@ class ResourceCoordinator:
         self._files: Set[Union[str, Path]] = set()
         self._handles: List[Any] = []
         self._lock = asyncio.Lock()
+        self._background_tasks: Set[asyncio.Task] = set()
 
     def track_task(self, task: asyncio.Task):
         self._tasks.add(task)
@@ -141,8 +142,11 @@ class ResourceCoordinator:
                 if tasks_to_reap:
                     try:
                         # Using shield to ensure we attempt to gather even if cleanup itself is cancelled.
+                        gather_task = asyncio.create_task(asyncio.gather(*tasks_to_reap, return_exceptions=True))
+                        self._background_tasks.add(gather_task)
+                        gather_task.add_done_callback(self._background_tasks.discard)
                         await asyncio.wait_for(
-                            asyncio.shield(asyncio.gather(*tasks_to_reap, return_exceptions=True)),
+                            asyncio.shield(gather_task),
                             timeout=5.0
                         )
                     except asyncio.TimeoutError:
@@ -453,6 +457,8 @@ class OmnistoreBackend:
                             logging.debug(f"AI session cleanup failed: {exc}")
                 finally:
                     cleanup_task = asyncio.create_task(self._resources.cleanup())
+                    self._background_tasks.add(cleanup_task)
+                    cleanup_task.add_done_callback(self._background_tasks.discard)
                     try:
                         await asyncio.shield(cleanup_task)
                     except asyncio.CancelledError:
