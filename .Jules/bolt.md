@@ -130,3 +130,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Skeletons should use `ListView.builder` with `prototypeItem` for better scroll virtualization, and state should be managed carefully to ensure loaders properly display and hide. The `UpdateService` was previously checking updates without exposing its loading state properly to the UI, leading to glitches. Also, ensuring that `finally { isCheckingUpdates.value = false; }` prevents permanent loading state locks.
 
 **Action:** Created `UpdatesTabSkeleton` with a `ListView.builder` and `prototypeItem`. Integrated `UpdateService.isCheckingUpdates` `ValueNotifier` to properly switch between loading skeleton, empty state, and list data. Fixed missing `finally` cleanup block in `UpdateService.checkNow()`.
+
+## 2026-08-02 - Store/Source Search Caching Optimization
+
+**Learning:** Frequently navigating back and forth or switching tabs within store/source-specific views (like Flatpak or GitHub) triggers redundant, expensive daemon subprocess searches or external network API calls. Caching these queries under a short, 5-minute TTL inside `PackageRepository` eliminates this duplicate overhead, realizing instantaneous tab switching and page re-entry.
+
+**Action:** Implemented a targeted `_sourceSearchCache` in `PackageRepository` for all `"source:"` prefixed queries. Leveraged a `forceRefresh` parameter to allow manual pull-to-refresh or retry actions to bypass the cache and successfully retrieve fresh data.
