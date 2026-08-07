@@ -1,67 +1,28 @@
-<<<<<<< HEAD
+# Pull Request: 🎨 Palette: Standardize Multi-Language Localization and Polishing
+
 ## What
-- Replaced the standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth (Option A: Shared Identity).
-- Implemented `MeoArchEnvironment` logic mapping `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_URL` via `--dart-define`.
-- Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
-- Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
-- Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
-- Refactored `DesktopWindowService` to rely on `MeoArchEnvironment` configs.
-- Initialized Supabase on app boot via `bootstrapOmniStore`.
-- Enabled and verified Linux Deep Linking handling logic (`omnistore://` uri scheme support).
-- Assured Sync mechanisms rely correctly on Supabase UUIDs (`auth.uid()`).
-=======
-<<<<<<< HEAD
-# Refactoring & Optimization PR
+Refined and standardized several key user-facing UI localization strings across Simplified Chinese (`zh`), Traditional Chinese (`zh_Hant`), and Spanish (`es`) to align with standard tech translation guidelines and ensure seamless, publication-grade user experience.
 
-## 🎯 **What:**
-1. Resolved duplicate copy-pasted member and method declarations in `SettingsController` (`bool _disposed`, `dispose()`, `notifyListeners()`) which were causing a severe Dart compile error.
-2. Resolved duplicate copy-pasted fields in `AppPackage` (`nameLower`, `descriptionLower`, `primarySourceLower`) which were causing a Dart compile error.
-3. Fully preserved the critical defensive guards (`_disposed` check in `notifyListeners` to prevent "setState() called after dispose()" crash, and the `nameLower` lazy-initialized lowering properties) to ensure the application remains robust, crash-free, and stable under rapid transitions.
+The following terminology unifications and polishing steps were performed:
+- `activity` -> Standardized to '任务动态' / '任務動態' (previously literal translations like '活动' / '活動').
+- `source` -> Standardized to '软件源' / '軟體源' (previously generic/stiff translations like '来源' / '來源').
+- `variant` -> Standardized to '分发版本' / '分發版本' / 'Variantes' (previously '可用版本' / 'Fuente de instalación').
+- `loggingLevel` -> Standardized to '日志级别' / '日誌級別' (previously '日志详细程度' / '日誌詳細程度').
+- `license` -> Standardized to '许可证' / '授權條款' (previously '许可' / '授權').
+- `dependenciesCount` -> Standardized to '依赖项（{count}）' / '依賴項（{count}）' (previously '依赖软件包' / '依賴套件').
+- `noActiveTasks` -> Aligned Simplified Chinese '暂无活动中的任务' with '暂无进行中的任务' (consistent with Traditional Chinese '無進行中的任務').
+- `recommendedSource` -> Standardized '推荐来源：' to '推荐软件源：' / '推薦軟體源：'.
+- `aiPickDisclaimer` -> Standardized '当前可用来源' to '当前可用软件源' / '當前可用軟體源'.
 
-## 📊 **Coverage & Verification:**
-- Ran the full Python unit/widget test suite successfully with **68 passed tests**.
-- Ran Flutter frontend widget & unit tests successfully, confirming that all compilation errors are eliminated and the app is 100% compile-clean and stable.
-- Verified that deleting duplicate declarations maintains perfect compatibility, prevents "already declared in this scope" compiler errors, and retains the robust defensive life-cycle guards.
-
-## ✨ **Result:**
-OmniStore is now completely compile-clean, with zero regressions, and fully protected against crashes caused by post-disposal state notifications.
-=======
-# 🎨 Palette: Standardized Settings Dropdowns for Material Design 3
->>>>>>> origin/main
+The python localization utility `python/polish_l10n.py` was also kept perfectly in-sync with these polished translations, and l10n compilation (`flutter gen-l10n`) was completed successfully.
 
 ## Coverage
-- Refactored `AuthService` and mapped `desktop_top_bar.dart` and `window_title_bar.dart` UI bindings.
-- Linux Application C++ bootstrap file modifications to delegate URI Scheme `command-line` processing.
-- Verified widget and flutter runtime builds correctly without compile-time anomalies.
+- Updated `python/polish_l10n.py` to overwrite existing translation keys on polish runs.
+- Regenerated `.arb` resource files:
+  - `FlutterUI/lib/l10n/app_zh.arb`
+  - `FlutterUI/lib/l10n/app_zh_Hant.arb`
+  - `FlutterUI/lib/l10n/app_es.arb`
+- Avoided checking in compiled `.dart` artifacts to ensure clean repository history.
 
-<<<<<<< HEAD
 ## Result
-OmniStore now acts natively as an extension of the MeoArch Account Identity system (through shared Supabase instances). Auth and Session properties are automatically saved via standard Supabase persistence. GitHub REST API connections are unblocked and properly segmented into the Settings integrations layer, allowing offline behavior to function as usual when Supabase instances are unreachable.
-=======
-Refined the styling of all configuration dropdown selectors (`DropdownButton`) within the application settings pages, including:
-1. **GeneralSettingsCard:** Language selector dropdown.
-2. **TypographySettingsCard:** Font family selector dropdown.
-3. **UpdateSettingsCard:** Update check interval hours selector dropdown.
-4. **AISettingsSection:** AI provider selector dropdown.
-
-Each dropdown has been wrapped in a modern Container utilizing Material Design 3 layout tokens (surfaceContainerHigh background, 12dp rounded corners, and a subtle outline border). The standard sharp arrow dropdown icon has been replaced with a soft, organic `keyboard_arrow_down_rounded` icon.
-
-Additionally, unresolved duplicate class definitions (which caused compile and static analysis errors in `NavigationController`, `SettingsController`, and `AppPackage`) were cleaned up to ensure a pristine build state.
-
-### 🎯 Why
-
-The legacy dropdown implementation rendered dropdowns as flat, unstyled floating text. This lacked clear click targets, interaction affordances, and visual boundaries on desktop/mouse-driven interfaces. Standardizing these inputs under modern MD3 guidelines makes the interface significantly more intuitive and comfortable to interact with.
-
-### ♿ Accessibility
-
-* **Readability:** Clear visual contrast is established via explicit container boundaries using `Theme.of(context).colorScheme.surfaceContainerHigh`.
-* **Sizing/Tap Targets:** Standardized symmetric inner padding (12dp horizontal, 2dp vertical) provides larger, comfortable tap/click targets for touchscreen and mouse users.
-* **Keyboard Navigation:** Uses standard Material focus/hover state transitions.
-
-### 📱 MD3 Alignment
-
-* Follows standard surface hierarchy by utilizing Material 3 `surfaceContainerHigh` for interactive elements nested inside `AppCard`'s `surfaceContainerLow`.
-* Employs soft geometry (12dp corners) and a subtle, semi-opaque border (`outlineVariant` at 0.5 opacity) in line with native M3 selection inputs.
-* Modernizes iconography using rounded material design symbols (`keyboard_arrow_down_rounded`).
->>>>>>> origin/main
->>>>>>> origin/main
+All widget and unit tests compile and pass successfully, confirming perfect syntax in the `.arb` resource files and localizations compiler. Users across Chinese and Spanish locales will experience a professional, native-grade desktop package management interface.
