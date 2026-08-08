@@ -136,3 +136,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** `ListView.builder` widgets inside Skeleton loading states should always include a `prototypeItem` matching the dimensions of the skeleton items to ensure efficient scroll virtualization and avoid redundant layout calculations across the view port.
 
 **Action:** Added `prototypeItem` to `FlatpakAppListSkeleton` in `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart` to optimize scroll layout overhead.
+
+## 2026-08-02 - Store/Source Search Caching Optimization
+
+**Learning:** Frequently navigating back and forth or switching tabs within store/source-specific views (like Flatpak or GitHub) triggers redundant, expensive daemon subprocess searches or external network API calls. Caching these queries under a short, 5-minute TTL inside `PackageRepository` eliminates this duplicate overhead, realizing instantaneous tab switching and page re-entry.
+
+**Action:** Implemented a targeted `_sourceSearchCache` in `PackageRepository` for all `"source:"` prefixed queries. Leveraged a `forceRefresh` parameter to allow manual pull-to-refresh or retry actions to bypass the cache and successfully retrieve fresh data.
