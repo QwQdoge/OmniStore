@@ -46,7 +46,16 @@ polish('zh', {
     "importListSubtitle": "从列表导入常用软件包",
     "emptyTrendingMessage": "暂无热门数据；网络连接恢复后将自动更新。",
     "emptyRecommendationsMessage": "继续搜索或安装应用后，此处将显示个性化建议。",
-    "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。"
+    "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
+    "activity": "任务动态",
+    "source": "软件源",
+    "variant": "分发版本",
+    "loggingLevel": "日志级别",
+    "license": "许可证",
+    "dependenciesCount": "依赖项（{count}）",
+    "noActiveTasks": "暂无进行中的任务",
+    "recommendedSource": "推荐软件源：{source}",
+    "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。"
 })
 
 # Traditional Chinese Polishing (Consistency with zh)
@@ -118,4 +127,5 @@ polish('zh_Hant', {
     "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
     "searchGithubHint": "搜尋 GitHub 倉庫...",
     "pluginsAndSources": "外掛程式與軟體源"
+>>>>>>> origin/main
 })
