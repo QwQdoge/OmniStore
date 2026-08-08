@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+## What
+Added an `AnimatedSwitcher` to the "Sign In" button on the Account Page to provide a smooth transition between the interactive text state and the loading state.
+
+## Why
+To align with the Conductor agent guidelines for improving motion and interaction clarity by replacing abrupt layout jumps with subtle MD3 implicit motion during loading transitions.
+
+## Result
+When the user clicks the Sign In button, the button now smoothly cross-fades between the label text and the `CircularProgressIndicator` instead of snapping instantly.
+=======
 # 🚀 OmniStore: Unified PR for Auth Redesign, Dropdown MD3 Standardizations, and Code Health Optimizations
 
 ## 🎯 What
@@ -128,4 +138,3 @@ This pull request consolidates and resolves several major development streams:
 - **Testing:**
   - Ran the full Python unit/widget test suite successfully with **69 passed tests**.
   - Ran Flutter frontend widget & unit tests successfully (`flutter test test/widget_test.dart`).
->>>>>>> origin/main
