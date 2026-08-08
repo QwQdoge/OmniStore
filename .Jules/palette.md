@@ -1,3 +1,9 @@
+## 2026-08-06 - Material Design 3 DropdownFormField & Dialog Inputs Polish
+
+**Learning:** Inline selection fields (`DropdownButtonFormField`) and text inputs in dialogs and onboarding flows lack native MD3 visual affordance if left as unstyled or default-bordered components. Standardizing them to utilize custom, consistent `OutlineInputBorder` wrappers with 12dp rounded corners, softer border/hover coloring (via `Theme.of(context).colorScheme.outlineVariant`), proper symmetric content padding, and overriding the default sharp arrow icon with the soft, organic `Icons.keyboard_arrow_down_rounded` icon ensures complete visual harmony, larger click targets, and a premium native feel across desktop and mobile form screens.
+
+**Action:** Align all form input elements and custom dropdown fields globally or within Dialogs/Onboarding flows to use explicit `OutlineInputBorder` (12dp radius), customized state borders (enabled and focused), and softness-oriented iconography (`keyboard_arrow_down_rounded`) with proper content padding.
+
 ## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
 
 **Learning:** Standardizing interactive full-screen screenshot viewers by adding a backdrop `GestureDetector` with `HitTestBehavior.opaque` enables comfortable single-tap dismissal anywhere on the screen (reducing visual search friction for dismiss actions). Accompanying this with native `MaterialLocalizations.of(context).closeButtonTooltip` on the close button ensures native accessibility. In horizontal galleries, wrapping preview cards in a `Tooltip` and `Semantics` widget using a localized index label (e.g., `"${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}"`) provides robust hover discovery and screen-reader context.
