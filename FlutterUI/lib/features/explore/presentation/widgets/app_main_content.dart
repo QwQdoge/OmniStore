@@ -83,7 +83,7 @@ class AppMainContent extends StatelessWidget {
         SmoothSizeSwitcher(
           alignment: Alignment.topLeft,
           child: Column(
-            key: ValueKey('coordinated-block-${isLoadingDetails}-${extraDetails != null}'),
+            key: ValueKey('coordinated-block-$isLoadingDetails-${extraDetails != null}'),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppDetailsSectionTitle(
