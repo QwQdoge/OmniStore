@@ -6,10 +6,10 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_intro_page.dart';
+import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
-import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;

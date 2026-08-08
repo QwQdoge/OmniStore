@@ -27,7 +27,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresh({bool forceRefresh = false}) async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -38,6 +38,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
       final results = await packageRepo.searchPackages(
         "source:flatpak",
         throwOnError: true,
+        forceRefresh: forceRefresh,
       );
       if (!mounted) return;
       setState(() {
@@ -71,7 +72,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
           isDesktop: isDesktop,
           selectedApp: _selectedApp,
           loadError: _loadError,
-          onRetry: _refresh,
+          onRetry: () => _refresh(forceRefresh: true),
           onAppSelected: (app) {
             setState(() {
               _selectedApp = app;
