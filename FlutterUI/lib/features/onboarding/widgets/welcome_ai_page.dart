@@ -116,17 +116,31 @@ class WelcomeAiPage extends StatelessWidget {
                                     vertical: 8,
                                   ),
                                 ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'ollama',
-                                    child: Text('Ollama (Local / Offline)'),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
+                                    value: aiProvider,
+                                    borderRadius: BorderRadius.circular(12),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                    icon: Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'ollama',
+                                        child: Text('Ollama (Local / Offline)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'openai',
+                                        child: Text('OpenAI API (Cloud)'),
+                                      ),
+                                    ],
+                                    onChanged: onAiProviderChanged,
                                   ),
-                                  DropdownMenuItem(
-                                    value: 'openai',
-                                    child: Text('OpenAI API (Cloud)'),
-                                  ),
-                                ],
-                                onChanged: onAiProviderChanged,
+                                ),
                               ),
                               const SizedBox(height: 16),
                               TextField(
