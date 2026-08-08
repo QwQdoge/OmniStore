@@ -77,3 +77,5 @@
 - Replaced `"根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。"` with `AppLocalizations.of(context)!.aiPickDisclaimer`.
 - Ensured these new keys were added to all `.arb` files and generated correctly via `flutter gen-l10n`.
 Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable global Toast utility.
+## 2026-08-08 - Global SnackBar Consistency: auth/account_page.dart
+- Standardized and unified all `ScaffoldMessenger.of(context).showSnackBar` usages in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart` into the reusable global `Toast.show` utility. This ensures consistent UI presentation and fixes the 'snackbar/dialog consistency' goal for the auth module.
