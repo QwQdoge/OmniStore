@@ -70,15 +70,43 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Text(widget.l10n.addCustomSource),
+      clipBehavior: Clip.antiAlias,
+      icon: Icon(
+        Icons.add_link_rounded,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
+      title: Text(
+        widget.l10n.addCustomSource,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _type,
-              decoration: InputDecoration(labelText: widget.l10n.sourceType),
+              borderRadius: BorderRadius.circular(12),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              decoration: InputDecoration(
+                labelText: widget.l10n.sourceType,
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
               items: [
                 DropdownMenuItem(
                   value: "github",
@@ -103,15 +131,22 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 }
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: widget.l10n.sourceName,
                 hintText: widget.l10n.hintCustomAppName,
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _urlController,
               decoration: InputDecoration(
@@ -121,6 +156,13 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 hintText: _type == "github" || _type == "bitu"
                     ? widget.l10n.hintRepoFormat
                     : widget.l10n.hintFeedUrl,
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ],

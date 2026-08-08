@@ -34,6 +34,10 @@ class _DownloadPageState extends State<DownloadPage>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _installedFilterScrollController = ScrollController();
 
+  // ⚡ Bolt: Cache/memoize the available filters list to avoid O(N) .expand()
+  // and set allocations on every single render in InstalledTab's build() loop.
+  List<String> _availableFilters = const ["all", "managed", "unmanaged"];
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +94,7 @@ class _DownloadPageState extends State<DownloadPage>
       if (!mounted) return;
       setState(() {
         _installedApps = results;
+        _updateFiltersList();
         _applyFilters();
       });
     } catch (e) {
@@ -97,6 +102,16 @@ class _DownloadPageState extends State<DownloadPage>
     } finally {
       if (mounted) setState(() => _isLoadingInstalled = false);
     }
+  }
+
+  void _updateFiltersList() {
+    final sources = _installedApps
+        .expand((app) => {...app.sources, app.primarySource})
+        .where((source) => source.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    _availableFilters = ['all', 'managed', 'unmanaged', ...sources];
   }
 
   void _applyFilters() {
@@ -268,6 +283,7 @@ class _DownloadPageState extends State<DownloadPage>
             selectedSourceFilter: _selectedSourceFilter,
             filteredApps: _filteredApps,
             filterScrollController: _installedFilterScrollController,
+            availableFilters: _availableFilters,
             onSourceFilterSelected: (s) {
               setState(() {
                 _selectedSourceFilter = s;
