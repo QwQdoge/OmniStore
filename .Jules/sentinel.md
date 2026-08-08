@@ -192,10 +192,18 @@ Extensive audit revealed asynchronous gaps where state (`setState`) or context (
 
 Action:
 Implemented a strict `if (!mounted) return;` guard immediately before `setState` in `_checkEnvironment` and `_testAIConnection` (including `try`, `catch` and an `if (mounted)` within `finally`). Added a `if (!mounted) return;` guard before `widget.onFinish()` in `_finishOnboarding`.
-## $(date +%Y-%m-%d) - [Zombie Process Leak on Async Cancellation - Fix Refinement 2]
+## 2026-08-06 - [Zombie Process Leak on Async Cancellation - Fix Refinement 3]
+
+Learning:
+While adding a background task to a set (`self._background_tasks.add(task)`) correctly holds a strong reference, the standard `task.add_done_callback(self._background_tasks.discard)` approach breaks if `task` is added *after* execution has started (or if it's already done). Also, ensuring resource cleanup doesn't get cancelled by putting it inside `_background_tasks` ensures it runs to completion even if the main block is cancelled.
+
+Action:
+Modified `OmnistoreBackend.__aexit__` in `python/core/backend.py` to correctly track `cleanup_task` by adding it to `self._background_tasks` and registering the `discard` callback before awaiting it. This ensures it retains a strong reference during cancellation unwinding.
+
+## 2026-08-07 - [Zombie Process Leak on Async Cancellation - Fix Refinement 2]
 
 Learning:
 While explicitly creating tasks and shielding them (`asyncio.shield(task)`) correctly prevents the task from being destroyed mid-execution *during* a timeout catch block, it fails to protect the task if the outer function exits entirely (e.g. from an `asyncio.CancelledError` unwinding the stack). Because local variables go out of scope, the tasks lose their strong references and are still garbage-collected. To ensure true async lifecycle safety for background shielded tasks, a strong reference must be maintained in a persistent collection (e.g. a class-level `set` or a global module-level `set`) until completion.
 
 Action:
-Modified `OmnistoreBackend` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded AI closure calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. Applied the same fix in `python/core/subprocess_utils.py`, adding a global `_background_tasks = set()` to persist the subprocess `wait()` tasks if `_cleanup_proc` is cancelled.
+Modified `OmnistoreBackend` and `ResourceCoordinator` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded cleanup and gather calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. This mirrors the global `_background_tasks` set fix applied in `python/core/subprocess_utils.py` for zombie process reaping.

@@ -87,6 +87,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     required void Function(bool) setLoading,
     required void Function(List<AppPackage>) setApps,
     required void Function(String?) setError,
+    bool forceRefresh = false,
   }) async {
     if (!mounted) return;
     setState(() {
@@ -98,6 +99,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         query,
         throwOnError: true,
+        forceRefresh: forceRefresh,
       );
       if (!mounted) return;
       setState(() {
@@ -117,39 +119,43 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   }
 
   // Fetch Recommended (Default search:github)
-  Future<void> _fetchRecommended() => _fetchCategory(
+  Future<void> _fetchRecommended({bool forceRefresh = false}) => _fetchCategory(
     query: "source:github",
     setLoading: (v) => _isLoadingRecommended = v,
     setApps: (v) => _recommendedApps = v,
     setError: (v) => _recommendedError = v,
+    forceRefresh: forceRefresh,
   );
 
   // Fetch Rankings (stars:>5000 sort:stars)
-  Future<void> _fetchRankings() => _fetchCategory(
+  Future<void> _fetchRankings({bool forceRefresh = false}) => _fetchCategory(
     query: "source:github:stars:>5000 sort:stars",
     setLoading: (v) => _isLoadingRankings = v,
     setApps: (v) => _rankingApps = v,
     setError: (v) => _rankingError = v,
+    forceRefresh: forceRefresh,
   );
 
   // Fetch Trending (stars:>1000 sort:forks)
-  Future<void> _fetchTrending() => _fetchCategory(
+  Future<void> _fetchTrending({bool forceRefresh = false}) => _fetchCategory(
     query: "source:github:stars:>1000 sort:forks",
     setLoading: (v) => _isLoadingTrending = v,
     setApps: (v) => _trendingApps = v,
     setError: (v) => _trendingError = v,
+    forceRefresh: forceRefresh,
   );
 
   // Fetch Recently Updated (stars:>500 sort:updated)
-  Future<void> _fetchUpdated() => _fetchCategory(
+  Future<void> _fetchUpdated({bool forceRefresh = false}) => _fetchCategory(
     query: "source:github:stars:>500 sort:updated",
     setLoading: (v) => _isLoadingUpdated = v,
     setApps: (v) => _updatedApps = v,
     setError: (v) => _updatedError = v,
+    forceRefresh: forceRefresh,
   );
 
   // Handle Search
-  Future<void> _performSearch(String query) async {
+  Future<void> _performSearch(String query, {bool forceRefresh = false}) async {
     if (query.trim().isEmpty) {
       setState(() {
         _isSearching = false;
@@ -171,8 +177,9 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         "source:github:$query",
         throwOnError: true,
+        forceRefresh: forceRefresh,
       );
-      if (!mounted) return;
+      if (!mounted || _searchQuery != query) return;
       setState(() {
         _searchApps = results;
         _searchError = null;
@@ -200,20 +207,44 @@ class _GitHubStorePageState extends State<GitHubStorePage>
 
   Future<void> _handleRefresh() async {
     if (_isSearching) {
-      await _performSearch(_searchQuery);
+      setState(() {
+        _isLoadingSearch = true;
+        _searchError = null;
+      });
+      final packageRepo = context.read<PackageRepository>();
+      try {
+        final results = await packageRepo.searchPackages(
+          "source:github:$_searchQuery",
+          throwOnError: true,
+          forceRefresh: true,
+        );
+        if (!mounted) return;
+        setState(() {
+          _searchApps = results;
+          _searchError = null;
+          _isLoadingSearch = false;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _searchError =
+              "Could not search GitHub repositories. Check your network and try again.";
+          _isLoadingSearch = false;
+        });
+      }
     } else {
       switch (_tabController.index) {
         case 0:
-          await _fetchRecommended();
+          await _fetchRecommended(forceRefresh: true);
           break;
         case 1:
-          await _fetchRankings();
+          await _fetchRankings(forceRefresh: true);
           break;
         case 2:
-          await _fetchTrending();
+          await _fetchTrending(forceRefresh: true);
           break;
         case 3:
-          await _fetchUpdated();
+          await _fetchUpdated(forceRefresh: true);
           break;
       }
     }
