@@ -90,21 +90,57 @@ class WelcomeAiPage extends StatelessWidget {
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 value: aiProvider,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'ollama',
-                                    child: Text('Ollama (Local / Offline)'),
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  DropdownMenuItem(
-                                    value: 'openai',
-                                    child: Text('OpenAI API (Cloud)'),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
                                   ),
-                                ],
-                                onChanged: onAiProviderChanged,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
+                                    value: aiProvider,
+                                    borderRadius: BorderRadius.circular(12),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                    icon: Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'ollama',
+                                        child: Text('Ollama (Local / Offline)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'openai',
+                                        child: Text('OpenAI API (Cloud)'),
+                                      ),
+                                    ],
+                                    onChanged: onAiProviderChanged,
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 16),
                               TextField(
@@ -114,7 +150,22 @@ class WelcomeAiPage extends StatelessWidget {
                                   hintText: aiProvider == 'ollama'
                                       ? l10n.aiEndpointHelper
                                       : 'e.g. https://api.openai.com/v1',
-                                  border: const OutlineInputBorder(),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -124,7 +175,22 @@ class WelcomeAiPage extends StatelessWidget {
                                 decoration: InputDecoration(
                                   labelText: 'API Key',
                                   hintText: l10n.aiApiKeyHelper,
-                                  border: const OutlineInputBorder(),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),

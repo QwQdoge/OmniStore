@@ -65,6 +65,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           const MagicPulseIcon(icon: Icons.auto_awesome_rounded),

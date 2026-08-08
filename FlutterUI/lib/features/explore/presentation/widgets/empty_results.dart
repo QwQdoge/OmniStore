@@ -45,7 +45,8 @@ class _EmptyResultsState extends State<EmptyResults> {
                     label: widget.l10n.categorySemantics(cat.name),
                     child: ActionChip(
                       onPressed: () {
-                        widget.searchController.text = '/${cat.id.toLowerCase()}';
+                        widget.searchController.text =
+                            '/${cat.id.toLowerCase()}';
                         widget.performSearch(widget.searchController.text);
                       },
                       label: Text(cat.name),

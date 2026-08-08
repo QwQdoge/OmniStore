@@ -151,9 +151,10 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 **Action:**
 - Audited all controllers and services using `ChangeNotifier`.
 - Confirmed that `_disposed` is consistently tracked and `notifyListeners()` safely guards against `_disposed` state across all implementations.
-## [2026-07-28] - Removed Stale Category Caching in UI\n\n**Learning:** Relying on `didChangeDependencies` to redundantly compute and cache stateless data derived from synchronous providers (e.g. `CategoryService.getCategories`) litters  classes with duplicate variables (). Not only does this violate 'state duplication' directives from Librarian, but allocating short-lived instances in `build()` is actually cheaper than maintaining complex state lifecycle overrides.\n\n**Action:** Refactored `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage` to drop `_categories` and `didChangeDependencies()`, directly utilizing `CategoryService.getCategories(context)` within their respective `build()` paths for cleaner ownership.
-## [2026-07-28] - Removed Stale Category Caching in UI
+## 2026-08-05 - State Management: State Duplication & didChangeDependencies
 
-**Learning:** Relying on `didChangeDependencies` to redundantly compute and cache stateless data derived from synchronous providers (e.g. `CategoryService.getCategories`) litters `State` classes with duplicate variables (`_categories`). Not only does this violate 'state duplication' directives from Librarian, but allocating short-lived instances in `build()` is actually cheaper than maintaining complex state lifecycle overrides.
+**Learning:** Prematurely caching synchronous, derived data (like `CategoryService.getCategories(context)`) in a state variable using `didChangeDependencies()` creates state duplication and risks invalidation bugs. Because fetching localized strings from an InheritedWidget is typically an O(1) operation in Flutter, the small memory overhead does not justify the added lifecycle complexity.
 
-**Action:** Refactored `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage` to drop `_categories` and `didChangeDependencies()`, directly utilizing `CategoryService.getCategories(context)` within their respective `build()` paths for cleaner ownership.
+**Action:**
+- Removed `late List<CategoryItem> _categories;` and the `didChangeDependencies()` overrides from `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
+- Shifted the evaluation to `final categories = CategoryService.getCategories(context);` directly within each widget's `build()` method. This guarantees the UI always reflects the most up-to-date localizations and themes on every rebuild without duplicating state.
