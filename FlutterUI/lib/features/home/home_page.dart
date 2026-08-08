@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   String? _aiPickBlurb;
   bool _isAILoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -169,6 +168,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final categories = CategoryService.getCategories(context);
     final l10n = AppLocalizations.of(context)!;
     final categories = CategoryService.getCategories(context);
 
