@@ -1141,7 +1141,7 @@
   "@installationDecisionTitle": {
     "description": "Description for installationDecisionTitle"
   },
-  "recommendedSource": "推荐来源：{source}",
+  "recommendedSource": "推荐软件源：{source}",
   "@recommendedSource": {
     "placeholders": {
       "source": {
@@ -1165,7 +1165,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。",
+  "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
