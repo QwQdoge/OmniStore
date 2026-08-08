@@ -63,7 +63,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get source => 'Fuente';
 
   @override
-  String get variant => 'Fuente de instalación';
+  String get variant => 'Variantes';
 
   @override
   String get version => 'Versión';
@@ -482,19 +482,19 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => 'Análisis';
+  String get aiPromptExplain => 'Explicar con IA';
 
   @override
   String get aiPromptRecommend => 'Sugerencias de IA';
 
   @override
-  String get aiPromptError => 'Análisis de errores';
+  String get aiPromptError => 'Analizar error con IA';
 
   @override
-  String get aiPickDay => 'Selección del día de la IA';
+  String get aiPickDay => 'Recomendación diaria de la IA';
 
   @override
-  String get aiPickDaySubtitle => 'Impulsado por OmniStore AI';
+  String get aiPickDaySubtitle => 'Con la tecnología de OmniStore AI';
 
   @override
   String get aiCompareTitle => 'Comparación de variantes por IA';
@@ -503,7 +503,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiHealthTitle => 'Informe de salud del sistema por IA';
 
   @override
-  String get aiHealthSubtitle => 'Diagnóstico inteligente para su Arch Linux';
+  String get aiHealthSubtitle => 'Diagnóstico inteligente para Arch Linux';
 
   @override
   String get aiCorrection => '¿Quisiste decir?';
@@ -527,10 +527,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiCopyCommand => 'Copiar comando';
 
   @override
-  String get aiRefineSearch => 'Refinamiento de búsqueda con IA';
+  String get aiRefineSearch => 'Refinar búsqueda con IA';
 
   @override
-  String get aiExplainUpdate => 'Análisis de actualización';
+  String get aiExplainUpdate => 'Explicar esta actualización';
 
   @override
   String get windowMinimize => 'Minimizar';
