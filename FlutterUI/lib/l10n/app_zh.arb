@@ -752,7 +752,7 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库",
+  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
   "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"
