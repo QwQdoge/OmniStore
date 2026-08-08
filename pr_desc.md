@@ -1,67 +1,30 @@
-<<<<<<< HEAD
-## What
-- Replaced the standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth (Option A: Shared Identity).
-- Implemented `MeoArchEnvironment` logic mapping `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_URL` via `--dart-define`.
-- Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
-- Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
-- Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
-- Refactored `DesktopWindowService` to rely on `MeoArchEnvironment` configs.
-- Initialized Supabase on app boot via `bootstrapOmniStore`.
-- Enabled and verified Linux Deep Linking handling logic (`omnistore://` uri scheme support).
-- Assured Sync mechanisms rely correctly on Supabase UUIDs (`auth.uid()`).
-=======
-<<<<<<< HEAD
-# Refactoring & Optimization PR
+# 🎨 Palette: Standardize Custom Dialogs and Inputs for Material Design 3
 
-## 🎯 **What:**
-1. Resolved duplicate copy-pasted member and method declarations in `SettingsController` (`bool _disposed`, `dispose()`, `notifyListeners()`) which were causing a severe Dart compile error.
-2. Resolved duplicate copy-pasted fields in `AppPackage` (`nameLower`, `descriptionLower`, `primarySourceLower`) which were causing a Dart compile error.
-3. Fully preserved the critical defensive guards (`_disposed` check in `notifyListeners` to prevent "setState() called after dispose()" crash, and the `nameLower` lazy-initialized lowering properties) to ensure the application remains robust, crash-free, and stable under rapid transitions.
+## 💡 What
+Refined and standardized the layout, geometry, typography, and visual feedback of the custom dialogs in the application to fully align with Material Design 3 guidelines:
+1. **AddSourceDialog (`add_source_dialog.dart`)**:
+   - Upgraded to leverage the native `icon` parameter in `AlertDialog` with `Icons.add_link_rounded`, tinted with primary theme coloring.
+   - Set the title style to use expressive `theme.textTheme.headlineSmall` with `FontWeight.w800` (Extra Bold).
+   - Structured and modernized form inputs (`DropdownButtonFormField` and `TextField`s) with a cohesive `OutlineInputBorder` (12dp radius), custom symmetric content padding, and standard outline styling.
+   - Refined the dropdown arrow icon to use `Icons.keyboard_arrow_down_rounded` for softer transitions.
+2. **AITestResultDialog (`ai_test_result_dialog.dart`)**:
+   - Replaced hardcoded `Colors.green` and `Colors.red` with standard semantic theme tokens (`colorScheme.primary` and `colorScheme.error`).
+   - Standardized layout by utilizing native `AlertDialog.icon` with rounded check/error symbols.
+   - Set title typography to `FontWeight.w800`.
+   - Wrapped diagnostic/console test messages inside a zero-elevation `Card` utilizing `colorScheme.surfaceContainerLow` decoration, a 16dp rounded corner radius, and an elegant monospace font style.
 
-## 📊 **Coverage & Verification:**
-- Ran the full Python unit/widget test suite successfully with **68 passed tests**.
-- Ran Flutter frontend widget & unit tests successfully, confirming that all compilation errors are eliminated and the app is 100% compile-clean and stable.
-- Verified that deleting duplicate declarations maintains perfect compatibility, prevents "already declared in this scope" compiler errors, and retains the robust defensive life-cycle guards.
+## 🎯 Why
+* **Legacy UI Contrast**: Dialog title structures were previously flat and inconsistent. The AI Test Result Dialog relied on raw text alignment and hardcoded, non-adaptive colors which failed to respect user color seeds/themes.
+* **Input Alignment**: Input fields inside dialog forms lacked modern Material 3 geometry (12dp corners) and structured spacing, reducing interaction discoverability and click-target comfortable spacing.
 
-## ✨ **Result:**
-OmniStore is now completely compile-clean, with zero regressions, and fully protected against crashes caused by post-disposal state notifications.
-=======
-# 🎨 Palette: Standardized Settings Dropdowns for Material Design 3
->>>>>>> origin/main
+## ♿ Accessibility
+* **Semantic Structure**: Provides clean and distinct hierarchy with leading semantic icons, ensuring screen readers receive immediate context about the purpose of the dialog (info vs error vs addition).
+* **Affordance & Usability**: Improved tap/click target safety with consistent input height boundaries and generous, standard-aligned inner padding. Monospace rendering on command/API output prevents text strain on wide paragraphs.
 
-## Coverage
-- Refactored `AuthService` and mapped `desktop_top_bar.dart` and `window_title_bar.dart` UI bindings.
-- Linux Application C++ bootstrap file modifications to delegate URI Scheme `command-line` processing.
-- Verified widget and flutter runtime builds correctly without compile-time anomalies.
+## 📱 MD3 Alignment
+* Leverages proper surface container tokens (`surfaceContainerLow` for message details cards).
+* Follows precise dialogue geometry standards: native `AlertDialog` properties (icon/title stack), 28dp overall dialogue shape tokens, and 12dp/16dp corner tokens for elements within the dialog.
 
-<<<<<<< HEAD
-## Result
-OmniStore now acts natively as an extension of the MeoArch Account Identity system (through shared Supabase instances). Auth and Session properties are automatically saved via standard Supabase persistence. GitHub REST API connections are unblocked and properly segmented into the Settings integrations layer, allowing offline behavior to function as usual when Supabase instances are unreachable.
-=======
-Refined the styling of all configuration dropdown selectors (`DropdownButton`) within the application settings pages, including:
-1. **GeneralSettingsCard:** Language selector dropdown.
-2. **TypographySettingsCard:** Font family selector dropdown.
-3. **UpdateSettingsCard:** Update check interval hours selector dropdown.
-4. **AISettingsSection:** AI provider selector dropdown.
-
-Each dropdown has been wrapped in a modern Container utilizing Material Design 3 layout tokens (surfaceContainerHigh background, 12dp rounded corners, and a subtle outline border). The standard sharp arrow dropdown icon has been replaced with a soft, organic `keyboard_arrow_down_rounded` icon.
-
-Additionally, unresolved duplicate class definitions (which caused compile and static analysis errors in `NavigationController`, `SettingsController`, and `AppPackage`) were cleaned up to ensure a pristine build state.
-
-### 🎯 Why
-
-The legacy dropdown implementation rendered dropdowns as flat, unstyled floating text. This lacked clear click targets, interaction affordances, and visual boundaries on desktop/mouse-driven interfaces. Standardizing these inputs under modern MD3 guidelines makes the interface significantly more intuitive and comfortable to interact with.
-
-### ♿ Accessibility
-
-* **Readability:** Clear visual contrast is established via explicit container boundaries using `Theme.of(context).colorScheme.surfaceContainerHigh`.
-* **Sizing/Tap Targets:** Standardized symmetric inner padding (12dp horizontal, 2dp vertical) provides larger, comfortable tap/click targets for touchscreen and mouse users.
-* **Keyboard Navigation:** Uses standard Material focus/hover state transitions.
-
-### 📱 MD3 Alignment
-
-* Follows standard surface hierarchy by utilizing Material 3 `surfaceContainerHigh` for interactive elements nested inside `AppCard`'s `surfaceContainerLow`.
-* Employs soft geometry (12dp corners) and a subtle, semi-opaque border (`outlineVariant` at 0.5 opacity) in line with native M3 selection inputs.
-* Modernizes iconography using rounded material design symbols (`keyboard_arrow_down_rounded`).
->>>>>>> origin/main
->>>>>>> origin/main
+## 📊 Coverage
+- Ran `flutter analyze` successfully with zero new analyzer issues.
+- Ran `flutter test test/widget_test.dart` successfully with all checks passing.

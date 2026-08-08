@@ -1,3 +1,9 @@
+## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
+
+**Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.
+
+**Action:** Update custom alert and input dialogs to leverage native `AlertDialog.icon` instead of inline title headers, style fields with custom 12dp `OutlineInputBorder` borders and symmetric padding, and structure diagnostic details inside zero-elevation `Card` containers using the `surfaceContainerLow` token and `monospace` fonts.
+
 ## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
 
 **Learning:** Standardizing interactive full-screen screenshot viewers by adding a backdrop `GestureDetector` with `HitTestBehavior.opaque` enables comfortable single-tap dismissal anywhere on the screen (reducing visual search friction for dismiss actions). Accompanying this with native `MaterialLocalizations.of(context).closeButtonTooltip` on the close button ensures native accessibility. In horizontal galleries, wrapping preview cards in a `Tooltip` and `Semantics` widget using a localized index label (e.g., `"${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}"`) provides robust hover discovery and screen-reader context.
