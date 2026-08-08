@@ -472,7 +472,7 @@
   "continueAnyway": "仍然继续",
   "sourceConfigTitle": "软件源配置",
   "sourceConfigSubtitle": "选择要启用的软件源",
-  "enableAur": "启用 AUR (Arch User Repository)",
+  "enableAur": "启用 AUR（Arch 用户软件源）",
   "yayDesc": "启用 AUR 需要安装 yay 助手。",
   "aurWarning": "安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。",
   "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",

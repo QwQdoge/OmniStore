@@ -471,7 +471,7 @@
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體源設定",
   "sourceConfigSubtitle": "選擇要啟用的軟體源",
-  "enableAur": "啟用 AUR (Arch User Repository)",
+  "enableAur": "啟用 AUR（Arch 使用者軟體源）",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。",
   "bootstrapNote": "注意：配置過程可能需要多次輸入管理員密碼。",
@@ -764,7 +764,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端軟體存放庫",
+  "flatpakRemoteType": "Flatpak 遠端軟體源",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
