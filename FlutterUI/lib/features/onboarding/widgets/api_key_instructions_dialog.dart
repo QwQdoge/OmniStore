@@ -10,6 +10,7 @@ class ApiKeyInstructionsDialog extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),

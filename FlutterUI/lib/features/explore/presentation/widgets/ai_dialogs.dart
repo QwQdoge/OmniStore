@@ -49,6 +49,7 @@ class AIMarkdownDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
@@ -86,6 +87,7 @@ class AICliDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           const MagicPulseIcon(icon: Icons.auto_awesome_rounded),

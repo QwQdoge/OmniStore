@@ -26,6 +26,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: Icon(
         widget.isUninstall
             ? Icons.delete_sweep_rounded
@@ -206,6 +207,7 @@ class InstallationDecisionDialog extends StatelessWidget {
     final recommended = decision['recommendedVariant']?.toString();
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: Icon(
         Icons.info_outline_rounded,
         color: theme.colorScheme.primary,
@@ -283,6 +285,7 @@ class AurSecurityDialog extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: Icon(
         Icons.gpp_maybe_rounded,
         color: theme.colorScheme.error,
