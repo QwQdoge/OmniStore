@@ -6,12 +6,25 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/app_package.dart';
 import '../../services/backend_service.dart';
 
+class _CachedSearchResult {
+  final List<AppPackage> results;
+  final DateTime timestamp;
+
+  _CachedSearchResult(this.results, this.timestamp);
+
+  bool get isExpired => DateTime.now().difference(timestamp).inMinutes >= 5;
+}
+
 class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
   Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
   DateTime? _lastFetchTime;
+
+  // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
+  // and daemon-side subprocess execution on frequent page re-entry and tab switching.
+  final Map<String, _CachedSearchResult> _sourceSearchCache = {};
 
   static final List<AppPackage> _editorialFeatured =
       [
@@ -55,24 +68,49 @@ class PackageRepository {
     Map<String, List<AppPackage>> dynamic,
   ) => {...dynamic, 'featured': _editorialFeatured};
 
+  final Map<String, Map<String, dynamic>> _searchCache = {};
+  static const int _maxCacheSize = 20;
+
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
     bool throwOnError = false,
+    bool forceRefresh = false,
     int? limit,
     int? offset,
   }) async {
+    final isSourceQuery = query.startsWith("source:");
+    if (isSourceQuery && !forceRefresh) {
+      final cached = _sourceSearchCache[query];
+      if (cached != null && !cached.isExpired) {
+        return cached.results;
+      }
+    }
+
+    final List<AppPackage> results;
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
-      return webResults
+      results = webResults
           .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
           .toList();
+    } else {
+      results = await BackendService.instance.searchPackages(
+        query,
+        cancelOngoing: cancelOngoing,
+        throwOnError: throwOnError,
+      );
     }
-    return BackendService.instance.searchPackages(
-      query,
-      cancelOngoing: cancelOngoing,
-      throwOnError: throwOnError,
-    );
+
+    if (isSourceQuery) {
+      _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
+      if (_sourceSearchCache.length > _maxCacheSize) {
+        final oldestKey = _sourceSearchCache.entries
+            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
+            .key;
+        _sourceSearchCache.remove(oldestKey);
+      }
+    }
+    return results;
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {
