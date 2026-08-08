@@ -199,3 +199,11 @@ While explicitly creating tasks and shielding them (`asyncio.shield(task)`) corr
 
 Action:
 Modified `OmnistoreBackend` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded AI closure calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. Applied the same fix in `python/core/subprocess_utils.py`, adding a global `_background_tasks = set()` to persist the subprocess `wait()` tasks if `_cleanup_proc` is cancelled.
+
+## 2026-08-10 - [Async Lifecycle Crashes in Onboarding Callbacks]
+
+Learning:
+Extensive audit revealed asynchronous gaps where state (`setState`) was accessed without verifying `mounted` status inside asynchronous stream callbacks (like `onError` and `onDone` in `_startBootstrap`) and inside `catch` blocks in `FlutterUI/lib/features/onboarding/welcome_page.dart`. While standard `await` gaps had guards, these alternative asynchronous paths are equally vulnerable to lifecycle violations if the user navigates away or closes the app during the onboarding setup.
+
+Action:
+Implemented strict `if (!mounted) return;` guards immediately before `setState` in all `catch` blocks and stream listener callbacks (`onError`, `onDone`, and custom line parsers) in `WelcomePage` to prevent "setState() called after dispose()" crashes.
