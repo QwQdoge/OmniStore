@@ -151,3 +151,11 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 **Action:**
 - Audited all controllers and services using `ChangeNotifier`.
 - Confirmed that `_disposed` is consistently tracked and `notifyListeners()` safely guards against `_disposed` state across all implementations.
+
+## 2026-08-05 - State Management: State Duplication & didChangeDependencies
+
+**Learning:** Prematurely caching synchronous, derived data (like `CategoryService.getCategories(context)`) in a state variable using `didChangeDependencies()` creates state duplication and risks invalidation bugs. Because fetching localized strings from an InheritedWidget is typically an O(1) operation in Flutter, the small memory overhead does not justify the added lifecycle complexity.
+
+**Action:**
+- Removed `late List<CategoryItem> _categories;` and the `didChangeDependencies()` overrides from `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
+- Shifted the evaluation to `final categories = CategoryService.getCategories(context);` directly within each widget's `build()` method. This guarantees the UI always reflects the most up-to-date localizations and themes on every rebuild without duplicating state.

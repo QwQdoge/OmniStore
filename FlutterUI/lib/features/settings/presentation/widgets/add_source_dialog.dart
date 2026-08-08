@@ -73,12 +73,12 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: Icon(
         Icons.add_link_rounded,
         color: theme.colorScheme.primary,
         size: 32,
       ),
-      clipBehavior: Clip.antiAlias,
       title: Text(
         widget.l10n.addCustomSource,
         style: theme.textTheme.headlineSmall?.copyWith(
@@ -89,8 +89,10 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _type,
+              borderRadius: BorderRadius.circular(12),
               icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: theme.colorScheme.onSurfaceVariant,
@@ -142,7 +144,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 }
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
@@ -170,7 +172,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _urlController,
               decoration: InputDecoration(

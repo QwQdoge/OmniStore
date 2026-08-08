@@ -453,6 +453,8 @@ class OmnistoreBackend:
                             logging.debug(f"AI session cleanup failed: {exc}")
                 finally:
                     cleanup_task = asyncio.create_task(self._resources.cleanup())
+                    self._background_tasks.add(cleanup_task)
+                    cleanup_task.add_done_callback(self._background_tasks.discard)
                     try:
                         await asyncio.shield(cleanup_task)
                     except asyncio.CancelledError:
