@@ -6,12 +6,25 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/app_package.dart';
 import '../../services/backend_service.dart';
 
+class _CachedSearchResult {
+  final List<AppPackage> results;
+  final DateTime timestamp;
+
+  _CachedSearchResult(this.results, this.timestamp);
+
+  bool get isExpired => DateTime.now().difference(timestamp).inMinutes >= 5;
+}
+
 class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
   Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
   DateTime? _lastFetchTime;
+
+  // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
+  // and daemon-side subprocess execution on frequent page re-entry and tab switching.
+  final Map<String, _CachedSearchResult> _sourceSearchCache = {};
 
   static final List<AppPackage> _editorialFeatured =
       [
@@ -66,19 +79,15 @@ class PackageRepository {
     int? limit,
     int? offset,
   }) async {
-    final bool isSourceSearch = query.trim().startsWith('source:');
-
-    if (isSourceSearch && !forceRefresh) {
-      final cached = _searchCache[query];
-      if (cached != null) {
-        final time = cached['time'] as DateTime;
-        if (DateTime.now().difference(time).inMinutes < 5) {
-          return List<AppPackage>.from(cached['results'] as List);
-        }
+    final isSourceQuery = query.startsWith("source:");
+    if (isSourceQuery && !forceRefresh) {
+      final cached = _sourceSearchCache[query];
+      if (cached != null && !cached.isExpired) {
+        return cached.results;
       }
     }
 
-    List<AppPackage> results;
+    final List<AppPackage> results;
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
       results = webResults
@@ -92,21 +101,15 @@ class PackageRepository {
       );
     }
 
-    if (isSourceSearch) {
-      _searchCache[query] = {
-        'results': results,
-        'time': DateTime.now(),
-      };
-
-      // Prevent unbounded memory growth (LRU-like behavior by removing oldest first if over limit)
-      if (_searchCache.length > _maxCacheSize) {
-        final oldestKey = _searchCache.entries
-            .reduce((a, b) => (a.value['time'] as DateTime).isBefore(b.value['time'] as DateTime) ? a : b)
+    if (isSourceQuery) {
+      _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
+      if (_sourceSearchCache.length > _maxCacheSize) {
+        final oldestKey = _sourceSearchCache.entries
+            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
             .key;
-        _searchCache.remove(oldestKey);
+        _sourceSearchCache.remove(oldestKey);
       }
     }
-
     return results;
   }
 

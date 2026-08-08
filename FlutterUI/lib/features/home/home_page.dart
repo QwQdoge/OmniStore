@@ -35,8 +35,6 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   String? _aiPickBlurb;
   bool _isAILoading = false;
-  // ⚡ Bolt: Memoize categories to avoid redundant allocations and L10n lookups on every build
-  List<CategoryItem> _categories = [];
 
   @override
   void initState() {
@@ -170,14 +168,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _categories = CategoryService.getCategories(context);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       body: RefreshIndicator(
@@ -243,7 +236,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             CategoryQuickAccess(
-              categories: _categories,
+              categories: categories,
               scrollController: _quickAccessScrollController,
             ),
             SliverToBoxAdapter(

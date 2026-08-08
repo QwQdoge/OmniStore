@@ -175,3 +175,12 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Instead of duplicating identical iterations over variant lists across multiple helper methods (`_getVersionForSource`, `_isSourceInstalled`), centralizing the search logic in one core method (`_getVariantForSource`) and reusing it by safely mapping its properties prevents divergent fallback states and improves maintainability.
 
 **Action:** Replaced `getVersionForSource` and `isSourceInstalled` callbacks in `app_details_header.dart`, `app_main_content.dart`, and `details_page.dart` with a single `getVariantForSource` callback. Removed redundant helper methods and updated inline logic to use the consolidated method.
+## 2026-07-28 - Clean up duplicated extracted files
+
+**Learning:** When extracting widgets into separate files during refactoring, it's common to accidentally duplicate files (e.g., creating `welcome_intro_page.dart` but forgetting to remove the original `intro_page.dart`). These duplicated, unused files bloat the codebase and cause confusion. Always perform a cleanup sweep after structural refactors to remove orphaned files.
+
+**Action:** Removed redundant files (`ai_config_page.dart`, `intro_page.dart`, `sources_page.dart`, `config_card.dart`, `env_check_page.dart`) from `FlutterUI/lib/features/onboarding/widgets/` that were replaced by their `welcome_` prefixed equivalents.
+
+## 2026-08-06 - Deprecation warnings vs Behavior
+
+**Learning:** When addressing deprecation warnings (e.g., `DropdownButtonFormField.value` being deprecated in favor of `initialValue`), be careful not to change the widget's behavior. In a stateless widget where the parent controls the state and passes it down, replacing `value` with `initialValue` can prevent the dropdown from updating dynamically when the parent state changes. If preserving exact behavior is paramount (and the new API doesn't support the dynamic update pattern seamlessly), it's sometimes necessary to leave the deprecation warning or refactor the widget to use a non-form equivalent (like `DropdownButton` instead of `DropdownButtonFormField`).

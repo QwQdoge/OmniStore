@@ -130,7 +130,14 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Skeletons should use `ListView.builder` with `prototypeItem` for better scroll virtualization, and state should be managed carefully to ensure loaders properly display and hide. The `UpdateService` was previously checking updates without exposing its loading state properly to the UI, leading to glitches. Also, ensuring that `finally { isCheckingUpdates.value = false; }` prevents permanent loading state locks.
 
 **Action:** Created `UpdatesTabSkeleton` with a `ListView.builder` and `prototypeItem`. Integrated `UpdateService.isCheckingUpdates` `ValueNotifier` to properly switch between loading skeleton, empty state, and list data. Fixed missing `finally` cleanup block in `UpdateService.checkNow()`.
-## Search Package Optimization
-- **What**: Implemented a short-lived (5-minute), size-bounded (LRU, max 20) in-memory cache for `source:` queries inside `PackageRepository.searchPackages`. Extended store page refresh logic to pass `forceRefresh: true` on manual pull-to-refresh actions.
-- **Why**: Prevented redundant network and IPC requests when rapidly switching tabs or re-entering store pages that load default `source:` queries (e.g. `source:github:stars:>5000 sort:stars`).
-- **Safety Measures**: Integrated bounds check to prevent memory leak and verified widget state mutations (`mounted` and `_searchQuery == query`) to prevent stale UI state overwrites during rapid searches.
+## 2026-08-01 - FlatpakAppListSkeleton List Virtualization Optimization
+
+**Learning:** `ListView.builder` widgets inside Skeleton loading states should always include a `prototypeItem` matching the dimensions of the skeleton items to ensure efficient scroll virtualization and avoid redundant layout calculations across the view port.
+
+**Action:** Added `prototypeItem` to `FlatpakAppListSkeleton` in `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart` to optimize scroll layout overhead.
+
+## 2026-08-02 - Store/Source Search Caching Optimization
+
+**Learning:** Frequently navigating back and forth or switching tabs within store/source-specific views (like Flatpak or GitHub) triggers redundant, expensive daemon subprocess searches or external network API calls. Caching these queries under a short, 5-minute TTL inside `PackageRepository` eliminates this duplicate overhead, realizing instantaneous tab switching and page re-entry.
+
+**Action:** Implemented a targeted `_sourceSearchCache` in `PackageRepository` for all `"source:"` prefixed queries with an LRU limit of 20. Leveraged a `forceRefresh` parameter to allow manual pull-to-refresh or retry actions to bypass the cache and successfully retrieve fresh data.

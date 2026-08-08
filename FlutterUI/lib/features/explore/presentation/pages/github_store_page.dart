@@ -207,7 +207,31 @@ class _GitHubStorePageState extends State<GitHubStorePage>
 
   Future<void> _handleRefresh() async {
     if (_isSearching) {
-      await _performSearch(_searchQuery, forceRefresh: true);
+      setState(() {
+        _isLoadingSearch = true;
+        _searchError = null;
+      });
+      final packageRepo = context.read<PackageRepository>();
+      try {
+        final results = await packageRepo.searchPackages(
+          "source:github:$_searchQuery",
+          throwOnError: true,
+          forceRefresh: true,
+        );
+        if (!mounted) return;
+        setState(() {
+          _searchApps = results;
+          _searchError = null;
+          _isLoadingSearch = false;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _searchError =
+              "Could not search GitHub repositories. Check your network and try again.";
+          _isLoadingSearch = false;
+        });
+      }
     } else {
       switch (_tabController.index) {
         case 0:

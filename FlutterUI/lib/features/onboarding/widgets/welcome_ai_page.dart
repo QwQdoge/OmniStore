@@ -90,9 +90,31 @@ class WelcomeAiPage extends StatelessWidget {
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 value: aiProvider,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
                                 items: const [
                                   DropdownMenuItem(
@@ -114,7 +136,22 @@ class WelcomeAiPage extends StatelessWidget {
                                   hintText: aiProvider == 'ollama'
                                       ? l10n.aiEndpointHelper
                                       : 'e.g. https://api.openai.com/v1',
-                                  border: const OutlineInputBorder(),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -124,7 +161,22 @@ class WelcomeAiPage extends StatelessWidget {
                                 decoration: InputDecoration(
                                   labelText: 'API Key',
                                   hintText: l10n.aiApiKeyHelper,
-                                  border: const OutlineInputBorder(),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
