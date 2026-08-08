@@ -448,28 +448,28 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => '解析';
+  String get aiPromptExplain => 'AIで解説';
 
   @override
-  String get aiPromptRecommend => 'AI 提案';
+  String get aiPromptRecommend => 'AIおすすめ提案';
 
   @override
-  String get aiPromptError => 'AI エラー分析';
+  String get aiPromptError => 'AIでエラーを分析';
 
   @override
-  String get aiPickDay => '本日の一押し（AI）';
+  String get aiPickDay => 'AIによる本日のおすすめ';
 
   @override
-  String get aiPickDaySubtitle => 'OmniStore AI による提供';
+  String get aiPickDaySubtitle => 'OmniStore AI 提供';
 
   @override
   String get aiCompareTitle => 'AI バリアント比較';
 
   @override
-  String get aiHealthTitle => 'AI システム健康診断レポート';
+  String get aiHealthTitle => 'AI システムヘルスレポート';
 
   @override
-  String get aiHealthSubtitle => 'Arch Linux 向けインテリジェント診断';
+  String get aiHealthSubtitle => 'Arch Linux のためのインテリジェント診断';
 
   @override
   String get aiCorrection => 'もしかして：';
@@ -1189,17 +1189,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get continueInstallation => 'インストールを続行';
 
   @override
-  String get changeRecommendation => '推奨事項を変更する';
+  String get changeRecommendation => '推奨を変更する';
 
   @override
   String get aiPickDisclaimer =>
-      '検索、インストール履歴、現在利用可能なソースに基づいて生成されます。インストールの選択には影響しません。';
+      'この推奨は、検索履歴、インストール履歴、および現在利用可能なソースに基づいて生成されたものであり、実際のインストール選択には影響しません。';
 
   @override
   String get quickStart => 'クイックスタート';
 
   @override
-  String get importListSubtitle => 'リストからよく使うパッケージをインポートします';
+  String get importListSubtitle => 'リストからよく使うパッケージをインポート';
 
   @override
   String get emptyTrendingMessage => 'トレンドデータがありません。接続が回復すると自動的に更新されます。';
