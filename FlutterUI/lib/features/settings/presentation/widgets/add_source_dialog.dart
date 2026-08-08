@@ -70,16 +70,23 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
       icon: Icon(
+<<<<<<< HEAD
         Icons.add_circle_outline_rounded,
         color: Theme.of(context).colorScheme.primary,
+=======
+        Icons.add_link_rounded,
+        color: theme.colorScheme.primary,
+>>>>>>> origin/main
         size: 32,
       ),
       title: Text(
         widget.l10n.addCustomSource,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+        style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -87,14 +94,42 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.l10n.sourceType,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: _type,
+              borderRadius: BorderRadius.circular(12),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              decoration: InputDecoration(
+                labelText: widget.l10n.sourceType,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                   ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: "github",
+                  child: Text(widget.l10n.githubRepoType),
+>>>>>>> origin/main
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -147,15 +182,35 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: widget.l10n.sourceName,
                 hintText: widget.l10n.hintCustomAppName,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _urlController,
               decoration: InputDecoration(
@@ -165,6 +220,26 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 hintText: _type == "github" || _type == "bitu"
                     ? widget.l10n.hintRepoFormat
                     : widget.l10n.hintFeedUrl,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
