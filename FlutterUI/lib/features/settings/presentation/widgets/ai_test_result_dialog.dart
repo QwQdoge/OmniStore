@@ -14,18 +14,44 @@ class AITestResultDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return AlertDialog(
-      title: Row(
-        children: [
-          Icon(
-            isSuccess ? Icons.check_circle : Icons.error,
-            color: isSuccess ? Colors.green : Colors.red,
-          ),
-          const SizedBox(width: 8),
-          Text(isSuccess ? l10n.aiTestSuccess : l10n.failed),
-        ],
+      clipBehavior: Clip.antiAlias,
+      icon: Icon(
+        isSuccess ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+        color: isSuccess ? theme.colorScheme.primary : theme.colorScheme.error,
+        size: 32,
       ),
-      content: msg.isNotEmpty ? SelectableText(msg) : null,
+      title: Text(
+        isSuccess ? l10n.aiTestSuccess : l10n.failed,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      content: msg.isNotEmpty
+          ? SingleChildScrollView(
+              child: Card(
+                color: theme.colorScheme.surfaceContainerLow,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SelectableText(
+                    msg,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
