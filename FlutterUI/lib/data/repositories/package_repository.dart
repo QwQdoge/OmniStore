@@ -68,13 +68,16 @@ class PackageRepository {
     Map<String, List<AppPackage>> dynamic,
   ) => {...dynamic, 'featured': _editorialFeatured};
 
+  final Map<String, Map<String, dynamic>> _searchCache = {};
+  static const int _maxCacheSize = 20;
+
   Future<List<AppPackage>> searchPackages(
     String query, {
     bool cancelOngoing = true,
     bool throwOnError = false,
+    bool forceRefresh = false,
     int? limit,
     int? offset,
-    bool forceRefresh = false,
   }) async {
     final isSourceQuery = query.startsWith("source:");
     if (isSourceQuery && !forceRefresh) {
@@ -100,6 +103,12 @@ class PackageRepository {
 
     if (isSourceQuery) {
       _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
+      if (_sourceSearchCache.length > _maxCacheSize) {
+        final oldestKey = _sourceSearchCache.entries
+            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
+            .key;
+        _sourceSearchCache.remove(oldestKey);
+      }
     }
     return results;
   }

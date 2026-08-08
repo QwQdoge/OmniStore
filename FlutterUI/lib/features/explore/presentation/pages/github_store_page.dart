@@ -155,7 +155,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   );
 
   // Handle Search
-  Future<void> _performSearch(String query) async {
+  Future<void> _performSearch(String query, {bool forceRefresh = false}) async {
     if (query.trim().isEmpty) {
       setState(() {
         _isSearching = false;
@@ -177,8 +177,9 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       final results = await packageRepo.searchPackages(
         "source:github:$query",
         throwOnError: true,
+        forceRefresh: forceRefresh,
       );
-      if (!mounted) return;
+      if (!mounted || _searchQuery != query) return;
       setState(() {
         _searchApps = results;
         _searchError = null;
