@@ -90,6 +90,7 @@ class _WelcomePageState extends State<WelcomePage> {
         _enableAur = level == 'ok';
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _envData = null;
         _isCheckingEnv = false;
@@ -124,12 +125,14 @@ class _WelcomePageState extends State<WelcomePage> {
         _parseBootstrapLine(data);
       },
       onError: (err) {
+        if (!mounted) return;
         setState(() {
           _bootstrapLogs += '\n[ERROR] Bootstrap failed: $err\n';
           _isBootstrapping = false;
         });
       },
       onDone: () {
+        if (!mounted) return;
         setState(() {
           _bootstrapLogs += '\n[INFO] Configuration sequence completed.\n';
           _isBootstrapping = false;
@@ -150,6 +153,7 @@ class _WelcomePageState extends State<WelcomePage> {
         if (data is Map<String, dynamic>) {
           String? message = data['log'] ?? data['message'];
           if (message != null) {
+            if (!mounted) return;
             setState(() {
               _bootstrapLogs += '$message\n';
             });
@@ -164,15 +168,18 @@ class _WelcomePageState extends State<WelcomePage> {
 
     if (cleanLine.startsWith('[ERROR]')) {
       final msg = cleanLine.replaceFirst('[ERROR]', '').trim();
+      if (!mounted) return;
       setState(() {
         _bootstrapLogs += '[ERROR] $msg\n';
       });
     } else if (cleanLine.startsWith('[INFO]')) {
       final msg = cleanLine.replaceFirst('[INFO]', '').trim();
+      if (!mounted) return;
       setState(() {
         _bootstrapLogs += '[INFO] $msg\n';
       });
     } else {
+      if (!mounted) return;
       setState(() {
         _bootstrapLogs += '$cleanLine\n';
       });

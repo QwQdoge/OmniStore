@@ -206,4 +206,12 @@ Learning:
 While explicitly creating tasks and shielding them (`asyncio.shield(task)`) correctly prevents the task from being destroyed mid-execution *during* a timeout catch block, it fails to protect the task if the outer function exits entirely (e.g. from an `asyncio.CancelledError` unwinding the stack). Because local variables go out of scope, the tasks lose their strong references and are still garbage-collected. To ensure true async lifecycle safety for background shielded tasks, a strong reference must be maintained in a persistent collection (e.g. a class-level `set` or a global module-level `set`) until completion.
 
 Action:
-Modified `OmnistoreBackend` and `ResourceCoordinator` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded cleanup and gather calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. This mirrors the global `_background_tasks` set fix applied in `python/core/subprocess_utils.py` for zombie process reaping.
+Modified `OmnistoreBackend` in `python/core/backend.py` to add `self._background_tasks = set()`. Replaced shielded AI closure calls with explicit tasks that are added to this set and discard themselves on completion via `add_done_callback`. Applied the same fix in `python/core/subprocess_utils.py`, adding a global `_background_tasks = set()` to persist the subprocess `wait()` tasks if `_cleanup_proc` is cancelled.
+
+## 2026-08-10 - [Async Lifecycle Crashes in Onboarding Callbacks]
+
+Learning:
+Extensive audit revealed asynchronous gaps where state (`setState`) was accessed without verifying `mounted` status inside asynchronous stream callbacks (like `onError` and `onDone` in `_startBootstrap`) and inside `catch` blocks in `FlutterUI/lib/features/onboarding/welcome_page.dart`. While standard `await` gaps had guards, these alternative asynchronous paths are equally vulnerable to lifecycle violations if the user navigates away or closes the app during the onboarding setup.
+
+Action:
+Implemented strict `if (!mounted) return;` guards immediately before `setState` in all `catch` blocks and stream listener callbacks (`onError`, `onDone`, and custom line parsers) in `WelcomePage` to prevent "setState() called after dispose()" crashes.
