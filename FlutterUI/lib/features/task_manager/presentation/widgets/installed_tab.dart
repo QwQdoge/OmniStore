@@ -16,6 +16,7 @@ class InstalledTab extends StatelessWidget {
   final List<AppPackage> filteredApps;
   final ScrollController filterScrollController;
   final ValueChanged<String> onSourceFilterSelected;
+  final List<String> availableFilters;
 
   const InstalledTab({
     super.key,
@@ -24,11 +25,11 @@ class InstalledTab extends StatelessWidget {
     required this.filteredApps,
     required this.filterScrollController,
     required this.onSourceFilterSelected,
+    required this.availableFilters,
   });
 
   @override
   Widget build(BuildContext context) {
-    final filters = _buildFilters();
     return SmoothSizeSwitcher(
       alignment: Alignment.topCenter,
       child: isLoading
@@ -49,7 +50,7 @@ class InstalledTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       child: Row(
-                        children: filters
+                        children: availableFilters
                             .map(
                               (s) => Padding(
                                 padding: const EdgeInsets.only(right: 8),
@@ -73,17 +74,6 @@ class InstalledTab extends StatelessWidget {
               ],
             ),
     );
-  }
-
-  List<String> _buildFilters() {
-    final sources =
-        filteredApps
-            .expand((app) => {...app.sources, app.primarySource})
-            .where((source) => source.trim().isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
-    return ['all', 'managed', 'unmanaged', ...sources];
   }
 
   String _filterLabel(BuildContext context, String value) {
