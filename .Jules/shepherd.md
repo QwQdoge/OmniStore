@@ -77,3 +77,10 @@
 - Replaced `"根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。"` with `AppLocalizations.of(context)!.aiPickDisclaimer`.
 - Ensured these new keys were added to all `.arb` files and generated correctly via `flutter gen-l10n`.
 Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable global Toast utility.
+* Replaced scattered ScaffoldMessenger.of(context).showSnackBar with centralized Toast.show(context, message) in AccountPage to enforce snackbar consistency and avoid visual queuing.
+
+## 2026-07-01 - daily Terminology and Translation Polish
+- Standardized and polished application localization across Simplified Chinese (zh), Traditional Chinese (zh_Hant), and Spanish (es).
+- Elevate terminology in software management context: refined 'activity' (from literal '活动' to '任务动态'/'任務動態'), 'source' (from '来源' to '软件源'), and 'variant' (from '可用版本' to '分发版本'), which are more techncially precise and elegant.
+- Refined technical terms like 'loggingLevel' (from '详细程度' to '级别'), 'license' (from '许可' to '许可证'/'授權條款'), and 'dependenciesCount' (from '依赖软件包' to '依赖项').
+- Enforced strict placeholder consistency across all locales with a custom validation script.

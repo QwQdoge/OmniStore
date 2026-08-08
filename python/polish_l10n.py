@@ -25,11 +25,19 @@ polish('ja', {
 polish('es', {
     "upToDate": "Todas las aplicaciones están actualizadas",
     "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
-    "variant": "Fuente de instalación"
+    "variant": "Variantes"
 })
 
 # Simplified Chinese Polishing
 polish('zh', {
+    "activity": "任务动态",
+    "source": "软件源",
+    "variant": "分发版本",
+    "loggingLevel": "日志级别",
+    "license": "许可证",
+    "dependenciesCount": "依赖项（{count}）",
+    "aiPromptExplain": "AI 解析",
+    "aiExplainUpdate": "AI 解析此更新",
     "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
     "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。",
     "importListSubtitle": "从列表导入常用软件包",
@@ -43,6 +51,14 @@ polish('zh_Hant', {
     "forYou": "為您推薦",
     "aiThinking": "AI 正在思考...",
     "aiCorrection": "您是指？",
+    "activity": "任務動態",
+    "source": "軟體源",
+    "variant": "分發版本",
+    "loggingLevel": "日誌級別",
+    "license": "授權條款",
+    "dependenciesCount": "依賴項（{count}）",
+    "aiPromptExplain": "AI 解析",
+    "aiExplainUpdate": "AI 解析此更新",
     "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 需填寫 sk-xxx",
     "aiOllamaNote": "確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。",
     "importListSubtitle": "從清單匯入常用套件",
