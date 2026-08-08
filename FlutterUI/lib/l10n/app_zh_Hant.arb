@@ -353,7 +353,7 @@
       }
     }
   },
-  "aiPromptExplain": "解析",
+  "aiPromptExplain": "AI 解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -417,7 +417,7 @@
   "@aiRefineSearch": {
     "description": "Action to refine search using AI"
   },
-  "aiExplainUpdate": "解析此更新",
+  "aiExplainUpdate": "AI 解析此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
