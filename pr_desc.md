@@ -1,30 +1,39 @@
-# PR Description
+# 🚀 OmniStore: Unified PR for Auth Redesign, Dropdown MD3 Standardizations, and Code Health Optimizations
 
-### 💡 What
-This pull request refactors and polishes `AddSourceDialog` and `AITestResultDialog` in the Settings configuration feature to bring them fully up to Material Design 3 (MD3) design, motion, and visual standards.
+## 🎯 What
 
-Key layout refinements implemented:
-* **`AddSourceDialog`**:
-  - Leverages the native `icon` slot of `AlertDialog` with `Icons.add_link_rounded` in the primary theme color.
-  - Aligns title typography with `theme.textTheme.headlineSmall` and an expressive bold weight of `FontWeight.w800`.
-  - Upgrades inputs (`DropdownButtonFormField` and `TextField`) to use a polished `OutlineInputBorder` (with custom 12dp rounded corners) and comfortable content padding.
-  - Customized dropdown icon with standard soft `Icons.keyboard_arrow_down_rounded`.
-  - Added anti-aliased clipping on the dialog boundary to prevent inner element bleeding.
+This pull request consolidates and resolves several major development streams:
 
-* **`AITestResultDialog`**:
-  - Migrated the icon directly into the native dialog `icon` slot, dynamically selecting check/error styles based on testing success.
-  - Applies identical standard `w800` headline styling.
-  - Groups complex dynamic messages inside a defined, zero-elevation `Card` styled with Material 3 tokens (`surfaceContainerLow` background, a 12dp border radius, and a subtle border with `outlineVariant` at 0.3 opacity).
-  - Placed the card inside a `SingleChildScrollView` container to fully eliminate any potential layout or scroll overflow issues for large payloads.
+1. **Authentication Redesign (MeoArch Supabase Integration):**
+   - Replaced standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth.
+   - Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
+   - Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
+   - Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
 
-### 🎯 Why
-The custom source and AI connection test feedback dialogs previously used flat, legacy layouts without defined input borders, modern MD3 shapes, or clear contrast boundaries. These improvements ensure the user experience is highly tactile, intuitive, and consistent with other Material Design 3 refined surfaces across the OmniStore ecosystem.
+2. **Material Design 3 Dropdown Selection Inputs:**
+   - Standardized styling of all configuration dropdown selectors (`DropdownButton`) within the settings pages (Language, Font Family, Update Interval, AI Provider) inside a Container utilizing Material Design 3 tokens.
+   - Replaced legacy sharp arrow icon with soft `keyboard_arrow_down_rounded` icon.
 
-### ♿ Accessibility
-* Form fields inside `AddSourceDialog` now feature comfortable tap targets and extremely readable placeholder hints.
-* Feedback results in `AITestResultDialog` use high-contrast text and are fully selectable via `SelectableText` for easier copying or debug assistance.
-* Status icon colors utilize standard theme primary/error colors to maintain accessible contrast relative to their surfaces.
+3. **Compiler Error Cleanup & Code Health:**
+   - Resolved duplicate copy-pasted member and method declarations in `SettingsController` (`bool _disposed`, `dispose()`, `notifyListeners()`) causing severe Dart compile errors.
+   - Resolved duplicate copy-pasted fields in `AppPackage` (`nameLower`, `descriptionLower`, `primarySourceLower`) causing Dart compile errors.
+   - Fully preserved the critical defensive guards (`_disposed` check in `notifyListeners` and lazy-initialized lowering properties) to ensure the application remains robust.
 
-### 📱 MD3 Alignment
-* Replaced manual, sharp widgets with standardized MD3 geometric tokens (12dp small container/input curves and native tonal elevation styling).
-* Organized technical response information into defined, low-elevation surface containers (`surfaceContainerLow`), providing clear physical boundaries without heavy shadows or borders.
+## 🎯 Why
+
+- **Authentication Cohesion:** Decoupling package registry identity (GitHub PAT) from the user's primary application account identity provides a cleaner UX.
+- **UI Consistency:** Legacy unstyled dropdown buttons lacked clean boundaries and hover effects. Standardizing these elements under Material Design 3 guidelines establishes consistent tap targets and boundaries.
+- **Code Health & Safety:** Eliminating duplicate class properties resolves critical build blockers while safeguarding lifecycle and performance optimizations.
+
+## ⚡ Impact
+
+- **Security & Stability:** Improved deep-link handling and async state transition safety prevents post-dispose setState crashes.
+- **Accessibility:** Large click/tap targets on dropdown selectors, and clear visual boundaries improve readability.
+- **Performance:** Optimized lazy-caching on model fields prevents unnecessary string allocations inside high-frequency filtration loops.
+
+## 📊 Verification & Coverage
+
+- **Flutter Analysis:** `flutter analyze` runs successfully with zero warnings/errors.
+- **Testing:**
+  - Ran the full Python unit/widget test suite successfully with **69 passed tests**.
+  - Ran Flutter frontend widget & unit tests successfully (`flutter test test/widget_test.dart`).
