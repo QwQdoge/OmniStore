@@ -79,6 +79,9 @@
 Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable global Toast utility.
 * Replaced scattered ScaffoldMessenger.of(context).showSnackBar with centralized Toast.show(context, message) in AccountPage to enforce snackbar consistency and avoid visual queuing.
 
+## 2026-07-01 - Global SnackBar Consistency: Authentication
+- Replaced scattered `ScaffoldMessenger.of(context).showSnackBar` calls in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart` (specifically within `_handleEmailSignIn`) with the globally centralized `Toast.show` utility. This ensures interaction feedback (like missing credentials or sign-in errors) consistently matches the application's unified SnackBar styling and queue management.
+
 ## 2026-07-01 - daily Terminology and Translation Polish
 - Standardized and polished application localization across Simplified Chinese (zh), Traditional Chinese (zh_Hant), and Spanish (es).
 - Elevate terminology in software management context: refined 'activity' (from literal '活动' to '任务动态'/'任務動態'), 'source' (from '来源' to '软件源'), and 'variant' (from '可用版本' to '分发版本'), which are more techncially precise and elegant.
