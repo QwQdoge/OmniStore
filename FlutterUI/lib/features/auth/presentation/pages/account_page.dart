@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
+import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -233,9 +234,12 @@ class _AccountPageState extends State<AccountPage> {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: _isLoading
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Sign In'),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _isLoading
+                  ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Sign In', key: ValueKey('idle')),
+              ),
             ),
 
             const SizedBox(height: 16),

@@ -60,10 +60,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get details => '详情';
 
   @override
-  String get source => '来源';
+  String get source => '软件源';
 
   @override
-  String get variant => '可用版本';
+  String get variant => '分发版本';
 
   @override
   String get version => '版本';
@@ -83,7 +83,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching => '正在搜索...';
 
   @override
-  String get activity => '活动';
+  String get activity => '任务动态';
 
   @override
   String get category => '分类';
@@ -125,7 +125,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get darkMode => '深色模式';
 
   @override
-  String get loggingLevel => '日志详细程度';
+  String get loggingLevel => '日志级别';
 
   @override
   String get saveAndApply => '保存并应用';
@@ -166,7 +166,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get developer => '开发者';
 
   @override
-  String get license => '许可';
+  String get license => '许可证';
 
   @override
   String get success => '成功';
@@ -446,7 +446,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aiPromptExplain => '解析';
+  String get aiPromptExplain => 'AI 解析';
 
   @override
   String get aiPromptRecommend => 'AI 建议';
@@ -494,7 +494,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiRefineSearch => '使用 AI 优化搜索';
 
   @override
-  String get aiExplainUpdate => '解析此更新';
+  String get aiExplainUpdate => 'AI 解析此更新';
 
   @override
   String get windowMinimize => '最小化';
@@ -530,7 +530,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeTitle => '欢迎来到 OmniStore';
 
   @override
-  String get welcomeSubtitle => '为您提供简单、优雅的 Arch Linux 应用管理体验';
+  String get welcomeSubtitle => '提供简单、优雅的 Arch Linux 应用管理体验';
 
   @override
   String get getStarted => '开始使用';
@@ -542,16 +542,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckTitle => '环境检查';
 
   @override
-  String get envCheckSubtitle => '我们需要确保您的系统已准备就绪';
+  String get envCheckSubtitle => '确保系统已准备就绪';
 
   @override
   String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的组件，我们可以为您自动配置。';
+  String get envWarningDesc => '缺少必要组件，将进行自动配置。';
 
   @override
-  String get envOkDesc => '一切就绪！您的系统非常完美。';
+  String get envOkDesc => '系统状态良好，一切就绪！';
 
   @override
   String get fixProblems => '一键修复/配置';
@@ -563,7 +563,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigTitle => '软件源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择您想要启用的软件源';
+  String get sourceConfigSubtitle => '选择要启用的软件源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
@@ -572,7 +572,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 包由用户上传，请确保您信任包的来源。';
+  String get aurWarning => '安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。';
 
   @override
   String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
@@ -587,7 +587,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiAssistantDesc => '启用 AI 驱动的搜索、应用解析及错误诊断';
 
   @override
-  String get aiProviderDesc => '选择您的 AI 模型来源 (本地或云端)';
+  String get aiProviderDesc => '选择 AI 模型来源（本地或云端）';
 
   @override
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
@@ -621,7 +621,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
 
   @override
-  String get resetCacheConfirm => '这将清空您的搜索历史和推荐缓存。是否继续？';
+  String get resetCacheConfirm => '将清空搜索历史和推荐缓存。确认继续？';
 
   @override
   String get resetting => '正在重置...';
@@ -710,7 +710,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String dependenciesCount(int count) {
-    return '依赖软件包（$count）';
+    return '依赖项（$count）';
   }
 
   @override
@@ -1191,16 +1191,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickStart => '快速开始';
 
   @override
-  String get importListSubtitle => '从列表导入你常用的软件包';
+  String get importListSubtitle => '从列表导入常用软件包';
 
   @override
-  String get emptyTrendingMessage => '暂无热门数据；网络恢复后会自动更新。';
+  String get emptyTrendingMessage => '暂无热门数据；网络连接恢复后将自动更新。';
 
   @override
-  String get emptyRecommendationsMessage => '继续搜索或安装应用后，这里会显示个性化建议。';
+  String get emptyRecommendationsMessage => '继续搜索或安装应用后，此处将显示个性化建议。';
 
   @override
-  String get aiPickFallbackMessage => '暂时无法生成个性化推荐。你仍可浏览编辑精选，或稍后重试。';
+  String get aiPickFallbackMessage => '暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1259,10 +1259,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get details => '詳情';
 
   @override
-  String get source => '來源';
+  String get source => '軟體源';
 
   @override
-  String get variant => '可用版本';
+  String get variant => '分發版本';
 
   @override
   String get version => '版本';
@@ -1282,7 +1282,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searching => '搜尋中...';
 
   @override
-  String get activity => '活動';
+  String get activity => '任務動態';
 
   @override
   String get category => '分類';
@@ -1324,7 +1324,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get darkMode => '深色模式';
 
   @override
-  String get loggingLevel => '日誌詳細程度';
+  String get loggingLevel => '日誌級別';
 
   @override
   String get saveAndApply => '儲存並套用';
@@ -1365,7 +1365,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get developer => '開發者';
 
   @override
-  String get license => '授權';
+  String get license => '授權條款';
 
   @override
   String get success => '成功';
@@ -1645,7 +1645,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get aiPromptExplain => '解析';
+  String get aiPromptExplain => 'AI 解析';
 
   @override
   String get aiPromptRecommend => 'AI 建議';
@@ -1693,7 +1693,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiRefineSearch => '使用 AI 精煉搜尋';
 
   @override
-  String get aiExplainUpdate => '解析此更新';
+  String get aiExplainUpdate => 'AI 解析此更新';
 
   @override
   String get windowMinimize => '最小化';
@@ -1729,7 +1729,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get welcomeTitle => '歡迎來到 OmniStore';
 
   @override
-  String get welcomeSubtitle => '為您提供簡單、優雅的 Arch Linux 應用程式管理體驗';
+  String get welcomeSubtitle => '提供簡單、優雅的 Arch Linux 應用程式管理體驗';
 
   @override
   String get getStarted => '開始使用';
@@ -1741,16 +1741,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckTitle => '環境檢查';
 
   @override
-  String get envCheckSubtitle => '我們需要確保您的系統已準備就緒';
+  String get envCheckSubtitle => '確保系統已準備就緒';
 
   @override
   String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
-  String get envWarningDesc => '缺少一些必要的組件，我們可以為您自動配置。';
+  String get envWarningDesc => '缺少必要組件，將進行自動配置。';
 
   @override
-  String get envOkDesc => '一切就緒！您的系統非常完美。';
+  String get envOkDesc => '系統狀態良好，一切就緒！';
 
   @override
   String get fixProblems => '一鍵修復/配置';
@@ -1762,7 +1762,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceConfigTitle => '軟體存放庫設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇您想要啟用的軟體存放庫';
+  String get sourceConfigSubtitle => '選擇要啟用的軟體存放庫';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
@@ -1771,7 +1771,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
-  String get aurWarning => '安全警告：AUR 套件由使用者上傳，請確保您信任套件的來源。';
+  String get aurWarning => '安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。';
 
   @override
   String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
@@ -1786,7 +1786,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiAssistantDesc => '啟用 AI 驅動的搜尋、應用程式解析及錯誤診斷';
 
   @override
-  String get aiProviderDesc => '選擇您的 AI 模型來源 (本地或雲端)';
+  String get aiProviderDesc => '選擇 AI 模型來源（本地或雲端）';
 
   @override
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
@@ -1820,7 +1820,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get resetCacheDesc => '清空搜尋歷史與本地推薦快取';
 
   @override
-  String get resetCacheConfirm => '這將清空您的搜尋歷史和推薦快取。是否繼續？';
+  String get resetCacheConfirm => '將清空搜尋歷史與推薦快取。確認繼續？';
 
   @override
   String get resetting => '正在重置...';
@@ -1909,7 +1909,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String dependenciesCount(int count) {
-    return '依賴套件（$count）';
+    return '依賴項（$count）';
   }
 
   @override
@@ -2390,14 +2390,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickStart => '快速開始';
 
   @override
-  String get importListSubtitle => '從列表匯入您常用的套件';
+  String get importListSubtitle => '從清單匯入常用套件';
 
   @override
-  String get emptyTrendingMessage => '暫無熱門資料；網路恢復後會自動更新。';
+  String get emptyTrendingMessage => '暫無熱門資料；網路連線恢復後將自動更新。';
 
   @override
-  String get emptyRecommendationsMessage => '繼續搜尋或安裝應用程式後，這裡會顯示個人化建議。';
+  String get emptyRecommendationsMessage => '繼續搜尋或安裝應用程式後，此處將顯示個人化建議。';
 
   @override
-  String get aiPickFallbackMessage => '暫時無法產生個人化推薦。您仍可瀏覽編輯精選，或稍后重試。';
+  String get aiPickFallbackMessage => '暫時無法產生個人化推薦。可瀏覽編輯精選或稍後重試。';
 }

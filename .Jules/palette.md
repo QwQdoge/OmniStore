@@ -1,3 +1,9 @@
+## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
+
+**Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.
+
+**Action:** Update custom alert and input dialogs to leverage native `AlertDialog.icon` instead of inline title headers, style fields with custom 12dp `OutlineInputBorder` borders and symmetric padding, and structure diagnostic details inside zero-elevation `Card` containers using the `surfaceContainerLow` token and `monospace` fonts.
+
 ## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
 
 **Learning:** Standardizing interactive full-screen screenshot viewers by adding a backdrop `GestureDetector` with `HitTestBehavior.opaque` enables comfortable single-tap dismissal anywhere on the screen (reducing visual search friction for dismiss actions). Accompanying this with native `MaterialLocalizations.of(context).closeButtonTooltip` on the close button ensures native accessibility. In horizontal galleries, wrapping preview cards in a `Tooltip` and `Semantics` widget using a localized index label (e.g., `"${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}"`) provides robust hover discovery and screen-reader context.
@@ -200,3 +206,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** To align legacy inline DropdownButton widgets with Material Design 3 guidelines (such as trailing elements in ListTiles), wrap the DropdownButton with DropdownButtonHideUnderline inside a Container styled with MD3 tokens (e.g., color `theme.colorScheme.surfaceContainerHigh`, 12dp rounded corners, and a subtle border using `theme.colorScheme.outlineVariant` at 0.5 opacity). Override the standard dropdown icon with `Icons.keyboard_arrow_down_rounded` for softer, native-feeling MD3 transitions.
 
 **Action:** Standardize the visual styling of Settings and Configuration inline DropdownButtons globally by wrapping them in matching M3 styled container boundaries and using soft keyboard arrow down icons to improve click targets, affordance, and visual harmony.
+
+## 2026-08-06 - Material Design 3 Dialog Input & Result Polish
+
+**Learning:** AlertDialog elements must adhere strictly to Material Design 3 geometry and typography. By utilizing native dialog components like `icon` paired with high-quality theme colors, styling titles with `theme.textTheme.headlineSmall` and `w800` weight, and enforcing `clipBehavior: Clip.antiAlias` on the dialog, the dialog structure becomes incredibly cohesive. To polish inputs (like DropdownButtonFormField or TextFields), use explicit 12dp rounded `OutlineInputBorder`s with comfortable content padding. When presenting dynamic message payloads (such as debug console outputs or API test descriptions), wrapping text in a themed Card (`surfaceContainerLow`, 12dp border radius, with outlineVariant border) nested in `SingleChildScrollView` prevents jarring layout overflows and keeps the focus entirely on content accessibility.
+
+**Action:** Refactor all configuration and informational dialogs to leverage native AlertDialog `icon` slots, robust `w800` typography, custom `OutlineInputBorder`s for text/dropdown fields, and structured content Cards to avoid layout overflows.
