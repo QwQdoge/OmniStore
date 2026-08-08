@@ -1,8 +1,8 @@
-## 2026-08-06 - Material Design 3 DropdownFormField & Dialog Inputs Polish
+## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
 
-**Learning:** Inline selection fields (`DropdownButtonFormField`) and text inputs in dialogs and onboarding flows lack native MD3 visual affordance if left as unstyled or default-bordered components. Standardizing them to utilize custom, consistent `OutlineInputBorder` wrappers with 12dp rounded corners, softer border/hover coloring (via `Theme.of(context).colorScheme.outlineVariant`), proper symmetric content padding, and overriding the default sharp arrow icon with the soft, organic `Icons.keyboard_arrow_down_rounded` icon ensures complete visual harmony, larger click targets, and a premium native feel across desktop and mobile form screens.
+**Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.
 
-**Action:** Align all form input elements and custom dropdown fields globally or within Dialogs/Onboarding flows to use explicit `OutlineInputBorder` (12dp radius), customized state borders (enabled and focused), and softness-oriented iconography (`keyboard_arrow_down_rounded`) with proper content padding.
+**Action:** Update custom alert and input dialogs to leverage native `AlertDialog.icon` instead of inline title headers, style fields with custom 12dp `OutlineInputBorder` borders and symmetric padding, and structure diagnostic details inside zero-elevation `Card` containers using the `surfaceContainerLow` token and `monospace` fonts.
 
 ## 2026-07-28 - Full-Screen ImageViewer and Gallery Polish
 
