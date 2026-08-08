@@ -354,7 +354,7 @@
       }
     }
   },
-  "aiPromptExplain": "解析",
+  "aiPromptExplain": "AI 解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -418,7 +418,7 @@
   "@aiRefineSearch": {
     "description": "Action to refine search using AI"
   },
-  "aiExplainUpdate": "解析此更新",
+  "aiExplainUpdate": "AI 解析此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
@@ -752,7 +752,7 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库",
+  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
   "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"

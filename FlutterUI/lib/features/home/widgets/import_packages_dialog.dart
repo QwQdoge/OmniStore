@@ -25,6 +25,7 @@ class ImportPackagesDialog extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: Icon(
         Icons.file_upload_rounded,
         color: theme.colorScheme.primary,

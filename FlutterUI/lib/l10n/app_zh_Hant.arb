@@ -43,11 +43,11 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "pacmanOfficial": "Pacman（官方軟體存放庫）",
-  "aurUser": "AUR（使用者軟體存放庫）",
+  "pacmanOfficial": "Pacman（官方軟體源）",
+  "aurUser": "AUR（使用者軟體源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "軟體存放庫優先級（拖曳排序）",
+  "sourcePriority": "軟體源優先級（拖曳排序）",
   "maxResults": "最大結果數",
   "appearance": "介面外觀",
   "themeColor": "主題色",
@@ -293,7 +293,7 @@
   "@advanced": {
     "description": "Label for advanced settings toggle"
   },
-  "repositories": "軟體存放庫",
+  "repositories": "軟體源",
   "@repositories": {
     "description": "Section title for software repositories"
   },
@@ -353,7 +353,7 @@
       }
     }
   },
-  "aiPromptExplain": "解析",
+  "aiPromptExplain": "AI 解析",
   "@aiPromptExplain": {
     "description": "Prompt action to explain content with AI"
   },
@@ -417,7 +417,7 @@
   "@aiRefineSearch": {
     "description": "Action to refine search using AI"
   },
-  "aiExplainUpdate": "解析此更新",
+  "aiExplainUpdate": "AI 解析此更新",
   "@aiExplainUpdate": {
     "description": "Action to explain an update with AI"
   },
@@ -469,8 +469,8 @@
   "envOkDesc": "系統狀態良好，一切就緒！",
   "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
-  "sourceConfigTitle": "軟體存放庫設定",
-  "sourceConfigSubtitle": "選擇要啟用的軟體存放庫",
+  "sourceConfigTitle": "軟體源設定",
+  "sourceConfigSubtitle": "選擇要啟用的軟體源",
   "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。",
@@ -527,12 +527,12 @@
     }
   },
   "switchSource": "切換",
-  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體源，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
   "cleanOrphans": "清理孤立套件",
   "securityWarning": "安全風險提示",
-  "aurSecurityDesc": "AUR 是由社群維護的軟體存放庫。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
+  "aurSecurityDesc": "AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
   "installInfo": "安裝資訊",
   "downloadSize": "下載大小",
@@ -642,7 +642,7 @@
   "@next": {
     "description": "Next button label"
   },
-  "aurFull": "AUR（Arch 使用者軟體存放庫）",
+  "aurFull": "AUR（Arch 使用者軟體源）",
   "@aurFull": {
     "description": "Full name for AUR"
   },
@@ -739,7 +739,7 @@
   "expand": "展開",
   "all": "全部",
   "relatedApps": "相關應用程式",
-  "activeSources": "已啟用軟體存放庫",
+  "activeSources": "已啟用軟體源",
   "@activeSources": {
     "description": "Label for active software sources"
   },
@@ -747,20 +747,20 @@
   "@autoDetect": {
     "description": "Button to auto detect available sources"
   },
-  "addCustomSource": "新增自訂軟體存放庫",
+  "addCustomSource": "新增自訂軟體源",
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫",
-  "sourceType": "軟體存放庫類型",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源",
+  "sourceType": "軟體源類型",
   "@sourceType": {
     "description": "Label for source type"
   },
-  "githubRepoType": "GitHub 存放庫（owner/repo）",
+  "githubRepoType": "GitHub 倉庫（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
-  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
+  "bituRepoType": "Bitu / Bitbucket（工作區/倉庫）",
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
@@ -772,7 +772,7 @@
   "@appImageFeedType": {
     "description": "AppImage source type option"
   },
-  "sourceName": "軟體存放庫名稱",
+  "sourceName": "軟體源名稱",
   "@sourceName": {
     "description": "Label for source name"
   },
@@ -780,7 +780,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "軟體存放庫地址（owner/repo）",
+  "repoOwnerRepo": "軟體源地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -796,23 +796,23 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名稱和連結/軟體存放庫地址不能為空",
+  "errorNameUrlRequired": "名稱和連結/軟體源地址不能為空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
-  "addingCustomSource": "正在新增自訂軟體存放庫...",
+  "addingCustomSource": "正在新增自訂軟體源...",
   "@addingCustomSource": {
     "description": "Message while adding custom source"
   },
-  "sourceAddSuccess": "軟體存放庫新增成功！",
+  "sourceAddSuccess": "軟體源新增成功！",
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
-  "sourceAddFailed": "新增軟體存放庫失敗。",
+  "sourceAddFailed": "新增軟體源失敗。",
   "@sourceAddFailed": {
     "description": "Failure message after adding source"
   },
-  "autoDetectingSources": "正在自動偵測系統中可用的軟體存放庫...",
+  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
   "@autoDetectingSources": {
     "description": "Message while auto detecting sources"
   },
@@ -977,13 +977,13 @@
   "ok": "確定",
   "checkNetwork": "請檢查網路連線並重試",
   "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用程式",
-  "searchGithubHint": "搜尋 GitHub 存放庫...",
+  "searchGithubHint": "搜尋 GitHub 倉庫...",
   "recommended": "推薦",
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
   "searchNoResultsSubtitle": "嘗試搜尋其他關鍵字",
-  "pluginsAndSources": "外掛程式與軟體存放庫",
+  "pluginsAndSources": "外掛程式與軟體源",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
   },
