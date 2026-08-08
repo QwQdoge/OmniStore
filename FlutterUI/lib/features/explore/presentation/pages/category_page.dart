@@ -16,6 +16,7 @@ class _CategoryPageState extends State<CategoryPage> {
   Widget build(BuildContext context) {
     final categories = CategoryService.getCategories(context);
     final l10n = AppLocalizations.of(context)!;
+    final categories = CategoryService.getCategories(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
