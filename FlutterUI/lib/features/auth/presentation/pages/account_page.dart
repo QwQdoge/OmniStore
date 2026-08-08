@@ -238,9 +238,19 @@ class _AccountPageState extends State<AccountPage> {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: _isLoading
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Sign In'),
+              child: SmoothSizeSwitcher(
+                child: _isLoading
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text(
+                        'Sign In',
+                        key: ValueKey('idle'),
+                      ),
+              ),
             ),
 
             const SizedBox(height: 16),
