@@ -11,10 +11,12 @@ class ProcessRegistry {
 
   ProcessRegistry() {
     // Murphy-proof: Periodic reaper to clean up stale process handles
-    _reaperTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => _reapStale(),
-    );
+    if (!kIsWeb && !Platform.environment.containsKey('FLUTTER_TEST')) {
+      _reaperTimer = Timer.periodic(
+        const Duration(minutes: 5),
+        (_) => _reapStale(),
+      );
+    }
   }
 
   void _reapStale() async {

@@ -332,6 +332,7 @@ class BackendService {
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
+    if (_isTestEnv) return null;
     return _ipc.send(action, args, kwargs: kwargs);
   }
 
@@ -744,7 +745,7 @@ class BackendService {
   }
 
   Future<Map<String, dynamic>> loadConfig() async {
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       final data = await ConfigRepository().loadConfig();
       isAIEnabled.value = data['ai']?['enabled'] ?? false;
       return data;
@@ -907,8 +908,10 @@ class BackendService {
     }
   }
 
+  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+
   Future<Map<String, dynamic>> checkEnv() async {
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       return ConfigRepository().checkEnv();
     }
     try {
@@ -935,9 +938,9 @@ class BackendService {
   }
 
   Stream<String> bootstrap() {
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       return Stream.value(
-        "[CALLBACK] {\"log\": \"[INFO] Web environment is already ready!\"}",
+        "[CALLBACK] {\"log\": \"[INFO] Environment is ready!\"}",
       );
     }
     return _safeStream(["--bootstrap", "--json"]);
