@@ -28,12 +28,10 @@ class InstalledAppList extends StatelessWidget {
             child: ListTile(
               leading: SizedBox(width: 40, height: 40),
               title: SizedBox(height: 16),
-              subtitle: Row(
-                children: [
-                  SizedBox(width: 40, height: 12),
-                  SizedBox(width: 8),
-                  Expanded(child: SizedBox(height: 12)),
-                ],
+              subtitle: SizedBox(height: 14),
+              trailing: AppSourceTag(
+                source: 'Flatpak',
+                mode: AppSourceTagMode.source,
               ),
             ),
           ),

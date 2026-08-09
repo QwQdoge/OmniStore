@@ -100,15 +100,14 @@ class InstalledTab extends StatelessWidget {
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      prototypeItem: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
         child: AppCard(
           borderRadius: 16,
           child: ListTile(
-            leading: const SizedBox(width: 40, height: 40),
-            title: const SizedBox(height: 16),
-            subtitle: const SizedBox(height: 12),
-            trailing: const SizedBox(width: 60, height: 24),
+            leading: SizedBox(width: 40, height: 40),
+            title: SizedBox(height: 16),
+            subtitle: SizedBox(height: 20),
           ),
         ),
       ),

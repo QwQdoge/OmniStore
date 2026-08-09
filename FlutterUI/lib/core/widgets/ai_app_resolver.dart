@@ -42,10 +42,16 @@ class _AIAppResolverState extends State<AIAppResolver> {
       final List<dynamic> names = jsonDecode(jsonPart);
 
       final packageRepo = context.read<PackageRepository>();
-      List<AppPackage> apps = [];
 
-      for (var name in names) {
-        final results = await packageRepo.searchPackages(name.toString());
+      // Parallelize package resolution to significantly speed up related apps loading.
+      // We pass cancelOngoing: false to prevent concurrent queries from cancelling each other.
+      final futures = names.map((name) {
+        return packageRepo.searchPackages(name.toString(), cancelOngoing: false);
+      }).toList();
+
+      final List<List<AppPackage>> searchResults = await Future.wait(futures);
+      final List<AppPackage> apps = [];
+      for (final results in searchResults) {
         if (results.isNotEmpty) {
           apps.add(results[0]);
         }
