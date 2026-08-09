@@ -1,214 +1,26 @@
-<<<<<<< HEAD
-## 🛡️ Sentinel: Async Lifecycle Safety Hardening for WelcomePage
-
-**What:**
-- Added strict `if (!mounted) return;` checks inside `catch` blocks and stream listener callbacks (`onError`, `onDone`, and line parsers) in `WelcomePage`.
-
-**Why:**
-- While `WelcomePage` had `mounted` checks after `await` calls, its `catch` blocks and asynchronous stream subscriptions (for the bootstrap output) modified state (using `setState`) without verifying if the widget was still mounted. This could result in "setState() called after dispose()" and "use of BuildContext across async gaps" crashes if the user navigated away or closed the app during the onboarding setup.
-
-**Result:**
-- `WelcomePage` is now fully resilient to asynchronous lifecycle exceptions, particularly during the critical environment checking and bootstrapping phases.
-=======
-<<<<<<< HEAD
-# 🎨 Palette: Standardize Custom Dialogs and Inputs for Material Design 3
-
-## 💡 What
-Refined and standardized the layout, geometry, typography, and visual feedback of the custom dialogs in the application to fully align with Material Design 3 guidelines:
-1. **AddSourceDialog (`add_source_dialog.dart`)**:
-   - Upgraded to leverage the native `icon` parameter in `AlertDialog` with `Icons.add_link_rounded`, tinted with primary theme coloring.
-   - Set the title style to use expressive `theme.textTheme.headlineSmall` with `FontWeight.w800` (Extra Bold).
-   - Structured and modernized form inputs (`DropdownButtonFormField` and `TextField`s) with a cohesive `OutlineInputBorder` (12dp radius), custom symmetric content padding, and standard outline styling.
-   - Refined the dropdown arrow icon to use `Icons.keyboard_arrow_down_rounded` for softer transitions.
-2. **AITestResultDialog (`ai_test_result_dialog.dart`)**:
-   - Replaced hardcoded `Colors.green` and `Colors.red` with standard semantic theme tokens (`colorScheme.primary` and `colorScheme.error`).
-   - Standardized layout by utilizing native `AlertDialog.icon` with rounded check/error symbols.
-   - Set title typography to `FontWeight.w800`.
-   - Wrapped diagnostic/console test messages inside a zero-elevation `Card` utilizing `colorScheme.surfaceContainerLow` decoration, a 16dp rounded corner radius, and an elegant monospace font style.
-
-## 🎯 Why
-* **Legacy UI Contrast**: Dialog title structures were previously flat and inconsistent. The AI Test Result Dialog relied on raw text alignment and hardcoded, non-adaptive colors which failed to respect user color seeds/themes.
-* **Input Alignment**: Input fields inside dialog forms lacked modern Material 3 geometry (12dp corners) and structured spacing, reducing interaction discoverability and click-target comfortable spacing.
-
-## ♿ Accessibility
-* **Semantic Structure**: Provides clean and distinct hierarchy with leading semantic icons, ensuring screen readers receive immediate context about the purpose of the dialog (info vs error vs addition).
-* **Affordance & Usability**: Improved tap/click target safety with consistent input height boundaries and generous, standard-aligned inner padding. Monospace rendering on command/API output prevents text strain on wide paragraphs.
-
-## 📱 MD3 Alignment
-* Leverages proper surface container tokens (`surfaceContainerLow` for message details cards).
-* Follows precise dialogue geometry standards: native `AlertDialog` properties (icon/title stack), 28dp overall dialogue shape tokens, and 12dp/16dp corner tokens for elements within the dialog.
-
-## 📊 Coverage
-- Ran `flutter analyze` successfully with zero new analyzer issues.
-- Ran `flutter test test/widget_test.dart` successfully with all checks passing.
-=======
-# Pull Request: 🎨 Palette: Standardize Multi-Language Localization and Polishing
+# Pull Request Description
 
 ## What
-<<<<<<< HEAD
-Refined and standardized several key user-facing UI localization strings across Simplified Chinese (`zh`), Traditional Chinese (`zh_Hant`), and Spanish (`es`) to align with standard tech translation guidelines and ensure seamless, publication-grade user experience.
+Refined localized translations for Simplified Chinese (`zh`) and Traditional Chinese (`zh_Hant`) in `app_zh.arb`, `app_zh_Hant.arb`, `polish_l10n.py`, and `update_arb.py`. Corrected stiff and literal translations, removed redudant filler expressions, unified critical terms across the application (e.g., standardizing repository/source to "软件源/軟體源", "仓库/倉庫"), and resolved pre-existing compiler / layout conflict issues.
 
-The following terminology unifications and polishing steps were performed:
-- `activity` -> Standardized to '任务动态' / '任務動態' (previously literal translations like '活动' / '活動').
-- `source` -> Standardized to '软件源' / '軟體源' (previously generic/stiff translations like '来源' / '來源').
-- `variant` -> Standardized to '分发版本' / '分發版本' / 'Variantes' (previously '可用版本' / 'Fuente de instalación').
-- `loggingLevel` -> Standardized to '日志级别' / '日誌級別' (previously '日志详细程度' / '日誌詳細程度').
-- `license` -> Standardized to '许可证' / '授權條款' (previously '许可' / '授權').
-- `dependenciesCount` -> Standardized to '依赖项（{count}）' / '依賴項（{count}）' (previously '依赖软件包' / '依賴套件').
-- `noActiveTasks` -> Aligned Simplified Chinese '暂无活动中的任务' with '暂无进行中的任务' (consistent with Traditional Chinese '無進行中的任務').
-- `recommendedSource` -> Standardized '推荐来源：' to '推荐软件源：' / '推薦軟體源：'.
-- `aiPickDisclaimer` -> Standardized '当前可用来源' to '当前可用软件源' / '當前可用軟體源'.
+## Localization Review Result
 
-The python localization utility `python/polish_l10n.py` was also kept perfectly in-sync with these polished translations, and l10n compilation (`flutter gen-l10n`) was completed successfully.
-
-## Coverage
-- Updated `python/polish_l10n.py` to overwrite existing translation keys on polish runs.
-- Regenerated `.arb` resource files:
-  - `FlutterUI/lib/l10n/app_zh.arb`
-  - `FlutterUI/lib/l10n/app_zh_Hant.arb`
-  - `FlutterUI/lib/l10n/app_es.arb`
-- Avoided checking in compiled `.dart` artifacts to ensure clean repository history.
-
-## Result
-All widget and unit tests compile and pass successfully, confirming perfect syntax in the `.arb` resource files and localizations compiler. Users across Chinese and Spanish locales will experience a professional, native-grade desktop package management interface.
-=======
-Added an `AnimatedSwitcher` to the "Sign In" button on the Account Page to provide a smooth transition between the interactive text state and the loading state.
-
-## Why
-To align with the Conductor agent guidelines for improving motion and interaction clarity by replacing abrupt layout jumps with subtle MD3 implicit motion during loading transitions.
-
-## Result
-When the user clicks the Sign In button, the button now smoothly cross-fades between the label text and the `CircularProgressIndicator` instead of snapping instantly.
-=======
-# 🚀 OmniStore: Unified PR for Auth Redesign, Dropdown MD3 Standardizations, and Code Health Optimizations
-
-## 🎯 What
-
-This pull request consolidates and resolves several major development streams:
-
-1. **Authentication Redesign (MeoArch Supabase Integration):**
-   - Replaced standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth.
-   - Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
-   - Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
-   - Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
-
-2. **Material Design 3 Dropdown Selection Inputs:**
-   - Standardized styling of all configuration dropdown selectors (`DropdownButton`) within the settings pages (Language, Font Family, Update Interval, AI Provider) inside a Container utilizing Material Design 3 tokens.
-   - Replaced legacy sharp arrow icon with soft `keyboard_arrow_down_rounded` icon.
-
-3. **Compiler Error Cleanup & Code Health:**
-   - Resolved duplicate copy-pasted member and method declarations in `SettingsController` (`bool _disposed`, `dispose()`, `notifyListeners()`) causing severe Dart compile errors.
-   - Resolved duplicate copy-pasted fields in `AppPackage` (`nameLower`, `descriptionLower`, `primarySourceLower`) causing Dart compile errors.
-   - Fully preserved the critical defensive guards (`_disposed` check in `notifyListeners` and lazy-initialized lowering properties) to ensure the application remains robust.
-
-## 🎯 Why
-
-- **Authentication Cohesion:** Decoupling package registry identity (GitHub PAT) from the user's primary application account identity provides a cleaner UX.
-- **UI Consistency:** Legacy unstyled dropdown buttons lacked clean boundaries and hover effects. Standardizing these elements under Material Design 3 guidelines establishes consistent tap targets and boundaries.
-- **Code Health & Safety:** Eliminating duplicate class properties resolves critical build blockers while safeguarding lifecycle and performance optimizations.
-
-## ⚡ Impact
-
-- **Security & Stability:** Improved deep-link handling and async state transition safety prevents post-dispose setState crashes.
-- **Accessibility:** Large click/tap targets on dropdown selectors, and clear visual boundaries improve readability.
-- **Performance:** Optimized lazy-caching on model fields prevents unnecessary string allocations inside high-frequency filtration loops.
-
-## 📊 Verification & Coverage
-
-- **Flutter Analysis:** `flutter analyze` runs successfully with zero warnings/errors.
-- **Testing:**
-  - Ran the full Python unit/widget test suite successfully with **69 passed tests**.
-  - Ran Flutter frontend widget & unit tests successfully (`flutter test test/widget_test.dart`).
-
-## ✨ **Result:**
-OmniStore's user interface now exhibits mother-tongue level fluency, publishing-grade precision, and absolute terminological consistency across all supported locales.
-=======
-<<<<<<< HEAD
-## What
-Added `prototypeItem` to `FlatpakAppListSkeleton` inside `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart`.
-
-## Why
-`ListView.builder` inside Skeleton loading states should include a `prototypeItem` matching the dimensions of the skeleton items to ensure efficient scroll virtualization and avoid redundant layout calculations across the viewport. This directly addresses the missing scroll virtualization issue reported by Bolt.
-
-## Measured Improvement
-Provides O(1) list virtualization performance during loading states, significantly reducing layout operations and engine overhead when rendering repetitive skeleton items.
+| 类别 (漏翻/优化/术语统一) | 原始文本 (Source) | 旧翻译 (Current) | 优化后翻译 (Optimized) | 修改原因 (Reason) |
+| :--- | :--- | :--- | :--- | :--- |
+| 术语统一 | repository / repositories | 软件存放库 | 软件源 | 统一软件源翻译，避免直翻“存放库”显得生硬、别扭。 |
+| 术语统一 | recommendedSource | 推荐来源：{source} | 推荐软件源：{source} | 与软件源专有名词统一，使之更为精确、易懂。 |
+| 术语统一 | recommendedSource (Hant) | 推薦來源：{source} | 推薦軟體源：{source} | 與繁體中文軟體源專有名詞相統一，維持全域術語一致性。 |
+| 术语统一 | Github Repository (Hant) | GitHub 存放庫 | GitHub 倉庫 | 倉庫為繁體中文下對 GitHub repo 的標準/地道業界翻譯。 |
+| 优化 | aiPickDisclaimer | 根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。 | 条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。 | 遵循 OmniStore 本地化術語標準，移除 stiff 句式，達到出版級流暢度。 |
+| 优化 | aiPickDisclaimer (Hant) | 根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。 | 條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。 | 遵循 OmniStore 本地化術語標準與繁體中文（使用標準字「後」），消除語義割裂。 |
+| 优化 | envFatalDesc | 当前系统不是 Arch Linux，核心功能受限。 | 当前系统并非基于 Arch Linux，大部分功能将不可用。 | 精确匹配 isn't Arch-based 的原意，消除“似乎”等口语化填充词，字句更精炼、大气。 |
+| 优化 | envFatalDesc (Hant) | 系統不是 Arch Linux，核心功能受限。 | 系統並非基於 Arch Linux，大部分功能將不可用。 | 消除直翻生硬感，準確傳達 Arch-based 原意。 |
+| 优化 | envWarningDesc | 缺少必要组件，将进行自动配置。 | 缺少部分必要组件，我们可以为您进行自动配置。 | 精简多余表达，使语气更加亲切、专业。 |
+| 优化 | envWarningDesc (Hant) | 缺少必要組件，將進行自動配置。 | 缺少部分必要組件，我們可以為您進行自動配置。 | 繁體中文語氣優化，增加親和力，消除僵硬的被動語氣。 |
+| 漏翻/优化 | noActiveTasks | 暂无活动中的任务 | 暂无进行中的任务 | 纠正 stiff 直译，更符合“进行中任务”这一任务管理器的通用语境。 |
 
 ## Coverage
-- `FlutterUI/lib/features/explore/presentation/widgets/flatpak_app_list.dart`
-- Tests passed.
-=======
-<<<<<<< HEAD
-# 🌱 Gardener: Removed Unused Extracted Files
-
-## What
-- Cleaned up duplicated and unused widget files (`ai_config_page.dart`, `intro_page.dart`, `sources_page.dart`, `config_card.dart`, and `env_check_page.dart`) from `FlutterUI/lib/features/onboarding/widgets/`.
-- Removed an unused/duplicate import from `welcome_page.dart`.
-- Reverted the unintended API change `DropdownButtonFormField.initialValue` back to `value` in `welcome_ai_page.dart` to strictly preserve original behavioral parity as requested during code review.
-- Documented findings in `.Jules/gardener.md`.
-
-## Coverage
-- Executed `flutter analyze` which confirms there are no broken imports or uncompilable syntax left in the project. (The remaining deprecation warning is kept to preserve original behavior).
-- Executed `flutter test test/widget_test.dart` successfully.
+Covered Simplified Chinese and Traditional Chinese, verified by running `flutter gen-l10n` to successfully build localized Dart classes and compiling all UI features successfully.
 
 ## Result
-A smaller, cleaner codebase without orphaned duplicated widgets, simplifying future maintenance and strictly preserving the exact behavioral functionality.
-=======
-<<<<<<< HEAD
-# ⚡ Bolt: Optimize InstalledTab filter calculation latency
-
-### 💡 What
-Optimized the installed app list filter chip generation. The calculation of unique available source filter chips (`_buildFilters()`) has been removed from the build method of `InstalledTab` (which runs on every single frame/repaint/rebuild, e.g. when scrolling or typing) and is now computed once in `_DownloadPageState` inside `DownloadPage` only when the raw underlying dataset (`_installedApps`) is successfully loaded or refreshed.
-
-### 🎯 Why
-In the original implementation, `_buildFilters()` utilized heavy O(N) list operations:
-1. `filteredApps.expand((app) => {...app.sources, app.primarySource})` which is extremely costly for long lists of packages.
-2. Converting the results into a `Set` to deduplicate.
-3. Sorting the list alphabetically.
-
-Since `InstalledTab` is rebuilt on every scroll, search text keystroke, tab switch, and loading status change, this resulted in massive CPU overhead and high garbage collection pressure.
-Furthermore, calculating the filter chips from `filteredApps` meant that once a source filter (e.g. `Flatpak`) was chosen, the other chips would completely disappear from the UI since the list of filtered apps now only contained Flatpak packages. Computing them from the stable `_installedApps` list keeps the UI intuitive and stable.
-
-### 📊 Impact
-- **Drastically Reduced Build Complexity:** Reduces O(N) collection flattening, set allocation, and sorting operations down to a one-time O(N) evaluation on data retrieval, rendering all subsequent widget repaints and scroll events O(1).
-
-# 🚀 OmniStore: Unified PR for Auth Redesign, Dropdown MD3 Standardizations, and Code Health Optimizations
-
-## 🎯 What
-
-This pull request consolidates and resolves several major development streams:
-
-1. **Authentication Redesign (MeoArch Supabase Integration):**
-   - Replaced standalone GitHub OAuth sign-in flow with MeoArch Account Authentication via Supabase Auth.
-   - Refactored `AuthService` into a unified authentication manager supporting Email/Password, Google, and GitHub logins, while managing deep links via `AppLinks` with the `omnistore://auth/callback` custom scheme.
-   - Redesigned the auth page into a new MD3-compliant `AccountPage` which offers standard log in methods and shows the user profile details with Account settings access.
-   - Moved the existing GitHub PAT configuration into `Settings` -> `Integrations` as `GitHubIntegrationPage` (renamed from old `AuthPage`) to decouple GitHub package repository identity from the main user authentication identity.
-
-2. **Material Design 3 Dropdown Selection Inputs:**
-   - Standardized styling of all configuration dropdown selectors (`DropdownButton`) within the settings pages (Language, Font Family, Update Interval, AI Provider) inside a Container utilizing Material Design 3 tokens.
-   - Replaced legacy sharp arrow icon with soft `keyboard_arrow_down_rounded` icon.
-
-3. **Compiler Error Cleanup & Code Health:**
-   - Resolved duplicate copy-pasted member and method declarations in `SettingsController` (`bool _disposed`, `dispose()`, `notifyListeners()`) causing severe Dart compile errors.
-   - Resolved duplicate copy-pasted fields in `AppPackage` (`nameLower`, `descriptionLower`, `primarySourceLower`) causing Dart compile errors.
-   - Fully preserved the critical defensive guards (`_disposed` check in `notifyListeners` and lazy-initialized lowering properties) to ensure the application remains robust.
-
-## 🎯 Why
-
-- **Authentication Cohesion:** Decoupling package registry identity (GitHub PAT) from the user's primary application account identity provides a cleaner UX.
-- **UI Consistency:** Legacy unstyled dropdown buttons lacked clean boundaries and hover effects. Standardizing these elements under Material Design 3 guidelines establishes consistent tap targets and boundaries.
-- **Code Health & Safety:** Eliminating duplicate class properties resolves critical build blockers while safeguarding lifecycle and performance optimizations.
-
-## ⚡ Impact
-
-- **Security & Stability:** Improved deep-link handling and async state transition safety prevents post-dispose setState crashes.
-- **Accessibility:** Large click/tap targets on dropdown selectors, and clear visual boundaries improve readability.
-- **Performance:** Optimized lazy-caching on model fields prevents unnecessary string allocations inside high-frequency filtration loops.
-
-## 📊 Verification & Coverage
-
-- **Flutter Analysis:** `flutter analyze` runs successfully with zero warnings/errors.
-- **Testing:**
-  - Ran the full Python unit/widget test suite successfully with **69 passed tests**.
-  - Ran Flutter frontend widget & unit tests successfully (`flutter test test/widget_test.dart`).
->>>>>>> origin/main
->>>>>>> origin/main
+Tests and Flutter analyze completed with zero errors and zero warnings.

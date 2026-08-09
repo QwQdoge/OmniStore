@@ -465,8 +465,8 @@
   "skip": "跳过",
   "envCheckTitle": "环境检查",
   "envCheckSubtitle": "确保系统已准备就绪",
-  "envFatalDesc": "当前系统不是 Arch Linux，核心功能受限。",
-  "envWarningDesc": "缺少必要组件，将进行自动配置。",
+  "envFatalDesc": "当前系统并非基于 Arch Linux，大部分功能将不可用。",
+  "envWarningDesc": "缺少部分必要组件，我们可以为您进行自动配置。",
   "envOkDesc": "系统状态良好，一切就绪！",
   "fixProblems": "一键修复/配置",
   "continueAnyway": "仍然继续",
@@ -1165,7 +1165,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。",
+  "aiPickDisclaimer": "条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
