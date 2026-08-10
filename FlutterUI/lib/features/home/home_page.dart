@@ -170,7 +170,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final categories = CategoryService.getCategories(context);
     final l10n = AppLocalizations.of(context)!;
-    final categories = CategoryService.getCategories(context);
 
     return Scaffold(
       body: RefreshIndicator(
