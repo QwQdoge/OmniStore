@@ -126,6 +126,7 @@ class AppDetailsHeader extends StatelessWidget {
                       Toast.show(
                         context,
                         AppLocalizations.of(context)!.copiedToClipboard,
+                        duration: const Duration(seconds: 2),
                       );
                     },
                   ),
