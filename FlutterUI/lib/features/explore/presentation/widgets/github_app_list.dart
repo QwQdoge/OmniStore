@@ -227,57 +227,54 @@ class GitHubAppListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(child: SizedBox(height: 120)),
-      ),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            color: scheme.surfaceContainerLow,
-            child: const Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Skeleton(width: 56, height: 56, borderRadius: 16),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    final skeletonItem = Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        color: scheme.surfaceContainerLow,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Skeleton(width: 56, height: 56, borderRadius: 16),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Skeleton(width: 140, height: 18),
-                            Skeleton(width: 60, height: 20, borderRadius: 12),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        Skeleton(width: double.infinity, height: 14),
-                        SizedBox(height: 6),
-                        Skeleton(width: 200, height: 14),
-                        SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Skeleton(width: 80, height: 22, borderRadius: 12),
-                            Skeleton(width: 70, height: 16),
-                          ],
-                        ),
+                        Skeleton(width: 140, height: 18),
+                        Skeleton(width: 60, height: 20, borderRadius: 12),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    const Skeleton(width: double.infinity, height: 14),
+                    const SizedBox(height: 6),
+                    const Skeleton(width: 200, height: 14),
+                    const SizedBox(height: 14),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Skeleton(width: 80, height: 22, borderRadius: 12),
+                        Skeleton(width: 70, height: 16),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
+    );
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      prototypeItem: skeletonItem,
+      itemCount: 8,
+      itemBuilder: (context, index) => skeletonItem,
     );
   }
 }
