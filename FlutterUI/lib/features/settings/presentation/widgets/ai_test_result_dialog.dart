@@ -19,7 +19,9 @@ class AITestResultDialog extends StatelessWidget {
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
       icon: Icon(
-        isSuccess ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+        isSuccess
+            ? Icons.check_circle_outline_rounded
+            : Icons.error_outline_rounded,
         color: isSuccess ? theme.colorScheme.primary : theme.colorScheme.error,
         size: 32,
       ),
@@ -28,6 +30,7 @@ class AITestResultDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: msg.isNotEmpty
           ? SingleChildScrollView(
@@ -37,7 +40,9 @@ class AITestResultDialog extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ),
                 child: Padding(

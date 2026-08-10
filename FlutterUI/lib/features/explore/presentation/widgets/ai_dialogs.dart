@@ -42,7 +42,24 @@ class AIMarkdownDialog extends StatelessWidget {
 
     return SingleChildScrollView(
       key: const ValueKey('loaded'),
-      child: MarkdownBody(data: data, selectable: true),
+      child: Builder(
+        builder: (context) => Card(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: MarkdownBody(data: data, selectable: true),
+          ),
+        ),
+      ),
     );
   }
 
@@ -50,12 +67,13 @@ class AIMarkdownDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(title),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        textAlign: TextAlign.center,
       ),
       content: SizedBox(
         width: width,
@@ -88,12 +106,13 @@ class AICliDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiCliTitle),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        AppLocalizations.of(context)!.aiCliTitle,
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        textAlign: TextAlign.center,
       ),
       content: FutureBuilder<String>(
         future: future,
@@ -114,15 +133,25 @@ class AICliDialog extends StatelessWidget {
                     key: const ValueKey('loaded'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(8),
+                      Card(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          ),
                         ),
-                        child: Text(
-                          cmd,
-                          style: const TextStyle(fontFamily: 'monospace'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            cmd,
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),

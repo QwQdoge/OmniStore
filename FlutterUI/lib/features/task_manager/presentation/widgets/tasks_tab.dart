@@ -36,7 +36,11 @@ class TasksTab extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(top: 24.0, left: 24.0, right: 24.0),
+              padding: const EdgeInsets.only(
+                top: 24.0,
+                left: 24.0,
+                right: 24.0,
+              ),
               child: SmoothSizeSwitcher(
                 alignment: Alignment.topCenter,
                 child: isBusy
@@ -99,9 +103,12 @@ class TasksTab extends StatelessWidget {
                                       FilledButton.icon(
                                         onPressed: () => showDialog(
                                           context: context,
-                                          builder: (_) => const TerminalDialog(),
+                                          builder: (_) =>
+                                              const TerminalDialog(),
                                         ),
-                                        icon: const Icon(Icons.terminal_rounded),
+                                        icon: const Icon(
+                                          Icons.terminal_rounded,
+                                        ),
                                         label: Text(l10n.terminalOutput),
                                       ),
                                     ],
@@ -113,7 +120,9 @@ class TasksTab extends StatelessWidget {
                           const SizedBox(height: 32),
                         ],
                       )
-                    : const SizedBox.shrink(key: ValueKey('active_task_hidden')),
+                    : const SizedBox.shrink(
+                        key: ValueKey('active_task_hidden'),
+                      ),
               ),
             ),
           ),
@@ -138,8 +147,9 @@ class TasksTab extends StatelessWidget {
                                 ),
                               ),
                               TextButton.icon(
-                                onPressed: () =>
-                                    context.read<TaskController>().clearHistory(),
+                                onPressed: () => context
+                                    .read<TaskController>()
+                                    .clearHistory(),
                                 icon: const Icon(
                                   Icons.delete_sweep_rounded,
                                   size: 18,
@@ -151,110 +161,111 @@ class TasksTab extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                       )
-                    : const SizedBox.shrink(key: ValueKey('task_history_header_hidden')),
+                    : const SizedBox.shrink(
+                        key: ValueKey('task_history_header_hidden'),
+                      ),
               ),
             ),
           ),
           if (historyLength > 0)
             SliverPadding(
-              padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-              sliver: Selector<
-                TaskController,
-                ({int length, List<TaskState> history})
-              >(
-                selector: (context, c) => (
-                  length: c.completedTasks.length,
-                  history: c.completedTasks,
-                ),
-                shouldRebuild: (prev, next) =>
-                    prev.length != next.length ||
-                    !const IterableEquality().equals(
-                      prev.history,
-                      next.history,
+              padding: const EdgeInsets.only(
+                left: 24.0,
+                right: 24.0,
+                bottom: 24.0,
+              ),
+              sliver:
+                  Selector<
+                    TaskController,
+                    ({int length, List<TaskState> history})
+                  >(
+                    selector: (context, c) => (
+                      length: c.completedTasks.length,
+                      history: c.completedTasks,
                     ),
-                builder: (context, data, child) {
-                  final history = data.history;
-                  return SliverList.builder(
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      final task = history[index];
-                      final isSuccess = task.status == TaskStatus.success;
-                      return AppCard(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        borderRadius: 12.0,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: isSuccess
-                                ? Colors.green.shade50
-                                : Colors.red.shade50,
-                            child: Icon(
-                              isSuccess
-                                  ? Icons.check_circle_rounded
-                                  : Icons.error_rounded,
-                              color: isSuccess
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                task.packageName ?? l10n.unknownApp,
+                    shouldRebuild: (prev, next) =>
+                        prev.length != next.length ||
+                        !const IterableEquality().equals(
+                          prev.history,
+                          next.history,
+                        ),
+                    builder: (context, data, child) {
+                      final history = data.history;
+                      return SliverList.builder(
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          final task = history[index];
+                          final isSuccess = task.status == TaskStatus.success;
+                          return AppCard(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            borderRadius: 12.0,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: isSuccess
+                                    ? Colors.green.shade50
+                                    : Colors.red.shade50,
+                                child: Icon(
+                                  isSuccess
+                                      ? Icons.check_circle_rounded
+                                      : Icons.error_rounded,
+                                  color: isSuccess ? Colors.green : Colors.red,
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    task.packageName ?? l10n.unknownApp,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primaryContainer,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      task.stage,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme
+                                            .colorScheme
+                                            .onPrimaryContainer,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Text(
+                                isSuccess
+                                    ? l10n.taskSuccessMsg
+                                    : l10n.failureReason(task.message),
+                                style: TextStyle(
+                                  color: isSuccess
+                                      ? Colors.grey
+                                      : Colors.red.shade900,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              trailing: Text(
+                                task.source ?? "",
                                 style: const TextStyle(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme
-                                      .colorScheme
-                                      .primaryContainer,
-                                  borderRadius: BorderRadius.circular(
-                                    6,
-                                  ),
-                                ),
-                                child: Text(
-                                  task.stage,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme
-                                        .colorScheme
-                                        .onPrimaryContainer,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            isSuccess
-                                ? l10n.taskSuccessMsg
-                                : l10n.failureReason(task.message),
-                            style: TextStyle(
-                              color: isSuccess
-                                  ? Colors.grey
-                                  : Colors.red.shade900,
-                              fontSize: 12,
                             ),
-                          ),
-                          trailing: Text(
-                            task.source ?? "",
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
             ),
         ],
       );

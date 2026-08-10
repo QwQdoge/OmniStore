@@ -43,6 +43,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -60,7 +61,9 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.3,
+                  ),
                 ),
               ),
               child: CheckboxListTile(
@@ -139,11 +142,7 @@ class _DecisionSectionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  color: foregroundColor,
-                  size: 20,
-                ),
+                Icon(icon, color: foregroundColor, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -195,10 +194,7 @@ class _DecisionSectionCard extends StatelessWidget {
 class InstallationDecisionDialog extends StatelessWidget {
   final Map<String, dynamic> decision;
 
-  const InstallationDecisionDialog({
-    super.key,
-    required this.decision,
-  });
+  const InstallationDecisionDialog({super.key, required this.decision});
 
   @override
   Widget build(BuildContext context) {
@@ -218,6 +214,7 @@ class InstallationDecisionDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -233,13 +230,16 @@ class InstallationDecisionDialog extends StatelessWidget {
                 items: decision['reasons'] as List? ?? const [],
               ),
             ],
-            if ((decision['preflightChecks'] as List? ?? const []).isNotEmpty) ...[
+            if ((decision['preflightChecks'] as List? ?? const [])
+                .isNotEmpty) ...[
               const SizedBox(height: 16),
               _DecisionSectionCard(
                 backgroundColor: theme.colorScheme.surfaceContainerLow,
                 foregroundColor: theme.colorScheme.onSurface,
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.3,
+                  ),
                 ),
                 icon: Icons.playlist_add_check_rounded,
                 title: localizations.preflightChecks,
@@ -296,6 +296,7 @@ class AurSecurityDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: Text(
         localizations.aurSecurityDesc,

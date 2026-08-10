@@ -19,7 +19,8 @@ class PackageRepository {
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
-  Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
+  Future<Map<String, List<AppPackage>>>? get activeFetchFuture =>
+      _activeFetchFuture;
   DateTime? _lastFetchTime;
 
   // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
@@ -105,7 +106,9 @@ class PackageRepository {
       _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
       if (_sourceSearchCache.length > _maxCacheSize) {
         final oldestKey = _sourceSearchCache.entries
-            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
+            .reduce(
+              (a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b,
+            )
             .key;
         _sourceSearchCache.remove(oldestKey);
       }

@@ -58,7 +58,24 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
 
     return SingleChildScrollView(
       key: const ValueKey('loaded'),
-      child: MarkdownBody(data: data, selectable: true),
+      child: Builder(
+        builder: (context) => Card(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: MarkdownBody(data: data, selectable: true),
+          ),
+        ),
+      ),
     );
   }
 
@@ -66,12 +83,13 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiChangelogTitle),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        AppLocalizations.of(context)!.aiChangelogTitle,
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        textAlign: TextAlign.center,
       ),
       content: SizedBox(
         width: 500,

@@ -196,12 +196,9 @@ class _SearchPageState extends State<SearchPage> {
                   : ResponsiveLayoutBuilder(
                       builder: (context, isDesktop) {
                         return Selector<
-                            BrowseController,
-                            ({
-                              List<AppPackage> filteredResults,
-                              bool isSearching,
-                            })
-                          >(
+                          BrowseController,
+                          ({List<AppPackage> filteredResults, bool isSearching})
+                        >(
                           selector: (context, b) {
                             final results = b.searchResults;
 

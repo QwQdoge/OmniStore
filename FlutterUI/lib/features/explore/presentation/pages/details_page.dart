@@ -295,7 +295,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 onSourceSelected: (String newValue) {
                   setState(() {
                     _selectedSource = newValue;
-                    _isAppInstalled = _getVariantForSource(newValue)?.installed ?? false;
+                    _isAppInstalled =
+                        _getVariantForSource(newValue)?.installed ?? false;
                   });
                 },
                 onLocateApp: _locateApp,
@@ -372,8 +373,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
     return null;
   }
-
-
 
   void _showScreenshotViewer(String url) {
     showDialog(

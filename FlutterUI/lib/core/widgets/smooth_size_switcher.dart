@@ -32,7 +32,8 @@ class SmoothSizeSwitcher extends StatelessWidget {
         duration: duration,
         switchInCurve: switchInCurve,
         switchOutCurve: switchOutCurve,
-        transitionBuilder: transitionBuilder ?? AnimatedSwitcher.defaultTransitionBuilder,
+        transitionBuilder:
+            transitionBuilder ?? AnimatedSwitcher.defaultTransitionBuilder,
         child: child,
       ),
     );

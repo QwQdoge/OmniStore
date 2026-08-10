@@ -36,6 +36,7 @@ class ImportPackagesDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: Text(
         contentText,

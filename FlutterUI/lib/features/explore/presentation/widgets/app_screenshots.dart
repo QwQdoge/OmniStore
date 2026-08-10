@@ -37,7 +37,8 @@ class AppScreenshots extends StatelessWidget {
           itemCount: screenshots.length,
           itemBuilder: (context, index) {
             final imageUrl = screenshots[index];
-            final labelText = "${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}";
+            final labelText =
+                "${AppLocalizations.of(context)!.screenshots} ${index + 1}/${screenshots.length}";
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Tooltip(

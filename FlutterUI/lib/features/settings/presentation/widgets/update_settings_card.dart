@@ -69,12 +69,17 @@ class UpdateSettingsCard extends StatelessWidget {
                   l10n.checkIntervalSubtitle(data.checkIntervalHours),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.5,
+                      ),
                       width: 1,
                     ),
                   ),
@@ -97,9 +102,9 @@ class UpdateSettingsCard extends StatelessWidget {
                       }).toList(),
                       onChanged: (val) {
                         if (val != null) {
-                          context.read<SettingsController>().setCheckIntervalHours(
-                            val,
-                          );
+                          context
+                              .read<SettingsController>()
+                              .setCheckIntervalHours(val);
                         }
                       },
                     ),
