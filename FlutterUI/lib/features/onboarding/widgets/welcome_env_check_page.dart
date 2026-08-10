@@ -69,134 +69,151 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                     ),
                   )
                 : envData == null
-                    ? Center(
-                        key: const ValueKey('error'),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 40),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.error_outline_rounded,
-                                size: 48,
-                                color: theme.colorScheme.error,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Failed to fetch environment details.',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: onCheckEnvironment,
-                                icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : Column(
-                        key: const ValueKey('content'),
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                ? Center(
+                    key: const ValueKey('error'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
                         children: [
-                          _buildEnvStatusHeader(level, l10n, theme),
-                          const SizedBox(height: 20),
-                          if (level == 'warning') ...[
-                            WelcomeConfigCard(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 48,
+                            color: theme.colorScheme.error,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Failed to fetch environment details.',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          FilledButton.icon(
+                            onPressed: onCheckEnvironment,
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Column(
+                    key: const ValueKey('content'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildEnvStatusHeader(level, l10n, theme),
+                      const SizedBox(height: 20),
+                      if (level == 'warning') ...[
+                        WelcomeConfigCard(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.info_outline_rounded,
-                                          size: 18,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            l10n.bootstrapNote,
-                                            style: theme.textTheme.bodySmall?.copyWith(
-                                              color: theme.colorScheme.onSurfaceVariant,
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 18,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.bootstrapNote,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
                                               fontWeight: FontWeight.bold,
                                             ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: FilledButton.icon(
-                                        onPressed: isBootstrapping ? null : onStartBootstrap,
-                                        icon: const Icon(Icons.build_rounded),
-                                        label: Text(l10n.fixProblems),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          if (isBootstrapping || bootstrapLogs.isNotEmpty) ...[
-                            Text(
-                              'Bootstrap progress:',
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (isBootstrapping) ...[
-                              const LinearProgressIndicator(),
-                              const SizedBox(height: 8),
-                            ],
-                            Container(
-                              height: 180,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerLow,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: theme.colorScheme.outlineVariant,
-                                  width: 0.5,
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              child: SingleChildScrollView(
-                                controller: terminalScrollController,
-                                child: SelectableText(
-                                  bootstrapLogs,
-                                  style: const TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 11,
-                                    height: 1.4,
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton.icon(
+                                    onPressed: isBootstrapping
+                                        ? null
+                                        : onStartBootstrap,
+                                    icon: const Icon(Icons.build_rounded),
+                                    label: Text(l10n.fixProblems),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          Text(
-                            'System details:',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          _buildEnvDetailsGrid(envData!, theme),
-                        ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (isBootstrapping || bootstrapLogs.isNotEmpty) ...[
+                        Text(
+                          'Bootstrap progress:',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SmoothSizeSwitcher(
+                          alignment: Alignment.topCenter,
+                          child: isBootstrapping
+                              ? const Column(
+                                  key: ValueKey('bootstrapping'),
+                                  children: [
+                                    LinearProgressIndicator(),
+                                    SizedBox(height: 8),
+                                  ],
+                                )
+                              : const SizedBox.shrink(key: ValueKey('idle')),
+                        ),
+                        Container(
+                          height: 180,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.outlineVariant,
+                              width: 0.5,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          child: SingleChildScrollView(
+                            controller: terminalScrollController,
+                            child: SelectableText(
+                              bootstrapLogs,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      Text(
+                        'System details:',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                      const SizedBox(height: 8),
+                      _buildEnvDetailsGrid(envData!, theme),
+                    ],
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEnvStatusHeader(String level, AppLocalizations l10n, ThemeData theme) {
+  Widget _buildEnvStatusHeader(
+    String level,
+    AppLocalizations l10n,
+    ThemeData theme,
+  ) {
     final IconData icon;
     final Color color;
     final String text;
@@ -278,12 +295,7 @@ class WelcomeEnvCheckPage extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: color),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  message,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
+              Expanded(child: Text(message, style: theme.textTheme.bodyMedium)),
               Text(
                 status.toUpperCase(),
                 style: theme.textTheme.bodySmall?.copyWith(
