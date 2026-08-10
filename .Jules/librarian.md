@@ -158,3 +158,12 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 **Action:**
 - Removed `late List<CategoryItem> _categories;` and the `didChangeDependencies()` overrides from `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
 - Shifted the evaluation to `final categories = CategoryService.getCategories(context);` directly within each widget's `build()` method. This guarantees the UI always reflects the most up-to-date localizations and themes on every rebuild without duplicating state.
+
+## 2026-08-10 - State Management: Fixing State Duplication and Merge Conflict Errors
+
+**Learning:** Addressed redundant widget rebuild state by removing duplicated `categories = CategoryService.getCategories(context)` declarations in UI components. In addition, when resolving complex `DropdownButtonFormField` merge conflicts in forms, ensure the inner `DropdownMenuItem` children and properties map correctly to the parent widget. Do not mistakenly drop `child:` properties or map properties improperly onto `Container` wrappers. Resolved lingering broken syntax in `WelcomeAiPage` and `AddSourceDialog` after botched Git merges.
+
+**Action:**
+- Removed redundant local variables in `home_page.dart`, `category_page.dart`, and `discovery_content.dart`.
+- Fixed broken `DropdownButtonFormField` syntax in `welcome_ai_page.dart` to properly supply the `items` property.
+- Fixed broken git conflict markers and nested list typing errors inside `add_source_dialog.dart`.
