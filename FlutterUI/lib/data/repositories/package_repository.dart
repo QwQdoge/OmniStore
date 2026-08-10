@@ -426,7 +426,54 @@ class PackageRepository {
     });
   }
 
-  Future<AppPackage?> getAppDetails(String appId) async {
+  // ⚡ Bolt: In-memory details cache to prevent redundant heavy network calls or subprocess spawning
+  static final Map<String, AppPackage> _detailsCache = {};
+  // ⚡ Bolt: Active request coalescing map to deduplicate duplicate simultaneous details requests
+  static final Map<String, Future<AppPackage?>> _activeDetailsRequests = {};
+
+  static void clearDetailsCacheFor(String appId) {
+    _detailsCache.remove(appId);
+    debugPrint("Details cache cleared for $appId");
+  }
+
+  static void clearAllDetailsCache() {
+    _detailsCache.clear();
+    _activeDetailsRequests.clear();
+    debugPrint("All details cache cleared");
+  }
+
+  Future<AppPackage?> getAppDetails(String appId, {bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      _detailsCache.remove(appId);
+    } else {
+      final cached = _detailsCache[appId];
+      if (cached != null) {
+        // Return from cache to eliminate redundant network/IPC/subprocess calls
+        return cached;
+      }
+    }
+
+    // Active request deduplication (coalescing) to prevent duplicate simultaneous calls
+    final activeRequest = _activeDetailsRequests[appId];
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final future = _getAppDetailsImpl(appId);
+    _activeDetailsRequests[appId] = future;
+
+    try {
+      final result = await future;
+      if (result != null) {
+        _detailsCache[appId] = result;
+      }
+      return result;
+    } finally {
+      _activeDetailsRequests.remove(appId);
+    }
+  }
+
+  Future<AppPackage?> _getAppDetailsImpl(String appId) async {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {
