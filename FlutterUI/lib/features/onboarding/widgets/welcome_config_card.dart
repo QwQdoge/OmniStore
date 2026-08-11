@@ -13,10 +13,7 @@ class WelcomeConfigCard extends StatelessWidget {
       color: theme.colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: theme.colorScheme.outlineVariant,
-          width: 0.3,
-        ),
+        side: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.3),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),

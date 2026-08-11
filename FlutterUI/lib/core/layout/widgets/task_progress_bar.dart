@@ -69,9 +69,7 @@ class TaskProgressBar extends StatelessWidget {
                 ),
                 if (data.progress != null && data.progress! >= 0)
                   TweenAnimationBuilder<double>(
-                    tween: Tween<double>(
-                      end: data.progress!.clamp(0.0, 1.0),
-                    ),
+                    tween: Tween<double>(end: data.progress!.clamp(0.0, 1.0)),
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
                     builder: (context, value, _) {

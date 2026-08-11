@@ -19,34 +19,34 @@ class HamburgerButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: IconButton.filledTonal(
-          onPressed: onToggle,
-          tooltip: isExpanded ? l10n.collapse : l10n.expand,
-          style: IconButton.styleFrom(
-            fixedSize: const Size(48, 48),
-            backgroundColor: isExpanded
-                ? scheme.primaryContainer
-                : scheme.surfaceContainerHighest,
-            foregroundColor: isExpanded
-                ? scheme.onPrimaryContainer
-                : scheme.onSurfaceVariant,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          icon: SmoothSizeSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.fastOutSlowIn,
-            transitionBuilder: (child, anim) => RotationTransition(
-              turns: Tween(begin: 0.5, end: 1.0).animate(anim),
-              child: child,
-            ),
-            child: Icon(
-              isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
-              key: ValueKey(isExpanded),
-            ),
+        onPressed: onToggle,
+        tooltip: isExpanded ? l10n.collapse : l10n.expand,
+        style: IconButton.styleFrom(
+          fixedSize: const Size(48, 48),
+          backgroundColor: isExpanded
+              ? scheme.primaryContainer
+              : scheme.surfaceContainerHighest,
+          foregroundColor: isExpanded
+              ? scheme.onPrimaryContainer
+              : scheme.onSurfaceVariant,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
+        icon: SmoothSizeSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.fastOutSlowIn,
+          transitionBuilder: (child, anim) => RotationTransition(
+            turns: Tween(begin: 0.5, end: 1.0).animate(anim),
+            child: child,
+          ),
+          child: Icon(
+            isExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
+            key: ValueKey(isExpanded),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -8,7 +8,13 @@ void main() {
 
   test('systemd background unit is oneshot and cannot restart-loop', () {
     final updateService = File(
-      p.join(projectRoot, 'FlutterUI', 'lib', 'services', 'update_service.dart'),
+      p.join(
+        projectRoot,
+        'FlutterUI',
+        'lib',
+        'services',
+        'update_service.dart',
+      ),
     ).readAsStringSync();
 
     expect(updateService, contains('Type=oneshot'));
@@ -21,7 +27,13 @@ void main() {
 
   test('systemd disable path removes installed user unit files', () {
     final updateService = File(
-      p.join(projectRoot, 'FlutterUI', 'lib', 'services', 'update_service.dart'),
+      p.join(
+        projectRoot,
+        'FlutterUI',
+        'lib',
+        'services',
+        'update_service.dart',
+      ),
     ).readAsStringSync();
 
     expect(updateService, contains("'disable'"));
@@ -47,7 +59,9 @@ void main() {
       ),
     ).readAsStringSync();
 
-    final systemdSwitchStart = settingsPage.indexOf('l10n.enableSystemdService');
+    final systemdSwitchStart = settingsPage.indexOf(
+      'l10n.enableSystemdService',
+    );
     expect(systemdSwitchStart, greaterThanOrEqualTo(0));
     final systemdSwitchBlock = settingsPage.substring(
       systemdSwitchStart,
@@ -61,8 +75,17 @@ void main() {
     final pkgbuild = File(p.join(projectRoot, 'PKGBUILD')).readAsStringSync();
 
     expect(pkgbuild, contains('omnistore-cleanup-systemd'));
-    expect(pkgbuild, contains('systemctl --user disable --now omnistore-update.timer'));
-    expect(pkgbuild, contains('rm -f "\$HOME/.config/systemd/user/omnistore-update.timer"'));
-    expect(pkgbuild, contains('rm -f "\$HOME/.config/systemd/user/omnistore-update.service"'));
+    expect(
+      pkgbuild,
+      contains('systemctl --user disable --now omnistore-update.timer'),
+    );
+    expect(
+      pkgbuild,
+      contains('rm -f "\$HOME/.config/systemd/user/omnistore-update.timer"'),
+    );
+    expect(
+      pkgbuild,
+      contains('rm -f "\$HOME/.config/systemd/user/omnistore-update.service"'),
+    );
   });
 }

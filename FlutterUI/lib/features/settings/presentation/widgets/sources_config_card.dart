@@ -176,11 +176,16 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   leading: const Icon(Icons.code_rounded),
                   title: const Text("GitHub Integration"),
                   subtitle: const Text("Configure Personal Access Token"),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const GitHubIntegrationPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const GitHubIntegrationPage(),
+                      ),
                     );
                   },
                 ),

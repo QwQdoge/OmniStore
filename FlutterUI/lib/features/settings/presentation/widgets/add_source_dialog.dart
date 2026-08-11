@@ -75,13 +75,8 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
       icon: Icon(
-<<<<<<< HEAD
-        Icons.add_circle_outline_rounded,
-        color: Theme.of(context).colorScheme.primary,
-=======
         Icons.add_link_rounded,
         color: theme.colorScheme.primary,
->>>>>>> origin/main
         size: 32,
       ),
       title: Text(
@@ -95,92 +90,56 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: _type,
-              borderRadius: BorderRadius.circular(12),
-              icon: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              decoration: InputDecoration(
-                labelText: widget.l10n.sourceType,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 1,
                 ),
               ),
-              items: [
-                DropdownMenuItem(
-                  value: "github",
-                  child: Text(widget.l10n.githubRepoType),
->>>>>>> origin/main
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
-                      width: 1,
-                    ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: _type,
+                  borderRadius: BorderRadius.circular(12),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: _type,
-                      borderRadius: BorderRadius.circular(12),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      icon: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: "github",
-                          child: Text(widget.l10n.githubRepoType),
-                        ),
-                        DropdownMenuItem(
-                          value: "bitu",
-                          child: Text(widget.l10n.bituRepoType),
-                        ),
-                        DropdownMenuItem(
-                          value: "flatpak",
-                          child: Text(widget.l10n.flatpakRemoteType),
-                        ),
-                        DropdownMenuItem(
-                          value: "appimage",
-                          child: Text(widget.l10n.appImageFeedType),
-                        ),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => _type = val);
-                        }
-                      },
-                    ),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+                  items: [
+                    DropdownMenuItem(
+                      value: "github",
+                      child: Text(widget.l10n.githubRepoType),
+                    ),
+                    DropdownMenuItem(
+                      value: "bitu",
+                      child: Text(widget.l10n.bituRepoType),
+                    ),
+                    DropdownMenuItem(
+                      value: "flatpak",
+                      child: Text(widget.l10n.flatpakRemoteType),
+                    ),
+                    DropdownMenuItem(
+                      value: "appimage",
+                      child: Text(widget.l10n.appImageFeedType),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() => _type = val);
+                    }
+                  },
                 ),
-              ],
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -194,7 +153,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -226,7 +187,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
