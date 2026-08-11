@@ -234,7 +234,7 @@ class _AccountPageState extends State<AccountPage> {
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: AnimatedSwitcher(
+              child: SmoothSizeSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: _isLoading
                   ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
