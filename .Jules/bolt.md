@@ -141,3 +141,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Frequently navigating back and forth or switching tabs within store/source-specific views (like Flatpak or GitHub) triggers redundant, expensive daemon subprocess searches or external network API calls. Caching these queries under a short, 5-minute TTL inside `PackageRepository` eliminates this duplicate overhead, realizing instantaneous tab switching and page re-entry.
 
 **Action:** Implemented a targeted `_sourceSearchCache` in `PackageRepository` for all `"source:"` prefixed queries with an LRU limit of 20. Leveraged a `forceRefresh` parameter to allow manual pull-to-refresh or retry actions to bypass the cache and successfully retrieve fresh data.
+
+## 2026-08-03 - Details Page Cache and Request Coalescing Optimization
+
+**Learning:** When navigating to details pages or rebuilding subtrees, multiple widgets or frequent re-entry can trigger duplicate async requests for the same package details. This causes redundant, blocking IPC daemon calls and heavy network queries. Implementing an in-memory cache and request coalescing map in `PackageRepository.getAppDetails` prevents duplicate calls, making page navigation instant and reducing CPU/network overhead.
+
+**Action:** Implemented `_detailsCache` and `_activeDetailsRequests` maps in `PackageRepository` to store fetched package details and deduplicate in-flight requests. Integrated `clearDetailsCacheFor` to clear the cache upon successful package actions (install/uninstall/update) in `details_page.dart`.

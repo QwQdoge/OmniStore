@@ -26,6 +26,10 @@ class PackageRepository {
   // and daemon-side subprocess execution on frequent page re-entry and tab switching.
   final Map<String, _CachedSearchResult> _sourceSearchCache = {};
 
+  // ⚡ Bolt: Cache and request coalescing map for AppDetails to prevent redundant daemon calls/IPC
+  final Map<String, AppPackage> _detailsCache = {};
+  final Map<String, Future<AppPackage?>> _activeDetailsRequests = {};
+
   static final List<AppPackage> _editorialFeatured =
       [
             ['Firefox', 'org.mozilla.firefox', 'Fast, private web browsing.'],
@@ -426,7 +430,36 @@ class PackageRepository {
     });
   }
 
-  Future<AppPackage?> getAppDetails(String appId) async {
+  Future<AppPackage?> getAppDetails(String appId, {bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      _detailsCache.remove(appId);
+      _activeDetailsRequests.remove(appId);
+    }
+
+    if (_detailsCache.containsKey(appId)) {
+      return _detailsCache[appId];
+    }
+
+    final activeRequest = _activeDetailsRequests[appId];
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final Future<AppPackage?> future = _getAppDetailsImpl(appId);
+    _activeDetailsRequests[appId] = future;
+
+    try {
+      final details = await future;
+      if (details != null) {
+        _detailsCache[appId] = details;
+      }
+      return details;
+    } finally {
+      _activeDetailsRequests.remove(appId);
+    }
+  }
+
+  Future<AppPackage?> _getAppDetailsImpl(String appId) async {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {
@@ -478,6 +511,11 @@ class PackageRepository {
       }
     }
     return BackendService.instance.getAppDetails(appId);
+  }
+
+  void clearDetailsCacheFor(String appId) {
+    _detailsCache.remove(appId);
+    _activeDetailsRequests.remove(appId);
   }
 
   Future<List<dynamic>> getEssentials() async {

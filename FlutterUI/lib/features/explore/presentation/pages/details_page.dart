@@ -210,6 +210,13 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     if (!mounted) return;
 
+    if (success) {
+      final packageRepo = context.read<PackageRepository>();
+      packageRepo.clearDetailsCacheFor(widget.app.id ?? "");
+      packageRepo.clearDetailsCacheFor(widget.app.name);
+      packageRepo.clearDetailsCacheFor(targetIdentifier);
+    }
+
     setState(() {
       if (success) {
         if (flag == "-I") {
