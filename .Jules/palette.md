@@ -1,3 +1,9 @@
+## 2026-08-06 - Material Design 3 Dropdown Form Standardization
+
+**Learning:** Nesting a standard `DropdownButton` inside the `child` of a `DropdownButtonFormField` is an invalid/unsupported configuration in Flutter that results in duplicate layout boundaries, overlapping interactive states, and severe static analysis/compile errors. Standardizing to a flat `DropdownButtonFormField` with `value`, `borderRadius: BorderRadius.circular(12)`, custom M3 outline borders, and symmetric `contentPadding` eliminates styling inconsistencies and guarantees correct keyboard and screen-reader accessibility. Note that while some newer SDK lint warnings might recommend `initialValue` over `value` for static forms, keeping the `value` parameter is essential in stateless or dynamically driven widgets to ensure the dropdown continues to receive and reflect reactive state updates from its parent controller correctly.
+
+**Action:** Standardize all dropdown selects in form configurations to use a clean, flat `DropdownButtonFormField` widget without nesting `DropdownButton` inside, utilizing the standard `value` parameter to maintain responsive dynamic state synchronization, and styled with 12dp border radius MD3 outline decorators.
+
 ## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
 
 **Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.
@@ -91,7 +97,7 @@
 
 **Learning:** `AnimatedSize` combined with `AnimatedSwitcher` is a powerful pattern for handling the appearance of layout-altering elements like task bars without causing jarring shifts. Using this around conditionally rendered sections like the active task block and task history lists prevents sudden jumps in the UI.
 
-**Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart`.
+**Action:** Applied `AnimatedSize` and `AnimatedSwitcher` wrappers to the active task and history blocks in `TasksTab` (FlutterUI/lib/features/task_manager/presentation/widgets/tasks_tab.dart).
 
 ## 2026-06-25 - Standardized Geometry and Accessibility for MD3
 
