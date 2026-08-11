@@ -93,3 +93,5 @@ Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable g
 - Mapped key terms: `activity` -> '任务动态'/'任務動態', `source` -> '软件源'/'軟體源', `variant` -> '分发版本'/'分發版本', `loggingLevel` -> '日志级别'/'日誌級別', `license` -> '许可证'/'授權條款', and `dependenciesCount` -> '依赖项'/'依賴項'.
 - Updated `python/polish_l10n.py` and `python/sync_l10n.py` to ensure consistency and prevent regression.
 - Corrected Traditional Chinese orthography ('後' vs '后') in `app_zh_Hant.arb` and `python/polish_l10n.py`.
+## 2026-08-07 - Button Consistency: Standardizing Dialog Actions
+- Replaced the primary dismissal action `TextButton` with `FilledButton` across several informational dialogs (`AITestResultDialog`, `AIMarkdownDialog`, `AICliDialog`, `AIUpdateSummaryDialog`, and `ApiKeyInstructionsDialog`). This ensures visual consistency with the rest of the application, standardizing primary confirmation and dismissal actions on `FilledButton`.
