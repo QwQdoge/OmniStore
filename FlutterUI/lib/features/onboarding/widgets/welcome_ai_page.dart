@@ -90,10 +90,6 @@ class WelcomeAiPage extends StatelessWidget {
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 value: aiProvider,
-                                icon: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -116,31 +112,17 @@ class WelcomeAiPage extends StatelessWidget {
                                     vertical: 8,
                                   ),
                                 ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    isExpanded: true,
-                                    value: aiProvider,
-                                    borderRadius: BorderRadius.circular(12),
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                    icon: Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: 'ollama',
-                                        child: Text('Ollama (Local / Offline)'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'openai',
-                                        child: Text('OpenAI API (Cloud)'),
-                                      ),
-                                    ],
-                                    onChanged: onAiProviderChanged,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'ollama',
+                                    child: Text('Ollama (Local / Offline)'),
                                   ),
-                                ),
+                                  DropdownMenuItem(
+                                    value: 'openai',
+                                    child: Text('OpenAI API (Cloud)'),
+                                  ),
+                                ],
+                                onChanged: onAiProviderChanged,
                               ),
                               const SizedBox(height: 16),
                               TextField(

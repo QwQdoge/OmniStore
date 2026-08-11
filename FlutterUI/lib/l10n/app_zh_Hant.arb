@@ -756,15 +756,15 @@
   "@sourceType": {
     "description": "Label for source type"
   },
-  "githubRepoType": "GitHub 倉庫（owner/repo）",
+  "githubRepoType": "GitHub 存放庫（owner/repo）",
   "@githubRepoType": {
     "description": "GitHub source type option"
   },
-  "bituRepoType": "Bitu / Bitbucket（工作區/倉庫）",
+  "bituRepoType": "Bitu / Bitbucket（工作區/存放庫）",
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端軟體存放庫",
+  "flatpakRemoteType": "Flatpak 遠端軟體源",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -780,7 +780,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "軟體源地址（owner/repo）",
+  "repoOwnerRepo": "軟體源位址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -796,7 +796,7 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名稱和連結/軟體源地址不能為空",
+  "errorNameUrlRequired": "名稱和連結/軟體源位址不能為空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
@@ -977,7 +977,7 @@
   "ok": "確定",
   "checkNetwork": "請檢查網路連線並重試",
   "githubStoreSubtitle": "直接從 GitHub Releases 發現並下載應用程式",
-  "searchGithubHint": "搜尋 GitHub 倉庫...",
+  "searchGithubHint": "搜尋 GitHub 存放庫...",
   "recommended": "推薦",
   "rankings": "排行榜",
   "trending": "熱度榜",
@@ -1164,7 +1164,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。",
+  "aiPickDisclaimer": "條件可用。推薦基於您的使用習慣和目前設定產生，不會影響具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
