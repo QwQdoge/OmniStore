@@ -16,10 +16,24 @@ class _CachedSearchResult {
 }
 
 class PackageRepository {
+  // Singleton pattern to ensure all references (provider & direct constructor) share the same cache
+  static final PackageRepository _instance = PackageRepository._internal();
+  factory PackageRepository() => _instance;
+  PackageRepository._internal();
+
+  // ⚡ Bolt: Details cache and request coalescing maps to prevent redundant network/IPC calls
+  final Map<String, AppPackage> _detailsCache = {};
+  final Map<String, Future<AppPackage?>> _activeDetailsRequests = {};
+
+  void clearDetailsCacheFor(String appId) {
+    _detailsCache.remove(appId);
+  }
+
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
-  Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
+  Future<Map<String, List<AppPackage>>>? get activeFetchFuture =>
+      _activeFetchFuture;
   DateTime? _lastFetchTime;
 
   // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
@@ -68,7 +82,6 @@ class PackageRepository {
     Map<String, List<AppPackage>> dynamic,
   ) => {...dynamic, 'featured': _editorialFeatured};
 
-  final Map<String, Map<String, dynamic>> _searchCache = {};
   static const int _maxCacheSize = 20;
 
   Future<List<AppPackage>> searchPackages(
@@ -105,7 +118,9 @@ class PackageRepository {
       _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
       if (_sourceSearchCache.length > _maxCacheSize) {
         final oldestKey = _sourceSearchCache.entries
-            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
+            .reduce(
+              (a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b,
+            )
             .key;
         _sourceSearchCache.remove(oldestKey);
       }
@@ -426,7 +441,37 @@ class PackageRepository {
     });
   }
 
-  Future<AppPackage?> getAppDetails(String appId) async {
+  Future<AppPackage?> getAppDetails(
+    String appId, {
+    bool forceRefresh = false,
+  }) async {
+    if (forceRefresh) {
+      clearDetailsCacheFor(appId);
+    }
+    if (_detailsCache.containsKey(appId)) {
+      return _detailsCache[appId];
+    }
+
+    final activeRequest = _activeDetailsRequests[appId];
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final future = _fetchAppDetails(appId);
+    _activeDetailsRequests[appId] = future;
+
+    try {
+      final result = await future;
+      if (result != null) {
+        _detailsCache[appId] = result;
+      }
+      return result;
+    } finally {
+      _activeDetailsRequests.remove(appId);
+    }
+  }
+
+  Future<AppPackage?> _fetchAppDetails(String appId) async {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {

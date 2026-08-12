@@ -210,6 +210,11 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
 
     if (!mounted) return;
 
+    if (success) {
+      final target = widget.app.id ?? widget.app.name;
+      context.read<PackageRepository>().clearDetailsCacheFor(target);
+    }
+
     setState(() {
       if (success) {
         if (flag == "-I") {
@@ -295,7 +300,8 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
                 onSourceSelected: (String newValue) {
                   setState(() {
                     _selectedSource = newValue;
-                    _isAppInstalled = _getVariantForSource(newValue)?.installed ?? false;
+                    _isAppInstalled =
+                        _getVariantForSource(newValue)?.installed ?? false;
                   });
                 },
                 onLocateApp: _locateApp,
@@ -372,8 +378,6 @@ class _AppDetailsPageState extends State<AppDetailsPage> {
     }
     return null;
   }
-
-
 
   void _showScreenshotViewer(String url) {
     showDialog(
