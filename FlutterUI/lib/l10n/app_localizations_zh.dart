@@ -312,7 +312,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refresh => '刷新';
 
   @override
-  String get noActiveTasks => '暂无活动中的任务';
+  String get noActiveTasks => '暂无进行中的任务';
 
   @override
   String get currentTask => '当前任务';
@@ -907,7 +907,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 仓库';
+      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源';
 
   @override
   String get sourceType => '软件源类型';
@@ -1169,7 +1169,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String recommendedSource(String source) {
-    return '推荐来源：$source';
+    return '推荐软件源：$source';
   }
 
   @override
@@ -1185,7 +1185,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '根据你的搜索、安装历史和当前可用来源生成；不会影响安装选择。';
+  String get aiPickDisclaimer => '条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -1291,10 +1291,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方軟體存放庫）';
+  String get pacmanOfficial => 'Pacman（官方軟體源）';
 
   @override
-  String get aurUser => 'AUR（使用者軟體存放庫）';
+  String get aurUser => 'AUR（使用者軟體源）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -1303,7 +1303,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '軟體存放庫優先級（拖曳排序）';
+  String get sourcePriority => '軟體源優先級（拖曳排序）';
 
   @override
   String get maxResults => '最大結果數';
@@ -1601,7 +1601,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get advanced => '進階';
 
   @override
-  String get repositories => '軟體存放庫';
+  String get repositories => '軟體源';
 
   @override
   String get aiSettings => 'AI 助手設定';
@@ -1759,10 +1759,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '軟體存放庫設定';
+  String get sourceConfigTitle => '軟體源設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇要啟用的軟體存放庫';
+  String get sourceConfigSubtitle => '選擇要啟用的軟體源';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
@@ -1877,7 +1877,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體存放庫，通常更穩定。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體源，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -1893,7 +1893,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR 是由社群維護的軟體存放庫。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
+      'AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -2020,7 +2020,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get next => '下一步';
 
   @override
-  String get aurFull => 'AUR（Arch 使用者軟體存放庫）';
+  String get aurFull => 'AUR（Arch 使用者軟體源）';
 
   @override
   String get flatpakFull => 'Flatpak（Flathub）';
@@ -2096,26 +2096,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get relatedApps => '相關應用程式';
 
   @override
-  String get activeSources => '已啟用軟體存放庫';
+  String get activeSources => '已啟用軟體源';
 
   @override
   String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '新增自訂軟體存放庫';
+  String get addCustomSource => '新增自訂軟體源';
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端軟體存放庫、AppImage 訂閱或 GitHub/Bitu 軟體存放庫';
+      '設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源';
 
   @override
-  String get sourceType => '軟體存放庫類型';
+  String get sourceType => '軟體源類型';
 
   @override
-  String get githubRepoType => 'GitHub 存放庫（owner/repo）';
+  String get githubRepoType => 'GitHub 倉庫（owner/repo）';
 
   @override
-  String get bituRepoType => 'Bitu / Bitbucket（工作區/存放庫）';
+  String get bituRepoType => 'Bitu / Bitbucket（工作區/倉庫）';
 
   @override
   String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
@@ -2124,13 +2124,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImageFeedType => 'AppImage 訂閱連結';
 
   @override
-  String get sourceName => '軟體存放庫名稱';
+  String get sourceName => '軟體源名稱';
 
   @override
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '軟體存放庫地址（owner/repo）';
+  String get repoOwnerRepo => '軟體源地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2142,19 +2142,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名稱和連結/軟體存放庫地址不能為空';
+  String get errorNameUrlRequired => '名稱和連結/軟體源地址不能為空';
 
   @override
-  String get addingCustomSource => '正在新增自訂軟體存放庫...';
+  String get addingCustomSource => '正在新增自訂軟體源...';
 
   @override
-  String get sourceAddSuccess => '軟體存放庫新增成功！';
+  String get sourceAddSuccess => '軟體源新增成功！';
 
   @override
-  String get sourceAddFailed => '新增軟體存放庫失敗。';
+  String get sourceAddFailed => '新增軟體源失敗。';
 
   @override
-  String get autoDetectingSources => '正在自動偵測系統中可用的軟體存放庫...';
+  String get autoDetectingSources => '正在自動偵測系統中可用的軟體源...';
 
   @override
   String get autoDetectSuccess => '自動偵測完成，設定已儲存！';
@@ -2310,7 +2310,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubStoreSubtitle => '直接從 GitHub Releases 發現並下載應用程式';
 
   @override
-  String get searchGithubHint => '搜尋 GitHub 存放庫...';
+  String get searchGithubHint => '搜尋 GitHub 倉庫...';
 
   @override
   String get recommended => '推薦';
@@ -2328,7 +2328,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體存放庫';
+  String get pluginsAndSources => '外掛程式與軟體源';
 
   @override
   String get refreshPlugins => '重新整理外掛程式';
@@ -2368,7 +2368,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String recommendedSource(String source) {
-    return '推薦來源：$source';
+    return '推薦軟體源：$source';
   }
 
   @override
@@ -2384,7 +2384,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '根據您的搜尋、安裝歷史和當前可用來源生成；不會影響安裝選擇。';
+  String get aiPickDisclaimer => '條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';
