@@ -1,3 +1,9 @@
+## 2026-08-08 - Material Design 3 Dropdown Standardization & Merged State Stabilization
+
+**Learning:** When resolving static analysis or compiler errors in controllers inheriting from ChangeNotifier, or in complex layout structures, it is critical to keep custom inputs like `DropdownButtonFormField` extremely clean and native. Avoid nesting standard `DropdownButton`s inside the `child` of `DropdownButtonFormField`, which is unsupported and breaks the Flutter layout tree. In stateful or locally controlled dropdown components, direct property mapping (e.g. `items`, `onChanged`, `value`) ensures the input remains Material Design 3 compliant, highly interactive, and completely free of syntax or git merge conflict regression errors.
+
+**Action:** Overwrite custom forms (like `AddSourceDialog` and `WelcomeAiPage`) to leverage single-level `DropdownButtonFormField` components. Specify direct properties for items, value, and onChanged. Ensure syntax-breaking git merge conflict markers are thoroughly eliminated from any modified files before compilation and test pipelines run.
+
 ## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
 
 **Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.
