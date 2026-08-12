@@ -41,7 +41,6 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
   Widget build(BuildContext context) {
     final categories = CategoryService.getCategories(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final categories = CategoryService.getCategories(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 32),
