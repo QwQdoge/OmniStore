@@ -63,3 +63,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Action:** Wrapped loading transitions in `auth_page.dart` (save button area), `welcome_ai_page.dart` (test connection button), and `ai_config_page.dart` (test connection button) with `SmoothSizeSwitcher`. Ensured correct widget extraction and imported `package:frontend/core/widgets/smooth_size_switcher.dart` in all modified files.
 
 - **Loading Transitions in Buttons**: When toggling between a text/icon and a `CircularProgressIndicator` within a button, always wrap the conditional expression in a `SmoothSizeSwitcher` (or `AnimatedSwitcher` if `SmoothSizeSwitcher` is unavailable) and assign distinct `ValueKey`s (e.g., `ValueKey('loading')` and `ValueKey('idle')`) to each child. This eliminates abrupt layout jumps and allows for smooth opacity cross-fading and size animations.
+
+## 2024-11-21 - Standardized Auth Loading Transition
+
+**Learning:** When toggling a button between an idle text state and a loading state (like `CircularProgressIndicator`), using a raw `AnimatedSwitcher` causes abrupt layout jumps. Using `SmoothSizeSwitcher` provides unified MD3 motion logic and concurrently handles opacity and sizing.
+
+**Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the "Sign In" `FilledButton` in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
