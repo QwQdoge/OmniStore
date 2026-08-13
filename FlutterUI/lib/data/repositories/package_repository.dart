@@ -67,8 +67,6 @@ class PackageRepository {
   Map<String, List<AppPackage>> _withEditorialFeatured(
     Map<String, List<AppPackage>> dynamic,
   ) => {...dynamic, 'featured': _editorialFeatured};
-
-  final Map<String, Map<String, dynamic>> _searchCache = {};
   static const int _maxCacheSize = 20;
 
   Future<List<AppPackage>> searchPackages(

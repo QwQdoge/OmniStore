@@ -1,3 +1,29 @@
-💡 **What:** Replaced the N+1 `is_installed` thread pool dispatches in `AppImageSearch.search` with a single batch disk read.
-🎯 **Why:** The previous code spawned a separate thread pool task for every matched item which then globbed the `~/Applications` directory repeatedly. This was highly inefficient for larger searches. Now, the disk is hit once to get all installed files, and the installation check occurs synchronously in memory.
-📊 **Measured Improvement:** In a benchmark with 100 installed mock AppImages and 500 search results evaluated 10 times, the execution time decreased from ~5.08s to ~0.05s (approx. 100x improvement).
+# 🚀 OmniStore: Unified PR for Code Health Optimizations and Cleanups
+
+## 🎯 What
+
+This pull request resolves multiple major compiler and linter errors to restore project health and stability.
+
+1. **Duplicate Variable Fixes:**
+   - Resolved `duplicate_definition` errors for the `categories` variable in `FlutterUI/lib/features/explore/presentation/pages/category_page.dart`, `FlutterUI/lib/features/explore/presentation/widgets/discovery_content.dart`, and `FlutterUI/lib/features/home/home_page.dart`.
+2. **Duplicate Import Fixes:**
+   - Removed the duplicate import in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
+3. **Unused Code Removal:**
+   - Removed the unused `_searchCache` field in `FlutterUI/lib/data/repositories/package_repository.dart`.
+4. **UI Bug Fixes:**
+   - Repaired Git merge conflict markers in `FlutterUI/lib/features/settings/presentation/widgets/add_source_dialog.dart` and refactored the broken `DropdownButton` layout to use a proper `DropdownButtonFormField` for selection inputs, retaining deprecated `value` parameter to preserve behavior.
+   - Fixed missing required parameters on `DropdownButtonFormField` in `FlutterUI/lib/features/onboarding/widgets/welcome_ai_page.dart` to make it compile successfully, keeping deprecated `value` to avoid behavioral regressions.
+5. **String Interpolation Fixes:**
+   - Cleaned up unnecessary braces inside a string interpolation block in `FlutterUI/lib/features/explore/presentation/widgets/app_main_content.dart`.
+
+## 🎯 Why
+
+- **Code Health:** Eliminating duplicate imports, duplicate definitions, merge markers, and unused variables resolves severe build and lint blockers.
+- **UI Preservation:** Keeping `value` (and suppressing the deprecation warning) across Dropdowns is required to maintain reactive parent state sync functionality.
+
+## 📊 Verification & Coverage
+
+- **Flutter Analysis:** `flutter analyze` runs successfully with zero issues found.
+- **Testing:**
+  - Ran the Python backend test suite successfully (`uv run ... pytest python/tests`).
+  - Ran Flutter frontend widget & unit tests successfully (`flutter test test/widget_test.dart`).

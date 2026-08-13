@@ -158,3 +158,11 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 **Action:**
 - Removed `late List<CategoryItem> _categories;` and the `didChangeDependencies()` overrides from `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`.
 - Shifted the evaluation to `final categories = CategoryService.getCategories(context);` directly within each widget's `build()` method. This guarantees the UI always reflects the most up-to-date localizations and themes on every rebuild without duplicating state.
+## 2026-08-14 - Code Health: Removing duplicates & Git merge resolution
+
+**Learning:** When resolving Git merge conflicts, it's vital to inspect the boundaries carefully and cleanly remove duplicate variables (e.g. `categories`) left behind by partial rebases. Re-evaluating complex nested widgets like `DropdownButtonFormField` inside forms is necessary when properties conflict. Using `value` instead of `initialValue` inside state-controlled `DropdownButtonFormField` widgets must be preserved (despite deprecation warnings) if the parent widget dynamically rebuilds it, otherwise the state becomes detached.
+
+**Action:**
+- Removed duplicate `categories` variable definitions across `home_page.dart`, `discovery_content.dart`, and `category_page.dart`.
+- Cleaned up Git merge markers and flattened broken `DropdownButton` wrappers into proper `DropdownButtonFormField` usage in `add_source_dialog.dart` and `welcome_ai_page.dart`.
+- Preserved the `value` parameter and suppressed the deprecation warning to maintain strict behavioral parity on state-controlled dropdowns.
