@@ -215,3 +215,11 @@ Extensive audit revealed asynchronous gaps where state (`setState`) was accessed
 
 Action:
 Implemented strict `if (!mounted) return;` guards immediately before `setState` in all `catch` blocks and stream listener callbacks (`onError`, `onDone`, and custom line parsers) in `WelcomePage` to prevent "setState() called after dispose()" crashes.
+
+## 2026-08-15 - [Dropdown Form Deprecation & Compilation Error]
+
+Learning:
+When attempting to wrap a `DropdownButton` inside the `child` parameter of a `DropdownButtonFormField`, compilation fails because `DropdownButtonFormField` does not accept a `child` parameter, only `items`. Alternatively, if we switch to `DropdownButton` inside a styled `Container` with `DropdownButtonHideUnderline`, we can avoid the SDK deprecation warnings for `value` vs `initialValue` and compile errors while retaining an externally controlled value.
+
+Action:
+Refactored `DropdownButtonFormField` in `FlutterUI/lib/features/onboarding/widgets/welcome_ai_page.dart` and `FlutterUI/lib/features/settings/presentation/widgets/add_source_dialog.dart` to fix compilation failures, duplicate imports, and unused variables. In both instances, standard `DropdownButtonFormField` was restored, leveraging the native `items` configuration parameter instead of incorrectly nesting a `DropdownButton` via `child`. For the `CategoryPage` widget family (`category_page.dart`, `discovery_content.dart`, `home_page.dart`), duplicate local declarations of `categories` were removed to prevent static analysis errors.

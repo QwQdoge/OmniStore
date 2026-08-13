@@ -39,7 +39,6 @@ class _DiscoveryContentState extends State<DiscoveryContent> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = CategoryService.getCategories(context);
     final colorScheme = Theme.of(context).colorScheme;
     final categories = CategoryService.getCategories(context);
 

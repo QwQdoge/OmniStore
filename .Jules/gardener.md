@@ -184,3 +184,9 @@ This drastically simplified the main page builds while ensuring exact behavioral
 ## 2026-08-06 - Deprecation warnings vs Behavior
 
 **Learning:** When addressing deprecation warnings (e.g., `DropdownButtonFormField.value` being deprecated in favor of `initialValue`), be careful not to change the widget's behavior. In a stateless widget where the parent controls the state and passes it down, replacing `value` with `initialValue` can prevent the dropdown from updating dynamically when the parent state changes. If preserving exact behavior is paramount (and the new API doesn't support the dynamic update pattern seamlessly), it's sometimes necessary to leave the deprecation warning or refactor the widget to use a non-form equivalent (like `DropdownButton` instead of `DropdownButtonFormField`).
+
+## 2026-08-16 - Clean up unused variables and duplicate declarations
+
+**Learning:** Removing duplicate local variable declarations (like `categories` inside `category_page.dart`, `discovery_content.dart`, `home_page.dart`) not only resolves static analysis and compile errors but also improves code clarity by eliminating shadowing and ambiguity about which variable is actually in scope.
+
+**Action:** Addressed duplicate variable definitions across the explore and home feature pages to resolve `flutter analyze` errors and maintain a clean, warning-free codebase.
