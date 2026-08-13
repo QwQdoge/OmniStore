@@ -1164,7 +1164,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。",
+  "aiPickDisclaimer": "條件可用。推薦基於您的使用習慣和目前設定產生，不會影響具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
