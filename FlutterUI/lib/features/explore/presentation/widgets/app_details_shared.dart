@@ -50,7 +50,11 @@ class AppDetailsInfoRow extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: value));
-    Toast.show(context, AppLocalizations.of(context)!.copiedToClipboard);
+    Toast.show(
+      context,
+      AppLocalizations.of(context)!.copiedToClipboard,
+      duration: const Duration(seconds: 2),
+    );
   }
 
   @override

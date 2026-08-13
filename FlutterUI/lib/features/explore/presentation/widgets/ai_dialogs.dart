@@ -132,6 +132,7 @@ class AICliDialog extends StatelessWidget {
                           Toast.show(
                             context,
                             AppLocalizations.of(context)!.copiedToClipboard,
+                            duration: const Duration(seconds: 2),
                           );
                         },
                         icon: const Icon(Icons.copy_rounded),
