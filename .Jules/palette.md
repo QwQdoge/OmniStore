@@ -1,3 +1,9 @@
+## 2026-08-08 - Dropdown Form Field Nesting and MD3 Input Hierarchy
+
+**Learning:** Nesting standard `DropdownButton` elements inside the `child` parameter of a `DropdownButtonFormField` is an invalid configuration that causes layout errors and static compiler analysis failures. Under Material Design 3 guidelines, dropdown forms must define configuration properties (`items`, `onChanged`, and `value`) directly on the `DropdownButtonFormField` to ensure unified visual style, keyboard accessibility, and correct form validation behaviors.
+
+**Action:** When creating form-based dropdown inputs, always supply `items` and `onChanged` directly to `DropdownButtonFormField` rather than nesting a hidden/legacy `DropdownButton` inside it.
+
 ## 2026-08-06 - Material Design 3 Dialog Input and Feedback Polish
 
 **Learning:** Aligning custom form-based and feedback dialogs (such as `AddSourceDialog` and `AITestResultDialog`) with Material Design 3 guidelines requires using the native `icon` and `title` properties of `AlertDialog` for correct hierarchy and vertical stack pacing. TextFields and Dropdowns within form dialogs must be configured with consistent geometric parameters (e.g., 12dp rounded OutlineInputBorder and proper symmetric content padding) to guarantee focus accessibility and visual consistency. Wrapping transient feedback or diagnostic console messages in a zero-elevation `Card` utilizing `surfaceContainerLow` and a clean monospace font ensures the content is highly scan-able and comfortable to inspect on high-density displays.

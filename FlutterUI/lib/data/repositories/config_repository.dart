@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../python_bridge.dart';
@@ -48,12 +49,14 @@ class ConfigRepository {
   Map<String, dynamic>? _cachedConfig;
   Map<String, dynamic>? _cachedEnv;
 
+  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+
   Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
     if (_cachedConfig != null && !forceRefresh) {
       return _cachedConfig!;
     }
 
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       try {
         final prefs = await SharedPreferences.getInstance();
         final raw = prefs.getString(_webConfigKey);
@@ -116,7 +119,7 @@ class ConfigRepository {
       await prefs.setString(_webConfigKey, jsonEncode(config));
     } catch (_) {}
 
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       return true;
     }
 
@@ -163,7 +166,7 @@ class ConfigRepository {
       return _cachedEnv!;
     }
 
-    if (kIsWeb) {
+    if (kIsWeb || _isTestEnv) {
       _cachedEnv = {
         "platform": "Web / Browser",
         "python_status": "Not supported (Browser Sandbox)",

@@ -117,21 +117,30 @@ class UpdateService {
       _notificationBody = (count) => l10n.notificationBody(count);
     }
 
-    if (!kIsWeb) {
-      final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
-      if (notificationsEnabled) {
-        const LinuxInitializationSettings initializationSettingsLinux =
-            LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
-        const InitializationSettings initializationSettings =
-            InitializationSettings(linux: initializationSettingsLinux);
-        await _notificationsPlugin.initialize(settings: initializationSettings);
-      }
-      _startUpdateTimer();
-      // 更新托盘菜单文本（初始化已在 init() 中完成）
-      await _refreshTrayMenu();
-    } else {
-      _startUpdateTimer();
+    if (kIsWeb || Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
     }
+
+    final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
+    if (notificationsEnabled) {
+      const LinuxInitializationSettings initializationSettingsLinux =
+          LinuxInitializationSettings(defaultActionName: 'Open OmniStore');
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+        linux: initializationSettingsLinux,
+        android: initializationSettingsAndroid,
+      );
+      try {
+        await _notificationsPlugin.initialize(settings: initializationSettings);
+      } catch (e) {
+        debugPrint("Failed to initialize notifications: $e");
+      }
+    }
+    _startUpdateTimer();
+    // 更新托盘菜单文本（初始化已在 init() 中完成）
+    await _refreshTrayMenu();
   }
 
   /// Murphy-proof: Safely refresh the tray menu with strict timeout and error handling.

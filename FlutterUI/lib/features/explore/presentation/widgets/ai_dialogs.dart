@@ -70,7 +70,7 @@ class AIMarkdownDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context),
           child: Text(AppLocalizations.of(context)!.ok),
         ),
@@ -132,6 +132,7 @@ class AICliDialog extends StatelessWidget {
                           Toast.show(
                             context,
                             AppLocalizations.of(context)!.copiedToClipboard,
+                            duration: const Duration(seconds: 2),
                           );
                         },
                         icon: const Icon(Icons.copy_rounded),
@@ -145,7 +146,7 @@ class AICliDialog extends StatelessWidget {
         },
       ),
       actions: [
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context),
           child: Text(AppLocalizations.of(context)!.ok),
         ),

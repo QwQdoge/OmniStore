@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
+import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/task_state.dart';
 
@@ -182,6 +183,12 @@ class TaskController with ChangeNotifier {
     _packageName = null;
     _flag = null;
     notifyListeners();
+
+    if (!hasError) {
+      // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
+      PackageRepository().clearDetailsCacheFor(packageName);
+    }
+
     return !hasError;
   }
 

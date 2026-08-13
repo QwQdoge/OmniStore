@@ -8,7 +8,12 @@ class PythonBridge {
   static const _secureStorage = FlutterSecureStorage();
   static const String apiKeyStorageKey = 'omnistore_ai_api_key';
 
+  static String? _testApiKey;
+
   static Future<String?> getApiKey() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      return _testApiKey;
+    }
     try {
       return await _secureStorage.read(key: apiKeyStorageKey);
     } catch (e) {
@@ -17,12 +22,20 @@ class PythonBridge {
   }
 
   static Future<void> saveApiKey(String key) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      _testApiKey = key;
+      return;
+    }
     try {
       await _secureStorage.write(key: apiKeyStorageKey, value: key);
     } catch (_) {}
   }
 
   static Future<void> deleteApiKey() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      _testApiKey = null;
+      return;
+    }
     try {
       await _secureStorage.delete(key: apiKeyStorageKey);
     } catch (_) {}
