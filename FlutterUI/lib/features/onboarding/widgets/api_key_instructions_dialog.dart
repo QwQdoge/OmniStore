@@ -26,7 +26,7 @@ class ApiKeyInstructionsDialog extends StatelessWidget {
         style: const TextStyle(height: 1.5),
       ),
       actions: [
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context),
           child: Text(l10n.ok),
         ),

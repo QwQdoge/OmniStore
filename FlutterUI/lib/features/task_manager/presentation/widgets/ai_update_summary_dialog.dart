@@ -86,7 +86,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context),
           child: Text(AppLocalizations.of(context)!.ok),
         ),
