@@ -7,33 +7,23 @@ class InstalledAppListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
-          ),
+    const skeletonItem = Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        child: ListTile(
+          leading: Skeleton(width: 40, height: 40),
+          title: Skeleton(width: 120, height: 16),
+          subtitle: Skeleton(width: double.infinity, height: 12),
+          trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
         ),
       ),
+    );
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      prototypeItem: skeletonItem,
       itemCount: 8,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            child: ListTile(
-              leading: Skeleton(width: 40, height: 40),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(width: double.infinity, height: 12),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 6),
-            ),
-          ),
-        );
-      },
+      itemBuilder: (context, index) => skeletonItem,
     );
   }
 }

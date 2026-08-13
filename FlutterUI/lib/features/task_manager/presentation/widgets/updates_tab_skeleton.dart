@@ -7,6 +7,35 @@ class UpdatesTabSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const skeletonItem = Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        borderRadius: 16,
+        child: ListTile(
+          leading: Skeleton(width: 44, height: 44, borderRadius: 16),
+          title: Skeleton(width: 140, height: 16),
+          subtitle: Padding(
+            padding: EdgeInsets.only(top: 4.0),
+            child: Row(
+              children: [
+                Skeleton(width: 60, height: 20, borderRadius: 10),
+                SizedBox(width: 8),
+                Skeleton(width: 120, height: 14),
+              ],
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Skeleton(width: 40, height: 40, borderRadius: 20),
+              SizedBox(width: 8),
+              Skeleton(width: 80, height: 40, borderRadius: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+
     return Column(
       children: [
         Padding(
@@ -15,7 +44,7 @@ class UpdatesTabSkeleton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Skeleton(width: 150, height: 20),
-              Skeleton(width: 120, height: 40, borderRadius: 20),
+              const Skeleton(width: 120, height: 40, borderRadius: 20),
             ],
           ),
         ),
@@ -23,56 +52,8 @@ class UpdatesTabSkeleton extends StatelessWidget {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: 6,
-            prototypeItem: Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AppCard(
-                borderRadius: 16,
-                child: ListTile(
-                  leading: const SizedBox(width: 44, height: 44),
-                  title: const SizedBox(height: 16),
-                  subtitle: const SizedBox(height: 12),
-                  trailing: const SizedBox(width: 80, height: 32),
-                ),
-              ),
-            ),
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AppCard(
-                  borderRadius: 16,
-                  child: ListTile(
-                    leading: const Skeleton(
-                      width: 44,
-                      height: 44,
-                      borderRadius: 16,
-                    ),
-                    title: const Skeleton(width: 140, height: 16),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Row(
-                        children: [
-                          const Skeleton(
-                            width: 60,
-                            height: 20,
-                            borderRadius: 10,
-                          ),
-                          const SizedBox(width: 8),
-                          const Skeleton(width: 120, height: 14),
-                        ],
-                      ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Skeleton(width: 40, height: 40, borderRadius: 20),
-                        const SizedBox(width: 8),
-                        const Skeleton(width: 80, height: 40, borderRadius: 20),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
+            prototypeItem: skeletonItem,
+            itemBuilder: (context, index) => skeletonItem,
           ),
         ),
       ],
