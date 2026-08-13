@@ -93,6 +93,9 @@ Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable g
 - Mapped key terms: `activity` -> '任务动态'/'任務動態', `source` -> '软件源'/'軟體源', `variant` -> '分发版本'/'分發版本', `loggingLevel` -> '日志级别'/'日誌級別', `license` -> '许可证'/'授權條款', and `dependenciesCount` -> '依赖项'/'依賴項'.
 - Updated `python/polish_l10n.py` and `python/sync_l10n.py` to ensure consistency and prevent regression.
 - Corrected Traditional Chinese orthography ('後' vs '后') in `app_zh_Hant.arb` and `python/polish_l10n.py`.
+## 2026-08-10 - Global SnackBar Consistency: Clipboard Feedback Duration
+- Standardized the duration of SnackBar widgets used for clipboard copy feedback across the application to `const Duration(seconds: 2)` in `ai_dialogs.dart`, `app_details_header.dart`, and `app_details_shared.dart` to unify interaction flow and prevent overlapping feedback messages.
+
 ## 2026-08-07 - Dialog Button Consistency: Dismissal Actions
 - Standardized the single-action dismissal buttons in informational, alert, and error dialogs to use `FilledButton` instead of `TextButton`, ensuring visual consistency with the app's primary action button pattern.
 - Updated `AITestResultDialog`, `AIMarkdownDialog`, `AICliDialog`, `AIUpdateSummaryDialog`, and `ApiKeyInstructionsDialog` to use `FilledButton` for the `l10n.ok` action.
