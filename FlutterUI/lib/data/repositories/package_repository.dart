@@ -16,10 +16,27 @@ class _CachedSearchResult {
 }
 
 class PackageRepository {
+  static final PackageRepository _instance = PackageRepository._internal();
+
+  factory PackageRepository() => _instance;
+
+  PackageRepository._internal();
+
+  // ⚡ Bolt: Cache details to avoid duplicate network/IPC/subprocess calls on navigation/re-entry.
+  final Map<String, AppPackage> _detailsCache = {};
+
+  // ⚡ Bolt: Deduplicate simultaneous active details requests.
+  final Map<String, Future<AppPackage?>> _activeDetailsRequests = {};
+
+  void clearDetailsCacheFor(String appId) {
+    _detailsCache.remove(appId);
+  }
+
   Map<String, List<AppPackage>>? _cachedRecs;
   // ⚡ Bolt: Deduplicate simultaneous recommendation fetches and throttle automatic updates.
   Future<Map<String, List<AppPackage>>>? _activeFetchFuture;
-  Future<Map<String, List<AppPackage>>>? get activeFetchFuture => _activeFetchFuture;
+  Future<Map<String, List<AppPackage>>>? get activeFetchFuture =>
+      _activeFetchFuture;
   DateTime? _lastFetchTime;
 
   // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
@@ -105,7 +122,9 @@ class PackageRepository {
       _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
       if (_sourceSearchCache.length > _maxCacheSize) {
         final oldestKey = _sourceSearchCache.entries
-            .reduce((a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b)
+            .reduce(
+              (a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b,
+            )
             .key;
         _sourceSearchCache.remove(oldestKey);
       }
@@ -426,7 +445,38 @@ class PackageRepository {
     });
   }
 
-  Future<AppPackage?> getAppDetails(String appId) async {
+  Future<AppPackage?> getAppDetails(
+    String appId, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh) {
+      final cached = _detailsCache[appId];
+      if (cached != null) {
+        return cached;
+      }
+    }
+
+    // Coalesce / Deduplicate in-flight requests to avoid redundant IPC/network calls
+    final activeRequest = _activeDetailsRequests[appId];
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final future = _getAppDetailsImpl(appId);
+    _activeDetailsRequests[appId] = future;
+
+    try {
+      final result = await future;
+      if (result != null) {
+        _detailsCache[appId] = result;
+      }
+      return result;
+    } finally {
+      _activeDetailsRequests.remove(appId);
+    }
+  }
+
+  Future<AppPackage?> _getAppDetailsImpl(String appId) async {
     if (kIsWeb) {
       try {
         if (appId.contains('/')) {
