@@ -184,3 +184,13 @@ This drastically simplified the main page builds while ensuring exact behavioral
 ## 2026-08-06 - Deprecation warnings vs Behavior
 
 **Learning:** When addressing deprecation warnings (e.g., `DropdownButtonFormField.value` being deprecated in favor of `initialValue`), be careful not to change the widget's behavior. In a stateless widget where the parent controls the state and passes it down, replacing `value` with `initialValue` can prevent the dropdown from updating dynamically when the parent state changes. If preserving exact behavior is paramount (and the new API doesn't support the dynamic update pattern seamlessly), it's sometimes necessary to leave the deprecation warning or refactor the widget to use a non-form equivalent (like `DropdownButton` instead of `DropdownButtonFormField`).
+
+## 2026-08-08 - Codebase Cleanup & Linter Resolution
+
+**Learning:** Duplicate variable declarations (e.g., `final categories = ...`) and redundant/duplicate imports (`toast.dart`) trigger linter and compiler issues, causing build-time failures. Standardizing layout fields (like `DropdownButtonFormField`) by passing configuration directly to the field instead of nesting `DropdownButton` inside `child` ensures strong typing, cleaner widget trees, and resolves standard Material Design 3 layout constraints.
+
+**Action:**
+- Resolved Git merge conflict markers and nested dropdowns in `add_source_dialog.dart`.
+- Refactored `welcome_ai_page.dart` to use `DropdownButtonFormField` directly without nested `DropdownButton`.
+- Cleaned up duplicate local `categories` variable definitions in `category_page.dart`, `discovery_content.dart`, and `home_page.dart`.
+- Eliminated redundant `toast.dart` import in `account_page.dart` and simplified braces in string interpolation within `app_main_content.dart`.
