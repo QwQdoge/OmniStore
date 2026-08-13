@@ -184,3 +184,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 ## 2026-08-06 - Deprecation warnings vs Behavior
 
 **Learning:** When addressing deprecation warnings (e.g., `DropdownButtonFormField.value` being deprecated in favor of `initialValue`), be careful not to change the widget's behavior. In a stateless widget where the parent controls the state and passes it down, replacing `value` with `initialValue` can prevent the dropdown from updating dynamically when the parent state changes. If preserving exact behavior is paramount (and the new API doesn't support the dynamic update pattern seamlessly), it's sometimes necessary to leave the deprecation warning or refactor the widget to use a non-form equivalent (like `DropdownButton` instead of `DropdownButtonFormField`).
+## 2026-08-08 - Extract InstalledAppList in InstalledTab
+
+**Learning:** Extracted the oversized `ListView.builder` representing the loaded state from `installed_tab.dart` into a new stateless widget `InstalledAppList`. Complex list building inside tab views clutters the UI layout. Extracting them improves maintainability, especially for files representing primary navigation tabs.
+
+**Action:** Created `FlutterUI/lib/features/task_manager/presentation/widgets/installed_app_list.dart` to encapsulate the list rendering logic, passing `filteredApps` as a required parameter, preserving exact functionality while cleaning up the parent file.

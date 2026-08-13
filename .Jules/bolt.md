@@ -141,3 +141,15 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Frequently navigating back and forth or switching tabs within store/source-specific views (like Flatpak or GitHub) triggers redundant, expensive daemon subprocess searches or external network API calls. Caching these queries under a short, 5-minute TTL inside `PackageRepository` eliminates this duplicate overhead, realizing instantaneous tab switching and page re-entry.
 
 **Action:** Implemented a targeted `_sourceSearchCache` in `PackageRepository` for all `"source:"` prefixed queries with an LRU limit of 20. Leveraged a `forceRefresh` parameter to allow manual pull-to-refresh or retry actions to bypass the cache and successfully retrieve fresh data.
+
+## 2026-08-05 - Extracted prototypeItem for Skeletons
+
+**Learning:** Duplicating layout code between `prototypeItem` and `itemBuilder` in virtualized `ListView.builder` widgets is prone to layout drift (dimension mismatches causing virtualization jitter) and violates DRY principles.
+
+**Action:** Extracted the skeleton widget structure into a local `skeletonItem` variable inside the `build()` method (or `_buildSkeletonResults()`) and assigned it to both properties across all skeleton lists (`AppsPageSkeleton`, `InstalledAppListSkeleton`, `UpdatesTabSkeleton`, `FlatpakAppListSkeleton`, `GitHubAppListSkeleton`, and `SearchResultsView`).
+
+## 2026-08-03 - PackageRepository Singleton & App Details Cache
+
+**Learning:** Direct instantiation of repositories (e.g. `PackageRepository()`) on every usage inside controllers, pages, or background services creates distinct instances, thereby entirely neutralizing any internal in-memory caching mechanisms. Refactoring the repository class into a factory singleton shares the internal cache state across all layers. Implementing a request deduplication (coalescing) map alongside in-memory details caching for `getAppDetails` with targeted invalidation on task completions drastically reduces network and IPC overhead during navigation.
+
+**Action:** Refactored `PackageRepository` to a singleton pattern, added details in-memory cache and `_activeDetailsRequests` coalescing map, and hooked `clearDetailsCacheFor` to successful task completions in `TaskManager` and `TaskController`.

@@ -39,34 +39,24 @@ class SearchResultsView extends StatelessWidget {
   );
 
   Widget _buildSkeletonResults() {
+    const skeletonItem = Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        child: ListTile(
+          leading: Skeleton(width: 40, height: 40, borderRadius: 12),
+          title: Skeleton(width: 120, height: 16),
+          subtitle: Skeleton(width: double.infinity, height: 12),
+          trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
+        ),
+      ),
+    );
+
     return ListView.builder(
       key: const ValueKey('loading'),
       padding: const EdgeInsets.all(16),
-      prototypeItem: const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          child: ListTile(
-            leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-            title: Skeleton(width: 120, height: 16),
-            subtitle: Skeleton(width: double.infinity, height: 12),
-            trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-          ),
-        ),
-      ),
+      prototypeItem: skeletonItem,
       itemCount: 6,
-      itemBuilder: (context, index) {
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            child: ListTile(
-              leading: Skeleton(width: 40, height: 40, borderRadius: 12),
-              title: Skeleton(width: 120, height: 16),
-              subtitle: Skeleton(width: double.infinity, height: 12),
-              trailing: Skeleton(width: 60, height: 24, borderRadius: 12),
-            ),
-          ),
-        );
-      },
+      itemBuilder: (context, index) => skeletonItem,
     );
   }
 

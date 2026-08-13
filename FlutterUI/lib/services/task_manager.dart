@@ -5,6 +5,7 @@ import '../models/task_state.dart';
 import 'backend_service.dart';
 import 'update_service.dart';
 import '../data/repositories/task_repository.dart';
+import '../data/repositories/package_repository.dart';
 
 class TaskManager {
   static final TaskManager _instance = TaskManager._internal();
@@ -177,6 +178,9 @@ class TaskManager {
           );
           BackendService.isDownloading.value = false;
 
+          // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
+          PackageRepository().clearDetailsCacheFor(packageName);
+
           UpdateService().showCompletionNotification(packageName, true);
 
           Future.delayed(const Duration(seconds: 5), () {
@@ -260,6 +264,8 @@ class TaskManager {
               speed: "",
             ),
           );
+          // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
+          PackageRepository().clearDetailsCacheFor(packageName);
         } else {
           if (_currentTask?.status != TaskStatus.failed) {
             _updateState(
