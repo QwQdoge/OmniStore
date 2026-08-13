@@ -88,32 +88,12 @@ class WelcomeAiPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                value: aiProvider,
-                                icon: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.primary,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                                   ),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -202,20 +182,27 @@ class WelcomeAiPage extends StatelessWidget {
                                     label: Text(l10n.howToGetApiKey),
                                   ),
                                   const Spacer(),
-                                  SmoothSizeSwitcher(
-                                    child: isTestingAI
-                                        ? const SizedBox(
-                                            key: ValueKey('testing'),
-                                            width: 24,
-                                            height: 24,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          )
-                                        : FilledButton.tonalIcon(
-                                            key: const ValueKey('idle'),
-                                            onPressed: onTestAI,
-                                            icon: const Icon(Icons.network_ping_rounded, size: 18),
-                                            label: const Text('Test Connection'),
-                                          ),
+                                  FilledButton.tonalIcon(
+                                    key: const ValueKey('idle'),
+                                    onPressed: isTestingAI ? null : onTestAI,
+                                    icon: SmoothSizeSwitcher(
+                                      child: isTestingAI
+                                          ? SizedBox(
+                                              key: const ValueKey('testing'),
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Theme.of(context).colorScheme.primary,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.network_ping_rounded,
+                                              key: ValueKey('idle'),
+                                              size: 18,
+                                            ),
+                                    ),
+                                    label: const Text('Test Connection'),
                                   ),
                                 ],
                               ),
