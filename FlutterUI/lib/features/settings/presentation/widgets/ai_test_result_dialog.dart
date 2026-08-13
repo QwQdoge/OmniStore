@@ -53,7 +53,7 @@ class AITestResultDialog extends StatelessWidget {
             )
           : null,
       actions: [
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context),
           child: Text(l10n.ok),
         ),
