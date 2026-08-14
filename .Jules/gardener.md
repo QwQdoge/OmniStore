@@ -189,3 +189,7 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracted the oversized `ListView.builder` representing the loaded state from `installed_tab.dart` into a new stateless widget `InstalledAppList`. Complex list building inside tab views clutters the UI layout. Extracting them improves maintainability, especially for files representing primary navigation tabs.
 
 **Action:** Created `FlutterUI/lib/features/task_manager/presentation/widgets/installed_app_list.dart` to encapsulate the list rendering logic, passing `filteredApps` as a required parameter, preserving exact functionality while cleaning up the parent file.
+Learning: Undefined Toast identifier in new files
+Action: Imported package:frontend/core/utils/toast.dart into AccountPage.
+Learning: Suppressing deprecated value warnings on form fields when initialValue is inadequate
+Action: Ignored deprecated_member_use on DropdownButtonFormField.value in AddSourceDialog.

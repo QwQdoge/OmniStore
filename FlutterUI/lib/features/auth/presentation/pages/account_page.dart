@@ -1,3 +1,4 @@
+import 'package:frontend/core/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
