@@ -85,7 +85,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, null),
           child: Text(localizations.cancel),
         ),
@@ -263,7 +263,7 @@ class InstallationDecisionDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(localizations.cancel),
         ),
@@ -304,7 +304,7 @@ class AurSecurityDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(localizations.cancel),
         ),

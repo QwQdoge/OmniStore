@@ -44,7 +44,7 @@ class ImportPackagesDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(onPressed: onCancel, child: Text(cancelText)),
+        FilledButton.tonal(onPressed: onCancel, child: Text(cancelText)),
         FilledButton(onPressed: onConfirm, child: Text(confirmText)),
       ],
     );
