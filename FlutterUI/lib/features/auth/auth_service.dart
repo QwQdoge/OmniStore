@@ -30,7 +30,8 @@ class AuthService extends ChangeNotifier {
   bool get isBusy => _isBusy;
 
   SupabaseClient get client => Supabase.instance.client;
-  Session? get currentSession => _isInitialized ? client.auth.currentSession : null;
+  Session? get currentSession =>
+      _isInitialized ? client.auth.currentSession : null;
   String? get accessToken => currentSession?.accessToken;
   Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
 
@@ -51,7 +52,9 @@ class AuthService extends ChangeNotifier {
     _isInitializing = true;
     try {
       if (!MeoArchEnvironment.isConfigured) {
-        debugPrint('Warning: Supabase environment variables not configured. Auth will not work.');
+        debugPrint(
+          'Warning: Supabase environment variables not configured. Auth will not work.',
+        );
       } else {
         await Supabase.initialize(
           url: MeoArchEnvironment.supabaseUrl,
@@ -63,22 +66,22 @@ class AuthService extends ChangeNotifier {
 
         _currentUser = Supabase.instance.client.auth.currentUser;
 
-        _authSubscription =
-            Supabase.instance.client.auth.onAuthStateChange.listen(
-          (data) {
-            if (_disposed) return;
-            final AuthChangeEvent event = data.event;
-            final Session? session = data.session;
+        _authSubscription = Supabase.instance.client.auth.onAuthStateChange
+            .listen(
+              (data) {
+                if (_disposed) return;
+                final AuthChangeEvent event = data.event;
+                final Session? session = data.session;
 
-            _currentUser = session?.user;
-            notifyListeners();
+                _currentUser = session?.user;
+                notifyListeners();
 
-            debugPrint('Auth event: $event, User: ${_currentUser?.id}');
-          },
-          onError: (err) {
-            debugPrint('Auth state subscription encountered error: $err');
-          },
-        );
+                debugPrint('Auth event: $event, User: ${_currentUser?.id}');
+              },
+              onError: (err) {
+                debugPrint('Auth state subscription encountered error: $err');
+              },
+            );
       }
 
       _initDeepLinks();
@@ -130,7 +133,9 @@ class AuthService extends ChangeNotifier {
   Future<void> _signInWithOAuth(OAuthProvider provider) async {
     if (_disposed) return;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService._signInWithOAuth: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService._signInWithOAuth: Supabase is not initialized. Operation ignored.',
+      );
       return;
     }
     if (_isBusy) return;
@@ -159,7 +164,9 @@ class AuthService extends ChangeNotifier {
   }) async {
     if (_disposed) return null;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService.signInWithPassword: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService.signInWithPassword: Supabase is not initialized. Operation ignored.',
+      );
       return null;
     }
     if (_isBusy) return null;
@@ -198,7 +205,9 @@ class AuthService extends ChangeNotifier {
   Future<void> signOut() async {
     if (_disposed) return;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService.signOut: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService.signOut: Supabase is not initialized. Operation ignored.',
+      );
       return;
     }
     if (_isBusy) return;

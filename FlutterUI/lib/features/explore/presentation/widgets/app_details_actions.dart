@@ -37,24 +37,25 @@ class AppDetailsActions extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Selector<
-            TaskController,
-            ({double? progress, String status, String speed})
-          >(
-            selector: (context, c) =>
-                (progress: c.progress, status: c.status, speed: c.speed),
-            builder: (context, data, _) => SmoothProgressBar(
-              taskState: TaskState(
-                id: "active",
-                packageName: appName,
-                status: TaskStatus.downloading,
-                progress: data.progress ?? 0.0,
-                stage: data.status,
-                speed: data.speed,
+          child:
+              Selector<
+                TaskController,
+                ({double? progress, String status, String speed})
+              >(
+                selector: (context, c) =>
+                    (progress: c.progress, status: c.status, speed: c.speed),
+                builder: (context, data, _) => SmoothProgressBar(
+                  taskState: TaskState(
+                    id: "active",
+                    packageName: appName,
+                    status: TaskStatus.downloading,
+                    progress: data.progress ?? 0.0,
+                    stage: data.status,
+                    speed: data.speed,
+                  ),
+                  onCancel: onCancelAction,
+                ),
               ),
-              onCancel: onCancelAction,
-            ),
-          ),
         ),
       );
     } else if (isAppInstalled) {
@@ -124,9 +125,6 @@ class AppDetailsActions extends StatelessWidget {
       );
     }
 
-    return SmoothSizeSwitcher(
-      alignment: Alignment.topLeft,
-      child: content,
-    );
+    return SmoothSizeSwitcher(alignment: Alignment.topLeft, child: content);
   }
 }

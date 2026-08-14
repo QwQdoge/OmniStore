@@ -129,9 +129,9 @@ class UpdateService {
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const InitializationSettings initializationSettings =
           InitializationSettings(
-        linux: initializationSettingsLinux,
-        android: initializationSettingsAndroid,
-      );
+            linux: initializationSettingsLinux,
+            android: initializationSettingsAndroid,
+          );
       try {
         await _notificationsPlugin.initialize(settings: initializationSettings);
       } catch (e) {

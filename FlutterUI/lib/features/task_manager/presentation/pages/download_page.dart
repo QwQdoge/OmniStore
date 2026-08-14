@@ -105,12 +105,13 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   void _updateFiltersList() {
-    final sources = _installedApps
-        .expand((app) => {...app.sources, app.primarySource})
-        .where((source) => source.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final sources =
+        _installedApps
+            .expand((app) => {...app.sources, app.primarySource})
+            .where((source) => source.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     _availableFilters = ['all', 'managed', 'unmanaged', ...sources];
   }
 

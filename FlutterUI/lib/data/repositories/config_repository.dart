@@ -49,7 +49,8 @@ class ConfigRepository {
   Map<String, dynamic>? _cachedConfig;
   Map<String, dynamic>? _cachedEnv;
 
-  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+  bool get _isTestEnv =>
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
   Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
     if (_cachedConfig != null && !forceRefresh) {

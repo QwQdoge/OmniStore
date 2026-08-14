@@ -908,7 +908,8 @@ class BackendService {
     }
   }
 
-  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+  bool get _isTestEnv =>
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
   Future<Map<String, dynamic>> checkEnv() async {
     if (kIsWeb || _isTestEnv) {

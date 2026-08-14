@@ -76,15 +76,27 @@ class UpdatesTab extends StatelessWidget {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  prototypeItem: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                  prototypeItem: const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
                     child: AppCard(
                       borderRadius: 16,
                       child: ListTile(
-                        leading: const SizedBox(width: 44, height: 44),
-                        title: const SizedBox(height: 16),
-                        subtitle: const SizedBox(height: 12),
-                        trailing: const SizedBox(width: 80, height: 32),
+                        title: SizedBox(height: 16),
+                        subtitle: Padding(
+                          padding: EdgeInsets.only(top: 4.0),
+                          child: Row(
+                            children: [
+                              AppSourceTag(
+                                source: 'Native',
+                                mode: AppSourceTagMode.source,
+                                isSmall: true,
+                              ),
+                              SizedBox(width: 8),
+                              Text('X → Y'),
+                            ],
+                          ),
+                        ),
+                        trailing: SizedBox(width: 80, height: 32),
                       ),
                     ),
                   ),

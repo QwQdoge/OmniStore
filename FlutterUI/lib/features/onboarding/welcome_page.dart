@@ -304,7 +304,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     WelcomeEnvCheckPage(
                       envData: _envData,
                       isCheckingEnv: _isCheckingEnv,
-                      level: _envData != null ? _evaluateEnvLevel(_envData!) : 'unknown',
+                      level: _envData != null
+                          ? _evaluateEnvLevel(_envData!)
+                          : 'unknown',
                       onCheckEnvironment: _checkEnvironment,
                       isBootstrapping: _isBootstrapping,
                       bootstrapLogs: _bootstrapLogs,
@@ -332,9 +334,11 @@ class _WelcomePageState extends State<WelcomePage> {
                           setState(() {
                             _aiProvider = val;
                             if (val == 'ollama') {
-                              _aiEndpointController.text = 'http://localhost:11434';
+                              _aiEndpointController.text =
+                                  'http://localhost:11434';
                             } else {
-                              _aiEndpointController.text = 'https://api.openai.com/v1';
+                              _aiEndpointController.text =
+                                  'https://api.openai.com/v1';
                             }
                           });
                         }

@@ -175,7 +175,9 @@ class AppDetailsHeader extends StatelessWidget {
                                 for (var v in extraDetails!.variants) v.source,
                               selectedSource,
                             }.map((String source) {
-                              final version = getVariantForSource(source)?.version;
+                              final version = getVariantForSource(
+                                source,
+                              )?.version;
                               return ButtonSegment<String>(
                                 value: source,
                                 label: Padding(

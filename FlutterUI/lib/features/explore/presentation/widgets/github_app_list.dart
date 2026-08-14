@@ -84,9 +84,51 @@ class GitHubAppList extends StatelessWidget {
       content = ListView.builder(
         key: PageStorageKey<String>('github_store_$keyPrefix'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        prototypeItem: const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(child: SizedBox(height: 120)),
+        prototypeItem: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.code_rounded, size: 56),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Expanded(child: Text('T', maxLines: 1)),
+                            SizedBox(width: 8),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('D', maxLines: 2),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const AppSourceTag(
+                              source: 'GitHub',
+                              mode: AppSourceTagMode.source,
+                            ),
+                            const Spacer(),
+                            const Text('Details'),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 12,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
         itemCount: apps.length,
         itemBuilder: (context, index) {

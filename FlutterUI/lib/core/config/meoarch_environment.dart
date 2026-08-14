@@ -12,5 +12,6 @@ class MeoArchEnvironment {
 
   static const appId = 'omnistore';
 
-  static bool get isConfigured => supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
+  static bool get isConfigured =>
+      supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 }

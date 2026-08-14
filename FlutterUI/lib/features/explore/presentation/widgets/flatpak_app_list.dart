@@ -79,7 +79,21 @@ class FlatpakAppList extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           prototypeItem: const Padding(
             padding: EdgeInsets.only(bottom: 12),
-            child: AppCard(child: SizedBox(height: 100)),
+            child: AppCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: Icon(Icons.shopping_bag_rounded, size: 44),
+                title: Text('T', style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('D', maxLines: 1),
+                trailing: AppSourceTag(
+                  source: 'Flatpak',
+                  mode: AppSourceTagMode.source,
+                ),
+              ),
+            ),
           ),
           itemCount: apps.length,
           itemBuilder: (context, index) {

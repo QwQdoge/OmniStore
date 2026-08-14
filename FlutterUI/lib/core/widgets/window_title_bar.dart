@@ -194,9 +194,7 @@ class _WindowTitleBarState extends State<WindowTitleBar> with WindowListener {
                             ),
                           IconButton(
                             icon: const Icon(Icons.account_circle_outlined),
-                            tooltip: AppLocalizations.of(
-                              context,
-                            )!.userAccount,
+                            tooltip: AppLocalizations.of(context)!.userAccount,
                             onPressed: () {
                               Navigator.push(
                                 context,

@@ -7,7 +7,8 @@ class ResponsiveLayoutBuilder extends StatefulWidget {
   const ResponsiveLayoutBuilder({super.key, required this.builder});
 
   @override
-  State<ResponsiveLayoutBuilder> createState() => _ResponsiveLayoutBuilderState();
+  State<ResponsiveLayoutBuilder> createState() =>
+      _ResponsiveLayoutBuilderState();
 }
 
 class _ResponsiveLayoutBuilderState extends State<ResponsiveLayoutBuilder> {
