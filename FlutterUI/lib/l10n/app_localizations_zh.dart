@@ -1185,7 +1185,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。';
+  String get aiPickDisclaimer => '条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -1511,7 +1511,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get refresh => '重新整理';
 
   @override
-  String get noActiveTasks => '無進行中的任務';
+  String get noActiveTasks => '暫無進行中的任務';
 
   @override
   String get currentTask => '目前任務';
@@ -1666,7 +1666,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthTitle => 'AI 系統健康報告';
 
   @override
-  String get aiHealthSubtitle => '針對您的 Arch Linux 的智慧診斷';
+  String get aiHealthSubtitle => '為您的 Arch Linux 提供智慧診斷報告';
 
   @override
   String get aiCorrection => '您是指？';
@@ -2118,7 +2118,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/倉庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
+  String get flatpakRemoteType => 'Flatpak 遠端軟體源';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -2254,7 +2254,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String cacheTypeInfo(String pacman, String flatpak, String custom) {
-    return 'Pacman：$pacman MB | Flatpak：$flatpak MB | 自定義：$custom MB';
+    return 'Pacman：$pacman MB | Flatpak：$flatpak MB | 自訂：$custom MB';
   }
 
   @override
@@ -2384,7 +2384,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。';
+  String get aiPickDisclaimer => '條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';
