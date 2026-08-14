@@ -1188,5 +1188,81 @@
   "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoArchAccount": "MeoArch 账户",
+  "@meoArchAccount": {
+    "description": "Description for meoArchAccount"
+  },
+  "signOut": "退出登录",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "同步状态",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "应用和设置已备份",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "管理账户",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "安全、多因素认证（MFA）及会话管理",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInToMeoArch": "登录 MeoArch 账户",
+  "@signInToMeoArch": {
+    "description": "Description for signInToMeoArch"
+  },
+  "signInSubtitle": "跨设备同步您的应用、设置及收藏項目。",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "邮箱",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "密码",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "登录",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "创建 MeoArch 账户",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "continueWithGoogle": "使用 Google 登录",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "使用 GitHub 登录",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailPassword": "请输入邮箱和密码。",
+  "@enterEmailPassword": {
+    "description": "Description for enterEmailPassword"
+  },
+  "signInFailed": "登录失败: {message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "登录出错: {message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

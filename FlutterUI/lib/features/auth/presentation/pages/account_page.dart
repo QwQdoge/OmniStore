@@ -4,6 +4,8 @@ import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:frontend/core/utils/toast.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -28,9 +30,10 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _handleEmailSignIn() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final l10n = AppLocalizations.of(context)!;
 
     if (email.isEmpty || password.isEmpty) {
-      Toast.show(context, 'Please enter email and password.');
+      Toast.show(context, l10n.enterEmailPassword);
       return;
     }
 
@@ -39,11 +42,11 @@ class _AccountPageState extends State<AccountPage> {
       await AuthService().signInWithPassword(email: email, password: password);
     } on AuthException catch (e) {
       if (mounted) {
-        Toast.show(context, 'Sign in failed: ${e.message}');
+        Toast.show(context, l10n.signInFailed(e.message));
       }
     } catch (e) {
       if (mounted) {
-        Toast.show(context, 'Sign in error: $e');
+        Toast.show(context, l10n.signInError(e.toString()));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -59,6 +62,7 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListenableBuilder(
       listenable: AuthService(),
       builder: (context, _) {
@@ -67,11 +71,11 @@ class _AccountPageState extends State<AccountPage> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('MeoArch Account'),
+            title: Text(l10n.meoArchAccount),
             actions: [
               if (isAuthenticated)
                 IconButton(
-                  tooltip: 'Sign Out',
+                  tooltip: l10n.signOut,
                   icon: const Icon(Icons.logout_rounded),
                   onPressed: () => authService.signOut(),
                 ),
@@ -90,6 +94,7 @@ class _AccountPageState extends State<AccountPage> {
   Widget _buildAccountProfile(User user) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final displayName = user.userMetadata?['full_name'] as String? ?? user.email ?? 'User';
     final avatarUrl = user.userMetadata?['avatar_url'] as String?;
@@ -139,24 +144,24 @@ class _AccountPageState extends State<AccountPage> {
               ),
               child: Column(
                 children: [
-                  const ListTile(
-                    leading: Icon(Icons.sync_rounded),
-                    title: Text('Sync Status'),
-                    subtitle: Text('Apps and settings are backed up'),
-                    trailing: Icon(Icons.check_circle_rounded, color: Colors.green),
+                  ListTile(
+                    leading: const Icon(Icons.sync_rounded),
+                    title: Text(l10n.syncStatus),
+                    subtitle: Text(l10n.syncStatusSubtitle),
+                    trailing: const Icon(Icons.check_circle_rounded, color: Colors.green),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.manage_accounts_rounded),
-                    title: const Text('Manage Account'),
-                    subtitle: const Text('Security, MFA, and sessions'),
+                    title: Text(l10n.manageAccount),
+                    subtitle: Text(l10n.manageAccountSubtitle),
                     trailing: const Icon(Icons.open_in_new_rounded),
                     onTap: _openAccountUrl,
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.logout_rounded),
-                    title: const Text('Sign Out'),
+                    title: Text(l10n.signOut),
                     onTap: () => AuthService().signOut(),
                   ),
                 ],
@@ -171,6 +176,7 @@ class _AccountPageState extends State<AccountPage> {
   Widget _buildSignInForm() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       key: const ValueKey('signin'),
@@ -182,7 +188,7 @@ class _AccountPageState extends State<AccountPage> {
             const Icon(Icons.account_circle_rounded, size: 64),
             const SizedBox(height: 24),
             Text(
-              'Sign In to MeoArch',
+              l10n.signInToMeoArch,
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -190,7 +196,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Sync your apps, settings, and favorites across devices.',
+              l10n.signInSubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
@@ -201,10 +207,29 @@ class _AccountPageState extends State<AccountPage> {
             // Email/Password Form
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.email,
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               keyboardType: TextInputType.emailAddress,
               enabled: !_isLoading,
@@ -214,9 +239,28 @@ class _AccountPageState extends State<AccountPage> {
               controller: _passwordController,
               obscureText: _isObscure,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: l10n.password,
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _isObscure = !_isObscure),
@@ -235,14 +279,14 @@ class _AccountPageState extends State<AccountPage> {
               child: SmoothSizeSwitcher(
                 child: _isLoading
                   ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Sign In', key: ValueKey('idle')),
+                  : Text(l10n.signIn, key: const ValueKey('idle')),
               ),
             ),
 
             const SizedBox(height: 16),
             TextButton(
               onPressed: _openAccountUrl,
-              child: const Text('Create MeoArch Account'),
+              child: Text(l10n.createAccount),
             ),
             const SizedBox(height: 24),
 
@@ -266,7 +310,7 @@ class _AccountPageState extends State<AccountPage> {
             OutlinedButton.icon(
               onPressed: _isLoading ? null : () => AuthService().signInWithGoogle(),
               icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-              label: const Text('Continue with Google'),
+              label: Text(l10n.continueWithGoogle),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
@@ -275,7 +319,7 @@ class _AccountPageState extends State<AccountPage> {
             OutlinedButton.icon(
               onPressed: _isLoading ? null : () => AuthService().signInWithGitHub(),
               icon: const Icon(Icons.code_rounded),
-              label: const Text('Continue with GitHub'),
+              label: Text(l10n.continueWithGitHub),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),

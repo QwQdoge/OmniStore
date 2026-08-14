@@ -2352,6 +2352,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to generate personalized recommendations at this time. You can still browse editor picks or try again later.'**
   String get aiPickFallbackMessage;
+
+  /// Description for meoArchAccount
+  ///
+  /// In en, this message translates to:
+  /// **'MeoArch Account'**
+  String get meoArchAccount;
+
+  /// Description for signOut
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// Description for syncStatus
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Status'**
+  String get syncStatus;
+
+  /// Description for syncStatusSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Apps and settings are backed up'**
+  String get syncStatusSubtitle;
+
+  /// Description for manageAccount
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Account'**
+  String get manageAccount;
+
+  /// Description for manageAccountSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Security, MFA, and sessions'**
+  String get manageAccountSubtitle;
+
+  /// Description for signInToMeoArch
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In to MeoArch'**
+  String get signInToMeoArch;
+
+  /// Description for signInSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Sync your apps, settings, and favorites across devices.'**
+  String get signInSubtitle;
+
+  /// Description for email
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// Description for password
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// Description for signIn
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// Description for createAccount
+  ///
+  /// In en, this message translates to:
+  /// **'Create MeoArch Account'**
+  String get createAccount;
+
+  /// Description for continueWithGoogle
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// Description for continueWithGitHub
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with GitHub'**
+  String get continueWithGitHub;
+
+  /// Description for enterEmailPassword
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter email and password.'**
+  String get enterEmailPassword;
+
+  /// No description provided for @signInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed: {message}'**
+  String signInFailed(String message);
+
+  /// No description provided for @signInError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in error: {message}'**
+  String signInError(String message);
 }
 
 class _AppLocalizationsDelegate

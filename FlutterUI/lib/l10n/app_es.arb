@@ -1184,5 +1184,81 @@
   "aiPickFallbackMessage": "No se pueden generar recomendaciones personalizadas en este momento. Aún puedes explorar las selecciones de los editores o volver a intentarlo más tarde.",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoArchAccount": "Cuenta de MeoArch",
+  "@meoArchAccount": {
+    "description": "Description for meoArchAccount"
+  },
+  "signOut": "Cerrar sesión",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "Estado de sincronización",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "Las aplicaciones y ajustes están respaldados",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "Gestionar cuenta",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "Seguridad, MFA y sesiones",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInToMeoArch": "Iniciar sesión en MeoArch",
+  "@signInToMeoArch": {
+    "description": "Description for signInToMeoArch"
+  },
+  "signInSubtitle": "Sincroniza tus aplicaciones, ajustes y favoritos en todos tus dispositivos.",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "Correo electrónico",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "Contraseña",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "Iniciar sesión",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "Crear cuenta de MeoArch",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "continueWithGoogle": "Continuar con Google",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "Continuar con GitHub",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailPassword": "Por favor, introduce tu correo y contraseña.",
+  "@enterEmailPassword": {
+    "description": "Description for enterEmailPassword"
+  },
+  "signInFailed": "Error al iniciar sesión: {message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "Error de inicio de sesión: {message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

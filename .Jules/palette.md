@@ -1,3 +1,9 @@
+## 2026-08-09 - Material Design 3 Input Standardization & Authentication Localization
+
+**Learning:** To guarantee unified Material Design 3 visuals and complete multi-language accessibility across core authentication screens, forms like standard Sign-In must fully migrate away from hardcoded English strings to `AppLocalizations`. These input fields must also follow global visual patterns using explicit 12dp rounded `OutlineInputBorder` borders with comfortable vertical-symmetric content padding and custom outline variants to align with modern Material Design 3 design languages.
+
+**Action:** Replace hardcoded strings on the login/sign-in screen with central `AppLocalizations` support, and polish raw text fields with custom 12dp `OutlineInputBorder` shapes and consistent padding properties.
+
 ## 2026-08-08 - Dropdown Form Field Nesting and MD3 Input Hierarchy
 
 **Learning:** Nesting standard `DropdownButton` elements inside the `child` parameter of a `DropdownButtonFormField` is an invalid configuration that causes layout errors and static compiler analysis failures. Under Material Design 3 guidelines, dropdown forms must define configuration properties (`items`, `onChanged`, and `value`) directly on the `DropdownButtonFormField` to ensure unified visual style, keyboard accessibility, and correct form validation behaviors.

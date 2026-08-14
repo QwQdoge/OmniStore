@@ -1294,4 +1294,60 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiPickFallbackMessage =>
       'Unable to generate personalized recommendations at this time. You can still browse editor picks or try again later.';
+
+  @override
+  String get meoArchAccount => 'MeoArch Account';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get syncStatus => 'Sync Status';
+
+  @override
+  String get syncStatusSubtitle => 'Apps and settings are backed up';
+
+  @override
+  String get manageAccount => 'Manage Account';
+
+  @override
+  String get manageAccountSubtitle => 'Security, MFA, and sessions';
+
+  @override
+  String get signInToMeoArch => 'Sign In to MeoArch';
+
+  @override
+  String get signInSubtitle =>
+      'Sync your apps, settings, and favorites across devices.';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get createAccount => 'Create MeoArch Account';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithGitHub => 'Continue with GitHub';
+
+  @override
+  String get enterEmailPassword => 'Please enter email and password.';
+
+  @override
+  String signInFailed(String message) {
+    return 'Sign in failed: $message';
+  }
+
+  @override
+  String signInError(String message) {
+    return 'Sign in error: $message';
+  }
 }

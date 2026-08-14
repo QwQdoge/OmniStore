@@ -46,7 +46,24 @@ NEW_KEYS_EN = {
     "recommendedSource": "Recommended Source: {source}",
     "preflightChecks": "Preflight Checks",
     "potentialRisks": "Potential Risks",
-    "continueInstallation": "Continue"
+    "continueInstallation": "Continue",
+    "meoArchAccount": "MeoArch Account",
+    "signOut": "Sign Out",
+    "syncStatus": "Sync Status",
+    "syncStatusSubtitle": "Apps and settings are backed up",
+    "manageAccount": "Manage Account",
+    "manageAccountSubtitle": "Security, MFA, and sessions",
+    "signInToMeoArch": "Sign In to MeoArch",
+    "signInSubtitle": "Sync your apps, settings, and favorites across devices.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "createAccount": "Create MeoArch Account",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGitHub": "Continue with GitHub",
+    "enterEmailPassword": "Please enter email and password.",
+    "signInFailed": "Sign in failed: {message}",
+    "signInError": "Sign in error: {message}"
 }
 
 NEW_KEYS_ZH = {
@@ -92,7 +109,24 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐来源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "meoArchAccount": "MeoArch 账户",
+    "signOut": "退出登录",
+    "syncStatus": "同步状态",
+    "syncStatusSubtitle": "应用和设置已备份",
+    "manageAccount": "管理账户",
+    "manageAccountSubtitle": "安全、多因素认证（MFA）及会话管理",
+    "signInToMeoArch": "登录 MeoArch 账户",
+    "signInSubtitle": "跨设备同步您的应用、设置及收藏項目。",
+    "email": "邮箱",
+    "password": "密码",
+    "signIn": "登录",
+    "createAccount": "创建 MeoArch 账户",
+    "continueWithGoogle": "使用 Google 登录",
+    "continueWithGitHub": "使用 GitHub 登录",
+    "enterEmailPassword": "请输入邮箱和密码。",
+    "signInFailed": "登录失败: {message}",
+    "signInError": "登录出错: {message}"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -138,7 +172,24 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦來源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "meoArchAccount": "MeoArch 帳戶",
+    "signOut": "登出",
+    "syncStatus": "同步狀態",
+    "syncStatusSubtitle": "應用程式與設定已備份",
+    "manageAccount": "管理帳戶",
+    "manageAccountSubtitle": "安全性、多因素驗證（MFA）與工作階段",
+    "signInToMeoArch": "登入 MeoArch 帳戶",
+    "signInSubtitle": "跨裝置同步您的應用程式、設定與收藏項目。",
+    "email": "電子郵件",
+    "password": "密碼",
+    "signIn": "登入",
+    "createAccount": "建立 MeoArch 帳戶",
+    "continueWithGoogle": "使用 Google 登入",
+    "continueWithGitHub": "使用 GitHub 登入",
+    "enterEmailPassword": "請輸入電子郵件和密碼。",
+    "signInFailed": "登入失敗: {message}",
+    "signInError": "登入出錯: {message}"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +235,24 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "meoArchAccount": "MeoArch アカウント",
+    "signOut": "サインアウト",
+    "syncStatus": "同期ステータス",
+    "syncStatusSubtitle": "アプリと設定がバックアップされています",
+    "manageAccount": "アカウント管理",
+    "manageAccountSubtitle": "セキュリティ、MFA、セッション",
+    "signInToMeoArch": "MeoArch にサインイン",
+    "signInSubtitle": "デバイス間でアプリ、設定、お気に入りを同期します。",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "signIn": "サインイン",
+    "createAccount": "MeoArch アカウントを作成",
+    "continueWithGoogle": "Google で続行",
+    "continueWithGitHub": "GitHub で続行",
+    "enterEmailPassword": "メールアドレスとパスワードを入力してください。",
+    "signInFailed": "サインイン失敗: {message}",
+    "signInError": "サインインエラー: {message}"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +298,24 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "meoArchAccount": "Cuenta de MeoArch",
+    "signOut": "Cerrar sesión",
+    "syncStatus": "Estado de sincronización",
+    "syncStatusSubtitle": "Las aplicaciones y ajustes están respaldados",
+    "manageAccount": "Gestionar cuenta",
+    "manageAccountSubtitle": "Seguridad, MFA y sesiones",
+    "signInToMeoArch": "Iniciar sesión en MeoArch",
+    "signInSubtitle": "Sincroniza tus aplicaciones, ajustes y favoritos en todos tus dispositivos.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta de MeoArch",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithGitHub": "Continuar con GitHub",
+    "enterEmailPassword": "Por favor, introduce tu correo y contraseña.",
+    "signInFailed": "Error al iniciar sesión: {message}",
+    "signInError": "Error de inicio de sesión: {message}"
 }
 
 MAPPINGS = {

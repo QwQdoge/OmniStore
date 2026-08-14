@@ -1303,4 +1303,62 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get aiPickFallbackMessage =>
       'No se pueden generar recomendaciones personalizadas en este momento. Aún puedes explorar las selecciones de los editores o volver a intentarlo más tarde.';
+
+  @override
+  String get meoArchAccount => 'Cuenta de MeoArch';
+
+  @override
+  String get signOut => 'Cerrar sesión';
+
+  @override
+  String get syncStatus => 'Estado de sincronización';
+
+  @override
+  String get syncStatusSubtitle =>
+      'Las aplicaciones y ajustes están respaldados';
+
+  @override
+  String get manageAccount => 'Gestionar cuenta';
+
+  @override
+  String get manageAccountSubtitle => 'Seguridad, MFA y sesiones';
+
+  @override
+  String get signInToMeoArch => 'Iniciar sesión en MeoArch';
+
+  @override
+  String get signInSubtitle =>
+      'Sincroniza tus aplicaciones, ajustes y favoritos en todos tus dispositivos.';
+
+  @override
+  String get email => 'Correo electrónico';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get signIn => 'Iniciar sesión';
+
+  @override
+  String get createAccount => 'Crear cuenta de MeoArch';
+
+  @override
+  String get continueWithGoogle => 'Continuar con Google';
+
+  @override
+  String get continueWithGitHub => 'Continuar con GitHub';
+
+  @override
+  String get enterEmailPassword =>
+      'Por favor, introduce tu correo y contraseña.';
+
+  @override
+  String signInFailed(String message) {
+    return 'Error al iniciar sesión: $message';
+  }
+
+  @override
+  String signInError(String message) {
+    return 'Error de inicio de sesión: $message';
+  }
 }

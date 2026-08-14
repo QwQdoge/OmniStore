@@ -127,5 +127,4 @@ polish('zh_Hant', {
     "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
     "searchGithubHint": "搜尋 GitHub 倉庫...",
     "pluginsAndSources": "外掛程式與軟體源"
->>>>>>> origin/main
 })
