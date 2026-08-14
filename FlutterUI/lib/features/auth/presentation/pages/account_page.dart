@@ -91,7 +91,8 @@ class _AccountPageState extends State<AccountPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final displayName = user.userMetadata?['full_name'] as String? ?? user.email ?? 'User';
+    final displayName =
+        user.userMetadata?['full_name'] as String? ?? user.email ?? 'User';
     final avatarUrl = user.userMetadata?['avatar_url'] as String?;
 
     return Center(
@@ -105,10 +106,16 @@ class _AccountPageState extends State<AccountPage> {
               child: CircleAvatar(
                 radius: 48,
                 backgroundColor: colorScheme.primaryContainer,
-                backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                backgroundImage: avatarUrl != null
+                    ? NetworkImage(avatarUrl)
+                    : null,
                 child: avatarUrl == null
-                  ? Icon(Icons.person_rounded, size: 48, color: colorScheme.onPrimaryContainer)
-                  : null,
+                    ? Icon(
+                        Icons.person_rounded,
+                        size: 48,
+                        color: colorScheme.onPrimaryContainer,
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 24),
@@ -143,7 +150,10 @@ class _AccountPageState extends State<AccountPage> {
                     leading: Icon(Icons.sync_rounded),
                     title: Text('Sync Status'),
                     subtitle: Text('Apps and settings are backed up'),
-                    trailing: Icon(Icons.check_circle_rounded, color: Colors.green),
+                    trailing: Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
@@ -218,7 +228,9 @@ class _AccountPageState extends State<AccountPage> {
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                  icon: Icon(
+                    _isObscure ? Icons.visibility_off : Icons.visibility,
+                  ),
                   onPressed: () => setState(() => _isObscure = !_isObscure),
                 ),
               ),
@@ -227,16 +239,25 @@ class _AccountPageState extends State<AccountPage> {
             ),
             const SizedBox(height: 24),
 
-            FilledButton(
+            FilledButton.icon(
               onPressed: _isLoading ? null : _handleEmailSignIn,
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: SmoothSizeSwitcher(
+              icon: SmoothSizeSwitcher(
                 child: _isLoading
-                  ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Sign In', key: ValueKey('idle')),
+                    ? SizedBox(
+                        key: const ValueKey('loading'),
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : const Icon(Icons.login_rounded, key: ValueKey('idle')),
               ),
+              label: const Text('Sign In'),
             ),
 
             const SizedBox(height: 16),
@@ -264,7 +285,9 @@ class _AccountPageState extends State<AccountPage> {
             const SizedBox(height: 24),
 
             OutlinedButton.icon(
-              onPressed: _isLoading ? null : () => AuthService().signInWithGoogle(),
+              onPressed: _isLoading
+                  ? null
+                  : () => AuthService().signInWithGoogle(),
               icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
               label: const Text('Continue with Google'),
               style: OutlinedButton.styleFrom(
@@ -273,7 +296,9 @@ class _AccountPageState extends State<AccountPage> {
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: _isLoading ? null : () => AuthService().signInWithGitHub(),
+              onPressed: _isLoading
+                  ? null
+                  : () => AuthService().signInWithGitHub(),
               icon: const Icon(Icons.code_rounded),
               label: const Text('Continue with GitHub'),
               style: OutlinedButton.styleFrom(
