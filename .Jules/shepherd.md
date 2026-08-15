@@ -99,3 +99,6 @@ Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable g
 ## 2026-08-07 - Dialog Button Consistency: Dismissal Actions
 - Standardized the single-action dismissal buttons in informational, alert, and error dialogs to use `FilledButton` instead of `TextButton`, ensuring visual consistency with the app's primary action button pattern.
 - Updated `AITestResultDialog`, `AIMarkdownDialog`, `AICliDialog`, `AIUpdateSummaryDialog`, and `ApiKeyInstructionsDialog` to use `FilledButton` for the `l10n.ok` action.
+## 2026-08-15 - Dialog Button Consistency: Secondary Actions
+- Standardized secondary/cancellation actions in dialogs to use `FilledButton.tonal` instead of `TextButton`, ensuring visual consistency and adhering to MD3 interaction patterns.
+- Updated `ActionConfirmDialog`, `AurSecurityDialog`, inline AUR warnings in `action_dialogs.dart`, `ImportPackagesDialog`, and `AddSourceDialog` to use `FilledButton.tonal` for the cancel/dismiss action.
