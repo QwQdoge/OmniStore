@@ -192,20 +192,19 @@ class WelcomeAiPage extends StatelessWidget {
                                     label: Text(l10n.howToGetApiKey),
                                   ),
                                   const Spacer(),
-                                  SmoothSizeSwitcher(
-                                    child: isTestingAI
-                                        ? const SizedBox(
-                                            key: ValueKey('testing'),
-                                            width: 24,
-                                            height: 24,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          )
-                                        : FilledButton.tonalIcon(
-                                            key: const ValueKey('idle'),
-                                            onPressed: onTestAI,
-                                            icon: const Icon(Icons.network_ping_rounded, size: 18),
-                                            label: const Text('Test Connection'),
-                                          ),
+                                  FilledButton.tonalIcon(
+                                    onPressed: isTestingAI ? null : onTestAI,
+                                    icon: SmoothSizeSwitcher(
+                                      child: isTestingAI
+                                          ? const SizedBox(
+                                              key: ValueKey('testing'),
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.network_ping_rounded, size: 18, key: ValueKey('idle')),
+                                    ),
+                                    label: const Text('Test Connection'),
                                   ),
                                 ],
                               ),

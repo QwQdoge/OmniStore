@@ -227,16 +227,22 @@ class _AccountPageState extends State<AccountPage> {
             ),
             const SizedBox(height: 24),
 
-            FilledButton(
+            FilledButton.icon(
               onPressed: _isLoading ? null : _handleEmailSignIn,
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: SmoothSizeSwitcher(
+              icon: SmoothSizeSwitcher(
                 child: _isLoading
-                  ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Sign In', key: ValueKey('idle')),
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const SizedBox.shrink(key: ValueKey('idle')),
               ),
+              label: const Text('Sign In'),
             ),
 
             const SizedBox(height: 16),

@@ -69,3 +69,8 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** When toggling a button between an idle text state and a loading state (like `CircularProgressIndicator`), using a raw `AnimatedSwitcher` causes abrupt layout jumps. Using `SmoothSizeSwitcher` provides unified MD3 motion logic and concurrently handles opacity and sizing.
 
 **Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the "Sign In" `FilledButton` in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
+## 2024-11-21 - Unified Implicit Button Loading Animations
+
+**Learning:** When toggling a UI button between an interactive state (idle) and a loading state (like a `CircularProgressIndicator`), a raw widget swap or modifying the layout above the button causes abrupt visual jumps. Furthermore, when converting a button to its `.icon` variant (e.g., `FilledButton.icon` or `FilledButton.tonalIcon`) to place a `SmoothSizeSwitcher` strictly around the `icon` parameter, using `SizedBox.shrink()` for the idle state's icon creates a subtle visual flaw: the button retains an implicit 8-pixel gap padding for the icon slot.
+
+**Action:** Refactored loading buttons in `github_integration_page.dart`, `welcome_ai_page.dart`, and `account_page.dart` to use `SmoothSizeSwitcher` exclusively within the `.icon` properties of `FilledButton.icon` or `FilledButton.tonalIcon`, preventing massive layout shifts.

@@ -1,4 +1,5 @@
-1. **Remove unused extracted files**: I have already removed the unused `ai_config_page.dart`, `intro_page.dart`, `sources_page.dart`, `config_card.dart`, and `env_check_page.dart` because they were duplicated when `welcome_` prefix files were created.
-2. **Remove unused import in `WelcomePage`**: Make sure no broken imports remain (though flutter analyze already passed). I should also update `.Jules/gardener.md` to note this cleanup.
-3. **Run flutter tests**: Run flutter tests to make sure there are no regressions.
-4. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
+1. Refactor button loading transitions in `FlutterUI/lib/features/settings/presentation/pages/github_integration_page.dart` to use `SmoothSizeSwitcher` exclusively inside the `icon` parameter of `FilledButton.icon`, wrapping the icon and loading indicator, rather than wrapping the entire button or putting an extra padding/switcher outside.
+2. Refactor button loading transitions in `FlutterUI/lib/features/onboarding/widgets/welcome_ai_page.dart` to use `SmoothSizeSwitcher` inside the `icon` parameter of `FilledButton.tonalIcon`, wrapping the icon and `CircularProgressIndicator`, rather than swapping out the entire button and loading indicator at a higher layout level.
+3. Refactor `FlutterUI/lib/features/auth/presentation/pages/account_page.dart` to use `FilledButton.icon` instead of `FilledButton`, placing the loading animation in the `icon` slot with `SmoothSizeSwitcher` so that the button text doesn't vanish abruptly, which avoids jarring layout jumps.
+4. Run testing script.
+5. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
