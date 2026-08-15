@@ -4,7 +4,7 @@ from aiohttp import ClientTimeout
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from .base import SearchSource
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Set
 
 
 class AppImageSearch(SearchSource):
@@ -78,7 +78,10 @@ class AppImageSearch(SearchSource):
             return set()
         return {f.name.lower() for f in apps_dir.glob("*.AppImage")}
 
-    def is_installed(self, app_name: str) -> bool:
+    def is_installed(self, app_name: str, installed_files: Optional[Set[str]] = None) -> bool:
+        if installed_files is not None:
+            app_name_lower = app_name.lower()
+            return any(app_name_lower in f for f in installed_files)
         apps_dir = Path.home() / "Applications"
         if not apps_dir.exists():
             return False
@@ -106,9 +109,9 @@ class AppImageSearch(SearchSource):
         )
 
         installed_statuses = []
+        # ⚡ Bolt: Pass pre-scanned installed_files set to is_installed to avoid O(N) glob scans per item.
         for item in matched_items:
-            app_name = item.get("name", "").lower()
-            is_inst = any(app_name in f for f in installed_files)
+            is_inst = self.is_installed(item.get("name", ""), installed_files)
             installed_statuses.append(is_inst)
 
         results = []
