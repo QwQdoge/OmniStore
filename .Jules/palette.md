@@ -1,3 +1,9 @@
+## 2026-08-09 - Material Design 3 Form Inputs and Toggle Accessibility Polish
+
+**Learning:** Styling form text input fields (such as email and password fields on authentication and account setup screens) with 12dp rounded `OutlineInputBorder`s, symmetric content padding (`horizontal: 16, vertical: 12`), and subtle `outlineVariant` borders ensures consistent visual hierarchy with Material Design 3 guidelines across Flutter pages. Furthermore, adding explicit `tooltip` parameters to trailing action buttons (like password visibility toggles) guarantees both desktop hover discovery and screen-reader accessibility.
+
+**Action:** Standardize text input styling across account/auth pages to use 12dp rounded `OutlineInputBorder`s with `outlineVariant` borders, and provide descriptive `tooltip` labels on all state toggling `IconButton`s.
+
 ## 2026-08-08 - Dropdown Form Field Nesting and MD3 Input Hierarchy
 
 **Learning:** Nesting standard `DropdownButton` elements inside the `child` parameter of a `DropdownButtonFormField` is an invalid configuration that causes layout errors and static compiler analysis failures. Under Material Design 3 guidelines, dropdown forms must define configuration properties (`items`, `onChanged`, and `value`) directly on the `DropdownButtonFormField` to ensure unified visual style, keyboard accessibility, and correct form validation behaviors.
