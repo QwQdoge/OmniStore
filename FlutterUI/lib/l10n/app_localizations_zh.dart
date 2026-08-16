@@ -1185,7 +1185,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。';
+  String get aiPickDisclaimer => '条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -2118,7 +2118,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/倉庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端軟體存放庫';
+  String get flatpakRemoteType => 'Flatpak 遠端軟體源';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
@@ -2384,7 +2384,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。';
+  String get aiPickDisclaimer => '條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';
