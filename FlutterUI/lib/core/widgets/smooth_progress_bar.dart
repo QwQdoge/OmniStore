@@ -144,27 +144,28 @@ class _TaskHeaderRow extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        if (taskState.stage.isNotEmpty && !isFailed)
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                taskState.stage.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
+        SmoothSizeSwitcher(
+          alignment: Alignment.centerLeft,
+          child: (taskState.stage.isNotEmpty && !isFailed)
+              ? Container(
+                  key: ValueKey(taskState.stage),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    taskState.stage.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey('empty_stage')),
+        ),
         Expanded(
           child: SmoothSizeSwitcher(
             duration: const Duration(milliseconds: 300),

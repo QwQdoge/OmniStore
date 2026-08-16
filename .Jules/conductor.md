@@ -69,3 +69,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** When toggling a button between an idle text state and a loading state (like `CircularProgressIndicator`), using a raw `AnimatedSwitcher` causes abrupt layout jumps. Using `SmoothSizeSwitcher` provides unified MD3 motion logic and concurrently handles opacity and sizing.
 
 **Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the "Sign In" `FilledButton` in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
+
+## 2024-11-21 - Eliminate Raw AnimatedSize for Conditional Renders
+
+**Learning:** When conditionally rendering a widget using an `if` block, wrapping the conditional branch in a raw `AnimatedSize` will not create an exit transition when the condition evaluates to false (the widget immediately drops out of the tree). To fix this, always keep the transition wrapper in the tree permanently and conditionally render its child (swapping the widget with a `SizedBox.shrink(key: ValueKey('empty'))`). We should use our unified `SmoothSizeSwitcher` wrapper for these cases to benefit from concurrent opacity and layout animation rather than using raw `AnimatedSize`.
+
+**Action:** Refactored `_TaskHeaderRow` in `smooth_progress_bar.dart` to use a `SmoothSizeSwitcher` instead of an `if`-wrapped `AnimatedSize`, providing a smooth cross-fade when a task changes stages.
