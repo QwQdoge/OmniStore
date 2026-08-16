@@ -36,11 +36,14 @@ def create_daemon_task(coro):
     return task
 
 async def cleanup_daemon_resources():
-    """Murphy-proof: Clean up all tracked daemon tasks and subprocesses safely."""
+    """
+    Murphy-proof: Clean up all tracked daemon tasks and subprocesses safely.
+    Guarantees subprocess termination even if task cancellation unwinds the stack.
+    """
     async with _shutdown_lock:
         logging.info("Cleaning up daemon resources...")
 
-        # 1. Cancel tasks
+        # 1. Task Cancellation: Gracefully cancel active background tasks
         current = asyncio.current_task()
         tasks_to_cancel = [t for t in _active_tasks if t is not current and not t.done()]
         if tasks_to_cancel:
@@ -48,15 +51,19 @@ async def cleanup_daemon_resources():
             for t in tasks_to_cancel:
                 t.cancel()
             try:
-                await asyncio.wait_for(
+                # Use shield to protect task gathering from being aborted by outer cancellation
+                await asyncio.shield(asyncio.wait_for(
                     asyncio.gather(*tasks_to_cancel, return_exceptions=True),
                     timeout=5.0
-                )
-            except Exception as e:
-                logging.error(f"Error gathering cancelled tasks: {e}")
-            _active_tasks.clear()
+                ))
+            except BaseException as e:
+                if not isinstance(e, (asyncio.CancelledError, TimeoutError, Exception)):
+                    raise
+                logging.debug(f"Daemon task gathering completed with signal/cancellation: {e}")
+            finally:
+                _active_tasks.clear()
 
-        # 2. Terminate subprocesses
+        # 2. Subprocess Termination: Ensure no zombie processes remain
         if _active_processes:
             logging.info(f"Terminating {len(_active_processes)} active subprocesses...")
             for proc in list(_active_processes):
@@ -72,7 +79,7 @@ async def cleanup_daemon_resources():
                     break
                 await asyncio.sleep(0.1)
 
-            # Force kill if still alive
+            # Escalation to SIGKILL for non-responsive subprocesses
             for proc in list(_active_processes):
                 if proc.returncode is None:
                     try:
@@ -210,10 +217,14 @@ def parse_json_output(raw: str):
         raise ValueError(f"Failed to extract valid JSON from: {text[:100]}...")
 
 async def run_auto_updates(updates):
-    """Murphy-proof: Auto-update sequence with individual task isolation."""
+    """Murphy-proof: Auto-update sequence with individual task isolation and input defensive checks."""
+    if not isinstance(updates, list):
+        logging.warning("Murphy-proof: Invalid updates payload provided to auto-update. Skipping.")
+        return
+
     logging.info("Auto-update is enabled. Starting updates...")
     
-    has_flatpaks = any(u.get("source") == "Flatpak" for u in updates)
+    has_flatpaks = any(isinstance(u, dict) and u.get("source") == "Flatpak" for u in updates)
     if has_flatpaks and shutil.which("flatpak"):
         logging.info("Auto-updating Flatpak applications...")
         try:
@@ -227,17 +238,20 @@ async def run_auto_updates(updates):
                     await asyncio.wait_for(proc.wait(), timeout=1800.0) # 30 min timeout
                 finally:
                     unregister_process(proc)
-        except Exception as e:
+        except BaseException as e:
+            if isinstance(e, asyncio.CancelledError):
+                logging.warning("Flatpak auto-update cancelled.")
+                raise
             logging.error(f"Flatpak auto-update failed: {e}")
 
     # Check if running as root for native package updates
     try:
-        is_root = os.getuid() == 0
-    except AttributeError:
+        is_root = hasattr(os, "getuid") and os.getuid() == 0
+    except Exception:
         is_root = False
 
     if is_root:
-        has_natives = any(u.get("source") in ("Native", "AUR") for u in updates)
+        has_natives = any(isinstance(u, dict) and u.get("source") in ("Native", "AUR") for u in updates)
         if has_natives and shutil.which("pacman"):
             logging.info("Running as root. Auto-updating native packages...")
             try:
@@ -251,7 +265,10 @@ async def run_auto_updates(updates):
                         await asyncio.wait_for(proc.wait(), timeout=3600.0) # 60 min timeout
                     finally:
                         unregister_process(proc)
-            except Exception as e:
+            except BaseException as e:
+                if isinstance(e, asyncio.CancelledError):
+                    logging.warning("Pacman auto-update cancelled.")
+                    raise
                 logging.error(f"Pacman auto-update failed: {e}")
     else:
         logging.info("Not running as root. Skipping native pacman/aur auto-updates.")

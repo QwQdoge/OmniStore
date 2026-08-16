@@ -222,13 +222,14 @@ def safe_command(func):
             # 2. State Locking: Reject concurrent duplicate high-frequency or stateful commands
             is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
             if is_action:
-                for active_id in list(self._active_commands.keys()):
-                    if active_id.startswith(func.__name__):
-                        error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
-                        logging.warning(error_msg)
-                        if json_mode and is_top_level:
-                            self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
-                        return False
+                async with self._lock:
+                    for active_id in list(self._active_commands.keys()):
+                        if active_id.startswith(func.__name__):
+                            error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
+                            logging.warning(error_msg)
+                            if json_mode and is_top_level:
+                                self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
+                            return False
 
             # 3. Timeout Calculation
             is_long_running = is_action or func.__name__ in ("run_bootstrap", "run_import_packages", "run_export_packages")
@@ -237,8 +238,9 @@ def safe_command(func):
             # 4. Execution & Panic Recovery
             command_id = f"{func.__name__}_{time.time()}"
             current_task = asyncio.current_task()
-            if current_task:
-                self._active_commands[command_id] = current_task
+            async with self._lock:
+                if current_task:
+                    self._active_commands[command_id] = current_task
 
             try:
                 # Murphy-proof: Strict and context-aware parameter validation using inspect.signature
@@ -343,7 +345,8 @@ def safe_command(func):
                     raise
                 return resp.model_dump(exclude_none=True) if (json_mode and is_top_level) else False
             finally:
-                self._active_commands.pop(command_id, None)
+                async with self._lock:
+                    self._active_commands.pop(command_id, None)
         finally:
             in_safe_command_var.reset(token)
 
