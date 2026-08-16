@@ -153,3 +153,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Direct instantiation of repositories (e.g. `PackageRepository()`) on every usage inside controllers, pages, or background services creates distinct instances, thereby entirely neutralizing any internal in-memory caching mechanisms. Refactoring the repository class into a factory singleton shares the internal cache state across all layers. Implementing a request deduplication (coalescing) map alongside in-memory details caching for `getAppDetails` with targeted invalidation on task completions drastically reduces network and IPC overhead during navigation.
 
 **Action:** Refactored `PackageRepository` to a singleton pattern, added details in-memory cache and `_activeDetailsRequests` coalescing map, and hooked `clearDetailsCacheFor` to successful task completions in `TaskManager` and `TaskController`.
+
+## 2026-08-16 - InstalledAppList PrototypeItem Trailing Element Alignment
+
+**Learning:** When using `prototypeItem` in virtualized `ListView.builder` lists, omitting layout components present in `itemBuilder` items (such as `trailing` widgets like `AppSourceTag`) causes extent recalculation during scrolling, leading to scroll jitter and inaccurate scrollbar sizing.
+
+**Action:** Updated `prototypeItem` in `InstalledAppList` (`FlutterUI/lib/features/apps/widgets/installed_app_list.dart`) to include a `trailing: AppSourceTag(source: 'pacman', mode: AppSourceTagMode.source)` matching the structural dimensions of `itemBuilder` items.

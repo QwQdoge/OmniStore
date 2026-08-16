@@ -35,6 +35,10 @@ class InstalledAppList extends StatelessWidget {
                   Expanded(child: SizedBox(height: 12)),
                 ],
               ),
+              trailing: AppSourceTag(
+                source: 'pacman',
+                mode: AppSourceTagMode.source,
+              ),
             ),
           ),
         ),
