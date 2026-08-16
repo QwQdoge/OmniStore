@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
+import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -130,7 +131,7 @@ class _AccountPageState extends State<AccountPage> {
             const SizedBox(height: 32),
             Card(
               elevation: 0,
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: colorScheme.surfaceContainerLow,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
@@ -201,10 +202,29 @@ class _AccountPageState extends State<AccountPage> {
             // Email/Password Form
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               keyboardType: TextInputType.emailAddress,
               enabled: !_isLoading,
@@ -216,9 +236,33 @@ class _AccountPageState extends State<AccountPage> {
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 suffixIcon: IconButton(
-                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                  tooltip: _isObscure ? 'Show password' : 'Hide password',
+                  icon: Icon(
+                    _isObscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
                   onPressed: () => setState(() => _isObscure = !_isObscure),
                 ),
               ),
@@ -234,7 +278,15 @@ class _AccountPageState extends State<AccountPage> {
               ),
               child: SmoothSizeSwitcher(
                 child: _isLoading
-                  ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? SizedBox(
+                      key: const ValueKey('loading'),
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
                   : const Text('Sign In', key: ValueKey('idle')),
               ),
             ),
