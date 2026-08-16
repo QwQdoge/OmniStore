@@ -55,8 +55,10 @@ class BrowseController with ChangeNotifier {
     if (_packageRepository.activeFetchFuture != null) {
       try {
         final freshRecs = await _packageRepository.activeFetchFuture!;
-        _recommendations = freshRecs;
-        notifyListeners();
+        if (!_disposed) {
+          _recommendations = freshRecs;
+          notifyListeners();
+        }
       } catch (_) {
         // Ignore background fetch errors as they are handled in the repository
       }
@@ -76,13 +78,15 @@ class BrowseController with ChangeNotifier {
       final results = await _packageRepository.searchPackages(query);
 
       // Only update if this is still the most recent search
-      if (searchId == _activeSearchId) {
+      if (!_disposed && searchId == _activeSearchId) {
         _searchResults = results;
       }
     } finally {
       if (searchId == _activeSearchId) {
-        _isSearching = false;
-        notifyListeners();
+        if (!_disposed) {
+          _isSearching = false;
+          notifyListeners();
+        }
       }
     }
   }

@@ -1,0 +1,5 @@
+🎨 Librarian: Resolve async lifecycles and build issues
+
+- Resolved undefined identifier `Toast` in `account_page.dart` by adding correct import.
+- Silenced `deprecated_member_use` warning for `value` parameter in `DropdownButtonFormField` inside `add_source_dialog.dart` per standard memory constraints.
+- Fortified `BrowseController` async methods (`fetchRecommendations`, `search`) against lifecycle leaks by adding robust `!_disposed` checks immediately before modifying view models or invoking `notifyListeners()`.
