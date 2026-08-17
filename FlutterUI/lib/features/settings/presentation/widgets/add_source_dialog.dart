@@ -211,7 +211,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context),
           child: Text(widget.l10n.cancel),
         ),
