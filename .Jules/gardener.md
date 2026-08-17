@@ -189,3 +189,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Extracted the oversized `ListView.builder` representing the loaded state from `installed_tab.dart` into a new stateless widget `InstalledAppList`. Complex list building inside tab views clutters the UI layout. Extracting them improves maintainability, especially for files representing primary navigation tabs.
 
 **Action:** Created `FlutterUI/lib/features/task_manager/presentation/widgets/installed_app_list.dart` to encapsulate the list rendering logic, passing `filteredApps` as a required parameter, preserving exact functionality while cleaning up the parent file.
+## 2026-08-10 - Consolidate Source Installation Checks
+
+**Learning:** In package search sources (e.g., `GitHubSource`, `BituSource` extending `UnifiedSource`), batch list operations were performing synchronous $O(N)$ `Path.exists()` syscalls repeatedly inside loops. Pre-scanning the managed directory using a shared `super()._get_installed_set()` avoids this overhead. However, when implementing `_get_installed_set()`, it is crucial not to filter by `is_dir()` because installed items may be single files (like binaries or metadata). For single-item lookups (e.g., `_get_repo_as_package`), do not pass `installed_set` to avoid an unnecessary $O(N)$ directory scan for a simple $O(1)$ lookup.
+
+**Action:** Consolidated the directory scanning logic into `UnifiedSource._get_installed_set(managed_dir)` in `python/core/sources/base.py`. Updated `github.py` and `bitu.py` to leverage this shared method during batch operations (`search`, `get_recommendations`), eliminating duplicate implementations while preserving behavior.
