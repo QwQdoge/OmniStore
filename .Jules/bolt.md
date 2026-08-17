@@ -153,3 +153,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Direct instantiation of repositories (e.g. `PackageRepository()`) on every usage inside controllers, pages, or background services creates distinct instances, thereby entirely neutralizing any internal in-memory caching mechanisms. Refactoring the repository class into a factory singleton shares the internal cache state across all layers. Implementing a request deduplication (coalescing) map alongside in-memory details caching for `getAppDetails` with targeted invalidation on task completions drastically reduces network and IPC overhead during navigation.
 
 **Action:** Refactored `PackageRepository` to a singleton pattern, added details in-memory cache and `_activeDetailsRequests` coalescing map, and hooked `clearDetailsCacheFor` to successful task completions in `TaskManager` and `TaskController`.
+
+## 2026-08-06 - Batch Pre-scan for Source Installation Checks
+
+**Learning:** Calling `Path.exists()` or checking directory paths synchronously inside result-formatting loops for search and recommendations across package sources (e.g. `GitHubSource`, `BituSource`) creates $O(N)$ synchronous filesystem syscall overhead. Pre-scanning the managed directory once per search/recommendations request into a `set` and passing it to `_is_installed` reduces filesystem syscalls to $O(1)$, significantly speeding up search result formatting.
+
+**Action:** Added `_get_installed_set()` to `GitHubSource` and `BituSource`, pre-scanning the managed installation directory once per search/recommendations call and reusing the `is_installed` boolean across package objects and variants.

@@ -46,8 +46,11 @@ class GitHubSource(UnifiedSource):
             # GitHub API uses 'page' parameter
             repos = await self.forge.search_repositories(query, sort=sort, order=order)
 
+        # ⚡ Optimization: Pre-scan managed directory once per search call to avoid O(N) synchronous exists() syscalls
+        installed_set = self._get_installed_set()
         results = []
         for repo in repos:
+            is_inst = self._is_installed(repo["full_name"], installed_set)
             results.append({
                 "name": repo["name"],
                 "id": repo["full_name"],
@@ -56,11 +59,11 @@ class GitHubSource(UnifiedSource):
                 "stars": repo.get("stargazers_count", 0),
                 "icon": repo.get("owner", {}).get("avatar_url"),
                 "url": repo["html_url"],
-                "installed": self._is_installed(repo["full_name"]),
+                "installed": is_inst,
                 "variants": [{
                     "source": "GitHub",
                     "id": repo["full_name"],
-                    "installed": self._is_installed(repo["full_name"])
+                    "installed": is_inst
                 }]
             })
         return results
@@ -71,6 +74,7 @@ class GitHubSource(UnifiedSource):
             async with self.session.get(repo_url, headers=self.forge.headers) as resp:
                 if resp.status != 200: return []
                 repo = await resp.json()
+                is_inst = self._is_installed(repo["full_name"])
                 return [{
                     "name": repo["name"],
                     "id": repo["full_name"],
@@ -79,20 +83,31 @@ class GitHubSource(UnifiedSource):
                     "stars": repo.get("stargazers_count", 0),
                     "icon": repo.get("owner", {}).get("avatar_url"),
                     "url": repo["html_url"],
-                    "installed": self._is_installed(repo["full_name"]),
+                    "installed": is_inst,
                     "variants": [{
                         "source": "GitHub",
                         "id": repo["full_name"],
-                        "installed": self._is_installed(repo["full_name"])
+                        "installed": is_inst
                     }]
                 }]
         except Exception:
             return []
 
-    def _is_installed(self, repo_id: str) -> bool:
+    def _get_installed_set(self) -> set:
+        managed_dir = self._managed_base_dir()
+        if not managed_dir.exists():
+            return set()
+        try:
+            return {p.name for p in managed_dir.iterdir() if p.is_dir()}
+        except Exception:
+            return set()
+
+    def _is_installed(self, repo_id: str, installed_set: Optional[set] = None) -> bool:
+        repo_safe_name = repo_id.replace("/", "_")
+        if installed_set is not None:
+            return repo_safe_name in installed_set
         # Check if we have a metadata file or the binary in our managed folder
         managed_dir = self._managed_base_dir()
-        repo_safe_name = repo_id.replace("/", "_")
         return (managed_dir / repo_safe_name).exists()
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
@@ -313,16 +328,18 @@ class GitHubSource(UnifiedSource):
                 order="desc",
             )
 
+            installed_set = self._get_installed_set()
             featured = []
             for repo in repos[:20]:
+                is_inst = self._is_installed(repo["full_name"], installed_set)
                 featured.append({
                     "name": repo["name"],
                     "id": repo["full_name"],
                     "description": repo.get("description", ""),
                     "source": "GitHub",
                     "icon": repo.get("owner", {}).get("avatar_url"),
-                    "installed": self._is_installed(repo["full_name"]),
-                    "variants": [{"source": "GitHub", "id": repo["full_name"]}]
+                    "installed": is_inst,
+                    "variants": [{"source": "GitHub", "id": repo["full_name"], "installed": is_inst}]
                 })
             return {"featured": featured, "trending": [], "for_you": []}
         except Exception:
