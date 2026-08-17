@@ -1201,6 +1201,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiPickFallbackMessage => '暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。';
+
+  @override
+  String get meoarchAccount => 'MeoArch 账户';
+
+  @override
+  String get defaultUser => '用户';
+
+  @override
+  String get signOut => '退出登录';
+
+  @override
+  String get syncStatus => '同步状态';
+
+  @override
+  String get syncStatusSubtitle => '应用与设置已安全备份';
+
+  @override
+  String get manageAccount => '管理账户';
+
+  @override
+  String get manageAccountSubtitle => '安全、多因素验证与会话管理';
+
+  @override
+  String get signInTitle => '登录 MeoArch';
+
+  @override
+  String get signInSubtitle => '跨设备同步您的应用、设置和收藏。';
+
+  @override
+  String get email => '邮箱';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get signIn => '登录';
+
+  @override
+  String get createAccount => '创建 MeoArch 账户';
+
+  @override
+  String get orDivider => '或';
+
+  @override
+  String get continueWithGoogle => '使用 Google 账号继续';
+
+  @override
+  String get continueWithGitHub => '使用 GitHub 账号继续';
+
+  @override
+  String get enterEmailAndPassword => '请输入邮箱和密码。';
+
+  @override
+  String signInFailed(String message) {
+    return '登录失败：$message';
+  }
+
+  @override
+  String signInError(String message) {
+    return '登录出错：$message';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2400,4 +2461,65 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aiPickFallbackMessage => '暫時無法產生個人化推薦。可瀏覽編輯精選或稍後重試。';
+
+  @override
+  String get meoarchAccount => 'MeoArch 帳戶';
+
+  @override
+  String get defaultUser => '使用者';
+
+  @override
+  String get signOut => '登出';
+
+  @override
+  String get syncStatus => '同步狀態';
+
+  @override
+  String get syncStatusSubtitle => '應用程式與設定已安全備份';
+
+  @override
+  String get manageAccount => '管理帳戶';
+
+  @override
+  String get manageAccountSubtitle => '安全性、多因素驗證與階段作業管理';
+
+  @override
+  String get signInTitle => '登入 MeoArch';
+
+  @override
+  String get signInSubtitle => '跨裝置同步您的應用程式、設定與最愛。';
+
+  @override
+  String get email => '電子郵件';
+
+  @override
+  String get password => '密碼';
+
+  @override
+  String get signIn => '登入';
+
+  @override
+  String get createAccount => '建立 MeoArch 帳戶';
+
+  @override
+  String get orDivider => '或';
+
+  @override
+  String get continueWithGoogle => '使用 Google 帳戶繼續';
+
+  @override
+  String get continueWithGitHub => '使用 GitHub 帳戶繼續';
+
+  @override
+  String get enterEmailAndPassword => '請輸入電子郵件和密碼。';
+
+  @override
+  String signInFailed(String message) {
+    return '登入失敗：$message';
+  }
+
+  @override
+  String signInError(String message) {
+    return '登入錯誤：$message';
+  }
 }

@@ -1188,5 +1188,89 @@
   "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoarchAccount": "MeoArch 账户",
+  "@meoarchAccount": {
+    "description": "Description for meoarchAccount"
+  },
+  "defaultUser": "用户",
+  "@defaultUser": {
+    "description": "Description for defaultUser"
+  },
+  "signOut": "退出登录",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "同步状态",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "应用与设置已安全备份",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "管理账户",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "安全、多因素验证与会话管理",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInTitle": "登录 MeoArch",
+  "@signInTitle": {
+    "description": "Description for signInTitle"
+  },
+  "signInSubtitle": "跨设备同步您的应用、设置和收藏。",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "邮箱",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "密码",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "登录",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "创建 MeoArch 账户",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "orDivider": "或",
+  "@orDivider": {
+    "description": "Description for orDivider"
+  },
+  "continueWithGoogle": "使用 Google 账号继续",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "使用 GitHub 账号继续",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailAndPassword": "请输入邮箱和密码。",
+  "@enterEmailAndPassword": {
+    "description": "Description for enterEmailAndPassword"
+  },
+  "signInFailed": "登录失败：{message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "登录出错：{message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -1211,4 +1211,65 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiPickFallbackMessage =>
       '現在、パーソナライズされたおすすめ情報を生成できません。編集部のおすすめを閲覧するか、後ほどもう一度お試しください。';
+
+  @override
+  String get meoarchAccount => 'MeoArch アカウント';
+
+  @override
+  String get defaultUser => 'ユーザー';
+
+  @override
+  String get signOut => 'サインアウト';
+
+  @override
+  String get syncStatus => '同期ステータス';
+
+  @override
+  String get syncStatusSubtitle => 'アプリと設定はバックアップされています';
+
+  @override
+  String get manageAccount => 'アカウント管理';
+
+  @override
+  String get manageAccountSubtitle => 'セキュリティ、MFA、セッション';
+
+  @override
+  String get signInTitle => 'MeoArch にサインイン';
+
+  @override
+  String get signInSubtitle => 'デバイス間でアプリ、設定、お気に入りを同期します。';
+
+  @override
+  String get email => 'メールアドレス';
+
+  @override
+  String get password => 'パスワード';
+
+  @override
+  String get signIn => 'サインイン';
+
+  @override
+  String get createAccount => 'MeoArch アカウントを作成';
+
+  @override
+  String get orDivider => 'または';
+
+  @override
+  String get continueWithGoogle => 'Google で続行';
+
+  @override
+  String get continueWithGitHub => 'GitHub で続行';
+
+  @override
+  String get enterEmailAndPassword => 'メールアドレスとパスワードを入力してください。';
+
+  @override
+  String signInFailed(String message) {
+    return 'サインイン失敗: $message';
+  }
+
+  @override
+  String signInError(String message) {
+    return 'サインインエラー: $message';
+  }
 }

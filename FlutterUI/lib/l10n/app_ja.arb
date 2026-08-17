@@ -1184,5 +1184,89 @@
   "aiPickFallbackMessage": "現在、パーソナライズされたおすすめ情報を生成できません。編集部のおすすめを閲覧するか、後ほどもう一度お試しください。",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoarchAccount": "MeoArch アカウント",
+  "@meoarchAccount": {
+    "description": "Description for meoarchAccount"
+  },
+  "defaultUser": "ユーザー",
+  "@defaultUser": {
+    "description": "Description for defaultUser"
+  },
+  "signOut": "サインアウト",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "同期ステータス",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "アプリと設定はバックアップされています",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "アカウント管理",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "セキュリティ、MFA、セッション",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInTitle": "MeoArch にサインイン",
+  "@signInTitle": {
+    "description": "Description for signInTitle"
+  },
+  "signInSubtitle": "デバイス間でアプリ、設定、お気に入りを同期します。",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "メールアドレス",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "パスワード",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "サインイン",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "MeoArch アカウントを作成",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "orDivider": "または",
+  "@orDivider": {
+    "description": "Description for orDivider"
+  },
+  "continueWithGoogle": "Google で続行",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "GitHub で続行",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailAndPassword": "メールアドレスとパスワードを入力してください。",
+  "@enterEmailAndPassword": {
+    "description": "Description for enterEmailAndPassword"
+  },
+  "signInFailed": "サインイン失敗: {message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "サインインエラー: {message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

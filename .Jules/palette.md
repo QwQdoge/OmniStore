@@ -1,3 +1,9 @@
+## 2026-08-17 - Material Design 3 Auth & Account Form Polish
+
+**Learning:** Designing auth and account pages in MD3 requires framing form elements inside `surfaceContainerLow` elevation containers with 20dp border radii and clean subtle outline borders. Text fields should use 12dp `OutlineInputBorder` shapes with comfortable vertical padding, explicit hover/focused states, and intuitive tooltips on password visibility toggle buttons. Adding `SmoothSizeSwitcher` around button progress indicators avoids abrupt size jumps during loading state toggles.
+
+**Action:** Standardize account profile and authentication forms by using Card containers with `surfaceContainerLow`, 12dp rounded `OutlineInputBorder`s, localized ARB strings, and `SmoothSizeSwitcher` transitions around loading states.
+
 ## 2026-08-08 - Dropdown Form Field Nesting and MD3 Input Hierarchy
 
 **Learning:** Nesting standard `DropdownButton` elements inside the `child` parameter of a `DropdownButtonFormField` is an invalid configuration that causes layout errors and static compiler analysis failures. Under Material Design 3 guidelines, dropdown forms must define configuration properties (`items`, `onChanged`, and `value`) directly on the `DropdownButtonFormField` to ensure unified visual style, keyboard accessibility, and correct form validation behaviors.
