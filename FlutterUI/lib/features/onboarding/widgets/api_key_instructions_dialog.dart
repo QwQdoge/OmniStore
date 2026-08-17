@@ -11,15 +11,17 @@ class ApiKeyInstructionsDialog extends StatelessWidget {
 
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
-          const SizedBox(width: 12),
-          Text(
-            l10n.howToGetApiKey,
-            style: const TextStyle(fontWeight: FontWeight.w800),
-          ),
-        ],
+      icon: Icon(
+        Icons.vpn_key_rounded,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
+      title: Text(
+        l10n.howToGetApiKey,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: Text(
         l10n.howToGetApiKeyDesc,

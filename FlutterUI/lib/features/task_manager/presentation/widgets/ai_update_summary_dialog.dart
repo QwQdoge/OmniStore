@@ -64,14 +64,20 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiChangelogTitle),
-        ],
+      icon: const MagicPulseIcon(
+        icon: Icons.auto_awesome_rounded,
+        size: 32,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.aiChangelogTitle,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
       ),
       content: SizedBox(
         width: 500,
