@@ -165,22 +165,23 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SmoothSizeSwitcher(
-                  child: (_isLoading || _isSaving)
-                      ? const Padding(
-                          key: ValueKey('loading'),
-                          padding: EdgeInsets.only(right: 16),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : const SizedBox.shrink(key: ValueKey('idle')),
-                ),
                 FilledButton.icon(
                   onPressed: isInteractive ? _savePat : null,
-                  icon: const Icon(Icons.save_rounded),
+                  icon: SmoothSizeSwitcher(
+                    child: (_isLoading || _isSaving)
+                        ? const SizedBox(
+                            key: ValueKey('loading'),
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.save_rounded,
+                            key: ValueKey('idle'),
+                          ),
+                  ),
                   label: Text(l10n.saveToken),
                 ),
               ],
