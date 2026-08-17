@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
