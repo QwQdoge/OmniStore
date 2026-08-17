@@ -215,3 +215,10 @@ Extensive audit revealed asynchronous gaps where state (`setState`) was accessed
 
 Action:
 Implemented strict `if (!mounted) return;` guards immediately before `setState` in all `catch` blocks and stream listener callbacks (`onError`, `onDone`, and custom line parsers) in `WelcomePage` to prevent "setState() called after dispose()" crashes.
+## 2026-08-17 - [Python Source Installation Checks Optimization]
+
+Learning:
+In package search sources (e.g., `GitHubSource`, `BituSource`), calling `_is_installed` inside result-formatting loops causes $O(N)$ synchronous `Path.exists()` syscalls. Furthermore, strictly enforcing `.is_dir()` when building an installation cache (like `_get_installed_set`) causes functional regressions for repositories installed as single binary files (as noted in `github.py`).
+
+Action:
+Pre-scanned the managed directory once per search/recommendations request using `_get_installed_set()` without the `.is_dir()` filter, passing the resulting `installed_set` down to `_is_installed`. This safely eliminates redundant disk I/O and reduces installation checks to $O(1)$ set lookups without breaking file-based package installations.

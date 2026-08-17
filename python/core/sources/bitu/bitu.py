@@ -27,8 +27,16 @@ class BituSource(UnifiedSource):
         else:
             return Path.home() / ".local" / "share" / "omnistore" / "bitu"
 
-    def _is_installed(self, repo_id: str) -> bool:
+    def _get_installed_set(self) -> set:
+        managed_dir = self._get_managed_dir()
+        if not managed_dir.exists():
+            return set()
+        return {d.name for d in managed_dir.iterdir()}
+
+    def _is_installed(self, repo_id: str, installed_set: Optional[set] = None) -> bool:
         repo_safe_name = repo_id.replace("/", "_")
+        if installed_set is not None:
+            return repo_safe_name in installed_set
         return (self._get_managed_dir() / repo_safe_name).exists()
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
@@ -44,9 +52,10 @@ class BituSource(UnifiedSource):
             repos = []
 
         results = []
+        installed_set = self._get_installed_set()
         for repo in repos:
             full_name = repo.get("full_name") or f"{repo.get('workspace', {}).get('slug')}/{repo.get('slug')}"
-            is_inst = self._is_installed(full_name)
+            is_inst = self._is_installed(full_name, installed_set)
             
             results.append({
                 "name": repo.get("name"),
