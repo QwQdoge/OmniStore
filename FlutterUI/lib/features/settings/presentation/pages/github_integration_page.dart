@@ -139,6 +139,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final isInteractive = !_isSaving && !_isLoading;
 
@@ -155,7 +156,26 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
               obscureText: true,
               decoration: InputDecoration(
                 labelText: l10n.personalAccessToken,
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 prefixIcon: const Icon(Icons.vpn_key_rounded),
                 helperText:
                     'Provide a GitHub Classic PAT or Fine-grained Token.',

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
+import 'package:frontend/core/utils/toast.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -128,15 +130,7 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ),
             const SizedBox(height: 32),
-            Card(
-              elevation: 0,
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-              ),
+            AppCard(
               child: Column(
                 children: [
                   const ListTile(
@@ -201,10 +195,29 @@ class _AccountPageState extends State<AccountPage> {
             // Email/Password Form
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
               keyboardType: TextInputType.emailAddress,
               enabled: !_isLoading,
@@ -216,8 +229,28 @@ class _AccountPageState extends State<AccountPage> {
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 suffixIcon: IconButton(
+                  tooltip: _isObscure ? 'Show password' : 'Hide password',
                   icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _isObscure = !_isObscure),
                 ),
@@ -231,10 +264,18 @@ class _AccountPageState extends State<AccountPage> {
               onPressed: _isLoading ? null : _handleEmailSignIn,
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: SmoothSizeSwitcher(
                 child: _isLoading
-                  ? const SizedBox(key: ValueKey('loading'), width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('Sign In', key: ValueKey('idle')),
               ),
             ),
@@ -269,6 +310,9 @@ class _AccountPageState extends State<AccountPage> {
               label: const Text('Continue with Google'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -278,6 +322,9 @@ class _AccountPageState extends State<AccountPage> {
               label: const Text('Continue with GitHub'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],

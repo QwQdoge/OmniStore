@@ -1,3 +1,9 @@
+## 2026-08-18 - MD3 Input Geometry and Accessible Icon Buttons
+
+**Learning:** Form input fields (`TextField`) must adhere to standard Material Design 3 geometric tokens (12dp rounded `OutlineInputBorder`s with explicit `enabledBorder` and `focusedBorder` side definitions and comfortable `EdgeInsets.symmetric(horizontal: 16, vertical: 14)` content padding) to ensure focus accessibility and visual harmony across authentication and settings pages. Furthermore, interactive icon buttons (such as password visibility toggles and list action buttons) inherently expose accessibility labels via their `tooltip` property; wrapping them in redundant `Semantics` widgets bloats the semantic tree without providing extra value.
+
+**Action:** Configure all text input fields with explicit 12dp `OutlineInputBorder`s and symmetric content padding, and rely natively on `IconButton.tooltip` for accessibility semantics rather than nesting extra `Semantics` wrappers.
+
 ## 2026-08-08 - Dropdown Form Field Nesting and MD3 Input Hierarchy
 
 **Learning:** Nesting standard `DropdownButton` elements inside the `child` parameter of a `DropdownButtonFormField` is an invalid configuration that causes layout errors and static compiler analysis failures. Under Material Design 3 guidelines, dropdown forms must define configuration properties (`items`, `onChanged`, and `value`) directly on the `DropdownButtonFormField` to ensure unified visual style, keyboard accessibility, and correct form validation behaviors.
