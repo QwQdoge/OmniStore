@@ -37,7 +37,7 @@ polish('zh', {
     "license": "许可证",
     "dependenciesCount": "依赖项（{count}）",
     "recommendedSource": "推荐软件源：{source}",
-    "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。",
+    "aiPickDisclaimer": "条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。",
     "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
     "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
     "aiPromptExplain": "AI 解析",
@@ -47,15 +47,7 @@ polish('zh', {
     "emptyTrendingMessage": "暂无热门数据；网络连接恢复后将自动更新。",
     "emptyRecommendationsMessage": "继续搜索或安装应用后，此处将显示个性化建议。",
     "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
-    "activity": "任务动态",
-    "source": "软件源",
-    "variant": "分发版本",
-    "loggingLevel": "日志级别",
-    "license": "许可证",
-    "dependenciesCount": "依赖项（{count}）",
-    "noActiveTasks": "暂无进行中的任务",
-    "recommendedSource": "推荐软件源：{source}",
-    "aiPickDisclaimer": "根据你的搜索、安装历史和当前可用软件源生成；不会影响安装选择。"
+    "noActiveTasks": "暂无进行中的任务"
 })
 
 # Traditional Chinese Polishing (Consistency with zh)
@@ -67,7 +59,7 @@ polish('zh_Hant', {
     "license": "授權條款",
     "dependenciesCount": "依賴項（{count}）",
     "recommendedSource": "推薦軟體源：{source}",
-    "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。",
+    "aiPickDisclaimer": "條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。",
     "pacmanOfficial": "Pacman（官方軟體源）",
     "aurUser": "AUR（使用者軟體源）",
     "sourcePriority": "軟體源優先級（拖曳排序）",
@@ -88,12 +80,6 @@ polish('zh_Hant', {
     "forYou": "為您推薦",
     "aiThinking": "AI 正在思考...",
     "aiCorrection": "您是指？",
-    "activity": "任務動態",
-    "source": "軟體源",
-    "variant": "分發版本",
-    "loggingLevel": "日誌級別",
-    "license": "授權條款",
-    "dependenciesCount": "依賴項（{count}）",
     "aiPromptExplain": "AI 解析",
     "aiExplainUpdate": "AI 解析此更新",
     "aiApiKeyHelper": "Ollama 無需金鑰，OpenAI 需填寫 sk-xxx",

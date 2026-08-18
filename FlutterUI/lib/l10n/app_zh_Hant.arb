@@ -166,7 +166,7 @@
   "@refresh": {
     "description": "Label for refresh action"
   },
-  "noActiveTasks": "無進行中的任務",
+  "noActiveTasks": "暫無進行中的任務",
   "@noActiveTasks": {
     "description": "Message shown when there are no active tasks"
   },
@@ -381,7 +381,7 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "針對您的 Arch Linux 的智慧診斷",
+  "aiHealthSubtitle": "為您的 Arch Linux 提供智慧診斷報告",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
@@ -764,7 +764,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端軟體存放庫",
+  "flatpakRemoteType": "Flatpak 遠端軟體源",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -924,7 +924,7 @@
       }
     }
   },
-  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自定義：{custom} MB",
+  "cacheTypeInfo": "Pacman：{pacman} MB | Flatpak：{flatpak} MB | 自訂：{custom} MB",
   "@cacheTypeInfo": {
     "placeholders": {
       "pacman": {
@@ -1164,7 +1164,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "根據您的搜尋、安裝歷史和當前可用軟體源生成；不會影響安裝選擇。",
+  "aiPickDisclaimer": "條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },

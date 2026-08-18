@@ -89,7 +89,7 @@ NEW_KEYS_ZH = {
     "openaiCompatible": "OpenAI 兼容",
     "googleGemini": "Google Gemini",
     "installationDecisionTitle": "安装决策助手",
-    "recommendedSource": "推荐来源：{source}",
+    "recommendedSource": "推荐软件源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
     "continueInstallation": "继续安装"
@@ -135,7 +135,7 @@ NEW_KEYS_ZH_HANT = {
     "openaiCompatible": "OpenAI 相容",
     "googleGemini": "Google Gemini",
     "installationDecisionTitle": "安裝決策助手",
-    "recommendedSource": "推薦來源：{source}",
+    "recommendedSource": "推薦軟體源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
     "continueInstallation": "繼續安裝"
