@@ -382,7 +382,7 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "为您的 Arch Linux 提供智能诊断报告",
+  "aiHealthSubtitle": "Arch Linux 智能诊断报告",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
@@ -797,7 +797,7 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名称和链接/仓库地址不能为空",
+  "errorNameUrlRequired": "名称和链接/软件源地址不能为空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
@@ -1221,7 +1221,7 @@
   "@signInTitle": {
     "description": "Description for signInTitle"
   },
-  "signInSubtitle": "跨设备同步您的应用、设置和收藏。",
+  "signInSubtitle": "跨设备同步应用、设置和收藏",
   "@signInSubtitle": {
     "description": "Description for signInSubtitle"
   },

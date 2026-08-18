@@ -381,7 +381,7 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "為您的 Arch Linux 提供智慧診斷報告",
+  "aiHealthSubtitle": "Arch Linux 智慧診斷報告",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
@@ -1220,7 +1220,7 @@
   "@signInTitle": {
     "description": "Description for signInTitle"
   },
-  "signInSubtitle": "跨裝置同步您的應用程式、設定與最愛。",
+  "signInSubtitle": "跨裝置同步應用程式、設定與最愛",
   "@signInSubtitle": {
     "description": "Description for signInSubtitle"
   },
