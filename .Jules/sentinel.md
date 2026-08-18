@@ -215,3 +215,11 @@ Extensive audit revealed asynchronous gaps where state (`setState`) was accessed
 
 Action:
 Implemented strict `if (!mounted) return;` guards immediately before `setState` in all `catch` blocks and stream listener callbacks (`onError`, `onDone`, and custom line parsers) in `WelcomePage` to prevent "setState() called after dispose()" crashes.
+
+## 2026-08-18 - [AppImageSearch ThreadPoolExecutor Leak]
+
+Learning:
+Custom `ThreadPoolExecutor` instances attached to class instances (like `AppImageSearch`) will leak threads if they are never explicitly `.shutdown()` when the class instance is destroyed or the application exits. For simple, one-off synchronous disk reads during an async search flow, it is safer and more efficient to use the default `asyncio` event loop executor (`loop.run_in_executor(None, ...)`) which is automatically managed by the event loop's lifecycle.
+
+Action:
+Removed the custom `ThreadPoolExecutor(max_workers=2)` from `AppImageSearch` in `python/core/search/appimage.py`. Refactored `search()` to use `loop.run_in_executor(None, self.get_installed_appimages)` so that the default executor is used, preventing potential resource leaks on backend restart or shutdown.
