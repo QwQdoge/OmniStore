@@ -1187,5 +1187,89 @@
   "aiPickFallbackMessage": "暫時無法產生個人化推薦。可瀏覽編輯精選或稍後重試。",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoarchAccount": "MeoArch 帳戶",
+  "@meoarchAccount": {
+    "description": "Description for meoarchAccount"
+  },
+  "defaultUser": "使用者",
+  "@defaultUser": {
+    "description": "Description for defaultUser"
+  },
+  "signOut": "登出",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "同步狀態",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "應用程式與設定已安全備份",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "管理帳戶",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "安全性、多因素驗證與階段作業管理",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInTitle": "登入 MeoArch",
+  "@signInTitle": {
+    "description": "Description for signInTitle"
+  },
+  "signInSubtitle": "跨裝置同步您的應用程式、設定與最愛。",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "電子郵件",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "密碼",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "登入",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "建立 MeoArch 帳戶",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "orDivider": "或",
+  "@orDivider": {
+    "description": "Description for orDivider"
+  },
+  "continueWithGoogle": "使用 Google 帳戶繼續",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "使用 GitHub 帳戶繼續",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailAndPassword": "請輸入電子郵件和密碼。",
+  "@enterEmailAndPassword": {
+    "description": "Description for enterEmailAndPassword"
+  },
+  "signInFailed": "登入失敗：{message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "登入錯誤：{message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

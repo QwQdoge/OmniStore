@@ -1184,5 +1184,89 @@
   "aiPickFallbackMessage": "Unable to generate personalized recommendations at this time. You can still browse editor picks or try again later.",
   "@aiPickFallbackMessage": {
     "description": "Fallback message shown when AI recommendation fails to generate"
+  },
+  "meoarchAccount": "MeoArch Account",
+  "@meoarchAccount": {
+    "description": "Description for meoarchAccount"
+  },
+  "defaultUser": "User",
+  "@defaultUser": {
+    "description": "Description for defaultUser"
+  },
+  "signOut": "Sign Out",
+  "@signOut": {
+    "description": "Description for signOut"
+  },
+  "syncStatus": "Sync Status",
+  "@syncStatus": {
+    "description": "Description for syncStatus"
+  },
+  "syncStatusSubtitle": "Apps and settings are backed up",
+  "@syncStatusSubtitle": {
+    "description": "Description for syncStatusSubtitle"
+  },
+  "manageAccount": "Manage Account",
+  "@manageAccount": {
+    "description": "Description for manageAccount"
+  },
+  "manageAccountSubtitle": "Security, MFA, and sessions",
+  "@manageAccountSubtitle": {
+    "description": "Description for manageAccountSubtitle"
+  },
+  "signInTitle": "Sign In to MeoArch",
+  "@signInTitle": {
+    "description": "Description for signInTitle"
+  },
+  "signInSubtitle": "Sync your apps, settings, and favorites across devices.",
+  "@signInSubtitle": {
+    "description": "Description for signInSubtitle"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Description for email"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Description for password"
+  },
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Description for signIn"
+  },
+  "createAccount": "Create MeoArch Account",
+  "@createAccount": {
+    "description": "Description for createAccount"
+  },
+  "orDivider": "OR",
+  "@orDivider": {
+    "description": "Description for orDivider"
+  },
+  "continueWithGoogle": "Continue with Google",
+  "@continueWithGoogle": {
+    "description": "Description for continueWithGoogle"
+  },
+  "continueWithGitHub": "Continue with GitHub",
+  "@continueWithGitHub": {
+    "description": "Description for continueWithGitHub"
+  },
+  "enterEmailAndPassword": "Please enter email and password.",
+  "@enterEmailAndPassword": {
+    "description": "Description for enterEmailAndPassword"
+  },
+  "signInFailed": "Sign in failed: {message}",
+  "@signInFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInError": "Sign in error: {message}",
+  "@signInError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }
