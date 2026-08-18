@@ -48,14 +48,17 @@ class AIMarkdownDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(title),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        title,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+        textAlign: TextAlign.center,
       ),
       content: SizedBox(
         width: width,
@@ -86,14 +89,17 @@ class AICliDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.aiCliTitle),
-        ],
+      icon: const MagicPulseIcon(icon: Icons.auto_awesome_rounded),
+      title: Text(
+        AppLocalizations.of(context)!.aiCliTitle,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+        textAlign: TextAlign.center,
       ),
       content: FutureBuilder<String>(
         future: future,
