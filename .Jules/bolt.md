@@ -153,3 +153,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Direct instantiation of repositories (e.g. `PackageRepository()`) on every usage inside controllers, pages, or background services creates distinct instances, thereby entirely neutralizing any internal in-memory caching mechanisms. Refactoring the repository class into a factory singleton shares the internal cache state across all layers. Implementing a request deduplication (coalescing) map alongside in-memory details caching for `getAppDetails` with targeted invalidation on task completions drastically reduces network and IPC overhead during navigation.
 
 **Action:** Refactored `PackageRepository` to a singleton pattern, added details in-memory cache and `_activeDetailsRequests` coalescing map, and hooked `clearDetailsCacheFor` to successful task completions in `TaskManager` and `TaskController`.
+
+## 2026-08-06 - Category Lookup Memoization in Discovery and Empty Results
+
+**Learning:** Invoking `CategoryService.getCategories(context)` directly inside `build()` re-instantiates list objects and re-evaluates localized strings on every frame or state rebuild. Caching the category list in `didChangeDependencies()` avoids these redundant allocations during search typing and animations.
+
+**Action:** Refactored `DiscoveryContent` and `EmptyResults` to memoize category lookups in `didChangeDependencies()`.
