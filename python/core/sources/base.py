@@ -117,3 +117,8 @@ class UnifiedSource(ABC):
             "weight": self.weight,
             "capabilities": self.capabilities,
         }
+
+    def _get_installed_set(self, managed_dir) -> set:
+        if not managed_dir or not managed_dir.exists():
+            return set()
+        return {d.name for d in managed_dir.iterdir()}

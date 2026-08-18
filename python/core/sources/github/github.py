@@ -46,6 +46,7 @@ class GitHubSource(UnifiedSource):
             # GitHub API uses 'page' parameter
             repos = await self.forge.search_repositories(query, sort=sort, order=order)
 
+        installed_set = super()._get_installed_set(self._managed_base_dir())
         results = []
         for repo in repos:
             results.append({
@@ -56,11 +57,11 @@ class GitHubSource(UnifiedSource):
                 "stars": repo.get("stargazers_count", 0),
                 "icon": repo.get("owner", {}).get("avatar_url"),
                 "url": repo["html_url"],
-                "installed": self._is_installed(repo["full_name"]),
+                "installed": self._is_installed(repo["full_name"], installed_set),
                 "variants": [{
                     "source": "GitHub",
                     "id": repo["full_name"],
-                    "installed": self._is_installed(repo["full_name"])
+                    "installed": self._is_installed(repo["full_name"], installed_set)
                 }]
             })
         return results
@@ -89,10 +90,14 @@ class GitHubSource(UnifiedSource):
         except Exception:
             return []
 
-    def _is_installed(self, repo_id: str) -> bool:
+
+
+    def _is_installed(self, repo_id: str, installed_set: Optional[set] = None) -> bool:
+        repo_safe_name = repo_id.replace("/", "_")
+        if installed_set is not None:
+            return repo_safe_name in installed_set
         # Check if we have a metadata file or the binary in our managed folder
         managed_dir = self._managed_base_dir()
-        repo_safe_name = repo_id.replace("/", "_")
         return (managed_dir / repo_safe_name).exists()
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
@@ -313,6 +318,7 @@ class GitHubSource(UnifiedSource):
                 order="desc",
             )
 
+            installed_set = super()._get_installed_set(self._managed_base_dir())
             featured = []
             for repo in repos[:20]:
                 featured.append({
@@ -321,7 +327,7 @@ class GitHubSource(UnifiedSource):
                     "description": repo.get("description", ""),
                     "source": "GitHub",
                     "icon": repo.get("owner", {}).get("avatar_url"),
-                    "installed": self._is_installed(repo["full_name"]),
+                    "installed": self._is_installed(repo["full_name"], installed_set),
                     "variants": [{"source": "GitHub", "id": repo["full_name"]}]
                 })
             return {"featured": featured, "trending": [], "for_you": []}
