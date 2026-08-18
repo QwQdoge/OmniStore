@@ -61,16 +61,13 @@ class SmoothProgressBar extends StatelessWidget {
     final isSuccess = taskState.status == TaskStatus.success;
     final isIndeterminate = taskState.progress < 0;
 
-    // Determine target color based on task status and custom theme override
     final Color targetColor;
     if (customColor != null) {
       targetColor = customColor!;
     } else if (isFailed) {
       targetColor = theme.colorScheme.error;
     } else if (isSuccess) {
-      targetColor = const Color(
-        0xFF10B981,
-      ); // Premium emerald green for success
+      targetColor = const Color(0xFF10B981);
     } else {
       targetColor = theme.colorScheme.primary;
     }
@@ -78,7 +75,6 @@ class SmoothProgressBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final displayMessage = _getDisplayMessage(l10n);
 
-    // Transition colors smoothly when state changes
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: targetColor),
       duration: const Duration(milliseconds: 300),
@@ -144,27 +140,28 @@ class _TaskHeaderRow extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        if (taskState.stage.isNotEmpty && !isFailed)
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                taskState.stage.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
+        SmoothSizeSwitcher(
+          alignment: Alignment.centerLeft,
+          child: (taskState.stage.isNotEmpty && !isFailed)
+              ? Container(
+                  key: ValueKey(taskState.stage),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    taskState.stage.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey('empty_stage')),
+        ),
         Expanded(
           child: SmoothSizeSwitcher(
             duration: const Duration(milliseconds: 300),
