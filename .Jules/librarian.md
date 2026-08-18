@@ -167,3 +167,6 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 - Removed redundant local variables in `home_page.dart`, `category_page.dart`, and `discovery_content.dart`.
 - Fixed broken `DropdownButtonFormField` syntax in `welcome_ai_page.dart` to properly supply the `items` property.
 - Fixed broken git conflict markers and nested list typing errors inside `add_source_dialog.dart`.
+## 2026-08-18 - State Management: ChangeNotifier Async Safety
+Learning: Asynchronous operations completing after a ChangeNotifier is disposed can trigger memory leaks or exceptions if notifyListeners is called. This is a common pattern in auth, navigation, and settings flows.
+Action: Ensure all classes extending or mixing in ChangeNotifier implement a _disposed flag, override dispose() to set it to true, and override notifyListeners() to check the flag before calling super.notifyListeners().
