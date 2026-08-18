@@ -23,23 +23,17 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
   @override
   void initState() {
     super.initState();
-    // Safely load token after the current frame is rendered.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _loadPat();
-      }
+      if (mounted) _loadPat();
     });
   }
 
   @override
   void dispose() {
-    // Prevent memory leak by disposing controller.
     _patController.dispose();
     super.dispose();
   }
 
-  /// Loads the saved PAT from the configuration store.
-  /// Wrapped in a try-catch to avoid app crashes if the YAML config file is corrupted.
   Future<void> _loadPat() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
@@ -54,52 +48,30 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
       if (githubSection is Map) {
         pat = (githubSection['pat'] ?? '').toString();
       }
-
-      setState(() {
-        _patController.text = pat;
-      });
+      setState(() => _patController.text = pat);
     } catch (e, stackTrace) {
       debugPrint('Error loading GitHub PAT: $e\n$stackTrace');
-      if (mounted) {
-        Toast.show(context, 'Failed to load GitHub token: $e');
-      }
+      if (mounted) Toast.show(context, 'Failed to load GitHub token: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  /// Validates and saves the personal access token.
-  /// Uses try-catch-finally to ensure the saving lock state is always released,
-  /// preventing infinite button lockout.
   Future<void> _savePat() async {
     if (_isSaving || _isLoading) return;
 
-    // Defensive check: validate and sanitize input arguments
-    final String rawInput = _patController.text;
-    final String tokenText = rawInput.trim();
-
+    final tokenText = _patController.text.trim();
     if (tokenText.isNotEmpty) {
-      // Validate string characters (ensure basic ASCII range to prevent YAML parser corruptions)
       final asciiRegExp = RegExp(r'^[\x20-\x7E]*$');
       if (!asciiRegExp.hasMatch(tokenText)) {
         if (mounted) {
-          Toast.show(
-            context,
-            'Error: Token contains invalid or non-printable characters.',
-          );
+          Toast.show(context, 'Error: Token contains invalid or non-printable characters.');
         }
         return;
       }
-
-      // Check for extremely long tokens that could crash memory or file storage
       if (tokenText.length > 512) {
         if (mounted) {
-          Toast.show(
-            context,
-            'Error: Token length exceeds safety limit of 512 characters.',
-          );
+          Toast.show(context, 'Error: Token length exceeds safety limit of 512 characters.');
         }
         return;
       }
@@ -115,10 +87,8 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
       if (config['github'] is Map) {
         config['github']['pat'] = tokenText;
       } else {
-        // Safe recovery if the underlying type was corrupted
         config['github'] = {'pat': tokenText};
       }
-
       await configRepo.saveConfig(config);
 
       if (mounted) {
@@ -126,19 +96,15 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
       }
     } catch (e, stackTrace) {
       debugPrint('Error saving GitHub PAT: $e\n$stackTrace');
-      if (mounted) {
-        Toast.show(context, 'Error: Failed to save GitHub token: $e');
-      }
+      if (mounted) Toast.show(context, 'Error: Failed to save GitHub token: $e');
     } finally {
-      // State rollback is guaranteed to run even if write operation throws an exception.
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final isInteractive = !_isSaving && !_isLoading;
 
@@ -155,10 +121,28 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
               obscureText: true,
               decoration: InputDecoration(
                 labelText: l10n.personalAccessToken,
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 prefixIcon: const Icon(Icons.vpn_key_rounded),
-                helperText:
-                    'Provide a GitHub Classic PAT or Fine-grained Token.',
+                helperText: 'Provide a GitHub Classic PAT or Fine-grained Token.',
               ),
             ),
             const SizedBox(height: 24),
