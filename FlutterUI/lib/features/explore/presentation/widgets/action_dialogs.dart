@@ -43,6 +43,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -85,7 +86,7 @@ class _ActionConfirmDialogState extends State<ActionConfirmDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, null),
           child: Text(localizations.cancel),
         ),
@@ -218,6 +219,7 @@ class InstallationDecisionDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -263,7 +265,7 @@ class InstallationDecisionDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(localizations.cancel),
         ),
@@ -296,15 +298,32 @@ class AurSecurityDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
-      content: Text(
-        localizations.aurSecurityDesc,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+      content: SingleChildScrollView(
+        child: Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              localizations.aurSecurityDesc,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+            ),
+          ),
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(localizations.cancel),
         ),

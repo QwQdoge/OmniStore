@@ -84,6 +84,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -211,7 +212,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context),
           child: Text(widget.l10n.cancel),
         ),

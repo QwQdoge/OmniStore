@@ -36,15 +36,32 @@ class ImportPackagesDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
-      content: Text(
-        contentText,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+      content: SingleChildScrollView(
+        child: Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              contentText,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+            ),
+          ),
         ),
       ),
       actions: [
-        TextButton(onPressed: onCancel, child: Text(cancelText)),
+        FilledButton.tonal(onPressed: onCancel, child: Text(cancelText)),
         FilledButton(onPressed: onConfirm, child: Text(confirmText)),
       ],
     );

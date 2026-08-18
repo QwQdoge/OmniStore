@@ -11,19 +11,35 @@ class ApiKeyInstructionsDialog extends StatelessWidget {
 
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      title: Row(
-        children: [
-          Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
-          const SizedBox(width: 12),
-          Text(
-            l10n.howToGetApiKey,
-            style: const TextStyle(fontWeight: FontWeight.w800),
-          ),
-        ],
+      icon: Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
+      title: Text(
+        l10n.howToGetApiKey,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+        textAlign: TextAlign.center,
       ),
-      content: Text(
-        l10n.howToGetApiKeyDesc,
-        style: const TextStyle(height: 1.5),
+      content: SingleChildScrollView(
+        child: Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              l10n.howToGetApiKeyDesc,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
       ),
       actions: [
         FilledButton(
