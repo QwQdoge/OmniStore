@@ -153,3 +153,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Direct instantiation of repositories (e.g. `PackageRepository()`) on every usage inside controllers, pages, or background services creates distinct instances, thereby entirely neutralizing any internal in-memory caching mechanisms. Refactoring the repository class into a factory singleton shares the internal cache state across all layers. Implementing a request deduplication (coalescing) map alongside in-memory details caching for `getAppDetails` with targeted invalidation on task completions drastically reduces network and IPC overhead during navigation.
 
 **Action:** Refactored `PackageRepository` to a singleton pattern, added details in-memory cache and `_activeDetailsRequests` coalescing map, and hooked `clearDetailsCacheFor` to successful task completions in `TaskManager` and `TaskController`.
+## 2026-08-18 - AIAppResolver Parallel Query Execution Optimization
+
+**Learning:** Parallelizing multiple sequential package queries (e.g., inside loops resolving related apps from AI markdown text in `AIAppResolver`) with `Future.wait` and passing `cancelOngoing: false` to `PackageRepository.searchPackages` speeds up resolution time and prevents concurrent queries from prematurely cancelling each other.
+
+**Action:** Replaced sequential `for` loop in `FlutterUI/lib/core/widgets/ai_app_resolver.dart` with a parallel `Future.wait` implementation mapping `name` to `packageRepo.searchPackages`.
