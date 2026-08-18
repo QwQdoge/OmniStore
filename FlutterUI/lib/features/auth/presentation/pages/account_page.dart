@@ -6,6 +6,7 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:frontend/core/utils/toast.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
