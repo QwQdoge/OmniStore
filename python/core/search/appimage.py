@@ -2,7 +2,6 @@ import asyncio
 import aiohttp
 from aiohttp import ClientTimeout
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
 from .base import SearchSource
 from typing import List, Dict, Any
 
@@ -21,7 +20,6 @@ class AppImageSearch(SearchSource):
         self.cache_timestamp = 0  # Timestamp in seconds
         self.cache_duration = 3600  # 1 hour validity
         self.lock = asyncio.Lock()
-        self.executor = ThreadPoolExecutor(max_workers=2)
 
     async def _fetch_single_feed(self, url: str) -> List[Dict]:
         try:
@@ -102,7 +100,7 @@ class AppImageSearch(SearchSource):
 
         loop = asyncio.get_event_loop()
         installed_files = await loop.run_in_executor(
-            self.executor, self.get_installed_appimages
+            None, self.get_installed_appimages
         )
 
         installed_statuses = []
