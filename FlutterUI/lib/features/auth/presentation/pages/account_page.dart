@@ -6,7 +6,6 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:frontend/core/utils/toast.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -99,7 +98,8 @@ class _AccountPageState extends State<AccountPage> {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    final displayName = user.userMetadata?['full_name'] as String? ?? user.email ?? l10n.defaultUser;
+    final displayName =
+        user.userMetadata?['full_name'] as String? ?? user.email ?? l10n.defaultUser;
     final avatarUrl = user.userMetadata?['avatar_url'] as String?;
 
     return Center(
@@ -121,10 +121,15 @@ class _AccountPageState extends State<AccountPage> {
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: colorScheme.primaryContainer,
-                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                  backgroundImage:
+                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
                   child: avatarUrl == null
-                    ? Icon(Icons.person_rounded, size: 48, color: colorScheme.onPrimaryContainer)
-                    : null,
+                      ? Icon(
+                          Icons.person_rounded,
+                          size: 48,
+                          color: colorScheme.onPrimaryContainer,
+                        )
+                      : null,
                 ),
               ),
             ),
@@ -164,25 +169,41 @@ class _AccountPageState extends State<AccountPage> {
                     leading: Icon(Icons.sync_rounded, color: colorScheme.primary),
                     title: Text(
                       l10n.syncStatus,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(l10n.syncStatusSubtitle),
-                    trailing: Icon(Icons.check_circle_rounded, color: colorScheme.primary),
+                    trailing: Icon(
+                      Icons.check_circle_rounded,
+                      color: colorScheme.primary,
+                    ),
                   ),
-                  Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                  Divider(
+                    height: 1,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  ),
                   ListTile(
-                    leading: Icon(Icons.manage_accounts_rounded, color: colorScheme.secondary),
+                    leading: Icon(
+                      Icons.manage_accounts_rounded,
+                      color: colorScheme.secondary,
+                    ),
                     title: Text(
                       l10n.manageAccount,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(l10n.manageAccountSubtitle),
-                    trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+                    trailing:
+                        const Icon(Icons.open_in_new_rounded, size: 20),
                     onTap: _openAccountUrl,
                   ),
-                  Divider(height: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                  Divider(
+                    height: 1,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  ),
                   ListTile(
-                    leading: Icon(Icons.logout_rounded, color: colorScheme.error),
+                    leading:
+                        Icon(Icons.logout_rounded, color: colorScheme.error),
                     title: Text(
                       l10n.signOut,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -241,7 +262,8 @@ class _AccountPageState extends State<AccountPage> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withValues(alpha: 0.7),
+                        color:
+                            colorScheme.primaryContainer.withValues(alpha: 0.7),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -269,8 +291,6 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                   ),
                   const SizedBox(height: 28),
-
-                  // Email Input
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -279,14 +299,15 @@ class _AccountPageState extends State<AccountPage> {
                       border: border,
                       enabledBorder: border,
                       focusedBorder: focusedBorder,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     enabled: !_isLoading,
                   ),
                   const SizedBox(height: 16),
-
-                  // Password Input
                   TextField(
                     controller: _passwordController,
                     obscureText: _isObscure,
@@ -296,20 +317,27 @@ class _AccountPageState extends State<AccountPage> {
                       border: border,
                       enabledBorder: border,
                       focusedBorder: focusedBorder,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       suffixIcon: IconButton(
-                        icon: Icon(_isObscure ? Icons.visibility_off_rounded : Icons.visibility_rounded),
-                        onPressed: () => setState(() => _isObscure = !_isObscure),
-                        tooltip: _isObscure ? 'Show Password' : 'Hide Password',
+                        icon: Icon(
+                          _isObscure
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                        ),
+                        onPressed: () =>
+                            setState(() => _isObscure = !_isObscure),
+                        tooltip:
+                            _isObscure ? 'Show Password' : 'Hide Password',
                       ),
                     ),
                     enabled: !_isLoading,
                     onSubmitted: (_) => _handleEmailSignIn(),
                   ),
                   const SizedBox(height: 24),
-
-                  // Sign In Button
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: _isLoading ? null : _handleEmailSignIn,
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(double.infinity, 48),
@@ -317,32 +345,36 @@ class _AccountPageState extends State<AccountPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: SmoothSizeSwitcher(
+                    icon: SmoothSizeSwitcher(
                       child: _isLoading
-                        ? const SizedBox(
-                            key: ValueKey('loading'),
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.5),
-                          )
-                        : Text(
-                            l10n.signIn,
-                            key: const ValueKey('idle'),
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onPrimary,
+                          ? SizedBox(
+                              key: const ValueKey('loading'),
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.onPrimary,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.login_rounded,
+                              key: ValueKey('idle'),
                             ),
-                          ),
+                    ),
+                    label: Text(
+                      l10n.signIn,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onPrimary,
+                      ),
                     ),
                   ),
-
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: _openAccountUrl,
                     child: Text(l10n.createAccount),
                   ),
                   const SizedBox(height: 20),
-
                   Row(
                     children: [
                       const Expanded(child: Divider()),
@@ -360,10 +392,10 @@ class _AccountPageState extends State<AccountPage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Google Login
                   OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => AuthService().signInWithGoogle(),
+                    onPressed: _isLoading
+                        ? null
+                        : () => AuthService().signInWithGoogle(),
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
                     label: Text(l10n.continueWithGoogle),
                     style: OutlinedButton.styleFrom(
@@ -375,10 +407,10 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // GitHub Login
                   OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => AuthService().signInWithGitHub(),
+                    onPressed: _isLoading
+                        ? null
+                        : () => AuthService().signInWithGitHub(),
                     icon: const Icon(Icons.code_rounded),
                     label: Text(l10n.continueWithGitHub),
                     style: OutlinedButton.styleFrom(
