@@ -44,8 +44,12 @@ class _AIAppResolverState extends State<AIAppResolver> {
       final packageRepo = context.read<PackageRepository>();
       List<AppPackage> apps = [];
 
-      for (var name in names) {
-        final results = await packageRepo.searchPackages(name.toString());
+      final futures = names.map(
+        (name) =>
+            packageRepo.searchPackages(name.toString(), cancelOngoing: false),
+      );
+      final allResults = await Future.wait(futures);
+      for (final results in allResults) {
         if (results.isNotEmpty) {
           apps.add(results[0]);
         }
