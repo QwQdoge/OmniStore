@@ -47,7 +47,10 @@ polish('zh', {
     "emptyTrendingMessage": "暂无热门数据；网络连接恢复后将自动更新。",
     "emptyRecommendationsMessage": "继续搜索或安装应用后，此处将显示个性化建议。",
     "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
-    "noActiveTasks": "暂无进行中的任务"
+    "noActiveTasks": "暂无进行中的任务",
+    "aiHealthSubtitle": "Arch Linux 智能诊断报告",
+    "signInSubtitle": "跨设备同步应用、设置和收藏",
+    "errorNameUrlRequired": "名称和链接/软件源地址不能为空"
 })
 
 # Traditional Chinese Polishing (Consistency with zh)
@@ -112,5 +115,7 @@ polish('zh_Hant', {
     "sourceAddFailed": "新增軟體源失敗。",
     "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
     "searchGithubHint": "搜尋 GitHub 倉庫...",
-    "pluginsAndSources": "外掛程式與軟體源"
+    "pluginsAndSources": "外掛程式與軟體源",
+    "aiHealthSubtitle": "Arch Linux 智慧診斷報告",
+    "signInSubtitle": "跨裝置同步應用程式、設定與最愛"
 })

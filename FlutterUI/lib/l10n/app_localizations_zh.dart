@@ -467,7 +467,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => '为您的 Arch Linux 提供智能诊断报告';
+  String get aiHealthSubtitle => 'Arch Linux 智能诊断报告';
 
   @override
   String get aiCorrection => '您是指：';
@@ -943,7 +943,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名称和链接/仓库地址不能为空';
+  String get errorNameUrlRequired => '名称和链接/软件源地址不能为空';
 
   @override
   String get addingCustomSource => '正在添加自定义软件源...';
@@ -1227,7 +1227,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signInTitle => '登录 MeoArch';
 
   @override
-  String get signInSubtitle => '跨设备同步您的应用、设置和收藏。';
+  String get signInSubtitle => '跨设备同步应用、设置和收藏';
 
   @override
   String get email => '邮箱';
@@ -1727,7 +1727,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthTitle => 'AI 系統健康報告';
 
   @override
-  String get aiHealthSubtitle => '為您的 Arch Linux 提供智慧診斷報告';
+  String get aiHealthSubtitle => 'Arch Linux 智慧診斷報告';
 
   @override
   String get aiCorrection => '您是指？';
@@ -2487,7 +2487,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get signInTitle => '登入 MeoArch';
 
   @override
-  String get signInSubtitle => '跨裝置同步您的應用程式、設定與最愛。';
+  String get signInSubtitle => '跨裝置同步應用程式、設定與最愛';
 
   @override
   String get email => '電子郵件';
