@@ -1367,4 +1367,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String signInError(String message) {
     return 'Error al iniciar sesión: $message';
   }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }

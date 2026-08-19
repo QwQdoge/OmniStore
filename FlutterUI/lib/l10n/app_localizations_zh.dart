@@ -1262,6 +1262,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String signInError(String message) {
     return '登录出错：$message';
   }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2522,4 +2528,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String signInError(String message) {
     return '登入錯誤：$message';
   }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }

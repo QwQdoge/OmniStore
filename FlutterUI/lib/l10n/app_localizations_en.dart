@@ -1356,4 +1356,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String signInError(String message) {
     return 'Sign in error: $message';
   }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }

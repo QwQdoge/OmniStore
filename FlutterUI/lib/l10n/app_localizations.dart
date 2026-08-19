@@ -2466,6 +2466,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in error: {message}'**
   String signInError(String message);
+
+  /// Tooltip for password visibility toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// Tooltip for hiding password
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class GitHubStoreHeader extends StatelessWidget {
   final TextEditingController searchController;
@@ -20,42 +21,35 @@ class GitHubStoreHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [scheme.surfaceContainerHigh, scheme.surfaceContainerLowest]
-              : [scheme.surfaceContainerLowest, scheme.surfaceContainerLow],
-        ),
+        color: scheme.surfaceContainerLow,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.4),
           ),
-        ],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              // Glassmorphic GitHub Icon Container
+              // GitHub Icon Container with MD3 Surface Token
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                  borderRadius: BorderRadius.circular(8),
+                  color: scheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: scheme.outlineVariant.withValues(alpha: 0.3),
+                    color: scheme.outlineVariant.withValues(alpha: 0.5),
                   ),
                 ),
                 child: CachedNetworkImage(
@@ -76,14 +70,14 @@ class GitHubStoreHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "GitHub App Store",
+                      l10n.githubStore,
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         letterSpacing: 0,
                       ),
                     ),
                     Text(
-                      "Discover and download apps directly from GitHub releases",
+                      l10n.githubStoreSubtitle,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -94,17 +88,17 @@ class GitHubStoreHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Premium Integrated Search Bar
+          // Integrated Search Bar with MD3 12dp Shape Token
           SearchBar(
             controller: searchController,
-            hintText: "Search GitHub repositories...",
+            hintText: l10n.searchGithubHint,
             leading: const Icon(Icons.search_rounded),
             trailing: [
               if (isSearching)
                 IconButton(
                   onPressed: onClearSearch,
                   icon: const Icon(Icons.clear_rounded),
-                  tooltip: 'Clear search',
+                  tooltip: l10n.clearSearch,
                 ),
             ],
             elevation: WidgetStateProperty.all(0),
@@ -113,9 +107,9 @@ class GitHubStoreHeader extends StatelessWidget {
             ),
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: scheme.outlineVariant.withValues(alpha: 0.3),
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
             ),

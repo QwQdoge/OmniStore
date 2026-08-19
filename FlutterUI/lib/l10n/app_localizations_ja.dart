@@ -1272,4 +1272,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String signInError(String message) {
     return 'サインインエラー: $message';
   }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }

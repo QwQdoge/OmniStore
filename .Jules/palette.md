@@ -1,3 +1,9 @@
+## 2026-08-19 - Material Design 3 Surface Hierarchy & Tooltip Localization
+
+**Learning:** Hardcoded string literals in headers and form tooltips (such as password toggle actions and search bar headers) degrade accessibility and break internationalization. Standardizing headers to use `AppLocalizations` (`l10n`) and replacing hardcoded gradient/shadow decorations with Material Design 3 surface tokens (`surfaceContainerLow`, `surfaceContainerHigh`) and standard 12dp/16dp shape tokens ensures visual harmony, clean elevation layering, and full multi-language support.
+
+**Action:** Standardize headers and forms by replacing hardcoded string literals with localized ARB keys and updating surface containers to use `surfaceContainerLow` and standard 12dp/16dp border shape tokens.
+
 ## 2026-08-17 - Material Design 3 Auth & Account Form Polish
 
 **Learning:** Designing auth and account pages in MD3 requires framing form elements inside `surfaceContainerLow` elevation containers with 20dp border radii and clean subtle outline borders. Text fields should use 12dp `OutlineInputBorder` shapes with comfortable vertical padding, explicit hover/focused states, and intuitive tooltips on password visibility toggle buttons. Adding `SmoothSizeSwitcher` around button progress indicators avoids abrupt size jumps during loading state toggles.
