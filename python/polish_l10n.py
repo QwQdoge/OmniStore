@@ -50,7 +50,8 @@ polish('zh', {
     "noActiveTasks": "暂无进行中的任务",
     "aiHealthSubtitle": "Arch Linux 智能诊断报告",
     "signInSubtitle": "跨设备同步应用、设置和收藏",
-    "errorNameUrlRequired": "名称和链接/软件源地址不能为空"
+    "errorNameUrlRequired": "名称和链接/软件源地址不能为空",
+    "resetFailed": "重置失败：{error}"
 })
 
 # Traditional Chinese Polishing (Consistency with zh)
@@ -117,5 +118,6 @@ polish('zh_Hant', {
     "searchGithubHint": "搜尋 GitHub 倉庫...",
     "pluginsAndSources": "外掛程式與軟體源",
     "aiHealthSubtitle": "Arch Linux 智慧診斷報告",
-    "signInSubtitle": "跨裝置同步應用程式、設定與最愛"
+    "signInSubtitle": "跨裝置同步應用程式、設定與最愛",
+    "resetFailed": "重置失敗：{error}"
 })

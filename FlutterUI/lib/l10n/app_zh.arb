@@ -493,7 +493,7 @@
   "resetCacheConfirm": "将清空搜索历史和推荐缓存。确认继续？",
   "resetting": "正在重置...",
   "resetSuccess": "缓存与历史记录已成功清空",
-  "resetFailed": "重置失败: {error}",
+  "resetFailed": "重置失败：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {

@@ -631,7 +631,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return '重置失败: $error';
+    return '重置失败：$error';
   }
 
   @override
@@ -1891,7 +1891,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resetFailed(String error) {
-    return '重置失敗: $error';
+    return '重置失敗：$error';
   }
 
   @override

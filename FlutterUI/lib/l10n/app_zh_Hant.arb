@@ -492,7 +492,7 @@
   "resetCacheConfirm": "將清空搜尋歷史與推薦快取。確認繼續？",
   "resetting": "正在重置...",
   "resetSuccess": "快取與歷史記錄已成功清空",
-  "resetFailed": "重置失敗: {error}",
+  "resetFailed": "重置失敗：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
