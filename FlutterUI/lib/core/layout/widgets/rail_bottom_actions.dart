@@ -81,24 +81,20 @@ class CompactActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      label: tooltip,
-      button: true,
-      selected: isSelected,
-      child: IconButton.filledTonal(
-        tooltip: tooltip,
-        onPressed: onTap,
-        style: IconButton.styleFrom(
-          fixedSize: const Size(48, 48),
-          backgroundColor: isSelected
-              ? scheme.primaryContainer
-              : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
-          foregroundColor: isSelected
-              ? scheme.onPrimaryContainer
-              : scheme.onSurfaceVariant,
-        ),
-        icon: Icon(icon),
+    return IconButton.filledTonal(
+      tooltip: tooltip,
+      isSelected: isSelected,
+      onPressed: onTap,
+      style: IconButton.styleFrom(
+        fixedSize: const Size(48, 48),
+        backgroundColor: isSelected
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        foregroundColor: isSelected
+            ? scheme.onPrimaryContainer
+            : scheme.onSurfaceVariant,
       ),
+      icon: Icon(icon),
     );
   }
 }

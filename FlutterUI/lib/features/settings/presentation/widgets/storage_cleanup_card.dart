@@ -123,14 +123,10 @@ class _StorageCleanupCardState extends State<StorageCleanupCard> {
                               ),
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
-                            Semantics(
-                              label: l10n.refresh,
-                              button: true,
-                              child: IconButton(
-                                icon: const Icon(Icons.refresh_rounded),
-                                onPressed: _fetchStorageInfo,
-                                tooltip: l10n.refresh,
-                              ),
+                            IconButton(
+                              icon: const Icon(Icons.refresh_rounded),
+                              onPressed: _fetchStorageInfo,
+                              tooltip: l10n.refresh,
                             ),
                           ],
                         ),

@@ -47,19 +47,15 @@ class DesktopTopBar extends StatelessWidget {
               label: Text(l10n.search),
             ),
           const SizedBox(width: 8),
-          Semantics(
-            label: l10n.githubAuthTitle,
-            button: true,
-            child: IconButton(
-              icon: const Icon(Icons.account_circle_outlined),
-              tooltip: l10n.githubAuthTitle,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AccountPage()),
-                );
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            tooltip: l10n.githubAuthTitle,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AccountPage()),
+              );
+            },
           ),
         ],
       ),
