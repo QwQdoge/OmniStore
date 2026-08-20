@@ -1,5 +1,17 @@
 # ⚡ Bolt Learning Journal
 
+## 2026-08-07 - Installed Apps Search List Equality Optimization
+
+**Learning:** ValueNotifier<List<T>> compares values using identity (==). Performing search filtering (.where().toList()) creates a new List instance on every filter evaluation. Assigning this new instance directly to ValueNotifier forces listener notifications and widget rebuilds, even when the filtered contents remain identical (e.g. typing query characters that do not alter the matching subset). Using const ListEquality().equals(...) before updating the notifier eliminates redundant re-renders.
+
+**Action:** Updated AppsPage._applyFilter() to verify ListEquality before assigning _filteredAppsNotifier.value.
+
+## 2026-08-07 - Installed Apps Search List Equality Optimization
+
+**Learning:**  compares values using identity (). Performing search filtering () creates a new  instance on every filter evaluation. Assigning this new instance directly to  forces listener notifications and widget rebuilds, even when the filtered contents remain identical (e.g. typing query characters that do not alter the matching subset). Using  before updating the notifier eliminates redundant re-renders.
+
+**Action:** Updated  to verify  before assigning .
+
 Routine work is never logged. Surprising technical findings, failed optimizations, or architecture-specific bottlenecks must be recorded here using the format: `## YYYY-MM-DD - [Title], **Learning:** [Insight], **Action:** [Future application].`
 
 ## 2026-06-16 - HomePage Selector Optimization

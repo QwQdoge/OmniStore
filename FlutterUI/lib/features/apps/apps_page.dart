@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
@@ -63,7 +64,10 @@ class _AppsPageState extends State<AppsPage> {
       return app.nameLower.contains(query) ||
           app.descriptionLower.contains(query);
     }).toList();
-    _filteredAppsNotifier.value = filtered;
+    // Compare list equality to prevent redundant ValueNotifier updates and unnecessary widget rebuilds during search
+    if (!const ListEquality().equals(_filteredAppsNotifier.value, filtered)) {
+      _filteredAppsNotifier.value = filtered;
+    }
   }
 
   Future<void> _refresh({bool forceRefresh = false}) async {
