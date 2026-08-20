@@ -194,3 +194,9 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** In package search sources (e.g., `GitHubSource`, `BituSource` extending `UnifiedSource`), batch list operations were performing synchronous $O(N)$ `Path.exists()` syscalls repeatedly inside loops. Pre-scanning the managed directory using a shared `super()._get_installed_set()` avoids this overhead. However, when implementing `_get_installed_set()`, it is crucial not to filter by `is_dir()` because installed items may be single files (like binaries or metadata). For single-item lookups (e.g., `_get_repo_as_package`), do not pass `installed_set` to avoid an unnecessary $O(N)$ directory scan for a simple $O(1)$ lookup.
 
 **Action:** Consolidated the directory scanning logic into `UnifiedSource._get_installed_set(managed_dir)` in `python/core/sources/base.py`. Updated `github.py` and `bitu.py` to leverage this shared method during batch operations (`search`, `get_recommendations`), eliminating duplicate implementations while preserving behavior.
+
+## 2026-08-15 - Extract Widgets in AccountPage
+
+**Learning:** Extracted the oversized `_buildAccountProfile` and `_buildSignInForm` inline methods from `AccountPage` into new stateless `AccountProfile` and stateful `SignInForm` widgets. This significantly improves readability and modularity of the `AccountPage` by separating the logic for user profile display and authentication forms.
+
+**Action:** Created `FlutterUI/lib/features/auth/presentation/widgets/account_profile.dart` and `FlutterUI/lib/features/auth/presentation/widgets/sign_in_form.dart` to encapsulate the UI building logic, preserving exact functionality while cleaning up the parent file. Removed inline logic and updated `AccountPage` to use these standalone widgets.
