@@ -69,3 +69,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** When toggling a button between an idle text state and a loading state (like `CircularProgressIndicator`), using a raw `AnimatedSwitcher` causes abrupt layout jumps. Using `SmoothSizeSwitcher` provides unified MD3 motion logic and concurrently handles opacity and sizing.
 
 **Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the "Sign In" `FilledButton` in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
+
+## 2024-11-21 - Standardized Button Loading Transition in Welcome Pages
+
+**Learning:** Similar to other loading transitions, when a button in the onboarding process toggles between an icon and a `CircularProgressIndicator` (like the 'Fix problems' button during environment bootstrapping), using a raw widget swap causes an abrupt layout jump.
+
+**Action:** Replaced the raw conditional widget with `SmoothSizeSwitcher` inside the 'Fix problems' `FilledButton.icon` in `welcome_env_check_page.dart`.
