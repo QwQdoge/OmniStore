@@ -159,3 +159,4 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** Invoking `CategoryService.getCategories(context)` directly inside `build()` re-instantiates list objects and re-evaluates localized strings on every frame or state rebuild. Caching the category list in `didChangeDependencies()` avoids these redundant allocations during search typing and animations.
 
 **Action:** Refactored `DiscoveryContent` and `EmptyResults` to memoize category lookups in `didChangeDependencies()`.
+- Flutter Performance - Caching Category Lookups: In widgets like `HomePage` or `CategoryPage`, calling `CategoryService.getCategories(context)` directly inside `build()` causes redundant `CategoryItem` allocations and localization lookups on every frame/state update. Memoize category lookups by storing them in a state variable initialized within `didChangeDependencies()`.
