@@ -1369,8 +1369,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get showPassword => 'Show password';
+  String get showPassword => 'Mostrar contraseña';
 
   @override
-  String get hidePassword => 'Hide password';
+  String get hidePassword => 'Ocultar contraseña';
 }

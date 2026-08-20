@@ -827,10 +827,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get next => '次へ';
 
   @override
-  String get aurFull => 'AUR（Arch User Repository）';
+  String get aurFull => 'AUR (Arch User Repository)';
 
   @override
-  String get flatpakFull => 'Flatpak（Flathub）';
+  String get flatpakFull => 'Flatpak (Flathub)';
 
   @override
   String get errorPackageNameRequired => 'エラー：パッケージ名は空にできません';
@@ -1202,7 +1202,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get importListSubtitle => 'リストからよく使うパッケージをインポート';
 
   @override
-  String get emptyTrendingMessage => 'トレンドデータがありません。接続が回復すると自動的に更新されます。';
+  String get emptyTrendingMessage => 'トレンドデータがありません。ネットワーク接続が復旧すると自動的に更新されます。';
 
   @override
   String get emptyRecommendationsMessage =>
@@ -1274,8 +1274,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get showPassword => 'Show password';
+  String get showPassword => 'パスワードを表示';
 
   @override
-  String get hidePassword => 'Hide password';
+  String get hidePassword => 'パスワードを非表示';
 }

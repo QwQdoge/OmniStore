@@ -31,10 +31,8 @@ class GitHubStoreHeader extends StatelessWidget {
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
-          ),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.4),
         ),
       ),
       child: Column(

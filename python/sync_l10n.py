@@ -45,6 +45,18 @@ def sync_locale(loc):
             "zh_Hant": "暫時無法產生個人化推薦。可瀏覽編輯精選或稍後重試。",
             "ja": "現在、パーソナライズされたおすすめ情報を生成できません。編集部のおすすめを閲覧するか、後ほどもう一度お試しください。",
             "es": "No se pueden generar recomendaciones personalizadas en este momento. Aún puedes explorar las selecciones de los editores o volver a intentarlo más tarde."
+        },
+        "showPassword": {
+            "zh": "显示密码",
+            "zh_Hant": "顯示密碼",
+            "ja": "パスワードを表示",
+            "es": "Mostrar contraseña"
+        },
+        "hidePassword": {
+            "zh": "隐藏密码",
+            "zh_Hant": "隱藏密碼",
+            "ja": "パスワードを非表示",
+            "es": "Ocultar contraseña"
         }
     }
 
@@ -56,13 +68,12 @@ def sync_locale(loc):
 
     # Add/Sync keys from base
     for k, v in base.items():
-        if k not in target:
-            if k in new_keys:
-                target[k] = new_keys[k][loc]
-            else:
-                target[k] = v
+        if k in new_keys:
+            target[k] = new_keys[k][loc]
+        elif k not in target:
+            target[k] = v
         elif k.startswith('@') and k[1:] in new_keys:
-             target[k] = v
+            target[k] = v
 
     # Sort target according to base order
     synced = {}

@@ -647,7 +647,7 @@
   "@aurFull": {
     "description": "Full name for AUR"
   },
-  "flatpakFull": "Flatpak（Flathub）",
+  "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
   },
@@ -1273,11 +1273,11 @@
       }
     }
   },
-  "showPassword": "Show password",
+  "showPassword": "显示密码",
   "@showPassword": {
-    "description": "Tooltip for password visibility toggle"
+    "description": "Tooltip for showing password"
   },
-  "hidePassword": "Hide password",
+  "hidePassword": "隐藏密码",
   "@hidePassword": {
     "description": "Tooltip for hiding password"
   }

@@ -824,7 +824,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aurFull => 'AUR（Arch 用户软件源）';
 
   @override
-  String get flatpakFull => 'Flatpak（Flathub）';
+  String get flatpakFull => 'Flatpak (Flathub)';
 
   @override
   String get errorPackageNameRequired => '错误：包名不能为空';
@@ -1264,10 +1264,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get showPassword => 'Show password';
+  String get showPassword => '显示密码';
 
   @override
-  String get hidePassword => 'Hide password';
+  String get hidePassword => '隐藏密码';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2090,7 +2090,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aurFull => 'AUR（Arch 使用者軟體源）';
 
   @override
-  String get flatpakFull => 'Flatpak（Flathub）';
+  String get flatpakFull => 'Flatpak (Flathub)';
 
   @override
   String get errorPackageNameRequired => '錯誤：套件名稱不能為空';
@@ -2530,8 +2530,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get showPassword => 'Show password';
+  String get showPassword => '顯示密碼';
 
   @override
-  String get hidePassword => 'Hide password';
+  String get hidePassword => '隱藏密碼';
 }

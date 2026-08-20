@@ -46,7 +46,9 @@ NEW_KEYS_EN = {
     "recommendedSource": "Recommended Source: {source}",
     "preflightChecks": "Preflight Checks",
     "potentialRisks": "Potential Risks",
-    "continueInstallation": "Continue"
+    "continueInstallation": "Continue",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
 }
 
 NEW_KEYS_ZH = {
@@ -92,7 +94,9 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐软件源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -138,7 +142,9 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦軟體源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +190,9 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +238,9 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña"
 }
 
 MAPPINGS = {

@@ -1271,7 +1271,7 @@
   },
   "showPassword": "Show password",
   "@showPassword": {
-    "description": "Tooltip for password visibility toggle"
+    "description": "Tooltip for showing password"
   },
   "hidePassword": "Hide password",
   "@hidePassword": {

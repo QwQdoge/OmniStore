@@ -639,11 +639,11 @@
   "@next": {
     "description": "Next button label"
   },
-  "aurFull": "AUR（Arch User Repository）",
+  "aurFull": "AUR (Arch User Repository)",
   "@aurFull": {
     "description": "Full name for AUR"
   },
-  "flatpakFull": "Flatpak（Flathub）",
+  "flatpakFull": "Flatpak (Flathub)",
   "@flatpakFull": {
     "description": "Full name for Flatpak"
   },
@@ -1173,7 +1173,7 @@
   "@importListSubtitle": {
     "description": "Subtitle for importing packages from a list"
   },
-  "emptyTrendingMessage": "トレンドデータがありません。接続が回復すると自動的に更新されます。",
+  "emptyTrendingMessage": "トレンドデータがありません。ネットワーク接続が復旧すると自動的に更新されます。",
   "@emptyTrendingMessage": {
     "description": "Message shown when trending section is empty"
   },
@@ -1269,11 +1269,11 @@
       }
     }
   },
-  "showPassword": "Show password",
+  "showPassword": "パスワードを表示",
   "@showPassword": {
-    "description": "Tooltip for password visibility toggle"
+    "description": "Tooltip for showing password"
   },
-  "hidePassword": "Hide password",
+  "hidePassword": "パスワードを非表示",
   "@hidePassword": {
     "description": "Tooltip for hiding password"
   }

@@ -247,7 +247,7 @@ class _AccountPageState extends State<AccountPage> {
             elevation: 0,
             color: colorScheme.surfaceContainerLow,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               side: BorderSide(
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
@@ -330,7 +330,7 @@ class _AccountPageState extends State<AccountPage> {
                         onPressed: () =>
                             setState(() => _isObscure = !_isObscure),
                         tooltip:
-                            _isObscure ? l10n.showPassword : l10n.hidePassword,
+                            _isObscure ? 'Show Password' : 'Hide Password',
                       ),
                     ),
                     enabled: !_isLoading,

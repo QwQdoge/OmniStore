@@ -1269,11 +1269,11 @@
       }
     }
   },
-  "showPassword": "Show password",
+  "showPassword": "Mostrar contraseña",
   "@showPassword": {
-    "description": "Tooltip for password visibility toggle"
+    "description": "Tooltip for showing password"
   },
-  "hidePassword": "Hide password",
+  "hidePassword": "Ocultar contraseña",
   "@hidePassword": {
     "description": "Tooltip for hiding password"
   }
