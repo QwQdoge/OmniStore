@@ -1,3 +1,9 @@
+## 2026-08-20 - Material Design 3 Empty State Surface Containers & Contrast Polish
+
+**Learning:** Empty states in Material Design 3 should anchor illustrative icons inside tonal surface container badges (`surfaceContainerHigh` circular decoration with subtle `outlineVariant` borders) rather than displaying unanchored floating icons with reduced opacity. Using `onSurface` instead of low-contrast `outline` color for title text significantly improves heading contrast and readability. Wrapping empty state content inside a `Semantics` container ensures screen readers announce informative state changes when lists or search views transition to empty.
+
+**Action:** Standardize empty state views across the app by wrapping `EmptyState` icons in circular `surfaceContainerHigh` containers, using high-contrast `onSurface` typography, and including explicit `Semantics` accessibility wrappers.
+
 ## 2026-08-17 - Material Design 3 Auth & Account Form Polish
 
 **Learning:** Designing auth and account pages in MD3 requires framing form elements inside `surfaceContainerLow` elevation containers with 20dp border radii and clean subtle outline borders. Text fields should use 12dp `OutlineInputBorder` shapes with comfortable vertical padding, explicit hover/focused states, and intuitive tooltips on password visibility toggle buttons. Adding `SmoothSizeSwitcher` around button progress indicators avoids abrupt size jumps during loading state toggles.
