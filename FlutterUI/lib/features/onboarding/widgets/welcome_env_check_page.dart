@@ -61,7 +61,7 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                           const CircularProgressIndicator(),
                           const SizedBox(height: 16),
                           Text(
-                            'Checking environment status...',
+                            l10n.checkingEnvStatus,
                             style: theme.textTheme.bodyMedium,
                           ),
                         ],
@@ -82,14 +82,14 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Failed to fetch environment details.',
+                                l10n.envDetailsFailed,
                                 style: theme.textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 12),
                               FilledButton.icon(
                                 onPressed: onCheckEnvironment,
                                 icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Retry'),
+                                label: Text(l10n.retry),
                               ),
                             ],
                           ),
@@ -144,7 +144,7 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                           ],
                           if (isBootstrapping || bootstrapLogs.isNotEmpty) ...[
                             Text(
-                              'Bootstrap progress:',
+                              l10n.bootstrapProgress,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -181,7 +181,7 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                             const SizedBox(height: 16),
                           ],
                           Text(
-                            'System details:',
+                            l10n.systemDetails,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),

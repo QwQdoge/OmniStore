@@ -1272,5 +1272,73 @@
         "type": "String"
       }
     }
+  },
+  "githubIntegration": "GitHub 集成",
+  "@githubIntegration": {
+    "description": "Description for githubIntegration"
+  },
+  "configurePat": "配置个人访问令牌 (PAT)",
+  "@configurePat": {
+    "description": "Description for configurePat"
+  },
+  "patHelperText": "请提供 GitHub Classic PAT 或 Fine-grained 令牌。",
+  "@patHelperText": {
+    "description": "Description for patHelperText"
+  },
+  "featuredSubtitle": "由 OmniStore 维护，离线时也始终可见",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  },
+  "editorPicks": "编辑推荐",
+  "@editorPicks": {
+    "description": "Description for editorPicks"
+  },
+  "checkingEnvStatus": "正在检查环境状态...",
+  "@checkingEnvStatus": {
+    "description": "Description for checkingEnvStatus"
+  },
+  "envDetailsFailed": "获取环境详情失败。",
+  "@envDetailsFailed": {
+    "description": "Description for envDetailsFailed"
+  },
+  "bootstrapProgress": "环境配置进度：",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "系统详情：",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiIntegrationDesc": "开启智能集成与辅助功能",
+  "@aiIntegrationDesc": {
+    "description": "Description for aiIntegrationDesc"
+  },
+  "ollamaLocalOffline": "Ollama (本地 / 离线)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (云端)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "testConnection": "测试连接",
+  "@testConnection": {
+    "description": "Description for testConnection"
+  },
+  "githubSearchFailed": "GitHub 搜索失败",
+  "@githubSearchFailed": {
+    "description": "Description for githubSearchFailed"
+  },
+  "githubStoreUnavailable": "GitHub 商店暂不可用",
+  "@githubStoreUnavailable": {
+    "description": "Description for githubStoreUnavailable"
+  },
+  "noGithubReposFound": "未找到 GitHub 软件仓库",
+  "@noGithubReposFound": {
+    "description": "Description for noGithubReposFound"
+  },
+  "pullToRefreshCategory": "下拉刷新或尝试其他分类。",
+  "@pullToRefreshCategory": {
+    "description": "Description for pullToRefreshCategory"
   }
 }

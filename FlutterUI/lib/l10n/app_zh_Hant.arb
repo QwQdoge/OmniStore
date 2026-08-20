@@ -1271,5 +1271,73 @@
         "type": "String"
       }
     }
+  },
+  "githubIntegration": "GitHub 整合",
+  "@githubIntegration": {
+    "description": "Description for githubIntegration"
+  },
+  "configurePat": "設定個人存取權標（PAT）",
+  "@configurePat": {
+    "description": "Description for configurePat"
+  },
+  "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權標。",
+  "@patHelperText": {
+    "description": "Description for patHelperText"
+  },
+  "featuredSubtitle": "由 OmniStore 維護，離線時也始終可見",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  },
+  "editorPicks": "編輯推薦",
+  "@editorPicks": {
+    "description": "Description for editorPicks"
+  },
+  "checkingEnvStatus": "正在檢查環境狀態...",
+  "@checkingEnvStatus": {
+    "description": "Description for checkingEnvStatus"
+  },
+  "envDetailsFailed": "取得環境詳細資訊失敗。",
+  "@envDetailsFailed": {
+    "description": "Description for envDetailsFailed"
+  },
+  "bootstrapProgress": "環境設定進度：",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "系統詳細資訊：",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiIntegrationDesc": "開啟智慧整合與輔助功能",
+  "@aiIntegrationDesc": {
+    "description": "Description for aiIntegrationDesc"
+  },
+  "ollamaLocalOffline": "Ollama (本地 / 離線)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (雲端)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "testConnection": "測試連線",
+  "@testConnection": {
+    "description": "Description for testConnection"
+  },
+  "githubSearchFailed": "GitHub 搜尋失敗",
+  "@githubSearchFailed": {
+    "description": "Description for githubSearchFailed"
+  },
+  "githubStoreUnavailable": "GitHub 商店暫不可用",
+  "@githubStoreUnavailable": {
+    "description": "Description for githubStoreUnavailable"
+  },
+  "noGithubReposFound": "未找到 GitHub 軟體倉庫",
+  "@noGithubReposFound": {
+    "description": "Description for noGithubReposFound"
+  },
+  "pullToRefreshCategory": "下拉重新整理或嘗試其他分類。",
+  "@pullToRefreshCategory": {
+    "description": "Description for pullToRefreshCategory"
   }
 }

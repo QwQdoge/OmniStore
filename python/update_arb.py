@@ -46,7 +46,24 @@ NEW_KEYS_EN = {
     "recommendedSource": "Recommended Source: {source}",
     "preflightChecks": "Preflight Checks",
     "potentialRisks": "Potential Risks",
-    "continueInstallation": "Continue"
+    "continueInstallation": "Continue",
+    "githubIntegration": "GitHub Integration",
+    "configurePat": "Configure Personal Access Token",
+    "patHelperText": "Provide a GitHub Classic PAT or Fine-grained Token.",
+    "featuredSubtitle": "Maintained by OmniStore, available even offline",
+    "editorPicks": "Editor's Choice",
+    "checkingEnvStatus": "Checking environment status...",
+    "envDetailsFailed": "Failed to fetch environment details.",
+    "bootstrapProgress": "Bootstrap progress:",
+    "systemDetails": "System details:",
+    "aiIntegrationDesc": "Enable intelligence integration features",
+    "ollamaLocalOffline": "Ollama (Local / Offline)",
+    "openaiCloud": "OpenAI API (Cloud)",
+    "testConnection": "Test Connection",
+    "githubSearchFailed": "GitHub search failed",
+    "githubStoreUnavailable": "GitHub Store unavailable",
+    "noGithubReposFound": "No GitHub repositories found",
+    "pullToRefreshCategory": "Pull to refresh or try another category."
 }
 
 NEW_KEYS_ZH = {
@@ -92,7 +109,24 @@ NEW_KEYS_ZH = {
     "recommendedSource": "推荐软件源：{source}",
     "preflightChecks": "安装前检查",
     "potentialRisks": "风险提示",
-    "continueInstallation": "继续安装"
+    "continueInstallation": "继续安装",
+    "githubIntegration": "GitHub 集成",
+    "configurePat": "配置个人访问令牌 (PAT)",
+    "patHelperText": "请提供 GitHub Classic PAT 或 Fine-grained 令牌。",
+    "featuredSubtitle": "由 OmniStore 维护，离线时也始终可见",
+    "editorPicks": "编辑推荐",
+    "checkingEnvStatus": "正在检查环境状态...",
+    "envDetailsFailed": "获取环境详情失败。",
+    "bootstrapProgress": "环境配置进度：",
+    "systemDetails": "系统详情：",
+    "aiIntegrationDesc": "开启智能集成与辅助功能",
+    "ollamaLocalOffline": "Ollama (本地 / 离线)",
+    "openaiCloud": "OpenAI API (云端)",
+    "testConnection": "测试连接",
+    "githubSearchFailed": "GitHub 搜索失败",
+    "githubStoreUnavailable": "GitHub 商店暂不可用",
+    "noGithubReposFound": "未找到 GitHub 软件仓库",
+    "pullToRefreshCategory": "下拉刷新或尝试其他分类。"
 }
 
 NEW_KEYS_ZH_HANT = {
@@ -138,7 +172,24 @@ NEW_KEYS_ZH_HANT = {
     "recommendedSource": "推薦軟體源：{source}",
     "preflightChecks": "安裝前檢查",
     "potentialRisks": "風險提示",
-    "continueInstallation": "繼續安裝"
+    "continueInstallation": "繼續安裝",
+    "githubIntegration": "GitHub 整合",
+    "configurePat": "設定個人存取權標（PAT）",
+    "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權標。",
+    "featuredSubtitle": "由 OmniStore 維護，離線時也始終可見",
+    "editorPicks": "編輯推薦",
+    "checkingEnvStatus": "正在檢查環境狀態...",
+    "envDetailsFailed": "取得環境詳細資訊失敗。",
+    "bootstrapProgress": "環境設定進度：",
+    "systemDetails": "系統詳細資訊：",
+    "aiIntegrationDesc": "開啟智慧整合與輔助功能",
+    "ollamaLocalOffline": "Ollama (本地 / 離線)",
+    "openaiCloud": "OpenAI API (雲端)",
+    "testConnection": "測試連線",
+    "githubSearchFailed": "GitHub 搜尋失敗",
+    "githubStoreUnavailable": "GitHub 商店暫不可用",
+    "noGithubReposFound": "未找到 GitHub 軟體倉庫",
+    "pullToRefreshCategory": "下拉重新整理或嘗試其他分類。"
 }
 
 NEW_KEYS_JA = {
@@ -184,7 +235,24 @@ NEW_KEYS_JA = {
     "recommendedSource": "推奨ソース: {source}",
     "preflightChecks": "事前チェック",
     "potentialRisks": "潜在的なリスク",
-    "continueInstallation": "インストールを続行"
+    "continueInstallation": "インストールを続行",
+    "githubIntegration": "GitHub 連携",
+    "configurePat": "個人アクセストークンの設定",
+    "patHelperText": "GitHub Classic PAT または Fine-grained トークンを入力してください。",
+    "featuredSubtitle": "OmniStore が管理、オフラインでも常時表示",
+    "editorPicks": "編集部のおすすめ",
+    "checkingEnvStatus": "環境状態を確認中...",
+    "envDetailsFailed": "環境の詳細情報の取得に失敗しました。",
+    "bootstrapProgress": "セットアップ進捗：",
+    "systemDetails": "システム詳細：",
+    "aiIntegrationDesc": "AI 連携機能を有効化",
+    "ollamaLocalOffline": "Ollama (ローカル / オフライン)",
+    "openaiCloud": "OpenAI API (クラウド)",
+    "testConnection": "接続テスト",
+    "githubSearchFailed": "GitHub 検索に失敗しました",
+    "githubStoreUnavailable": "GitHub ストアは利用できません",
+    "noGithubReposFound": "GitHub リポジトリが見つかりません",
+    "pullToRefreshCategory": "スワイプして更新するか、別のカテゴリーをお試しください。"
 }
 
 NEW_KEYS_ES = {
@@ -230,7 +298,24 @@ NEW_KEYS_ES = {
     "recommendedSource": "Fuente Recomendada: {source}",
     "preflightChecks": "Comprobaciones Previas",
     "potentialRisks": "Riesgos Potenciales",
-    "continueInstallation": "Continuar Instalación"
+    "continueInstallation": "Continuar Instalación",
+    "githubIntegration": "Integración con GitHub",
+    "configurePat": "Configurar Token de Acceso Personal",
+    "patHelperText": "Proporcione un PAT clásico de GitHub o un Token de grano fino.",
+    "featuredSubtitle": "Mantenido por OmniStore, disponible incluso sin conexión",
+    "editorPicks": "Selección del editor",
+    "checkingEnvStatus": "Comprobando el estado del entorno...",
+    "envDetailsFailed": "Error al obtener los detalles del entorno.",
+    "bootstrapProgress": "Progreso de configuración:",
+    "systemDetails": "Detalles del sistema:",
+    "aiIntegrationDesc": "Habilitar funciones de integración inteligente",
+    "ollamaLocalOffline": "Ollama (Local / Sin conexión)",
+    "openaiCloud": "OpenAI API (Nube)",
+    "testConnection": "Probar conexión",
+    "githubSearchFailed": "Error en la búsqueda de GitHub",
+    "githubStoreUnavailable": "Tienda de GitHub no disponible",
+    "noGithubReposFound": "No se encontraron repositorios de GitHub",
+    "pullToRefreshCategory": "Deslice hacia abajo para actualizar o pruebe otra categoría."
 }
 
 MAPPINGS = {

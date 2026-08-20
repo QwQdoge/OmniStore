@@ -1268,5 +1268,73 @@
         "type": "String"
       }
     }
+  },
+  "githubIntegration": "Integración con GitHub",
+  "@githubIntegration": {
+    "description": "Description for githubIntegration"
+  },
+  "configurePat": "Configurar Token de Acceso Personal",
+  "@configurePat": {
+    "description": "Description for configurePat"
+  },
+  "patHelperText": "Proporcione un PAT clásico de GitHub o un Token de grano fino.",
+  "@patHelperText": {
+    "description": "Description for patHelperText"
+  },
+  "featuredSubtitle": "Mantenido por OmniStore, disponible incluso sin conexión",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  },
+  "editorPicks": "Selección del editor",
+  "@editorPicks": {
+    "description": "Description for editorPicks"
+  },
+  "checkingEnvStatus": "Comprobando el estado del entorno...",
+  "@checkingEnvStatus": {
+    "description": "Description for checkingEnvStatus"
+  },
+  "envDetailsFailed": "Error al obtener los detalles del entorno.",
+  "@envDetailsFailed": {
+    "description": "Description for envDetailsFailed"
+  },
+  "bootstrapProgress": "Progreso de configuración:",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "Detalles del sistema:",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiIntegrationDesc": "Habilitar funciones de integración inteligente",
+  "@aiIntegrationDesc": {
+    "description": "Description for aiIntegrationDesc"
+  },
+  "ollamaLocalOffline": "Ollama (Local / Sin conexión)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (Nube)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "testConnection": "Probar conexión",
+  "@testConnection": {
+    "description": "Description for testConnection"
+  },
+  "githubSearchFailed": "Error en la búsqueda de GitHub",
+  "@githubSearchFailed": {
+    "description": "Description for githubSearchFailed"
+  },
+  "githubStoreUnavailable": "Tienda de GitHub no disponible",
+  "@githubStoreUnavailable": {
+    "description": "Description for githubStoreUnavailable"
+  },
+  "noGithubReposFound": "No se encontraron repositorios de GitHub",
+  "@noGithubReposFound": {
+    "description": "Description for noGithubReposFound"
+  },
+  "pullToRefreshCategory": "Deslice hacia abajo para actualizar o pruebe otra categoría.",
+  "@pullToRefreshCategory": {
+    "description": "Description for pullToRefreshCategory"
   }
 }

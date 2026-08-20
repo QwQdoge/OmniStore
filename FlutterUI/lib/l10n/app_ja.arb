@@ -1268,5 +1268,73 @@
         "type": "String"
       }
     }
+  },
+  "githubIntegration": "GitHub 連携",
+  "@githubIntegration": {
+    "description": "Description for githubIntegration"
+  },
+  "configurePat": "個人アクセストークンの設定",
+  "@configurePat": {
+    "description": "Description for configurePat"
+  },
+  "patHelperText": "GitHub Classic PAT または Fine-grained トークンを入力してください。",
+  "@patHelperText": {
+    "description": "Description for patHelperText"
+  },
+  "featuredSubtitle": "OmniStore が管理、オフラインでも常時表示",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  },
+  "editorPicks": "編集部のおすすめ",
+  "@editorPicks": {
+    "description": "Description for editorPicks"
+  },
+  "checkingEnvStatus": "環境状態を確認中...",
+  "@checkingEnvStatus": {
+    "description": "Description for checkingEnvStatus"
+  },
+  "envDetailsFailed": "環境の詳細情報の取得に失敗しました。",
+  "@envDetailsFailed": {
+    "description": "Description for envDetailsFailed"
+  },
+  "bootstrapProgress": "セットアップ進捗：",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "システム詳細：",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiIntegrationDesc": "AI 連携機能を有効化",
+  "@aiIntegrationDesc": {
+    "description": "Description for aiIntegrationDesc"
+  },
+  "ollamaLocalOffline": "Ollama (ローカル / オフライン)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (クラウド)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "testConnection": "接続テスト",
+  "@testConnection": {
+    "description": "Description for testConnection"
+  },
+  "githubSearchFailed": "GitHub 検索に失敗しました",
+  "@githubSearchFailed": {
+    "description": "Description for githubSearchFailed"
+  },
+  "githubStoreUnavailable": "GitHub ストアは利用できません",
+  "@githubStoreUnavailable": {
+    "description": "Description for githubStoreUnavailable"
+  },
+  "noGithubReposFound": "GitHub リポジトリが見つかりません",
+  "@noGithubReposFound": {
+    "description": "Description for noGithubReposFound"
+  },
+  "pullToRefreshCategory": "スワイプして更新するか、別のカテゴリーをお試しください。",
+  "@pullToRefreshCategory": {
+    "description": "Description for pullToRefreshCategory"
   }
 }

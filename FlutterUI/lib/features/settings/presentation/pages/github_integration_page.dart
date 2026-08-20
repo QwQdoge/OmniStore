@@ -142,7 +142,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
                   vertical: 14,
                 ),
                 prefixIcon: const Icon(Icons.vpn_key_rounded),
-                helperText: 'Provide a GitHub Classic PAT or Fine-grained Token.',
+                helperText: l10n.patHelperText,
               ),
             ),
             const SizedBox(height: 24),

@@ -1,5 +1,6 @@
 import 'package:frontend/features/explore/presentation/widgets/github_store_header.dart';
 import 'package:frontend/features/explore/presentation/widgets/github_store_tabs.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
@@ -319,6 +320,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
   }
 
   Widget _buildSearchResultsView({Key? key}) {
+    final l10n = AppLocalizations.of(context)!;
     final hasError = _searchError != null;
     return GitHubAppList(
       key: key,
@@ -327,8 +329,8 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       keyPrefix: 'search',
       onRetry: _handleRefresh,
       emptyIcon: hasError ? Icons.cloud_off_rounded : Icons.search_off_rounded,
-      emptyText: hasError ? "GitHub search failed" : "No results found",
-      emptySubtitle: _searchError ?? "Try searching for something else",
+      emptyText: hasError ? l10n.githubSearchFailed : l10n.noResults,
+      emptySubtitle: _searchError ?? l10n.searchNoResultsSubtitle,
       showRetry: hasError,
     );
   }
@@ -339,6 +341,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     required String keyPrefix,
     required String? error,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final hasError = error != null;
     return GitHubAppList(
       apps: apps,
@@ -347,9 +350,9 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       onRetry: _handleRefresh,
       emptyIcon: hasError ? Icons.cloud_off_rounded : Icons.inventory_2_rounded,
       emptyText: hasError
-          ? "GitHub Store unavailable"
-          : "No GitHub repositories found",
-      emptySubtitle: error ?? "Pull to refresh or try another category.",
+          ? l10n.githubStoreUnavailable
+          : l10n.noGithubReposFound,
+      emptySubtitle: error ?? l10n.pullToRefreshCategory,
       showRetry: true,
     );
   }

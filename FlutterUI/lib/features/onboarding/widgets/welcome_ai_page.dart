@@ -63,7 +63,7 @@ class WelcomeAiPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: const Text('Enable intelligence integration features'),
+              subtitle: Text(l10n.aiIntegrationDesc),
               value: enableAI,
               onChanged: onEnableAIChanged,
             ),
@@ -120,14 +120,14 @@ class WelcomeAiPage extends StatelessWidget {
                                     vertical: 8,
                                   ),
                                 ),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: 'ollama',
-                                    child: Text('Ollama (Local / Offline)'),
+                                    child: Text(l10n.ollamaLocalOffline),
                                   ),
                                   DropdownMenuItem(
                                     value: 'openai',
-                                    child: Text('OpenAI API (Cloud)'),
+                                    child: Text(l10n.openaiCloud),
                                   ),
                                 ],
                                 onChanged: onAiProviderChanged,
@@ -204,7 +204,7 @@ class WelcomeAiPage extends StatelessWidget {
                                             )
                                           : const Icon(Icons.network_ping_rounded, size: 18, key: ValueKey('idle')),
                                     ),
-                                    label: const Text('Test Connection'),
+                                    label: Text(l10n.testConnection),
                                   ),
                                 ],
                               ),
