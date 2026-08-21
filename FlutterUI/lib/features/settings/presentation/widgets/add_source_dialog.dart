@@ -92,7 +92,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
           children: [
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               borderRadius: BorderRadius.circular(12),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface,

@@ -142,7 +142,10 @@ class ResourceCoordinator:
                 if tasks_to_reap:
                     try:
                         # Using shield to ensure we attempt to gather even if cleanup itself is cancelled.
-                        gather_task = asyncio.create_task(asyncio.gather(*tasks_to_reap, return_exceptions=True))
+                        # asyncio.gather() already returns a scheduled Future.
+                        # Wrapping it in create_task() raises TypeError because
+                        # create_task only accepts coroutine objects.
+                        gather_task = asyncio.gather(*tasks_to_reap, return_exceptions=True)
                         self._background_tasks.add(gather_task)
                         gather_task.add_done_callback(self._background_tasks.discard)
                         await asyncio.wait_for(
@@ -557,7 +560,10 @@ class OmnistoreBackend:
             async def cb(m): await self._flutter_callback(m, json_mode)
             if not json_mode: console.print(Panel(f"Updating [bold blue]{v_name}[/bold blue] via [cyan]{v_source}[/cyan]", border_style="blue"))
 
-            success = await self.executor.update({"name": v_name, "id": v_name, "source": v_source}, callback=cb)
+            if v_name.lower() == "all" and v_source.lower() == "all":
+                success = await self.updater.apply_all_updates(callback=cb)
+            else:
+                success = await self.executor.update({"name": v_name, "id": v_name, "source": v_source}, callback=cb)
             if success:
                 self.cache.invalidate_installed_cache()
                 if not json_mode: console.print(Panel(f"Update completed! 🎉", border_style="green"))

@@ -2,17 +2,89 @@ import asyncio
 from core.subprocess_utils import safe_subprocess
 import shutil
 import re
-from typing import List, Dict
+import inspect
+from typing import Awaitable, Callable, List, Dict, Optional
+
+from core.sources.utils import PrivilegeManager
 
 class UpdateManager:
     def __init__(self, config=None):
         self.config = config
+        self.privilege = PrivilegeManager()
+
+    async def apply_all_updates(
+        self,
+        callback: Optional[Callable[[str], Awaitable[None]]] = None,
+    ) -> bool:
+        """Apply updates through each supported system manager.
+
+        This is intentionally an explicit orchestration path. Passing a fake
+        package named ``all`` to an individual source can install the wrong
+        package or report a false success.
+        """
+        commands = []
+        if shutil.which("pacman"):
+            if not await self.privilege.ensure_privileged(callback):
+                return False
+            commands.append(("Pacman", ["sudo", "pacman", "-Syu", "--noconfirm"]))
+        if shutil.which("flatpak"):
+            commands.append(("Flatpak", ["flatpak", "update", "--user", "-y"]))
+        include_aur = bool(
+            self.config
+            and self.config.get("updates.include_aur_in_update_all", False)
+        )
+        if include_aur and shutil.which("yay"):
+            commands.append(("AUR", ["yay", "-Syu", "--noconfirm"]))
+
+        if not commands:
+            await self._emit(callback, "[ERROR] No supported update manager is available.")
+            return False
+
+        succeeded = True
+        for index, (name, command) in enumerate(commands):
+            await self._emit(callback, f"[INFO] Updating {name} packages...")
+            if not await self._run_update_command(command, callback):
+                succeeded = False
+                await self._emit(callback, f"[ERROR] {name} update failed.")
+            await self._emit(
+                callback,
+                f"[PROGRESS] {round(((index + 1) / len(commands)) * 100)}",
+            )
+        if succeeded:
+            await self._emit(callback, "[INFO] All enabled package sources are up to date.")
+        return succeeded
+
+    async def _run_update_command(self, command, callback) -> bool:
+        try:
+            async with safe_subprocess(
+                *command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            ) as proc:
+                if proc.stdout:
+                    async for raw_line in proc.stdout:
+                        line = raw_line.decode("utf-8", errors="replace").strip()
+                        if line:
+                            await self._emit(callback, f"[INFO] {line}")
+                await proc.wait()
+                return proc.returncode == 0
+        except Exception as exc:
+            await self._emit(callback, f"[ERROR] Update command failed: {exc}")
+            return False
+
+    @staticmethod
+    async def _emit(callback, message: str) -> None:
+        if callback is None:
+            return
+        result = callback(message)
+        if inspect.isawaitable(result):
+            await result
 
     async def check_all_updates(self) -> List[Dict]:
         tasks = []
         include_aur = True
         if self.config:
-            include_aur = self.config.get("updates.include_aur_in_update_all", True)
+            include_aur = self.config.get("updates.include_aur_in_update_all", False)
 
         if shutil.which("pacman"):
             tasks.append(self.check_pacman_updates())

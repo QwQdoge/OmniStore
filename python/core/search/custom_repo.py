@@ -143,87 +143,13 @@ class CustomRepoManager:
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback=None) -> bool:
-        """Add a custom repository entry to /etc/pacman.conf (requires sudo privileges)."""
-        if not name or not url:
-            if callback:
-                await callback("[ERROR] Repository name and URL cannot be empty.")
-            return False
-
+        """Reject custom Pacman repositories until signed repository support exists."""
         if callback:
-            await callback(f"[INFO] Requesting authorization to modify /etc/pacman.conf...")
-
-        # 1. Elevate privileges
-        if not await self.executor._ensure_privileged(callback):
-            return False
-
-        try:
-            # 2. Read current /etc/pacman.conf
-            with open("/etc/pacman.conf", "r", encoding="utf-8") as f:
-                conf = f.read()
-
-            if f"[{name}]" in conf:
-                if callback:
-                    await callback(f"[WARNING] Repository [{name}] already exists in pacman.conf.")
-                return True
-
-            # 3. Create modified version in temp file
-            repo_entry = f"\n[{name}]\nSigLevel = Optional TrustAll\nServer = {url}\n"
-            temp_fd, temp_path = tempfile.mkstemp()
-            try:
-                with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmpf:
-                    tmpf.write(conf + repo_entry)
-
-                # 4. Copy via sudo
-                if callback:
-                    await callback("[INFO] Applying changes to /etc/pacman.conf...")
-
-                # Since we are already authenticated in sudo cache, we can execute sudo cp
-                async with safe_subprocess(
-                    "sudo", "cp", temp_path, "/etc/pacman.conf",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT
-                ) as proc:
-                    await proc.wait()
-            finally:
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
-
-            if proc.returncode == 0:
-                # Sync config.yaml
-                custom_pacman = self.cm.get("custom_repos.pacman", [])
-                for r in custom_pacman:
-                    if r.get("name") == name:
-                        break
-                else:
-                    custom_pacman.append({"name": name, "url": url})
-                    self.cm.set("custom_repos.pacman", custom_pacman)
-                
-                if callback:
-                    await callback(f"[INFO] Successfully added Pacman repository [{name}]. Updating databases...")
-                
-                # Sync databases
-                async with safe_subprocess(
-                    "sudo", "pacman", "-Sy",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT
-                ) as sync_proc:
-                    if sync_proc.stdout and callback:
-                        while True:
-                            line = await sync_proc.stdout.readline()
-                            if not line:
-                                break
-                            await callback(f"[INFO] {line.decode().strip()}")
-                    await sync_proc.wait()
-                    return True
-            else:
-                if callback:
-                    await callback("[ERROR] Failed to write /etc/pacman.conf.")
-                return False
-
-        except Exception as e:
-            if callback:
-                await callback(f"[ERROR] Failed to update pacman repos: {e}")
-            return False
+            await callback(
+                "[ERROR] Custom Pacman repositories are disabled until "
+                "signature verification and keyring enrollment are implemented."
+            )
+        return False
 
     async def remove_pacman_repo(self, name: str, callback=None) -> bool:
         """Remove a custom repository from /etc/pacman.conf (requires sudo privileges)."""

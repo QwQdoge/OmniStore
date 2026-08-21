@@ -6,9 +6,9 @@ from copy import deepcopy
 from pydantic import BaseModel, Field
 
 class SearchSourcesModel(BaseModel):
-    pacman: bool = False
+    pacman: bool = True
     aur: bool = False
-    flatpak: bool = False
+    flatpak: bool = True
     appimage: bool = False
     snap: bool = False
     github: bool = False
@@ -85,9 +85,9 @@ class ConfigManager:
             "first_run": True,
             "search": {
                 "sources": {
-                    "pacman": False,
+                    "pacman": True,
                     "aur": False,
-                    "flatpak": False,
+                    "flatpak": True,
                     "appimage": False,
                     "snap": False,
                     "github": False,
@@ -126,7 +126,7 @@ class ConfigManager:
             "updates": {
                 "check_interval_hours": 1,
                 "remind_updates": True,
-                "include_aur_in_update_all": True,
+                "include_aur_in_update_all": False,
                 "enable_systemd_service": False
             },
             "ai": {

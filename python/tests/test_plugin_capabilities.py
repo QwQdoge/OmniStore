@@ -176,7 +176,7 @@ def test_file_backed_plugins_install_size_and_uninstall_with_sync_callbacks(tmp_
     asyncio.run(run_cycle())
 
 
-def test_manifest_plugins_keep_review_gating_except_builtin_winget(tmp_path, monkeypatch):
+def test_trusted_system_stores_are_enabled_by_default_and_risky_sources_stay_gated(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     cm = ConfigManager()
     registry = PluginRegistry(cm, None)
@@ -186,7 +186,13 @@ def test_manifest_plugins_keep_review_gating_except_builtin_winget(tmp_path, mon
     manifest_ids = {manifest["id"] for manifest in _plugin_manifests()}
     enabled_by_default = [plugin_id for plugin_id in manifest_ids if listed[plugin_id]["enabled"]]
 
-    assert enabled_by_default == ["builtin.winget"]
+    assert set(enabled_by_default) == {
+        "builtin.flatpak",
+        "builtin.pacman",
+        "builtin.winget",
+    }
+    assert cm.get("search.sources.pacman") is True
+    assert cm.get("search.sources.flatpak") is True
     assert listed["builtin.winget"]["trusted"] is True
     assert listed["builtin.winget"]["default_enabled"] is True
     assert listed["builtin.aur"]["trusted"] is False
