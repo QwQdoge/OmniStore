@@ -105,8 +105,7 @@ class WelcomeAiPage extends StatelessWidget {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant
-                                          .withValues(alpha: 0.5),
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -147,8 +146,7 @@ class WelcomeAiPage extends StatelessWidget {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant
-                                          .withValues(alpha: 0.5),
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -173,8 +171,7 @@ class WelcomeAiPage extends StatelessWidget {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant
-                                          .withValues(alpha: 0.5),
+                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -191,10 +188,7 @@ class WelcomeAiPage extends StatelessWidget {
                                 children: [
                                   TextButton.icon(
                                     onPressed: onShowApiKeyInstructions,
-                                    icon: const Icon(
-                                      Icons.help_outline_rounded,
-                                      size: 18,
-                                    ),
+                                    icon: const Icon(Icons.help_outline_rounded, size: 18),
                                     label: Text(l10n.howToGetApiKey),
                                   ),
                                   const Spacer(),
@@ -206,15 +200,9 @@ class WelcomeAiPage extends StatelessWidget {
                                               key: ValueKey('testing'),
                                               width: 18,
                                               height: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
+                                              child: CircularProgressIndicator(strokeWidth: 2),
                                             )
-                                          : const Icon(
-                                              Icons.network_ping_rounded,
-                                              size: 18,
-                                              key: ValueKey('idle'),
-                                            ),
+                                          : const Icon(Icons.network_ping_rounded, size: 18, key: ValueKey('idle')),
                                     ),
                                     label: Text(l10n.testConnection),
                                   ),
@@ -223,26 +211,16 @@ class WelcomeAiPage extends StatelessWidget {
                               if (testResult != null) ...[
                                 const SizedBox(height: 12),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   decoration: BoxDecoration(
                                     color: testSuccess
-                                        ? theme.colorScheme.primary.withValues(
-                                            alpha: 0.1,
-                                          )
-                                        : theme.colorScheme.error.withValues(
-                                            alpha: 0.1,
-                                          ),
+                                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                                        : theme.colorScheme.error.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: testSuccess
-                                          ? theme.colorScheme.primary
-                                                .withValues(alpha: 0.3)
-                                          : theme.colorScheme.error.withValues(
-                                              alpha: 0.3,
-                                            ),
+                                          ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                                          : theme.colorScheme.error.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: Row(
@@ -289,17 +267,13 @@ class WelcomeAiPage extends StatelessWidget {
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.info_outline_rounded,
-                                  color: theme.colorScheme.primary,
-                                ),
+                                Icon(Icons.info_outline_rounded, color: theme.colorScheme.primary),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     l10n.aiOllamaNote,
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color:
-                                          theme.colorScheme.onSurfaceVariant,
+                                      color: theme.colorScheme.onSurfaceVariant,
                                       height: 1.4,
                                     ),
                                   ),
