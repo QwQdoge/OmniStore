@@ -132,7 +132,16 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                                       width: double.infinity,
                                       child: FilledButton.icon(
                                         onPressed: isBootstrapping ? null : onStartBootstrap,
-                                        icon: const Icon(Icons.build_rounded),
+                                        icon: SmoothSizeSwitcher(
+                                          child: isBootstrapping
+                                              ? const SizedBox(
+                                                  key: ValueKey('loading'),
+                                                  width: 18,
+                                                  height: 18,
+                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                )
+                                              : const Icon(Icons.build_rounded, key: ValueKey('idle')),
+                                        ),
                                         label: Text(l10n.fixProblems),
                                       ),
                                     ),
@@ -150,10 +159,18 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            if (isBootstrapping) ...[
-                              const LinearProgressIndicator(),
-                              const SizedBox(height: 8),
-                            ],
+                            SmoothSizeSwitcher(
+                              alignment: Alignment.topCenter,
+                              child: isBootstrapping
+                                  ? const Column(
+                                      key: ValueKey('loading-progress'),
+                                      children: [
+                                        LinearProgressIndicator(),
+                                        SizedBox(height: 8),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(key: ValueKey('idle-progress')),
+                            ),
                             Container(
                               height: 180,
                               width: double.infinity,
