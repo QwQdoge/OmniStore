@@ -1,18 +1,52 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../python_bridge.dart';
+
+typedef ConfigPersistenceWriter = Future<bool> Function(
+  Map<String, dynamic> config,
+);
+
+class _ConfigRepositoryState {
+  Timer? saveTimer;
+  Map<String, dynamic>? pendingConfig;
+  Completer<bool>? pendingCompleter;
+  Future<void> writeTail = Future<void>.value();
+  Map<String, dynamic>? cachedConfig;
+  Map<String, dynamic>? cachedEnv;
+}
 
 class ConfigRepository {
   static const String _webConfigKey = 'omnistore_config';
+  static final _ConfigRepositoryState _sharedState = _ConfigRepositoryState();
 
-  Timer? _saveTimer;
-  Map<String, dynamic>? _pendingConfig;
-  Completer<bool>? _pendingCompleter;
+  /// Shared production instance. Default-constructed repositories also use the
+  /// same state so accidental duplicate instances cannot race each other.
+  static final ConfigRepository instance = ConfigRepository._(_sharedState);
 
-  final Map<String, dynamic> _defaultWebConfig = {
+  final _ConfigRepositoryState _state;
+  final ConfigPersistenceWriter? _desktopWriter;
+  final Duration _saveDebounce;
+
+  ConfigRepository() : this._(_sharedState);
+
+  ConfigRepository._(this._state)
+    : _desktopWriter = null,
+      _saveDebounce = const Duration(milliseconds: 500);
+
+  @visibleForTesting
+  ConfigRepository.test({
+    ConfigPersistenceWriter? desktopWriter,
+    Duration saveDebounce = const Duration(milliseconds: 500),
+  }) : _state = _ConfigRepositoryState(),
+       _desktopWriter = desktopWriter,
+       _saveDebounce = saveDebounce;
+
+  static final Map<String, dynamic> _defaultWebConfig = {
     "first_run": true,
     "search": {
       "sources": {
@@ -46,32 +80,41 @@ class ConfigRepository {
     },
   };
 
-  Map<String, dynamic>? _cachedConfig;
-  Map<String, dynamic>? _cachedEnv;
+  bool get _isTestEnv =>
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
-  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+  bool get _preferencesArePrimary =>
+      _desktopWriter == null && (kIsWeb || _isTestEnv);
+
+  Map<String, dynamic> _copyMap(Map<String, dynamic> value) {
+    return jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
+  }
+
+  Map<String, dynamic> _decodeMap(String raw) {
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map) {
+      throw const FormatException('Configuration root must be an object.');
+    }
+    return Map<String, dynamic>.from(decoded);
+  }
+
+  void _commitConfig(Map<String, dynamic> config) {
+    _state.cachedConfig = _copyMap(config);
+    _state.cachedEnv = null;
+  }
 
   Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
-    if (_cachedConfig != null && !forceRefresh) {
-      return _cachedConfig!;
+    if (forceRefresh) {
+      await _settlePendingWrites();
+    }
+
+    final cachedConfig = _state.cachedConfig;
+    if (cachedConfig != null && !forceRefresh) {
+      return _copyMap(cachedConfig);
     }
 
     if (kIsWeb || _isTestEnv) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final raw = prefs.getString(_webConfigKey);
-        if (raw == null) {
-          await prefs.setString(_webConfigKey, jsonEncode(_defaultWebConfig));
-          _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
-          return _cachedConfig!;
-        }
-        _cachedConfig = jsonDecode(raw) as Map<String, dynamic>;
-        return _cachedConfig!;
-      } catch (e) {
-        debugPrint("Web loadConfig Exception: $e");
-        _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
-        return _cachedConfig!;
-      }
+      return _loadPreferencesOrDefault();
     }
 
     try {
@@ -83,97 +126,221 @@ class ConfigRepository {
 
       if (result.exitCode != 0) {
         debugPrint(
-          "loadConfig failed with exit code ${result.exitCode}: ${result.stderr}",
+          'loadConfig failed with exit code ${result.exitCode}; '
+          'using the last local backup.',
         );
-        return {};
+        return _loadPreferencesOrDefault();
       }
 
       final output = result.stdout.toString().trim();
-      if (output.isEmpty) return {};
-      _cachedConfig = jsonDecode(output) as Map<String, dynamic>;
-      return _cachedConfig!;
-    } catch (e) {
-      debugPrint("loadConfig Exception: $e");
-      // Fallback to SharedPreferences on desktop if python is broken
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final raw = prefs.getString(_webConfigKey);
-        if (raw != null) {
-          _cachedConfig = jsonDecode(raw) as Map<String, dynamic>;
-          return _cachedConfig!;
-        }
-      } catch (_) {}
-      _cachedConfig = Map<String, dynamic>.from(_defaultWebConfig);
-      return _cachedConfig!;
+      if (output.isEmpty) {
+        debugPrint('loadConfig returned no data; using the last local backup.');
+        return _loadPreferencesOrDefault();
+      }
+
+      final config = _decodeMap(output);
+      _state.cachedConfig = _copyMap(config);
+      return _copyMap(config);
+    } catch (error) {
+      debugPrint(
+        'loadConfig failed (${error.runtimeType}); '
+        'using the last local backup.',
+      );
+      return _loadPreferencesOrDefault();
+    }
+  }
+
+  Future<Map<String, dynamic>> _loadPreferencesOrDefault() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_webConfigKey);
+      if (raw != null) {
+        final config = _decodeMap(raw);
+        _state.cachedConfig = _copyMap(config);
+        return _copyMap(config);
+      }
+
+      final defaultConfig = _copyMap(_defaultWebConfig);
+      final stored = await prefs.setString(
+        _webConfigKey,
+        jsonEncode(defaultConfig),
+      );
+      if (!stored) {
+        debugPrint('Failed to persist the default OmniStore configuration.');
+      }
+      _state.cachedConfig = _copyMap(defaultConfig);
+      return _copyMap(defaultConfig);
+    } catch (error) {
+      debugPrint(
+        'Local configuration backup could not be loaded '
+        '(${error.runtimeType}).',
+      );
+      final defaultConfig = _copyMap(_defaultWebConfig);
+      _state.cachedConfig = _copyMap(defaultConfig);
+      return _copyMap(defaultConfig);
     }
   }
 
   Future<bool> saveConfig(Map<String, dynamic> config) async {
-    _cachedConfig = config;
-    _cachedEnv =
-        null; // Invalidate env check cache in case source configs changed
-
-    // Save to preferences instantly (web or desktop backup)
+    late final Map<String, dynamic> snapshot;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_webConfigKey, jsonEncode(config));
-    } catch (_) {}
-
-    if (kIsWeb || _isTestEnv) {
-      return true;
+      snapshot = _copyMap(config);
+    } catch (error) {
+      debugPrint(
+        'Configuration is not JSON serializable (${error.runtimeType}).',
+      );
+      return false;
     }
 
-    _pendingConfig = config;
-    _pendingCompleter ??= Completer<bool>();
+    if (_preferencesArePrimary) {
+      return _enqueueWrite(() => _persistPreferencesAsPrimary(snapshot));
+    }
 
-    _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 500), () async {
-      final configToSave = _pendingConfig;
-      final completer = _pendingCompleter;
-      _pendingConfig = null;
-      _pendingCompleter = null;
+    _state.pendingConfig = snapshot;
+    final completer = _state.pendingCompleter ??= Completer<bool>();
 
-      if (configToSave == null) {
-        completer?.complete(true);
-        return;
+    _state.saveTimer?.cancel();
+    _state.saveTimer = Timer(_saveDebounce, () {
+      unawaited(_flushPendingConfig());
+    });
+
+    return completer.future;
+  }
+
+  Future<void> _flushPendingConfig() async {
+    _state.saveTimer = null;
+    final configToSave = _state.pendingConfig;
+    final completer = _state.pendingCompleter;
+    _state.pendingConfig = null;
+    _state.pendingCompleter = null;
+
+    if (configToSave == null) {
+      if (completer != null && !completer.isCompleted) {
+        completer.complete(true);
       }
+      return;
+    }
 
+    final success = await _enqueueWrite(
+      () => _persistDesktopAndCommit(configToSave),
+    );
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(success);
+    }
+  }
+
+  Future<bool> _enqueueWrite(Future<bool> Function() operation) {
+    final result = _state.writeTail.then((_) async {
       try {
-        final process = await PythonBridge.start(
-          PythonBridge.venvPython,
-          PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
-          workingDirectory: PythonBridge.workingDir,
-        ).timeout(const Duration(seconds: 5));
-
-        process.stdin.write(jsonEncode(configToSave));
-        await process.stdin.close();
-
-        final exitCode = await process.exitCode.timeout(
-          const Duration(seconds: 5),
+        return await operation();
+      } catch (error) {
+        debugPrint(
+          'Configuration persistence failed (${error.runtimeType}).',
         );
-        completer?.complete(exitCode == 0);
-      } catch (e) {
-        debugPrint("saveConfig Exception: $e");
-        completer?.complete(false);
+        return false;
       }
     });
 
-    return _pendingCompleter!.future;
+    _state.writeTail = result.then<void>((_) {});
+    return result;
+  }
+
+  Future<bool> _persistPreferencesAsPrimary(
+    Map<String, dynamic> config,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = await prefs.setString(_webConfigKey, jsonEncode(config));
+      if (!stored) return false;
+      _commitConfig(config);
+      return true;
+    } catch (error) {
+      debugPrint(
+        'Configuration preferences write failed (${error.runtimeType}).',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _persistDesktopAndCommit(
+    Map<String, dynamic> config,
+  ) async {
+    final persisted = _desktopWriter != null
+        ? await _desktopWriter!(_copyMap(config))
+        : await _writeDesktopConfig(config);
+    if (!persisted) return false;
+
+    _commitConfig(config);
+    await _writeBackup(config);
+    return true;
+  }
+
+  Future<bool> _writeDesktopConfig(Map<String, dynamic> config) async {
+    Process? process;
+    try {
+      process = await PythonBridge.start(
+        PythonBridge.venvPython,
+        PythonBridge.buildArgs(["--set-config", "stdin", "--json"]),
+        workingDirectory: PythonBridge.workingDir,
+      ).timeout(const Duration(seconds: 5));
+
+      final outputDrain = process.stdout.drain<void>();
+      final errorDrain = process.stderr.drain<void>();
+
+      process.stdin.write(jsonEncode(config));
+      await process.stdin.close();
+
+      final exitCode = await process.exitCode.timeout(
+        const Duration(seconds: 5),
+      );
+      await Future.wait([outputDrain, errorDrain]);
+      return exitCode == 0;
+    } catch (error) {
+      process?.kill();
+      debugPrint('saveConfig failed (${error.runtimeType}).');
+      return false;
+    }
+  }
+
+  Future<void> _writeBackup(Map<String, dynamic> config) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = await prefs.setString(_webConfigKey, jsonEncode(config));
+      if (!stored) {
+        debugPrint('The desktop configuration backup could not be updated.');
+      }
+    } catch (error) {
+      debugPrint(
+        'The desktop configuration backup could not be updated '
+        '(${error.runtimeType}).',
+      );
+    }
+  }
+
+  Future<void> _settlePendingWrites() async {
+    if (_state.pendingConfig != null) {
+      _state.saveTimer?.cancel();
+      _state.saveTimer = null;
+      await _flushPendingConfig();
+    }
+    await _state.writeTail;
   }
 
   Future<Map<String, dynamic>> checkEnv({bool forceRefresh = false}) async {
-    if (_cachedEnv != null && !forceRefresh) {
-      return _cachedEnv!;
+    final cachedEnv = _state.cachedEnv;
+    if (cachedEnv != null && !forceRefresh) {
+      return _copyMap(cachedEnv);
     }
 
     if (kIsWeb || _isTestEnv) {
-      _cachedEnv = {
+      final env = <String, dynamic>{
         "platform": "Web / Browser",
         "python_status": "Not supported (Browser Sandbox)",
         "available_sources": ["GitHub", "Bitu"],
         "os_details": "Chrome / Web browser environment",
       };
-      return _cachedEnv!;
+      _state.cachedEnv = _copyMap(env);
+      return _copyMap(env);
     }
 
     try {
@@ -182,16 +349,18 @@ class ConfigRepository {
         PythonBridge.buildArgs(["--check-env", "--json"]),
         workingDirectory: PythonBridge.workingDir,
       ).timeout(const Duration(seconds: 10));
-      _cachedEnv = jsonDecode(result.stdout) as Map<String, dynamic>;
-      return _cachedEnv!;
-    } catch (e) {
-      debugPrint("checkEnv Exception: $e");
-      _cachedEnv = {
+      final env = _decodeMap(result.stdout.toString());
+      _state.cachedEnv = _copyMap(env);
+      return _copyMap(env);
+    } catch (error) {
+      debugPrint('checkEnv failed (${error.runtimeType}).');
+      final env = <String, dynamic>{
         "platform": "Unknown/Desktop",
-        "python_status": "Error: $e",
+        "python_status": "Error",
         "available_sources": ["GitHub", "Bitu"],
       };
-      return _cachedEnv!;
+      _state.cachedEnv = _copyMap(env);
+      return _copyMap(env);
     }
   }
 }
