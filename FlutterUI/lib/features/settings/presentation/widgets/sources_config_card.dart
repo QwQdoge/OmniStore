@@ -215,18 +215,14 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   contentPadding: EdgeInsets.zero,
                   title: Text(l10n.addCustomSource),
                   subtitle: Text(l10n.addCustomSourceDesc),
-                  trailing: Semantics(
-                    label: l10n.addCustomSource,
-                    button: true,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.add_circle_outline_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 28,
-                      ),
-                      tooltip: l10n.addCustomSource,
-                      onPressed: () => _showAddSourceDialog(l10n),
+                  trailing: IconButton(
+                    icon: Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 28,
                     ),
+                    tooltip: l10n.addCustomSource,
+                    onPressed: () => _showAddSourceDialog(l10n),
                   ),
                 ),
               ],

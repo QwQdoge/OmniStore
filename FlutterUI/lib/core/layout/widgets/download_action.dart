@@ -25,23 +25,19 @@ class DownloadAction extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            Semantics(
-              label: l10n.downloads,
-              button: true,
-              child: IconButton(
-                tooltip: l10n.downloads,
-                onPressed: () =>
-                    context.read<NavigationController>().setIndex(4),
-                icon: Selector<TaskController, bool>(
-                  selector: (context, task) => task.isBusy,
-                  builder: (context, isBusy, child) => Icon(
-                    isBusy
-                        ? Icons.downloading_rounded
-                        : Icons.download_for_offline_rounded,
-                    color: selectedIndex == 4
-                        ? scheme.primary
-                        : scheme.onSurfaceVariant,
-                  ),
+            IconButton(
+              tooltip: l10n.downloads,
+              onPressed: () =>
+                  context.read<NavigationController>().setIndex(4),
+              icon: Selector<TaskController, bool>(
+                selector: (context, task) => task.isBusy,
+                builder: (context, isBusy, child) => Icon(
+                  isBusy
+                      ? Icons.downloading_rounded
+                      : Icons.download_for_offline_rounded,
+                  color: selectedIndex == 4
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
                 ),
               ),
             ),

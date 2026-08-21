@@ -117,14 +117,10 @@ class AdaptiveNavigationShell extends StatelessWidget {
                 centerTitle: false,
                 actions: [
                   if (showSearch && selectedIndex != 2)
-                    Semantics(
-                      label: l10n.search,
-                      button: true,
-                      child: IconButton(
-                        onPressed: onSearch,
-                        tooltip: l10n.search,
-                        icon: const Icon(Icons.search_rounded),
-                      ),
+                    IconButton(
+                      onPressed: onSearch,
+                      tooltip: l10n.search,
+                      icon: const Icon(Icons.search_rounded),
                     ),
                   const DownloadAction(compact: true),
                 ],

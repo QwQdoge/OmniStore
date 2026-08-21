@@ -1,3 +1,9 @@
+## 2026-08-18 - Clean Up Redundant IconButton Semantics Wrappers
+
+**Learning:** `IconButton` and `IconButton.filledTonal` widgets natively manage their accessibility properties through their `tooltip` and `isSelected` parameters in Flutter. Wrapping native `IconButton` instances in a redundant `Semantics(button: true, label: ...)` wrapper creates duplicate accessibility nodes in screen-reader trees and bloats widget layout hierarchies.
+
+**Action:** Remove redundant `Semantics` wrappers around native `IconButton` widgets across layout bars and settings cards (`desktop_top_bar`, `download_action`, `rail_bottom_actions`, `adaptive_navigation_shell`, `storage_cleanup_card`, `sources_config_card`), relying directly on `IconButton.tooltip` and `isSelected`.
+
 ## 2026-08-17 - Material Design 3 Auth & Account Form Polish
 
 **Learning:** Designing auth and account pages in MD3 requires framing form elements inside `surfaceContainerLow` elevation containers with 20dp border radii and clean subtle outline borders. Text fields should use 12dp `OutlineInputBorder` shapes with comfortable vertical padding, explicit hover/focused states, and intuitive tooltips on password visibility toggle buttons. Adding `SmoothSizeSwitcher` around button progress indicators avoids abrupt size jumps during loading state toggles.
