@@ -1268,5 +1268,73 @@
         "type": "String"
       }
     }
+  },
+  "githubIntegration": "GitHub Integration",
+  "@githubIntegration": {
+    "description": "Description for githubIntegration"
+  },
+  "configurePat": "Configure Personal Access Token",
+  "@configurePat": {
+    "description": "Description for configurePat"
+  },
+  "patHelperText": "Provide a GitHub Classic PAT or Fine-grained Token.",
+  "@patHelperText": {
+    "description": "Description for patHelperText"
+  },
+  "featuredSubtitle": "Maintained by OmniStore, available even offline",
+  "@featuredSubtitle": {
+    "description": "Description for featuredSubtitle"
+  },
+  "editorPicks": "Editor's Choice",
+  "@editorPicks": {
+    "description": "Description for editorPicks"
+  },
+  "checkingEnvStatus": "Checking environment status...",
+  "@checkingEnvStatus": {
+    "description": "Description for checkingEnvStatus"
+  },
+  "envDetailsFailed": "Failed to fetch environment details.",
+  "@envDetailsFailed": {
+    "description": "Description for envDetailsFailed"
+  },
+  "bootstrapProgress": "Bootstrap progress:",
+  "@bootstrapProgress": {
+    "description": "Description for bootstrapProgress"
+  },
+  "systemDetails": "System details:",
+  "@systemDetails": {
+    "description": "Description for systemDetails"
+  },
+  "aiIntegrationDesc": "Enable intelligence integration features",
+  "@aiIntegrationDesc": {
+    "description": "Description for aiIntegrationDesc"
+  },
+  "ollamaLocalOffline": "Ollama (Local / Offline)",
+  "@ollamaLocalOffline": {
+    "description": "Description for ollamaLocalOffline"
+  },
+  "openaiCloud": "OpenAI API (Cloud)",
+  "@openaiCloud": {
+    "description": "Description for openaiCloud"
+  },
+  "testConnection": "Test Connection",
+  "@testConnection": {
+    "description": "Description for testConnection"
+  },
+  "githubSearchFailed": "GitHub search failed",
+  "@githubSearchFailed": {
+    "description": "Description for githubSearchFailed"
+  },
+  "githubStoreUnavailable": "GitHub Store unavailable",
+  "@githubStoreUnavailable": {
+    "description": "Description for githubStoreUnavailable"
+  },
+  "noGithubReposFound": "No GitHub repositories found",
+  "@noGithubReposFound": {
+    "description": "Description for noGithubReposFound"
+  },
+  "pullToRefreshCategory": "Pull to refresh or try another category.",
+  "@pullToRefreshCategory": {
+    "description": "Description for pullToRefreshCategory"
   }
 }

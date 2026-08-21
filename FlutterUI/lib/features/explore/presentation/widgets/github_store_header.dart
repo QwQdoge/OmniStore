@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class GitHubStoreHeader extends StatelessWidget {
   final TextEditingController searchController;
@@ -17,6 +18,7 @@ class GitHubStoreHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
@@ -76,14 +78,14 @@ class GitHubStoreHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "GitHub App Store",
+                      l10n.githubStore,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0,
                       ),
                     ),
                     Text(
-                      "Discover and download apps directly from GitHub releases",
+                      l10n.githubStoreSubtitle,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -97,14 +99,14 @@ class GitHubStoreHeader extends StatelessWidget {
           // Premium Integrated Search Bar
           SearchBar(
             controller: searchController,
-            hintText: "Search GitHub repositories...",
+            hintText: l10n.searchGithubHint,
             leading: const Icon(Icons.search_rounded),
             trailing: [
               if (isSearching)
                 IconButton(
                   onPressed: onClearSearch,
                   icon: const Icon(Icons.clear_rounded),
-                  tooltip: 'Clear search',
+                  tooltip: l10n.clearSearch,
                 ),
             ],
             elevation: WidgetStateProperty.all(0),

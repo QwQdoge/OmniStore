@@ -174,8 +174,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.code_rounded),
-                  title: const Text("GitHub Integration"),
-                  subtitle: const Text("Configure Personal Access Token"),
+                  title: Text(l10n.githubIntegration),
+                  subtitle: Text(l10n.configurePat),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                   onTap: () {
                     Navigator.push(

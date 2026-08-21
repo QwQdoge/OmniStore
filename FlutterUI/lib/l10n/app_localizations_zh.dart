@@ -1262,6 +1262,57 @@ class AppLocalizationsZh extends AppLocalizations {
   String signInError(String message) {
     return '登录出错：$message';
   }
+
+  @override
+  String get githubIntegration => 'GitHub 集成';
+
+  @override
+  String get configurePat => '配置个人访问令牌 (PAT)';
+
+  @override
+  String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
+
+  @override
+  String get featuredSubtitle => '由 OmniStore 维护，离线时也始终可见';
+
+  @override
+  String get editorPicks => '编辑推荐';
+
+  @override
+  String get checkingEnvStatus => '正在检查环境状态...';
+
+  @override
+  String get envDetailsFailed => '获取环境详情失败。';
+
+  @override
+  String get bootstrapProgress => '环境配置进度：';
+
+  @override
+  String get systemDetails => '系统详情：';
+
+  @override
+  String get aiIntegrationDesc => '开启智能集成与辅助功能';
+
+  @override
+  String get ollamaLocalOffline => 'Ollama (本地 / 离线)';
+
+  @override
+  String get openaiCloud => 'OpenAI API (云端)';
+
+  @override
+  String get testConnection => '测试连接';
+
+  @override
+  String get githubSearchFailed => 'GitHub 搜索失败';
+
+  @override
+  String get githubStoreUnavailable => 'GitHub 商店暂不可用';
+
+  @override
+  String get noGithubReposFound => '未找到 GitHub 软件仓库';
+
+  @override
+  String get pullToRefreshCategory => '下拉刷新或尝试其他分类。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2522,4 +2573,55 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String signInError(String message) {
     return '登入錯誤：$message';
   }
+
+  @override
+  String get githubIntegration => 'GitHub 整合';
+
+  @override
+  String get configurePat => '設定個人存取權標（PAT）';
+
+  @override
+  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權標。';
+
+  @override
+  String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';
+
+  @override
+  String get editorPicks => '編輯推薦';
+
+  @override
+  String get checkingEnvStatus => '正在檢查環境狀態...';
+
+  @override
+  String get envDetailsFailed => '取得環境詳細資訊失敗。';
+
+  @override
+  String get bootstrapProgress => '環境設定進度：';
+
+  @override
+  String get systemDetails => '系統詳細資訊：';
+
+  @override
+  String get aiIntegrationDesc => '開啟智慧整合與輔助功能';
+
+  @override
+  String get ollamaLocalOffline => 'Ollama (本地 / 離線)';
+
+  @override
+  String get openaiCloud => 'OpenAI API (雲端)';
+
+  @override
+  String get testConnection => '測試連線';
+
+  @override
+  String get githubSearchFailed => 'GitHub 搜尋失敗';
+
+  @override
+  String get githubStoreUnavailable => 'GitHub 商店暫不可用';
+
+  @override
+  String get noGithubReposFound => '未找到 GitHub 軟體倉庫';
+
+  @override
+  String get pullToRefreshCategory => '下拉重新整理或嘗試其他分類。';
 }

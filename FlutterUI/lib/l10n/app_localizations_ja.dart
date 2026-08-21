@@ -1272,4 +1272,56 @@ class AppLocalizationsJa extends AppLocalizations {
   String signInError(String message) {
     return 'サインインエラー: $message';
   }
+
+  @override
+  String get githubIntegration => 'GitHub 連携';
+
+  @override
+  String get configurePat => '個人アクセストークンの設定';
+
+  @override
+  String get patHelperText =>
+      'GitHub Classic PAT または Fine-grained トークンを入力してください。';
+
+  @override
+  String get featuredSubtitle => 'OmniStore が管理、オフラインでも常時表示';
+
+  @override
+  String get editorPicks => '編集部のおすすめ';
+
+  @override
+  String get checkingEnvStatus => '環境状態を確認中...';
+
+  @override
+  String get envDetailsFailed => '環境の詳細情報の取得に失敗しました。';
+
+  @override
+  String get bootstrapProgress => 'セットアップ進捗：';
+
+  @override
+  String get systemDetails => 'システム詳細：';
+
+  @override
+  String get aiIntegrationDesc => 'AI 連携機能を有効化';
+
+  @override
+  String get ollamaLocalOffline => 'Ollama (ローカル / オフライン)';
+
+  @override
+  String get openaiCloud => 'OpenAI API (クラウド)';
+
+  @override
+  String get testConnection => '接続テスト';
+
+  @override
+  String get githubSearchFailed => 'GitHub 検索に失敗しました';
+
+  @override
+  String get githubStoreUnavailable => 'GitHub ストアは利用できません';
+
+  @override
+  String get noGithubReposFound => 'GitHub リポジトリが見つかりません';
+
+  @override
+  String get pullToRefreshCategory => 'スワイプして更新するか、別のカテゴリーをお試しください。';
 }

@@ -1367,4 +1367,59 @@ class AppLocalizationsEs extends AppLocalizations {
   String signInError(String message) {
     return 'Error al iniciar sesión: $message';
   }
+
+  @override
+  String get githubIntegration => 'Integración con GitHub';
+
+  @override
+  String get configurePat => 'Configurar Token de Acceso Personal';
+
+  @override
+  String get patHelperText =>
+      'Proporcione un PAT clásico de GitHub o un Token de grano fino.';
+
+  @override
+  String get featuredSubtitle =>
+      'Mantenido por OmniStore, disponible incluso sin conexión';
+
+  @override
+  String get editorPicks => 'Selección del editor';
+
+  @override
+  String get checkingEnvStatus => 'Comprobando el estado del entorno...';
+
+  @override
+  String get envDetailsFailed => 'Error al obtener los detalles del entorno.';
+
+  @override
+  String get bootstrapProgress => 'Progreso de configuración:';
+
+  @override
+  String get systemDetails => 'Detalles del sistema:';
+
+  @override
+  String get aiIntegrationDesc =>
+      'Habilitar funciones de integración inteligente';
+
+  @override
+  String get ollamaLocalOffline => 'Ollama (Local / Sin conexión)';
+
+  @override
+  String get openaiCloud => 'OpenAI API (Nube)';
+
+  @override
+  String get testConnection => 'Probar conexión';
+
+  @override
+  String get githubSearchFailed => 'Error en la búsqueda de GitHub';
+
+  @override
+  String get githubStoreUnavailable => 'Tienda de GitHub no disponible';
+
+  @override
+  String get noGithubReposFound => 'No se encontraron repositorios de GitHub';
+
+  @override
+  String get pullToRefreshCategory =>
+      'Deslice hacia abajo para actualizar o pruebe otra categoría.';
 }

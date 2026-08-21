@@ -1356,4 +1356,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String signInError(String message) {
     return 'Sign in error: $message';
   }
+
+  @override
+  String get githubIntegration => 'GitHub Integration';
+
+  @override
+  String get configurePat => 'Configure Personal Access Token';
+
+  @override
+  String get patHelperText =>
+      'Provide a GitHub Classic PAT or Fine-grained Token.';
+
+  @override
+  String get featuredSubtitle =>
+      'Maintained by OmniStore, available even offline';
+
+  @override
+  String get editorPicks => 'Editor\'s Choice';
+
+  @override
+  String get checkingEnvStatus => 'Checking environment status...';
+
+  @override
+  String get envDetailsFailed => 'Failed to fetch environment details.';
+
+  @override
+  String get bootstrapProgress => 'Bootstrap progress:';
+
+  @override
+  String get systemDetails => 'System details:';
+
+  @override
+  String get aiIntegrationDesc => 'Enable intelligence integration features';
+
+  @override
+  String get ollamaLocalOffline => 'Ollama (Local / Offline)';
+
+  @override
+  String get openaiCloud => 'OpenAI API (Cloud)';
+
+  @override
+  String get testConnection => 'Test Connection';
+
+  @override
+  String get githubSearchFailed => 'GitHub search failed';
+
+  @override
+  String get githubStoreUnavailable => 'GitHub Store unavailable';
+
+  @override
+  String get noGithubReposFound => 'No GitHub repositories found';
+
+  @override
+  String get pullToRefreshCategory =>
+      'Pull to refresh or try another category.';
 }

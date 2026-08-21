@@ -2466,6 +2466,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in error: {message}'**
   String signInError(String message);
+
+  /// Description for githubIntegration
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Integration'**
+  String get githubIntegration;
+
+  /// Description for configurePat
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Personal Access Token'**
+  String get configurePat;
+
+  /// Description for patHelperText
+  ///
+  /// In en, this message translates to:
+  /// **'Provide a GitHub Classic PAT or Fine-grained Token.'**
+  String get patHelperText;
+
+  /// Description for featuredSubtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Maintained by OmniStore, available even offline'**
+  String get featuredSubtitle;
+
+  /// Description for editorPicks
+  ///
+  /// In en, this message translates to:
+  /// **'Editor\'s Choice'**
+  String get editorPicks;
+
+  /// Description for checkingEnvStatus
+  ///
+  /// In en, this message translates to:
+  /// **'Checking environment status...'**
+  String get checkingEnvStatus;
+
+  /// Description for envDetailsFailed
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch environment details.'**
+  String get envDetailsFailed;
+
+  /// Description for bootstrapProgress
+  ///
+  /// In en, this message translates to:
+  /// **'Bootstrap progress:'**
+  String get bootstrapProgress;
+
+  /// Description for systemDetails
+  ///
+  /// In en, this message translates to:
+  /// **'System details:'**
+  String get systemDetails;
+
+  /// Description for aiIntegrationDesc
+  ///
+  /// In en, this message translates to:
+  /// **'Enable intelligence integration features'**
+  String get aiIntegrationDesc;
+
+  /// Description for ollamaLocalOffline
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama (Local / Offline)'**
+  String get ollamaLocalOffline;
+
+  /// Description for openaiCloud
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI API (Cloud)'**
+  String get openaiCloud;
+
+  /// Description for testConnection
+  ///
+  /// In en, this message translates to:
+  /// **'Test Connection'**
+  String get testConnection;
+
+  /// Description for githubSearchFailed
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub search failed'**
+  String get githubSearchFailed;
+
+  /// Description for githubStoreUnavailable
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Store unavailable'**
+  String get githubStoreUnavailable;
+
+  /// Description for noGithubReposFound
+  ///
+  /// In en, this message translates to:
+  /// **'No GitHub repositories found'**
+  String get noGithubReposFound;
+
+  /// Description for pullToRefreshCategory
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh or try another category.'**
+  String get pullToRefreshCategory;
 }
 
 class _AppLocalizationsDelegate
