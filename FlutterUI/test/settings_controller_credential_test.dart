@@ -32,7 +32,8 @@ class _MemoryConfigRepository extends ConfigRepository {
   _MemoryConfigRepository({
     required Map<String, dynamic> initialConfig,
     this.saveSucceeds = true,
-  }) : storedConfig = _copyConfig(initialConfig);
+  }) : storedConfig = _copyConfig(initialConfig),
+       super.test();
 
   Map<String, dynamic> storedConfig;
   bool saveSucceeds;
