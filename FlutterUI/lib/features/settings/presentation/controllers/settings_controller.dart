@@ -6,8 +6,30 @@ import 'package:frontend/data/repositories/config_repository.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/services/backend_service.dart';
 
+typedef DaemonEnvironmentUpdater = Future<bool> Function(
+  Map<String, String> environment,
+);
+typedef UpdateConfigRefresher = Future<void> Function();
+
 class SettingsController with ChangeNotifier {
   bool _disposed = false;
+
+  final ConfigRepository _configRepository;
+  final DaemonEnvironmentUpdater _updateDaemonEnvironment;
+  final UpdateConfigRefresher _refreshUpdateService;
+
+  Map<String, dynamic> _config = {};
+  bool _isAIEnabled = false;
+  bool _isRailExpanded = true;
+
+  SettingsController(
+    this._configRepository, {
+    DaemonEnvironmentUpdater? updateDaemonEnvironment,
+    UpdateConfigRefresher? refreshUpdateService,
+  }) : _updateDaemonEnvironment =
+           updateDaemonEnvironment ?? BackendService.instance.updateDaemonEnv,
+       _refreshUpdateService =
+           refreshUpdateService ?? (() => UpdateService().updateConfig());
 
   @override
   void dispose() {
@@ -21,13 +43,6 @@ class SettingsController with ChangeNotifier {
       super.notifyListeners();
     }
   }
-
-  final ConfigRepository _configRepository;
-  Map<String, dynamic> _config = {};
-  bool _isAIEnabled = false;
-  bool _isRailExpanded = true;
-
-  SettingsController(this._configRepository);
 
   Map<String, dynamic> get config => _config;
   bool get isAIEnabled => _isAIEnabled;
@@ -73,7 +88,10 @@ class SettingsController with ChangeNotifier {
         return const Locale('zh');
       case 'zh-TW':
       case 'zh_Hant':
-        return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant');
+        return const Locale.fromSubtags(
+          languageCode: 'zh',
+          scriptCode: 'Hant',
+        );
       case 'en-US':
       case 'en':
         return const Locale('en');
@@ -116,7 +134,8 @@ class SettingsController with ChangeNotifier {
   }
 
   // ─── System Title Bar ─────────────────────────────────
-  bool get useSystemTitleBar => _config['ui']?['use_system_title_bar'] ?? false;
+  bool get useSystemTitleBar =>
+      _config['ui']?['use_system_title_bar'] ?? false;
 
   Future<void> setUseSystemTitleBar(bool value) async {
     final config = Map<String, dynamic>.from(_config);
@@ -168,7 +187,6 @@ class SettingsController with ChangeNotifier {
   void setRailExpanded(bool expanded) {
     if (_isRailExpanded != expanded) {
       _isRailExpanded = expanded;
-      // Persist to config
       final config = Map<String, dynamic>.from(_config);
       config['ui'] = Map<String, dynamic>.from(config['ui'] ?? {});
       config['ui']['rail_expanded'] = expanded;
@@ -243,7 +261,7 @@ class SettingsController with ChangeNotifier {
     _isAIEnabled = _config['ai']?['enabled'] ?? false;
     _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
 
-    // Read secure API key and merge into UI-facing config map
+    // Read the credential from secure storage only for the editable UI state.
     final apiKey = await PythonBridge.getApiKey();
     if (apiKey != null && apiKey.isNotEmpty) {
       _config['ai'] = Map<String, dynamic>.from(_config['ai'] ?? {});
@@ -253,38 +271,103 @@ class SettingsController with ChangeNotifier {
   }
 
   Future<bool> updateConfig(Map<String, dynamic> newConfig) async {
-    // Extract and save key to SecureStorage
-    if (newConfig['ai'] != null && newConfig['ai']['api_key'] != null) {
-      final apiKey = newConfig['ai']['api_key'] as String;
-      if (apiKey != '******') {
-        await PythonBridge.saveApiKey(apiKey);
+    final aiConfig = newConfig['ai'];
+    final apiKeyValue = aiConfig is Map ? aiConfig['api_key'] : null;
+    final submittedApiKey =
+        apiKeyValue is String && apiKeyValue != '******'
+        ? apiKeyValue
+        : null;
+    final shouldUpdateCredential = submittedApiKey != null;
+
+    String? previousApiKey;
+    if (shouldUpdateCredential) {
+      try {
+        previousApiKey = await PythonBridge.getApiKey(throwOnError: true);
+        if (submittedApiKey.isEmpty) {
+          await PythonBridge.deleteApiKey();
+        } else {
+          await PythonBridge.saveApiKey(submittedApiKey);
+        }
+      } catch (error) {
+        debugPrint(
+          'Failed to update AI credential storage: '
+          '${error.runtimeType}',
+        );
+        return false;
       }
     }
 
-    // Prepare config to save to disk with key scrubbed
+    // Never persist the credential in the ordinary configuration file.
     final configToSave = Map<String, dynamic>.from(newConfig);
     if (configToSave['ai'] != null) {
       configToSave['ai'] = Map<String, dynamic>.from(configToSave['ai']);
-      configToSave['ai']['api_key'] = ''; // Scrubbed!
+      configToSave['ai']['api_key'] = '';
     }
 
-    final success = await _configRepository.saveConfig(configToSave);
-    if (success) {
-      _config = newConfig;
-      _isAIEnabled = _config['ai']?['enabled'] ?? false;
-      _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
-      notifyListeners();
-      // Propagate configuration updates dynamically to the background updates manager
-      UpdateService().updateConfig();
-      // Sync environment variables (like API keys) to the background daemon
-      final apiKey = await PythonBridge.getApiKey();
-      if (apiKey != null) {
-        BackendService.instance.updateDaemonEnv({
-          'OMNISTORE_AI_API_KEY': apiKey,
-        });
-      }
+    bool success;
+    try {
+      success = await _configRepository.saveConfig(configToSave);
+    } catch (error) {
+      debugPrint('Failed to persist settings: ${error.runtimeType}');
+      success = false;
     }
-    return success;
+
+    if (!success) {
+      if (shouldUpdateCredential) {
+        await _restoreApiKey(previousApiKey);
+      }
+      return false;
+    }
+
+    _config = newConfig;
+    _isAIEnabled = _config['ai']?['enabled'] ?? false;
+    _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
+    notifyListeners();
+
+    try {
+      await _refreshUpdateService();
+    } catch (error) {
+      debugPrint(
+        'Failed to refresh background update settings: '
+        '${error.runtimeType}',
+      );
+    }
+
+    try {
+      final currentApiKey = shouldUpdateCredential
+          ? (submittedApiKey.isEmpty ? null : submittedApiKey)
+          : await PythonBridge.getApiKey(throwOnError: true);
+      final daemonUpdated = await _updateDaemonEnvironment({
+        'OMNISTORE_AI_API_KEY': currentApiKey ?? '',
+      });
+      if (!daemonUpdated &&
+          !kIsWeb &&
+          !Platform.environment.containsKey('FLUTTER_TEST')) {
+        debugPrint('Failed to synchronize the AI credential with the daemon.');
+      }
+    } catch (error) {
+      debugPrint(
+        'Failed to synchronize the AI credential with the daemon: '
+        '${error.runtimeType}',
+      );
+    }
+
+    return true;
+  }
+
+  Future<void> _restoreApiKey(String? previousApiKey) async {
+    try {
+      if (previousApiKey == null || previousApiKey.isEmpty) {
+        await PythonBridge.deleteApiKey();
+      } else {
+        await PythonBridge.saveApiKey(previousApiKey);
+      }
+    } catch (error) {
+      debugPrint(
+        'Failed to roll back AI credential storage: '
+        '${error.runtimeType}',
+      );
+    }
   }
 
   // ─── Font Customization ──────────────────────────────
