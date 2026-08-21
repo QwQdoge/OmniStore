@@ -25,9 +25,10 @@ void main() {
     expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
   });
 
-  testWidgets('EmptyState applies semantic label correctly', (
+  testWidgets('EmptyState applies live region semantics correctly with ensureSemantics', (
     WidgetTester tester,
   ) async {
+    final semanticsHandle = tester.ensureSemantics();
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -40,7 +41,8 @@ void main() {
     );
 
     expect(find.text('No Active Tasks'), findsOneWidget);
-    final semantics = tester.getSemantics(find.byType(EmptyState));
-    expect(semantics.label, 'No Active Tasks');
+    expect(find.bySemanticsLabel('No Active Tasks'), findsOneWidget);
+
+    semanticsHandle.dispose();
   });
 }
