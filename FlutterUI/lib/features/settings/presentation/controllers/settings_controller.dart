@@ -90,10 +90,7 @@ class SettingsController with ChangeNotifier {
         return const Locale('zh');
       case 'zh-TW':
       case 'zh_Hant':
-        return const Locale.fromSubtags(
-          languageCode: 'zh',
-          scriptCode: 'Hant',
-        );
+        return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant');
       case 'en-US':
       case 'en':
         return const Locale('en');
@@ -136,8 +133,7 @@ class SettingsController with ChangeNotifier {
   }
 
   // ─── System Title Bar ─────────────────────────────────
-  bool get useSystemTitleBar =>
-      _config['ui']?['use_system_title_bar'] ?? false;
+  bool get useSystemTitleBar => _config['ui']?['use_system_title_bar'] ?? false;
 
   Future<void> setUseSystemTitleBar(bool value) async {
     final config = Map<String, dynamic>.from(_config);
@@ -189,6 +185,7 @@ class SettingsController with ChangeNotifier {
   void setRailExpanded(bool expanded) {
     if (_isRailExpanded != expanded) {
       _isRailExpanded = expanded;
+      // Persist to config
       final config = Map<String, dynamic>.from(_config);
       config['ui'] = Map<String, dynamic>.from(config['ui'] ?? {});
       config['ui']['rail_expanded'] = expanded;
