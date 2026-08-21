@@ -37,6 +37,11 @@ class ProcessExecutionService {
     },
   );
 
+  Map<String, String>? _environmentForApiKey(String? apiKey) {
+    if (apiKey == null || apiKey.isEmpty) return null;
+    return {'OMNISTORE_AI_API_KEY': apiKey};
+  }
+
   Future<ProcessResult?> run({
     required List<String> args,
     Duration timeout = const Duration(seconds: 30),
@@ -53,16 +58,11 @@ class ProcessExecutionService {
 
     Process? process;
     try {
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
-      }
-
       process = await Process.start(
         _env.venvPython,
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
-        environment: env.isEmpty ? null : env,
+        environment: _environmentForApiKey(apiKey),
         runInShell: false,
       ).timeout(const Duration(seconds: 10));
 
@@ -115,16 +115,11 @@ class ProcessExecutionService {
     final controller = StreamController<String>();
 
     try {
-      final env = <String, String>{};
-      if (apiKey != null && apiKey.isNotEmpty) {
-        env['OMNISTORE_AI_API_KEY'] = apiKey;
-      }
-
       process = await Process.start(
         _env.venvPython,
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
-        environment: env.isEmpty ? null : env,
+        environment: _environmentForApiKey(apiKey),
         // Arguments are already passed as a list. Avoiding a shell removes an
         // unnecessary quoting/injection surface and makes exit semantics more
         // predictable across platforms.
