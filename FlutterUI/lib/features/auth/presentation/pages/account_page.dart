@@ -330,7 +330,7 @@ class _AccountPageState extends State<AccountPage> {
                         onPressed: () =>
                             setState(() => _isObscure = !_isObscure),
                         tooltip:
-                            _isObscure ? 'Show Password' : 'Hide Password',
+                            _isObscure ? l10n.showPassword : l10n.hidePassword,
                       ),
                     ),
                     enabled: !_isLoading,

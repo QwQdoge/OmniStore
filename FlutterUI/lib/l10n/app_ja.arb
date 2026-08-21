@@ -1229,6 +1229,14 @@
   "@password": {
     "description": "Description for password"
   },
+  "showPassword": "パスワードを表示",
+  "@showPassword": {
+    "description": "Tooltip for showing password in plain text"
+  },
+  "hidePassword": "パスワードを非表示",
+  "@hidePassword": {
+    "description": "Tooltip for hiding password in obscure text"
+  },
   "signIn": "サインイン",
   "@signIn": {
     "description": "Description for signIn"
