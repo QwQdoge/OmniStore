@@ -27,15 +27,17 @@ class ProcessExecutionService {
         ...extra,
       })}';
 
-  String _errorEvent(String message, {Object? error, int? exitCode}) => _event(
-    type: 'error',
-    level: 'error',
-    message: message,
-    extra: {
-      if (error != null) 'error': error.toString(),
-      if (exitCode != null) 'exitCode': exitCode,
-    },
-  );
+  String _errorEvent(String message, {Object? error, int? exitCode}) {
+    final extra = <String, dynamic>{};
+    if (error != null) extra['error'] = error.toString();
+    if (exitCode != null) extra['exitCode'] = exitCode;
+    return _event(
+      type: 'error',
+      level: 'error',
+      message: message,
+      extra: extra,
+    );
+  }
 
   Map<String, String>? _environmentForApiKey(String? apiKey) {
     if (apiKey == null || apiKey.isEmpty) return null;
