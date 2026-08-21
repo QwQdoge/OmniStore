@@ -2,15 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 
-/// Murphy-proof: Centralized registry for tracking and reaping subprocesses.
-/// Ensures that no zombie processes are left behind by utilizing process groups
-/// and escalating termination signals.
+/// Centralized registry for tracking and reaping subprocesses.
 class ProcessRegistry {
   final Set<Process> _activeProcesses = {};
   Timer? _reaperTimer;
 
   ProcessRegistry() {
-    // Murphy-proof: Periodic reaper to clean up stale process handles
     if (!kIsWeb && !Platform.environment.containsKey('FLUTTER_TEST')) {
       _reaperTimer = Timer.periodic(
         const Duration(minutes: 5),
@@ -31,94 +28,110 @@ class ProcessRegistry {
     }
   }
 
-  /// Registers a process for tracking.
   void add(Process process) {
     _activeProcesses.add(process);
     process.exitCode.then((_) => _activeProcesses.remove(process));
   }
 
-  /// Removes a process from tracking.
   void remove(Process process) {
     _activeProcesses.remove(process);
   }
 
-  /// Murphy-proof: Guaranteed process reaping with tree-killing capability.
-  /// Escalates from SIGTERM to SIGKILL to ensure termination.
+  Future<int?> _processGroupId(int processId) async {
+    try {
+      final result = await Process.run('ps', [
+        '-o',
+        'pgid=',
+        '-p',
+        '$processId',
+      ]).timeout(const Duration(seconds: 2));
+      if (result.exitCode != 0) return null;
+      return int.tryParse(result.stdout.toString().trim());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _signalDirectChildren(int processId, String signal) async {
+    try {
+      // Best-effort cleanup for helpers spawned by package managers. This is
+      // deliberately scoped to children of the backend process; it never
+      // signals OmniStore's own process group.
+      await Process.run('pkill', [
+        '-$signal',
+        '-P',
+        '$processId',
+      ]).timeout(const Duration(seconds: 2));
+    } catch (_) {
+      // `pkill` may be unavailable or return non-zero when there are no
+      // children. Either case is safe to ignore before killing the parent.
+    }
+  }
+
+  /// Terminates a tracked process without ever signalling OmniStore's own
+  /// process group. Escalates from TERM to KILL if necessary.
   Future<void> kill(Process? process) async {
     if (process == null) return;
     _activeProcesses.remove(process);
-    final pid = process.pid;
+    final processId = process.pid;
 
     try {
       if (Platform.isLinux || Platform.isMacOS) {
-        // Murphy-proof: Verify process group ID before group-killing to avoid hitting self.
-        bool groupKillAttempted = false;
-        try {
-          // Use 'ps' to get the PGID of the process.
-          final pgidRes = await Process.run('ps', [
-            '-o',
-            'pgid=',
-            '-p',
-            '$pid',
-          ]);
-          final pgid = int.tryParse(pgidRes.stdout.toString().trim());
+        final pgid = await _processGroupId(processId);
 
-          if (pgid != null && pgid > 1 && pgid != pid) {
-            // 1. Attempt SIGTERM on the entire process group
+        // A process group is safe to signal only when the child is its group
+        // leader (PGID == PID). The previous PGID != PID condition could target
+        // the shared group containing the Flutter application itself.
+        final ownsProcessGroup = pgid != null && pgid > 1 && pgid == processId;
+
+        if (ownsProcessGroup) {
+          try {
             await Process.run('kill', [
               '-TERM',
               '--',
               '-$pgid',
             ]).timeout(const Duration(seconds: 2));
-            groupKillAttempted = true;
+          } catch (_) {
+            process.kill(ProcessSignal.sigterm);
           }
-        } catch (_) {}
-
-        if (!groupKillAttempted) {
+        } else {
+          await _signalDirectChildren(processId, 'TERM');
           try {
             process.kill(ProcessSignal.sigterm);
           } catch (_) {}
         }
 
-        // Wait for potential graceful exit
         await Future.delayed(const Duration(milliseconds: 800));
 
-        // 2. Stage 2: Escalation to SIGKILL if still alive
-        if (await _isProcessAlive(pid)) {
-          try {
-            final pgidRes = await Process.run('ps', [
-              '-o',
-              'pgid=',
-              '-p',
-              '$pid',
-            ]);
-            final pgid = int.tryParse(pgidRes.stdout.toString().trim());
-            if (pgid != null && pgid > 1) {
+        if (await _isProcessAlive(processId)) {
+          if (ownsProcessGroup) {
+            try {
               await Process.run('kill', [
                 '-KILL',
                 '--',
                 '-$pgid',
               ]).timeout(const Duration(seconds: 2));
-            } else {
+            } catch (_) {
               process.kill(ProcessSignal.sigkill);
             }
-          } catch (_) {
-            process.kill(ProcessSignal.sigkill);
+          } else {
+            await _signalDirectChildren(processId, 'KILL');
+            try {
+              process.kill(ProcessSignal.sigkill);
+            } catch (_) {}
           }
         }
       } else if (Platform.isWindows) {
-        // Murphy-proof: Use taskkill /F /T /PID to kill the process tree on Windows.
-        // /T ensures children are also terminated, /F forces termination.
         try {
           await Process.run('taskkill', [
             '/F',
             '/T',
             '/PID',
-            '$pid',
+            '$processId',
           ]).timeout(const Duration(seconds: 5));
         } catch (e) {
           debugPrint(
-            "ProcessRegistry: Windows taskkill failed for PID $pid: $e",
+            "ProcessRegistry: Windows taskkill failed for PID $processId: $e",
           );
           process.kill(ProcessSignal.sigkill);
         }
@@ -126,16 +139,18 @@ class ProcessRegistry {
         process.kill(ProcessSignal.sigkill);
       }
     } catch (e) {
-      debugPrint("ProcessRegistry: Absolute reap failed for PID $pid: $e");
+      debugPrint("ProcessRegistry: Failed to reap PID $processId: $e");
     } finally {
-      // 3. Final Fail-safe: Direct SIGKILL to the process handle if it's still somehow lingering.
+      // Direct-handle fail-safe. This affects only the tracked process, never a
+      // process group.
       try {
-        process.kill(ProcessSignal.sigkill);
+        if (await _isProcessAlive(processId)) {
+          process.kill(ProcessSignal.sigkill);
+        }
       } catch (_) {}
     }
   }
 
-  /// Murphy-proof: Atomic reaping of all registered processes.
   Future<void> dispose() async {
     _reaperTimer?.cancel();
     _reaperTimer = null;
@@ -144,20 +159,20 @@ class ProcessRegistry {
     await Future.wait(processes.map((p) => kill(p)));
   }
 
-  Future<bool> _isProcessAlive(int pid) async {
+  Future<bool> _isProcessAlive(int processId) async {
     try {
       if (Platform.isLinux || Platform.isMacOS) {
-        final result = await Process.run('kill', ['-0', '$pid']);
+        final result = await Process.run('kill', ['-0', '$processId']);
         return result.exitCode == 0;
       }
       if (Platform.isWindows) {
         final result = await Process.run('tasklist', [
           '/FI',
-          'PID eq $pid',
+          'PID eq $processId',
           '/NH',
         ]);
         final output = result.stdout.toString();
-        return result.exitCode == 0 && output.contains('$pid');
+        return result.exitCode == 0 && output.contains('$processId');
       }
     } catch (_) {}
     return false;
