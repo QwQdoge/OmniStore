@@ -167,3 +167,11 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 - Removed redundant local variables in `home_page.dart`, `category_page.dart`, and `discovery_content.dart`.
 - Fixed broken `DropdownButtonFormField` syntax in `welcome_ai_page.dart` to properly supply the `items` property.
 - Fixed broken git conflict markers and nested list typing errors inside `add_source_dialog.dart`.
+
+## 2026-08-15 - State Management: Eliminating Redundant UI Rebuilds in AppsPage
+
+**Learning:** `TextEditingController.addListener` fires not just on text changes but also on selection or cursor changes. Furthermore, assigning a `.toList()` output directly to a `ValueNotifier<List<T>>` triggers listeners because identity equality (`==`) fails for new list objects, even when the underlying data is identical. Both issues combine to cause highly inefficient UI redraws in search/filter contexts.
+
+**Action:**
+- Introduced a `_lastSearchText` caching variable in `AppsPage` to early-return from `_onSearchChanged` when only the cursor/selection has moved.
+- Wrapped the reassignment of `_filteredAppsNotifier.value` inside a `const ListEquality().equals(old, new)` condition to ensure widget listeners are only notified when the list contents actually mutate.
