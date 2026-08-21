@@ -868,7 +868,9 @@ class OmnistoreBackend:
         async with self:
             installed = await self.run_list_installed()
             def _write():
-                with open(filepath, 'w', encoding='utf-8') as f: json.dump(installed, f, ensure_ascii=False)
+                tmp_path = str(filepath) + ".tmp"
+                with open(tmp_path, 'w', encoding='utf-8') as f: json.dump(installed, f, ensure_ascii=False)
+                os.replace(tmp_path, filepath)
             await asyncio.to_thread(_write)
             if self.json_mode: sys.stdout.write(json.dumps({"status": "success", "count": len(installed)}) + "\n"); sys.stdout.flush()
         return True

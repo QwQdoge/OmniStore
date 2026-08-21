@@ -223,3 +223,11 @@ Custom `ThreadPoolExecutor` instances attached to class instances (like `AppImag
 
 Action:
 Removed the custom `ThreadPoolExecutor(max_workers=2)` from `AppImageSearch` in `python/core/search/appimage.py`. Refactored `search()` to use `loop.run_in_executor(None, self.get_installed_appimages)` so that the default executor is used, preventing potential resource leaks on backend restart or shutdown.
+
+## 2026-08-21 - [Atomic File Write Hardening]
+
+Learning:
+Writing directly to JSON files using `with open(..., 'w')` creates a vulnerability where a crash mid-write can corrupt the file. In `python/core/backend.py`, the `run_export_packages` function was found to write directly to the destination path.
+
+Action:
+Replaced the direct file write in `python/core/backend.py` with an atomic write using a temporary `.tmp` file and `os.replace`. This guarantees that exported package files are never left in a partially written, corrupt state.
