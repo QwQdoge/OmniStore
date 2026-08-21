@@ -21,7 +21,6 @@ class AppsPage extends StatefulWidget {
 
 class _AppsPageState extends State<AppsPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _lastSearchText = "";
   List<AppPackage> _apps = [];
   final ValueNotifier<List<AppPackage>> _filteredAppsNotifier = ValueNotifier(
     [],

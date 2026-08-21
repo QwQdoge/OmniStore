@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
@@ -33,6 +35,7 @@ class _DownloadPageState extends State<DownloadPage>
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
   String _lastSearchText = "";
+  Timer? _searchDebounceTimer;
   final ScrollController _installedFilterScrollController = ScrollController();
 
   // ⚡ Bolt: Cache/memoize the available filters list to avoid O(N) .expand()
@@ -46,14 +49,30 @@ class _DownloadPageState extends State<DownloadPage>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInstalledApps());
 
-    _searchController.addListener(() {
-      if (mounted && _searchController.text != _lastSearchText) {
-        _lastSearchText = _searchController.text;
-        setState(() {
-          _searchQuery = _searchController.text.toLowerCase();
-          _applyFilters();
-        });
-      }
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    if (!mounted) return;
+    final text = _searchController.text;
+    if (text == _lastSearchText) return;
+    _lastSearchText = text;
+
+    _searchDebounceTimer?.cancel();
+    if (text.isEmpty) {
+      setState(() {
+        _searchQuery = '';
+        _applyFilters();
+      });
+      return;
+    }
+
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      setState(() {
+        _searchQuery = text.toLowerCase();
+        _applyFilters();
+      });
     });
   }
 
@@ -107,12 +126,13 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   void _updateFiltersList() {
-    final sources = _installedApps
-        .expand((app) => {...app.sources, app.primarySource})
-        .where((source) => source.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final sources =
+        _installedApps
+            .expand((app) => {...app.sources, app.primarySource})
+            .where((source) => source.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     _availableFilters = ['all', 'managed', 'unmanaged', ...sources];
   }
 
@@ -136,8 +156,10 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _filterScrollController.dispose();
     _tabController.dispose();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _installedFilterScrollController.dispose();
     super.dispose();
