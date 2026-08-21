@@ -341,7 +341,7 @@
   "@aiTestButton": {
     "description": "Button label to test AI connectivity"
   },
-  "aiTestSuccess": "AI 连接成功！",
+  "aiTestSuccess": "AI 已成功连接",
   "@aiTestSuccess": {
     "description": "Success message after testing AI connection"
   },
@@ -805,7 +805,7 @@
   "@addingCustomSource": {
     "description": "Message while adding custom source"
   },
-  "sourceAddSuccess": "软件源添加成功！",
+  "sourceAddSuccess": "软件源已添加",
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
@@ -1261,7 +1261,7 @@
   "@continueWithGitHub": {
     "description": "Description for continueWithGitHub"
   },
-  "enterEmailAndPassword": "请输入邮箱和密码。",
+  "enterEmailAndPassword": "请填写邮箱与密码",
   "@enterEmailAndPassword": {
     "description": "Description for enterEmailAndPassword"
   },

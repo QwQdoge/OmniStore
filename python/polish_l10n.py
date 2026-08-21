@@ -25,7 +25,8 @@ polish('ja', {
 polish('es', {
     "upToDate": "Todas las aplicaciones están actualizadas",
     "confirmActionMsg": "¿Confirmas que deseas realizar esta acción en {name}?",
-    "variant": "Variantes"
+    "variant": "Variantes",
+    "ollamaLocal": "Ollama (Local)"
 })
 
 # Simplified Chinese Polishing
@@ -50,7 +51,10 @@ polish('zh', {
     "noActiveTasks": "暂无进行中的任务",
     "aiHealthSubtitle": "Arch Linux 智能诊断报告",
     "signInSubtitle": "跨设备同步应用、设置和收藏",
-    "errorNameUrlRequired": "名称和链接/软件源地址不能为空"
+    "errorNameUrlRequired": "名称和链接/软件源地址不能为空",
+    "enterEmailAndPassword": "请填写邮箱与密码",
+    "sourceAddSuccess": "软件源已添加",
+    "aiTestSuccess": "AI 已成功连接"
 })
 
 # Traditional Chinese Polishing (Consistency with zh)
@@ -111,11 +115,13 @@ polish('zh_Hant', {
     "repoOwnerRepo": "軟體源地址（owner/repo）",
     "errorNameUrlRequired": "名稱和連結/軟體源地址不能為空",
     "addingCustomSource": "正在新增自訂軟體源...",
-    "sourceAddSuccess": "軟體源新增成功！",
+    "sourceAddSuccess": "軟體源已新增",
     "sourceAddFailed": "新增軟體源失敗。",
     "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
     "searchGithubHint": "搜尋 GitHub 倉庫...",
     "pluginsAndSources": "外掛程式與軟體源",
     "aiHealthSubtitle": "Arch Linux 智慧診斷報告",
-    "signInSubtitle": "跨裝置同步應用程式、設定與最愛"
+    "signInSubtitle": "跨裝置同步應用程式、設定與最愛",
+    "enterEmailAndPassword": "請填寫電子郵件與密碼",
+    "aiTestSuccess": "AI 已成功連線"
 })
