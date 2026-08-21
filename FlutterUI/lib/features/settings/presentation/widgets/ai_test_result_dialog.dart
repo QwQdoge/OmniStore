@@ -28,6 +28,7 @@ class AITestResultDialog extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
+        textAlign: TextAlign.center,
       ),
       content: msg.isNotEmpty
           ? SingleChildScrollView(

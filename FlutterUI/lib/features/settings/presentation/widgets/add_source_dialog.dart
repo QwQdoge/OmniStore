@@ -91,6 +91,7 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
+            // ignore: deprecated_member_use
             DropdownButtonFormField<String>(
               initialValue: _type,
               borderRadius: BorderRadius.circular(12),

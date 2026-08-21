@@ -229,3 +229,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** Across the OmniStore UI layer, numerous legacy `AlertDialog`s were utilizing manually nested `Row`s in the `title` attribute to display icons, coupled with unconstrained `Text` body contents that could potentially render-overflow. Conforming accurately to Material Design 3 dictates explicitly utilizing the `AlertDialog`'s native `icon` parameter, assigning `textAlign: TextAlign.center` alongside `w800` typography on the `title` element, and safely encapsulating lengthy instructional content inside scrollable `Card` boundaries (`elevation: 0`, `surfaceContainerLow` coloring, 12dp rounded borders). Furthermore, transitioning standard dialog cancellation paths from legacy `TextButton` to MD3 `FilledButton.tonal` enhances visual interactability without overshadowing primary primary `FilledButton` commitments.
 
 **Action:** Upgraded legacy dialog widgets (e.g. `ActionConfirmDialog`, `AIUpdateSummaryDialog`, `ApiKeyInstructionsDialog`, `AIMarkdownDialog`, `ImportPackagesDialog`) globally to inject native `icon` properties, properly center-align header `w800` typography, securely enclose dense text blocks in MD3 surface cards bound within `SingleChildScrollView`s, and swapped weak text dismissal actions for clear `FilledButton.tonal` interactions.
+
+## 2026-08-08 - Material Design 3 Dialog Title Alignment
+
+**Learning:** When aligning custom form-based and feedback dialogs (such as `AITestResultDialog`) with Material Design 3 guidelines, it is important to explicitly set `textAlign: TextAlign.center` on the `AlertDialog` title in addition to assigning the `w800` font weight and `headlineSmall` text style to guarantee proper centering, especially when icons are used.
+
+**Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
