@@ -299,7 +299,7 @@ class SettingsController with ChangeNotifier {
 
     String? previousApiKey;
     if (credentialWasEdited) {
-      final editedApiKey = submittedApiKey!;
+      final editedApiKey = submittedApiKey;
       try {
         previousApiKey = await PythonBridge.getApiKey(throwOnError: true);
         if (editedApiKey.isEmpty) {
@@ -345,7 +345,7 @@ class SettingsController with ChangeNotifier {
     }
 
     if (credentialWasEdited) {
-      final editedApiKey = submittedApiKey!;
+      final editedApiKey = submittedApiKey;
       _knownApiKey = editedApiKey.isEmpty ? null : editedApiKey;
       _credentialStateKnown = true;
     }
