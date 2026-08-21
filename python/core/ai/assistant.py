@@ -174,11 +174,15 @@ class AIAssistant:
                 try:
                     data = await resp.json()
                 except Exception as json_err:
-                    raw_txt = await resp.text()
+                    self._failure_count += 1
+                    self._last_failure_time = time.time()
+                    raw_txt = self._redact_sensitive(await resp.text())
                     logging.error(f"AI response JSON decode error: {json_err}. Raw text: {raw_txt[:200]}")
                     return "AI 服务商返回了无法解析的数据格式。"
 
                 if not isinstance(data, dict):
+                    self._failure_count += 1
+                    self._last_failure_time = time.time()
                     return "AI 服务商返回的数据结构异常。"
 
                 # Success: reset circuit
