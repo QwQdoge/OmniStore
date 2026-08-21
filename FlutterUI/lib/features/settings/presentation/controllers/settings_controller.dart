@@ -21,6 +21,8 @@ class SettingsController with ChangeNotifier {
   Map<String, dynamic> _config = {};
   bool _isAIEnabled = false;
   bool _isRailExpanded = true;
+  String? _knownApiKey;
+  bool _credentialStateKnown = false;
 
   SettingsController(
     this._configRepository, {
@@ -262,10 +264,20 @@ class SettingsController with ChangeNotifier {
     _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
 
     // Read the credential from secure storage only for the editable UI state.
-    final apiKey = await PythonBridge.getApiKey();
-    if (apiKey != null && apiKey.isNotEmpty) {
-      _config['ai'] = Map<String, dynamic>.from(_config['ai'] ?? {});
-      _config['ai']['api_key'] = apiKey;
+    try {
+      final apiKey = await PythonBridge.getApiKey(throwOnError: true);
+      _knownApiKey = apiKey;
+      _credentialStateKnown = true;
+      if (apiKey != null && apiKey.isNotEmpty) {
+        _config['ai'] = Map<String, dynamic>.from(_config['ai'] ?? {});
+        _config['ai']['api_key'] = apiKey;
+      }
+    } catch (error) {
+      _knownApiKey = null;
+      _credentialStateKnown = false;
+      debugPrint(
+        'Failed to read AI credential storage: ${error.runtimeType}',
+      );
     }
     notifyListeners();
   }
@@ -273,20 +285,27 @@ class SettingsController with ChangeNotifier {
   Future<bool> updateConfig(Map<String, dynamic> newConfig) async {
     final aiConfig = newConfig['ai'];
     final apiKeyValue = aiConfig is Map ? aiConfig['api_key'] : null;
-    final submittedApiKey =
+    final String? submittedApiKey =
         apiKeyValue is String && apiKeyValue != '******'
         ? apiKeyValue
         : null;
-    final shouldUpdateCredential = submittedApiKey != null;
+
+    final currentAiConfig = _config['ai'];
+    final currentUiApiKey = currentAiConfig is Map
+        ? currentAiConfig['api_key']
+        : null;
+    final credentialWasEdited =
+        submittedApiKey != null && submittedApiKey != currentUiApiKey;
 
     String? previousApiKey;
-    if (shouldUpdateCredential) {
+    if (credentialWasEdited) {
+      final editedApiKey = submittedApiKey!;
       try {
         previousApiKey = await PythonBridge.getApiKey(throwOnError: true);
-        if (submittedApiKey.isEmpty) {
+        if (editedApiKey.isEmpty) {
           await PythonBridge.deleteApiKey();
         } else {
-          await PythonBridge.saveApiKey(submittedApiKey);
+          await PythonBridge.saveApiKey(editedApiKey);
         }
       } catch (error) {
         debugPrint(
@@ -313,10 +332,22 @@ class SettingsController with ChangeNotifier {
     }
 
     if (!success) {
-      if (shouldUpdateCredential) {
-        await _restoreApiKey(previousApiKey);
+      if (credentialWasEdited) {
+        final restored = await _restoreApiKey(previousApiKey);
+        if (restored) {
+          _knownApiKey = previousApiKey;
+          _credentialStateKnown = true;
+        } else {
+          _credentialStateKnown = false;
+        }
       }
       return false;
+    }
+
+    if (credentialWasEdited) {
+      final editedApiKey = submittedApiKey!;
+      _knownApiKey = editedApiKey.isEmpty ? null : editedApiKey;
+      _credentialStateKnown = true;
     }
 
     _config = newConfig;
@@ -333,40 +364,43 @@ class SettingsController with ChangeNotifier {
       );
     }
 
-    try {
-      final currentApiKey = shouldUpdateCredential
-          ? (submittedApiKey.isEmpty ? null : submittedApiKey)
-          : await PythonBridge.getApiKey(throwOnError: true);
-      final daemonUpdated = await _updateDaemonEnvironment({
-        'OMNISTORE_AI_API_KEY': currentApiKey ?? '',
-      });
-      if (!daemonUpdated &&
-          !kIsWeb &&
-          !Platform.environment.containsKey('FLUTTER_TEST')) {
-        debugPrint('Failed to synchronize the AI credential with the daemon.');
+    if (_credentialStateKnown) {
+      try {
+        final daemonUpdated = await _updateDaemonEnvironment({
+          'OMNISTORE_AI_API_KEY': _knownApiKey ?? '',
+        });
+        if (!daemonUpdated &&
+            !kIsWeb &&
+            !Platform.environment.containsKey('FLUTTER_TEST')) {
+          debugPrint(
+            'Failed to synchronize the AI credential with the daemon.',
+          );
+        }
+      } catch (error) {
+        debugPrint(
+          'Failed to synchronize the AI credential with the daemon: '
+          '${error.runtimeType}',
+        );
       }
-    } catch (error) {
-      debugPrint(
-        'Failed to synchronize the AI credential with the daemon: '
-        '${error.runtimeType}',
-      );
     }
 
     return true;
   }
 
-  Future<void> _restoreApiKey(String? previousApiKey) async {
+  Future<bool> _restoreApiKey(String? previousApiKey) async {
     try {
       if (previousApiKey == null || previousApiKey.isEmpty) {
         await PythonBridge.deleteApiKey();
       } else {
         await PythonBridge.saveApiKey(previousApiKey);
       }
+      return true;
     } catch (error) {
       debugPrint(
         'Failed to roll back AI credential storage: '
         '${error.runtimeType}',
       );
+      return false;
     }
   }
 
