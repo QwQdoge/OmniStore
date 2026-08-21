@@ -7,6 +7,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/features/apps/widgets/apps_page_skeleton.dart';
+import 'package:collection/collection.dart';
 import 'package:frontend/features/apps/widgets/apps_page_empty_state.dart';
 import 'package:frontend/features/apps/widgets/installed_app_list.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
@@ -26,6 +27,7 @@ class _AppsPageState extends State<AppsPage> {
   );
   final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(true);
   Timer? _searchDebounceTimer;
+  String _lastSearchText = '';
 
   @override
   void initState() {
@@ -45,6 +47,9 @@ class _AppsPageState extends State<AppsPage> {
   }
 
   void _onSearchChanged() {
+    if (_searchController.text == _lastSearchText) return;
+    _lastSearchText = _searchController.text;
+
     _searchDebounceTimer?.cancel();
     final query = _searchController.text;
     if (query.isEmpty) {
@@ -63,7 +68,10 @@ class _AppsPageState extends State<AppsPage> {
       return app.nameLower.contains(query) ||
           app.descriptionLower.contains(query);
     }).toList();
-    _filteredAppsNotifier.value = filtered;
+
+    if (!const ListEquality().equals(_filteredAppsNotifier.value, filtered)) {
+      _filteredAppsNotifier.value = filtered;
+    }
   }
 
   Future<void> _refresh({bool forceRefresh = false}) async {
