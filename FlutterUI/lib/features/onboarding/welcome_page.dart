@@ -20,11 +20,29 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
+  static const Set<String> _knownSourceIds = {
+    'pacman',
+    'aur',
+    'flatpak',
+    'appimage',
+    'apt',
+    'dnf',
+    'zypper',
+    'apk',
+    'winget',
+    'scoop',
+    'chocolatey',
+    'brew',
+    'fdroid',
+  };
+
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Software sources configuration
+  // Software sources configuration derived from backend platform detection.
   bool _enableAur = false;
+  List<String> _recommendedSources = const [];
+  String _nativeManager = '';
 
   // AI assistant configuration
   bool _enableAI = false;
@@ -83,17 +101,40 @@ class _WelcomePageState extends State<WelcomePage> {
     try {
       final env = await BackendService.instance.checkEnv();
       if (!mounted) return;
+
+      final system = env['system'];
+      final detectedSources = <String>[];
+      String nativeManager = '';
+      if (system is Map) {
+        nativeManager = system['native_manager']?.toString() ?? '';
+        final recommended = system['recommended_sources'];
+        if (recommended is List) {
+          for (final item in recommended) {
+            final source = item.toString().trim().toLowerCase();
+            if (_knownSourceIds.contains(source) && !detectedSources.contains(source)) {
+              detectedSources.add(source);
+            }
+          }
+        }
+      }
+
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
-        final level = _evaluateEnvLevel(env);
-        _enableAur = level == 'ok';
+        _recommendedSources = List<String>.unmodifiable(detectedSources);
+        _nativeManager = nativeManager;
+        // AUR is recommended only on Arch-based systems. Keep it user-toggleable
+        // because it executes community PKGBUILDs.
+        _enableAur = detectedSources.contains('aur');
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _envData = null;
         _isCheckingEnv = false;
+        _recommendedSources = const [];
+        _nativeManager = '';
+        _enableAur = false;
       });
     }
   }
@@ -260,9 +301,36 @@ class _WelcomePageState extends State<WelcomePage> {
 
     config['first_run'] = false;
 
-    config['search'] = config['search'] ?? {};
-    config['search']['sources'] = config['search']['sources'] ?? {};
-    config['search']['sources']['aur'] = _enableAur;
+    final enabledSources = _recommendedSources.toSet();
+    if (_enableAur && _recommendedSources.contains('aur')) {
+      enabledSources.add('aur');
+    } else {
+      enabledSources.remove('aur');
+    }
+
+    final search = Map<String, dynamic>.from(
+      (config['search'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    final sourceConfig = Map<String, dynamic>.from(
+      (search['sources'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    for (final source in _knownSourceIds) {
+      sourceConfig[source] = enabledSources.contains(source);
+    }
+    search['sources'] = sourceConfig;
+    config['search'] = search;
+
+    final plugins = Map<String, dynamic>.from(
+      (config['plugins'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    final pluginEnabled = Map<String, dynamic>.from(
+      (plugins['enabled'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    for (final source in _knownSourceIds) {
+      pluginEnabled['builtin.$source'] = enabledSources.contains(source);
+    }
+    plugins['enabled'] = pluginEnabled;
+    config['plugins'] = plugins;
 
     config['ai'] = config['ai'] ?? {};
     config['ai']['enabled'] = _enableAI;
@@ -318,6 +386,8 @@ class _WelcomePageState extends State<WelcomePage> {
                           _enableAur = val;
                         });
                       },
+                      recommendedSources: _recommendedSources,
+                      nativeManager: _nativeManager,
                     ),
                     WelcomeAiPage(
                       enableAI: _enableAI,
