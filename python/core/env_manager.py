@@ -1,171 +1,335 @@
-import os
-import subprocess
 import asyncio
-from core.subprocess_utils import safe_subprocess
-from pathlib import Path
+import os
+import shutil
+import tempfile
 from typing import Dict, List, Optional
+
+from core.platform_profile import detect_system_profile, recommended_sources
+from core.sources.utils import PrivilegeManager
+from core.subprocess_utils import safe_subprocess
+
+
+_MANAGER_COMMANDS = {
+    "pacman": "pacman",
+    "apt": "apt-get",
+    "dnf": "dnf",
+    "zypper": "zypper",
+    "apk": "apk",
+    "winget": "winget",
+    "brew": "brew",
+}
+
 
 class EnvManager:
     def __init__(self):
-        self.is_arch = self._check_arch()
-
-    def _check_arch(self) -> bool:
-        """Check if the system is Arch Linux or Arch-based."""
-        try:
-            if os.path.exists("/etc/os-release"):
-                with open("/etc/os-release", "r") as f:
-                    content = f.read().lower()
-                    return "arch" in content
-            return False
-        except Exception:
-            return False
+        self.profile = detect_system_profile()
+        # Kept for older callers while the UI/backend migrate to system_profile.
+        self.is_arch = self.profile.native_manager == "pacman"
+        self.privilege = PrivilegeManager()
+        self._apt_updated = False
 
     async def check_env(self) -> Dict:
-        """
-        Returns a status dictionary for various environment requirements.
-        Levels: 'ok', 'warning' (fixable), 'error' (non-fatal), 'fatal' (cannot run).
-        """
-        status = {
-            "is_arch": {
-                "status": "ok" if self.is_arch else "fatal",
-                "message": "Arch Linux detected" if self.is_arch else "System is not Arch-based"
+        """Return cross-platform capability status for first-run setup."""
+        recommended = recommended_sources(self.profile)
+        manager = self.profile.native_manager
+        manager_command = _MANAGER_COMMANDS.get(manager, "")
+        manager_available = bool(manager_command and self._has_cmd(manager_command))
+
+        if self.profile.platform == "linux":
+            system_message = self.profile.distro_id or "Linux"
+            if self.profile.immutable:
+                system_message += " (immutable/atomic)"
+            system_status = "ok"
+        elif self.profile.platform in {"windows", "macos"}:
+            system_message = self.profile.platform.title()
+            system_status = "ok"
+        else:
+            system_message = f"Platform {self.profile.platform} has limited support"
+            system_status = "warning"
+
+        status: Dict[str, Dict] = {
+            "system": {
+                "status": system_status,
+                "message": f"Detected {system_message}",
+                "platform": self.profile.platform,
+                "distro_id": self.profile.distro_id,
+                "distro_like": list(self.profile.distro_like),
+                "immutable": self.profile.immutable,
+                "native_manager": manager,
+                "recommended_sources": recommended,
             },
-            "git": {
-                "status": "ok" if await self._has_cmd("git") else "warning",
-                "message": "Git is installed" if await self._has_cmd("git") else "Git is missing"
+            "native_package_manager": {
+                "status": "ok" if manager_available else "warning",
+                "message": (
+                    f"Native package manager detected: {manager}"
+                    if manager_available
+                    else "No supported native package manager detected"
+                ),
             },
-            "base-devel": {
-                "status": "ok" if await self._has_pkg("base-devel") else "warning",
-                "message": "Build tools detected" if await self._has_pkg("base-devel") else "Build tools (base-devel) missing"
-            },
-            "yay": {
-                "status": "ok" if await self._has_cmd("yay") else "warning",
-                "message": "AUR helper (yay) found" if await self._has_cmd("yay") else "AUR helper (yay) missing"
-            },
-            "libdbusmenu-gtk3": {
-                "status": "ok" if await self._has_pkg("libdbusmenu-gtk3") else "warning",
-                "message": "Tray menu support detected" if await self._has_pkg("libdbusmenu-gtk3") else "Tray menu support (libdbusmenu-gtk3) missing"
-            },
-            "libappindicator-gtk3": {
-                "status": "ok" if await self._has_pkg("libappindicator-gtk3") or await self._has_pkg("libayatana-appindicator") else "warning",
-                "message": "Tray indicator support detected" if await self._has_pkg("libappindicator-gtk3") or await self._has_pkg("libayatana-appindicator") else "Tray indicator support (libappindicator-gtk3) missing"
-            }
         }
+
+        if self.profile.platform == "linux":
+            has_flatpak = self._has_cmd("flatpak")
+            status["flatpak"] = {
+                "status": "ok" if has_flatpak else "warning",
+                "message": "Flatpak is installed" if has_flatpak else "Flatpak is not installed",
+            }
+            has_flathub = await self._has_flatpak_remote("flathub") if has_flatpak else False
+            status["flathub"] = {
+                "status": "ok" if has_flathub else "warning",
+                "message": "Flathub remote is configured" if has_flathub else "Flathub remote is not configured",
+            }
+
+            if manager == "pacman":
+                helper = self._aur_helper()
+                status["aur_helper"] = {
+                    "status": "ok" if helper else "warning",
+                    "message": f"AUR helper detected: {helper}" if helper else "No AUR helper detected (yay/paru)",
+                }
+                status["build_tools"] = {
+                    "status": "ok" if self._has_cmd("makepkg") and self._has_cmd("git") else "warning",
+                    "message": (
+                        "AUR build tools are available"
+                        if self._has_cmd("makepkg") and self._has_cmd("git")
+                        else "AUR build tools are incomplete"
+                    ),
+                }
+
         return status
 
-    async def _has_cmd(self, cmd: str) -> bool:
-        try:
-            async with safe_subprocess("which", cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL) as proc:
-                await proc.wait()
-                return proc.returncode == 0
-        except Exception:
-            return False
+    def _has_cmd(self, cmd: str) -> bool:
+        return shutil.which(cmd) is not None
 
-    async def _has_pkg(self, pkg: str) -> bool:
-        if not await self._has_cmd("pacman"):
+    def _aur_helper(self) -> Optional[str]:
+        for helper in ("yay", "paru"):
+            if self._has_cmd(helper):
+                return helper
+        return None
+
+    async def _has_flatpak_remote(self, name: str) -> bool:
+        if not self._has_cmd("flatpak"):
             return False
         try:
-            async with safe_subprocess("pacman", "-Qq", pkg, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL) as proc:
-                await proc.wait()
-                if proc.returncode == 0:
-                    return True
-            async with safe_subprocess("pacman", "-Qg", pkg, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL) as proc:
-                await proc.wait()
-                return proc.returncode == 0
+            async with safe_subprocess(
+                "flatpak",
+                "remotes",
+                "--columns=name",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                if proc.returncode != 0:
+                    return False
+                return name in {line.strip() for line in stdout.decode("utf-8", errors="replace").splitlines()}
         except Exception:
             return False
 
     async def bootstrap(self, callback=None):
-        """Install git, base-devel, libraries and yay if missing."""
-        if not self.is_arch:
-            if callback: await callback("[ERROR] Cannot bootstrap on non-Arch system.")
+        """Prepare a clean machine for OmniStore's recommended source set.
+
+        Linux bootstrap installs Flatpak using the distribution's native package
+        manager, adds Flathub per-user, and on Arch-based systems prepares an AUR
+        helper when neither yay nor paru exists. Immutable Fedora-style systems
+        are never mutated through dnf/rpm-ostree here.
+        """
+        if self.profile.platform != "linux":
+            if callback:
+                await callback("[INFO] No automatic system bootstrap is required on this platform.")
+            return True
+
+        if self.profile.immutable:
+            if not self._has_cmd("flatpak"):
+                if callback:
+                    await callback("[ERROR] Immutable Linux host detected without Flatpak. Host mutation is intentionally disabled.")
+                return False
+            return await self._ensure_flathub(callback)
+
+        manager = self.profile.native_manager
+        if not manager or not self._has_cmd(_MANAGER_COMMANDS.get(manager, "")):
+            if callback:
+                await callback("[ERROR] No supported native package manager is available for bootstrap.")
             return False
 
-        # 1. Install base dependencies and libraries
-        deps = ["git", "base-devel", "libdbusmenu-gtk3"]
-        # Use libayatana-appindicator if libappindicator-gtk3 is not in repos (Arch often uses Ayatana now)
-        if not await self._has_pkg("libappindicator-gtk3") and not await self._has_pkg("libayatana-appindicator"):
-            deps.append("libayatana-appindicator")
-        elif await self._has_pkg("libappindicator-gtk3"):
-             # It's fine
-             pass
-
-        needed = []
-        for d in deps:
-            if d == "git":
-                if not await self._has_cmd(d):
-                    needed.append(d)
-            else:
-                if not await self._has_pkg(d):
-                    needed.append(d)
-
-        if needed:
-            if callback: await callback(f"[INFO] Installing dependencies: {', '.join(needed)}...")
-            success = await self._run_pacman(["-S", "--noconfirm", "--needed"] + needed, callback)
-            if not success:
-                if callback: await callback("[ERROR] Failed to install dependencies.")
+        # Flatpak is the common application layer across supported Linux distros.
+        if not self._has_cmd("flatpak"):
+            if callback:
+                await callback(f"[INFO] Installing Flatpak with {manager}...")
+            if not await self._install_native_packages(["flatpak"], callback):
+                if callback:
+                    await callback("[ERROR] Failed to install Flatpak.")
                 return False
 
-        # 2. Install yay
-        if not await self._has_cmd("yay"):
-            if callback: await callback("[INFO] Building and installing yay (this may take a while)...")
-            success = await self._install_yay(callback)
-            if not success:
+        if not await self._ensure_flathub(callback):
+            return False
+
+        # Arch gets the optional AUR layer as part of the recommended clean-install
+        # setup. yay-bin avoids adding a Go toolchain just to bootstrap the helper.
+        if manager == "pacman" and not self._aur_helper():
+            if callback:
+                await callback("[INFO] Preparing AUR support (git, base-devel, yay)...")
+            if not await self._install_native_packages(["git", "base-devel"], callback):
+                if callback:
+                    await callback("[ERROR] Failed to install AUR build prerequisites.")
+                return False
+            if not await self._install_yay(callback):
                 return False
 
-        if callback: await callback("[INFO] Environment bootstrap completed successfully.")
+        if callback:
+            await callback("[INFO] Environment bootstrap completed successfully.")
         return True
 
-    async def _run_pacman(self, args: List[str], callback) -> bool:
-        # Needs sudo
-        cmd = ["sudo", "pacman"] + args
-        async with safe_subprocess(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT
-        ) as proc:
-            if proc.stdout:
-                while True:
-                    line = await proc.stdout.readline()
-                    if not line: break
-                    if callback: await callback(f"[INFO] {line.decode().strip()}")
-            await proc.wait()
-            return proc.returncode == 0
+    async def _ensure_privileged(self, callback=None) -> bool:
+        if hasattr(os, "geteuid") and os.geteuid() == 0:
+            return True
+        if not self._has_cmd("sudo"):
+            if callback:
+                await callback("[ERROR] sudo is required for host package installation.")
+            return False
+        return await self.privilege.ensure_privileged(callback)
 
-    async def _install_yay(self, callback) -> bool:
-        import tempfile
-        import shutil
+    async def _run_host_command(self, command: List[str], callback=None, timeout: int = 1800) -> bool:
+        final_command = list(command)
+        if not (hasattr(os, "geteuid") and os.geteuid() == 0):
+            if not await self._ensure_privileged(callback):
+                return False
+            final_command = ["sudo", "-n", *final_command]
 
-        tmpdir = tempfile.mkdtemp()
         try:
-            if callback: await callback("[INFO] Cloning yay repository...")
             async with safe_subprocess(
-                "git", "clone", "https://aur.archlinux.org/yay-bin.git", tmpdir,
+                *final_command,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
+                stderr=asyncio.subprocess.STDOUT,
+            ) as proc:
+                if proc.stdout:
+                    while True:
+                        raw = await proc.stdout.readline()
+                        if not raw:
+                            break
+                        line = raw.decode("utf-8", errors="replace").strip()
+                        if line and callback:
+                            await callback(f"[INFO] {line}")
+                await asyncio.wait_for(proc.wait(), timeout=timeout)
+                return proc.returncode == 0
+        except asyncio.TimeoutError:
+            if callback:
+                await callback("[ERROR] System package-manager command timed out.")
+            return False
+        except Exception as exc:
+            if callback:
+                await callback(f"[ERROR] System package-manager command failed: {exc}")
+            return False
+
+    async def _install_native_packages(self, packages: List[str], callback=None) -> bool:
+        manager = self.profile.native_manager
+        if manager == "pacman":
+            return await self._run_host_command(
+                ["pacman", "-S", "--noconfirm", "--needed", *packages], callback
+            )
+
+        if manager == "apt":
+            if not self._apt_updated:
+                if callback:
+                    await callback("[INFO] Refreshing APT package metadata...")
+                if not await self._run_host_command(["apt-get", "update"], callback, timeout=900):
+                    return False
+                self._apt_updated = True
+            return await self._run_host_command(["apt-get", "install", "-y", *packages], callback)
+
+        if manager == "dnf":
+            return await self._run_host_command(["dnf", "install", "-y", *packages], callback)
+
+        if manager == "zypper":
+            return await self._run_host_command(
+                ["zypper", "--non-interactive", "install", *packages], callback
+            )
+
+        if manager == "apk":
+            return await self._run_host_command(["apk", "add", *packages], callback)
+
+        return False
+
+    async def _ensure_flathub(self, callback=None) -> bool:
+        if not self._has_cmd("flatpak"):
+            return False
+        if await self._has_flatpak_remote("flathub"):
+            return True
+        if callback:
+            await callback("[INFO] Adding Flathub remote for the current user...")
+        try:
+            async with safe_subprocess(
+                "flatpak",
+                "remote-add",
+                "--user",
+                "--if-not-exists",
+                "flathub",
+                "https://dl.flathub.org/repo/flathub.flatpakrepo",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
+                if proc.returncode == 0:
+                    return True
+                if callback:
+                    message = stdout.decode("utf-8", errors="replace").strip()
+                    await callback(f"[ERROR] Failed to add Flathub: {message}")
+                return False
+        except Exception as exc:
+            if callback:
+                await callback(f"[ERROR] Failed to configure Flathub: {exc}")
+            return False
+
+    async def _install_yay(self, callback=None) -> bool:
+        tmpdir = tempfile.mkdtemp(prefix="omnistore-yay-")
+        try:
+            if callback:
+                await callback("[INFO] Downloading yay-bin from AUR...")
+            async with safe_subprocess(
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                "https://aur.archlinux.org/yay-bin.git",
+                tmpdir,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
             ) as clone:
-                await clone.wait()
+                stdout, _ = await asyncio.wait_for(clone.communicate(), timeout=120)
                 if clone.returncode != 0:
-                    if callback: await callback("[ERROR] Failed to clone yay repository.")
+                    if callback:
+                        await callback(
+                            f"[ERROR] Failed to clone yay-bin: {stdout.decode('utf-8', errors='replace').strip()}"
+                        )
                     return False
 
-                if callback: await callback("[INFO] Building yay package...")
-                # makepkg cannot be run as root
-                async with safe_subprocess(
-                    "makepkg", "-si", "--noconfirm",
-                    cwd=tmpdir,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT
-                ) as makepkg:
-                    if makepkg.stdout:
-                        while True:
-                            line = await makepkg.stdout.readline()
-                            if not line: break
-                            if callback: await callback(f"[INFO] {line.decode().strip()}")
-                    await makepkg.wait()
-                    return makepkg.returncode == 0
-        except Exception as e:
-            if callback: await callback(f"[ERROR] Yay installation failed: {e}")
+            # makepkg itself must stay unprivileged. Its pacman step can reuse the
+            # sudo credentials validated by _install_native_packages above.
+            if callback:
+                await callback("[INFO] Building and installing yay-bin...")
+            async with safe_subprocess(
+                "makepkg",
+                "-si",
+                "--noconfirm",
+                cwd=tmpdir,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            ) as makepkg:
+                if makepkg.stdout:
+                    while True:
+                        raw = await makepkg.stdout.readline()
+                        if not raw:
+                            break
+                        line = raw.decode("utf-8", errors="replace").strip()
+                        if line and callback:
+                            await callback(f"[INFO] {line}")
+                await asyncio.wait_for(makepkg.wait(), timeout=1800)
+                if makepkg.returncode != 0:
+                    if callback:
+                        await callback("[ERROR] yay-bin build/install failed.")
+                    return False
+            return self._has_cmd("yay")
+        except Exception as exc:
+            if callback:
+                await callback(f"[ERROR] Yay installation failed: {exc}")
             return False
         finally:
-            shutil.rmtree(tmpdir)
+            shutil.rmtree(tmpdir, ignore_errors=True)
