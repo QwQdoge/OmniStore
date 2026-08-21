@@ -129,13 +129,13 @@ class ConfigRepository {
           'loadConfig failed with exit code ${result.exitCode}; '
           'using the last local backup.',
         );
-        return _loadPreferencesOrDefault();
+        return await _loadPreferencesOrDefault();
       }
 
       final output = result.stdout.toString().trim();
       if (output.isEmpty) {
         debugPrint('loadConfig returned no data; using the last local backup.');
-        return _loadPreferencesOrDefault();
+        return await _loadPreferencesOrDefault();
       }
 
       final config = _decodeMap(output);
@@ -265,8 +265,9 @@ class ConfigRepository {
   Future<bool> _persistDesktopAndCommit(
     Map<String, dynamic> config,
   ) async {
-    final persisted = _desktopWriter != null
-        ? await _desktopWriter!(_copyMap(config))
+    final desktopWriter = _desktopWriter;
+    final persisted = desktopWriter != null
+        ? await desktopWriter(_copyMap(config))
         : await _writeDesktopConfig(config);
     if (!persisted) return false;
 
