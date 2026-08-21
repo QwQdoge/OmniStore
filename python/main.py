@@ -15,30 +15,17 @@ from core.backend import OmnistoreBackend, console, setup_stdout_hijack, hijacke
 from core.daemon_server import handle_daemon_client, daemon_watchdog
 from core.cli_handler import handle_cli
 from core.friendly_messages import get_friendly_message
+from core.logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 # Shared event for shutdown signaling
 stop_event = asyncio.Event()
 
-def setup_logging(level="INFO", json_mode=False):
-    log_level = getattr(logging, level.upper(), logging.INFO)
-    if json_mode:
-        logging.basicConfig(
-            level=log_level,
-            format="%(message)s",
-            handlers=[logging.StreamHandler(sys.stderr)]
-        )
-    else:
-        from rich.logging import RichHandler
-        logging.basicConfig(
-            level=log_level,
-            format="%(message)s",
-            datefmt="[%X]",
-            handlers=[RichHandler(console=console, rich_tracebacks=True)]
-        )
 
 async def main():
     parser = argparse.ArgumentParser(description="Omnistore Backend")
-    
+
     cmd = parser.add_mutually_exclusive_group()
     cmd.add_argument("-S", "--search")
     cmd.add_argument("-I", "--install")
@@ -92,63 +79,113 @@ async def main():
     setup_stdout_hijack()
 
     backend = OmnistoreBackend(json_mode=json_mode)
-    setup_logging(backend.config.get("logging.level", "INFO"), json_mode)
+    configure_logging(
+        backend.config.get("logging.level", "INFO"),
+        json_mode=json_mode,
+        component="omnistore.backend",
+    )
 
     if not json_mode:
-        console.print(Panel.fit(f"[bold blue]OmniStore[/bold blue] v0.1.0\n[dim]{get_friendly_message()}[/dim]", border_style="blue"))
+        console.print(
+            Panel.fit(
+                f"[bold blue]OmniStore[/bold blue] v0.1.0\n"
+                f"[dim]{get_friendly_message()}[/dim]",
+                border_style="blue",
+            )
+        )
         if not sys.platform.startswith("linux"):
-            console.print("[bold yellow]Warning: OmniStore is optimized for Linux (Arch).[/bold yellow]")
+            console.print(
+                "[bold yellow]Warning: OmniStore is optimized for Linux (Arch).[/bold yellow]"
+            )
 
-    # Register signal handlers for graceful shutdown
+    # Register signal handlers for graceful shutdown.
     loop = asyncio.get_running_loop()
-    def _shutdown(sig_name):
-        logging.info(f"Received exit signal {sig_name}. Shutting down...")
+
+    def _shutdown(sig_name: str):
+        logger.info("Received exit signal %s. Shutting down...", sig_name)
         stop_event.set()
-        if backend.executor:
-            backend.executor.stop()
+
+        # Do not touch the lazy `backend.executor` property here: constructing
+        # a new executor while the process is shutting down creates resources at
+        # exactly the wrong time.
+        executor = getattr(backend, "_executor", None)
+        if executor is not None:
+            try:
+                executor.stop()
+            except Exception:
+                logger.exception("Failed to stop install executor during shutdown")
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         try:
             loop.add_signal_handler(sig, lambda s=sig: _shutdown(s.name))
-        except NotImplementedError: pass
+        except NotImplementedError:
+            logger.debug("Signal handlers are not supported on this event loop")
 
-    # Try handling as CLI command first
+    # Try handling as CLI command first.
     executed = await handle_cli(backend, args)
     if executed:
         return
 
-    # If not a CLI command, check if it's daemon mode
     if args.daemon:
         try:
             async with backend:
                 server = await asyncio.start_server(
                     lambda r, w: handle_daemon_client(backend, r, w, stop_event),
-                    '127.0.0.1', 9081,
-                    limit=512 * 1024
+                    "127.0.0.1",
+                    9081,
+                    limit=512 * 1024,
                 )
-                logging.info("Python daemon started on 127.0.0.1:9081")
+                logger.info("Python daemon started on 127.0.0.1:9081")
+
                 async with server:
-                    watchdog_task = asyncio.create_task(daemon_watchdog(stop_event))
-                    serve_task = asyncio.create_task(server.serve_forever())
-                    wait_task = asyncio.create_task(stop_event.wait())
+                    watchdog_task = asyncio.create_task(
+                        daemon_watchdog(stop_event),
+                        name="omnistore-daemon-watchdog",
+                    )
+                    serve_task = asyncio.create_task(
+                        server.serve_forever(),
+                        name="omnistore-daemon-server",
+                    )
+                    wait_task = asyncio.create_task(
+                        stop_event.wait(),
+                        name="omnistore-daemon-stop-event",
+                    )
 
                     done, pending = await asyncio.wait(
                         [serve_task, wait_task, watchdog_task],
-                        return_when=asyncio.FIRST_COMPLETED
+                        return_when=asyncio.FIRST_COMPLETED,
                     )
-                    for task in pending: task.cancel()
-                    logging.info("Stopping daemon server...")
-        except Exception as e:
-            await backend._handle_error("Daemon Fatal Error", e, json_mode)
-            sys.exit(1)
-    else:
-        if not any(vars(args).values()):
-            parser.print_help()
+
+                    # Surface unexpected task failures instead of silently
+                    # continuing with a half-dead daemon.
+                    for task in done:
+                        if task is wait_task or task.cancelled():
+                            continue
+                        exc = task.exception()
+                        if exc is not None:
+                            raise exc
+
+                    for task in pending:
+                        task.cancel()
+                    if pending:
+                        await asyncio.gather(*pending, return_exceptions=True)
+
+                    logger.info("Stopping daemon server...")
+        except Exception as exc:
+            logger.exception("Daemon fatal error")
+            await backend._handle_error("Daemon Fatal Error", exc, json_mode)
+            raise SystemExit(1) from exc
+    elif not any(vars(args).values()):
+        parser.print_help()
+
 
 if __name__ == "__main__":
-    try: asyncio.run(main())
-    except KeyboardInterrupt: pass
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        raise
     except Exception:
-        import traceback
-        traceback.print_exc(file=sys.stderr)
+        logger.exception("OmniStore backend crashed")
         sys.exit(1)

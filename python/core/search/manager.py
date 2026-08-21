@@ -52,8 +52,9 @@ class SearchManager:
         return active
 
     async def search_all(self, query: str) -> List[Dict]:
-        if not query or len(query) < 2:
+        if not query or not isinstance(query, str) or len(query.strip()) < 2:
             return []
+        query = query.strip()
 
         if query.startswith("/") or query.startswith("category:"):
             cat_id = (query[1:] if query.startswith("/") else query[9:]).strip().lower()
@@ -298,7 +299,6 @@ class SearchManager:
     async def _get_installed_flatpak(self, cached_set: Optional[set]):
         if cached_set:
             return cached_set
-        p = None
         try:
             async with safe_subprocess("flatpak", "list", "--installed", "--columns=application",
                                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
@@ -307,18 +307,10 @@ class SearchManager:
         except Exception as e:
             logging.debug(f"Failed to get installed apps: {e}")
             return set()
-        finally:
-            if p and p.returncode is None:
-                try:
-                    p.kill()
-                    await p.wait()
-                except Exception as e:
-                    logging.debug(f"Failed to kill subprocess: {e}")
 
     async def _get_installed_aur(self, cached_set: Optional[set]):
         if cached_set:
             return cached_set
-        p = None
         try:
             async with safe_subprocess("pacman", "-Qmq", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as p:
                 stdout, _ = await p.communicate()
@@ -326,13 +318,6 @@ class SearchManager:
         except Exception as e:
             logging.debug(f"Failed to get installed apps: {e}")
             return set()
-        finally:
-            if p and p.returncode is None:
-                try:
-                    p.kill()
-                    await p.wait()
-                except Exception as e:
-                    logging.debug(f"Failed to kill subprocess: {e}")
 
     async def _get_installed_winget(self, cached_set: Optional[set]):
         if cached_set:

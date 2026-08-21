@@ -15,14 +15,13 @@ class TaskManager {
   final _taskStateController = StreamController<TaskState?>.broadcast();
   TaskState? _currentTask;
 
-  // Murphy-proof: Lock to prevent concurrent task starts
+  // Lock to prevent concurrent task starts.
   Completer<void> _mutex = Completer<void>()..complete();
 
   Stream<TaskState?> get taskStateStream => _taskStateController.stream;
   TaskState? get currentTask => _currentTask;
   bool get isBusy => _currentTask != null;
 
-  // Throttling mechanism
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
   static const _throttleDuration = Duration(milliseconds: 16); // ~60Hz
   DateTime _lastLogTime = DateTime.now();
@@ -53,14 +52,13 @@ class TaskManager {
 
   void _startStaleCheck() {
     _staleTaskTimer?.cancel();
-    // Murphy-proof: Aggressive stale check (10 mins idle).
     _staleTaskTimer = Timer(const Duration(minutes: 10), () async {
       if (isBusy) {
         final now = DateTime.now();
         final idleTime = now.difference(_lastLogTime);
         if (idleTime >= const Duration(minutes: 10)) {
           debugPrint(
-            "Murphy-proof: Stale task detected (Idle for ${idleTime.inMinutes}m). Forcing cleanup.",
+            "Stale task detected (idle for ${idleTime.inMinutes}m). Forcing cleanup.",
           );
           await cancelTask();
         } else {
@@ -70,7 +68,6 @@ class TaskManager {
     });
   }
 
-  // Murphy-proof: Track active subscriptions to prevent leaks
   final Set<StreamSubscription> _subscriptions = {};
 
   Future<bool> startTask({
@@ -93,7 +90,7 @@ class TaskManager {
             throw TimeoutException("TaskManager: Could not acquire task lock."),
       );
     } catch (e) {
-      debugPrint("TaskManager Mutex Error: $e");
+      debugPrint("TaskManager mutex error: $e");
       if (!currentMutex.isCompleted) currentMutex.complete();
       return false;
     }
@@ -136,7 +133,7 @@ class TaskManager {
       );
       return success;
     } catch (e) {
-      debugPrint("TaskManager.startTask Fatal: $e");
+      debugPrint("TaskManager.startTask fatal: $e");
       _updateState(
         _currentTask?.copyWith(
           status: TaskStatus.failed,
@@ -145,7 +142,6 @@ class TaskManager {
       );
       return false;
     } finally {
-      // Murphy-proof: Ensure mutex is ALWAYS released
       if (!currentMutex.isCompleted) currentMutex.complete();
     }
   }
@@ -165,23 +161,27 @@ class TaskManager {
             source,
             url: url,
           );
+          var success = true;
           await for (final line in stream) {
             _handleOutput(line);
+            if (_isErrorEvent(line)) success = false;
           }
+
           _updateState(
             _currentTask?.copyWith(
-              status: TaskStatus.success,
-              progress: 1.0,
-              messageKey: "taskSuccess",
+              status: success ? TaskStatus.success : TaskStatus.failed,
+              progress: success ? 1.0 : _currentTask?.progress,
+              messageKey: success ? "taskSuccess" : "taskFailed",
               speed: "",
             ),
           );
           BackendService.isDownloading.value = false;
 
-          // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
-          PackageRepository().clearDetailsCacheFor(packageName);
+          if (success) {
+            PackageRepository().clearDetailsCacheFor(packageName);
+          }
 
-          UpdateService().showCompletionNotification(packageName, true);
+          UpdateService().showCompletionNotification(packageName, success);
 
           Future.delayed(const Duration(seconds: 5), () {
             if (_currentTask?.status == TaskStatus.success ||
@@ -189,7 +189,7 @@ class TaskManager {
               _updateState(null);
             }
           });
-          return true;
+          return success;
         } catch (e) {
           debugPrint("Web TaskManager execution exception: $e");
           _updateState(
@@ -222,13 +222,10 @@ class TaskManager {
           sub = stream.listen(
             (line) {
               _handleOutput(line);
-              if (line.toLowerCase().contains("error") ||
-                  line.contains("[ERROR]")) {
-                success = false;
-              }
+              if (_isErrorEvent(line)) success = false;
             },
             onError: (e) {
-              debugPrint("TaskManager Stream Error: $e");
+              debugPrint("TaskManager stream error: $e");
               success = false;
               if (!completer.isCompleted) completer.complete(false);
             },
@@ -239,11 +236,10 @@ class TaskManager {
           );
 
           _subscriptions.add(sub);
-          // Murphy-proof: Absolute timeout for any single task (1 hour)
           success = await completer.future.timeout(
             const Duration(minutes: 60),
             onTimeout: () async {
-              debugPrint("Murphy-proof: Task timed out. Forcing cleanup.");
+              debugPrint("Task timed out. Forcing cleanup.");
               await BackendService.cancelCurrentTask();
               return false;
             },
@@ -264,18 +260,15 @@ class TaskManager {
               speed: "",
             ),
           );
-          // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
           PackageRepository().clearDetailsCacheFor(packageName);
-        } else {
-          if (_currentTask?.status != TaskStatus.failed) {
-            _updateState(
-              _currentTask?.copyWith(
-                status: TaskStatus.failed,
-                messageKey: "taskFailed",
-                speed: "",
-              ),
-            );
-          }
+        } else if (_currentTask?.status != TaskStatus.failed) {
+          _updateState(
+            _currentTask?.copyWith(
+              status: TaskStatus.failed,
+              messageKey: "taskFailed",
+              speed: "",
+            ),
+          );
         }
 
         if (_currentTask != null) {
@@ -324,75 +317,162 @@ class TaskManager {
     return false;
   }
 
+  bool _isErrorEvent(String line) {
+    final cleanLine = line.trim();
+    if (cleanLine.startsWith("[ERROR]") ||
+        cleanLine.startsWith("[FATAL]") ||
+        cleanLine.startsWith("[CRITICAL]")) {
+      return true;
+    }
+
+    String? jsonText;
+    if (cleanLine.startsWith("[CALLBACK]")) {
+      jsonText = cleanLine.substring("[CALLBACK]".length).trim();
+    } else if (cleanLine.startsWith("{")) {
+      jsonText = cleanLine;
+    }
+
+    if (jsonText == null || jsonText.isEmpty) return false;
+
+    try {
+      final data = jsonDecode(jsonText);
+      if (data is! Map) return false;
+      final level = data['level']?.toString().toLowerCase();
+      final type = data['type']?.toString().toLowerCase();
+      final key = data['key']?.toString().toLowerCase();
+      return level == 'error' ||
+          level == 'fatal' ||
+          level == 'critical' ||
+          type == 'error' ||
+          type == 'fatal' ||
+          (key?.startsWith('error') ?? false);
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _handleOutput(String line) {
     if (line.isEmpty) return;
     final cleanLine = line.trim();
 
     try {
       if (cleanLine.startsWith("[CALLBACK]")) {
-        final data = jsonDecode(cleanLine.replaceFirst("[CALLBACK] ", ""));
-        _processStructuredCallback(data);
+        final jsonText = cleanLine.substring("[CALLBACK]".length).trim();
+        final data = jsonDecode(jsonText);
+        if (data is Map<String, dynamic>) {
+          _processStructuredCallback(data);
+        }
       } else if (cleanLine.startsWith("{")) {
         final data = jsonDecode(cleanLine);
-        _processStructuredCallback(data);
+        if (data is Map<String, dynamic>) {
+          _processStructuredCallback(data);
+        }
       } else {
         _processLegacyLine(cleanLine);
       }
     } catch (e) {
-      debugPrint("Murphy-proof Warning: Output parsing error: $e");
+      debugPrint("Task output parsing warning: $e");
       BackendService.addLog("Raw: $cleanLine");
     }
   }
 
   void _processStructuredCallback(Map<String, dynamic> data) {
-    final String? msg = data['message'] ?? data['log'];
-    final String? type = data['type']?.toString().toUpperCase();
+    final key = data['key']?.toString();
+    final level = data['level']?.toString().toLowerCase();
+    final type = data['type']?.toString().toLowerCase();
+    final rawMessage = data['message'] ?? data['log'] ?? data['error'] ?? key;
+    final msg = rawMessage?.toString();
 
-    if (msg != null) {
-      if (type == 'ERROR' || msg.startsWith("[ERROR]")) {
-        _processError(msg.replaceFirst("[ERROR] ", ""));
+    final isError = level == 'error' ||
+        level == 'fatal' ||
+        level == 'critical' ||
+        type == 'error' ||
+        type == 'fatal' ||
+        (key?.toLowerCase().startsWith('error') ?? false);
+
+    if (msg != null && msg.isNotEmpty) {
+      if (isError ||
+          msg.startsWith("[ERROR]") ||
+          msg.startsWith("[FATAL]") ||
+          msg.startsWith("[CRITICAL]")) {
+        _processError(_stripLegacyPrefix(msg));
       } else if (msg.startsWith("[PROGRESS]")) {
-        _processProgress(msg.replaceFirst("[PROGRESS] ", ""));
+        _processProgress(msg.replaceFirst("[PROGRESS]", "").trim());
       } else if (msg.startsWith("[SPEED]")) {
         _updateState(
-          _currentTask?.copyWith(speed: msg.replaceFirst("[SPEED] ", "")),
+          _currentTask?.copyWith(
+            speed: msg.replaceFirst("[SPEED]", "").trim(),
+          ),
         );
       } else if (msg.startsWith("[STAGE]")) {
         _updateState(
-          _currentTask?.copyWith(stage: msg.replaceFirst("[STAGE] ", "")),
+          _currentTask?.copyWith(
+            stage: msg.replaceFirst("[STAGE]", "").trim(),
+          ),
         );
       } else {
-        _processInfo(msg.replaceFirst("[INFO] ", ""));
+        _processInfo(_stripLegacyPrefix(msg));
       }
     }
 
     if (data.containsKey('progress')) {
       _processProgress(data['progress'].toString());
     }
+    if (data.containsKey('speed')) {
+      _updateState(_currentTask?.copyWith(speed: data['speed'].toString()));
+    }
+    if (data.containsKey('stage')) {
+      _updateState(_currentTask?.copyWith(stage: data['stage'].toString()));
+    }
   }
 
   void _processLegacyLine(String line) {
     if (line.startsWith("[PROGRESS]")) {
-      _processProgress(line.replaceFirst("[PROGRESS] ", ""));
+      _processProgress(line.replaceFirst("[PROGRESS]", "").trim());
     } else if (line.startsWith("[SPEED]")) {
       _updateState(
-        _currentTask?.copyWith(speed: line.replaceFirst("[SPEED] ", "")),
+        _currentTask?.copyWith(
+          speed: line.replaceFirst("[SPEED]", "").trim(),
+        ),
       );
     } else if (line.startsWith("[INFO]")) {
-      _processInfo(line.replaceFirst("[INFO] ", ""));
-    } else if (line.startsWith("[ERROR]")) {
-      _processError(line.replaceFirst("[ERROR] ", ""));
+      _processInfo(_stripLegacyPrefix(line));
+    } else if (line.startsWith("[ERROR]") ||
+        line.startsWith("[FATAL]") ||
+        line.startsWith("[CRITICAL]")) {
+      _processError(_stripLegacyPrefix(line));
     } else {
       BackendService.addLog(line);
     }
   }
 
+  String _stripLegacyPrefix(String message) {
+    const prefixes = [
+      '[CRITICAL]',
+      '[WARNING]',
+      '[SUCCESS]',
+      '[ERROR]',
+      '[FATAL]',
+      '[DEBUG]',
+      '[TRACE]',
+      '[INFO]',
+      '[WARN]',
+    ];
+    final trimmed = message.trim();
+    for (final prefix in prefixes) {
+      if (trimmed.startsWith(prefix)) {
+        return trimmed.substring(prefix.length).trimLeft();
+      }
+    }
+    return trimmed;
+  }
+
   void _processProgress(String value) {
     final parts = value.split(" ");
     final p = double.tryParse(parts[0]);
-    if (p == null) return;
+    if (p == null || !p.isFinite) return;
 
-    final progress = p / 100.0;
+    final progress = (p / 100.0).clamp(0.0, 1.0);
     _updateState(
       _currentTask?.copyWith(
         progress: progress,
@@ -407,11 +487,13 @@ class TaskManager {
   }
 
   void _processInfo(String msg) {
-    BackendService.addLog("[INFO] $msg");
+    final cleanMessage = msg.trim();
+    if (cleanMessage.isEmpty) return;
+    BackendService.addLog(cleanMessage);
     TaskStatus status = _currentTask?.status ?? TaskStatus.pending;
     double? progress = _currentTask?.progress;
 
-    final lowerMsg = msg.toLowerCase();
+    final lowerMsg = cleanMessage.toLowerCase();
     if (lowerMsg.contains("installing") ||
         lowerMsg.contains("verifying") ||
         lowerMsg.contains("building") ||
@@ -424,15 +506,21 @@ class TaskManager {
     }
 
     _updateState(
-      _currentTask?.copyWith(message: msg, status: status, progress: progress),
+      _currentTask?.copyWith(
+        message: cleanMessage,
+        status: status,
+        progress: progress,
+      ),
     );
-    BackendService.globalStatus.value = msg;
+    BackendService.globalStatus.value = cleanMessage;
   }
 
   void _processError(String err) {
-    BackendService.addLog("[ERROR] $err");
+    final cleanError = err.trim();
+    if (cleanError.isEmpty) return;
+    BackendService.addLog(cleanError);
     _updateState(
-      _currentTask?.copyWith(status: TaskStatus.failed, message: err),
+      _currentTask?.copyWith(status: TaskStatus.failed, message: cleanError),
     );
   }
 
@@ -491,7 +579,7 @@ class TaskManager {
         );
       }
     } catch (e) {
-      debugPrint("TaskManager.cancelTask Fatal: $e");
+      debugPrint("TaskManager.cancelTask fatal: $e");
     } finally {
       final cancelledTaskId = _currentTask?.id;
       Future.delayed(const Duration(seconds: 3), () {

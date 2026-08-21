@@ -225,8 +225,8 @@ def safe_command(func):
             # 2. State Locking: Reject concurrent duplicate high-frequency or stateful commands
             is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
             if is_action:
-                for active_id in list(self._active_commands.keys()):
-                    if active_id.startswith(func.__name__):
+                for active_id, active_task in list(self._active_commands.items()):
+                    if active_id.startswith(func.__name__) and not active_task.done():
                         error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
                         logging.warning(error_msg)
                         if json_mode and is_top_level:
@@ -253,8 +253,9 @@ def safe_command(func):
                 def validate_value(val: Any, name: str):
                     if isinstance(val, str):
                         if "url" in name.lower():
-                            SecurityValidator.validate_url(val, name)
-                        elif "path" in name.lower():
+                            if val.strip():
+                                SecurityValidator.validate_url(val, name)
+                        elif "path" in name.lower() or "filepath" in name.lower():
                             SecurityValidator.validate_path(val, name)
                         elif name in ("query", "prompt"):
                             SecurityValidator.validate_search_query(val, name)

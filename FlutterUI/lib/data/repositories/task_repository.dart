@@ -7,6 +7,60 @@ import "../../services/local_apps_tracker.dart";
 import "../../services/sync_service.dart";
 
 class TaskRepository {
+  String _callback(Map<String, dynamic> payload) =>
+      '[CALLBACK] ${jsonEncode(payload)}';
+
+  String _logEvent(String message, {String level = 'info'}) => _callback({
+    'type': 'log',
+    'level': level,
+    'message': message,
+  });
+
+  String _errorEvent(String key, {Object? error}) => _callback({
+    'type': 'error',
+    'level': 'error',
+    'key': key,
+    if (error != null) 'error': error.toString(),
+  });
+
+  String _progressEvent(num progress) => _callback({
+    'type': 'progress',
+    'progress': progress,
+  });
+
+  bool _isErrorEvent(String line) {
+    final trimmed = line.trim();
+
+    // Backwards compatibility for older Python/plugin output.
+    if (trimmed.startsWith('[ERROR]')) return true;
+
+    String? payloadText;
+    if (trimmed.startsWith('[CALLBACK]')) {
+      payloadText = trimmed.substring('[CALLBACK]'.length).trim();
+    } else if (trimmed.startsWith('{')) {
+      payloadText = trimmed;
+    }
+
+    if (payloadText == null || payloadText.isEmpty) return false;
+
+    try {
+      final payload = jsonDecode(payloadText);
+      if (payload is! Map) return false;
+
+      final level = payload['level']?.toString().toLowerCase();
+      final type = payload['type']?.toString().toLowerCase();
+      final key = payload['key']?.toString().toLowerCase();
+
+      return level == 'error' ||
+          level == 'fatal' ||
+          type == 'error' ||
+          type == 'fatal' ||
+          (key?.startsWith('error') ?? false);
+    } catch (_) {
+      return false;
+    }
+  }
+
   Stream<String> executeAction(
     String flag,
     String packageName,
@@ -14,15 +68,15 @@ class TaskRepository {
     String? url,
   }) {
     if (packageName.isEmpty) {
-      return Stream.value("[CALLBACK] {\"key\": \"errorPackageNameRequired\"}");
+      return Stream.value(_errorEvent('errorPackageNameRequired'));
     }
 
     if (kIsWeb) {
       return _webExecuteAction(flag, packageName, source, url: url);
     }
 
-    // Murphy-proof: Delegate process execution to BackendService to benefit from
-    // centralized ProcessRegistry tracking, daemon multiplexing, and safety guards.
+    // Delegate process execution to BackendService for centralized
+    // ProcessRegistry tracking, daemon multiplexing, and safety guards.
     final controller = StreamController<String>();
     var sawBackendError = false;
 
@@ -35,14 +89,12 @@ class TaskRepository {
 
     stream.listen(
       (line) {
-        if (line.contains('[ERROR]')) sawBackendError = true;
+        if (_isErrorEvent(line)) sawBackendError = true;
         if (!controller.isClosed) controller.add(line);
       },
       onError: (err) {
         if (!controller.isClosed) {
-          controller.add(
-            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-          );
+          controller.add(_errorEvent('errorFatalStream', error: err));
           controller.close();
         }
       },
@@ -50,10 +102,13 @@ class TaskRepository {
         if (!controller.isClosed) {
           if (sawBackendError) {
             controller.add(
-              "[CALLBACK] {\"key\": \"errorStartFailed\", \"error\": \"Backend reported an error\"}",
+              _errorEvent(
+                'errorStartFailed',
+                error: 'Backend reported an error',
+              ),
             );
           } else {
-            // Local tracking for OmniStore apps
+            // Local tracking for OmniStore apps.
             if (flag == "-I") {
               await LocalAppsTracker.trackApp(packageName);
               SyncService().syncInstalledApps();
@@ -82,19 +137,21 @@ class TaskRepository {
   }) async* {
     final isInstall = flag == "-I";
 
-    yield '[CALLBACK] {"type": "log", "message": "[INFO] Starting ${isInstall ? "install" : "uninstall"} for $packageName via $source...", "level": "INFO"}';
+    yield _logEvent(
+      'Starting ${isInstall ? "install" : "uninstall"} for $packageName via $source...',
+    );
     await Future.delayed(const Duration(milliseconds: 300));
 
-    yield '[PROGRESS] 10';
+    yield _progressEvent(10);
     await Future.delayed(const Duration(milliseconds: 300));
 
-    yield '[PROGRESS] 40';
+    yield _progressEvent(40);
     await Future.delayed(const Duration(milliseconds: 300));
 
-    yield '[PROGRESS] 80';
+    yield _progressEvent(80);
     await Future.delayed(const Duration(milliseconds: 300));
 
-    yield '[PROGRESS] 100';
+    yield _progressEvent(100);
     await Future.delayed(const Duration(milliseconds: 100));
 
     final prefs = await SharedPreferences.getInstance();
@@ -128,13 +185,13 @@ class TaskRepository {
       });
       await LocalAppsTracker.trackApp(packageName);
       SyncService().syncInstalledApps();
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Installed successfully!", "level": "SUCCESS"}';
+      yield _logEvent('Installed successfully!', level: 'success');
     } else {
       installedIds.remove(packageName);
       installedCache.removeWhere((item) => item['id'] == packageName);
       await LocalAppsTracker.untrackApp(packageName);
       SyncService().syncInstalledApps();
-      yield '[CALLBACK] {"type": "log", "message": "[INFO] Uninstalled successfully!", "level": "SUCCESS"}';
+      yield _logEvent('Uninstalled successfully!', level: 'success');
     }
 
     await prefs.setStringList('omnistore_installed_ids', installedIds);
@@ -149,24 +206,20 @@ class TaskRepository {
       return [];
     }
 
-    // Murphy-proof: Delegate to BackendService for centralized execution and caching.
     return BackendService.instance.checkUpdates();
   }
 
   Stream<String> updateAll(String source) {
     if (kIsWeb) {
       final controller = StreamController<String>();
-      controller.add(
-        '[CALLBACK] {"type": "log", "message": "[INFO] Starting system update on web...", "level": "INFO"}',
-      );
+      controller.add(_logEvent('Starting system update on web...'));
       Future.delayed(const Duration(milliseconds: 500), () {
-        controller.add('[PROGRESS] 50');
+        if (!controller.isClosed) controller.add(_progressEvent(50));
       });
       Future.delayed(const Duration(milliseconds: 1000), () {
-        controller.add('[PROGRESS] 100');
-        controller.add(
-          '[CALLBACK] {"type": "log", "message": "[INFO] Web updates completed!", "level": "SUCCESS"}',
-        );
+        if (controller.isClosed) return;
+        controller.add(_progressEvent(100));
+        controller.add(_logEvent('Web updates completed!', level: 'success'));
         controller.close();
       });
       return controller.stream;
@@ -181,9 +234,7 @@ class TaskRepository {
       },
       onError: (err) {
         if (!controller.isClosed) {
-          controller.add(
-            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-          );
+          controller.add(_errorEvent('errorFatalStream', error: err));
           controller.close();
         }
       },
@@ -212,23 +263,21 @@ class TaskRepository {
       };
     }
 
-    // Murphy-proof: Delegate to BackendService for centralized execution and validation.
     return BackendService.instance.exportPackages(filepath);
   }
 
   Stream<String> cleanSystem() {
     if (kIsWeb) {
       final controller = StreamController<String>();
-      controller.add(
-        '[CALLBACK] {"type": "log", "message": "[INFO] Running system cleanup in browser...", "level": "INFO"}',
-      );
+      controller.add(_logEvent('Running system cleanup in browser...'));
       Future.delayed(const Duration(milliseconds: 500), () {
-        controller.add('[PROGRESS] 50');
+        if (!controller.isClosed) controller.add(_progressEvent(50));
       });
       Future.delayed(const Duration(milliseconds: 1000), () {
-        controller.add('[PROGRESS] 100');
+        if (controller.isClosed) return;
+        controller.add(_progressEvent(100));
         controller.add(
-          '[CALLBACK] {"type": "log", "message": "[INFO] Browser storage cleanup finished!", "level": "SUCCESS"}',
+          _logEvent('Browser storage cleanup finished!', level: 'success'),
         );
         controller.close();
       });
@@ -244,9 +293,7 @@ class TaskRepository {
       },
       onError: (err) {
         if (!controller.isClosed) {
-          controller.add(
-            "[CALLBACK] {\"key\": \"errorFatalStream\", \"error\": \"$err\"}",
-          );
+          controller.add(_errorEvent('errorFatalStream', error: err));
           controller.close();
         }
       },

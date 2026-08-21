@@ -171,14 +171,38 @@ class AIAssistant:
                     logging.error(f"AI Provider Error ({resp.status}): {err_body}")
                     return f"AI 服务商返回错误 ({resp.status})。请检查 API 密钥或网络连接。"
 
-                data = await resp.json()
+                try:
+                    data = await resp.json()
+                except Exception as json_err:
+                    self._failure_count += 1
+                    self._last_failure_time = time.time()
+                    raw_txt = self._redact_sensitive(await resp.text())
+                    logging.error(f"AI response JSON decode error: {json_err}. Raw text: {raw_txt[:200]}")
+                    return "AI 服务商返回了无法解析的数据格式。"
+
+                if not isinstance(data, dict):
+                    self._failure_count += 1
+                    self._last_failure_time = time.time()
+                    return "AI 服务商返回的数据结构异常。"
+
                 # Success: reset circuit
                 self._failure_count = 0
-                if provider == "ollama": return data.get("response", "").strip()
+                if provider == "ollama":
+                    return str(data.get("response") or "").strip()
                 if provider == "gemini":
-                    parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-                    return parts[0].get("text", "").strip() if parts else "Gemini 未能生成有效回复。"
-                return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                    candidates = data.get("candidates")
+                    if isinstance(candidates, list) and candidates:
+                        parts = candidates[0].get("content", {}).get("parts", []) if isinstance(candidates[0], dict) else []
+                        if parts and isinstance(parts, list) and isinstance(parts[0], dict):
+                            return str(parts[0].get("text") or "").strip()
+                    return "Gemini 未能生成有效回复。"
+
+                choices = data.get("choices")
+                if isinstance(choices, list) and choices and isinstance(choices[0], dict):
+                    msg = choices[0].get("message")
+                    if isinstance(msg, dict):
+                        return str(msg.get("content") or "").strip()
+                return "AI 服务商未返回有效内容。"
 
         except asyncio.TimeoutError:
             self._failure_count += 1

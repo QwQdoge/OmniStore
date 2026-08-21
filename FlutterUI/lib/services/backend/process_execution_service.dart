@@ -5,12 +5,37 @@ import 'package:flutter/foundation.dart';
 import 'process_registry.dart';
 import 'platform_environment.dart';
 
-/// Murphy-proof: Specialized service for process execution and lifecycle management.
+/// Executes backend processes while keeping lifecycle and protocol handling in
+/// one place. Human-readable messages and machine-readable severity are kept
+/// separate so callers never have to infer success from log text.
 class ProcessExecutionService {
   final ProcessRegistry _registry;
   final PlatformEnvironment _env = PlatformEnvironment.instance;
 
   ProcessExecutionService(this._registry);
+
+  String _event({
+    required String type,
+    required String level,
+    required String message,
+    Map<String, dynamic> extra = const {},
+  }) =>
+      '[CALLBACK] ${jsonEncode(<String, dynamic>{
+        'type': type,
+        'level': level,
+        'message': message,
+        ...extra,
+      })}';
+
+  String _errorEvent(String message, {Object? error, int? exitCode}) => _event(
+    type: 'error',
+    level: 'error',
+    message: message,
+    extra: {
+      if (error != null) 'error': error.toString(),
+      if (exitCode != null) 'exitCode': exitCode,
+    },
+  );
 
   Future<ProcessResult?> run({
     required List<String> args,
@@ -21,7 +46,7 @@ class ProcessExecutionService {
 
     if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
       debugPrint(
-        "Backend Error: Python environment missing at ${_env.venvPython}",
+        "Python environment missing at ${_env.venvPython}",
       );
       return null;
     }
@@ -38,6 +63,7 @@ class ProcessExecutionService {
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
         environment: env.isEmpty ? null : env,
+        runInShell: false,
       ).timeout(const Duration(seconds: 10));
 
       _registry.add(process);
@@ -68,10 +94,20 @@ class ProcessExecutionService {
     String? apiKey,
     Function(Process)? onProcessStarted,
   }) async* {
-    if (kIsWeb) yield "[CALLBACK] {\"log\": \"Web sandbox\"}";
+    if (kIsWeb) {
+      yield _event(
+        type: 'log',
+        level: 'info',
+        message: 'Web sandbox',
+      );
+      return;
+    }
 
     if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
-      yield "[CALLBACK] {\"type\": \"log\", \"message\": \"[ERROR] Python environment missing\", \"level\": \"ERROR\"}";
+      yield _errorEvent(
+        'Python environment missing',
+        error: _env.venvPython,
+      );
       return;
     }
 
@@ -89,7 +125,10 @@ class ProcessExecutionService {
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
         environment: env.isEmpty ? null : env,
-        runInShell: true,
+        // Arguments are already passed as a list. Avoiding a shell removes an
+        // unnecessary quoting/injection surface and makes exit semantics more
+        // predictable across platforms.
+        runInShell: false,
       ).timeout(const Duration(seconds: 10));
 
       _registry.add(process);
@@ -106,13 +145,34 @@ class ProcessExecutionService {
             },
             onError: (e) {
               if (!controller.isClosed) {
-                controller.add("[CALLBACK] {\"error\": \"$e\"}");
+                controller.add(
+                  _errorEvent('Failed to read process stdout', error: e),
+                );
               }
             },
             onDone: () async {
               await stderrDone.future;
-              if (process != null) _registry.remove(process);
-              if (!controller.isClosed) controller.close();
+
+              try {
+                final exitCode = await process!.exitCode;
+                if (exitCode != 0 && !controller.isClosed) {
+                  controller.add(
+                    _errorEvent(
+                      'Backend process exited unsuccessfully',
+                      exitCode: exitCode,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (!controller.isClosed) {
+                  controller.add(
+                    _errorEvent('Failed to obtain process exit code', error: e),
+                  );
+                }
+              } finally {
+                _registry.remove(process!);
+                if (!controller.isClosed) await controller.close();
+              }
             },
           );
 
@@ -121,11 +181,27 @@ class ProcessExecutionService {
           .transform(const LineSplitter())
           .listen(
             (data) {
-              debugPrint("Stderr: $data");
-              if (!controller.isClosed) controller.add("[ERROR] $data");
+              debugPrint("Backend stderr: $data");
+              if (!controller.isClosed && data.trim().isNotEmpty) {
+                // stderr is a stream, not a severity. Many CLI tools use it for
+                // warnings/progress even on successful exit. The process exit
+                // code above is the authoritative failure signal.
+                controller.add(
+                  _event(
+                    type: 'log',
+                    level: 'warning',
+                    message: data,
+                    extra: const {'stream': 'stderr'},
+                  ),
+                );
+              }
             },
             onError: (e) {
-              if (!controller.isClosed) controller.add("[ERROR] $e");
+              if (!controller.isClosed) {
+                controller.add(
+                  _errorEvent('Failed to read process stderr', error: e),
+                );
+              }
               if (!stderrDone.isCompleted) stderrDone.complete();
             },
             onDone: () {
@@ -143,6 +219,13 @@ class ProcessExecutionService {
       debugPrint("ProcessExecutionService.stream exception: $e");
       if (!controller.isClosed) await controller.close();
       if (process != null) await _registry.kill(process);
+
+      // If startup failed before `yield* controller.stream`, adding an event to
+      // the controller would be invisible to the caller. Yield the failure
+      // directly from this async generator instead.
+      yield _errorEvent('Failed to start backend process', error: e);
+    } finally {
+      if (process != null) _registry.remove(process);
     }
   }
 }

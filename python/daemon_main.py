@@ -48,12 +48,11 @@ async def cleanup_daemon_resources():
             for t in tasks_to_cancel:
                 t.cancel()
             try:
-                await asyncio.wait_for(
-                    asyncio.gather(*tasks_to_cancel, return_exceptions=True),
-                    timeout=5.0
-                )
-            except Exception as e:
-                logging.error(f"Error gathering cancelled tasks: {e}")
+                gather_fut = asyncio.gather(*tasks_to_cancel, return_exceptions=True)
+                await asyncio.wait_for(asyncio.shield(gather_fut), timeout=5.0)
+            except BaseException as e:
+                if isinstance(e, Exception):
+                    logging.error(f"Error gathering cancelled tasks: {e}")
             _active_tasks.clear()
 
         # 2. Terminate subprocesses

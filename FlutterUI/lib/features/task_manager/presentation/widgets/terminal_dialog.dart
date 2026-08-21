@@ -8,6 +8,24 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 class TerminalDialog extends StatelessWidget {
   const TerminalDialog({super.key});
 
+  String _formatTime(DateTime timestamp) {
+    final local = timestamp.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    final s = local.second.toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  Color _logColor(ThemeData theme, TaskLogLevel level) {
+    return switch (level) {
+      TaskLogLevel.debug => theme.colorScheme.onSurfaceVariant,
+      TaskLogLevel.info => theme.colorScheme.onSurface,
+      TaskLogLevel.warning => theme.colorScheme.tertiary,
+      TaskLogLevel.error => theme.colorScheme.error,
+      TaskLogLevel.success => theme.colorScheme.primary,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -99,59 +117,69 @@ class TerminalDialog extends StatelessWidget {
               },
             ),
             Expanded(
-              child:
-                  Selector<TaskController, ({int length, List<String> logs})>(
-                    selector: (context, c) =>
-                        (length: c.logs.length, logs: c.logs),
-                    shouldRebuild: (prev, next) =>
-                        prev.length != next.length ||
-                        !const IterableEquality().equals(prev.logs, next.logs),
-                    builder: (context, data, _) {
-                      final logs = data.logs;
-                      return logs.isEmpty
-                          ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.waitingForOutput,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              reverse: true,
-                              padding: const EdgeInsets.all(12),
-                              itemCount: logs.length,
-                              prototypeItem: const Text(
-                                '',
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              ),
-                              itemBuilder: (context, i) {
-                                final log = logs[logs.length - 1 - i];
-                                Color textColor = theme.colorScheme.onSurface;
-                                if (log.contains("[ERROR]")) {
-                                  textColor = theme.colorScheme.error;
-                                }
-                                if (log.contains("[INFO]")) {
-                                  textColor = theme.colorScheme.primary;
-                                }
-                                return Text(
-                                  log,
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontFamily: 'monospace',
-                                    fontSize: 12,
-                                    height: 1.5,
+              child: Selector<
+                TaskController,
+                ({int length, List<TaskLogEntry> logs})
+              >(
+                selector: (context, c) =>
+                    (length: c.logEntries.length, logs: c.logEntries),
+                shouldRebuild: (prev, next) =>
+                    prev.length != next.length ||
+                    !const IterableEquality().equals(prev.logs, next.logs),
+                builder: (context, data, _) {
+                  final logs = data.logs;
+                  return logs.isEmpty
+                      ? Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.waitingForOutput,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          reverse: true,
+                          padding: const EdgeInsets.all(12),
+                          itemCount: logs.length,
+                          prototypeItem: const Text(
+                            '',
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                              height: 1.5,
+                            ),
+                          ),
+                          itemBuilder: (context, i) {
+                            final entry = logs[logs.length - 1 - i];
+                            final time = _formatTime(entry.timestamp);
+                            return Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '$time  ',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                );
-                              },
+                                  TextSpan(
+                                    text: entry.message,
+                                    style: TextStyle(
+                                      color: _logColor(theme, entry.level),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                                height: 1.5,
+                              ),
                             );
-                    },
-                  ),
+                          },
+                        );
+                },
+              ),
             ),
           ],
         ),
