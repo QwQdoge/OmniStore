@@ -1,0 +1,49 @@
+name: Flutter quality
+
+on:
+  pull_request:
+    paths:
+      - 'FlutterUI/**'
+      - '.github/workflows/flutter-quality.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'FlutterUI/**'
+      - '.github/workflows/flutter-quality.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: FlutterUI
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.4'
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test --reporter expanded
