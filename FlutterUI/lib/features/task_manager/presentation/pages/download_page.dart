@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import "package:flutter/material.dart";
@@ -33,6 +35,8 @@ class _DownloadPageState extends State<DownloadPage>
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _installedFilterScrollController = ScrollController();
+  Timer? _searchDebounceTimer;
+  String _lastSearchText = "";
 
   // ⚡ Bolt: Cache/memoize the available filters list to avoid O(N) .expand()
   // and set allocations on every single render in InstalledTab's build() loop.
@@ -44,14 +48,32 @@ class _DownloadPageState extends State<DownloadPage>
     _selectedSourceFilter = "all";
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInstalledApps());
+    _searchController.addListener(_onSearchChanged);
+  }
 
-    _searchController.addListener(() {
-      if (mounted) {
-        setState(() {
-          _searchQuery = _searchController.text.toLowerCase();
-          _applyFilters();
-        });
-      }
+  void _onSearchChanged() {
+    if (!mounted) return;
+    final text = _searchController.text;
+    if (text == _lastSearchText) return;
+    _lastSearchText = text;
+
+    _searchDebounceTimer?.cancel();
+    if (text.isEmpty) {
+      setState(() {
+        _searchQuery = "";
+        _applyFilters();
+      });
+      return;
+    }
+
+    // ⚡ Bolt: Debounce search filtering by 200ms when typing to prevent
+    // synchronous package filtering and setState rebuilds on every keypress.
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      setState(() {
+        _searchQuery = text.toLowerCase();
+        _applyFilters();
+      });
     });
   }
 
@@ -134,6 +156,8 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
+    _searchController.removeListener(_onSearchChanged);
     _filterScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();

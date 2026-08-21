@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import "package:frontend/data/repositories/package_repository.dart";
 import "package:provider/provider.dart";
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _AppsPageState extends State<AppsPage> {
   );
   final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(true);
   Timer? _searchDebounceTimer;
+  String _lastSearchText = "";
 
   @override
   void initState() {
@@ -45,8 +47,11 @@ class _AppsPageState extends State<AppsPage> {
   }
 
   void _onSearchChanged() {
-    _searchDebounceTimer?.cancel();
     final query = _searchController.text;
+    if (query == _lastSearchText) return;
+    _lastSearchText = query;
+
+    _searchDebounceTimer?.cancel();
     if (query.isEmpty) {
       _applyFilter();
       return;
@@ -63,7 +68,9 @@ class _AppsPageState extends State<AppsPage> {
       return app.nameLower.contains(query) ||
           app.descriptionLower.contains(query);
     }).toList();
-    _filteredAppsNotifier.value = filtered;
+    if (!const ListEquality().equals(_filteredAppsNotifier.value, filtered)) {
+      _filteredAppsNotifier.value = filtered;
+    }
   }
 
   Future<void> _refresh({bool forceRefresh = false}) async {

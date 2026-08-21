@@ -160,3 +160,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Refactored `DiscoveryContent` and `EmptyResults` to memoize category lookups in `didChangeDependencies()`.
 - Flutter Performance - Caching Category Lookups: In widgets like `HomePage` or `CategoryPage`, calling `CategoryService.getCategories(context)` directly inside `build()` causes redundant `CategoryItem` allocations and localization lookups on every frame/state update. Memoize category lookups by storing them in a state variable initialized within `didChangeDependencies()`.
+
+## 2026-08-07 - TextEditingController Search Listener & ValueNotifier Optimization
+
+**Learning:** `TextEditingController.addListener` triggers on cursor movements and selection changes in addition to character entry. Unchecked state updates inside the listener run expensive O(N) list filtering and `setState` calls even when search text is unchanged. Furthermore, `ValueNotifier<List<T>>` uses identity comparison (`_value == newValue`) which always evaluates to `false` when assigned newly created list instances from `.toList()`, causing redundant downstream rebuilds.
+
+**Action:** Added `_lastSearchText` checks and 200ms debouncing in `DownloadPage` and `AppsPage`, and added `ListEquality().equals` checks before setting `_filteredAppsNotifier.value` in `AppsPage`.
