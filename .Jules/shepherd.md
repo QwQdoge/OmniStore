@@ -99,3 +99,7 @@ Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable g
 ## 2026-08-07 - Dialog Button Consistency: Dismissal Actions
 - Standardized the single-action dismissal buttons in informational, alert, and error dialogs to use `FilledButton` instead of `TextButton`, ensuring visual consistency with the app's primary action button pattern.
 - Updated `AITestResultDialog`, `AIMarkdownDialog`, `AICliDialog`, `AIUpdateSummaryDialog`, and `ApiKeyInstructionsDialog` to use `FilledButton` for the `l10n.ok` action.
+
+## 2026-08-11 - Card Consistency: Auth and Onboarding Surface Standardization
+- Replaced raw `Card` widgets in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`, `FlutterUI/lib/features/auth/presentation/widgets/sign_in_form.dart`, and `FlutterUI/lib/features/onboarding/widgets/welcome_config_card.dart` with `AppCard`.
+- This ensures consistent Material Design 3 surface container styling, 16-20dp rounded corners, and standardized border tokens across authentication and onboarding components.

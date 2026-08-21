@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class SignInForm extends StatelessWidget {
@@ -48,15 +49,8 @@ class SignInForm extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 440),
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Card(
-            elevation: 0,
-            color: colorScheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-            ),
+          child: AppCard(
+            borderRadius: 20,
             child: Padding(
               padding: const EdgeInsets.all(28),
               child: Column(

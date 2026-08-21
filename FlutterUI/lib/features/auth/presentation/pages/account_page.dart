@@ -6,6 +6,7 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/auth/presentation/widgets/sign_in_form.dart';
 
 
@@ -165,15 +166,8 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ],
             const SizedBox(height: 32),
-            Card(
-              elevation: 0,
-              color: colorScheme.surfaceContainerLow,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-              ),
+            AppCard(
+              borderRadius: 16,
               clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
