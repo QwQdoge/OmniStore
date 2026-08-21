@@ -20,6 +20,7 @@ class AppsPage extends StatefulWidget {
 
 class _AppsPageState extends State<AppsPage> {
   final TextEditingController _searchController = TextEditingController();
+  String _lastSearchText = "";
   List<AppPackage> _apps = [];
   final ValueNotifier<List<AppPackage>> _filteredAppsNotifier = ValueNotifier(
     [],
@@ -45,6 +46,9 @@ class _AppsPageState extends State<AppsPage> {
   }
 
   void _onSearchChanged() {
+    if (_searchController.text == _lastSearchText) return;
+    _lastSearchText = _searchController.text;
+
     _searchDebounceTimer?.cancel();
     final query = _searchController.text;
     if (query.isEmpty) {

@@ -1,3 +1,9 @@
+## 2026-08-10 - TextEditingController Listener Optimization
+
+**Learning:** `TextEditingController.addListener` fires not just on text changes, but also on cursor movements and text selection changes. Triggering heavy filter operations, timer resets, or state updates (`setState`) purely on this listener causes significant, redundant CPU overhead and UI jitter.
+
+**Action:** Introduced a cached `_lastSearchText` string pattern in UI classes using `TextEditingController`. Modified listeners to check `if (_searchController.text == _lastSearchText) return;` before executing state updates or complex search logic. Implemented in `apps_page.dart`, `download_page.dart`, and `welcome_page.dart`.
+
 # ⚡ Bolt Learning Journal
 
 Routine work is never logged. Surprising technical findings, failed optimizations, or architecture-specific bottlenecks must be recorded here using the format: `## YYYY-MM-DD - [Title], **Learning:** [Insight], **Action:** [Future application].`
