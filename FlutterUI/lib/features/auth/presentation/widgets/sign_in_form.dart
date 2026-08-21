@@ -134,7 +134,7 @@ class SignInForm extends StatelessWidget {
                         ),
                         onPressed: onToggleObscure,
                         tooltip:
-                            isObscure ? 'Show Password' : 'Hide Password',
+                            isObscure ? l10n.showPassword : l10n.hidePassword,
                       ),
                     ),
                     enabled: !isLoading,

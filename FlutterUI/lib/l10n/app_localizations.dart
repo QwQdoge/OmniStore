@@ -2419,6 +2419,18 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get password;
 
+  /// Tooltip for showing password in plain text
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// Tooltip for hiding password in obscure text
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
   /// Description for signIn
   ///
   /// In en, this message translates to:

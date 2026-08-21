@@ -1232,6 +1232,14 @@
   "@password": {
     "description": "Description for password"
   },
+  "showPassword": "顯示密碼",
+  "@showPassword": {
+    "description": "Tooltip for showing password in plain text"
+  },
+  "hidePassword": "隱藏密碼",
+  "@hidePassword": {
+    "description": "Tooltip for hiding password in obscure text"
+  },
   "signIn": "登入",
   "@signIn": {
     "description": "Description for signIn"

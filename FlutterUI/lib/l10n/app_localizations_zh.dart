@@ -1236,6 +1236,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get password => '密码';
 
   @override
+  String get showPassword => '显示密码';
+
+  @override
+  String get hidePassword => '隐藏密码';
+
+  @override
   String get signIn => '登录';
 
   @override
@@ -2545,6 +2551,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get password => '密碼';
+
+  @override
+  String get showPassword => '顯示密碼';
+
+  @override
+  String get hidePassword => '隱藏密碼';
 
   @override
   String get signIn => '登入';

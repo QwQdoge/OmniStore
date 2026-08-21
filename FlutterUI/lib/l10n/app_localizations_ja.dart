@@ -1246,6 +1246,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get password => 'パスワード';
 
   @override
+  String get showPassword => 'パスワードを表示';
+
+  @override
+  String get hidePassword => 'パスワードを非表示';
+
+  @override
   String get signIn => 'サインイン';
 
   @override
