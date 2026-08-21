@@ -32,6 +32,7 @@ class _DownloadPageState extends State<DownloadPage>
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  String _lastSearchText = "";
   final ScrollController _installedFilterScrollController = ScrollController();
 
   // ⚡ Bolt: Cache/memoize the available filters list to avoid O(N) .expand()
@@ -46,7 +47,8 @@ class _DownloadPageState extends State<DownloadPage>
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInstalledApps());
 
     _searchController.addListener(() {
-      if (mounted) {
+      if (mounted && _searchController.text != _lastSearchText) {
+        _lastSearchText = _searchController.text;
         setState(() {
           _searchQuery = _searchController.text.toLowerCase();
           _applyFilters();

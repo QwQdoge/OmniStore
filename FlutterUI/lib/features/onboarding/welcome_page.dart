@@ -33,6 +33,8 @@ class _WelcomePageState extends State<WelcomePage> {
     text: 'http://localhost:11434',
   );
   final TextEditingController _aiApiKeyController = TextEditingController();
+  late String _lastAiEndpoint;
+  late String _lastAiApiKey;
 
   // Environment check state
   bool _isCheckingEnv = false;
@@ -52,6 +54,8 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
+    _lastAiEndpoint = _aiEndpointController.text;
+    _lastAiApiKey = _aiApiKeyController.text;
     _aiEndpointController.addListener(_onAiConfigChanged);
     _aiApiKeyController.addListener(_onAiConfigChanged);
   }
@@ -67,6 +71,13 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   void _onAiConfigChanged() {
+    if (_aiEndpointController.text == _lastAiEndpoint &&
+        _aiApiKeyController.text == _lastAiApiKey) {
+      return;
+    }
+    _lastAiEndpoint = _aiEndpointController.text;
+    _lastAiApiKey = _aiApiKeyController.text;
+
     if (_aiTestResult != null) {
       setState(() {
         _aiTestResult = null;
