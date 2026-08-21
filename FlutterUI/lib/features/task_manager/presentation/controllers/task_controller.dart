@@ -6,6 +6,20 @@ import 'package:frontend/data/repositories/package_repository.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/task_state.dart';
 
+enum TaskLogLevel { debug, info, warning, error, success }
+
+class TaskLogEntry {
+  const TaskLogEntry({
+    required this.message,
+    required this.level,
+    required this.timestamp,
+  });
+
+  final String message;
+  final TaskLogLevel level;
+  final DateTime timestamp;
+}
+
 class TaskController with ChangeNotifier {
   final TaskRepository _taskRepository;
 
@@ -31,14 +45,14 @@ class TaskController with ChangeNotifier {
   String? _packageName;
   String? _flag;
   int _taskGeneration = 0;
-  final List<String> _logs = [];
+  final List<TaskLogEntry> _logEntries = [];
   final List<TaskState> _completedTasks = [];
 
-  late UnmodifiableListView<String> _logsView;
+  late UnmodifiableListView<TaskLogEntry> _logEntriesView;
   late UnmodifiableListView<TaskState> _completedTasksView;
 
   TaskController(this._taskRepository) {
-    _logsView = UnmodifiableListView(_logs);
+    _logEntriesView = UnmodifiableListView(_logEntries);
     _completedTasksView = UnmodifiableListView(_completedTasks);
   }
 
@@ -48,11 +62,19 @@ class TaskController with ChangeNotifier {
   String get speed => _speed;
   String? get packageName => _packageName;
   String? get flag => _flag;
-  List<String> get logs => _logsView;
+
+  /// Backwards-compatible plain-text view for callers that only need messages.
+  List<String> get logs => List<String>.unmodifiable(
+    _logEntries.map((entry) => entry.message),
+  );
+
+  /// Structured log entries for UI and diagnostics.
+  List<TaskLogEntry> get logEntries => _logEntriesView;
+
   List<TaskState> get completedTasks => _completedTasksView;
 
   void clearLogs() {
-    _logs.clear();
+    _logEntries.clear();
     notifyListeners();
   }
 
@@ -108,7 +130,9 @@ class TaskController with ChangeNotifier {
     );
   }
 
-  /// Murphy-proof: Consolidated task execution logic with guaranteed state reset and robust error isolation.
+  /// Consolidated task execution logic with guaranteed state reset and robust
+  /// error isolation. Failure is determined from structured event severity,
+  /// never by searching arbitrary log text for the word "error".
   Future<bool> _executeTaskInternal(
     Stream<String> Function() streamFactory,
     String flag,
@@ -117,7 +141,6 @@ class TaskController with ChangeNotifier {
     AppLocalizations l10n, {
     String Function(String)? errorMapper,
   }) async {
-    // Stage 1: State Locking & Initialization
     if (_isBusy) return false;
     final taskGeneration = ++_taskGeneration;
     _isBusy = true;
@@ -125,7 +148,7 @@ class TaskController with ChangeNotifier {
     _flag = flag;
     _progress = null;
     _status = l10n.taskStarting;
-    _logs.clear();
+    _logEntries.clear();
     bool hasError = false;
     notifyListeners();
 
@@ -134,25 +157,16 @@ class TaskController with ChangeNotifier {
 
       await for (final line in stream) {
         if (taskGeneration != _taskGeneration) break;
-        if (line.contains("errorFatalStream") ||
-            line.contains("errorProcessStart") ||
-            line.contains("errorStartFailed") ||
-            line.contains("errorUpdateFailed") ||
-            line.contains("errorCleanFailed") ||
-            line.contains("errorUpdateAll") ||
-            line.contains("[ERROR]")) {
-          hasError = true;
-        }
-        _parseLine(line, l10n);
+        final level = _parseLine(line, l10n);
+        if (level == TaskLogLevel.error) hasError = true;
         notifyListeners();
       }
     } catch (e) {
       if (taskGeneration != _taskGeneration) return false;
       hasError = true;
       _status = l10n.errorFatalStream(e.toString());
-      _logs.add("[FATAL] $e");
+      _appendLog(e.toString(), TaskLogLevel.error);
     } finally {
-      // Murphy-proof: Guaranteed busy state reset
       if (taskGeneration == _taskGeneration) {
         _isBusy = false;
         _progress = null;
@@ -162,7 +176,6 @@ class TaskController with ChangeNotifier {
 
     if (taskGeneration != _taskGeneration) return false;
 
-    // Murphy-proof: Record task result before clearing identifiers
     _completedTasks.insert(
       0,
       TaskState(
@@ -185,7 +198,6 @@ class TaskController with ChangeNotifier {
     notifyListeners();
 
     if (!hasError) {
-      // ⚡ Bolt: Invalidate details cache upon successful installation/uninstallation/update.
       PackageRepository().clearDetailsCacheFor(packageName);
     }
 
@@ -208,21 +220,16 @@ class TaskController with ChangeNotifier {
 
       await for (final line in stream) {
         if (taskGeneration != _taskGeneration) break;
-        if (line.contains("errorCleanFailed") ||
-            line.contains("errorFatalStream") ||
-            line.contains("[ERROR]")) {
-          hasError = true;
-        }
-        _parseLine(line, l10n);
+        final level = _parseLine(line, l10n);
+        if (level == TaskLogLevel.error) hasError = true;
         notifyListeners();
       }
     } catch (e) {
       if (taskGeneration != _taskGeneration) return;
       hasError = true;
       _status = l10n.errorCleanFailed(e.toString());
-      _logs.add("[FATAL] $e");
+      _appendLog(e.toString(), TaskLogLevel.error);
     } finally {
-      // Murphy-proof: Guaranteed state reset
       if (taskGeneration == _taskGeneration) {
         _isBusy = false;
         _progress = null;
@@ -248,23 +255,31 @@ class TaskController with ChangeNotifier {
     );
   }
 
-  void _parseLine(String line, AppLocalizations l10n) {
+  TaskLogLevel? _parseLine(String line, AppLocalizations l10n) {
     final cleanLine = line.trim();
-    if (cleanLine.isEmpty) return;
+    if (cleanLine.isEmpty) return null;
 
-    // Murphy-proof: Prioritize structured [CALLBACK] JSON data for reliable parsing.
+    // Prefer structured callback JSON. Legacy tags remain supported only as a
+    // compatibility boundary while older Python/plugin producers migrate.
     if (cleanLine.startsWith("[CALLBACK]")) {
       final jsonStr = cleanLine.replaceFirst("[CALLBACK]", "").trim();
       try {
         final data = jsonDecode(jsonStr);
-        _processStructuredData(data, l10n);
-        return;
+        return _processStructuredData(data, l10n);
       } catch (e) {
         debugPrint("TaskController: JSON parse error: $e");
       }
     }
 
-    // Fallback: Legacy tag-based parsing or raw log lines.
+    if (cleanLine.startsWith("{")) {
+      try {
+        final data = jsonDecode(cleanLine);
+        return _processStructuredData(data, l10n);
+      } catch (e) {
+        debugPrint("TaskController: JSON parse error: $e");
+      }
+    }
+
     if (cleanLine.startsWith("[PROGRESS]")) {
       final val = double.tryParse(
         cleanLine.replaceFirst("[PROGRESS]", "").trim(),
@@ -272,48 +287,153 @@ class TaskController with ChangeNotifier {
       if (val != null && val.isFinite) {
         _progress = (val / 100.0).clamp(0.0, 1.0);
       }
-    } else if (cleanLine.startsWith("[SPEED]")) {
-      _speed = cleanLine.replaceFirst("[SPEED]", "").trim();
-    } else if (cleanLine.startsWith("[ERROR]")) {
-      final msg = cleanLine.replaceFirst("[ERROR]", "").trim();
-      _logs.add(msg);
-      _status = msg;
-    } else if (cleanLine.startsWith("[INFO]")) {
-      final msg = cleanLine.replaceFirst("[INFO]", "").trim();
-      _logs.add(msg);
-      _status = msg;
-    } else {
-      _logs.add(cleanLine);
+      return null;
     }
 
-    if (_logs.length > 500) _logs.removeAt(0);
+    if (cleanLine.startsWith("[SPEED]")) {
+      _speed = cleanLine.replaceFirst("[SPEED]", "").trim();
+      return null;
+    }
+
+    final legacyLevel = _legacyLevel(cleanLine);
+    final message = _stripLegacyPrefix(cleanLine);
+    _appendLog(message, legacyLevel ?? TaskLogLevel.info);
+    if (message.isNotEmpty) _status = message;
+    return legacyLevel ?? TaskLogLevel.info;
   }
 
-  void _processStructuredData(dynamic data, AppLocalizations l10n) {
-    if (data is! Map<String, dynamic>) return;
+  TaskLogLevel? _processStructuredData(
+    dynamic data,
+    AppLocalizations l10n,
+  ) {
+    if (data is! Map<String, dynamic>) return null;
 
     String? message;
-    if (data['key'] != null) {
-      final key = data['key'] as String;
-      final error = data['error'] as String?;
+    final key = data['key']?.toString();
+    if (key != null) {
+      final error = data['error']?.toString();
       message = _translateKey(key, error, l10n);
     } else if (data['log'] != null) {
-      message = data['log'];
+      message = data['log'].toString();
     } else if (data['message'] != null) {
-      message = data['message'];
+      message = data['message'].toString();
     }
 
     if (data['progress'] != null) {
       final p = double.tryParse(data['progress'].toString());
-      if (p != null && p.isFinite) _progress = (p / 100.0).clamp(0.0, 1.0);
+      if (p != null && p.isFinite) {
+        _progress = (p / 100.0).clamp(0.0, 1.0);
+      }
     }
 
-    if (message != null) {
-      _logs.add(message);
-      _status = message;
+    if (data['speed'] != null) {
+      _speed = data['speed'].toString();
     }
 
-    if (_logs.length > 500) _logs.removeAt(0);
+    if (message == null || message.trim().isEmpty) {
+      return key?.toLowerCase().startsWith('error') == true
+          ? TaskLogLevel.error
+          : null;
+    }
+
+    var level = _parseLevel(
+      data['level']?.toString() ?? data['severity']?.toString(),
+    );
+
+    final type = data['type']?.toString().toLowerCase();
+    if (type == 'error' || type == 'fatal') {
+      level = TaskLogLevel.error;
+    } else if (type == 'warning' || type == 'warn') {
+      level = TaskLogLevel.warning;
+    }
+
+    if (key?.toLowerCase().startsWith('error') == true) {
+      level = TaskLogLevel.error;
+    }
+
+    final legacyLevel = _legacyLevel(message);
+    if (legacyLevel != null && data['level'] == null) {
+      level = legacyLevel;
+    }
+
+    final cleanMessage = _stripLegacyPrefix(message);
+    _appendLog(cleanMessage, level);
+    _status = cleanMessage;
+    return level;
+  }
+
+  TaskLogLevel _parseLevel(String? level) {
+    switch (level?.trim().toLowerCase()) {
+      case 'debug':
+      case 'trace':
+        return TaskLogLevel.debug;
+      case 'warning':
+      case 'warn':
+        return TaskLogLevel.warning;
+      case 'error':
+      case 'fatal':
+      case 'critical':
+        return TaskLogLevel.error;
+      case 'success':
+        return TaskLogLevel.success;
+      default:
+        return TaskLogLevel.info;
+    }
+  }
+
+  TaskLogLevel? _legacyLevel(String message) {
+    final trimmed = message.trimLeft();
+    if (trimmed.startsWith('[ERROR]') ||
+        trimmed.startsWith('[FATAL]') ||
+        trimmed.startsWith('[CRITICAL]')) {
+      return TaskLogLevel.error;
+    }
+    if (trimmed.startsWith('[WARNING]') || trimmed.startsWith('[WARN]')) {
+      return TaskLogLevel.warning;
+    }
+    if (trimmed.startsWith('[SUCCESS]')) return TaskLogLevel.success;
+    if (trimmed.startsWith('[DEBUG]') || trimmed.startsWith('[TRACE]')) {
+      return TaskLogLevel.debug;
+    }
+    if (trimmed.startsWith('[INFO]')) return TaskLogLevel.info;
+    return null;
+  }
+
+  String _stripLegacyPrefix(String message) {
+    const prefixes = [
+      '[CRITICAL]',
+      '[WARNING]',
+      '[SUCCESS]',
+      '[ERROR]',
+      '[FATAL]',
+      '[DEBUG]',
+      '[TRACE]',
+      '[INFO]',
+      '[WARN]',
+    ];
+
+    final trimmed = message.trim();
+    for (final prefix in prefixes) {
+      if (trimmed.startsWith(prefix)) {
+        return trimmed.substring(prefix.length).trimLeft();
+      }
+    }
+    return trimmed;
+  }
+
+  void _appendLog(String message, TaskLogLevel level) {
+    final cleanMessage = message.trim();
+    if (cleanMessage.isEmpty) return;
+
+    _logEntries.add(
+      TaskLogEntry(
+        message: cleanMessage,
+        level: level,
+        timestamp: DateTime.now(),
+      ),
+    );
+
+    if (_logEntries.length > 500) _logEntries.removeAt(0);
   }
 
   String? _translateKey(String key, String? error, AppLocalizations l10n) {
