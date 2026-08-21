@@ -88,8 +88,9 @@ class WelcomeAiPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
+                              // ignore: deprecated_member_use
                               DropdownButtonFormField<String>(
-                                initialValue: aiProvider,
+                                value: aiProvider,
                                 borderRadius: BorderRadius.circular(12),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface,
