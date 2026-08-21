@@ -10,25 +10,28 @@ class PythonBridge {
 
   static String? _testApiKey;
 
-  static Future<String?> getApiKey() async {
+  static Future<String?> getApiKey({bool throwOnError = false}) async {
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
       return _testApiKey;
     }
     try {
       return await _secureStorage.read(key: apiKeyStorageKey);
-    } catch (e) {
+    } catch (_) {
+      if (throwOnError) rethrow;
       return null;
     }
   }
 
   static Future<void> saveApiKey(String key) async {
+    if (key.isEmpty) {
+      await deleteApiKey();
+      return;
+    }
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
       _testApiKey = key;
       return;
     }
-    try {
-      await _secureStorage.write(key: apiKeyStorageKey, value: key);
-    } catch (_) {}
+    await _secureStorage.write(key: apiKeyStorageKey, value: key);
   }
 
   static Future<void> deleteApiKey() async {
@@ -36,9 +39,7 @@ class PythonBridge {
       _testApiKey = null;
       return;
     }
-    try {
-      await _secureStorage.delete(key: apiKeyStorageKey);
-    } catch (_) {}
+    await _secureStorage.delete(key: apiKeyStorageKey);
   }
 
   static Future<ProcessResult> run(
