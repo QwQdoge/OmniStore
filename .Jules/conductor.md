@@ -69,3 +69,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** When toggling a button between an idle text state and a loading state (like `CircularProgressIndicator`), using a raw `AnimatedSwitcher` causes abrupt layout jumps. Using `SmoothSizeSwitcher` provides unified MD3 motion logic and concurrently handles opacity and sizing.
 
 **Action:** Replaced `AnimatedSwitcher` with `SmoothSizeSwitcher` inside the "Sign In" `FilledButton` in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart`.
+
+## 2024-11-23 - Smooth Layout Transitions for Loading Indicators
+
+**Learning:** When conditionally rendering a `LinearProgressIndicator` (or similar layout-altering elements) using a standard `if` statement, Flutter abruptly jumps the layout to accommodate the new height. Wrapping the conditional logic in a `SmoothSizeSwitcher` and assigning clear `ValueKey`s (e.g., swapping between the progress indicator and a `SizedBox.shrink(key: ValueKey('idle'))`) concurrently animates the height expansion and cross-fade, eliminating the jarring jump and preserving motion clarity.
+
+**Action:** Replaced the raw conditional rendering of `LinearProgressIndicator` in `FlutterUI/lib/features/onboarding/widgets/welcome_env_check_page.dart` with a `SmoothSizeSwitcher` to ensure a smooth layout expansion during bootstrapping. Also standardized the 'Fix Problems' button's loading transition using `SmoothSizeSwitcher`.
