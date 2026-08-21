@@ -217,11 +217,13 @@ class ProcessExecutionService {
       yield* controller.stream;
     } catch (e) {
       debugPrint("ProcessExecutionService.stream exception: $e");
-      if (!controller.isClosed) {
-        controller.add(_errorEvent('Failed to start backend process', error: e));
-        await controller.close();
-      }
+      if (!controller.isClosed) await controller.close();
       if (process != null) await _registry.kill(process);
+
+      // If startup failed before `yield* controller.stream`, adding an event to
+      // the controller would be invisible to the caller. Yield the failure
+      // directly from this async generator instead.
+      yield _errorEvent('Failed to start backend process', error: e);
     } finally {
       if (process != null) _registry.remove(process);
     }
