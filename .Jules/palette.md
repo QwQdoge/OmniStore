@@ -1,3 +1,12 @@
+## 2026-08-20 - Material Design 3 EmptyState Container Badges and Semantics
+
+**Learning:** Empty states in Material Design 3 benefit from housing illustrative icons inside explicit tonal surface container badges (`surfaceContainerHigh` circular container decorated with a subtle `outlineVariant` border and `primary` icon color) rather than unanchored low-contrast raw icons. Furthermore, wrapping the empty state title and subtitle in a single `Semantics` wrapper with `excludeSemantics: true` consolidates screen reader output into a single cohesive announcement (`$title. $subtitle`), avoiding fragmented or duplicated text readings.
+
+**Action:** Standardize shared empty states with MD3 `surfaceContainerHigh` badge containers, high contrast `onSurface` title text, and consolidated `Semantics(excludeSemantics: true, label: ...)` wrappers.
+
+
+
+
 ## 2026-08-18 - Clean Up Redundant IconButton Semantics Wrappers
 
 **Learning:** `IconButton` and `IconButton.filledTonal` widgets natively manage their accessibility properties through their `tooltip` and `isSelected` parameters in Flutter. Wrapping native `IconButton` instances in a redundant `Semantics(button: true, label: ...)` wrapper creates duplicate accessibility nodes in screen-reader trees and bloats widget layout hierarchies.
