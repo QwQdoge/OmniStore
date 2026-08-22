@@ -15,6 +15,8 @@ class GitHubClient {
   final SharedPreferences prefs;
 
   final Map<String, _MemoryEntry> _memory = {};
+  // Coalesce / deduplicate in-flight HTTP requests for repository details
+  final Map<String, Future<Map<String, dynamic>?>> _activeRequests = {};
 
   GitHubClient({this.token, required this.prefs});
 
@@ -40,6 +42,26 @@ class GitHubClient {
       return mem.data;
     }
 
+    final activeRequest = _activeRequests[cacheKey];
+    if (activeRequest != null) {
+      return activeRequest;
+    }
+
+    final future = _getRepoDetailsImpl(cacheKey, owner, repo);
+    _activeRequests[cacheKey] = future;
+
+    try {
+      return await future;
+    } finally {
+      _activeRequests.remove(cacheKey);
+    }
+  }
+
+  Future<Map<String, dynamic>?> _getRepoDetailsImpl(
+    String cacheKey,
+    String owner,
+    String repo,
+  ) async {
     String? cachedData;
     try {
       cachedData = prefs.getString(cacheKey);
