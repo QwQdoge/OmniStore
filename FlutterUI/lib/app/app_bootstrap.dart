@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<void> bootstrapOmniStore() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final configRepo = ConfigRepository();
+  final configRepo = ConfigRepository.instance;
   final packageRepo = PackageRepository();
   final taskRepo = TaskRepository();
   final aiRepo = AIRepository();

@@ -13,7 +13,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
 
-    final configRepo = ConfigRepository();
+    final configRepo = ConfigRepository.test();
     final settingsController = SettingsController(configRepo);
 
     // Initial mock load of config
