@@ -231,3 +231,11 @@ Writing directly to JSON files using `with open(..., 'w')` creates a vulnerabili
 
 Action:
 Replaced the direct file write in `python/core/backend.py` with an atomic write using a temporary `.tmp` file and `os.replace`. This guarantees that exported package files are never left in a partially written, corrupt state.
+
+## 2026-08-22 - [Async Lifecycle Context Safety in StatefulWidgets]
+
+Learning:
+Inside a `StatefulWidget`, replacing `!context.mounted` with `!mounted` ensures the widget's exact mounting status is accurately verified. While `context.mounted` checks if the provided `BuildContext` is mounted, it is safer to use the state's `mounted` property directly. This is because `context` in asynchronous blocks (especially after `await` gaps in callbacks like `showDialog`) can refer to the inner scope, or the element might have been rebuilt but the `State` object retains the true lifecycle information.
+
+Action:
+Refactored `HomePage._importPackages` in `FlutterUI/lib/features/home/home_page.dart` to use `!mounted` instead of `!context.mounted` inside the `showDialog` confirmation callback loop. This guarantees safe verification before executing asynchronous package installation tasks.
