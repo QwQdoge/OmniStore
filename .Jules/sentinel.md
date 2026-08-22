@@ -239,3 +239,11 @@ Inside a `StatefulWidget`, replacing `!context.mounted` with `!mounted` ensures 
 
 Action:
 Refactored `HomePage._importPackages` in `FlutterUI/lib/features/home/home_page.dart` to use `!mounted` instead of `!context.mounted` inside the `showDialog` confirmation callback loop. This guarantees safe verification before executing asynchronous package installation tasks.
+
+## 2026-08-22 - [Async Lifecycle Context Shadowing Fix]
+
+Learning:
+Inside a `StatefulWidget`, the Dart analyzer correctly flags `use_build_context_synchronously` when using `!mounted` (which checks the `State`'s mounted status) to guard a use of a shadowed `BuildContext` variable. In `HomePage._importPackages`, the `context` variable inside the `showDialog` callback was shadowed by the inner `Builder(builder: (context) => ...)`. Renaming the inner shadowed context to `dialogContext` resolves the ambiguity and ensures the `!mounted` guard correctly protects the outer `State.context` usage, passing static analysis and preventing hidden lifecycle crashes.
+
+Action:
+Renamed the inner `context` in `builder: (context) => ImportPackagesDialog(...)` to `dialogContext` in `FlutterUI/lib/features/home/home_page.dart`. This aligns the `!mounted` check precisely with the `State` context rather than the local callback context.
