@@ -6,6 +6,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import "add_source_dialog.dart";
 import '../pages/github_integration_page.dart';
 import '../controllers/settings_controller.dart';
@@ -200,15 +201,21 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                       ),
                     ],
                   ),
-                  if (_loadingPlugins)
-                    const LinearProgressIndicator(minHeight: 2)
-                  else if (_plugins.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(l10n.noPluginsFound),
-                    )
-                  else
-                    ..._plugins.map((p) => _buildPluginTile(p, l10n)),
+                  SmoothSizeSwitcher(
+                    alignment: Alignment.topCenter,
+                    child: _loadingPlugins
+                        ? const LinearProgressIndicator(minHeight: 2, key: ValueKey('loading'))
+                        : _plugins.isEmpty
+                            ? Padding(
+                                key: const ValueKey('empty'),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(l10n.noPluginsFound),
+                              )
+                            : Column(
+                                key: const ValueKey('plugins'),
+                                children: _plugins.map((p) => _buildPluginTile(p, l10n)).toList(),
+                              ),
+                  ),
                   const SizedBox(height: 12),
                 ],
                 ListTile(
