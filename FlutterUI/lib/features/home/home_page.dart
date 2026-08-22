@@ -137,15 +137,15 @@ class _HomePageState extends State<HomePage> {
       if (packages.isNotEmpty) {
         showDialog(
           context: context,
-          builder: (context) => ImportPackagesDialog(
+          builder: (dialogContext) => ImportPackagesDialog(
             packagesCount: packages.length,
             titleText: l10n.importPackages,
             contentText: l10n.importPackagesConfirm(packages.length),
             cancelText: l10n.cancel,
             confirmText: l10n.allDownloads,
-            onCancel: () => Navigator.pop(context),
+            onCancel: () => Navigator.pop(dialogContext),
             onConfirm: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               // Capture context properties before async gaps
 
