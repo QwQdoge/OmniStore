@@ -241,3 +241,5 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Learning:** When aligning custom form-based and feedback dialogs (such as `AITestResultDialog`) with Material Design 3 guidelines, it is important to explicitly set `textAlign: TextAlign.center` on the `AlertDialog` title in addition to assigning the `w800` font weight and `headlineSmall` text style to guarantee proper centering, especially when icons are used.
 
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
+
+- Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
