@@ -97,7 +97,7 @@ class AIPickSection extends StatelessWidget {
             ],
             if (onRefresh != null) ...[
               const SizedBox(height: 12),
-              TextButton.icon(
+              FilledButton.tonalIcon(
                 onPressed: onRefresh,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: Text(AppLocalizations.of(context)!.changeRecommendation),

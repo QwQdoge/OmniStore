@@ -174,7 +174,7 @@ class SignInForm extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextButton(
+                  FilledButton.tonal(
                     onPressed: onCreateAccount,
                     child: Text(l10n.createAccount),
                   ),

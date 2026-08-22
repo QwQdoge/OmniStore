@@ -186,7 +186,7 @@ class WelcomeAiPage extends StatelessWidget {
                               const SizedBox(height: 16),
                               Row(
                                 children: [
-                                  TextButton.icon(
+                                  FilledButton.tonalIcon(
                                     onPressed: onShowApiKeyInstructions,
                                     icon: const Icon(Icons.help_outline_rounded, size: 18),
                                     label: Text(l10n.howToGetApiKey),

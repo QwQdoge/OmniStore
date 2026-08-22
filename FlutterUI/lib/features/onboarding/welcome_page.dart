@@ -386,7 +386,7 @@ class _WelcomePageState extends State<WelcomePage> {
       child: Row(
         children: [
           if (_currentPage > 0)
-            TextButton.icon(
+            FilledButton.tonalIcon(
               onPressed: _isBootstrapping
                   ? null
                   : () {
