@@ -137,7 +137,7 @@ class TasksTab extends StatelessWidget {
                                   fontSize: 18,
                                 ),
                               ),
-                              TextButton.icon(
+                              FilledButton.tonalIcon(
                                 onPressed: () =>
                                     context.read<TaskController>().clearHistory(),
                                 icon: const Icon(

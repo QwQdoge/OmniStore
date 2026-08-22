@@ -149,7 +149,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton.icon(
+                    FilledButton.tonalIcon(
                       onPressed: () => _autoDetectSources(l10n),
                       icon: const Icon(Icons.radar_rounded, size: 18),
                       label: Text(l10n.autoDetect),
