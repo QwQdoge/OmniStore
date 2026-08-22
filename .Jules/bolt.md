@@ -166,3 +166,8 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 
 **Action:** Refactored `DiscoveryContent` and `EmptyResults` to memoize category lookups in `didChangeDependencies()`.
 - Flutter Performance - Caching Category Lookups: In widgets like `HomePage` or `CategoryPage`, calling `CategoryService.getCategories(context)` directly inside `build()` causes redundant `CategoryItem` allocations and localization lookups on every frame/state update. Memoize category lookups by storing them in a state variable initialized within `didChangeDependencies()`.
+## 2026-08-22 - Task Tab SliverList Virtualization Optimization
+
+**Learning:** `SliverList.builder` does not natively support the `prototypeItem` property which is critical for efficient scroll virtualization when items have uniform dimensions. Attempting to pass it causes compilation errors.
+
+**Action:** Replaced `SliverList.builder` with `SliverPrototypeExtentList.builder` in `tasks_tab.dart` and provided a skeleton `AppCard` as the `prototypeItem` to drastically reduce layout calculation overhead during scrolling.
