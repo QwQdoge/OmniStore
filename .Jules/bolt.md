@@ -1,3 +1,15 @@
+## 2026-08-15 - GitHubClient Request Coalescing
+
+**Learning:** When multiple list items (such as GitHubStarBadge instances across rendered lists) fetch repository details asynchronously, concurrent calls for the same owner/repo can fire before disk/memory cache is populated, causing redundant HTTP requests and API rate-limiting issues.
+
+**Action:** Added an `_activeRequests` map to `GitHubClient` to coalesce in-flight `getRepoDetails` requests, sharing the active `Future` across all callers until completion.
+
+## 2026-08-15 - GitHubClient Request Coalescing
+
+**Learning:** When multiple list items (such as GitHubStarBadge instances across rendered lists) fetch repository details asynchronously, concurrent calls for the same owner/repo can fire before disk/memory cache is populated, causing redundant HTTP requests and API rate-limiting issues.
+
+**Action:** Added an  map to  to coalesce in-flight  requests, sharing the active  across all callers until completion.
+
 ## 2026-08-10 - TextEditingController Listener Optimization
 
 **Learning:** `TextEditingController.addListener` fires not just on text changes, but also on cursor movements and text selection changes. Triggering heavy filter operations, timer resets, or state updates (`setState`) purely on this listener causes significant, redundant CPU overhead and UI jitter.
