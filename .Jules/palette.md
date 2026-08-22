@@ -243,3 +243,15 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
 
 - Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
+
+## 2026-08-22 - Async Context Shadowing in Dialog Builder
+
+**Learning:** When using  inside async dialog callbacks (such as  ), shadowing the outer  with the dialog builder parameter  triggers the  analyzer warning after async gaps even when  checks are present. Renaming the inner dialog builder parameter to  resolves context ambiguity, satisfies the analyzer, and ensures  correctly targets the dialog context while preserving state  checks for the page context.
+
+**Action:** Always name inner builder context parameters uniquely (e.g., ) when showing dialogs from stateful widgets to prevent context shadowing and maintain analyzer cleanliness.
+
+## 2026-08-22 - Async Context Shadowing in Dialog Builder
+
+**Learning:** When using BuildContext inside async dialog callbacks (such as ImportPackagesDialog onConfirm), shadowing the outer BuildContext with the dialog builder parameter (context) triggers the use_build_context_synchronously analyzer warning after async gaps even when mounted checks are present. Renaming the inner dialog builder parameter to dialogContext resolves context ambiguity, satisfies the analyzer, and ensures Navigator.pop(dialogContext) correctly targets the dialog context while preserving state mounted checks for the page context.
+
+**Action:** Always name inner builder context parameters uniquely (e.g., dialogContext) when showing dialogs from stateful widgets to prevent context shadowing and maintain analyzer cleanliness.
