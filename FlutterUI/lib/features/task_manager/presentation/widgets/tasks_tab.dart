@@ -174,8 +174,29 @@ class TasksTab extends StatelessWidget {
                     ),
                 builder: (context, data, child) {
                   final history = data.history;
-                  return SliverList.builder(
+                  return SliverPrototypeExtentList.builder(
                     itemCount: data.length,
+                    prototypeItem: AppCard(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      borderRadius: 12.0,
+                      child: ListTile(
+                        leading: const CircleAvatar(),
+                        title: Row(
+                          children: [
+                            const Text(''),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: const Text(''),
+                        trailing: const Text(''),
+                      ),
+                    ),
                     itemBuilder: (context, index) {
                       final task = history[index];
                       final isSuccess = task.status == TaskStatus.success;
