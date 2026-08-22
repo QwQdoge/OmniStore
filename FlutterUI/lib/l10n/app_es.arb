@@ -610,7 +610,7 @@
   "@taskCancelledByUser": {
     "description": "Status message when a task is cancelled by the user"
   },
-  "taskError": "Error: {error}",
+  "taskError": "Error de tarea: {error}",
   "@taskError": {
     "description": "Status message when a task encounters an error",
     "placeholders": {

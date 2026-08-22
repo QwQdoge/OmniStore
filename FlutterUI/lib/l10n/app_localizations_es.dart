@@ -872,7 +872,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String taskError(String error) {
-    return 'Error: $error';
+    return 'Error de tarea: $error';
   }
 
   @override

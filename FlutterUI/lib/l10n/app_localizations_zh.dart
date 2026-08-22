@@ -371,7 +371,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String importBackupConfirm(int count) {
-    return '已从备份中读取 $count 个软件包。是否开始批量还原？';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已从备份中读取 $count 个软件包。是否开始批量还原？',
+      one: '已从备份中读取 1 个软件包。是否开始还原？',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -467,7 +473,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => 'Arch Linux 智能诊断报告';
+  String get aiHealthSubtitle => '针对您 Arch Linux 的智能诊断';
 
   @override
   String get aiCorrection => '您是指：';
@@ -593,20 +599,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiEndpointHelper => 'Ollama 默认为 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 无需密钥，OpenAI 需填写 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 可留空，OpenAI 填写 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何获取 API 密钥？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：直接运行，无需密钥。2. 云端 (OpenAI)：前往官网创建并填写密钥。';
+      '1. Ollama（本地）：下载并运行 Ollama，无需密钥；2. 云端（OpenAI）：前往服务商官网创建 API 密钥后在此填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+  String get aiOllamaNote =>
+      '注意：使用 Ollama 时，请确保其已运行且环境变量配置为 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '进入商店';
@@ -621,7 +628,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetCacheDesc => '清空搜索历史与本地推荐缓存';
 
   @override
-  String get resetCacheConfirm => '将清空搜索历史和推荐缓存。确认继续？';
+  String get resetCacheConfirm => '此操作将清空您的搜索历史与本地推荐缓存。是否继续？';
 
   @override
   String get resetting => '正在重置...';
@@ -648,7 +655,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String importPackagesConfirm(int count) {
-    return '已从文件中读取 $count 个软件包。是否开始批量下载？';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已从文件中读取 $count 个软件包。是否开始批量下载？',
+      one: '已从文件中读取 1 个软件包。是否开始下载？',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1001,7 +1014,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return '每隔 $hours 小时自动检查一次';
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '每隔 $hours 小时自动检查一次',
+      one: '每隔 1 小时自动检查一次',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1018,7 +1037,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String hourValue(int count) {
-    return '$count 小时';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 小时',
+      one: '1 小时',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1135,7 +1160,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refreshPlugins => '刷新插件';
 
   @override
-  String get noPluginsFound => '未发现插件';
+  String get noPluginsFound => '未找到软件源插件';
 
   @override
   String get builtin => '内置';
@@ -1276,7 +1301,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get configurePat => '配置个人访问令牌 (PAT)';
 
   @override
-  String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
+  String get patHelperText => '请提供 GitHub Classic PAT 或细粒度 (Fine-grained) 令牌。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 维护，离线时也始终可见';
@@ -1688,7 +1713,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String importBackupConfirm(int count) {
-    return '已從備份中讀取 $count 個套件。是否開始批次還原？';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已從備份中讀取 $count 個套件。是否開始批次還原？',
+      one: '已從備份中讀取 1 個套件。是否開始還原？',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1784,7 +1815,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthTitle => 'AI 系統健康報告';
 
   @override
-  String get aiHealthSubtitle => 'Arch Linux 智慧診斷報告';
+  String get aiHealthSubtitle => '針對您 Arch Linux 的智慧診斷';
 
   @override
   String get aiCorrection => '您是指？';
@@ -1910,20 +1941,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiEndpointHelper => 'Ollama 預設為 http://localhost:11434';
 
   @override
-  String get aiApiKeyHelper => 'Ollama 無需金鑰，OpenAI 需填寫 sk-xxx';
+  String get aiApiKeyHelper => 'Ollama 可留空，OpenAI 填寫 sk-xxx';
 
   @override
   String get howToGetApiKey => '如何獲取 API 金鑰？';
 
   @override
   String get howToGetApiKeyDesc =>
-      '1. Ollama (本地)：直接執行，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填寫金鑰。';
+      '1. Ollama（本地）：下載並執行 Ollama，無需金鑰；2. 雲端（OpenAI）：前往服務商官網建立 API 金鑰後在此填入。';
 
   @override
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote => '確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+  String get aiOllamaNote =>
+      '注意：使用 Ollama 時，請確保其已執行且環境變數設定為 OLLAMA_ORIGINS=\"*\"。';
 
   @override
   String get enterStore => '進入商店';
@@ -1938,7 +1970,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get resetCacheDesc => '清空搜尋歷史與本地推薦快取';
 
   @override
-  String get resetCacheConfirm => '將清空搜尋歷史與推薦快取。確認繼續？';
+  String get resetCacheConfirm => '此操作將清空您的搜尋歷史與本地推薦快取。是否繼續？';
 
   @override
   String get resetting => '正在重置...';
@@ -1965,7 +1997,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String importPackagesConfirm(int count) {
-    return '已從檔案中讀取 $count 個套件。是否開始批次下載？';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已從檔案中讀取 $count 個套件。是否開始批次下載？',
+      one: '已從檔案中讀取 1 個套件。是否開始下載？',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2248,7 +2286,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '軟體源地址（owner/repo）';
+  String get repoOwnerRepo => '儲存庫地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2318,7 +2356,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String checkIntervalSubtitle(int hours) {
-    return '每隔 $hours 小時自動檢查一次';
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '每隔 $hours 小時自動檢查一次',
+      one: '每隔 1 小時自動檢查一次',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2335,7 +2379,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String hourValue(int count) {
-    return '$count 小時';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 小時',
+      one: '1 小時',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2452,7 +2502,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get refreshPlugins => '重新整理外掛程式';
 
   @override
-  String get noPluginsFound => '未找到外掛程式';
+  String get noPluginsFound => '未找到軟體源外掛程式';
 
   @override
   String get builtin => '內建';
@@ -2593,7 +2643,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get configurePat => '設定個人存取權標（PAT）';
 
   @override
-  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權標。';
+  String get patHelperText => '請提供 GitHub Classic PAT 或細粒度（Fine-grained）權標。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';
@@ -2632,7 +2682,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubStoreUnavailable => 'GitHub 商店暫不可用';
 
   @override
-  String get noGithubReposFound => '未找到 GitHub 軟體倉庫';
+  String get noGithubReposFound => '未找到 GitHub 程式碼儲存庫';
 
   @override
   String get pullToRefreshCategory => '下拉重新整理或嘗試其他分類。';

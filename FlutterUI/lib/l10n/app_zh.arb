@@ -248,7 +248,7 @@
   "@importBackup": {
     "description": "Label for importing a backup file"
   },
-  "importBackupConfirm": "已从备份中读取 {count} 个软件包。是否开始批量还原？",
+  "importBackupConfirm": "{count, plural, =1{已从备份中读取 1 个软件包。是否开始还原？} other{已从备份中读取 {count} 个软件包。是否开始批量还原？}}",
   "@importBackupConfirm": {
     "description": "Confirmation text for batch recovery from backup",
     "placeholders": {
@@ -382,7 +382,7 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "Arch Linux 智能诊断报告",
+  "aiHealthSubtitle": "针对您 Arch Linux 的智能诊断",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },
@@ -481,16 +481,16 @@
   "aiAssistantDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
   "aiProviderDesc": "选择 AI 模型来源（本地或云端）",
   "aiEndpointHelper": "Ollama 默认为 http://localhost:11434",
-  "aiApiKeyHelper": "Ollama 无需密钥，OpenAI 需填写 sk-xxx",
+  "aiApiKeyHelper": "Ollama 可留空，OpenAI 填写 sk-xxx",
   "howToGetApiKey": "如何获取 API 密钥？",
-  "howToGetApiKeyDesc": "1. Ollama (本地)：直接运行，无需密钥。2. 云端 (OpenAI)：前往官网创建并填写密钥。",
+  "howToGetApiKeyDesc": "1. Ollama（本地）：下载并运行 Ollama，无需密钥；2. 云端（OpenAI）：前往服务商官网创建 API 密钥后在此填入。",
   "gotIt": "知道了",
-  "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "aiOllamaNote": "注意：使用 Ollama 时，请确保其已运行且环境变量配置为 OLLAMA_ORIGINS=\"*\"。",
   "enterStore": "进入商店",
   "nextStep": "下一步",
   "resetCache": "重置缓存与历史记录",
   "resetCacheDesc": "清空搜索历史与本地推荐缓存",
-  "resetCacheConfirm": "将清空搜索历史和推荐缓存。确认继续？",
+  "resetCacheConfirm": "此操作将清空您的搜索历史与本地推荐缓存。是否继续？",
   "resetting": "正在重置...",
   "resetSuccess": "缓存与历史记录已成功清空",
   "resetFailed": "重置失败: {error}",
@@ -505,7 +505,7 @@
   "openaiCompatible": "OpenAI 兼容",
   "googleGemini": "Google Gemini",
   "importPackages": "导入软件包",
-  "importPackagesConfirm": "已从文件中读取 {count} 个软件包。是否开始批量下载？",
+  "importPackagesConfirm": "{count, plural, =1{已从文件中读取 1 个软件包。是否开始下载？} other{已从文件中读取 {count} 个软件包。是否开始批量下载？}}",
   "@importPackagesConfirm": {
     "placeholders": {
       "count": {
@@ -861,7 +861,7 @@
   "@checkIntervalTitle": {
     "description": "Title for update check interval"
   },
-  "checkIntervalSubtitle": "每隔 {hours} 小时自动检查一次",
+  "checkIntervalSubtitle": "{hours, plural, =1{每隔 1 小时自动检查一次} other{每隔 {hours} 小时自动检查一次}}",
   "@checkIntervalSubtitle": {
     "placeholders": {
       "hours": {
@@ -885,7 +885,7 @@
   "@systemDefault": {
     "description": "Label for system default option"
   },
-  "hourValue": "{count} 小时",
+  "hourValue": "{count, plural, =1{1 小时} other{{count} 小时}}",
   "@hourValue": {
     "placeholders": {
       "count": {
@@ -992,7 +992,7 @@
   "@refreshPlugins": {
     "description": "Tooltip for refreshing plugin list"
   },
-  "noPluginsFound": "未发现插件",
+  "noPluginsFound": "未找到软件源插件",
   "@noPluginsFound": {
     "description": "Message shown when no source plugins are available"
   },
@@ -1289,7 +1289,7 @@
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "请提供 GitHub Classic PAT 或 Fine-grained 令牌。",
+  "patHelperText": "请提供 GitHub Classic PAT 或细粒度 (Fine-grained) 令牌。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
