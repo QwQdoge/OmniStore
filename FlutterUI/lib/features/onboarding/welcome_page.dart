@@ -10,6 +10,7 @@ import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog
 import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
+import 'package:frontend/features/onboarding/widgets/welcome_bottom_bar.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -363,7 +364,23 @@ class _WelcomePageState extends State<WelcomePage> {
                   ],
                 ),
               ),
-              _buildBottomBar(l10n, theme),
+              WelcomeBottomBar(
+                currentPage: _currentPage,
+                isBootstrapping: _isBootstrapping,
+                onPrevious: () {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                  );
+                },
+                onNext: () {
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                  );
+                },
+                onFinish: _finishOnboarding,
+              ),
             ],
           ),
         ),
@@ -377,64 +394,6 @@ class _WelcomePageState extends State<WelcomePage> {
       builder: (context) {
         return const ApiKeyInstructionsDialog();
       },
-    );
-  }
-
-  Widget _buildBottomBar(AppLocalizations l10n, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          if (_currentPage > 0)
-            TextButton.icon(
-              onPressed: _isBootstrapping
-                  ? null
-                  : () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOutCubic,
-                      );
-                    },
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: Text(l10n.back),
-            ),
-          const Spacer(),
-          Text(
-            'Step ${_currentPage + 1} of 4',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-          const Spacer(),
-          FilledButton.icon(
-            onPressed: _isBootstrapping
-                ? null
-                : () {
-                    if (_currentPage < 3) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOutCubic,
-                      );
-                    } else {
-                      _finishOnboarding();
-                    }
-                  },
-            icon: Icon(
-              _currentPage < 3
-                  ? Icons.arrow_forward_rounded
-                  : Icons.login_rounded,
-              size: 18,
-            ),
-            label: Text(
-              _currentPage == 0
-                  ? l10n.getStarted
-                  : _currentPage < 3
-                  ? l10n.next
-                  : l10n.enterStore,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
