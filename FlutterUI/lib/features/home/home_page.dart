@@ -147,25 +147,19 @@ class _HomePageState extends State<HomePage> {
             onConfirm: () async {
               Navigator.pop(dialogContext);
 
-              // Capture context properties before async gaps
-
-              final appLocalizations = AppLocalizations.of(context);
-
-              if (appLocalizations == null) return;
-
               for (var pkg in packages) {
                 if (!mounted) break;
 
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
 
-                Toast.show(context, appLocalizations.installingPkg(name));
+                Toast.show(context, l10n.installingPkg(name));
 
                 await taskController.runTask(
                   "-I",
                   name,
                   source,
-                  appLocalizations,
+                  l10n,
                 );
               }
             },

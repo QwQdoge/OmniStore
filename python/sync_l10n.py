@@ -75,6 +75,7 @@ def sync_locale(loc):
 
     with open(target_file, 'w', encoding='utf-8') as f:
         json.dump(synced, f, ensure_ascii=False, indent=2)
+        f.write('\n')
 
 locales = ['zh', 'zh_Hant', 'ja', 'es']
 for loc in locales:
