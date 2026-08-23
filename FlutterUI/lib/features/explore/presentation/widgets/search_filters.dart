@@ -54,14 +54,19 @@ class SearchFilters extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: FilterChip(
-                label: Text(AppLocalizations.of(context)!.all),
-                selected: selectedSources.isEmpty,
-                onSelected: (selected) {
-                  if (selected) {
-                    onSelectedSourcesChanged([]);
-                  }
-                },
+              child: Semantics(
+                label: AppLocalizations.of(context)!.sourceFilterSemantics(
+                  AppLocalizations.of(context)!.all,
+                ),
+                child: FilterChip(
+                  label: Text(AppLocalizations.of(context)!.all),
+                  selected: selectedSources.isEmpty,
+                  onSelected: (selected) {
+                    if (selected) {
+                      onSelectedSourcesChanged([]);
+                    }
+                  },
+                ),
               ),
             ),
             ...enabledSources.map((src) {
@@ -69,18 +74,21 @@ class SearchFilters extends StatelessWidget {
               final isSelected = selectedSources.contains(name.toLowerCase());
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: FilterChip(
-                  label: Text(name),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    final newSources = List<String>.from(selectedSources);
-                    if (selected) {
-                      newSources.add(name.toLowerCase());
-                    } else {
-                      newSources.remove(name.toLowerCase());
-                    }
-                    onSelectedSourcesChanged(newSources);
-                  },
+                child: Semantics(
+                  label: AppLocalizations.of(context)!.sourceFilterSemantics(name),
+                  child: FilterChip(
+                    label: Text(name),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      final newSources = List<String>.from(selectedSources);
+                      if (selected) {
+                        newSources.add(name.toLowerCase());
+                      } else {
+                        newSources.remove(name.toLowerCase());
+                      }
+                      onSelectedSourcesChanged(newSources);
+                    },
+                  ),
                 ),
               );
             }),

@@ -1347,5 +1347,13 @@
   "pullToRefreshCategory": "下拉重新整理或嘗試其他分類。",
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
+  },
+  "sourceFilterSemantics": "按軟體源篩選：{name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

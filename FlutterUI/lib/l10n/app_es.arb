@@ -1344,5 +1344,13 @@
   "pullToRefreshCategory": "Deslice hacia abajo para actualizar o pruebe otra categoría.",
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
+  },
+  "sourceFilterSemantics": "Filtrar por origen: {name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
