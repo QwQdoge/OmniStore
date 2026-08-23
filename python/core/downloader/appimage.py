@@ -1,5 +1,10 @@
 import os
 import asyncio
+import re
+from pathlib import Path
+
+import aiohttp
+
 from core.subprocess_utils import safe_subprocess
 
 
@@ -12,15 +17,22 @@ class AppImageDownloader:
         self.timeout = aiohttp.ClientTimeout(total=5)
 
     async def install(self, package_data: dict, callback=None):
-        name = package_data.get("name")
+        name = str(package_data.get("name") or "").strip()
         url = package_data.get("url")
-        dest_path = self.apps_dir / f"{name}.AppImage"
-        self.apps_dir.mkdir(parents=True, exist_ok=True)
 
         if not url or not name:
             if callback:
                 await callback("[ERROR] Invalid package data")
-            return
+            return False
+
+        safe_name = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip(".-")
+        if not safe_name:
+            if callback:
+                await callback("[ERROR] Invalid AppImage name")
+            return False
+        dest_path = self.apps_dir / f"{safe_name}.AppImage"
+        part_path = dest_path.with_suffix(".AppImage.part")
+        self.apps_dir.mkdir(parents=True, exist_ok=True)
 
         # Try to get content-length to show progress percentage
         total_size = 0
@@ -33,7 +45,7 @@ class AppImageDownloader:
             pass
 
         # Start wget download
-        cmd = ["wget", "-q", "-O", str(dest_path), str(url)]
+        cmd = ["wget", "-q", "-O", str(part_path), str(url)]
         
         try:
             async with safe_subprocess(
@@ -41,13 +53,12 @@ class AppImageDownloader:
                 env=os.environ.copy()
             ) as self.current_download_task:
                 process = self.current_download_task
-                total_size = 0  # Initial 0
                 last_percent = -1
 
                 # 3. Poll disk file size
                 while process.returncode is None:
-                    if dest_path.exists():
-                        current_size = dest_path.stat().st_size
+                    if part_path.exists():
+                        current_size = part_path.stat().st_size
                         if total_size > 0:
                             percent = int((current_size / total_size) * 100)
                             if percent > last_percent and percent < 100:
@@ -68,33 +79,33 @@ class AppImageDownloader:
                 ret_code = await process.wait()
 
                 if ret_code == 0:
+                    part_path.replace(dest_path)
                     dest_path.chmod(0o755)
-                    self._create_desktop_entry(name, dest_path)
                     if callback:
                         await callback("[PROGRESS] 100")
+                    return True
                 else:
+                    part_path.unlink(missing_ok=True)
                     if callback:
                         await callback(f"[ERROR] Download failed (Code: {ret_code})")
+                    return False
 
         except Exception as e:
+            part_path.unlink(missing_ok=True)
             if callback:
-                await callback("[PROGRESS] 100")
-            return True
-    except Exception as e:
-        if callback:
-            await callback(f"[ERROR] AppImage install failed: {e}")
+                await callback(f"[ERROR] AppImage install failed: {e}")
 
-    return False
+        return False
 
 async def uninstall_appimage(package, callback=None):
-    url = package.get("url")
-    if not url: return False
+    name = str(package.get("name") or "").strip()
+    if not name:
+        return False
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip(".-")
+    target_path = Path.home() / "Applications" / f"{safe_name}.AppImage"
 
-    filename = url.split("/")[-1]
-    target_path = os.path.expanduser(f"~/Applications/{filename}")
-
-    if os.path.exists(target_path):
-        os.remove(target_path)
+    if target_path.exists():
+        target_path.unlink()
         if callback:
             await callback(f"[INFO] Removed {target_path}")
         return True

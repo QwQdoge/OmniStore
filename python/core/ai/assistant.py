@@ -12,6 +12,16 @@ from core.models import InstallationDecision
 
 import time
 
+
+class AIProviderError(RuntimeError):
+    """A user-safe provider failure with a stable machine-readable code."""
+
+    def __init__(self, code: str, message: str, suggestion: str = ""):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.suggestion = suggestion
+
 class AIAssistant:
     """
     AI Assistant core for OmniStore.
@@ -27,6 +37,7 @@ class AIAssistant:
         self._last_failure_time = 0
         self._circuit_threshold = 3
         self._cooldown_period = 60 # seconds
+        self._circuit_config_key = ""
 
     async def _get_session(self) -> aiohttp.ClientSession:
         """Lazy session initialization with proper timeout defaults."""
@@ -109,6 +120,122 @@ class AIAssistant:
                 self._failure_count = 0
         return False
 
+    @staticmethod
+    def _openai_url(endpoint: str, suffix: str) -> str:
+        base = (endpoint or "https://api.openai.com/v1").rstrip("/")
+        if base.endswith("/chat/completions"):
+            base = base.removesuffix("/chat/completions")
+        if not base.endswith("/v1"):
+            base = f"{base}/v1"
+        return f"{base}/{suffix.lstrip('/')}"
+
+    @staticmethod
+    def _friendly_http_error(status: int) -> tuple[str, str]:
+        if status in (401, 403):
+            return "authentication_failed", "认证失败，请检查 API 密钥是否有效。"
+        if status == 404:
+            return "model_or_endpoint_not_found", "接口或模型不存在，请检查地址和模型名称。"
+        if status == 429:
+            return "rate_limited", "服务商限流或额度不足，请稍后重试并检查账户额度。"
+        if status >= 500:
+            return "provider_unavailable", "AI 服务商暂时不可用，请稍后重试。"
+        return "provider_rejected_request", f"AI 服务商拒绝了请求（HTTP {status}）。"
+
+    def _circuit_key(self, cfg: Dict) -> str:
+        return "|".join(str(cfg.get(key, "")) for key in ("provider", "endpoint", "model"))
+
+    async def diagnose_connection(self) -> Dict:
+        """Check provider reachability and model readiness without exposing secrets."""
+        started = time.monotonic()
+        cfg = self._get_ai_config()
+        provider = str(cfg.get("provider", "ollama")).lower().strip()
+        endpoint = str(cfg.get("endpoint", "")).strip().rstrip("/")
+        model = str(cfg.get("model", "")).strip()
+        api_key = str(cfg.get("api_key", ""))
+        proxy = str(cfg.get("proxy", "")) or None
+        result = {
+            "ok": False,
+            "provider": provider,
+            "endpoint": endpoint,
+            "model": model,
+            "service_reachable": False,
+            "model_ready": False,
+            "models": [],
+            "code": "unknown",
+            "message": "AI 连接检查失败。",
+            "suggestion": "",
+        }
+
+        if not cfg.get("enabled", False):
+            result.update(code="disabled", message="AI 功能尚未启用。", suggestion="请先开启 AI 功能。")
+            return result
+        if provider not in {"ollama", "openai", "gemini"}:
+            result.update(code="unsupported_provider", message=f"不支持的 AI 服务商：{provider}。")
+            return result
+        if provider != "ollama" and not api_key:
+            result.update(code="missing_api_key", message="尚未保存 API 密钥。", suggestion="请填写密钥后重试。")
+            return result
+
+        headers = {"Accept": "application/json"}
+        if provider == "openai" and api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        try:
+            session = await self._get_session()
+            if provider == "ollama":
+                url = f"{endpoint or 'http://localhost:11434'}/api/tags"
+                async with session.get(url, headers=headers, proxy=proxy) as resp:
+                    if resp.status != 200:
+                        code, message = self._friendly_http_error(resp.status)
+                        result.update(code=code, message=message)
+                        return result
+                    data = await resp.json()
+                models = [str(item.get("name", "")) for item in data.get("models", []) if isinstance(item, dict)]
+                result["service_reachable"] = True
+                result["models"] = models
+                result["model_ready"] = bool(model and (model in models or any(name.split(":")[0] == model for name in models)))
+                if not model:
+                    result.update(code="missing_model", message="Ollama 已连接，但尚未选择模型。", suggestion="请选择或下载一个模型。")
+                elif not result["model_ready"]:
+                    result.update(code="model_not_installed", message=f"Ollama 已连接，但模型 {model} 尚未下载。", suggestion=f"运行 ollama pull {model}，或选择已安装模型。")
+                else:
+                    result.update(ok=True, code="ready", message="Ollama 和所选模型均已就绪。")
+            elif provider == "openai":
+                url = self._openai_url(endpoint, "models")
+                async with session.get(url, headers=headers, proxy=proxy) as resp:
+                    if resp.status != 200:
+                        code, message = self._friendly_http_error(resp.status)
+                        result.update(code=code, message=message)
+                        return result
+                    data = await resp.json()
+                models = [str(item.get("id", "")) for item in data.get("data", []) if isinstance(item, dict)]
+                result["service_reachable"] = True
+                result["models"] = models[:200]
+                result["model_ready"] = bool(model and (not models or model in models))
+                if not model:
+                    result.update(code="missing_model", message="服务已连接，但尚未填写模型名称。")
+                elif models and model not in models:
+                    result.update(code="model_not_found", message=f"服务已连接，但未找到模型 {model}。", suggestion="请从服务商支持的模型中选择。")
+                else:
+                    result.update(ok=True, code="ready", message="OpenAI-compatible 服务和模型均已就绪。")
+            else:
+                selected = model or "gemini-1.5-flash"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{selected}?key={api_key}"
+                async with session.get(url, proxy=proxy) as resp:
+                    if resp.status != 200:
+                        code, message = self._friendly_http_error(resp.status)
+                        result.update(code=code, message=message)
+                        return result
+                result.update(ok=True, service_reachable=True, model_ready=True, model=selected, code="ready", message="Gemini 服务和模型均已就绪。")
+        except asyncio.TimeoutError:
+            result.update(code="timeout", message="连接 AI 服务超时。", suggestion="请检查网络、代理或本地服务状态。")
+        except aiohttp.ClientConnectorError:
+            result.update(code="connection_refused", message="无法连接到 AI 服务。", suggestion="如果使用 Ollama，请先启动 ollama serve；云端服务请检查地址和网络。")
+        except (aiohttp.ClientError, ValueError, TypeError, json.JSONDecodeError):
+            result.update(code="invalid_response", message="AI 服务返回了无法识别的响应。", suggestion="请检查接口是否兼容 OpenAI API。")
+        finally:
+            result["latency_ms"] = round((time.monotonic() - started) * 1000)
+        return result
+
     async def _post_request(self, system_prompt: str, user_prompt: str) -> str:
         """
         Generic POST request handler with circuit-breaker-like resilience.
@@ -117,6 +244,10 @@ class AIAssistant:
             return "AI 服务暂时不可用（触发熔断）。请在 60 秒后再试。"
 
         cfg = self._get_ai_config()
+        circuit_key = self._circuit_key(cfg)
+        if circuit_key != self._circuit_config_key:
+            self._circuit_config_key = circuit_key
+            self._failure_count = 0
         if not cfg.get("enabled", False):
             return "AI 服务当前未启用。请在设置中开启以使用智能功能。"
 
@@ -134,10 +265,10 @@ class AIAssistant:
         # 1. Provider Logic Mapping
         try:
             if provider == "ollama":
-                url = f"{endpoint}/api/generate" if endpoint else "http://localhost:11434/api/generate"
+                url = f"{endpoint}/api/chat" if endpoint else "http://localhost:11434/api/chat"
                 payload = {
                     "model": model or "qwen2.5:7b",
-                    "prompt": f"{system_prompt}\n\nUser: {user_prompt}",
+                    "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
                     "stream": False,
                     "options": {"temperature": cfg.get("temperature", 0.7), "num_predict": cfg.get("max_tokens", 2048)}
                 }
@@ -149,9 +280,7 @@ class AIAssistant:
                 }
             else: # OpenAI Compatible
                 if endpoint:
-                    url = endpoint.rstrip('/')
-                    if not url.endswith("/chat/completions"):
-                        url = f"{url}/v1/chat/completions" if not url.endswith("/v1") else f"{url}/chat/completions"
+                    url = self._openai_url(endpoint, "chat/completions")
                 else:
                     url = "https://api.openai.com/v1/chat/completions"
                 if api_key: headers["Authorization"] = f"Bearer {api_key}"
@@ -188,7 +317,8 @@ class AIAssistant:
                 # Success: reset circuit
                 self._failure_count = 0
                 if provider == "ollama":
-                    return str(data.get("response") or "").strip()
+                    message = data.get("message")
+                    return str(message.get("content") if isinstance(message, dict) else "").strip()
                 if provider == "gemini":
                     candidates = data.get("candidates")
                     if isinstance(candidates, list) and candidates:
@@ -211,8 +341,8 @@ class AIAssistant:
         except Exception as e:
             self._failure_count += 1
             self._last_failure_time = time.time()
-            logging.error(f"AI Connection Failed: {e}")
-            return f"无法连接到 AI 服务商 ({provider}): {str(e)}"
+            logging.error("AI connection failed for provider %s: %s", provider, type(e).__name__)
+            return f"无法连接到 AI 服务商 ({provider})。请检查服务地址、网络和运行状态。"
 
     async def explain_app(self, app_name: str, app_description: str = "") -> str:
         """Fail-safe app explanation."""
@@ -327,11 +457,6 @@ class AIAssistant:
         system = "Summarize the OmniStore project in concise markdown."
         return await self._post_request(system, f"README:\n{readme}" if readme else "OmniStore project summary.")
 
-    async def test_connection(self) -> str:
-        """Test the AI connection and configuration."""
-        lang = self._get_language()
-        system = f"You are a connection tester. Reply exactly with 'CONNECTION_OK'. Do not add any other text."
-        response = await self._post_request(system, "Ping")
-        if "CONNECTION_OK" in response or "OK" in response.upper():
-            return "success"
-        return f"failed: {response}"
+    async def test_connection(self) -> Dict:
+        """Return structured, non-secret connection diagnostics."""
+        return await self.diagnose_connection()

@@ -21,21 +21,23 @@ def _async_callback(callback):
 async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
     callback = _async_callback(callback)
     try:
-        if not await privilege.ensure_privileged(callback):
-            return False
-
         name = package.get("name")
         if not name:
-             if callback: await callback("[ERROR] Package name missing for pacman install.")
-             return False
+            if callback: await callback("[ERROR] Package name missing for pacman install.")
+            return False
+
+        if not await privilege.ensure_privileged(callback):
+            return False
+        privilege_env = await privilege.subprocess_environment()
 
         if callback:
-            await callback(f"[INFO] Running: sudo pacman -S --noconfirm {name}")
+            await callback(f"[INFO] Installing {name} with pacman")
 
         async with safe_subprocess(
-            "sudo", "pacman", "-S", "--noconfirm", name,
+            "sudo", "-A", "pacman", "-S", "--needed", "--noconfirm", name,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT
+            stderr=asyncio.subprocess.STDOUT,
+            env=privilege_env,
         ) as proc:
             last_sent_progress = -1
             if proc.stdout:
@@ -84,21 +86,23 @@ async def install_pacman(package: Dict[str, Any], callback: Optional[Callable] =
 async def uninstall_pacman(package: Dict[str, Any], callback: Optional[Callable] = None) -> bool:
     callback = _async_callback(callback)
     try:
-        if not await privilege.ensure_privileged(callback):
-            return False
-
         name = package.get("name")
         if not name:
-             if callback: await callback("[ERROR] Package name missing for pacman uninstall.")
-             return False
+            if callback: await callback("[ERROR] Package name missing for pacman uninstall.")
+            return False
+
+        if not await privilege.ensure_privileged(callback):
+            return False
+        privilege_env = await privilege.subprocess_environment()
 
         if callback:
-            await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
+            await callback(f"[INFO] Removing {name} with pacman")
 
         async with safe_subprocess(
-            "sudo", "pacman", "-Rs", "--noconfirm", name,
+            "sudo", "-A", "pacman", "-Rs", "--noconfirm", name,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT
+            stderr=asyncio.subprocess.STDOUT,
+            env=privilege_env,
         ) as proc:
 
             if proc.stdout:

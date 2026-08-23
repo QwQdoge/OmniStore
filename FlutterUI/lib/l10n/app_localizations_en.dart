@@ -33,7 +33,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
-  String get downloads => 'Downloads';
+  String get downloads => 'Activity & Updates';
 
   @override
   String get help => 'Help';
@@ -69,7 +69,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
-  String get ready => 'Ready';
+  String get ready => 'Installed';
 
   @override
   String resultsFound(int count) {
@@ -99,6 +99,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pacmanOfficial => 'Pacman (Official)';
+
+  @override
+  String get pacmanBrowsingNoAuthorization =>
+      'Browsing, searching, viewing details, and checking Pacman updates never require account or administrator authorization. Authorization is requested only when the system is changed.';
 
   @override
   String get aurUser => 'AUR (User)';
@@ -332,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refresh => 'Refresh';
 
   @override
-  String get noActiveTasks => 'No active tasks';
+  String get noActiveTasks => 'No active or completed tasks';
 
   @override
   String get currentTask => 'Current Task';
@@ -341,10 +345,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewLogs => 'View Logs';
 
   @override
-  String get allUpdated => 'All apps are up to date';
+  String get allUpdated => 'No package updates found';
 
   @override
   String get update => 'Update';
+
+  @override
+  String updatingSourcePackages(String source) {
+    return 'Updating $source packages…';
+  }
+
+  @override
+  String sourceUpdateFailed(String source) {
+    return '$source update failed';
+  }
+
+  @override
+  String get enabledSourcesUpdated =>
+      'All enabled package sources are up to date';
 
   @override
   String get enableSystemTray => 'Enable system tray';
@@ -353,8 +371,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get systemCleaning => 'System Cleaning';
 
   @override
+  String get system => 'System';
+
+  @override
+  String get clean => 'Clean';
+
+  @override
   String get systemCleaningDesc =>
-      'Delete orphan packages and clean pacman cache';
+      'Remove orphan packages and clear the Pacman cache (administrator authorization required)';
 
   @override
   String get systemCleaningSubtitle =>
@@ -602,7 +626,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sourceConfigTitle => 'Software Sources';
 
   @override
-  String get sourceConfigSubtitle => 'Choose the sources you want to enable';
+  String get sourceConfigSubtitle =>
+      'Choose where OmniStore may search for software';
 
   @override
   String get enableAur => 'Enable AUR (Arch User Repository)';
@@ -616,7 +641,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bootstrapNote =>
-      'Note: Setup may require entering your password multiple times.';
+      'Browsing never requires authorization. Administrator authorization is requested only when setup changes the system.';
 
   @override
   String get feedbackDesc =>
@@ -841,6 +866,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get searchFailedSubtitle =>
+      'The software sources could not be reached. Check your connection and try again.';
+
+  @override
+  String pluginCapabilities(int count) {
+    return '$count capabilities';
+  }
 
   @override
   String get aiResponseFailed => 'AI failed to respond.';
@@ -1172,7 +1206,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unknownApp => 'Unknown App';
 
   @override
-  String get taskSuccessMsg => 'Task executed successfully';
+  String get taskSuccessMsg => 'Completed successfully';
 
   @override
   String failureReason(String message) {
@@ -1214,7 +1248,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get latestUpdates => 'Latest Updates';
 
   @override
-  String get searchNoResultsSubtitle => 'Try searching for something else';
+  String get searchNoResultsSubtitle =>
+      'Try another keyword or enable more software sources';
 
   @override
   String get pluginsAndSources => 'Plugins & Sources';
@@ -1308,7 +1343,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncStatus => 'Sync Status';
 
   @override
-  String get syncStatusSubtitle => 'Apps and settings are backed up';
+  String get syncStatusSubtitle => 'Tap to back up your OmniStore app list';
 
   @override
   String get manageAccount => 'Manage Account';
@@ -1367,7 +1402,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get githubIntegration => 'GitHub Integration';
 
   @override
-  String get configurePat => 'Configure Personal Access Token';
+  String get configurePat => 'GitHub access token (optional)';
 
   @override
   String get patHelperText =>

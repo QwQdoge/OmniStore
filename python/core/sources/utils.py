@@ -1,5 +1,4 @@
 import os
-import time
 import asyncio
 from core.subprocess_utils import safe_subprocess
 import sys
@@ -9,11 +8,21 @@ class PrivilegeManager:
     """Handles cross-platform privilege escalation (sudo ASKPASS)."""
 
     def __init__(self):
-        self._last_auth_time = 0
-        self._auth_timeout = 15 * 60  # 15 minutes
+        self._askpass_tool: Optional[str] = None
 
-    def _is_auth_cached(self) -> bool:
-        return (time.time() - self._last_auth_time) < self._auth_timeout
+    async def subprocess_environment(self) -> dict[str, str]:
+        """Return an environment suitable for an explicit ``sudo -A`` call.
+
+        The helper path is not a credential. Keeping it here lets nested tools
+        such as yay use the same graphical authorization path as OmniStore.
+        """
+        askpass_tool = self._askpass_tool or await self._find_askpass()
+        if not askpass_tool:
+            raise RuntimeError("No sudo-compatible graphical askpass helper found")
+        self._askpass_tool = askpass_tool
+        env = os.environ.copy()
+        env["SUDO_ASKPASS"] = askpass_tool
+        return env
 
     async def ensure_privileged(self, callback: Optional[Callable[[str], Awaitable[None]]] = None) -> bool:
         """Acquire sudo privileges safely without a TTY."""
@@ -31,7 +40,6 @@ class PrivilegeManager:
             ) as check:
                 await asyncio.wait_for(check.wait(), timeout=5)
                 if check.returncode == 0:
-                    self._last_auth_time = time.time()
                     return True
         except (asyncio.TimeoutError, Exception):
             pass
@@ -43,11 +51,7 @@ class PrivilegeManager:
                 except Exception:
                     pass
 
-        # 2. Memory cache
-        if self._is_auth_cached():
-            return True
-
-        # 3. GUI askpass. Let sudo invoke the desktop helper directly so the
+        # 2. GUI askpass. Let sudo invoke the desktop helper directly so the
         # application process never receives or stores the password.
         if callback:
             await callback("[INFO] Requesting administrator password (a dialog will appear)...")
@@ -59,9 +63,8 @@ class PrivilegeManager:
                     await callback("[ERROR] No sudo-compatible graphical askpass helper found. Please install ksshaskpass or run OmniStore from an authenticated session.")
                 return False
 
-            env = os.environ.copy()
-            env["SUDO_ASKPASS"] = askpass_tool
-            env["SUDO_ASKPASS_REQUIRE"] = "force"
+            self._askpass_tool = askpass_tool
+            env = await self.subprocess_environment()
 
             sudo_proc = None
             try:
@@ -84,7 +87,6 @@ class PrivilegeManager:
                 if callback: await callback("[ERROR] Sudo verification timed out.")
                 return False
             if sudo_proc.returncode == 0:
-                self._last_auth_time = time.time()
                 if callback: await callback("[INFO] Authorization confirmed.")
                 return True
 

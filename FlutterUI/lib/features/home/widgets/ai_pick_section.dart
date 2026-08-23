@@ -3,8 +3,8 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/ai_app_resolver.dart';
-import 'package:frontend/core/widgets/magic_pulse_icon.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/features/ai/widgets/ai_mark.dart';
 
 class AIPickSkeleton extends StatelessWidget {
   const AIPickSkeleton({super.key});
@@ -66,10 +66,7 @@ class AIPickSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                const MagicPulseIcon(
-                  icon: Icons.auto_awesome_rounded,
-                  size: 20,
-                ),
+                const AiMark(size: 20),
                 const SizedBox(width: 8),
                 Text(
                   AppLocalizations.of(context)!.aiPickDay,

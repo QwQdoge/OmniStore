@@ -220,20 +220,16 @@ class _WelcomePageState extends State<WelcomePage> {
       _aiTestSuccess = false;
     });
 
-    final settings = context.read<SettingsController>();
-    final originalConfig = Map<String, dynamic>.from(settings.config);
-
-    final testConfig = Map<String, dynamic>.from(originalConfig);
-    testConfig['ai'] = testConfig['ai'] ?? {};
-    testConfig['ai']['enabled'] = true;
-    testConfig['ai']['provider'] = _aiProvider;
-    testConfig['ai']['endpoint'] = _aiEndpointController.text.trim();
-    testConfig['ai']['api_key'] = _aiApiKeyController.text.trim();
-
-    await settings.updateConfig(testConfig);
-
     try {
-      final result = await BackendService.instance.testAiConnection();
+      final result = await BackendService.instance.testAiConnection(
+        aiOverride: {
+          'enabled': true,
+          'provider': _aiProvider,
+          'endpoint': _aiEndpointController.text.trim(),
+          'model': _defaultModelForProvider(_aiProvider),
+        },
+        ephemeralApiKey: _aiApiKeyController.text.trim(),
+      );
       final status = result['status']?.toString();
       final response = result['response']?.toString() ?? '';
 
@@ -256,12 +252,28 @@ class _WelcomePageState extends State<WelcomePage> {
         _aiTestResult = 'Error: $e';
       });
     } finally {
-      await settings.updateConfig(originalConfig);
       if (mounted) {
         setState(() {
           _isTestingAI = false;
         });
       }
+    }
+  }
+
+  String _defaultModelForProvider(String provider) {
+    switch (provider) {
+      case 'openai':
+        return 'gpt-5';
+      case 'gemini':
+        return 'gemini-2.5-pro';
+      case 'deepseek':
+        return 'deepseek-chat';
+      case 'openrouter':
+        return 'openai/gpt-5';
+      case 'ollama':
+        return 'qwen2.5:latest';
+      default:
+        return 'custom-model';
     }
   }
 
@@ -279,6 +291,7 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai']['enabled'] = _enableAI;
     config['ai']['provider'] = _aiProvider;
     config['ai']['endpoint'] = _aiEndpointController.text.trim();
+    config['ai']['model'] = _defaultModelForProvider(_aiProvider);
     config['ai']['api_key'] = _aiApiKeyController.text.trim();
 
     await settingsController.updateConfig(config);
@@ -315,7 +328,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     WelcomeEnvCheckPage(
                       envData: _envData,
                       isCheckingEnv: _isCheckingEnv,
-                      level: _envData != null ? _evaluateEnvLevel(_envData!) : 'unknown',
+                      level: _envData != null
+                          ? _evaluateEnvLevel(_envData!)
+                          : 'unknown',
                       onCheckEnvironment: _checkEnvironment,
                       isBootstrapping: _isBootstrapping,
                       bootstrapLogs: _bootstrapLogs,
@@ -343,9 +358,11 @@ class _WelcomePageState extends State<WelcomePage> {
                           setState(() {
                             _aiProvider = val;
                             if (val == 'ollama') {
-                              _aiEndpointController.text = 'http://localhost:11434';
+                              _aiEndpointController.text =
+                                  'http://localhost:11434';
                             } else {
-                              _aiEndpointController.text = 'https://api.openai.com/v1';
+                              _aiEndpointController.text =
+                                  'https://api.openai.com/v1';
                             }
                           });
                         }

@@ -20,6 +20,11 @@ class DummyConfig:
 async def test_openai_compatible_env_overrides(monkeypatch):
     seen = {}
 
+    async def models(request):
+        seen["models_path"] = request.path
+        seen["models_auth"] = request.headers.get("Authorization")
+        return web.json_response({"data": [{"id": "test-model"}]})
+
     async def chat_completions(request):
         seen["path"] = request.path
         seen["auth"] = request.headers.get("Authorization")
@@ -29,6 +34,7 @@ async def test_openai_compatible_env_overrides(monkeypatch):
         )
 
     app = web.Application()
+    app.router.add_get("/v1/models", models)
     app.router.add_post("/v1/chat/completions", chat_completions)
     runner = web.AppRunner(app)
     await runner.setup()
@@ -44,20 +50,23 @@ async def test_openai_compatible_env_overrides(monkeypatch):
 
     assistant = AIAssistant(DummyConfig())
     try:
-        assert await assistant.test_connection() == "success"
+        diagnostics = await assistant.test_connection()
+        assert diagnostics["ok"] is True
+        assert diagnostics["model_ready"] is True
     finally:
         await assistant.close()
         await runner.cleanup()
 
-    assert seen["path"] == "/v1/chat/completions"
-    assert seen["auth"] == "Bearer test-key"
-    assert seen["payload"]["model"] == "test-model"
-    assert seen["payload"]["messages"][0]["role"] == "system"
+    assert seen["models_path"] == "/v1/models"
+    assert seen["models_auth"] == "Bearer test-key"
 
 
 @pytest.mark.asyncio
 async def test_all_ai_assistant_features_call_provider(monkeypatch):
     calls = []
+
+    async def models(_request):
+        return web.json_response({"data": [{"id": "test-model"}]})
 
     async def chat_completions(request):
         payload = await request.json()
@@ -78,6 +87,7 @@ async def test_all_ai_assistant_features_call_provider(monkeypatch):
         return web.json_response({"choices": [{"message": {"content": content}}]})
 
     app = web.Application()
+    app.router.add_get("/v1/models", models)
     app.router.add_post("/v1/chat/completions", chat_completions)
     runner = web.AppRunner(app)
     await runner.setup()
@@ -117,10 +127,39 @@ async def test_all_ai_assistant_features_call_provider(monkeypatch):
         await assistant.close()
         await runner.cleanup()
 
-    assert results[0] == "success"
+    assert results[0]["ok"] is True
     assert all(result for result in results)
-    assert len(calls) == 12
+    assert len(calls) == 11
     assert {call["model"] for call in calls} == {"test-model"}
+
+
+@pytest.mark.asyncio
+async def test_ollama_diagnostics_distinguish_service_from_missing_model(monkeypatch):
+    async def tags(_request):
+        return web.json_response({"models": [{"name": "other:latest"}]})
+
+    app = web.Application()
+    app.router.add_get("/api/tags", tags)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 0)
+    await site.start()
+    port = site._server.sockets[0].getsockname()[1]
+    monkeypatch.setenv("OMNISTORE_AI_ENABLED", "true")
+    monkeypatch.setenv("OMNISTORE_AI_PROVIDER", "ollama")
+    monkeypatch.setenv("OMNISTORE_AI_ENDPOINT", f"http://127.0.0.1:{port}")
+    monkeypatch.setenv("OMNISTORE_AI_MODEL", "qwen2.5:1.5b")
+
+    assistant = AIAssistant(DummyConfig())
+    try:
+        diagnostics = await assistant.test_connection()
+    finally:
+        await assistant.close()
+        await runner.cleanup()
+
+    assert diagnostics["service_reachable"] is True
+    assert diagnostics["model_ready"] is False
+    assert diagnostics["code"] == "model_not_installed"
 
 
 def test_ai_error_redaction():

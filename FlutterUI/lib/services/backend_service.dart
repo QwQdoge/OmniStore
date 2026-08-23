@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
-import '../data/python_bridge.dart';
 import '../models/app_package.dart';
 import 'backend/process_registry.dart';
 import 'backend/daemon_client.dart';
@@ -13,7 +12,9 @@ import 'backend/platform_environment.dart';
 import 'backend/security_validator.dart';
 import 'backend/daemon_ipc_service.dart';
 import 'backend/process_execution_service.dart';
-import 'backend/ai_bridge_service.dart';
+import '../features/ai/account_ai_prompts.dart';
+import '../features/ai/account_ai_service.dart';
+import '../features/ai/local_ai_service.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -27,14 +28,12 @@ class BackendService {
   // Specialized Services
   late final DaemonIpcService _ipc;
   late final ProcessExecutionService _executor;
-  late final AiBridgeService _aiBridge;
 
   BackendService._internal() {
     _processRegistry = ProcessRegistry();
     _daemonClient = DaemonClient(onDemandStart: _startDaemonIfNeeded);
     _ipc = DaemonIpcService(_daemonClient);
     _executor = ProcessExecutionService(_processRegistry);
-    _aiBridge = AiBridgeService(this);
   }
 
   // ignore: unused_field
@@ -178,11 +177,80 @@ class BackendService {
 
   Process? _daemonProcess;
   Timer? _healthCheckTimer;
+  Future<Process?>? _daemonStartFuture;
+  bool _backgroundDaemonEnabled = false;
+  bool _backgroundDaemonConfigured = false;
   int _daemonRestartCount = 0;
   DateTime? _lastDaemonStartTime;
 
+  bool get backgroundDaemonEnabled => _backgroundDaemonEnabled;
+
+  Future<void> setBackgroundDaemonEnabled(bool enabled) async {
+    if (_backgroundDaemonConfigured && _backgroundDaemonEnabled == enabled) {
+      return;
+    }
+    _backgroundDaemonConfigured = true;
+    _backgroundDaemonEnabled = enabled;
+    if (enabled) {
+      _scheduleHealthCheck(const Duration(seconds: 20));
+      return;
+    }
+    _healthCheckTimer?.cancel();
+    _healthCheckTimer = null;
+    await _daemonClient.shutdown(startIfNeeded: false);
+    _daemonProcess = null;
+    _daemonRestartCount = 0;
+    _lastDaemonStartTime = null;
+  }
+
   Future<Process?> _startDaemonIfNeeded() async {
-    if (kIsWeb) return null;
+    if (kIsWeb || !_backgroundDaemonEnabled) return null;
+    final activeStart = _daemonStartFuture;
+    if (activeStart != null) return activeStart;
+    final start = _startDaemonOnce();
+    _daemonStartFuture = start;
+    try {
+      return await start;
+    } finally {
+      if (identical(_daemonStartFuture, start)) _daemonStartFuture = null;
+    }
+  }
+
+  Future<bool> _probeDaemon() async {
+    Socket? socket;
+    try {
+      socket = await Socket.connect(
+        '127.0.0.1',
+        9081,
+        timeout: const Duration(seconds: 1),
+      );
+      socket.write(
+        '${jsonEncode({"action": "ping", "args": [], "kwargs": {}})}\n',
+      );
+      await socket.flush().timeout(const Duration(seconds: 1));
+      final line = await socket
+          .cast<List<int>>()
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .first
+          .timeout(const Duration(seconds: 2));
+      final response = jsonDecode(line);
+      return response is Map &&
+          response['status'] == 'success' &&
+          response['response'] is Map &&
+          response['response']['protocol'] == 1;
+    } catch (_) {
+      return false;
+    } finally {
+      socket?.destroy();
+    }
+  }
+
+  Future<Process?> _startDaemonOnce() async {
+    if (await _probeDaemon()) {
+      _daemonRestartCount = 0;
+      return null;
+    }
 
     if (_daemonProcess != null) {
       // Murphy-proof: Strict liveness check using kill -0
@@ -256,6 +324,13 @@ class BackendService {
       // Murphy-proof: Immediate registration to ensure reaping on exit
       _processRegistry.add(_daemonProcess!);
 
+      // The daemon protocol uses the socket only. Always drain stdout so a
+      // mismatched/older backend can never block when its pipe fills up.
+      _daemonProcess!.stdout.listen(
+        (_) {},
+        onError: (error) => debugPrint('Daemon stdout drain error: $error'),
+      );
+
       // Divert python stderr outputs to a structured local debug log file
       final logSink = logFile.openWrite(mode: FileMode.append);
       _daemonProcess!.stderr
@@ -272,7 +347,17 @@ class BackendService {
             onDone: () => logSink.close(),
           );
 
-      _startHealthCheckLoop();
+      final spawnedDaemon = _daemonProcess!;
+      spawnedDaemon.exitCode.then((exitCode) {
+        if (identical(_daemonProcess, spawnedDaemon)) {
+          _daemonProcess = null;
+        }
+        if (_backgroundDaemonEnabled && exitCode != 0) {
+          _daemonRestartCount++;
+          _scheduleHealthCheck(_restartBackoff());
+        }
+      });
+      _scheduleHealthCheck(const Duration(seconds: 20));
       return _daemonProcess;
     } catch (e) {
       debugPrint("Failed to start Python daemon: $e");
@@ -280,49 +365,30 @@ class BackendService {
     }
   }
 
-  void _startHealthCheckLoop() {
+  Duration _restartBackoff() {
+    final exponent = _daemonRestartCount.clamp(0, 5);
+    return Duration(seconds: (5 * (1 << exponent)).clamp(5, 300));
+  }
+
+  void _scheduleHealthCheck(Duration delay) {
     _healthCheckTimer?.cancel();
-    if (!Platform.isLinux && !Platform.isMacOS) {
+    if (!_backgroundDaemonEnabled || (!Platform.isLinux && !Platform.isMacOS)) {
       return;
     }
-    int backoffSeconds = 20;
-
-    _healthCheckTimer = Timer.periodic(Duration(seconds: backoffSeconds), (
-      timer,
-    ) async {
-      bool needsRestart = false;
-      if (_daemonProcess == null) {
-        needsRestart = true;
-      } else {
-        try {
-          final res = await Process.run('kill', [
-            '-0',
-            '${_daemonProcess!.pid}',
-          ]);
-          if (res.exitCode != 0) {
-            debugPrint("Daemon dead detected by health check.");
-            needsRestart = true;
-          }
-        } catch (_) {
-          needsRestart = true;
-        }
+    _healthCheckTimer = Timer(delay, () async {
+      final healthy = await _probeDaemon();
+      if (healthy) {
+        _daemonRestartCount = 0;
+        _scheduleHealthCheck(const Duration(seconds: 20));
+        return;
       }
-
-      if (needsRestart) {
-        final success = await _startDaemonIfNeeded() != null;
-        if (!success) {
-          // Increase backoff on repeated failures (max 5 minutes)
-          final newBackoff = (backoffSeconds * 1.5).toInt().clamp(20, 300);
-          if (newBackoff != backoffSeconds) {
-            backoffSeconds = newBackoff;
-            _startHealthCheckLoop(); // Restart loop with new interval
-          }
-        } else {
-          if (backoffSeconds != 20) {
-            backoffSeconds = 20;
-            _startHealthCheckLoop();
-          }
-        }
+      _daemonRestartCount++;
+      await _startDaemonIfNeeded();
+      if (await _probeDaemon()) {
+        _daemonRestartCount = 0;
+        _scheduleHealthCheck(const Duration(seconds: 20));
+      } else {
+        _scheduleHealthCheck(_restartBackoff());
       }
     });
   }
@@ -332,7 +398,7 @@ class BackendService {
     List<dynamic> args, [
     Map<String, dynamic>? kwargs,
   ]) async {
-    if (_isTestEnv) return null;
+    if (_isTestEnv || !_backgroundDaemonEnabled) return null;
     return _ipc.send(action, args, kwargs: kwargs);
   }
 
@@ -340,8 +406,7 @@ class BackendService {
     List<String> args, {
     Duration timeout = const Duration(seconds: 30),
   }) async {
-    final apiKey = await PythonBridge.getApiKey();
-    return _executor.run(args: args, timeout: timeout, apiKey: apiKey);
+    return _executor.run(args: args, timeout: timeout);
   }
 
   Future<ProcessResult?> _safeRun(
@@ -360,10 +425,8 @@ class BackendService {
   Stream<String> _safeStream(List<String> args, {bool useLock = true}) async* {
     if (useLock) await _acquireLock();
     try {
-      final apiKey = await PythonBridge.getApiKey();
       yield* _executor.stream(
         args: args,
-        apiKey: apiKey,
         onProcessStarted: (p) => activeProcess = p,
       );
     } finally {
@@ -780,85 +843,136 @@ class BackendService {
     }
   }
 
-  Future<String> _aiCall(
-    List<String> args, {
-    Duration timeout = const Duration(seconds: 60),
-  }) async {
-    if (kIsWeb) {
-      return "This is a simulated AI response on web.";
-    }
-    try {
-      final res = await _safeRun([...args, "--json"], timeout: timeout);
-      if (res == null) {
-        return "AI_TIMEOUT";
-      }
-      final data = _safeJsonDecode(res.stdout.toString());
-      if (data is Map) {
-        return data['response']?.toString() ?? "AI_NO_RESPONSE";
-      }
-      return "AI_PARSE_FAILED";
-    } catch (e) {
-      debugPrint("_aiCall Error: $e");
-      return "AI_ERROR: ${e.toString()}";
-    }
-  }
-
   // Fail-safe AI counter
   int _aiFailureCount = 0;
 
-  Future<String> aiExplain(String name, String desc) =>
-      _aiBridge.explain(name, desc);
+  Future<({Map<String, dynamic> ai, String language})?>
+  _configuredAiContext() async {
+    final config = await ConfigRepository.instance.loadConfig();
+    final rawAi = config['ai'];
+    if (rawAi is! Map) return null;
+    final ai = Map<String, dynamic>.from(rawAi);
+    final language = OmniStoreAiPrompts.language(
+      config['ui'] is Map
+          ? '${(config['ui'] as Map)['language'] ?? 'zh-CN'}'
+          : 'zh-CN',
+    );
+    return (ai: ai, language: language);
+  }
+
+  Future<String> _callConfiguredAi(
+    FutureOr<OmniStoreAiPrompt> Function(String language) buildPrompt,
+  ) async {
+    final context = await _configuredAiContext();
+    if (context == null) {
+      throw const LocalAiException('AI 配置不可用。');
+    }
+    if (context.ai['enabled'] != true) {
+      throw const LocalAiException('AI 功能尚未启用。');
+    }
+    final prompt = await buildPrompt(context.language);
+    final temperature = context.ai['temperature'] is num
+        ? (context.ai['temperature'] as num).toDouble()
+        : 0.3;
+    final configuredMaxTokens = context.ai['max_tokens'] is num
+        ? (context.ai['max_tokens'] as num).toInt()
+        : prompt.maxOutputTokens;
+    final provider = '${context.ai['provider'] ?? 'ollama'}'.trim();
+    if (provider == 'account') {
+      final credentialId = '${context.ai['account_credential_id'] ?? ''}'
+          .trim();
+      if (credentialId.isEmpty) {
+        throw const AccountAiException('请先在 OmniStore 设置中选择账号 AI 连接。');
+      }
+      return AccountAiService.instance.invokeWithConsent(
+        credentialId: credentialId,
+        purpose: prompt.purpose,
+        dataCategories: prompt.dataCategories,
+        systemPrompt: prompt.systemPrompt,
+        userPrompt: prompt.userPrompt,
+        model: '${context.ai['model'] ?? ''}',
+        temperature: temperature,
+        maxOutputTokens: configuredMaxTokens.clamp(1, prompt.maxOutputTokens),
+      );
+    }
+    return LocalAiService.instance.invokeWithConsent(
+      provider: provider,
+      endpoint: '${context.ai['endpoint'] ?? ''}',
+      model: '${context.ai['model'] ?? ''}',
+      purpose: prompt.purpose,
+      dataCategories: prompt.dataCategories,
+      systemPrompt: prompt.systemPrompt,
+      userPrompt: prompt.userPrompt,
+      temperature: temperature,
+      maxOutputTokens: configuredMaxTokens.clamp(1, prompt.maxOutputTokens),
+    );
+  }
+
+  Future<String> aiExplain(String name, String desc) async {
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.explain(name, desc, language),
+    );
+  }
 
   Future<String> aiSummarizeUpdate(String n, String c, String next) async {
-    return _aiBridge.call(["--ai-changelog", "$n,$c,$next"]);
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.summarizeUpdate(n, c, next, language),
+    );
   }
 
   Future<String> aiGenerateCLI(String n, String s) async {
-    return _aiBridge.call([
-      "--ai-cli",
-      "$n,$s",
-    ], timeout: const Duration(seconds: 20));
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.cli(n, s, language),
+    );
   }
 
   Future<String> aiDetectConflicts(String n) async {
-    return _aiBridge.call(["--ai-conflicts", n.trim()]);
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.conflicts(n, language),
+    );
   }
 
   Future<String> aiPickOfTheDay() async {
-    return _aiBridge.call(["--ai-pick"]);
+    return _callConfiguredAi(OmniStoreAiPrompts.pick);
   }
 
   Future<String> aiSuggestCorrection(String q) async {
     try {
       _validateString(q, "AI Query");
-      return await _aiCall([
-        "--ai-correct",
-        q.trim(),
-      ], timeout: const Duration(seconds: 15));
+      return await _callConfiguredAi(
+        (language) => OmniStoreAiPrompts.correction(q, language),
+      );
     } catch (e) {
       return q;
     }
   }
 
   Future<String> aiCompareVariants(String n) async {
-    return _aiBridge.call(["--ai-compare", n.trim()]);
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.compare(n, language),
+    );
   }
 
   Future<String> aiSystemHealth() async {
-    return _aiBridge.call(["--ai-health"]);
+    return _callConfiguredAi(
+      (language) async => OmniStoreAiPrompts.health(await checkEnv(), language),
+    );
   }
 
-  Future<String> aiAnalyzeError(String log) => _aiBridge.analyzeError(log);
+  Future<String> aiAnalyzeError(String log) async {
+    return _callConfiguredAi(
+      (language) => OmniStoreAiPrompts.analyzeError(log, language),
+    );
+  }
 
   Future<String> aiRecommend(String p) async {
     try {
       _validateString(p, "AI Prompt");
-      final res = await _aiCall([
-        "--ai-recommend",
-        p.trim(),
-      ], timeout: const Duration(seconds: 90));
+      final response = await _callConfiguredAi(
+        (language) => OmniStoreAiPrompts.recommend(p, language),
+      );
       _aiFailureCount = 0;
-      return res;
+      return response;
     } catch (e) {
       _aiFailureCount++;
       if (_aiFailureCount > 3) {
@@ -908,7 +1022,8 @@ class BackendService {
     }
   }
 
-  bool get _isTestEnv => !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+  bool get _isTestEnv =>
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
   Future<Map<String, dynamic>> checkEnv() async {
     if (kIsWeb || _isTestEnv) {
@@ -1004,27 +1119,54 @@ class BackendService {
         'Confirm the selected source is enabled.',
       ],
     };
-    if (kIsWeb || appName.trim().isEmpty) return fallback;
-    try {
-      final payload = variants.map((variant) => variant.toJson()).toList();
-      final daemonRes = await _sendToDaemon('run_ai_install_decision', [
-        appName.trim(),
-        payload,
-        true,
-      ]).timeout(const Duration(seconds: 15));
-      final data = daemonRes?.response;
-      if (daemonRes?.status == 'success' && data is Map) {
-        final recommendation = Map<String, dynamic>.from(data);
-        final sources = variants.map((variant) => variant.source).toSet();
-        if (recommendation['recommendedVariant'] == null ||
-            sources.contains(recommendation['recommendedVariant'])) {
-          return recommendation;
-        }
+    if (appName.trim().isEmpty || variants.isEmpty) return fallback;
+    final payload = variants
+        .map((variant) => Map<String, dynamic>.from(variant.toJson()))
+        .toList(growable: false);
+
+    final aiContext = await _configuredAiContext();
+    if (aiContext != null && aiContext.ai['enabled'] == true) {
+      try {
+        final response = await _callConfiguredAi(
+          (language) => OmniStoreAiPrompts.installationDecision(
+            appName.trim(),
+            payload,
+            language,
+          ),
+        );
+        final recommendation = _installationDecisionFromText(
+          response,
+          variants,
+        );
+        if (recommendation != null) return recommendation;
+      } catch (error) {
+        debugPrint('AI installation decision fallback: ${error.runtimeType}');
       }
-    } catch (e) {
-      debugPrint('Installation decision fallback: $e');
+      return fallback;
     }
     return fallback;
+  }
+
+  Map<String, dynamic>? _installationDecisionFromText(
+    String text,
+    List<AppVariant> variants,
+  ) {
+    final start = text.indexOf('{');
+    final end = text.lastIndexOf('}');
+    if (start < 0 || end <= start) return null;
+    try {
+      final decoded = jsonDecode(text.substring(start, end + 1));
+      if (decoded is! Map) return null;
+      final result = Map<String, dynamic>.from(decoded);
+      const listKeys = ['reasons', 'risks', 'alternatives', 'preflightChecks'];
+      if (listKeys.any((key) => result[key] is! List)) return null;
+      final sources = variants.map((variant) => variant.source).toSet();
+      final selected = result['recommendedVariant'];
+      if (selected != null && !sources.contains(selected)) return null;
+      return result;
+    } catch (_) {
+      return null;
+    }
   }
 
   Map<String, List<AppPackage>> _parseRecommendations(dynamic data) {
@@ -1406,31 +1548,33 @@ class BackendService {
     await _ipc.shutdown();
   }
 
-  Future<Map<String, dynamic>> testAiConnection() async {
-    if (kIsWeb) return {"status": "error", "response": "Not supported on web"};
-    try {
-      final daemonRes = await _sendToDaemon("run_ai_test", [true]);
-      if (daemonRes != null && daemonRes.status == 'success') {
-        final data = _safeJsonDecode(daemonRes.stdout);
-        return (data is Map<String, dynamic>)
-            ? data
-            : {"status": "error", "response": "Invalid format"};
+  Future<Map<String, dynamic>> testAiConnection({
+    Map<String, dynamic>? aiOverride,
+    String? ephemeralApiKey,
+  }) async {
+    final aiContext = aiOverride == null ? await _configuredAiContext() : null;
+    final ai = aiOverride ?? aiContext?.ai;
+    if (ai == null || ai['enabled'] != true) {
+      return {"status": "error", "response": "AI 功能尚未启用。"};
+    }
+    final provider = '${ai['provider'] ?? 'ollama'}'.trim();
+    if (provider == 'account') {
+      final credentialId = '${ai['account_credential_id'] ?? ''}'.trim();
+      if (credentialId.isEmpty) {
+        return {"status": "error", "response": "请先选择账号 AI 连接。"};
       }
-    } catch (e) {
-      debugPrint("Daemon testAiConnection error: $e. Falling back.");
+      return AccountAiService.instance.testConnection(
+        credentialId: credentialId,
+        model: '${ai['model'] ?? ''}',
+      );
     }
-    try {
-      final res = await _safeRun([
-        "--ai-test",
-        "--json",
-      ], timeout: const Duration(seconds: 60));
-      final data = _safeJsonDecode(res?.stdout?.toString() ?? "");
-      return (data is Map<String, dynamic>)
-          ? data
-          : {"status": "error", "response": "Invalid response"};
-    } catch (e) {
-      debugPrint("testAiConnection Error: $e");
-      return {"status": "error", "response": e.toString()};
-    }
+    final localService = ephemeralApiKey == null
+        ? LocalAiService.instance
+        : LocalAiService(keyReader: (_) async => ephemeralApiKey);
+    return localService.testConnection(
+      provider: provider,
+      endpoint: '${ai['endpoint'] ?? ''}',
+      model: '${ai['model'] ?? ''}',
+    );
   }
 }

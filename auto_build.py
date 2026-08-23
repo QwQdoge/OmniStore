@@ -119,6 +119,30 @@ def build_flutter(platform):
     cmd = f"flutter build {platform} --release"
     run_command(cmd, FLUTTER_PROJECT_DIR, f"Flutter {platform} Release build")
 
+
+def copy_builtin_source_manifests(bundle_dir):
+    """Ship the manifest layer that the frozen backend resolves at runtime.
+
+    ``python_server`` contains the builtin source implementations, but the
+    runtime registry intentionally reads the trusted source manifests next to
+    the release bundle.  Without them a PyInstaller backend can start and
+    still report an empty source inventory.
+    """
+    manifests_src = BASE_DIR / "plugins" / "sources"
+    manifests_dest = bundle_dir / "plugins" / "sources"
+    if not manifests_src.is_dir():
+        print(f"⚠️ can not find built-in source manifests: {manifests_src}")
+        return False
+    shutil.copytree(
+        manifests_src,
+        manifests_dest,
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
+    print("✅ copy built-in source manifests")
+    return True
+
+
 def assemble(platform, output_dir):
     print("\n📦 [assemble] assembling Flutter Bundle...")
 
@@ -171,6 +195,8 @@ def assemble(platform, output_dir):
         print(f"✅ copy python artifacts: {python_bin_name}")
     else:
         print(f"⚠️ can not find python artifacts: {python_src}")
+
+    copy_builtin_source_manifests(flutter_bundle_dir)
 
     icon_src = BASE_DIR / "omnistore.svg"
     if icon_src.exists():

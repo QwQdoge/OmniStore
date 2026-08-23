@@ -64,9 +64,8 @@ class TaskController with ChangeNotifier {
   String? get flag => _flag;
 
   /// Backwards-compatible plain-text view for callers that only need messages.
-  List<String> get logs => List<String>.unmodifiable(
-    _logEntries.map((entry) => entry.message),
-  );
+  List<String> get logs =>
+      List<String>.unmodifiable(_logEntries.map((entry) => entry.message));
 
   /// Structured log entries for UI and diagnostics.
   List<TaskLogEntry> get logEntries => _logEntriesView;
@@ -123,8 +122,8 @@ class TaskController with ChangeNotifier {
     return _executeTaskInternal(
       () => _taskRepository.updateAll(source),
       "-U",
-      "All Packages",
-      source,
+      l10n.updateAllPackages,
+      l10n.all,
       l10n,
       errorMapper: (err) => l10n.errorUpdateAll(err),
     );
@@ -185,11 +184,11 @@ class TaskController with ChangeNotifier {
         status: !hasError ? TaskStatus.success : TaskStatus.failed,
         progress: !hasError ? 1.0 : 0.0,
         stage: flag == "-I"
-            ? "Install"
+            ? l10n.install
             : flag == "-R"
-            ? "Uninstall"
-            : "Update",
-        message: !hasError ? "Success" : _status,
+            ? l10n.uninstall
+            : l10n.update,
+        message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
 
@@ -208,7 +207,7 @@ class TaskController with ChangeNotifier {
     if (_isBusy) return;
     final taskGeneration = ++_taskGeneration;
     _isBusy = true;
-    _packageName = 'System Cleanup';
+    _packageName = l10n.systemCleaning;
     _flag = '-C';
     _progress = null;
     _status = l10n.systemCleaningStarted;
@@ -245,12 +244,12 @@ class TaskController with ChangeNotifier {
       0,
       TaskState(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        packageName: "System Cleanup",
-        source: "System",
+        packageName: l10n.systemCleaning,
+        source: l10n.system,
         status: !hasError ? TaskStatus.success : TaskStatus.failed,
         progress: !hasError ? 1.0 : 0.0,
-        stage: "Clean",
-        message: !hasError ? "Success" : _status,
+        stage: l10n.clean,
+        message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
   }
@@ -296,16 +295,16 @@ class TaskController with ChangeNotifier {
     }
 
     final legacyLevel = _legacyLevel(cleanLine);
-    final message = _stripLegacyPrefix(cleanLine);
+    final message = _localizeBackendMessage(
+      _stripLegacyPrefix(cleanLine),
+      l10n,
+    );
     _appendLog(message, legacyLevel ?? TaskLogLevel.info);
     if (message.isNotEmpty) _status = message;
     return legacyLevel ?? TaskLogLevel.info;
   }
 
-  TaskLogLevel? _processStructuredData(
-    dynamic data,
-    AppLocalizations l10n,
-  ) {
+  TaskLogLevel? _processStructuredData(dynamic data, AppLocalizations l10n) {
     if (data is! Map<String, dynamic>) return null;
 
     String? message;
@@ -356,7 +355,10 @@ class TaskController with ChangeNotifier {
       level = legacyLevel;
     }
 
-    final cleanMessage = _stripLegacyPrefix(message);
+    final cleanMessage = _localizeBackendMessage(
+      _stripLegacyPrefix(message),
+      l10n,
+    );
     _appendLog(cleanMessage, level);
     _status = cleanMessage;
     return level;
@@ -419,6 +421,25 @@ class TaskController with ChangeNotifier {
       }
     }
     return trimmed;
+  }
+
+  String _localizeBackendMessage(String message, AppLocalizations l10n) {
+    final updating = RegExp(
+      r'^Updating (.+) packages\.\.\.$',
+    ).firstMatch(message);
+    if (updating != null) {
+      return l10n.updatingSourcePackages(updating.group(1)!);
+    }
+
+    final failed = RegExp(r'^(.+) update failed\.$').firstMatch(message);
+    if (failed != null) {
+      return l10n.sourceUpdateFailed(failed.group(1)!);
+    }
+
+    if (message == 'All enabled package sources are up to date.') {
+      return l10n.enabledSourcesUpdated;
+    }
+    return message;
   }
 
   void _appendLog(String message, TaskLogLevel level) {

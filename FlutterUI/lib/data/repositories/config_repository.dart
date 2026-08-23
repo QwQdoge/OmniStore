@@ -7,9 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../python_bridge.dart';
 
-typedef ConfigPersistenceWriter = Future<bool> Function(
-  Map<String, dynamic> config,
-);
+typedef ConfigPersistenceWriter =
+    Future<bool> Function(Map<String, dynamic> config);
 
 class _ConfigRepositoryState {
   Timer? saveTimer;
@@ -73,9 +72,10 @@ class ConfigRepository {
     },
     "ai": {
       "enabled": false,
-      "provider": "openai",
-      "endpoint": "",
-      "model": "",
+      "provider": "ollama",
+      "account_credential_id": "",
+      "endpoint": "http://localhost:11434",
+      "model": "qwen2.5:1.5b",
       "api_key": "",
     },
   };
@@ -234,9 +234,7 @@ class ConfigRepository {
       try {
         return await operation();
       } catch (error) {
-        debugPrint(
-          'Configuration persistence failed (${error.runtimeType}).',
-        );
+        debugPrint('Configuration persistence failed (${error.runtimeType}).');
         return false;
       }
     });
@@ -245,9 +243,7 @@ class ConfigRepository {
     return result;
   }
 
-  Future<bool> _persistPreferencesAsPrimary(
-    Map<String, dynamic> config,
-  ) async {
+  Future<bool> _persistPreferencesAsPrimary(Map<String, dynamic> config) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = await prefs.setString(_webConfigKey, jsonEncode(config));
@@ -262,9 +258,7 @@ class ConfigRepository {
     }
   }
 
-  Future<bool> _persistDesktopAndCommit(
-    Map<String, dynamic> config,
-  ) async {
+  Future<bool> _persistDesktopAndCommit(Map<String, dynamic> config) async {
     final desktopWriter = _desktopWriter;
     final persisted = desktopWriter != null
         ? await desktopWriter(_copyMap(config))

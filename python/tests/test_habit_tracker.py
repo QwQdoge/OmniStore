@@ -2,6 +2,7 @@ import pytest
 from core.habit_tracker import HabitTracker
 
 def test_get_recommendation_tags(tmp_path, monkeypatch):
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     tracker = HabitTracker()
     tracker.habits = {
@@ -42,6 +43,7 @@ def test_get_recommendation_tags(tmp_path, monkeypatch):
     assert "code" not in tags # 6th item should not be in top 5 installs
 
 def test_get_recommendation_tags_empty(tmp_path, monkeypatch):
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     tracker = HabitTracker()
     tracker.habits = {
@@ -51,3 +53,9 @@ def test_get_recommendation_tags_empty(tmp_path, monkeypatch):
     }
     tags = tracker.get_recommendation_tags()
     assert tags == []
+
+
+def test_habit_tracker_honors_xdg_config_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg-config"))
+    tracker = HabitTracker()
+    assert tracker.data_dir == tmp_path / "xdg-config" / "omnistore"

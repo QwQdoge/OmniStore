@@ -1,6 +1,8 @@
 import inspect
 import asyncio
+import ast
 import json
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -8,13 +10,14 @@ from unittest.mock import AsyncMock
 
 from core import backend as backend_module
 from core import cli_handler
-from core.cli_handler import CLIArguments
+from core.cli_handler import CLIArguments, legacy_ai_requested
 from core.config_loader import ConfigManager
 from core.security_validator import SecurityValidator
 from core.sources.git_forges.github import GitHubForge
 from core.search.custom_repo import CustomRepoManager
 from core.sources.utils import PrivilegeManager
 from core.update_manager import UpdateManager
+from core.daemon_server import DaemonRequest
 from daemon_main import parse_json_output
 
 
@@ -37,6 +40,46 @@ def test_search_validator_rejects_shell_control_syntax():
     for char in [";", "&", "|", "`", "$", "(", ")", "\\", "'", '"']:
         with pytest.raises(ValueError):
             SecurityValidator.validate_search_query(f"source:github{char} rm -rf /")
+
+
+def test_daemon_protocol_allows_lightweight_ping():
+    request = DaemonRequest(action="ping")
+    assert request.action == "ping"
+
+
+def test_daemon_protocol_rejects_legacy_ai_transport():
+    with pytest.raises(ValidationError):
+        DaemonRequest(action="run_ai_explain", args=["Example"])
+
+
+def test_cli_legacy_ai_flags_are_routed_to_consent_ui():
+    assert legacy_ai_requested(CLIArguments(ai_explain="Example")) is True
+    assert legacy_ai_requested(CLIArguments(search="Example")) is False
+
+
+def test_search_does_not_call_ai_automatically():
+    search_source = (
+        Path(__file__).resolve().parents[1] / "core/search/manager.py"
+    ).read_text(encoding="utf-8")
+    assert "ai.recommend_apps" not in search_source
+    assert "one-time\n        # consent flow" in search_source
+
+
+def test_backend_normalizes_incomplete_package_records():
+    backend = backend_module.OmnistoreBackend(json_mode=True, emit_stdout=False)
+    packages = backend._to_app_packages([
+        {"name": "Example", "description": None},
+        {"id": "org.meo.Second", "description": "Ready"},
+    ])
+    assert [package.id for package in packages] == ["Example", "org.meo.Second"]
+    assert packages[0].description == ""
+    assert packages[1].name == "org.meo.Second"
+
+
+def test_daemon_backend_never_emits_cli_json(capsys):
+    backend = backend_module.OmnistoreBackend(json_mode=True, emit_stdout=False)
+    backend._output_command_response(backend_module.CommandResponse(status="success"))
+    assert capsys.readouterr().out == ""
 
 
 def test_github_forge_uses_structured_query_params():
@@ -137,7 +180,7 @@ def test_custom_pacman_repository_addition_is_fail_closed():
 
 
 def test_privilege_manager_never_reads_or_pipes_the_sudo_password():
-    source = inspect.getsource(PrivilegeManager.ensure_privileged)
+    source = inspect.getsource(PrivilegeManager)
 
     assert '"sudo", "-A"' in source
     assert '"sudo", "-S"' not in source
@@ -149,6 +192,9 @@ def test_update_all_uses_real_manager_commands_instead_of_a_fake_package(monkeyp
     async def run_update_all():
         manager = UpdateManager(config=ConfigManager())
         manager.privilege.ensure_privileged = AsyncMock(return_value=True)
+        manager.privilege.subprocess_environment = AsyncMock(
+            return_value={"SUDO_ASKPASS": "/usr/bin/ksshaskpass"}
+        )
         manager._run_update_command = AsyncMock(return_value=True)
         monkeypatch.setattr(
             "core.update_manager.shutil.which",
@@ -156,10 +202,65 @@ def test_update_all_uses_real_manager_commands_instead_of_a_fake_package(monkeyp
         )
 
         assert await manager.apply_all_updates() is True
-        return [call.args[0] for call in manager._run_update_command.await_args_list]
+        return manager, [
+            call.args[0]
+            for call in manager._run_update_command.await_args_list
+        ]
 
-    commands = asyncio.run(run_update_all())
+    manager, commands = asyncio.run(run_update_all())
 
-    assert ["sudo", "pacman", "-Syu", "--noconfirm"] in commands
+    assert ["sudo", "-A", "pacman", "-Syu", "--noconfirm"] in commands
     assert ["flatpak", "update", "--user", "-y"] in commands
     assert all("all" not in command for command in commands)
+    manager.privilege.ensure_privileged.assert_not_awaited()
+
+
+def test_flutter_progress_callback_is_structured_without_protocol_text(capsys):
+    backend = backend_module.OmnistoreBackend(json_mode=True)
+
+    asyncio.run(backend._flutter_callback("[PROGRESS] 67", json_mode=True))
+
+    line = capsys.readouterr().out.strip()
+    assert line.startswith("[CALLBACK] ")
+    payload = json.loads(line.removeprefix("[CALLBACK] "))
+    assert payload == {"type": "progress", "progress": 67.0}
+    assert "[PROGRESS]" not in line
+
+
+def test_update_all_passes_graphical_askpass_to_aur_helper(monkeypatch):
+    async def run_update_all():
+        manager = UpdateManager(
+            config={"updates.include_aur_in_update_all": True}
+        )
+        manager.privilege.ensure_privileged = AsyncMock(return_value=True)
+        manager.privilege.subprocess_environment = AsyncMock(
+            return_value={"SUDO_ASKPASS": "/usr/bin/ksshaskpass"}
+        )
+        manager._run_update_command = AsyncMock(return_value=True)
+        monkeypatch.setattr(
+            "core.update_manager.shutil.which",
+            lambda name: f"/usr/bin/{name}" if name in {"pacman", "yay"} else None,
+        )
+
+        assert await manager.apply_all_updates() is True
+        return manager._run_update_command.await_args_list
+
+    calls = asyncio.run(run_update_all())
+    aur_call = next(call for call in calls if call.args[0][0] == "yay")
+    assert aur_call.args[0][:3] == ["yay", "--sudoflags", "-A"]
+    assert "-Sua" in aur_call.args[0]
+    assert "-Syu" not in aur_call.args[0]
+    assert aur_call.kwargs["env"]["SUDO_ASKPASS"] == "/usr/bin/ksshaskpass"
+
+
+def test_all_project_python_sources_parse():
+    project_python = Path(__file__).resolve().parents[1]
+    failures = []
+    for source in project_python.rglob("*.py"):
+        if ".venv" in source.parts or "__pycache__" in source.parts:
+            continue
+        try:
+            ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+        except SyntaxError as error:
+            failures.append(f"{source.relative_to(project_python)}:{error.lineno}: {error.msg}")
+    assert failures == []

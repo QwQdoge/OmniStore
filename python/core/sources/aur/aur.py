@@ -83,6 +83,7 @@ class AurSource(UnifiedSource):
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
+            privilege_env = await self.privilege.subprocess_environment()
 
             name = package.get("name")
             if not name:
@@ -95,9 +96,10 @@ class AurSource(UnifiedSource):
                 if callback:
                     await callback(f"[INFO] Running: yay -S --noconfirm {name}")
                 async with safe_subprocess(
-                    "yay", "-S", "--noconfirm", name,
+                    "yay", "--sudoflags", "-A", "-S", "--noconfirm", name,
                     stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT
+                    stderr=asyncio.subprocess.STDOUT,
+                    env=privilege_env,
                 ) as proc:
                     last_sent_progress = -1
                     if proc.stdout:
@@ -140,6 +142,7 @@ class AurSource(UnifiedSource):
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
+            privilege_env = await self.privilege.subprocess_environment()
 
             name = package.get("name")
             if not name:
@@ -147,11 +150,12 @@ class AurSource(UnifiedSource):
                 return False
 
             if callback:
-                await callback(f"[INFO] Running: sudo pacman -Rs --noconfirm {name}")
+                await callback(f"[INFO] Removing {name} with pacman")
             async with safe_subprocess(
-                "sudo", "pacman", "-Rs", "--noconfirm", name,
+                "sudo", "-A", "pacman", "-Rs", "--noconfirm", name,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
+                stderr=asyncio.subprocess.STDOUT,
+                env=privilege_env,
             ) as proc:
 
                 last_sent_progress = -1

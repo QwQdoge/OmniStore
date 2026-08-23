@@ -154,7 +154,7 @@ class _HomePageState extends State<HomePage> {
               if (appLocalizations == null) return;
 
               for (var pkg in packages) {
-                if (!mounted) break;
+                if (!context.mounted) break;
 
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';

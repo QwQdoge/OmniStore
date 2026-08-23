@@ -23,74 +23,52 @@ class SyncService {
 
   void stopBackgroundSync() {
     _syncTimer?.cancel();
+    _syncTimer = null;
   }
 
   /// Manually trigger a sync
-  Future<void> syncInstalledApps() async {
-    if (_isSyncing) return;
+  static const _snapshotSource = 'omnistore';
+  static const _snapshotFormat =
+      'application/vnd.meo.omnistore.library+json;version=1';
+
+  Future<bool> syncInstalledApps() async {
+    if (_isSyncing) return false;
 
     final SupabaseClient client;
     try {
       client = Supabase.instance.client;
     } catch (_) {
       debugPrint('Sync aborted: Supabase is not initialized.');
-      return;
+      return false;
     }
 
     final user = client.auth.currentUser;
     if (user == null) {
       debugPrint('Sync aborted: User not logged in.');
-      return;
+      return false;
     }
 
     _isSyncing = true;
     try {
       final localApps = await LocalAppsTracker.getTrackedApps();
+      final normalizedApps = localApps.toSet().toList()..sort();
 
-      // Update the user's installed apps in Supabase.
-      // Assuming 'installed_apps' table with columns: id, user_id, app_id, installed_at
+      // Keep one compact, versioned document per user. The database enforces a
+      // 1 MiB limit and RLS restricts every row to auth.uid(). No local config,
+      // API key, access token, or machine identifier is uploaded.
+      await client.from('user_library_snapshots').upsert({
+        'user_id': user.id,
+        'source': _snapshotSource,
+        'export_format': _snapshotFormat,
+        'content': {'schema_version': 1, 'apps': normalizedApps},
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'user_id,source');
 
-      // 1. Fetch current remote apps
-      final remoteData = await client
-          .from('installed_apps')
-          .select('app_id')
-          .eq('user_id', user.id);
-
-      final Set<String> remoteApps = (remoteData as List)
-          .map((row) => row['app_id'].toString())
-          .toSet();
-      final Set<String> localAppsSet = localApps.toSet();
-
-      final appsToUpload = localAppsSet.difference(remoteApps);
-      final appsToDelete = remoteApps.difference(localAppsSet);
-
-      if (appsToUpload.isNotEmpty) {
-        final insertPayload = appsToUpload
-            .map(
-              (appId) => {
-                'user_id': user.id,
-                'app_id': appId,
-                'installed_at': DateTime.now().toIso8601String(),
-              },
-            )
-            .toList();
-
-        await client.from('installed_apps').insert(insertPayload);
-      }
-
-      if (appsToDelete.isNotEmpty) {
-        await client
-            .from('installed_apps')
-            .delete()
-            .eq('user_id', user.id)
-            .inFilter('app_id', appsToDelete.toList());
-      }
-
-      debugPrint(
-        'Sync successful: Uploaded ${appsToUpload.length}, Deleted ${appsToDelete.length}',
-      );
+      debugPrint('Sync successful: ${normalizedApps.length} app IDs saved.');
+      return true;
     } catch (e) {
       debugPrint('Error syncing installed apps: $e');
+      return false;
     } finally {
       _isSyncing = false;
     }
@@ -111,12 +89,28 @@ class SyncService {
     }
 
     try {
-      final data = await client
+      final snapshot = await client
+          .from('user_library_snapshots')
+          .select('content')
+          .eq('user_id', user.id)
+          .eq('source', _snapshotSource)
+          .maybeSingle();
+      final content = snapshot?['content'];
+      final apps = content is Map ? content['apps'] : null;
+      if (apps is List) {
+        return apps.whereType<String>().toSet().toList()..sort();
+      }
+
+      // Compatibility with the older row-per-app representation.
+      final legacyRows = await client
           .from('installed_apps')
           .select('app_id')
           .eq('user_id', user.id);
-
-      return (data as List).map((row) => row['app_id'].toString()).toList();
+      return (legacyRows as List)
+          .map((row) => row['app_id'].toString())
+          .toSet()
+          .toList()
+        ..sort();
     } catch (e) {
       debugPrint('Error fetching backed up apps: $e');
       return [];

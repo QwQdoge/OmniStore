@@ -33,7 +33,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings => '設定';
 
   @override
-  String get downloads => 'ダウンロード';
+  String get downloads => '処理とアップデート';
 
   @override
   String get help => 'ヘルプ';
@@ -93,6 +93,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pacmanOfficial => 'Pacman（公式リポジトリ）';
+
+  @override
+  String get pacmanBrowsingNoAuthorization =>
+      'Pacman の閲覧、検索、詳細表示、更新確認にはアカウント認証も管理者認証も不要です。システムを変更する場合にのみ認証を求めます。';
 
   @override
   String get aurUser => 'AUR（ユーザーリポジトリ）';
@@ -313,7 +317,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get refresh => '更新';
 
   @override
-  String get noActiveTasks => 'アクティブなタスクはありません';
+  String get noActiveTasks => '実行中または完了済みの処理はありません';
 
   @override
   String get currentTask => '現在のタスク';
@@ -322,10 +326,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get viewLogs => 'ログを表示';
 
   @override
-  String get allUpdated => 'すべてのアプリは最新バージョンです';
+  String get allUpdated => 'パッケージの更新はありません';
 
   @override
   String get update => '更新';
+
+  @override
+  String updatingSourcePackages(String source) {
+    return '$source パッケージを更新しています…';
+  }
+
+  @override
+  String sourceUpdateFailed(String source) {
+    return '$source の更新に失敗しました';
+  }
+
+  @override
+  String get enabledSourcesUpdated => '有効なパッケージソースはすべて最新です';
 
   @override
   String get enableSystemTray => 'システムトレイを有効にする';
@@ -334,7 +351,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemCleaning => 'システムクリーニング';
 
   @override
-  String get systemCleaningDesc => '孤立パッケージの削除と pacman キャッシュのクリーンアップ';
+  String get system => 'システム';
+
+  @override
+  String get clean => 'クリーンアップ';
+
+  @override
+  String get systemCleaningDesc => '孤立パッケージを削除して Pacman キャッシュを消去します（管理者認証が必要）';
 
   @override
   String get systemCleaningSubtitle => '孤立したパッケージを削除し、pacman キャッシュをクリーンアップします';
@@ -565,7 +588,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sourceConfigTitle => 'ソフトウェアソース';
 
   @override
-  String get sourceConfigSubtitle => '有効にするソースを選択してください';
+  String get sourceConfigSubtitle => 'OmniStore が検索できるソフトウェアソースを選択します';
 
   @override
   String get enableAur => 'AUR (Arch User Repository) を有効にする';
@@ -578,7 +601,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。';
 
   @override
-  String get bootstrapNote => '注意: セットアップにはパスワードの入力が数回必要な場合があります。';
+  String get bootstrapNote => '閲覧に認証は不要です。セットアップでシステムを変更する場合のみ管理者認証を求めます。';
 
   @override
   String get feedbackDesc => '問題が発生した場合は、GitHub で報告してください。';
@@ -777,6 +800,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String get searchFailedSubtitle => 'ソフトウェアソースに接続できませんでした。接続を確認して再試行してください。';
+
+  @override
+  String pluginCapabilities(int count) {
+    return '$count 個の機能';
+  }
 
   @override
   String get aiResponseFailed => 'AI の応答に失敗しました。';
@@ -1092,7 +1123,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get unknownApp => '不明なアプリ';
 
   @override
-  String get taskSuccessMsg => 'タスクが正常に実行されました';
+  String get taskSuccessMsg => '正常に完了しました';
 
   @override
   String failureReason(String message) {
@@ -1133,7 +1164,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get latestUpdates => '最新の更新';
 
   @override
-  String get searchNoResultsSubtitle => '別のキーワードで検索してみてください';
+  String get searchNoResultsSubtitle => '別のキーワードを試すか、ソフトウェアソースを追加で有効にしてください';
 
   @override
   String get pluginsAndSources => 'プラグインとソース';
@@ -1225,7 +1256,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get syncStatus => '同期ステータス';
 
   @override
-  String get syncStatusSubtitle => 'アプリと設定はバックアップされています';
+  String get syncStatusSubtitle => 'タップして OmniStore のアプリ一覧をバックアップ';
 
   @override
   String get manageAccount => 'アカウント管理';
@@ -1283,7 +1314,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get githubIntegration => 'GitHub 連携';
 
   @override
-  String get configurePat => '個人アクセストークンの設定';
+  String get configurePat => 'GitHub アクセストークン（任意）';
 
   @override
   String get patHelperText =>

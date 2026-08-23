@@ -2,6 +2,7 @@ import sys
 import argparse
 import logging
 import asyncio
+import json
 import signal
 from pathlib import Path
 from rich.panel import Panel
@@ -16,6 +17,7 @@ from core.daemon_server import handle_daemon_client, daemon_watchdog
 from core.cli_handler import handle_cli
 from core.friendly_messages import get_friendly_message
 from core.logging_config import configure_logging
+from core.apps_usage_export import SCHEMA, SCHEMA_VERSION, export_installed_usage
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +67,7 @@ async def main():
     cmd.add_argument("--locate")
     cmd.add_argument("--daemon", action="store_true")
     cmd.add_argument("--storage-info", action="store_true")
+    cmd.add_argument("--export-installed-usage", action="store_true")
 
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--source", default="AUR")
@@ -74,16 +77,37 @@ async def main():
 
     args = parser.parse_args()
 
-    json_mode = args.json
+    # The cross-application export is intentionally always machine-readable:
+    # Meo Settings must never parse Rich UI output or daemon traffic.
+    json_mode = args.json or args.export_installed_usage
     setattr(hijacked_print, "json_mode_active", json_mode)
     setup_stdout_hijack()
 
-    backend = OmnistoreBackend(json_mode=json_mode)
+    backend = OmnistoreBackend(json_mode=json_mode, emit_stdout=not args.daemon)
     configure_logging(
         backend.config.get("logging.level", "INFO"),
         json_mode=json_mode,
         component="omnistore.backend",
     )
+
+    if args.export_installed_usage:
+        try:
+            snapshot = await export_installed_usage(backend)
+        except Exception:
+            # Do not expose filesystem paths, backend diagnostics, credentials,
+            # or arbitrary plugin output through this cross-application ABI.
+            failure = {
+                "schema": SCHEMA,
+                "version": SCHEMA_VERSION,
+                "status": "error",
+                "error": "installed_usage_unavailable",
+            }
+            sys.stdout.write(json.dumps(failure, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            raise SystemExit(1)
+        sys.stdout.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+        return
 
     if not json_mode:
         console.print(

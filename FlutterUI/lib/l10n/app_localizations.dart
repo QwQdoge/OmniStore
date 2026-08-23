@@ -154,7 +154,7 @@ abstract class AppLocalizations {
   /// No description provided for @downloads.
   ///
   /// In en, this message translates to:
-  /// **'Downloads'**
+  /// **'Activity & Updates'**
   String get downloads;
 
   /// No description provided for @help.
@@ -226,7 +226,7 @@ abstract class AppLocalizations {
   /// No description provided for @ready.
   ///
   /// In en, this message translates to:
-  /// **'Ready'**
+  /// **'Installed'**
   String get ready;
 
   /// No description provided for @resultsFound.
@@ -270,6 +270,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pacman (Official)'**
   String get pacmanOfficial;
+
+  /// Explains when Pacman operations require authorization
+  ///
+  /// In en, this message translates to:
+  /// **'Browsing, searching, viewing details, and checking Pacman updates never require account or administrator authorization. Authorization is requested only when the system is changed.'**
+  String get pacmanBrowsingNoAuthorization;
 
   /// No description provided for @aurUser.
   ///
@@ -688,7 +694,7 @@ abstract class AppLocalizations {
   /// noActiveTasks
   ///
   /// In en, this message translates to:
-  /// **'No active tasks'**
+  /// **'No active or completed tasks'**
   String get noActiveTasks;
 
   /// currentTask
@@ -706,7 +712,7 @@ abstract class AppLocalizations {
   /// allUpdated
   ///
   /// In en, this message translates to:
-  /// **'All apps are up to date'**
+  /// **'No package updates found'**
   String get allUpdated;
 
   /// update
@@ -714,6 +720,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update'**
   String get update;
+
+  /// No description provided for @updatingSourcePackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating {source} packages…'**
+  String updatingSourcePackages(String source);
+
+  /// No description provided for @sourceUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} update failed'**
+  String sourceUpdateFailed(String source);
+
+  /// No description provided for @enabledSourcesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'All enabled package sources are up to date'**
+  String get enabledSourcesUpdated;
 
   /// enableSystemTray
   ///
@@ -727,10 +751,22 @@ abstract class AppLocalizations {
   /// **'System Cleaning'**
   String get systemCleaning;
 
+  /// No description provided for @system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
+
+  /// No description provided for @clean.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean'**
+  String get clean;
+
   /// systemCleaningDesc
   ///
   /// In en, this message translates to:
-  /// **'Delete orphan packages and clean pacman cache'**
+  /// **'Remove orphan packages and clear the Pacman cache (administrator authorization required)'**
   String get systemCleaningDesc;
 
   /// systemCleaningSubtitle
@@ -1174,7 +1210,7 @@ abstract class AppLocalizations {
   /// Description for sourceConfigSubtitle
   ///
   /// In en, this message translates to:
-  /// **'Choose the sources you want to enable'**
+  /// **'Choose where OmniStore may search for software'**
   String get sourceConfigSubtitle;
 
   /// Description for enableAur
@@ -1198,7 +1234,7 @@ abstract class AppLocalizations {
   /// Description for bootstrapNote
   ///
   /// In en, this message translates to:
-  /// **'Note: Setup may require entering your password multiple times.'**
+  /// **'Browsing never requires authorization. Administrator authorization is requested only when setup changes the system.'**
   String get bootstrapNote;
 
   /// Description for feedbackDesc
@@ -1566,6 +1602,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// Explanation shown when a package search fails
+  ///
+  /// In en, this message translates to:
+  /// **'The software sources could not be reached. Check your connection and try again.'**
+  String get searchFailedSubtitle;
+
+  /// Number of capabilities exposed by a source plugin
+  ///
+  /// In en, this message translates to:
+  /// **'{count} capabilities'**
+  String pluginCapabilities(int count);
 
   /// Message shown when AI fails to respond
   ///
@@ -2128,7 +2176,7 @@ abstract class AppLocalizations {
   /// No description provided for @taskSuccessMsg.
   ///
   /// In en, this message translates to:
-  /// **'Task executed successfully'**
+  /// **'Completed successfully'**
   String get taskSuccessMsg;
 
   /// No description provided for @failureReason.
@@ -2206,7 +2254,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchNoResultsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Try searching for something else'**
+  /// **'Try another keyword or enable more software sources'**
   String get searchNoResultsSubtitle;
 
   /// Section title for plugins and software sources
@@ -2380,7 +2428,7 @@ abstract class AppLocalizations {
   /// Description for syncStatusSubtitle
   ///
   /// In en, this message translates to:
-  /// **'Apps and settings are backed up'**
+  /// **'Tap to back up your OmniStore app list'**
   String get syncStatusSubtitle;
 
   /// Description for manageAccount
@@ -2488,7 +2536,7 @@ abstract class AppLocalizations {
   /// Description for configurePat
   ///
   /// In en, this message translates to:
-  /// **'Configure Personal Access Token'**
+  /// **'GitHub access token (optional)'**
   String get configurePat;
 
   /// Description for patHelperText

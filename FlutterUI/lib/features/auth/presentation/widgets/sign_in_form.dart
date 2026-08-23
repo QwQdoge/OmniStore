@@ -12,6 +12,7 @@ class SignInForm extends StatelessWidget {
   final VoidCallback onCreateAccount;
   final VoidCallback onSignInWithGoogle;
   final VoidCallback onSignInWithGitHub;
+  final VoidCallback? onSignInWithSystemAccount;
 
   const SignInForm({
     super.key,
@@ -24,6 +25,7 @@ class SignInForm extends StatelessWidget {
     required this.onCreateAccount,
     required this.onSignInWithGoogle,
     required this.onSignInWithGitHub,
+    this.onSignInWithSystemAccount,
   });
 
   @override
@@ -67,8 +69,9 @@ class SignInForm extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color:
-                            colorScheme.primaryContainer.withValues(alpha: 0.7),
+                        color: colorScheme.primaryContainer.withValues(
+                          alpha: 0.7,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -133,8 +136,9 @@ class SignInForm extends StatelessWidget {
                               : Icons.visibility_rounded,
                         ),
                         onPressed: onToggleObscure,
-                        tooltip:
-                            isObscure ? l10n.showPassword : l10n.hidePassword,
+                        tooltip: isObscure
+                            ? l10n.showPassword
+                            : l10n.hidePassword,
                       ),
                     ),
                     enabled: !isLoading,
@@ -196,6 +200,20 @@ class SignInForm extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  if (onSignInWithSystemAccount != null) ...[
+                    FilledButton.tonalIcon(
+                      onPressed: isLoading ? null : onSignInWithSystemAccount,
+                      icon: const Icon(Icons.devices_rounded),
+                      label: Text(l10n.meoarchAccount),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   OutlinedButton.icon(
                     onPressed: isLoading ? null : onSignInWithGoogle,
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),

@@ -7,10 +7,17 @@ import pytest
 from core.cache_manager import CacheManager
 
 @pytest.fixture
-def cache_manager(tmp_path):
+def cache_manager(tmp_path, monkeypatch):
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     with patch("core.cache_manager.Path.home", return_value=tmp_path):
         manager = CacheManager()
         yield manager
+
+
+def test_cache_manager_honors_xdg_cache_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg-cache"))
+    manager = CacheManager()
+    assert manager.cache_dir == tmp_path / "xdg-cache" / "omnistore"
 
 def test_get_installed_packages_no_cache(cache_manager):
     assert cache_manager.get_installed_packages() is None

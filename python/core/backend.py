@@ -354,7 +354,7 @@ def safe_command(func):
     return wrapper
 
 class OmnistoreBackend:
-    def __init__(self, json_mode: bool = False):
+    def __init__(self, json_mode: bool = False, emit_stdout: bool = True):
         self.config = ConfigManager()
         self.config.backend = self
         self.cache = CacheManager()
@@ -370,6 +370,7 @@ class OmnistoreBackend:
         self._repo_manager = None
         self._essentials = None
         self.json_mode = json_mode
+        self.emit_stdout = emit_stdout
         self.session: Optional[aiohttp.ClientSession] = None
         self._ref_count = 0
         self._lock = asyncio.Lock()
@@ -488,9 +489,17 @@ class OmnistoreBackend:
         for prefix in ["[Status]", "[INFO]", "[ERROR]", "[Error]", "[DEBUG]", "[Executor]"]:
             if clean_msg.startswith(prefix): clean_msg = clean_msg.replace(prefix, "", 1).strip(); break
         if json_mode:
-            icon = {"ERROR": "❌", "SUCCESS": "✅", "INFO": "🔹", "PROGRESS": "⏳"}.get(level, "🔹")
             try:
-                output = json.dumps({"type": "log", "message": f"[{level.upper()}] {icon} {clean_msg}", "level": level.upper()}, ensure_ascii=False)
+                if level == "PROGRESS":
+                    progress_text = clean_msg.replace("[PROGRESS]", "", 1).strip()
+                    output_data = {"type": "progress", "progress": float(progress_text)}
+                elif clean_msg.startswith("[SPEED]"):
+                    output_data = {"type": "speed", "speed": clean_msg.replace("[SPEED]", "", 1).strip()}
+                elif clean_msg.startswith("[STAGE]"):
+                    output_data = {"type": "stage", "stage": clean_msg.replace("[STAGE]", "", 1).strip()}
+                else:
+                    output_data = {"type": "error" if level == "ERROR" else "log", "message": clean_msg, "level": level.lower()}
+                output = json.dumps(output_data, ensure_ascii=False)
                 sys.stdout.write(f"[CALLBACK] {output}\n"); sys.stdout.flush()
             except Exception: pass
         else: logging.info(f"{level}: {clean_msg}")
@@ -499,7 +508,7 @@ class OmnistoreBackend:
     async def run_search(self, query: str, json_mode: bool = False) -> Any:
         # Murphy-proof: Fail-safe query handling
         try:
-            valid_query = SecurityValidator.validate_string(query or "", "Search Query")
+            valid_query = SecurityValidator.validate_search_query(query or "", "Search Query")
         except ValueError:
             return []
 
@@ -633,6 +642,17 @@ class OmnistoreBackend:
         async with self:
             if not self.recommender: raise RuntimeError("Backend offline")
             details = await asyncio.wait_for(self.recommender.get_details(v_id), timeout=30)
+            if not isinstance(details, dict) or not details:
+                return CommandResponse(
+                    status="error",
+                    error="NotFound",
+                    message=f"No details found for {v_id}",
+                    context="run_app_details",
+                )
+            details = dict(details)
+            details["id"] = str(details.get("id") or v_id)
+            details["name"] = str(details.get("name") or v_id)
+            details["description"] = str(details.get("description") or "")
             if sys.platform.startswith("linux") and shutil.which("pacman"):
                 for variant in details.get("variants", []):
                     if variant.get('source') in ("Native", "Pacman", "AUR"):
@@ -932,7 +952,12 @@ class OmnistoreBackend:
         # closed after a one-shot diagnostics request.
         async with self:
             res = await self.ai.test_connection()
-        if json_mode: sys.stdout.write(json.dumps({"status": "success" if res == "success" else "error", "response": res}) + "\n"); sys.stdout.flush()
+        payload = {
+            "status": "success" if res.get("ok") else "error",
+            "response": res.get("message", ""),
+            "diagnostics": res,
+        }
+        if json_mode: sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n"); sys.stdout.flush()
         return res
 
     @safe_command
@@ -945,26 +970,51 @@ class OmnistoreBackend:
 
     @safe_command
     async def run_clean_system(self, json_mode: bool = False) -> Any:
-        if not sys.platform.startswith("linux"): return True
+        if not sys.platform.startswith("linux"):
+            return False
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
-            if shutil.which("pacman"):
-                await cb("[INFO] Detecting orphan packages...")
-                orphans = []
-                try:
-                    async with safe_subprocess("pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE) as proc:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
-                        orphans = [o.strip() for o in stdout.decode().splitlines() if o.strip()]
-                except Exception: pass
-                if orphans and await self.executor._ensure_privileged(cb):
-                    await cb(f"[INFO] Removing {len(orphans)} orphan packages...")
-                    async with safe_subprocess("sudo", "pacman", "-Rns", "--noconfirm", *orphans) as p: await asyncio.wait_for(p.wait(), timeout=120)
-                await cb("[INFO] Cleaning package cache...")
-                if await self.executor._ensure_privileged(cb):
-                    async with safe_subprocess("sudo", "pacman", "-Scc", "--noconfirm") as p: await asyncio.wait_for(p.wait(), timeout=120)
+            if not shutil.which("pacman"):
+                await cb("[ERROR] Pacman is not available on this system.")
+                return False
+            await cb("[INFO] Detecting orphan packages...")
+            try:
+                async with safe_subprocess(
+                    "pacman", "-Qtdq", stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                ) as proc:
+                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+                orphans = [o.strip() for o in stdout.decode().splitlines() if o.strip()]
+            except Exception as exc:
+                await cb(f"[ERROR] Could not inspect orphan packages: {exc}")
+                return False
+            if not await self.executor._ensure_privileged(cb):
+                return False
+            privilege_env = await self.executor.privilege_manager.subprocess_environment()
+            if orphans:
+                await cb(f"[INFO] Removing {len(orphans)} orphan packages...")
+                async with safe_subprocess(
+                    "sudo", "-A", "pacman", "-Rns", "--noconfirm", *orphans,
+                    env=privilege_env,
+                ) as process:
+                    await asyncio.wait_for(process.wait(), timeout=120)
+                    if process.returncode != 0:
+                        await cb("[ERROR] Pacman could not remove orphan packages.")
+                        return False
+            await cb("[INFO] Cleaning package cache...")
+            async with safe_subprocess(
+                "sudo", "-A", "pacman", "-Scc", "--noconfirm",
+                env=privilege_env,
+            ) as process:
+                await asyncio.wait_for(process.wait(), timeout=120)
+                if process.returncode != 0:
+                    await cb("[ERROR] Pacman could not clean its package cache.")
+                    return False
             return True
 
     def _output_command_response(self, resp: CommandResponse):
+        if not self.emit_stdout:
+            return
         try: sys.stdout.write("\n" + resp.model_dump_json(exclude_none=True) + "\n"); sys.stdout.flush()
         except Exception: pass
 
@@ -972,8 +1022,13 @@ class OmnistoreBackend:
         output = []
         for item in results:
             try:
-                if 'id' not in item and 'name' in item: item['id'] = item['name']
-                output.append(AppPackage(**item))
+                if not isinstance(item, dict):
+                    continue
+                normalized = dict(item)
+                normalized['id'] = str(normalized.get('id') or normalized.get('name') or '')
+                normalized['name'] = str(normalized.get('name') or normalized.get('id') or '')
+                normalized['description'] = str(normalized.get('description') or '')
+                output.append(AppPackage(**normalized))
             except Exception as e: logging.error(f"Murphy-proof: Validation failed for AppPackage '{item.get('name', 'Unknown')}': {e}")
         return output
 
