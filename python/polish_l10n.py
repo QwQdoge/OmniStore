@@ -91,6 +91,7 @@ polish('zh_Hant', {
     "emptyTrendingMessage": "暫無熱門資料；網路連線恢復後將自動更新。",
     "emptyRecommendationsMessage": "繼續搜尋或安裝應用程式後，此處將顯示個人化建議。",
     "aiPickFallbackMessage": "暫時無法產生個人化推薦。可瀏覽編輯精選或稍後重試。",
+    "noActiveTasks": "暫無進行中的任務",
     # Traditional Chinese source & repository adjustments
     "pacmanOfficial": "Pacman（官方軟體源）",
     "aurUser": "AUR（使用者軟體源）",

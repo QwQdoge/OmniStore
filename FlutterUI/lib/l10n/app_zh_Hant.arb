@@ -170,7 +170,7 @@
   "@refresh": {
     "description": "Label for refresh action"
   },
-  "noActiveTasks": "暫無進行中或已完成的工作",
+  "noActiveTasks": "暫無進行中的任務",
   "@noActiveTasks": {
     "description": "Message shown when there are no active tasks"
   },
@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 套件…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失敗",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已啟用的軟體來源均已更新",
   "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
@@ -481,7 +493,7 @@
   "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體源設定",
-  "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體來源",
+  "sourceConfigSubtitle": "選擇要啟用的軟體源",
   "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。",
@@ -589,7 +601,11 @@
   "pluginCapabilities": "{count} 項功能",
   "@pluginCapabilities": {
     "description": "軟體來源外掛提供的功能數量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
