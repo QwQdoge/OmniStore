@@ -52,15 +52,23 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
   @override
   Widget build(BuildContext context) {
     final summary = widget.summary;
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final isChinese = Localizations.localeOf(context).languageCode == 'zh';
     final fingerprint = summary.payloadSha256.length >= 12
         ? summary.payloadSha256.substring(0, 12)
         : summary.payloadSha256;
 
     return AlertDialog(
+      clipBehavior: Clip.antiAlias,
       icon: const AiMark(size: 52),
-      title: Text(isChinese ? '允许这一次 AI 调用？' : 'Allow this AI request?'),
+      title: Text(
+        isChinese ? '允许这一次 AI 调用？' : 'Allow this AI request?',
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+        textAlign: TextAlign.center,
+      ),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: SingleChildScrollView(
@@ -143,7 +151,7 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(isChinese ? '拒绝' : 'Deny'),
         ),

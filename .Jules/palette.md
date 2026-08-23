@@ -243,3 +243,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
 
 - Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
+
+## 2026-08-09 - Material Design 3 AI Consent Dialog Refinements
+
+**Learning:** `AlertDialog` instances for sensitive consent confirmation (such as `_AiConsentDialog`) must adhere strictly to Material Design 3 specifications. Enforcing `clipBehavior: Clip.antiAlias` on the dialog container prevents inner card/list boundaries from overflowing rounded dialog edges. Applying `headlineSmall` typography with `FontWeight.w800` alongside `textAlign: TextAlign.center` provides visual emphasis for title headers, and replacing weak `TextButton` dismissal options with MD3 `FilledButton.tonal` creates a clear visual hierarchy against the primary action.
+
+**Action:** Refactored `_AiConsentDialog` in `ai_consent_dialog.dart` to include `clipBehavior: Clip.antiAlias`, centered `w800` `headlineSmall` title styling, and swapped the dismissal button to `FilledButton.tonal`.
