@@ -1,3 +1,9 @@
+## 2026-08-24 - Material Design 3 Filter and Choice Chip Tooltips
+
+**Learning:** `FilterChip` and `ChoiceChip` widgets in Flutter natively handle hover tooltips and screen-reader semantics via their `tooltip` property. Providing localized `tooltip` strings (e.g., `"${l10n.source}: $name"`) ensures accessible desktop hover feedback and clear screen reader announcements without adding duplicate `Semantics` wrapper nodes.
+
+**Action:** Standardized `FilterChip` and `ChoiceChip` widgets across search filters (`search_filters.dart`), source settings (`sources_config_card.dart`), and task manager tabs (`installed_tab.dart`) to explicitly include localized `tooltip` descriptions.
+
 ## 2026-08-18 - Clean Up Redundant IconButton Semantics Wrappers
 
 **Learning:** `IconButton` and `IconButton.filledTonal` widgets natively manage their accessibility properties through their `tooltip` and `isSelected` parameters in Flutter. Wrapping native `IconButton` instances in a redundant `Semantics(button: true, label: ...)` wrapper creates duplicate accessibility nodes in screen-reader trees and bloats widget layout hierarchies.

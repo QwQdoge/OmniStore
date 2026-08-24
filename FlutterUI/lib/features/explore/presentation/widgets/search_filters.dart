@@ -34,6 +34,7 @@ class SearchFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final enabledSources = sourcesMap.entries
         .where((e) => e.value == true)
         .map((e) => e.key)
@@ -55,8 +56,9 @@ class SearchFilters extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: FilterChip(
-                label: Text(AppLocalizations.of(context)!.all),
+                label: Text(l10n.all),
                 selected: selectedSources.isEmpty,
+                tooltip: '${l10n.source}: ${l10n.all}',
                 onSelected: (selected) {
                   if (selected) {
                     onSelectedSourcesChanged([]);
@@ -72,6 +74,7 @@ class SearchFilters extends StatelessWidget {
                 child: FilterChip(
                   label: Text(name),
                   selected: isSelected,
+                  tooltip: '${l10n.source}: $name',
                   onSelected: (selected) {
                     final newSources = List<String>.from(selectedSources);
                     if (selected) {

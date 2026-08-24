@@ -46,20 +46,23 @@ class InstalledTab extends StatelessWidget {
                       ),
                       child: Row(
                         children: availableFilters
-                            .map(
-                              (s) => Padding(
+                            .map((s) {
+                              final label = _filterLabel(context, s);
+                              final l10n = AppLocalizations.of(context)!;
+                              return Padding(
                                 padding: const EdgeInsets.only(right: 8),
                                 child: ChoiceChip(
-                                  label: Text(_filterLabel(context, s)),
+                                  label: Text(label),
                                   selected: selectedSourceFilter == s,
+                                  tooltip: '${l10n.source}: $label',
                                   onSelected: (v) {
                                     if (v) {
                                       onSourceFilterSelected(s);
                                     }
                                   },
                                 ),
-                              ),
-                            )
+                              );
+                            })
                             .toList(),
                       ),
                     ),
