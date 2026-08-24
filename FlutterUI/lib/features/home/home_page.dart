@@ -150,16 +150,17 @@ class _HomePageState extends State<HomePage> {
               // Capture context properties before async gaps
 
               final appLocalizations = AppLocalizations.of(context);
+              final currentContext = context;
 
               if (appLocalizations == null) return;
 
               for (var pkg in packages) {
-                if (!mounted) break;
+                if (!currentContext.mounted) break;
 
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
 
-                Toast.show(context, appLocalizations.installingPkg(name));
+                Toast.show(currentContext, appLocalizations.installingPkg(name));
 
                 await taskController.runTask(
                   "-I",
