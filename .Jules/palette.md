@@ -243,10 +243,3 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
 
 - Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
-
-
-## 2026-08-19 - FilterChip Semantics and Async Context Shadowing Polish
-
-**Learning:** FilterChip widgets in Flutter represent toggleable source/category filters. Wrapping each FilterChip in an explicit Semantics widget with a localized description (e.g., sourceFilterSemantics) ensures screen readers announce the filter purpose clearly rather than just reading raw chip text. Additionally, when guarding async calls in StatefulWidget using mounted checks, renaming inner builder context variables (like showDialog builder: (dialogContext) => ...) resolves context shadowing analyzer warnings (use_build_context_synchronously).
-
-**Action:** Wrap FilterChip instances in SearchFilters with localized Semantics labels (sourceFilterSemantics) and avoid shadowing BuildContext in StatefulWidget dialog callbacks.

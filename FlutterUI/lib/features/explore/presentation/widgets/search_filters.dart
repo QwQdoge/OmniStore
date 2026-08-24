@@ -54,19 +54,17 @@ class SearchFilters extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Semantics(
-                label: AppLocalizations.of(context)!.sourceFilterSemantics(
+              child: FilterChip(
+                label: Text(AppLocalizations.of(context)!.all),
+                tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(
                   AppLocalizations.of(context)!.all,
                 ),
-                child: FilterChip(
-                  label: Text(AppLocalizations.of(context)!.all),
-                  selected: selectedSources.isEmpty,
-                  onSelected: (selected) {
-                    if (selected) {
-                      onSelectedSourcesChanged([]);
-                    }
-                  },
-                ),
+                selected: selectedSources.isEmpty,
+                onSelected: (selected) {
+                  if (selected) {
+                    onSelectedSourcesChanged([]);
+                  }
+                },
               ),
             ),
             ...enabledSources.map((src) {
@@ -74,21 +72,19 @@ class SearchFilters extends StatelessWidget {
               final isSelected = selectedSources.contains(name.toLowerCase());
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: Semantics(
-                  label: AppLocalizations.of(context)!.sourceFilterSemantics(name),
-                  child: FilterChip(
-                    label: Text(name),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      final newSources = List<String>.from(selectedSources);
-                      if (selected) {
-                        newSources.add(name.toLowerCase());
-                      } else {
-                        newSources.remove(name.toLowerCase());
-                      }
-                      onSelectedSourcesChanged(newSources);
-                    },
-                  ),
+                child: FilterChip(
+                  label: Text(name),
+                  tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    final newSources = List<String>.from(selectedSources);
+                    if (selected) {
+                      newSources.add(name.toLowerCase());
+                    } else {
+                      newSources.remove(name.toLowerCase());
+                    }
+                    onSelectedSourcesChanged(newSources);
+                  },
                 ),
               );
             }),
