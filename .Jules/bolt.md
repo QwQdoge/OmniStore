@@ -183,3 +183,10 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** `SliverList.builder` does not natively support the `prototypeItem` property which is critical for efficient scroll virtualization when items have uniform dimensions. Attempting to pass it causes compilation errors.
 
 **Action:** Replaced `SliverList.builder` with `SliverPrototypeExtentList.builder` in `tasks_tab.dart` and provided a skeleton `AppCard` as the `prototypeItem` to drastically reduce layout calculation overhead during scrolling.
+
+
+## 2026-08-22 - Task Tab SliverList Virtualization Optimization
+
+**Learning:** `SliverList.builder` does not natively support the `prototypeItem` property which is critical for efficient scroll virtualization when items have uniform dimensions. Attempting to pass it causes compilation errors.
+
+**Action:** Replaced `SliverList.builder` with `SliverPrototypeExtentList.builder` in `tasks_tab.dart` and provided a skeleton `AppCard` as the `prototypeItem` to drastically reduce layout calculation overhead during scrolling.
