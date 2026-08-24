@@ -49,6 +49,8 @@ class GitHubSource(UnifiedSource):
         installed_set = super()._get_installed_set(self._managed_base_dir())
         results = []
         for repo in repos:
+            # ⚡ Bolt: Pre-calculate installed status to avoid redundant O(1) set lookups per item and variant
+            is_inst = self._is_installed(repo["full_name"], installed_set)
             results.append({
                 "name": repo["name"],
                 "id": repo["full_name"],
@@ -57,11 +59,11 @@ class GitHubSource(UnifiedSource):
                 "stars": repo.get("stargazers_count", 0),
                 "icon": repo.get("owner", {}).get("avatar_url"),
                 "url": repo["html_url"],
-                "installed": self._is_installed(repo["full_name"], installed_set),
+                "installed": is_inst,
                 "variants": [{
                     "source": "GitHub",
                     "id": repo["full_name"],
-                    "installed": self._is_installed(repo["full_name"], installed_set)
+                    "installed": is_inst
                 }]
             })
         return results
@@ -72,6 +74,8 @@ class GitHubSource(UnifiedSource):
             async with self.session.get(repo_url, headers=self.forge.headers) as resp:
                 if resp.status != 200: return []
                 repo = await resp.json()
+                # ⚡ Bolt: Pre-calculate installed status to avoid redundant filesystem checks per item and variant
+                is_inst = self._is_installed(repo["full_name"])
                 return [{
                     "name": repo["name"],
                     "id": repo["full_name"],
@@ -80,11 +84,11 @@ class GitHubSource(UnifiedSource):
                     "stars": repo.get("stargazers_count", 0),
                     "icon": repo.get("owner", {}).get("avatar_url"),
                     "url": repo["html_url"],
-                    "installed": self._is_installed(repo["full_name"]),
+                    "installed": is_inst,
                     "variants": [{
                         "source": "GitHub",
                         "id": repo["full_name"],
-                        "installed": self._is_installed(repo["full_name"])
+                        "installed": is_inst
                     }]
                 }]
         except Exception:
