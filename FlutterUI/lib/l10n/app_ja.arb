@@ -191,21 +191,9 @@
     "description": "update"
   },
   "updatingSourcePackages": "{source} パッケージを更新しています…",
-  "@updatingSourcePackages": {
-    "placeholders": {
-      "source": {
-        "type": "String"
-      }
-    }
-  },
+  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
   "sourceUpdateFailed": "{source} の更新に失敗しました",
-  "@sourceUpdateFailed": {
-    "placeholders": {
-      "source": {
-        "type": "String"
-      }
-    }
-  },
+  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
   "enabledSourcesUpdated": "有効なパッケージソースはすべて最新です",
   "enableSystemTray": "システムトレイを有効にする",
   "@enableSystemTray": {
@@ -598,11 +586,7 @@
   "pluginCapabilities": "{count} 個の機能",
   "@pluginCapabilities": {
     "description": "ソースプラグインが提供する機能の数",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "placeholders": {"count": {"type": "int"}}
   },
   "aiResponseFailed": "AI の応答に失敗しました。",
   "@aiResponseFailed": {
