@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.pop(dialogContext);
 
               for (var pkg in packages) {
-                if (!mounted) break;
+                if (!mounted || !context.mounted) break;
 
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
