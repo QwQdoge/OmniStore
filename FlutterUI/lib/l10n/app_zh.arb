@@ -170,7 +170,7 @@
   "@refresh": {
     "description": "Refresh action label"
   },
-  "noActiveTasks": "暂无进行中或已完成的任务",
+  "noActiveTasks": "暂无进行中的任务",
   "@noActiveTasks": {
     "description": "Message shown when no tasks are running"
   },
@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 软件包…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失败",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已启用的软件源均已更新",
   "enableSystemTray": "启用系统托盘",
   "@enableSystemTray": {
@@ -590,7 +602,11 @@
   "pluginCapabilities": "{count} 项能力",
   "@pluginCapabilities": {
     "description": "软件源插件提供的能力数量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 响应失败。",
   "@aiResponseFailed": {
