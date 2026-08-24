@@ -727,7 +727,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                     ),
                     if (provider == 'account') ...[
                       const SizedBox(height: 12),
-                      _buildAccountConnectionCard(aiConfig),
+                      SmoothSizeSwitcher(
+                        child: KeyedSubtree(
+                          key: ValueKey('account_connection_card_${_isLoadingAccountCredentials}_${_accountCredentialError != null}_${_accountCredentials.isEmpty}'),
+                          child: _buildAccountConnectionCard(aiConfig),
+                        ),
+                      ),
                     ],
                     if (provider == 'ollama' || provider == 'openai_compatible')
                       _buildTextField(

@@ -81,3 +81,7 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** `AnimatedSwitcher` and `SmoothSizeSwitcher` can only accept a single child widget. When refactoring conditional logic that previously used a spread operator (`...items`) to inject multiple elements directly into a parent `Column` or `ListView`, wrap the elements in a nested `Column(mainAxisSize: MainAxisSize.min, children: items)` and assign it a `ValueKey`. This safely provides the switcher with a distinct, single child to animate without disrupting the overall layout.
 
 **Action:** Refactored `sources_config_card.dart` to wrap the conditional list of plugins with a `SmoothSizeSwitcher` by encapsulating the spread operator in a nested `Column` with `ValueKey('plugins')`.
+
+## 2024-11-21 - Conditional Empty State Transitions
+**Learning:** When rendering different whole widgets (like `ListTile`s) conditionally (e.g. loading vs. error vs. loaded), wrap the conditional statement inside a `SmoothSizeSwitcher` and assign `KeyedSubtree` with a `ValueKey` based on the condition state (e.g. `ValueKey('${isLoading}_${hasError}')`). This prevents abrupt layout shifts when the widget size changes.
+**Action:** Refactored `_buildAccountConnectionCard` usage in `ai_settings_section.dart` to be wrapped in `SmoothSizeSwitcher` with `KeyedSubtree`.
