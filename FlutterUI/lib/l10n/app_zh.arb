@@ -382,7 +382,7 @@
   "@aiHealthTitle": {
     "description": "Title for AI system health report"
   },
-  "aiHealthSubtitle": "针对您 Arch Linux 的智能诊断",
+  "aiHealthSubtitle": "针对您的 Arch Linux 系统进行智能诊断",
   "@aiHealthSubtitle": {
     "description": "Subtitle for AI system health report"
   },

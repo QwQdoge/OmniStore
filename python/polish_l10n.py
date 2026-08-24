@@ -54,7 +54,7 @@ polish('zh', {
     "emptyRecommendationsMessage": "继续搜索或安装应用后，此处将显示个性化建议。",
     "aiPickFallbackMessage": "暂时无法生成个性化推荐。可浏览编辑精选或稍后重试。",
     "noActiveTasks": "暂无进行中的任务",
-    "aiHealthSubtitle": "针对您 Arch Linux 的智能诊断",
+    "aiHealthSubtitle": "针对您的 Arch Linux 系统进行智能诊断",
     "signInSubtitle": "跨设备同步应用、设置和收藏",
     "errorNameUrlRequired": "名称和链接/软件源地址不能为空"
 })
@@ -109,6 +109,6 @@ polish('zh_Hant', {
     "bituRepoType": "Bitu / Bitbucket（工作區/倉庫）",
     "errorNameUrlRequired": "名稱和連結/軟體源地址不能為空",
     "searchGithubHint": "搜尋 GitHub 倉庫...",
-    "aiHealthSubtitle": "針對您 Arch Linux 的智慧診斷",
+    "aiHealthSubtitle": "針對您的 Arch Linux 系統進行智慧診斷",
     "signInSubtitle": "跨裝置同步應用程式、設定與最愛"
 })

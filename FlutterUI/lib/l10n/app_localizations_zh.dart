@@ -473,7 +473,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiHealthTitle => 'AI 系统健康报告';
 
   @override
-  String get aiHealthSubtitle => '针对您 Arch Linux 的智能诊断';
+  String get aiHealthSubtitle => '针对您的 Arch Linux 系统进行智能诊断';
 
   @override
   String get aiCorrection => '您是指：';
@@ -1815,7 +1815,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiHealthTitle => 'AI 系統健康報告';
 
   @override
-  String get aiHealthSubtitle => '針對您 Arch Linux 的智慧診斷';
+  String get aiHealthSubtitle => '針對您的 Arch Linux 系統進行智慧診斷';
 
   @override
   String get aiCorrection => '您是指？';
