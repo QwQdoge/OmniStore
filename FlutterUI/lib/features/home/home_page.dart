@@ -145,10 +145,12 @@ class _HomePageState extends State<HomePage> {
             confirmText: l10n.allDownloads,
             onCancel: () => Navigator.pop(dialogContext),
             onConfirm: () async {
+              if (!mounted) return;
               Navigator.pop(dialogContext);
 
               // Capture context properties before async gaps
 
+              if (!mounted) return;
               final appLocalizations = AppLocalizations.of(context);
 
               if (appLocalizations == null) return;
@@ -159,6 +161,7 @@ class _HomePageState extends State<HomePage> {
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
 
+                if (!mounted) break;
                 Toast.show(context, appLocalizations.installingPkg(name));
 
                 await taskController.runTask(
