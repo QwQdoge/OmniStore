@@ -277,9 +277,6 @@ async def run_update_check(config):
                         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300.0) # 5 min timeout
                     except asyncio.TimeoutError:
                         logging.error("Murphy-proof: Update check subprocess timed out.")
-                        if proc.returncode is None:
-                            try: proc.kill()
-                            except Exception: pass
                         return
                 finally:
                     unregister_process(proc)

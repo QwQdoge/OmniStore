@@ -43,13 +43,6 @@ class PrivilegeManager:
                     return True
         except (asyncio.TimeoutError, Exception):
             pass
-        finally:
-            if check and check.returncode is None:
-                try:
-                    check.kill()
-                    await check.wait()
-                except Exception:
-                    pass
 
         # 2. GUI askpass. Let sudo invoke the desktop helper directly so the
         # application process never receives or stores the password.
@@ -79,11 +72,6 @@ class PrivilegeManager:
                         sudo_proc.communicate(), timeout=60
                     )
             except asyncio.TimeoutError:
-                if sudo_proc and sudo_proc.returncode is None:
-                    try:
-                        sudo_proc.kill()
-                        await sudo_proc.wait()
-                    except Exception: pass
                 if callback: await callback("[ERROR] Sudo verification timed out.")
                 return False
             if sudo_proc.returncode == 0:
@@ -112,11 +100,4 @@ class PrivilegeManager:
                         return stdout.decode().strip()
             except Exception:
                 continue
-            finally:
-                if which and which.returncode is None:
-                    try:
-                        which.kill()
-                        await which.wait()
-                    except Exception:
-                        pass
         return None

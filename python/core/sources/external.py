@@ -86,12 +86,6 @@ class WingetSource(UnifiedSource):
                 output = _decode_output(stdout or b"")
                 return proc.returncode or 0, output
         except asyncio.TimeoutError:
-            if proc and proc.returncode is None:
-                try:
-                    proc.kill()
-                    await proc.wait()
-                except Exception:
-                    pass
             if callback:
                 await callback(f"[ERROR] winget command timed out after {timeout}s.")
             return 124, ""

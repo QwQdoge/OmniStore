@@ -170,13 +170,6 @@ class FlatpakSource(UnifiedSource):
         except Exception as e:
             if callback: await callback(f"[ERROR] Flatpak installation failed: {e}")
             return False
-        finally:
-            if 'proc' in locals() and proc and proc.returncode is None:
-                try:
-                    proc.kill()
-                    await proc.wait()
-                except Exception:
-                    pass
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
