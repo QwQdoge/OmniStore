@@ -145,6 +145,8 @@ class SearchManager:
         installed_flatpak_task = None
         installed_aur_task = None
         installed_winget_task = None
+        installed_scoop_task = None
+        installed_brew_task = None
 
         # Only create tasks if the respective sources are active
         active_names = {s.name.lower() for s in active_sources}
@@ -171,6 +173,22 @@ class SearchManager:
             else:
                 installed_winget_task = asyncio.create_task(self._get_installed_winget(w_cached))
 
+        if "scoop" in active_names:
+            scoop_src = self.sources.get("scoop")
+            if scoop_src and hasattr(scoop_src, "_get_installed_ids"):
+                if hasattr(self.cm, "backend") and self.cm.backend:
+                    installed_scoop_task = self.cm.backend.create_task(scoop_src._get_installed_ids())
+                else:
+                    installed_scoop_task = asyncio.create_task(scoop_src._get_installed_ids())
+
+        if "homebrew" in active_names or "brew" in active_names:
+            brew_src = self.sources.get("homebrew") or self.sources.get("brew")
+            if brew_src and hasattr(brew_src, "_get_installed_ids"):
+                if hasattr(self.cm, "backend") and self.cm.backend:
+                    installed_brew_task = self.cm.backend.create_task(brew_src._get_installed_ids())
+                else:
+                    installed_brew_task = asyncio.create_task(brew_src._get_installed_ids())
+
         # Record the search query (moved after spawning async tasks to reduce startup latency)
         self.habit_tracker.record_search(query)
 
@@ -186,7 +204,7 @@ class SearchManager:
                 logging.error(f"Murphy-proof: Search failed for source {source.name}: {e}")
                 return []
 
-        tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task, installed_winget_task=installed_winget_task) for src in active_sources]
+        tasks = [safe_search(src, query, installed_flatpak_task=installed_flatpak_task, installed_aur_task=installed_aur_task, installed_winget_task=installed_winget_task, installed_scoop_task=installed_scoop_task, installed_brew_task=installed_brew_task) for src in active_sources]
         try:
             responses = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=15)
         except Exception as e:

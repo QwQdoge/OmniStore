@@ -1,3 +1,9 @@
+## 2026-08-25 - Scoop and Homebrew Search Optimization
+
+**Learning:** Invoking `list_installed()` inside `search()` for sources like `ScoopSource` and `BrewSource` causes severe latency spikes because `list_installed()` calculates package directory sizes or spawns per-package subprocesses (`brew --prefix <pkg>`). Using a lightweight `_get_installed_ids()` method fetches installed package IDs in a single CLI command (`scoop list` or `brew list --versions`), eliminating $O(N)$ subprocesses and filesystem tree walks.
+
+**Action:** Added `_get_installed_ids()` to `ScoopSource` and `BrewSource` in `python/core/sources/external.py` and integrated task pre-fetching in `SearchManager`.
+
 ## 2026-08-15 - GitHubClient Request Coalescing
 
 **Learning:** When multiple list items (such as GitHubStarBadge instances across rendered lists) fetch repository details asynchronously, concurrent calls for the same owner/repo can fire before disk/memory cache is populated, causing redundant HTTP requests and API rate-limiting issues.

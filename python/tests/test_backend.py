@@ -62,3 +62,73 @@ async def test_run_get_storage_info_json_mode(mock_backend):
                 expected_json_str = json.dumps(expected_result) + "\n"
                 mock_stdout.write.assert_called_with(expected_json_str)
                 mock_stdout.flush.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_scoop_source_search_uses_get_installed_ids_without_list_installed():
+    import contextlib
+    from unittest.mock import AsyncMock
+    from core.sources.external import ScoopSource
+
+    source = ScoopSource()
+    source.enabled = True
+
+    @contextlib.asynccontextmanager
+    async def mock_subproc(*args, **kwargs):
+        mock_p = AsyncMock()
+        mock_p.communicate.return_value = (b"git 2.30.0 [main]\ncurl 7.80.0 [main]\n", b"")
+        yield mock_p
+
+    with patch.object(source, "_get_installed_ids", new_callable=AsyncMock) as mock_get_ids, \
+         patch.object(source, "list_installed") as mock_list_installed, \
+         patch.object(source, "get_size") as mock_get_size, \
+         patch("core.sources.external.safe_subprocess", side_effect=mock_subproc):
+
+        mock_get_ids.return_value = {"git"}
+
+        results = await source.search("git")
+
+        mock_get_ids.assert_called_once()
+        mock_list_installed.assert_not_called()
+        mock_get_size.assert_not_called()
+
+        assert len(results) == 2
+        assert results[0]["name"] == "git"
+        assert results[0]["installed"] is True
+        assert results[1]["name"] == "curl"
+        assert results[1]["installed"] is False
+
+
+@pytest.mark.asyncio
+async def test_brew_source_search_uses_get_installed_ids_without_list_installed():
+    import contextlib
+    from unittest.mock import AsyncMock
+    from core.sources.external import BrewSource
+
+    source = BrewSource()
+    source.enabled = True
+
+    @contextlib.asynccontextmanager
+    async def mock_subproc(*args, **kwargs):
+        mock_p = AsyncMock()
+        mock_p.communicate.return_value = (b"wget\ncurl\n", b"")
+        yield mock_p
+
+    with patch.object(source, "_get_installed_ids", new_callable=AsyncMock) as mock_get_ids, \
+         patch.object(source, "list_installed") as mock_list_installed, \
+         patch.object(source, "get_size") as mock_get_size, \
+         patch("core.sources.external.safe_subprocess", side_effect=mock_subproc):
+
+        mock_get_ids.return_value = {"wget"}
+
+        results = await source.search("wget")
+
+        mock_get_ids.assert_called_once()
+        mock_list_installed.assert_not_called()
+        mock_get_size.assert_not_called()
+
+        assert len(results) == 2
+        assert results[0]["name"] == "wget"
+        assert results[0]["installed"] is True
+        assert results[1]["name"] == "curl"
+        assert results[1]["installed"] is False
