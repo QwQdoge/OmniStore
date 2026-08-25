@@ -8,7 +8,7 @@
   "explore": "探索",
   "search": "搜尋",
   "settings": "設定",
-  "downloads": "工作與更新",
+  "downloads": "任務與更新",
   "help": "幫助",
   "userAccount": "使用者帳戶",
   "install": "安裝",
@@ -170,7 +170,7 @@
   "@refresh": {
     "description": "Label for refresh action"
   },
-  "noActiveTasks": "暫無進行中或已完成的工作",
+  "noActiveTasks": "暫無進行中的任務",
   "@noActiveTasks": {
     "description": "Message shown when there are no active tasks"
   },
@@ -191,10 +191,22 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 套件…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失敗",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
-  "enabledSourcesUpdated": "所有已啟用的軟體來源均已更新",
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "enabledSourcesUpdated": "所有已啟用的軟體源均已更新",
   "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
     "description": "Toggle label for system tray support"
@@ -481,7 +493,7 @@
   "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體源設定",
-  "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體來源",
+  "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體源",
   "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。",
@@ -582,14 +594,18 @@
   "processing": "正在處理",
   "clear": "清除",
   "retry": "重試",
-  "searchFailedSubtitle": "無法連線至軟體來源。請檢查網路連線後重試。",
+  "searchFailedSubtitle": "無法連線至軟體源。請檢查網路連線後重試。",
   "@searchFailedSubtitle": {
     "description": "軟體套件搜尋失敗時顯示的說明"
   },
   "pluginCapabilities": "{count} 項功能",
   "@pluginCapabilities": {
     "description": "軟體來源外掛提供的功能數量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
@@ -1002,7 +1018,7 @@
   "rankings": "排行榜",
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "請嘗試其他關鍵字，或啟用更多軟體來源",
+  "searchNoResultsSubtitle": "請嘗試其他關鍵字，或啟用更多軟體源",
   "pluginsAndSources": "外掛程式與軟體源",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
