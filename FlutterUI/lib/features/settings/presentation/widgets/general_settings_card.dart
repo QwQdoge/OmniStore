@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import '../controllers/settings_controller.dart';
 import 'package:frontend/core/utils/toast.dart';
 
@@ -119,7 +120,7 @@ class GeneralSettingsCard extends StatelessWidget {
                 },
               ),
               SwitchListTile(
-                secondary: const Icon(Icons.auto_awesome_rounded),
+                secondary: const AiMark(size: 24),
                 title: Text(l10n.aiEnabled),
                 subtitle: Text(l10n.aiAssistantDesc),
                 value: data.isAIEnabled,

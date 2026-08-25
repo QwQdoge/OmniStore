@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -7,7 +8,12 @@ class CacheManager:
     INSTALLED_CACHE_VERSION = 2
 
     def __init__(self):
-        self.cache_dir = Path.home() / ".cache" / "omnistore"
+        xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
+        self.cache_dir = (
+            Path(xdg_cache_home) / "omnistore"
+            if xdg_cache_home
+            else Path.home() / ".cache" / "omnistore"
+        )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.installed_cache_path = self.cache_dir / "installed_packages.json"
 

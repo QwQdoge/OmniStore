@@ -8,7 +8,7 @@
   "explore": "Explorar",
   "search": "Buscar",
   "settings": "Ajustes",
-  "downloads": "Descargas",
+  "downloads": "Actividad y actualizaciones",
   "help": "Ayuda",
   "userAccount": "Cuenta de usuario",
   "install": "Instalar",
@@ -44,6 +44,10 @@
   },
   "packageManager": "Gestor de paquetes",
   "pacmanOfficial": "Pacman (Oficial)",
+  "pacmanBrowsingNoAuthorization": "Explorar, buscar, ver detalles y comprobar actualizaciones de Pacman no requiere autenticación de cuenta ni de administrador. Solo se solicita autorización al modificar el sistema.",
+  "@pacmanBrowsingNoAuthorization": {
+    "description": "Explica cuándo las operaciones de Pacman requieren autorización"
+  },
   "aurUser": "AUR (Repositorio de usuarios)",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -166,7 +170,7 @@
   "@refresh": {
     "description": "refresh"
   },
-  "noActiveTasks": "No hay tareas activas",
+  "noActiveTasks": "No hay tareas activas ni completadas",
   "@noActiveTasks": {
     "description": "noActiveTasks"
   },
@@ -178,7 +182,7 @@
   "@viewLogs": {
     "description": "viewLogs"
   },
-  "allUpdated": "Todas las aplicaciones están al día",
+  "allUpdated": "No se encontraron actualizaciones de paquetes",
   "@allUpdated": {
     "description": "allUpdated"
   },
@@ -186,6 +190,23 @@
   "@update": {
     "description": "update"
   },
+  "updatingSourcePackages": "Actualizando paquetes de {source}…",
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceUpdateFailed": "Falló la actualización de {source}",
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "enabledSourcesUpdated": "Todas las fuentes habilitadas están actualizadas",
   "enableSystemTray": "Activar bandeja del sistema",
   "@enableSystemTray": {
     "description": "enableSystemTray"
@@ -194,7 +215,9 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
-  "systemCleaningDesc": "Eliminar paquetes huérfanos y limpiar caché de pacman",
+  "system": "Sistema",
+  "clean": "Limpiar",
+  "systemCleaningDesc": "Eliminar paquetes huérfanos y vaciar la caché de Pacman (requiere autorización de administrador)",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -467,11 +490,11 @@
   "fixProblems": "Corregir / Configurar todo",
   "continueAnyway": "Continuar de todos modos",
   "sourceConfigTitle": "Fuentes de software",
-  "sourceConfigSubtitle": "Elija las fuentes que desea habilitar",
+  "sourceConfigSubtitle": "Elige dónde puede buscar software OmniStore",
   "enableAur": "Activar AUR (Arch User Repository)",
   "yayDesc": "Activar AUR requiere instalar el asistente yay.",
   "aurWarning": "Advertencia de seguridad: Los paquetes AUR son contribuciones de usuarios. Asegúrese de confiar en la fuente.",
-  "bootstrapNote": "Nota: La configuración puede requerir introducir su contraseña varias veces.",
+  "bootstrapNote": "Explorar no requiere autorización. Solo se solicita autorización de administrador cuando la configuración modifica el sistema.",
   "feedbackDesc": "Si encuentra problemas, por favor infórmenos en GitHub.",
   "aiAssistant": "Asistente de IA",
   "aiAssistantDesc": "Activar búsqueda asistida por IA, explicación de aplicaciones y diagnóstico de errores.",
@@ -568,6 +591,19 @@
   "processing": "Procesando",
   "clear": "Limpiar",
   "retry": "Reintentar",
+  "searchFailedSubtitle": "No se pudo conectar con las fuentes de software. Comprueba la conexión e inténtalo de nuevo.",
+  "@searchFailedSubtitle": {
+    "description": "Explicación mostrada cuando falla una búsqueda de paquetes"
+  },
+  "pluginCapabilities": "{count} capacidades",
+  "@pluginCapabilities": {
+    "description": "Número de capacidades que ofrece un complemento de fuente",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "aiResponseFailed": "La IA no pudo responder.",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -959,7 +995,7 @@
   "enableSystemdServiceDesc": "Permitir registrar el temporizador de systemd para buscar actualizaciones cuando la aplicación está cerrada",
   "taskHistory": "Historial de tareas",
   "unknownApp": "Aplicación desconocida",
-  "taskSuccessMsg": "Tarea ejecutada con éxito",
+  "taskSuccessMsg": "Completada correctamente",
   "failureReason": "Razón del fallo: {message}",
   "@failureReason": {
     "placeholders": {
@@ -979,7 +1015,7 @@
   "rankings": "Clasificaciones",
   "trending": "Tendencias",
   "latestUpdates": "Últimas actualizaciones",
-  "searchNoResultsSubtitle": "Intente buscar otra cosa",
+  "searchNoResultsSubtitle": "Prueba otra palabra clave o habilita más fuentes de software",
   "pluginsAndSources": "Complementos y fuentes",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
@@ -1201,7 +1237,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "Las aplicaciones y la configuración están respaldadas",
+  "syncStatusSubtitle": "Toca para guardar tu lista de aplicaciones de OmniStore",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },
@@ -1281,7 +1317,7 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "Configurar Token de Acceso Personal",
+  "configurePat": "Token de acceso de GitHub (opcional)",
   "@configurePat": {
     "description": "Description for configurePat"
   },

@@ -146,13 +146,19 @@ class _TaskHeaderRow extends StatelessWidget {
               ? Container(
                   key: ValueKey(taskState.stage),
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  constraints: const BoxConstraints(maxWidth: 120),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     taskState.stage.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -192,13 +198,18 @@ class _TaskHeaderRow extends StatelessWidget {
           ),
         ),
         if (taskState.speed.isNotEmpty && !isFailed)
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Text(
-              taskState.speed,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
-                color: theme.colorScheme.secondary,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 160),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                taskState.speed,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontFamily: 'monospace',
+                  color: theme.colorScheme.secondary,
+                ),
               ),
             ),
           ),

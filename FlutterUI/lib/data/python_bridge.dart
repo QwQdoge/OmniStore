@@ -6,40 +6,96 @@ import 'package:path/path.dart' as p;
 /// Lives in `lib/data/` (Flutter-side bridge), not the `python/` backend tree.
 class PythonBridge {
   static const _secureStorage = FlutterSecureStorage();
+  // Legacy releases used this unbound key. It is migrated once to the
+  // currently configured provider and then removed.
   static const String apiKeyStorageKey = 'omnistore_ai_api_key';
+  static const Set<String> _credentialProviders = {
+    'openai',
+    'gemini',
+    'deepseek',
+    'openrouter',
+    'openai_compatible',
+  };
 
-  static String? _testApiKey;
+  static final Map<String, String> _testApiKeys = {};
 
-  static Future<String?> getApiKey({bool throwOnError = false}) async {
+  static String _normalizedCredentialProvider(String provider) {
+    final normalized = provider.trim().toLowerCase() == 'custom'
+        ? 'openai_compatible'
+        : provider.trim().toLowerCase();
+    if (!_credentialProviders.contains(normalized)) {
+      throw ArgumentError.value(
+        provider,
+        'provider',
+        'Unsupported AI credential provider',
+      );
+    }
+    return normalized;
+  }
+
+  static String apiKeyStorageKeyForProvider(String provider) =>
+      '${apiKeyStorageKey}_${_normalizedCredentialProvider(provider)}';
+
+  static Future<String?> getApiKey({
+    required String provider,
+    bool throwOnError = false,
+  }) async {
+    final normalized = _normalizedCredentialProvider(provider);
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      return _testApiKey;
+      return _testApiKeys[normalized];
     }
     try {
-      return await _secureStorage.read(key: apiKeyStorageKey);
+      return await _secureStorage.read(
+        key: apiKeyStorageKeyForProvider(normalized),
+      );
     } catch (_) {
       if (throwOnError) rethrow;
       return null;
     }
   }
 
-  static Future<void> saveApiKey(String key) async {
+  static Future<void> saveApiKey(String key, {required String provider}) async {
+    final normalized = _normalizedCredentialProvider(provider);
     if (key.isEmpty) {
-      await deleteApiKey();
+      await deleteApiKey(provider: normalized);
       return;
     }
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      _testApiKey = key;
+      _testApiKeys[normalized] = key;
       return;
     }
-    await _secureStorage.write(key: apiKeyStorageKey, value: key);
+    await _secureStorage.write(
+      key: apiKeyStorageKeyForProvider(normalized),
+      value: key,
+    );
   }
 
-  static Future<void> deleteApiKey() async {
+  static Future<void> deleteApiKey({required String provider}) async {
+    final normalized = _normalizedCredentialProvider(provider);
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      _testApiKey = null;
+      _testApiKeys.remove(normalized);
       return;
     }
+    await _secureStorage.delete(key: apiKeyStorageKeyForProvider(normalized));
+  }
+
+  /// Moves the old provider-agnostic vault entry without ever exposing it to
+  /// config, logs, subprocesses, or the network.
+  static Future<bool> migrateLegacyApiKey({required String provider}) async {
+    final normalized = _normalizedCredentialProvider(provider);
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return false;
+    final current = await _secureStorage.read(
+      key: apiKeyStorageKeyForProvider(normalized),
+    );
+    if (current != null && current.isNotEmpty) return false;
+    final legacy = await _secureStorage.read(key: apiKeyStorageKey);
+    if (legacy == null || legacy.isEmpty) return false;
+    await _secureStorage.write(
+      key: apiKeyStorageKeyForProvider(normalized),
+      value: legacy,
+    );
     await _secureStorage.delete(key: apiKeyStorageKey);
+    return true;
   }
 
   static Future<ProcessResult> run(
@@ -50,13 +106,11 @@ class PythonBridge {
     bool includeParentEnvironment = true,
     bool runInShell = false,
   }) async {
-    final apiKey = await getApiKey();
     final env = environment != null
         ? Map<String, String>.from(environment)
         : <String, String>{};
-    if (apiKey != null && apiKey.isNotEmpty) {
-      env['OMNISTORE_AI_API_KEY'] = apiKey;
-    }
+    // Generic Python helpers must never receive the AI credential. AI requests
+    // are issued directly by the consent-gated Flutter services after approval.
     return Process.run(
       executable,
       arguments,
@@ -76,13 +130,10 @@ class PythonBridge {
     bool runInShell = false,
     ProcessStartMode mode = ProcessStartMode.normal,
   }) async {
-    final apiKey = await getApiKey();
     final env = environment != null
         ? Map<String, String>.from(environment)
         : <String, String>{};
-    if (apiKey != null && apiKey.isNotEmpty) {
-      env['OMNISTORE_AI_API_KEY'] = apiKey;
-    }
+    // Keep secure-store credentials out of config and daemon subprocesses.
     return Process.start(
       executable,
       arguments,

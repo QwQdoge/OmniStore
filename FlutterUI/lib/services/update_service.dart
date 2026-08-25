@@ -129,9 +129,9 @@ class UpdateService {
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const InitializationSettings initializationSettings =
           InitializationSettings(
-        linux: initializationSettingsLinux,
-        android: initializationSettingsAndroid,
-      );
+            linux: initializationSettingsLinux,
+            android: initializationSettingsAndroid,
+          );
       try {
         await _notificationsPlugin.initialize(settings: initializationSettings);
       } catch (e) {
@@ -530,7 +530,7 @@ WantedBy=timers.target
     }
   }
 
-  Future<void> checkNow() async {
+  Future<void> checkNow({bool notify = true}) async {
     if (isCheckingUpdates.value) return;
     isCheckingUpdates.value = true;
     debugPrint("Checking for updates...");
@@ -550,7 +550,8 @@ WantedBy=timers.target
 
         // Murphy-proof: Separate notification and tray logic to prevent one's failure
         // from affecting the other.
-        if (remindEnabled &&
+        if (notify &&
+            remindEnabled &&
             notificationsEnabled &&
             currentHash != _lastNotifiedUpdateHash) {
           try {
@@ -612,7 +613,7 @@ WantedBy=timers.target
     showCompletionNotification(name, success);
 
     if (success) {
-      checkNow();
+      await checkNow(notify: false);
     }
   }
 

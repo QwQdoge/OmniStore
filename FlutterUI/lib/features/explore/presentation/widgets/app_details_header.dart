@@ -91,10 +91,12 @@ class AppDetailsHeader extends StatelessWidget {
                     )
                   : Text(
                       key: const ValueKey('text_placeholder'),
-                      app.name[0].toUpperCase(),
+                      app.name.trim().isEmpty
+                          ? '?'
+                          : app.name.trim()[0].toUpperCase(),
                       style: TextStyle(
                         fontSize: 56,
-                        color: colorScheme.onPrimary,
+                        color: colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -175,7 +177,9 @@ class AppDetailsHeader extends StatelessWidget {
                                 for (var v in extraDetails!.variants) v.source,
                               selectedSource,
                             }.map((String source) {
-                              final version = getVariantForSource(source)?.version;
+                              final version = getVariantForSource(
+                                source,
+                              )?.version;
                               return ButtonSegment<String>(
                                 value: source,
                                 label: Padding(

@@ -245,33 +245,9 @@ class SearchManager:
         combined.sort(key=lambda x: x['_smart_score'], reverse=True)
         merged = self.merge_duplicates(combined)
 
-        # ⚡ Bolt: Move AI Ranking after initial scoring and merging
-        # This ensures the AI ranks unique, relevant results instead of raw source output.
-        if self.cm.get("ai.enabled", False) and self.cm.get("ai.ranking_enabled", True) and len(query) >= 3:
-            try:
-                # Ask AI to rank the top results from the merged list
-                candidates_list = merged[:10]
-                candidates_str = [f"{i['name']} ({i['primary_source']})" for i in candidates_list]
-                ai = self.ai_assistant
-                if candidates_str and ai:
-                    prompt = f"Rank these apps for query '{query}': {', '.join(candidates_str)}"
-                    try:
-                        # Murphy-proof: Tight timeout and panic recovery for AI ranking
-                        res = await asyncio.wait_for(ai.recommend_apps(prompt, candidates_list), timeout=1.5)
-                        if res:
-                            ai_ranked_names = {n.strip() for n in res.split("\n") if n.strip()}
-
-                            # Apply AI boost to merged results and re-sort
-                            for item in merged:
-                                if item['name'] in ai_ranked_names:
-                                    item['_smart_score'] *= 1.5
-                            merged.sort(key=lambda x: x['_smart_score'], reverse=True)
-                    except asyncio.TimeoutError:
-                        logging.warning("Murphy-proof: AI Ranking timed out (1.5s). Falling back to smart score.")
-                    except Exception as e:
-                        logging.error(f"Murphy-proof: AI Ranking panic: {e}. Falling back to smart score.")
-            except Exception as e:
-                logging.warning(f"AI ranking setup failed: {e}")
+        # Provider-backed ranking used to happen automatically here whenever AI
+        # was enabled. AI calls now live exclusively in Flutter's one-time
+        # consent flow, so backend search remains deterministic and offline.
 
         exact_match_idx = -1
         for idx, item in enumerate(merged):

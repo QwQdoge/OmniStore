@@ -20,12 +20,7 @@ class ProcessExecutionService {
     required String message,
     Map<String, dynamic> extra = const {},
   }) =>
-      '[CALLBACK] ${jsonEncode(<String, dynamic>{
-        'type': type,
-        'level': level,
-        'message': message,
-        ...extra,
-      })}';
+      '[CALLBACK] ${jsonEncode(<String, dynamic>{'type': type, 'level': level, 'message': message, ...extra})}';
 
   String _errorEvent(String message, {Object? error, int? exitCode}) {
     final extra = <String, dynamic>{};
@@ -39,22 +34,14 @@ class ProcessExecutionService {
     );
   }
 
-  Map<String, String>? _environmentForApiKey(String? apiKey) {
-    if (apiKey == null || apiKey.isEmpty) return null;
-    return {'OMNISTORE_AI_API_KEY': apiKey};
-  }
-
   Future<ProcessResult?> run({
     required List<String> args,
     Duration timeout = const Duration(seconds: 30),
-    String? apiKey,
   }) async {
     if (kIsWeb) return null;
 
     if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
-      debugPrint(
-        "Python environment missing at ${_env.venvPython}",
-      );
+      debugPrint("Python environment missing at ${_env.venvPython}");
       return null;
     }
 
@@ -64,7 +51,6 @@ class ProcessExecutionService {
         _env.venvPython,
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
-        environment: _environmentForApiKey(apiKey),
         runInShell: false,
       ).timeout(const Duration(seconds: 10));
 
@@ -93,23 +79,15 @@ class ProcessExecutionService {
 
   Stream<String> stream({
     required List<String> args,
-    String? apiKey,
     Function(Process)? onProcessStarted,
   }) async* {
     if (kIsWeb) {
-      yield _event(
-        type: 'log',
-        level: 'info',
-        message: 'Web sandbox',
-      );
+      yield _event(type: 'log', level: 'info', message: 'Web sandbox');
       return;
     }
 
     if (!File(_env.venvPython).existsSync() && _env.venvPython != 'python') {
-      yield _errorEvent(
-        'Python environment missing',
-        error: _env.venvPython,
-      );
+      yield _errorEvent('Python environment missing', error: _env.venvPython);
       return;
     }
 
@@ -121,7 +99,6 @@ class ProcessExecutionService {
         _env.venvPython,
         _env.buildArgs(args),
         workingDirectory: _env.workingDir,
-        environment: _environmentForApiKey(apiKey),
         // Arguments are already passed as a list. Avoiding a shell removes an
         // unnecessary quoting/injection surface and makes exit semantics more
         // predictable across platforms.

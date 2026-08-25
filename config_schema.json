@@ -227,6 +227,10 @@
             "ollama",
             "openai",
             "gemini",
+            "deepseek",
+            "openrouter",
+            "openai_compatible",
+            "account",
             "custom"
           ]
         },

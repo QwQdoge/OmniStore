@@ -14,6 +14,7 @@ import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 class SearchResultsView extends StatelessWidget {
   final List<AppPackage> filteredResults;
   final bool isSearching;
+  final bool hasError;
   final bool isDesktop;
   final TextEditingController searchController;
   final Function(String) performSearch;
@@ -23,6 +24,7 @@ class SearchResultsView extends StatelessWidget {
     super.key,
     required this.filteredResults,
     required this.isSearching,
+    required this.hasError,
     required this.isDesktop,
     required this.searchController,
     required this.performSearch,
@@ -61,6 +63,19 @@ class SearchResultsView extends StatelessWidget {
   }
 
   Widget _buildResults(BuildContext context) {
+    if (hasError) {
+      return EmptyState(
+        key: const ValueKey('error'),
+        icon: Icons.cloud_off_rounded,
+        title: l10n.failed,
+        subtitle: l10n.searchFailedSubtitle,
+        child: FilledButton.icon(
+          onPressed: () => performSearch(searchController.text),
+          icon: const Icon(Icons.refresh_rounded),
+          label: Text(l10n.retry),
+        ),
+      );
+    }
     if (filteredResults.isEmpty) {
       return EmptyResults(
         key: const ValueKey('empty'),

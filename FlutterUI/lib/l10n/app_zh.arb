@@ -8,7 +8,7 @@
   "explore": "探索",
   "search": "搜索",
   "settings": "设置",
-  "downloads": "下载",
+  "downloads": "任务与更新",
   "help": "帮助",
   "userAccount": "用户账户",
   "install": "安装",
@@ -44,6 +44,10 @@
   },
   "packageManager": "软件包管理器",
   "pacmanOfficial": "Pacman（官方软件源）",
+  "pacmanBrowsingNoAuthorization": "浏览、搜索、查看详情和检查 Pacman 更新均不需要账号或管理员认证；只有修改系统时才会请求授权。",
+  "@pacmanBrowsingNoAuthorization": {
+    "description": "说明 Pacman 操作何时需要授权"
+  },
   "aurUser": "AUR（用户软件源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -166,7 +170,7 @@
   "@refresh": {
     "description": "Refresh action label"
   },
-  "noActiveTasks": "暂无进行中的任务",
+  "noActiveTasks": "暂无进行中或已完成的任务",
   "@noActiveTasks": {
     "description": "Message shown when no tasks are running"
   },
@@ -178,7 +182,7 @@
   "@viewLogs": {
     "description": "Button label to open task logs"
   },
-  "allUpdated": "应用已是最新版本",
+  "allUpdated": "未发现软件包更新",
   "@allUpdated": {
     "description": "Status text when all applications are up to date"
   },
@@ -186,6 +190,23 @@
   "@update": {
     "description": "Update action label"
   },
+  "updatingSourcePackages": "正在更新 {source} 软件包…",
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceUpdateFailed": "{source} 更新失败",
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "enabledSourcesUpdated": "所有已启用的软件源均已更新",
   "enableSystemTray": "启用系统托盘",
   "@enableSystemTray": {
     "description": "Toggle label for system tray support"
@@ -194,7 +215,9 @@
   "@systemCleaning": {
     "description": "Section title for system cleanup"
   },
-  "systemCleaningDesc": "清理孤立软件包与 pacman 缓存",
+  "system": "系统",
+  "clean": "清理",
+  "systemCleaningDesc": "移除孤立软件包并清空 Pacman 缓存（需要管理员授权）",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -471,11 +494,11 @@
   "fixProblems": "一键修复/配置",
   "continueAnyway": "仍然继续",
   "sourceConfigTitle": "软件源配置",
-  "sourceConfigSubtitle": "选择要启用的软件源",
+  "sourceConfigSubtitle": "选择 OmniStore 可以搜索的软件来源",
   "enableAur": "启用 AUR (Arch User Repository)",
   "yayDesc": "启用 AUR 需要安装 yay 助手。",
   "aurWarning": "安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。",
-  "bootstrapNote": "注意：配置过程可能需要多次输入管理员密码。",
+  "bootstrapNote": "浏览无需任何授权；只有配置需要修改系统时才会请求管理员授权。",
   "feedbackDesc": "通过 GitHub 反馈遇到的问题。",
   "aiAssistant": "AI 助手",
   "aiAssistantDesc": "启用 AI 驱动的搜索、应用解析及错误诊断",
@@ -572,6 +595,19 @@
   "processing": "正在处理",
   "clear": "清除",
   "retry": "重试",
+  "searchFailedSubtitle": "无法连接软件源。请检查网络连接后重试。",
+  "@searchFailedSubtitle": {
+    "description": "软件包搜索失败时显示的说明"
+  },
+  "pluginCapabilities": "{count} 项能力",
+  "@pluginCapabilities": {
+    "description": "软件源插件提供的能力数量",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "aiResponseFailed": "AI 响应失败。",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -963,7 +999,7 @@
   "enableSystemdServiceDesc": "允许在应用关闭时通过注册 systemd 定时器来静默检查更新",
   "taskHistory": "任务历史记录",
   "unknownApp": "未知应用",
-  "taskSuccessMsg": "任务执行成功",
+  "taskSuccessMsg": "已成功完成",
   "failureReason": "失败原因：{message}",
   "@failureReason": {
     "placeholders": {
@@ -983,7 +1019,7 @@
   "rankings": "排行榜",
   "trending": "热度榜",
   "latestUpdates": "最新更新",
-  "searchNoResultsSubtitle": "尝试搜索其他关键词",
+  "searchNoResultsSubtitle": "请尝试其他关键词，或启用更多软件源",
   "pluginsAndSources": "插件与软件源",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
@@ -1205,7 +1241,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "应用与设置已安全备份",
+  "syncStatusSubtitle": "点按备份 OmniStore 应用列表",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },
@@ -1285,7 +1321,7 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "配置个人访问令牌 (PAT)",
+  "configurePat": "GitHub 访问令牌（可选）",
   "@configurePat": {
     "description": "Description for configurePat"
   },

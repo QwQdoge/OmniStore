@@ -8,7 +8,7 @@
   "explore": "探索",
   "search": "検索",
   "settings": "設定",
-  "downloads": "ダウンロード",
+  "downloads": "処理とアップデート",
   "help": "ヘルプ",
   "userAccount": "ユーザーアカウント",
   "install": "インストール",
@@ -44,6 +44,10 @@
   },
   "packageManager": "パッケージマネージャー",
   "pacmanOfficial": "Pacman（公式リポジトリ）",
+  "pacmanBrowsingNoAuthorization": "Pacman の閲覧、検索、詳細表示、更新確認にはアカウント認証も管理者認証も不要です。システムを変更する場合にのみ認証を求めます。",
+  "@pacmanBrowsingNoAuthorization": {
+    "description": "Pacman 操作で認証が必要になる条件の説明"
+  },
   "aurUser": "AUR（ユーザーリポジトリ）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -166,7 +170,7 @@
   "@refresh": {
     "description": "refresh"
   },
-  "noActiveTasks": "アクティブなタスクはありません",
+  "noActiveTasks": "実行中または完了済みの処理はありません",
   "@noActiveTasks": {
     "description": "noActiveTasks"
   },
@@ -178,7 +182,7 @@
   "@viewLogs": {
     "description": "viewLogs"
   },
-  "allUpdated": "すべてのアプリは最新バージョンです",
+  "allUpdated": "パッケージの更新はありません",
   "@allUpdated": {
     "description": "allUpdated"
   },
@@ -186,6 +190,23 @@
   "@update": {
     "description": "update"
   },
+  "updatingSourcePackages": "{source} パッケージを更新しています…",
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceUpdateFailed": "{source} の更新に失敗しました",
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "enabledSourcesUpdated": "有効なパッケージソースはすべて最新です",
   "enableSystemTray": "システムトレイを有効にする",
   "@enableSystemTray": {
     "description": "enableSystemTray"
@@ -194,7 +215,9 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
-  "systemCleaningDesc": "孤立パッケージの削除と pacman キャッシュのクリーンアップ",
+  "system": "システム",
+  "clean": "クリーンアップ",
+  "systemCleaningDesc": "孤立パッケージを削除して Pacman キャッシュを消去します（管理者認証が必要）",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -467,11 +490,11 @@
   "fixProblems": "すべて修正 / 設定",
   "continueAnyway": "とにかく続行",
   "sourceConfigTitle": "ソフトウェアソース",
-  "sourceConfigSubtitle": "有効にするソースを選択してください",
+  "sourceConfigSubtitle": "OmniStore が検索できるソフトウェアソースを選択します",
   "enableAur": "AUR (Arch User Repository) を有効にする",
   "yayDesc": "AUR を有効にするには yay ヘルパーのインストールが必要です。",
   "aurWarning": "セキュリティ警告: AUR パッケージはユーザーによって提供されています。ソースを信頼できることを確認してください。",
-  "bootstrapNote": "注意: セットアップにはパスワードの入力が数回必要な場合があります。",
+  "bootstrapNote": "閲覧に認証は不要です。セットアップでシステムを変更する場合のみ管理者認証を求めます。",
   "feedbackDesc": "問題が発生した場合は、GitHub で報告してください。",
   "aiAssistant": "AI アシスタント",
   "aiAssistantDesc": "AI による検索補助、アプリの説明、エラー診断を有効にします。",
@@ -568,6 +591,19 @@
   "processing": "処理中",
   "clear": "クリア",
   "retry": "再試行",
+  "searchFailedSubtitle": "ソフトウェアソースに接続できませんでした。接続を確認して再試行してください。",
+  "@searchFailedSubtitle": {
+    "description": "パッケージ検索に失敗した場合の説明"
+  },
+  "pluginCapabilities": "{count} 個の機能",
+  "@pluginCapabilities": {
+    "description": "ソースプラグインが提供する機能の数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "aiResponseFailed": "AI の応答に失敗しました。",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -959,7 +995,7 @@
   "enableSystemdServiceDesc": "アプリが閉じているときに更新をサイレントに確認するため、systemd タイマーの登録を許可します",
   "taskHistory": "タスク履歴",
   "unknownApp": "不明なアプリ",
-  "taskSuccessMsg": "タスクが正常に実行されました",
+  "taskSuccessMsg": "正常に完了しました",
   "failureReason": "失敗理由：{message}",
   "@failureReason": {
     "placeholders": {
@@ -979,7 +1015,7 @@
   "rankings": "ランキング",
   "trending": "トレンド",
   "latestUpdates": "最新の更新",
-  "searchNoResultsSubtitle": "別のキーワードで検索してみてください",
+  "searchNoResultsSubtitle": "別のキーワードを試すか、ソフトウェアソースを追加で有効にしてください",
   "pluginsAndSources": "プラグインとソース",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
@@ -1201,7 +1237,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "アプリと設定はバックアップされています",
+  "syncStatusSubtitle": "タップして OmniStore のアプリ一覧をバックアップ",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },
@@ -1281,7 +1317,7 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "個人アクセストークンの設定",
+  "configurePat": "GitHub アクセストークン（任意）",
   "@configurePat": {
     "description": "Description for configurePat"
   },
