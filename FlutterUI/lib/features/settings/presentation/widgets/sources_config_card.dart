@@ -196,8 +196,10 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   children: sources.map((src) {
                     final bool isEnabled =
                         sourcesMap[src] ?? (src == 'github' || src == 'bitu');
+                    final displayName = _displayName(src);
                     return FilterChip(
-                      label: Text(_displayName(src)),
+                      label: Text(displayName),
+                      tooltip: displayName,
                       selected: isEnabled,
                       onSelected: _updatingSources.contains(src)
                           ? null

@@ -243,3 +243,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
 
 - Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
+
+## 2026-08-19 - Material Design 3 GitHub PAT Form & Chip Tooltips Polish
+
+**Learning:** Credential configuration forms on desktop screens require surface elevation containers (`surfaceContainerLow` Card with 20dp border radius, subtle outline border) constrained to max-width (e.g. 600px) to prevent stretched inputs and maintain MD3 visual harmony. Obscured token fields must feature an `IconButton` suffix toggle with localized `tooltip`s (`showPassword`/`hidePassword`) and `onSubmitted` handlers so users can verify input and save using the Enter key. Additionally, passing explicit `tooltip` strings to `FilterChip` and `ChoiceChip` widgets provides hover feedback on desktop and accessible screen-reader descriptions without creating duplicate `Semantics` wrapper nodes.
+
+**Action:** Standardized `GitHubIntegrationPage` with MD3 surface card framing, circular icon header, max-width constraints, and password visibility toggle with localized tooltips. Added explicit `tooltip` parameters to `FilterChip` and `ChoiceChip` widgets across configuration and filter views (`sources_config_card`, `search_filters`, `installed_tab`).
