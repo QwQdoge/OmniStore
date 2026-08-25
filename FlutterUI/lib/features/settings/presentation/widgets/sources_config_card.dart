@@ -179,12 +179,15 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                       onPressed: _detectingSources
                           ? null
                           : () => _autoDetectSources(l10n),
-                      icon: _detectingSources
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.radar_rounded, size: 18),
+                      icon: SmoothSizeSwitcher(
+                        child: _detectingSources
+                            ? const SizedBox.square(
+                                key: ValueKey('loading'),
+                                dimension: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.radar_rounded, size: 18, key: ValueKey('idle')),
+                      ),
                       label: Text(l10n.autoDetect),
                     ),
                   ],

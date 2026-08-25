@@ -402,6 +402,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   Widget _buildAccountCallout({
+    Key? key,
     required Color background,
     required String title,
     required String detail,
@@ -410,6 +411,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     required VoidCallback onPressed,
   }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: background,
@@ -471,9 +473,17 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   Widget _buildAccountConnectionCard(Map<dynamic, dynamic> aiConfig) {
+    return SmoothSizeSwitcher(
+      alignment: Alignment.topCenter,
+      child: _buildAccountConnectionCardContent(aiConfig),
+    );
+  }
+
+  Widget _buildAccountConnectionCardContent(Map<dynamic, dynamic> aiConfig) {
     final colors = Theme.of(context).colorScheme;
     if (!_authService.isAuthenticated) {
       return _buildAccountCallout(
+        key: const ValueKey('unauth'),
         background: colors.secondaryContainer.withValues(alpha: 0.55),
         title: '先登录 Meo Account',
         detail: '登录后即可选择账号中加密保存的 AI 连接；API 密钥不会下发到 OmniStore。',
@@ -485,6 +495,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
     if (_isLoadingAccountCredentials) {
       return const ListTile(
+        key: ValueKey('loading'),
         contentPadding: EdgeInsets.zero,
         leading: SizedBox.square(
           dimension: 24,
@@ -497,6 +508,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
     if (_accountCredentialError != null) {
       return ListTile(
+        key: const ValueKey('error'),
         contentPadding: EdgeInsets.zero,
         leading: Icon(Icons.cloud_off_rounded, color: colors.error),
         title: const Text('无法读取账号 AI 连接'),
@@ -511,6 +523,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
     if (_accountCredentials.isEmpty) {
       return _buildAccountCallout(
+        key: const ValueKey('empty'),
         background: colors.surfaceContainerHigh,
         title: '账号中还没有 AI 连接',
         detail: '前往 Account 填写你自己的 API 密钥并安全保存，然后回到这里刷新。',
@@ -527,6 +540,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
         : null;
 
     return Column(
+      key: const ValueKey('configured'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String>(

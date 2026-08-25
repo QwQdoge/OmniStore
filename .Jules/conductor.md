@@ -81,3 +81,9 @@ These changes preserve responsiveness, apply subtle MD3 motion, and strictly eli
 **Learning:** `AnimatedSwitcher` and `SmoothSizeSwitcher` can only accept a single child widget. When refactoring conditional logic that previously used a spread operator (`...items`) to inject multiple elements directly into a parent `Column` or `ListView`, wrap the elements in a nested `Column(mainAxisSize: MainAxisSize.min, children: items)` and assign it a `ValueKey`. This safely provides the switcher with a distinct, single child to animate without disrupting the overall layout.
 
 **Action:** Refactored `sources_config_card.dart` to wrap the conditional list of plugins with a `SmoothSizeSwitcher` by encapsulating the spread operator in a nested `Column` with `ValueKey('plugins')`.
+
+## 2026-08-25 - Smooth Loading Transitions for CircularProgressIndicator
+
+**Learning:** When transitioning between an idle state (like a button icon or an empty space) and a `CircularProgressIndicator`, using raw conditional checks or `SizedBox` without an explicitly assigned `SmoothSizeSwitcher` and `ValueKey` can cause abrupt visual jumps and unpolished transitions. Wrapping the loading widget (e.g. `CircularProgressIndicator`) and its alternate state with `SmoothSizeSwitcher` and assigning `ValueKey('loading')` and `ValueKey('idle')` ensures the opacity cross-fades and size animates concurrently, preventing layout jumping.
+
+**Action:** Wrapped `CircularProgressIndicator` uses in `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` and `FlutterUI/lib/features/settings/presentation/widgets/ai_settings_section.dart` inside `SmoothSizeSwitcher` and assigned proper `ValueKey`s.
