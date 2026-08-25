@@ -183,3 +183,9 @@ Result: Significantly reduced 60fps widget rebuilds during active downloads. Tes
 **Learning:** `SliverList.builder` does not natively support the `prototypeItem` property which is critical for efficient scroll virtualization when items have uniform dimensions. Attempting to pass it causes compilation errors.
 
 **Action:** Replaced `SliverList.builder` with `SliverPrototypeExtentList.builder` in `tasks_tab.dart` and provided a skeleton `AppCard` as the `prototypeItem` to drastically reduce layout calculation overhead during scrolling.
+
+## 2026-08-25 - BackendService availableSources Rebuild Reduction
+
+**Learning:** `ValueNotifier<List<Map<String, dynamic>>>` assignments inside a `listPlugins` function instantiate new lists on every refresh, bypassing `ValueNotifier`'s shallow identity comparison and causing redundant re-renders for consumers of `availableSources`. Since the elements are Maps, a standard `ListEquality()` is insufficient because it only checks shallow references.
+
+**Action:** Wrapped the assignment of `availableSources.value` in `BackendService.listPlugins()` with `if (!const DeepCollectionEquality().equals(availableSources.value, newData))` from `package:collection/collection.dart` to effectively block redundant assignments and re-renders when the plugin list remains logically unchanged.
