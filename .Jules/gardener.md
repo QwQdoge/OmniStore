@@ -200,3 +200,8 @@ This drastically simplified the main page builds while ensuring exact behavioral
 **Learning:** Oversized inline widget builders like `_buildSignInForm` in `account_page.dart` (which was over 200 lines long) clutter stateful presentation files and make the file structure hard to parse. Extracting them into standalone stateless components improves readability and maintainability without changing behavior.
 
 **Action:** Extracted the inline `_buildSignInForm` method from `account_page.dart` into a new `SignInForm` widget located in `FlutterUI/lib/features/auth/presentation/widgets/sign_in_form.dart`.
+## 2026-08-12 - Extract AccountConnectionCard in AISettingsSection
+
+**Learning:** Oversized inline widget builders like `_buildAccountConnectionCard` and `_buildAccountCallout` in `ai_settings_section.dart` clutter stateful presentation files and make the file structure hard to parse. Extracting them into standalone stateless components improves readability and maintainability without changing behavior.
+
+**Action:** Extracted the inline `_buildAccountConnectionCard` and `_buildAccountCallout` methods from `ai_settings_section.dart` into a new `AccountConnectionCard` widget located in `FlutterUI/lib/features/settings/presentation/widgets/account_connection_card.dart`.
