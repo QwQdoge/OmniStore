@@ -37,31 +37,31 @@ class InstalledTab extends StatelessWidget {
                   child: Scrollbar(
                     controller: filterScrollController,
                     thumbVisibility: true,
-                    child: SingleChildScrollView(
+                    // ⚡ Bolt: Virtualized horizontal list for filter chips to prevent instantiating
+                    // all ChoiceChips at once when there are many installed sources.
+                    child: ListView.builder(
                       controller: filterScrollController,
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
-                      child: Row(
-                        children: availableFilters
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(_filterLabel(context, s)),
-                                  selected: selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      onSourceFilterSelected(s);
-                                    }
-                                  },
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      itemCount: availableFilters.length,
+                      itemBuilder: (context, index) {
+                        final s = availableFilters[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(_filterLabel(context, s)),
+                            selected: selectedSourceFilter == s,
+                            onSelected: (v) {
+                              if (v) {
+                                onSourceFilterSelected(s);
+                              }
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
