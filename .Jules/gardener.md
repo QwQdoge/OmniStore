@@ -1,3 +1,9 @@
+## 2026-08-26 - Extract Widgets in AISettingsSection
+
+**Learning:** Oversized inline widget builders like `_buildAccountCallout`, `_buildTextField`, and `_buildAccountConnectionCard` in `ai_settings_section.dart` clutter stateful presentation files and make the file structure hard to parse. Extracting them into standalone stateless components improves readability and maintainability without changing behavior.
+
+**Action:** Extracted the inline methods `_buildAccountCallout`, `_buildTextField`, and `_buildAccountConnectionCard` from `ai_settings_section.dart` into new `AccountCalloutCard`, `SettingsTextField`, and `AccountConnectionCard` widgets located in `FlutterUI/lib/features/settings/presentation/widgets/`.
+
 ## 2024-03-20 - Documentation and Localization Refinement
 
 **Learning:** Hardcoded strings in navigation and sidebar components are easily overlooked but significantly impact internationalization. Unifying these early under `AppLocalizations` ensures a professional feel across all supported locales.
