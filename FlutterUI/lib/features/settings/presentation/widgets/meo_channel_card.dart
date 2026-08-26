@@ -60,8 +60,14 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
 
   @override
   Widget build(BuildContext context) {
-    final channel = _state?['channel']?.toString() ?? 'Checking…';
-    final error = _state?['status'] == 'error' ? _state?['error']?.toString() : null;
+    final status = _state?['status']?.toString();
+    final channel = (_state?['currentChannel'] ?? _state?['channel'])?.toString() ?? 'Checking…';
+    final stableUnavailable = status == 'stable_unavailable';
+    final stableMessage = _state?['message']?.toString();
+    final errorMessage = _state?['error']?.toString();
+    final error = status == 'error'
+        ? errorMessage
+        : (stableUnavailable ? stableMessage : null);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +79,9 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             subtitle: Text(
               channel == 'beta'
                   ? 'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.'
-                  : 'Stable receives fully tested MeoArch release trains.',
+                  : (stableUnavailable
+                      ? 'Stable is not published for this beta trial. Your active package channel was not changed.'
+                      : 'Stable receives fully tested MeoArch release trains.'),
             ),
             trailing: Chip(label: Text(channel)),
           ),
