@@ -175,3 +175,11 @@ Action: Exposed `activeFetchFuture` from `PackageRepository` and awaited it insi
 **Action:**
 - Introduced a `_lastSearchText` caching variable in `AppsPage` to early-return from `_onSearchChanged` when only the cursor/selection has moved.
 - Wrapped the reassignment of `_filteredAppsNotifier.value` inside a `const ListEquality().equals(old, new)` condition to ensure widget listeners are only notified when the list contents actually mutate.
+
+## 2026-08-16 - State Management: Removing didChangeDependencies caching of derived data
+
+**Learning:** Prematurely caching synchronous, derived data (like `CategoryService.getCategories(context)`) in a state variable using `didChangeDependencies()` creates state duplication and risks invalidation bugs. The proper approach is to compute this inline in the `build()` method unless it's an expensive operation.
+
+**Action:**
+- Removed the `_categories` state variable and `didChangeDependencies` override in `HomePage`, `CategoryPage`, `EmptyResults`, and `DiscoveryContent`.
+- Computed `final categories = CategoryService.getCategories(context);` inline within the `build()` methods to prevent state duplication and ensure reactivity.

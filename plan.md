@@ -1,6 +1,36 @@
-1. **Remove `ThreadPoolExecutor` from `AppImageSearch`**: The executor is instantiated in `__init__` but never explicitly shut down. Since it is only used for `get_installed_appimages`, and `get_installed_appimages` just reads the filesystem once per search query (as it was refactored in a previous PR), it doesn't need a dedicated thread pool instance tied to the class lifecycle.
-2. **Use the default loop executor**: Instead of creating a custom `ThreadPoolExecutor(max_workers=2)`, we can use `loop.run_in_executor(None, self.get_installed_appimages)`. This uses the default `ThreadPoolExecutor` provided by `asyncio` (which automatically scales and manages its own lifecycle).
-3. **Clean up imports**: Remove `from concurrent.futures import ThreadPoolExecutor`.
-4. **Update Journal**: Add a note to `.Jules/sentinel.md` documenting this process leak fix.
-5. **Run tests**: Run `uv run --with-requirements python/requirements.txt pytest python/tests`.
-6. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
+
+## Overview
+
+The Librarian agent directives state: "State ownership must be obvious. Prefer minimal targeted fixes. Avoid: rewriting architecture, introducing unnecessary patterns. Focus areas: rebuild ownership, async lifecycle clarity, state duplication, invalidation correctness, and provider/bloc consistency."
+
+From reviewing `.Jules/librarian.md`, a previous action was:
+"Prematurely caching synchronous, derived data (like `CategoryService.getCategories(context)`) in a state variable using `didChangeDependencies()` creates state duplication and risks invalidation bugs. Because fetching localized strings from an InheritedWidget is typically an O(1) operation in Flutter, the small memory overhead does not justify the added lifecycle complexity.
+Action: Removed `late List<CategoryItem> _categories;` and the `didChangeDependencies()` overrides from `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`. Shifted the evaluation to `final categories = CategoryService.getCategories(context);` directly within each widget's `build()` method."
+
+However, looking at the code in those files, this bad pattern (`didChangeDependencies` caching) is back! I need to remove `_categories` and `didChangeDependencies` overrides in `HomePage`, `EmptyResults`, `DiscoveryContent`, and `CategoryPage`, and compute `categories` inline in `build()`.
+
+1. **Remove State Duplication in `HomePage`**
+   - Remove `List<CategoryItem> _categories = [];` from `_HomePageState`.
+   - Remove the `didChangeDependencies` override from `_HomePageState`.
+   - In `build()`, change any usage of `_categories` to `CategoryService.getCategories(context)`.
+
+2. **Remove State Duplication in `CategoryPage`**
+   - Remove `List<CategoryItem> _categories = [];` from `_CategoryPageState`.
+   - Remove the `didChangeDependencies` override from `_CategoryPageState`.
+   - In `build()`, change `final categories = _categories;` to `final categories = CategoryService.getCategories(context);`.
+
+3. **Remove State Duplication in `EmptyResults`**
+   - Remove `List<CategoryItem> _categories = [];` from `_EmptyResultsState`.
+   - Remove the `didChangeDependencies` override from `_EmptyResultsState`.
+   - In `build()`, change any usage of `_categories` to `CategoryService.getCategories(context)`.
+
+4. **Remove State Duplication in `DiscoveryContent`**
+   - Remove `List<CategoryItem> _categories = [];` from `_DiscoveryContentState`.
+   - Remove the `didChangeDependencies` override from `_DiscoveryContentState`.
+   - In `build()`, change any usage of `_categories` to `CategoryService.getCategories(context)`.
+
+5. **Complete pre commit steps**
+   - Ensure proper testing, verification, review, and reflection are done.
+
+6. **Submit the change**
+   - Commit and push to `fix-state-duplication`.
