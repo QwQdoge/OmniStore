@@ -1350,6 +1350,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pullToRefreshCategory => '下拉刷新或尝试其他分类。';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return '按软件源筛选：$name';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2698,4 +2703,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get pullToRefreshCategory => '下拉重新整理或嘗試其他分類。';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return '按軟體源篩選：$name';
+  }
 }

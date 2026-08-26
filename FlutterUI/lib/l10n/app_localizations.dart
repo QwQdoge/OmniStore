@@ -2628,6 +2628,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pull to refresh or try another category.'**
   String get pullToRefreshCategory;
+
+  /// No description provided for @sourceFilterSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by source: {name}'**
+  String sourceFilterSemantics(String name);
 }
 
 class _AppLocalizationsDelegate

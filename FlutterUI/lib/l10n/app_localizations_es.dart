@@ -1463,4 +1463,9 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get pullToRefreshCategory =>
       'Deslice hacia abajo para actualizar o pruebe otra categoría.';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return 'Filtrar por origen: $name';
+  }
 }

@@ -1368,5 +1368,13 @@
   "pullToRefreshCategory": "下拉刷新或尝试其他分类。",
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
+  },
+  "sourceFilterSemantics": "按软件源筛选：{name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
