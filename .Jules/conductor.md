@@ -1,3 +1,9 @@
+## 2024-11-23 - Smooth Layout Transitions for Loading Indicators
+
+**Learning:** When conditionally rendering a `CircularProgressIndicator` (or similar loading state element) to replace an interactive widget like an `Icon` inside a button or a trailing list tile component, raw conditional swaps create abrupt layout jumping. Wrapping the conditional block in a `SmoothSizeSwitcher` and assigning clear `ValueKey`s (e.g., `ValueKey('loading')` and `ValueKey('idle')`) explicitly instructs the framework to crossfade and animate the size change concurrently, ensuring unified MD3 interaction smoothness.
+
+**Action:** Standardized loading transitions in `FlutterUI/lib/features/auth/presentation/pages/account_page.dart` (sync status icon) and `FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart` (auto detect button icon) by replacing raw conditionals with `SmoothSizeSwitcher`.
+
 # Conductor Agent Journal
 
 ## Motion Polish: Eliminating Layout Jumps
