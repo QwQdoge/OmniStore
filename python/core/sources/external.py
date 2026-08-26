@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import json
+import logging
 import os
 import re
 import shutil
@@ -541,7 +542,11 @@ class ScoopSource(UnifiedSource):
                         continue
                     results.add(parts[0].lower())
                 return results
-        except Exception:
+        except (asyncio.TimeoutError, FileNotFoundError) as e:
+            logging.debug(f"[ScoopSource] Expected CLI failure retrieving installed IDs: {e}")
+            return set()
+        except Exception as e:
+            logging.warning(f"[ScoopSource] Unexpected failure retrieving installed IDs: {e}")
             return set()
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
@@ -713,7 +718,11 @@ class BrewSource(UnifiedSource):
                     if parts and not line.startswith("==>"):
                         results.add(parts[0].lower())
                 return results
-        except Exception:
+        except (asyncio.TimeoutError, FileNotFoundError) as e:
+            logging.debug(f"[BrewSource] Expected CLI failure retrieving installed IDs: {e}")
+            return set()
+        except Exception as e:
+            logging.warning(f"[BrewSource] Unexpected failure retrieving installed IDs: {e}")
             return set()
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
