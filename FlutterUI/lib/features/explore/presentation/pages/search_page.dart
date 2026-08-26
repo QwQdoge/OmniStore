@@ -136,24 +136,30 @@ class _SearchPageState extends State<SearchPage> {
                 ValueListenableBuilder<bool>(
                   valueListenable: _hasSearchText,
                   builder: (context, hasText, child) {
-                    if (hasText) {
-                      return IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: l10n.clearSearch,
-                        onPressed: () {
-                          _searchController.clear();
-                          _hasSearchText.value = false;
-                          if (!_showDiscovery || _selectedSources.isNotEmpty) {
-                            setState(() {
-                              _showDiscovery = true;
-                              _selectedSources.clear();
-                            });
-                          }
-                          context.read<BrowseController>().clearSearch();
-                        },
-                      );
-                    }
-                    return const SizedBox.shrink();
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: hasText
+                          ? IconButton(
+                              key: const ValueKey('clear_search'),
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: l10n.clearSearch,
+                              onPressed: () {
+                                _searchController.clear();
+                                _hasSearchText.value = false;
+                                if (!_showDiscovery ||
+                                    _selectedSources.isNotEmpty) {
+                                  setState(() {
+                                    _showDiscovery = true;
+                                    _selectedSources.clear();
+                                  });
+                                }
+                                context.read<BrowseController>().clearSearch();
+                              },
+                            )
+                          : const SizedBox.shrink(key: ValueKey('empty_clear')),
+                    );
                   },
                 ),
               ],

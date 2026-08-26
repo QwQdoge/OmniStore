@@ -35,6 +35,7 @@ class _DownloadPageState extends State<DownloadPage>
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  final ValueNotifier<bool> _hasSearchTextNotifier = ValueNotifier(false);
   String _lastSearchText = "";
   Timer? _searchDebounceTimer;
   final ScrollController _installedFilterScrollController = ScrollController();
@@ -56,6 +57,11 @@ class _DownloadPageState extends State<DownloadPage>
   void _onSearchChanged() {
     if (!mounted) return;
     final text = _searchController.text;
+    final hasText = text.isNotEmpty;
+    if (_hasSearchTextNotifier.value != hasText) {
+      _hasSearchTextNotifier.value = hasText;
+    }
+
     if (text == _lastSearchText) return;
     _lastSearchText = text;
 
@@ -200,6 +206,7 @@ class _DownloadPageState extends State<DownloadPage>
     _searchDebounceTimer?.cancel();
     _filterScrollController.dispose();
     _tabController.dispose();
+    _hasSearchTextNotifier.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _installedFilterScrollController.dispose();
@@ -232,18 +239,30 @@ class _DownloadPageState extends State<DownloadPage>
                   hintText: AppLocalizations.of(context)!.searchInstalledHint,
                   leading: const Icon(Icons.search_rounded),
                   trailing: [
-                    if (_searchQuery.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: AppLocalizations.of(context)!.clear,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = "";
-                            _applyFilters();
-                          });
-                        },
-                      ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _hasSearchTextNotifier,
+                      builder: (context, hasText, _) {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
+                          child: hasText
+                              ? IconButton(
+                                  key: const ValueKey('clear_search'),
+                                  icon: const Icon(Icons.close_rounded),
+                                  tooltip: AppLocalizations.of(context)!.clear,
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = "";
+                                      _applyFilters();
+                                    });
+                                  },
+                                )
+                              : const SizedBox.shrink(key: ValueKey('empty_clear')),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

@@ -26,6 +26,7 @@ class _AppsPageState extends State<AppsPage> {
     [],
   );
   final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(true);
+  final ValueNotifier<bool> _hasSearchTextNotifier = ValueNotifier(false);
   Timer? _searchDebounceTimer;
   String _lastSearchText = '';
 
@@ -41,18 +42,24 @@ class _AppsPageState extends State<AppsPage> {
     _searchDebounceTimer?.cancel();
     _filteredAppsNotifier.dispose();
     _isLoadingNotifier.dispose();
+    _hasSearchTextNotifier.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    if (_searchController.text == _lastSearchText) return;
-    _lastSearchText = _searchController.text;
+    final text = _searchController.text;
+    final hasText = text.isNotEmpty;
+    if (_hasSearchTextNotifier.value != hasText) {
+      _hasSearchTextNotifier.value = hasText;
+    }
+
+    if (text == _lastSearchText) return;
+    _lastSearchText = text;
 
     _searchDebounceTimer?.cancel();
-    final query = _searchController.text;
-    if (query.isEmpty) {
+    if (text.isEmpty) {
       _applyFilter();
       return;
     }
@@ -109,12 +116,24 @@ class _AppsPageState extends State<AppsPage> {
               hintText: l10n.searchInstalledHint,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    tooltip: l10n.clear,
-                    onPressed: () => _searchController.clear(),
-                  ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: _hasSearchTextNotifier,
+                  builder: (context, hasText, _) {
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: hasText
+                          ? IconButton(
+                              key: const ValueKey('clear_search'),
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: l10n.clear,
+                              onPressed: () => _searchController.clear(),
+                            )
+                          : const SizedBox.shrink(key: ValueKey('empty_clear')),
+                    );
+                  },
+                ),
               ],
             ),
           ),

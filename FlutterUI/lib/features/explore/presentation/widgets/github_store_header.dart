@@ -102,12 +102,25 @@ class GitHubStoreHeader extends StatelessWidget {
             hintText: l10n.searchGithubHint,
             leading: const Icon(Icons.search_rounded),
             trailing: [
-              if (isSearching)
-                IconButton(
-                  onPressed: onClearSearch,
-                  icon: const Icon(Icons.clear_rounded),
-                  tooltip: l10n.clearSearch,
-                ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: searchController,
+                builder: (context, value, _) {
+                  final showClear = isSearching || value.text.isNotEmpty;
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.fastOutSlowIn,
+                    child: showClear
+                        ? IconButton(
+                            key: const ValueKey('clear_search'),
+                            onPressed: onClearSearch,
+                            icon: const Icon(Icons.clear_rounded),
+                            tooltip: l10n.clearSearch,
+                          )
+                        : const SizedBox.shrink(key: ValueKey('empty_clear')),
+                  );
+                },
+              ),
             ],
             elevation: WidgetStateProperty.all(0),
             backgroundColor: WidgetStateProperty.all(

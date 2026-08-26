@@ -1,3 +1,9 @@
+## 2026-08-20 - SearchBar Clear Action Responsiveness and MD3 Transitions
+
+**Learning:** When using debounced search filters or asynchronous search queries with `SearchBar`, conditionally displaying the clear `IconButton` based on debounced search variables (like `_searchQuery` or `isSearching`) causes noticeable visual lag before the clear button appears as the user types. Decoupling the clear button's visibility from search execution by tracking `TextEditingController.text` instantly via `ValueNotifier<bool>` or `ValueListenableBuilder<TextEditingValue>` ensures immediate visual feedback. Furthermore, wrapping the clear action in an `AnimatedSwitcher` with standard MD3 easing curves (`Curves.easeOutCubic` / `Curves.fastOutSlowIn`) eliminates abrupt layout popping.
+
+**Action:** Standardize `SearchBar` clear action buttons across pages (`apps_page.dart`, `download_page.dart`, `search_page.dart`, `github_store_header.dart`) by using instant text state tracking and smooth `AnimatedSwitcher` transitions with MD3 curves.
+
 ## 2026-08-18 - Clean Up Redundant IconButton Semantics Wrappers
 
 **Learning:** `IconButton` and `IconButton.filledTonal` widgets natively manage their accessibility properties through their `tooltip` and `isSelected` parameters in Flutter. Wrapping native `IconButton` instances in a redundant `Semantics(button: true, label: ...)` wrapper creates duplicate accessibility nodes in screen-reader trees and bloats widget layout hierarchies.
