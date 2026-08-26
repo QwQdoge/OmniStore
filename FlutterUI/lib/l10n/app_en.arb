@@ -8,7 +8,7 @@
   "explore": "Explore",
   "search": "Search",
   "settings": "Settings",
-  "downloads": "Downloads",
+  "downloads": "Activity & Updates",
   "help": "Help",
   "userAccount": "User Account",
   "install": "Install",
@@ -23,7 +23,7 @@
     "description": "Label for app variants/versions"
   },
   "version": "Version",
-  "ready": "Ready",
+  "ready": "Installed",
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "@resultsFound": {
     "placeholders": {
@@ -44,6 +44,10 @@
   },
   "packageManager": "Package Manager",
   "pacmanOfficial": "Pacman (Official)",
+  "pacmanBrowsingNoAuthorization": "Browsing, searching, viewing details, and checking Pacman updates never require account or administrator authorization. Authorization is requested only when the system is changed.",
+  "@pacmanBrowsingNoAuthorization": {
+    "description": "Explains when Pacman operations require authorization"
+  },
   "aurUser": "AUR (User)",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
@@ -166,7 +170,7 @@
   "@refresh": {
     "description": "refresh"
   },
-  "noActiveTasks": "No active tasks",
+  "noActiveTasks": "No active or completed tasks",
   "@noActiveTasks": {
     "description": "noActiveTasks"
   },
@@ -178,7 +182,7 @@
   "@viewLogs": {
     "description": "viewLogs"
   },
-  "allUpdated": "All apps are up to date",
+  "allUpdated": "No package updates found",
   "@allUpdated": {
     "description": "allUpdated"
   },
@@ -186,6 +190,11 @@
   "@update": {
     "description": "update"
   },
+  "updatingSourcePackages": "Updating {source} packages…",
+  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "sourceUpdateFailed": "{source} update failed",
+  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "enabledSourcesUpdated": "All enabled package sources are up to date",
   "enableSystemTray": "Enable system tray",
   "@enableSystemTray": {
     "description": "enableSystemTray"
@@ -194,7 +203,9 @@
   "@systemCleaning": {
     "description": "systemCleaning"
   },
-  "systemCleaningDesc": "Delete orphan packages and clean pacman cache",
+  "system": "System",
+  "clean": "Clean",
+  "systemCleaningDesc": "Remove orphan packages and clear the Pacman cache (administrator authorization required)",
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
@@ -467,11 +478,11 @@
   "fixProblems": "Fix / Configure All",
   "continueAnyway": "Continue Anyway",
   "sourceConfigTitle": "Software Sources",
-  "sourceConfigSubtitle": "Choose the sources you want to enable",
+  "sourceConfigSubtitle": "Choose where OmniStore may search for software",
   "enableAur": "Enable AUR (Arch User Repository)",
   "yayDesc": "Enabling AUR requires installing the yay helper.",
   "aurWarning": "Security Warning: AUR packages are user-contributed. Ensure you trust the source.",
-  "bootstrapNote": "Note: Setup may require entering your password multiple times.",
+  "bootstrapNote": "Browsing never requires authorization. Administrator authorization is requested only when setup changes the system.",
   "feedbackDesc": "If you encounter issues, please report them on GitHub.",
   "aiAssistant": "AI Assistant",
   "aiAssistantDesc": "Enable AI-powered search, app explanation, and error diagnosis.",
@@ -568,6 +579,15 @@
   "processing": "Processing",
   "clear": "Clear",
   "retry": "Retry",
+  "searchFailedSubtitle": "The software sources could not be reached. Check your connection and try again.",
+  "@searchFailedSubtitle": {
+    "description": "Explanation shown when a package search fails"
+  },
+  "pluginCapabilities": "{count} capabilities",
+  "@pluginCapabilities": {
+    "description": "Number of capabilities exposed by a source plugin",
+    "placeholders": {"count": {"type": "int"}}
+  },
   "aiResponseFailed": "AI failed to respond.",
   "@aiResponseFailed": {
     "description": "Message shown when AI fails to respond"
@@ -959,7 +979,7 @@
   "enableSystemdServiceDesc": "Allow registering systemd timer to check for updates when the app is closed",
   "taskHistory": "Task History",
   "unknownApp": "Unknown App",
-  "taskSuccessMsg": "Task executed successfully",
+  "taskSuccessMsg": "Completed successfully",
   "failureReason": "Failure reason: {message}",
   "@failureReason": {
     "placeholders": {
@@ -979,7 +999,7 @@
   "rankings": "Rankings",
   "trending": "Trending",
   "latestUpdates": "Latest Updates",
-  "searchNoResultsSubtitle": "Try searching for something else",
+  "searchNoResultsSubtitle": "Try another keyword or enable more software sources",
   "pluginsAndSources": "Plugins & Sources",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
@@ -1201,7 +1221,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "Apps and settings are backed up",
+  "syncStatusSubtitle": "Tap to back up your OmniStore app list",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },
@@ -1281,7 +1301,7 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "Configure Personal Access Token",
+  "configurePat": "GitHub access token (optional)",
   "@configurePat": {
     "description": "Description for configurePat"
   },

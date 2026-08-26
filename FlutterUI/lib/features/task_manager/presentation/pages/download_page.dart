@@ -31,6 +31,7 @@ class _DownloadPageState extends State<DownloadPage>
   List<AppPackage> _filteredApps = [];
   bool _isLoadingInstalled = false;
   bool _isCheckingUpdates = false;
+  bool _isRefreshing = false;
   late String _selectedSourceFilter;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
@@ -104,24 +105,64 @@ class _DownloadPageState extends State<DownloadPage>
     }
   }
 
-  Future<void> _loadInstalledApps({bool forceRefresh = false}) async {
-    if (!mounted) return;
+  Future<bool> _loadInstalledApps({bool forceRefresh = false}) async {
+    if (!mounted || _isLoadingInstalled) return false;
     setState(() => _isLoadingInstalled = true);
     try {
       final packageRepo = context.read<PackageRepository>();
       final results = await packageRepo.listInstalled(
         forceRefresh: forceRefresh,
       );
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _installedApps = results;
         _updateFiltersList();
         _applyFilters();
       });
+      return true;
     } catch (e) {
       debugPrint("Error loading installed apps: $e");
+      if (mounted) {
+        Toast.show(context, AppLocalizations.of(context)!.failed);
+      }
+      return false;
     } finally {
       if (mounted) setState(() => _isLoadingInstalled = false);
+    }
+  }
+
+  Future<void> _refreshAll() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    try {
+      await Future.wait([
+        _loadInstalledApps(forceRefresh: true),
+        _checkUpdatesWithFeedback(),
+      ]);
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
+  }
+
+  Future<void> _refreshAfterUpdate(bool success) async {
+    if (!mounted || _isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    try {
+      await Future.wait([
+        _loadInstalledApps(forceRefresh: true),
+        UpdateService().checkNow(notify: false),
+      ]);
+      if (!mounted) return;
+
+      final remaining = UpdateService().availableUpdates.value.length;
+      final l10n = AppLocalizations.of(context)!;
+      Toast.show(
+        context,
+        remaining == 0 ? l10n.allUpdated : l10n.foundUpdates(remaining),
+      );
+      _tabController.animateTo(remaining == 0 || success ? 1 : 0);
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
     }
   }
 
@@ -275,7 +316,7 @@ class _DownloadPageState extends State<DownloadPage>
           ),
           SmoothSizeSwitcher(
             alignment: Alignment.center,
-            child: _isCheckingUpdates
+            child: _isRefreshing
                 ? const Padding(
                     key: ValueKey('checking_updates'),
                     padding: EdgeInsets.all(12.0),
@@ -288,10 +329,7 @@ class _DownloadPageState extends State<DownloadPage>
                 : IconButton(
                     key: const ValueKey('refresh_icon'),
                     icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      _loadInstalledApps(forceRefresh: true);
-                      _checkUpdatesWithFeedback();
-                    },
+                    onPressed: _refreshAll,
                     tooltip: AppLocalizations.of(context)!.refresh,
                   ),
           ),
@@ -301,7 +339,10 @@ class _DownloadPageState extends State<DownloadPage>
         controller: _tabController,
         children: [
           const TasksTab(),
-          UpdatesTab(onUpdateStarted: () => _tabController.animateTo(0)),
+          UpdatesTab(
+            onUpdateStarted: () => _tabController.animateTo(0),
+            onUpdateFinished: _refreshAfterUpdate,
+          ),
           InstalledTab(
             isLoading: _isLoadingInstalled,
             selectedSourceFilter: _selectedSourceFilter,

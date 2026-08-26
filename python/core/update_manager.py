@@ -23,27 +23,43 @@ class UpdateManager:
         package or report a false success.
         """
         commands = []
+        privilege_env = None
         if shutil.which("pacman"):
-            if not await self.privilege.ensure_privileged(callback):
+            try:
+                # Do not run a separate sudo -v probe here. The real Pacman
+                # command is the authorization boundary, so GUI users see one
+                # prompt instead of a validation prompt followed by execution.
+                privilege_env = await self.privilege.subprocess_environment()
+            except RuntimeError as exc:
+                await self._emit(callback, f"[ERROR] {exc}")
                 return False
-            commands.append(("Pacman", ["sudo", "pacman", "-Syu", "--noconfirm"]))
+            commands.append(("Pacman", ["sudo", "-A", "pacman", "-Syu", "--noconfirm"], privilege_env))
         if shutil.which("flatpak"):
-            commands.append(("Flatpak", ["flatpak", "update", "--user", "-y"]))
+            commands.append(("Flatpak", ["flatpak", "update", "--user", "-y"], None))
         include_aur = bool(
             self.config
             and self.config.get("updates.include_aur_in_update_all", False)
         )
         if include_aur and shutil.which("yay"):
-            commands.append(("AUR", ["yay", "-Syu", "--noconfirm"]))
+            if privilege_env is None:
+                try:
+                    privilege_env = await self.privilege.subprocess_environment()
+                except RuntimeError as exc:
+                    await self._emit(callback, f"[ERROR] {exc}")
+                    return False
+            # Pacman already handled repository packages above. -Sua limits
+            # this phase to AUR packages and avoids a duplicate system upgrade
+            # plus its extra authorization requests.
+            commands.append(("AUR", ["yay", "--sudoflags", "-A", "-Sua", "--noconfirm"], privilege_env))
 
         if not commands:
             await self._emit(callback, "[ERROR] No supported update manager is available.")
             return False
 
         succeeded = True
-        for index, (name, command) in enumerate(commands):
+        for index, (name, command, command_env) in enumerate(commands):
             await self._emit(callback, f"[INFO] Updating {name} packages...")
-            if not await self._run_update_command(command, callback):
+            if not await self._run_update_command(command, callback, env=command_env):
                 succeeded = False
                 await self._emit(callback, f"[ERROR] {name} update failed.")
             await self._emit(
@@ -54,12 +70,13 @@ class UpdateManager:
             await self._emit(callback, "[INFO] All enabled package sources are up to date.")
         return succeeded
 
-    async def _run_update_command(self, command, callback) -> bool:
+    async def _run_update_command(self, command, callback, env=None) -> bool:
         try:
             async with safe_subprocess(
                 *command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
+                env=env,
             ) as proc:
                 if proc.stdout:
                     async for raw_line in proc.stdout:

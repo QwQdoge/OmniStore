@@ -12,6 +12,7 @@ import 'package:frontend/features/explore/presentation/controllers/browse_contro
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/services/l10n_service.dart';
+import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,10 +31,13 @@ Future<void> bootstrapOmniStore() async {
   try {
     // ⚡ Load config first to know window style
     config = await configRepo.loadConfig();
+    await BackendService.instance.setBackgroundDaemonEnabled(
+      config['daemon']?['enabled'] == true,
+    );
     // 始终使用系统标题栏，忽略配置中的 use_system_title_bar 选项
     const useSystemTitleBar = true;
 
-        final results = await Future.wait([
+    final results = await Future.wait([
       DesktopWindowService.initialize(
         useSystemTitleBar: useSystemTitleBar,
       ).timeout(const Duration(seconds: 5)),

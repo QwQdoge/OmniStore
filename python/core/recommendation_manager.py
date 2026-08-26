@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import json
+import os
 import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -13,7 +14,12 @@ class RecommendationManager:
         self.backend = backend
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
-        self.cache_dir = Path.home() / ".cache" / "omnistore"
+        xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
+        self.cache_dir = (
+            Path(xdg_cache_home) / "omnistore"
+            if xdg_cache_home
+            else Path.home() / ".cache" / "omnistore"
+        )
         self.cache_path = self.cache_dir / "recommendations.json"
         self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
         self.featured_config_path = Path(__file__).with_name("featured_apps.json")
@@ -399,8 +405,9 @@ class RecommendationManager:
                                     break
 
                     result = {
-                        "name": data.get("name"),
-                        "description": data.get("description"),
+                        "id": app_id,
+                        "name": data.get("name") or app_id,
+                        "description": data.get("description") or "",
                         "screenshots": screenshots,
                         "developer": data.get("developer_name"),
                         "homepage": data.get("urls", {}).get("homepage"),

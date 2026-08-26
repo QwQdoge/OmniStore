@@ -8,6 +8,7 @@ import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class SearchResultTile extends StatelessWidget {
   final AppPackage app;
@@ -24,6 +25,7 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroTag = 'search-result-${app.name}-${app.primarySource}';
+    final l10n = AppLocalizations.of(context)!;
 
     // Check if this specific app is currently selected in BrowseController
     final isSelected = context.select<BrowseController, bool>((b) {
@@ -45,7 +47,8 @@ class SearchResultTile extends StatelessWidget {
     });
 
     return Semantics(
-      label: 'Search result: ${app.name} from ${app.primarySource}',
+      label:
+          '${l10n.search}: ${app.name} · ${l10n.source}: ${app.primarySource}',
       button: true,
       selected: isSelected,
       child: AppCard(
@@ -122,7 +125,9 @@ class SearchResultTile extends StatelessWidget {
                     },
                   )
                 : Text(
-                    app.description,
+                    app.description.trim().isEmpty
+                        ? l10n.noDescription
+                        : app.description,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -130,6 +135,7 @@ class SearchResultTile extends StatelessWidget {
                 ? Selector<TaskController, String>(
                     selector: (context, c) => c.speed,
                     builder: (context, speed, child) {
+                      if (speed.trim().isEmpty) return const SizedBox.shrink();
                       return Text(
                         speed,
                         style: TextStyle(

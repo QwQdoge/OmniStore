@@ -7,7 +7,8 @@ import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:frontend/features/auth/presentation/widgets/sign_in_form.dart';
-
+import 'package:frontend/services/sync_service.dart';
+import 'package:frontend/features/auth/system_account_service.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -21,6 +22,17 @@ class _AccountPageState extends State<AccountPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isObscure = true;
   bool _isLoading = false;
+  bool _isSyncing = false;
+  bool? _lastSyncSucceeded;
+  bool _systemAccountAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemAccountService.instance.isAvailable().then((available) {
+      if (mounted) setState(() => _systemAccountAvailable = available);
+    });
+  }
 
   @override
   void dispose() {
@@ -62,6 +74,19 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+  Future<void> _syncNow() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    final succeeded = await SyncService().syncInstalledApps();
+    if (!mounted) return;
+    setState(() {
+      _isSyncing = false;
+      _lastSyncSucceeded = succeeded;
+    });
+    final l10n = AppLocalizations.of(context)!;
+    Toast.show(context, succeeded ? l10n.syncStatusSubtitle : l10n.failed);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -89,16 +114,20 @@ class _AccountPageState extends State<AccountPage> {
             child: isAuthenticated
                 ? _buildAccountProfile(authService.currentUser!)
                 : SignInForm(
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  isObscure: _isObscure,
-                  isLoading: _isLoading,
-                  onToggleObscure: () => setState(() => _isObscure = !_isObscure),
-                  onSignIn: _handleEmailSignIn,
-                  onCreateAccount: _openAccountUrl,
-                  onSignInWithGoogle: () => AuthService().signInWithGoogle(),
-                  onSignInWithGitHub: () => AuthService().signInWithGitHub(),
-                ),
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    isObscure: _isObscure,
+                    isLoading: _isLoading,
+                    onToggleObscure: () =>
+                        setState(() => _isObscure = !_isObscure),
+                    onSignIn: _handleEmailSignIn,
+                    onCreateAccount: _openAccountUrl,
+                    onSignInWithGoogle: () => AuthService().signInWithGoogle(),
+                    onSignInWithGitHub: () => AuthService().signInWithGitHub(),
+                    onSignInWithSystemAccount: _systemAccountAvailable
+                        ? () => AuthService().signInWithSystemAccount()
+                        : null,
+                  ),
           ),
         );
       },
@@ -111,7 +140,9 @@ class _AccountPageState extends State<AccountPage> {
     final l10n = AppLocalizations.of(context)!;
 
     final displayName =
-        user.userMetadata?['full_name'] as String? ?? user.email ?? l10n.defaultUser;
+        user.userMetadata?['full_name'] as String? ??
+        user.email ??
+        l10n.defaultUser;
     final avatarUrl = user.userMetadata?['avatar_url'] as String?;
 
     return Center(
@@ -133,8 +164,9 @@ class _AccountPageState extends State<AccountPage> {
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: colorScheme.primaryContainer,
-                  backgroundImage:
-                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                  backgroundImage: avatarUrl != null
+                      ? NetworkImage(avatarUrl)
+                      : null,
                   child: avatarUrl == null
                       ? Icon(
                           Icons.person_rounded,
@@ -178,17 +210,33 @@ class _AccountPageState extends State<AccountPage> {
               child: Column(
                 children: [
                   ListTile(
-                    leading: Icon(Icons.sync_rounded, color: colorScheme.primary),
-                    title: Text(
-                      l10n.syncStatus,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(l10n.syncStatusSubtitle),
-                    trailing: Icon(
-                      Icons.check_circle_rounded,
+                    leading: Icon(
+                      Icons.sync_rounded,
                       color: colorScheme.primary,
                     ),
+                    title: Text(
+                      l10n.syncStatus,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(l10n.syncStatusSubtitle),
+                    trailing: _isSyncing
+                        ? const SizedBox.square(
+                            dimension: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          )
+                        : Icon(
+                            _lastSyncSucceeded == false
+                                ? Icons.error_rounded
+                                : _lastSyncSucceeded == true
+                                ? Icons.check_circle_rounded
+                                : Icons.cloud_upload_rounded,
+                            color: _lastSyncSucceeded == false
+                                ? colorScheme.error
+                                : colorScheme.primary,
+                          ),
+                    onTap: _isSyncing ? null : _syncNow,
                   ),
                   Divider(
                     height: 1,
@@ -201,12 +249,12 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                     title: Text(
                       l10n.manageAccount,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(l10n.manageAccountSubtitle),
-                    trailing:
-                        const Icon(Icons.open_in_new_rounded, size: 20),
+                    trailing: const Icon(Icons.open_in_new_rounded, size: 20),
                     onTap: _openAccountUrl,
                   ),
                   Divider(
@@ -214,8 +262,10 @@ class _AccountPageState extends State<AccountPage> {
                     color: colorScheme.outlineVariant.withValues(alpha: 0.4),
                   ),
                   ListTile(
-                    leading:
-                        Icon(Icons.logout_rounded, color: colorScheme.error),
+                    leading: Icon(
+                      Icons.logout_rounded,
+                      color: colorScheme.error,
+                    ),
                     title: Text(
                       l10n.signOut,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -233,5 +283,4 @@ class _AccountPageState extends State<AccountPage> {
       ),
     );
   }
-
 }

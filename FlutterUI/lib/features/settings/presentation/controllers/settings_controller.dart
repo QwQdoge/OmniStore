@@ -6,12 +6,19 @@ import 'package:frontend/data/repositories/config_repository.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:frontend/services/backend_service.dart';
 
-typedef DaemonEnvironmentUpdater = Future<bool> Function(
-  Map<String, String> environment,
-);
+typedef DaemonEnvironmentUpdater =
+    Future<bool> Function(Map<String, String> environment);
 typedef UpdateConfigRefresher = Future<void> Function();
 
 class SettingsController with ChangeNotifier {
+  static const Set<String> _localCredentialProviders = {
+    'openai',
+    'gemini',
+    'deepseek',
+    'openrouter',
+    'openai_compatible',
+  };
+
   bool _disposed = false;
 
   final ConfigRepository _configRepository;
@@ -21,7 +28,7 @@ class SettingsController with ChangeNotifier {
   Map<String, dynamic> _config = {};
   bool _isAIEnabled = false;
   bool _isRailExpanded = true;
-  String? _knownApiKey;
+  bool _hasLocalAiCredential = false;
   bool _credentialStateKnown = false;
 
   SettingsController(
@@ -48,7 +55,30 @@ class SettingsController with ChangeNotifier {
 
   Map<String, dynamic> get config => _config;
   bool get isAIEnabled => _isAIEnabled;
+  bool get hasLocalAiCredential => _hasLocalAiCredential;
+  bool get localAiCredentialStateKnown => _credentialStateKnown;
   bool get isRailExpanded => _isRailExpanded;
+
+  String? _credentialProvider(Object? aiConfig) {
+    if (aiConfig is! Map) return null;
+    final raw = aiConfig['provider']?.toString().trim().toLowerCase() ?? '';
+    final normalized = raw == 'custom' ? 'openai_compatible' : raw;
+    return _localCredentialProviders.contains(normalized) ? normalized : null;
+  }
+
+  Future<void> _readCredentialMarker(String? provider) async {
+    if (provider == null) {
+      _hasLocalAiCredential = false;
+      _credentialStateKnown = true;
+      return;
+    }
+    final apiKey = await PythonBridge.getApiKey(
+      provider: provider,
+      throwOnError: true,
+    );
+    _hasLocalAiCredential = apiKey != null && apiKey.isNotEmpty;
+    _credentialStateKnown = true;
+  }
 
   // ─── Theme Mode ──────────────────────────────────────
   ThemeMode get themeMode {
@@ -149,7 +179,16 @@ class SettingsController with ChangeNotifier {
     final config = Map<String, dynamic>.from(_config);
     config['daemon'] = Map<String, dynamic>.from(config['daemon'] ?? {});
     config['daemon']['enabled'] = value;
-    await updateConfig(config);
+    config['updates'] = Map<String, dynamic>.from(config['updates'] ?? {});
+    if (!value) {
+      config['updates']['enable_systemd_service'] = false;
+    }
+    final saved = await updateConfig(config);
+    if (!saved) return;
+    await BackendService.instance.setBackgroundDaemonEnabled(value);
+    if (!value) {
+      await UpdateService().removeSystemdBackgroundTimer();
+    }
   }
 
   bool get autoUpdate => _config['daemon']?['auto_update'] ?? false;
@@ -260,49 +299,88 @@ class SettingsController with ChangeNotifier {
     _isAIEnabled = _config['ai']?['enabled'] ?? false;
     _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
 
-    // Read the credential from secure storage only for the editable UI state.
+    // Bind legacy credentials to the configured provider inside the platform
+    // vault. Plaintext from an older config is moved only after the secure
+    // write succeeds, then the ordinary config is scrubbed.
+    final aiConfig = Map<String, dynamic>.from(_config['ai'] ?? {});
+    final credentialProvider = _credentialProvider(aiConfig);
+    final legacyPlaintext = aiConfig['api_key'] is String
+        ? (aiConfig['api_key'] as String).trim()
+        : '';
+    var migratedPlaintext = false;
     try {
-      final apiKey = await PythonBridge.getApiKey(throwOnError: true);
-      _knownApiKey = apiKey;
-      _credentialStateKnown = true;
-      if (apiKey != null && apiKey.isNotEmpty) {
-        _config['ai'] = Map<String, dynamic>.from(_config['ai'] ?? {});
-        _config['ai']['api_key'] = apiKey;
+      if (credentialProvider != null) {
+        if (legacyPlaintext.isNotEmpty &&
+            legacyPlaintext != '******' &&
+            legacyPlaintext.length >= 8 &&
+            !legacyPlaintext.contains(RegExp(r'[\r\n\x00]'))) {
+          await PythonBridge.saveApiKey(
+            legacyPlaintext,
+            provider: credentialProvider,
+          );
+          migratedPlaintext = true;
+        } else {
+          await PythonBridge.migrateLegacyApiKey(provider: credentialProvider);
+        }
       }
+      await _readCredentialMarker(credentialProvider);
     } catch (error) {
-      _knownApiKey = null;
+      _hasLocalAiCredential = false;
       _credentialStateKnown = false;
-      debugPrint(
-        'Failed to read AI credential storage: ${error.runtimeType}',
-      );
+      debugPrint('Failed to read AI credential storage: ${error.runtimeType}');
+    }
+    aiConfig['api_key'] = _hasLocalAiCredential ? '******' : '';
+    _config['ai'] = aiConfig;
+    if (migratedPlaintext) {
+      final sanitized = Map<String, dynamic>.from(_config);
+      sanitized['ai'] = Map<String, dynamic>.from(aiConfig)..['api_key'] = '';
+      try {
+        final scrubbed = await _configRepository.saveConfig(sanitized);
+        if (!scrubbed) {
+          debugPrint(
+            'Secure AI credential migrated, but legacy config scrubbing failed.',
+          );
+        }
+      } catch (error) {
+        debugPrint(
+          'Failed to scrub legacy AI credential config: ${error.runtimeType}',
+        );
+      }
     }
     notifyListeners();
   }
 
   Future<bool> updateConfig(Map<String, dynamic> newConfig) async {
     final aiConfig = newConfig['ai'];
+    final credentialProvider = _credentialProvider(aiConfig);
     final apiKeyValue = aiConfig is Map ? aiConfig['api_key'] : null;
     final String? submittedApiKey =
-        apiKeyValue is String && apiKeyValue != '******'
-        ? apiKeyValue
-        : null;
+        apiKeyValue is String && apiKeyValue != '******' ? apiKeyValue : null;
 
     final currentAiConfig = _config['ai'];
+    final currentCredentialProvider = _credentialProvider(currentAiConfig);
     final currentUiApiKey = currentAiConfig is Map
         ? currentAiConfig['api_key']
         : null;
     final credentialWasEdited =
-        submittedApiKey != null && submittedApiKey != currentUiApiKey;
+        credentialProvider != null &&
+        submittedApiKey != null &&
+        submittedApiKey.isNotEmpty &&
+        submittedApiKey != currentUiApiKey;
 
     String? previousApiKey;
     if (credentialWasEdited) {
       final editedApiKey = submittedApiKey;
+      final provider = credentialProvider;
       try {
-        previousApiKey = await PythonBridge.getApiKey(throwOnError: true);
+        previousApiKey = await PythonBridge.getApiKey(
+          provider: provider,
+          throwOnError: true,
+        );
         if (editedApiKey.isEmpty) {
-          await PythonBridge.deleteApiKey();
+          await PythonBridge.deleteApiKey(provider: provider);
         } else {
-          await PythonBridge.saveApiKey(editedApiKey);
+          await PythonBridge.saveApiKey(editedApiKey, provider: provider);
         }
       } catch (error) {
         debugPrint(
@@ -330,9 +408,13 @@ class SettingsController with ChangeNotifier {
 
     if (!success) {
       if (credentialWasEdited) {
-        final restored = await _restoreApiKey(previousApiKey);
+        final restored = await _restoreApiKey(
+          credentialProvider,
+          previousApiKey,
+        );
         if (restored) {
-          _knownApiKey = previousApiKey;
+          _hasLocalAiCredential =
+              previousApiKey != null && previousApiKey.isNotEmpty;
           _credentialStateKnown = true;
         } else {
           _credentialStateKnown = false;
@@ -343,11 +425,26 @@ class SettingsController with ChangeNotifier {
 
     if (credentialWasEdited) {
       final editedApiKey = submittedApiKey;
-      _knownApiKey = editedApiKey.isEmpty ? null : editedApiKey;
+      _hasLocalAiCredential = editedApiKey.isNotEmpty;
       _credentialStateKnown = true;
+    } else if (credentialProvider != currentCredentialProvider) {
+      try {
+        await _readCredentialMarker(credentialProvider);
+      } catch (error) {
+        _hasLocalAiCredential = false;
+        _credentialStateKnown = false;
+        debugPrint(
+          'Failed to refresh provider-bound AI credential state: '
+          '${error.runtimeType}',
+        );
+      }
     }
 
-    _config = newConfig;
+    _config = Map<String, dynamic>.from(newConfig);
+    if (_config['ai'] is Map) {
+      _config['ai'] = Map<String, dynamic>.from(_config['ai'] as Map);
+      _config['ai']['api_key'] = _hasLocalAiCredential ? '******' : '';
+    }
     _isAIEnabled = _config['ai']?['enabled'] ?? false;
     _isRailExpanded = _config['ui']?['rail_expanded'] ?? true;
     notifyListeners();
@@ -361,35 +458,50 @@ class SettingsController with ChangeNotifier {
       );
     }
 
-    if (_credentialStateKnown) {
-      try {
-        final daemonUpdated = await _updateDaemonEnvironment({
-          'OMNISTORE_AI_API_KEY': _knownApiKey ?? '',
-        });
-        if (!daemonUpdated &&
-            !kIsWeb &&
-            !Platform.environment.containsKey('FLUTTER_TEST')) {
-          debugPrint(
-            'Failed to synchronize the AI credential with the daemon.',
-          );
-        }
-      } catch (error) {
+    try {
+      final savedAi = newConfig['ai'] is Map
+          ? Map<String, dynamic>.from(newConfig['ai'] as Map)
+          : <String, dynamic>{};
+      final daemonEnvironment = <String, String>{
+        // Every new AI call is made by Flutter after the exact consent surface.
+        // Keep the legacy Python provider path disabled for every provider so
+        // it cannot bypass consent or receive a platform-vault credential.
+        'OMNISTORE_AI_ENABLED': 'false',
+        'OMNISTORE_AI_PROVIDER': '${savedAi['provider'] ?? 'ollama'}',
+        'OMNISTORE_AI_ENDPOINT': '${savedAi['endpoint'] ?? ''}',
+        'OMNISTORE_AI_MODEL': '${savedAi['model'] ?? ''}',
+        'OMNISTORE_AI_TEMPERATURE': '${savedAi['temperature'] ?? 0.7}',
+        'OMNISTORE_AI_MAX_TOKENS': '${savedAi['max_tokens'] ?? 2048}',
+        'OMNISTORE_AI_PROXY': '${savedAi['proxy'] ?? ''}',
+      };
+      daemonEnvironment['OMNISTORE_AI_API_KEY'] = '';
+      // The daemon is long-lived and otherwise keeps the AI configuration it
+      // read at startup. Synchronize the complete provider tuple atomically;
+      // syncing only the credential makes the UI and backend disagree.
+      final daemonUpdated = await _updateDaemonEnvironment(daemonEnvironment);
+      if (!daemonUpdated &&
+          !kIsWeb &&
+          !Platform.environment.containsKey('FLUTTER_TEST')) {
         debugPrint(
-          'Failed to synchronize the AI credential with the daemon: '
-          '${error.runtimeType}',
+          'Failed to synchronize the AI configuration with the daemon.',
         );
       }
+    } catch (error) {
+      debugPrint(
+        'Failed to synchronize the AI configuration with the daemon: '
+        '${error.runtimeType}',
+      );
     }
 
     return true;
   }
 
-  Future<bool> _restoreApiKey(String? previousApiKey) async {
+  Future<bool> _restoreApiKey(String provider, String? previousApiKey) async {
     try {
       if (previousApiKey == null || previousApiKey.isEmpty) {
-        await PythonBridge.deleteApiKey();
+        await PythonBridge.deleteApiKey(provider: provider);
       } else {
-        await PythonBridge.saveApiKey(previousApiKey);
+        await PythonBridge.saveApiKey(previousApiKey, provider: provider);
       }
       return true;
     } catch (error) {
@@ -397,6 +509,52 @@ class SettingsController with ChangeNotifier {
         'Failed to roll back AI credential storage: '
         '${error.runtimeType}',
       );
+      return false;
+    }
+  }
+
+  Future<bool> saveLocalAiCredential(String value) async {
+    final normalized = value.trim();
+    if (normalized.length < 8 || normalized.contains(RegExp(r'[\r\n\x00]'))) {
+      return false;
+    }
+    final provider = _credentialProvider(_config['ai']);
+    if (provider == null) return false;
+    try {
+      await PythonBridge.saveApiKey(normalized, provider: provider);
+      _hasLocalAiCredential = true;
+      _credentialStateKnown = true;
+      if (_config['ai'] is Map) {
+        _config['ai'] = Map<String, dynamic>.from(_config['ai'] as Map);
+        _config['ai']['api_key'] = '******';
+      }
+      notifyListeners();
+      return true;
+    } catch (error) {
+      _credentialStateKnown = false;
+      debugPrint('Failed to save local AI credential: ${error.runtimeType}');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteLocalAiCredential() async {
+    final provider = _credentialProvider(_config['ai']);
+    if (provider == null) return false;
+    try {
+      await PythonBridge.deleteApiKey(provider: provider);
+      _hasLocalAiCredential = false;
+      _credentialStateKnown = true;
+      if (_config['ai'] is Map) {
+        _config['ai'] = Map<String, dynamic>.from(_config['ai'] as Map);
+        _config['ai']['api_key'] = '';
+      }
+      notifyListeners();
+      return true;
+    } catch (error) {
+      _credentialStateKnown = false;
+      debugPrint('Failed to delete local AI credential: ${error.runtimeType}');
+      notifyListeners();
       return false;
     }
   }

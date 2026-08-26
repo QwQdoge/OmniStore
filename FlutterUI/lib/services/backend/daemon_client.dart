@@ -15,6 +15,26 @@ class DaemonResult {
     required this.stdout,
     this.error,
   });
+
+  factory DaemonResult.fromWire(Map<String, dynamic> wire) {
+    Map<String, dynamic> payload = wire;
+    for (var depth = 0; depth < 3; depth++) {
+      final nested = payload['response'];
+      if (payload['status'] == 'success' &&
+          nested is Map<String, dynamic> &&
+          (nested['status'] == 'success' || nested['status'] == 'error')) {
+        payload = nested;
+        continue;
+      }
+      break;
+    }
+    return DaemonResult(
+      status: payload['status']?.toString() ?? 'error',
+      response: payload['response'],
+      stdout: payload['stdout']?.toString() ?? '',
+      error: payload['error']?.toString(),
+    );
+  }
 }
 
 /// Murphy-proof: Client for communicating with the Python backend daemon.
@@ -34,6 +54,7 @@ class DaemonClient {
   StreamSubscription<String>? _socketSub;
   Completer<DaemonResult>? _responseCompleter;
   Timer? _heartbeatTimer;
+  bool _heartbeatInFlight = false;
   Completer<void> _mutex = Completer<void>()..complete();
 
   bool get isConnected => _socket != null;
@@ -45,21 +66,29 @@ class DaemonClient {
     List<dynamic> args, {
     Map<String, dynamic>? kwargs,
     Duration timeout = const Duration(seconds: 60),
+    bool startIfNeeded = true,
   }) async {
     final previousMutex = _mutex;
     final currentMutex = Completer<void>();
     _mutex = currentMutex;
 
+    var acquired = false;
     try {
       await previousMutex.future.timeout(
         Duration(seconds: timeout.inSeconds + 5),
-        onTimeout: () =>
-            debugPrint("DaemonClient: Mutex bottlenecked for $action"),
+        onTimeout: () => throw TimeoutException(
+          "Daemon transaction queue timed out for $action",
+        ),
       );
-    } catch (_) {}
+      acquired = true;
+    } catch (error) {
+      debugPrint("DaemonClient: Refusing overlapping transaction: $error");
+      if (!currentMutex.isCompleted) currentMutex.complete();
+      return null;
+    }
 
     try {
-      await _ensureConnected();
+      await _ensureConnected(startIfNeeded: startIfNeeded);
       final socket = _socket;
       if (socket == null) return null;
 
@@ -100,23 +129,22 @@ class DaemonClient {
       return null;
     } finally {
       _responseCompleter = null;
-      if (!currentMutex.isCompleted) currentMutex.complete();
+      if (acquired && !currentMutex.isCompleted) currentMutex.complete();
     }
   }
 
-  Future<void> _ensureConnected() async {
+  Future<void> _ensureConnected({required bool startIfNeeded}) async {
     if (_socket != null) return;
 
     // Murphy-proof: Trigger daemon start/liveness check before connection
     try {
-      await onDemandStart();
+      if (startIfNeeded) await onDemandStart();
     } catch (e) {
       debugPrint("DaemonClient: Failed to trigger daemon start: $e");
     }
 
     int retryDelay = 300;
-    final int maxRetries =
-        12; // Increased retries for potentially slow backend initialization
+    final int maxRetries = startIfNeeded ? 12 : 1;
     for (int i = 0; i < maxRetries; i++) {
       try {
         // Murphy-proof: Strict connection timeout to prevent hanging the UI thread
@@ -169,25 +197,12 @@ class DaemonClient {
       if (trimmedLine.isEmpty) return;
 
       final dynamic res = jsonDecode(trimmedLine);
-      if (res is Map) {
+      if (res is Map<String, dynamic>) {
         final completer = _responseCompleter;
         if (completer != null && !completer.isCompleted) {
-          if (res['status'] == 'success') {
-            completer.complete(
-              DaemonResult(
-                status: 'success',
-                response: res['response'],
-                stdout: res['stdout']?.toString() ?? '',
-              ),
-            );
-          } else if (res['status'] == 'error' || res.containsKey('error')) {
-            completer.complete(
-              DaemonResult(
-                status: 'error',
-                error: res['error']?.toString() ?? 'Daemon error',
-                stdout: res['stdout']?.toString() ?? '',
-              ),
-            );
+          final result = DaemonResult.fromWire(res);
+          if (result.status == 'success' || result.status == 'error') {
+            completer.complete(result);
           } else {
             // Unexpected map structure
             debugPrint("DaemonClient: Received unexpected JSON map: $res");
@@ -210,15 +225,13 @@ class DaemonClient {
         timer.cancel();
         return;
       }
+      if (_heartbeatInFlight) return;
+      _heartbeatInFlight = true;
 
       try {
         // Murphy-proof: Lightweight liveness ping to ensure daemon is still responsive.
         // We use a short timeout to prevent the heartbeat from hanging.
-        final res = await send(
-          "run_check_env",
-          [],
-          timeout: const Duration(seconds: 5),
-        );
+        final res = await send("ping", [], timeout: const Duration(seconds: 5));
         if (res == null || res.status != 'success') {
           debugPrint("DaemonClient: Heartbeat failed. Reconnecting...");
           _cleanupSocket();
@@ -226,6 +239,8 @@ class DaemonClient {
       } catch (e) {
         debugPrint("DaemonClient: Heartbeat Exception: $e");
         _cleanupSocket();
+      } finally {
+        _heartbeatInFlight = false;
       }
     });
   }
@@ -248,5 +263,18 @@ class DaemonClient {
   Future<void> dispose() async {
     _cleanupSocket();
     if (!_mutex.isCompleted) _mutex.complete();
+  }
+
+  Future<void> shutdown({bool startIfNeeded = false}) async {
+    try {
+      await send(
+        'shutdown',
+        const [],
+        timeout: const Duration(seconds: 3),
+        startIfNeeded: startIfNeeded,
+      );
+    } finally {
+      _cleanupSocket();
+    }
   }
 }

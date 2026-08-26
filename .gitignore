@@ -97,6 +97,7 @@ flutter_export_environment.sh
 **/android/app/src/main/res/mipmap-*/
 
 # --- Release Bundles & Packaging ---
+/artifacts/
 release_bundle/
 release_bundle*/
 *.tar.gz

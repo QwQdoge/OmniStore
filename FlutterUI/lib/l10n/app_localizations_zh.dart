@@ -33,7 +33,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings => '设置';
 
   @override
-  String get downloads => '下载';
+  String get downloads => '任务与更新';
 
   @override
   String get help => '帮助';
@@ -93,6 +93,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pacmanOfficial => 'Pacman（官方软件源）';
+
+  @override
+  String get pacmanBrowsingNoAuthorization =>
+      '浏览、搜索、查看详情和检查 Pacman 更新均不需要账号或管理员认证；只有修改系统时才会请求授权。';
 
   @override
   String get aurUser => 'AUR（用户软件源）';
@@ -312,7 +316,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refresh => '刷新';
 
   @override
-  String get noActiveTasks => '暂无进行中的任务';
+  String get noActiveTasks => '暂无进行中或已完成的任务';
 
   @override
   String get currentTask => '当前任务';
@@ -321,10 +325,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLogs => '查看日志';
 
   @override
-  String get allUpdated => '应用已是最新版本';
+  String get allUpdated => '未发现软件包更新';
 
   @override
   String get update => '更新';
+
+  @override
+  String updatingSourcePackages(String source) {
+    return '正在更新 $source 软件包…';
+  }
+
+  @override
+  String sourceUpdateFailed(String source) {
+    return '$source 更新失败';
+  }
+
+  @override
+  String get enabledSourcesUpdated => '所有已启用的软件源均已更新';
 
   @override
   String get enableSystemTray => '启用系统托盘';
@@ -333,7 +350,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaning => '系统清理';
 
   @override
-  String get systemCleaningDesc => '清理孤立软件包与 pacman 缓存';
+  String get system => '系统';
+
+  @override
+  String get clean => '清理';
+
+  @override
+  String get systemCleaningDesc => '移除孤立软件包并清空 Pacman 缓存（需要管理员授权）';
 
   @override
   String get systemCleaningSubtitle => '清理孤立软件包与 pacman 缓存';
@@ -563,7 +586,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigTitle => '软件源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择要启用的软件源';
+  String get sourceConfigSubtitle => '选择 OmniStore 可以搜索的软件来源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
@@ -575,7 +598,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aurWarning => '安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。';
 
   @override
-  String get bootstrapNote => '注意：配置过程可能需要多次输入管理员密码。';
+  String get bootstrapNote => '浏览无需任何授权；只有配置需要修改系统时才会请求管理员授权。';
 
   @override
   String get feedbackDesc => '通过 GitHub 反馈遇到的问题。';
@@ -771,6 +794,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retry => '重试';
+
+  @override
+  String get searchFailedSubtitle => '无法连接软件源。请检查网络连接后重试。';
+
+  @override
+  String pluginCapabilities(int count) {
+    return '$count 项能力';
+  }
 
   @override
   String get aiResponseFailed => 'AI 响应失败。';
@@ -1085,7 +1116,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknownApp => '未知应用';
 
   @override
-  String get taskSuccessMsg => '任务执行成功';
+  String get taskSuccessMsg => '已成功完成';
 
   @override
   String failureReason(String message) {
@@ -1126,7 +1157,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get latestUpdates => '最新更新';
 
   @override
-  String get searchNoResultsSubtitle => '尝试搜索其他关键词';
+  String get searchNoResultsSubtitle => '请尝试其他关键词，或启用更多软件源';
 
   @override
   String get pluginsAndSources => '插件与软件源';
@@ -1215,7 +1246,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncStatus => '同步状态';
 
   @override
-  String get syncStatusSubtitle => '应用与设置已安全备份';
+  String get syncStatusSubtitle => '点按备份 OmniStore 应用列表';
 
   @override
   String get manageAccount => '管理账户';
@@ -1273,7 +1304,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubIntegration => 'GitHub 集成';
 
   @override
-  String get configurePat => '配置个人访问令牌 (PAT)';
+  String get configurePat => 'GitHub 访问令牌（可选）';
 
   @override
   String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
@@ -1355,7 +1386,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings => '設定';
 
   @override
-  String get downloads => '下載';
+  String get downloads => '工作與更新';
 
   @override
   String get help => '幫助';
@@ -1415,6 +1446,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get pacmanOfficial => 'Pacman（官方軟體源）';
+
+  @override
+  String get pacmanBrowsingNoAuthorization =>
+      '瀏覽、搜尋、查看詳細資料和檢查 Pacman 更新均不需要帳號或管理員認證；只有變更系統時才會要求授權。';
 
   @override
   String get aurUser => 'AUR（使用者軟體源）';
@@ -1634,7 +1669,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get refresh => '重新整理';
 
   @override
-  String get noActiveTasks => '暫無進行中的任務';
+  String get noActiveTasks => '暫無進行中或已完成的工作';
 
   @override
   String get currentTask => '目前任務';
@@ -1643,10 +1678,23 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get viewLogs => '查看日誌';
 
   @override
-  String get allUpdated => '應用程式已是最新版本';
+  String get allUpdated => '未發現軟體套件更新';
 
   @override
   String get update => '更新';
+
+  @override
+  String updatingSourcePackages(String source) {
+    return '正在更新 $source 套件…';
+  }
+
+  @override
+  String sourceUpdateFailed(String source) {
+    return '$source 更新失敗';
+  }
+
+  @override
+  String get enabledSourcesUpdated => '所有已啟用的軟體來源均已更新';
 
   @override
   String get enableSystemTray => '啟用系統匣';
@@ -1655,7 +1703,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaning => '系統清理';
 
   @override
-  String get systemCleaningDesc => '清理孤立套件與 pacman 快取';
+  String get system => '系統';
+
+  @override
+  String get clean => '清理';
+
+  @override
+  String get systemCleaningDesc => '移除孤立套件並清空 Pacman 快取（需要管理員授權）';
 
   @override
   String get systemCleaningSubtitle => '清理孤立套件與 pacman 快取';
@@ -1885,7 +1939,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceConfigTitle => '軟體源設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇要啟用的軟體源';
+  String get sourceConfigSubtitle => '選擇 OmniStore 可以搜尋的軟體來源';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
@@ -1897,7 +1951,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aurWarning => '安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。';
 
   @override
-  String get bootstrapNote => '注意：配置過程可能需要多次輸入管理員密碼。';
+  String get bootstrapNote => '瀏覽不需要任何授權；只有設定需要變更系統時才會要求管理員授權。';
 
   @override
   String get feedbackDesc => '透過 GitHub 回報遇到的問題。';
@@ -2093,6 +2147,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get retry => '重試';
+
+  @override
+  String get searchFailedSubtitle => '無法連線至軟體來源。請檢查網路連線後重試。';
+
+  @override
+  String pluginCapabilities(int count) {
+    return '$count 項功能';
+  }
 
   @override
   String get aiResponseFailed => 'AI 回應失敗。';
@@ -2407,7 +2469,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get unknownApp => '未知應用程式';
 
   @override
-  String get taskSuccessMsg => '任務執行成功';
+  String get taskSuccessMsg => '已成功完成';
 
   @override
   String failureReason(String message) {
@@ -2448,7 +2510,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get latestUpdates => '最新更新';
 
   @override
-  String get searchNoResultsSubtitle => '嘗試搜尋其他關鍵字';
+  String get searchNoResultsSubtitle => '請嘗試其他關鍵字，或啟用更多軟體來源';
 
   @override
   String get pluginsAndSources => '外掛程式與軟體源';
@@ -2537,7 +2599,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get syncStatus => '同步狀態';
 
   @override
-  String get syncStatusSubtitle => '應用程式與設定已安全備份';
+  String get syncStatusSubtitle => '點按備份 OmniStore 應用程式清單';
 
   @override
   String get manageAccount => '管理帳戶';
@@ -2595,7 +2657,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubIntegration => 'GitHub 整合';
 
   @override
-  String get configurePat => '設定個人存取權標（PAT）';
+  String get configurePat => 'GitHub 存取權杖（選用）';
 
   @override
   String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權標。';

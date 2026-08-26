@@ -11,11 +11,7 @@ Map<String, dynamic> _copyConfig(Map<String, dynamic> value) {
 
 Map<String, dynamic> _initialConfig() {
   return {
-    'ui': {
-      'appearance': 'system',
-      'language': 'en-US',
-      'rail_expanded': true,
-    },
+    'ui': {'appearance': 'system', 'language': 'en-US', 'rail_expanded': true},
     'ai': {
       'enabled': true,
       'provider': 'openai',
@@ -39,9 +35,7 @@ class _MemoryConfigRepository extends ConfigRepository {
   bool saveSucceeds;
 
   @override
-  Future<Map<String, dynamic>> loadConfig({
-    bool forceRefresh = false,
-  }) async {
+  Future<Map<String, dynamic>> loadConfig({bool forceRefresh = false}) async {
     return _copyConfig(storedConfig);
   }
 
@@ -57,19 +51,19 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() async {
-    await PythonBridge.deleteApiKey();
+    await PythonBridge.deleteApiKey(provider: 'openai');
+    await PythonBridge.deleteApiKey(provider: 'deepseek');
   });
 
   tearDown(() async {
-    await PythonBridge.deleteApiKey();
+    await PythonBridge.deleteApiKey(provider: 'openai');
+    await PythonBridge.deleteApiKey(provider: 'deepseek');
   });
 
   test('clearing the API key clears secure storage and daemon state', () async {
-    await PythonBridge.saveApiKey('old-secret');
+    await PythonBridge.saveApiKey('old-secret', provider: 'openai');
 
-    final repository = _MemoryConfigRepository(
-      initialConfig: _initialConfig(),
-    );
+    final repository = _MemoryConfigRepository(initialConfig: _initialConfig());
     final daemonUpdates = <Map<String, String>>[];
     var refreshCount = 0;
     final controller = SettingsController(
@@ -85,22 +79,15 @@ void main() {
     addTearDown(controller.dispose);
 
     await controller.loadConfig();
-    final updated = _copyConfig(controller.config);
-    (updated['ai'] as Map<String, dynamic>)['api_key'] = '';
-
-    expect(await controller.updateConfig(updated), isTrue);
-    expect(await PythonBridge.getApiKey(), isNull);
-    expect(
-      (repository.storedConfig['ai'] as Map<String, dynamic>)['api_key'],
-      isEmpty,
-    );
-    expect(daemonUpdates, hasLength(1));
-    expect(daemonUpdates.single['OMNISTORE_AI_API_KEY'], isEmpty);
-    expect(refreshCount, 1);
+    expect(await controller.deleteLocalAiCredential(), isTrue);
+    expect(await PythonBridge.getApiKey(provider: 'openai'), isNull);
+    expect(controller.hasLocalAiCredential, isFalse);
+    expect(daemonUpdates, isEmpty);
+    expect(refreshCount, 0);
   });
 
   test('restores the previous key when config persistence fails', () async {
-    await PythonBridge.saveApiKey('old-secret');
+    await PythonBridge.saveApiKey('old-secret', provider: 'openai');
 
     final repository = _MemoryConfigRepository(
       initialConfig: _initialConfig(),
@@ -125,8 +112,30 @@ void main() {
     (updated['ai'] as Map<String, dynamic>)['api_key'] = 'new-secret';
 
     expect(await controller.updateConfig(updated), isFalse);
-    expect(await PythonBridge.getApiKey(), 'old-secret');
+    expect(await PythonBridge.getApiKey(provider: 'openai'), 'old-secret');
     expect(daemonUpdates, isEmpty);
     expect(refreshCount, 0);
+  });
+
+  test('provider switch never reuses another provider credential', () async {
+    await PythonBridge.saveApiKey('openai-secret', provider: 'openai');
+
+    final repository = _MemoryConfigRepository(initialConfig: _initialConfig());
+    final controller = SettingsController(
+      repository,
+      updateDaemonEnvironment: (_) async => true,
+      refreshUpdateService: () async {},
+    );
+    addTearDown(controller.dispose);
+
+    await controller.loadConfig();
+    expect(controller.hasLocalAiCredential, isTrue);
+
+    final deepSeekConfig = _copyConfig(controller.config);
+    (deepSeekConfig['ai'] as Map<String, dynamic>)['provider'] = 'deepseek';
+    expect(await controller.updateConfig(deepSeekConfig), isTrue);
+    expect(controller.hasLocalAiCredential, isFalse);
+    expect(await PythonBridge.getApiKey(provider: 'openai'), 'openai-secret');
+    expect(await PythonBridge.getApiKey(provider: 'deepseek'), isNull);
   });
 }

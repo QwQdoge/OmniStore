@@ -95,14 +95,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _performSearch(String query) {
-    if (query.length < 2) {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.length < 2) {
       // ⚡ Bolt: Only trigger setState if state actually changes to avoid redundant builds
       if (!_showDiscovery) {
         setState(() {
           _showDiscovery = true;
         });
       }
-      context.read<BrowseController>().selectedApp = null;
+      context.read<BrowseController>().clearSearch();
       return;
     }
 
@@ -111,7 +112,7 @@ class _SearchPageState extends State<SearchPage> {
         _showDiscovery = false;
       });
     }
-    context.read<BrowseController>().search(query);
+    context.read<BrowseController>().search(normalizedQuery);
   }
 
   @override
@@ -148,7 +149,7 @@ class _SearchPageState extends State<SearchPage> {
                               _selectedSources.clear();
                             });
                           }
-                          context.read<BrowseController>().selectedApp = null;
+                          context.read<BrowseController>().clearSearch();
                         },
                       );
                     }
@@ -196,12 +197,13 @@ class _SearchPageState extends State<SearchPage> {
                   : ResponsiveLayoutBuilder(
                       builder: (context, isDesktop) {
                         return Selector<
-                            BrowseController,
-                            ({
-                              List<AppPackage> filteredResults,
-                              bool isSearching,
-                            })
-                          >(
+                          BrowseController,
+                          ({
+                            List<AppPackage> filteredResults,
+                            bool isSearching,
+                            bool hasError,
+                          })
+                        >(
                           selector: (context, b) {
                             final results = b.searchResults;
 
@@ -218,10 +220,12 @@ class _SearchPageState extends State<SearchPage> {
                             return (
                               filteredResults: filtered,
                               isSearching: b.isSearching,
+                              hasError: b.searchError != null,
                             );
                           },
                           shouldRebuild: (prev, next) {
                             return prev.isSearching != next.isSearching ||
+                                prev.hasError != next.hasError ||
                                 !const IterableEquality().equals(
                                   prev.filteredResults,
                                   next.filteredResults,
@@ -231,6 +235,7 @@ class _SearchPageState extends State<SearchPage> {
                             return SearchResultsView(
                               filteredResults: data.filteredResults,
                               isSearching: data.isSearching,
+                              hasError: data.hasError,
                               isDesktop: isDesktop,
                               searchController: _searchController,
                               performSearch: _performSearch,

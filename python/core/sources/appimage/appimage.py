@@ -181,14 +181,15 @@ class AppImageSource(UnifiedSource):
     def _create_desktop_entry(self, name: str, exec_path: Path):
         desktop_dir = Path.home() / ".local/share/applications"
         desktop_dir.mkdir(parents=True, exist_ok=True)
-        desktop_file = desktop_dir / f"{name.lower()}.desktop"
+        safe_name = self._safe_filename(name)
+        desktop_file = desktop_dir / f"{safe_name.lower()}.desktop"
         content = f"""[Desktop Entry]
 Version=1.0
 Type=Application
 Name={name}
 Comment=Installed via Omnistore
 Exec="{exec_path}" %U
-Icon={name.lower()}
+Icon={safe_name.lower()}
 Terminal=false
 Categories=Utility;Application;
 """
@@ -198,12 +199,19 @@ Categories=Utility;Application;
         tmp_path.replace(desktop_file)
 
     def _delete_desktop_entry(self, name: str):
-        desktop_file = Path.home() / f".local/share/applications/{name.lower()}.desktop"
+        desktop_file = Path.home() / ".local/share/applications" / f"{self._safe_filename(name).lower()}.desktop"
         if desktop_file.exists():
             try:
                 desktop_file.unlink()
             except Exception:
                 pass
+
+    @staticmethod
+    def _safe_filename(name: str) -> str:
+        value = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip(".-")
+        if not value:
+            raise ValueError("AppImage name does not contain a safe filename")
+        return value
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
@@ -215,7 +223,9 @@ Categories=Utility;Application;
 
         apps_dir = Path.home() / "Applications"
         apps_dir.mkdir(parents=True, exist_ok=True)
-        dest = apps_dir / f"{name}.AppImage"
+        safe_name = self._safe_filename(name)
+        dest = apps_dir / f"{safe_name}.AppImage"
+        partial = dest.with_suffix(".AppImage.part")
 
         url = await self._resolve_github_appimage(url, callback)
 
@@ -224,11 +234,11 @@ Categories=Utility;Application;
         try:
             parsed = urlparse(url)
             if parsed.scheme == "file":
-                shutil.copy2(Path(url2pathname(parsed.path)), dest)
+                shutil.copy2(Path(url2pathname(parsed.path)), partial)
                 if callback:
                     await callback("[PROGRESS] 100")
             elif parsed.scheme == "" and Path(url).exists():
-                shutil.copy2(Path(url), dest)
+                shutil.copy2(Path(url), partial)
                 if callback:
                     await callback("[PROGRESS] 100")
             else:
@@ -240,7 +250,7 @@ Categories=Utility;Application;
                     total = int(resp.headers.get('content-length', 0))
                     downloaded = 0
                     last_percent = -1
-                    with open(dest, 'wb') as f:
+                    with open(partial, 'wb') as f:
                         async for chunk in resp.content.iter_chunked(8192):
                             f.write(chunk)
                             downloaded += len(chunk)
@@ -250,6 +260,7 @@ Categories=Utility;Application;
                                     await callback(f"[PROGRESS] {progress}")
                                     last_percent = progress
 
+            partial.replace(dest)
             dest.chmod(0o755)
             try:
                 self._create_desktop_entry(name, dest)
@@ -260,6 +271,7 @@ Categories=Utility;Application;
             if callback: await callback(f"[INFO] Successfully installed {name} to {dest}")
             return True
         except Exception as e:
+            partial.unlink(missing_ok=True)
             if callback: await callback(f"[ERROR] AppImage installation failed: {e}")
             return False
 
@@ -269,37 +281,39 @@ Categories=Utility;Application;
         if not name:
             if callback: await callback("[ERROR] Missing package name for AppImage uninstall.")
             return False
-        apps_dir = Path.home() / "Applications"
-        found = list(apps_dir.glob(f"*{name}*.AppImage"))
+        apps_dir = (Path.home() / "Applications").resolve()
+        safe_name = self._safe_filename(name)
+        candidate = (apps_dir / f"{safe_name}.AppImage").resolve()
+        raw_path = package.get("path") or package.get("id")
+        if raw_path:
+            supplied = Path(str(raw_path)).expanduser().resolve()
+            if supplied.parent == apps_dir and supplied.suffix.lower() == ".appimage":
+                candidate = supplied
 
         self._delete_desktop_entry(name)
         if callback: await callback(f"[INFO] Removed desktop entry for {name}")
 
-        if not found:
-            fallback = apps_dir / f"{name}.AppImage"
-            if fallback.exists():
-                found = [fallback]
-
-        if not found:
+        if not candidate.exists() or not candidate.is_file():
             if callback: await callback(f"[ERROR] {name} AppImage not found in {apps_dir}")
             return False
 
-        for f in found:
-            try:
-                f.unlink()
-                if callback: await callback(f"[INFO] Removed {f}")
-            except Exception as e:
-                if callback: await callback(f"[ERROR] Failed to remove {f}: {e}")
-                return False
+        try:
+            candidate.unlink()
+            if callback: await callback(f"[INFO] Removed {candidate}")
+        except Exception as e:
+            if callback: await callback(f"[ERROR] Failed to remove {candidate}: {e}")
+            return False
         return True
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        name = package.get("name")
-        apps_dir = Path.home() / "Applications"
+        name = str(package.get("name") or "")
+        if not name:
+            return False
+        apps_dir = (Path.home() / "Applications").resolve()
         from core.subprocess_utils import safe_subprocess
-        found = list(apps_dir.glob(f"*{name}*.AppImage"))
-        if found:
-            async with safe_subprocess(str(found[0]), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
+        candidate = (apps_dir / f"{self._safe_filename(name)}.AppImage").resolve()
+        if candidate.parent == apps_dir and candidate.is_file():
+            async with safe_subprocess(str(candidate), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
                 return True
         return False
 

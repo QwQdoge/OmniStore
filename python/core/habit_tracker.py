@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Dict, Any
 
@@ -6,7 +7,12 @@ import asyncio
 
 class HabitTracker:
     def __init__(self, backend=None):
-        self.data_dir = Path.home() / ".config" / "omnistore"
+        xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+        self.data_dir = (
+            Path(xdg_config_home) / "omnistore"
+            if xdg_config_home
+            else Path.home() / ".config" / "omnistore"
+        )
         self.data_path = self.data_dir / "user_habits.json"
         self.habits = self._load_habits()
         # ⚡ Optimization: flags for coalesced saving

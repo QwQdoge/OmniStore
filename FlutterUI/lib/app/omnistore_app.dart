@@ -11,6 +11,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/core/app_navigator.dart';
 
 class OmnistoreApp extends StatefulWidget {
   const OmnistoreApp({super.key, required this.initialConfig});
@@ -49,6 +50,7 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
       ),
       builder: (context, data, _) {
         return MaterialApp(
+          navigatorKey: omnistoreNavigatorKey,
           debugShowCheckedModeBanner: false,
           title: 'Omnistore',
           localizationsDelegates: const [
@@ -69,10 +71,14 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
           theme: OmnistoreTheme.light(fontFamily: data.fontFamily),
           darkTheme: OmnistoreTheme.dark(fontFamily: data.fontFamily),
           builder: (context, child) {
+            final media = MediaQuery.of(context);
+            final platformTextScale = media.textScaler.scale(16) / 16;
+            final effectiveTextScale = (platformTextScale * data.fontScale)
+                .clamp(0.8, 1.6);
             return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(data.fontScale)),
+              data: media.copyWith(
+                textScaler: TextScaler.linear(effectiveTextScale),
+              ),
               child: child!,
             );
           },

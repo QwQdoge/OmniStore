@@ -36,7 +36,11 @@ class TasksTab extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(top: 24.0, left: 24.0, right: 24.0),
+              padding: const EdgeInsets.only(
+                top: 24.0,
+                left: 24.0,
+                right: 24.0,
+              ),
               child: SmoothSizeSwitcher(
                 alignment: Alignment.topCenter,
                 child: isBusy
@@ -46,9 +50,8 @@ class TasksTab extends StatelessWidget {
                         children: [
                           Text(
                             l10n.currentTask,
-                            style: const TextStyle(
+                            style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
-                              fontSize: 18,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -66,6 +69,7 @@ class TasksTab extends StatelessWidget {
                                       double? progress,
                                       String status,
                                       String speed,
+                                      String? flag,
                                     })
                                   >(
                                     selector: (context, c) => (
@@ -73,6 +77,7 @@ class TasksTab extends StatelessWidget {
                                       progress: c.progress,
                                       status: c.status,
                                       speed: c.speed,
+                                      flag: c.flag,
                                     ),
                                     builder: (context, data, child) {
                                       return SmoothProgressBar(
@@ -83,7 +88,13 @@ class TasksTab extends StatelessWidget {
                                               l10n.taskProcessing,
                                           status: TaskStatus.downloading,
                                           progress: data.progress ?? 0.0,
-                                          stage: data.status,
+                                          message: data.status,
+                                          stage: switch (data.flag) {
+                                            '-I' => l10n.install,
+                                            '-R' => l10n.uninstall,
+                                            '-U' => l10n.update,
+                                            _ => '',
+                                          },
                                           speed: data.speed,
                                         ),
                                         onCancel: () => context
@@ -99,9 +110,12 @@ class TasksTab extends StatelessWidget {
                                       FilledButton.icon(
                                         onPressed: () => showDialog(
                                           context: context,
-                                          builder: (_) => const TerminalDialog(),
+                                          builder: (_) =>
+                                              const TerminalDialog(),
                                         ),
-                                        icon: const Icon(Icons.terminal_rounded),
+                                        icon: const Icon(
+                                          Icons.terminal_rounded,
+                                        ),
                                         label: Text(l10n.terminalOutput),
                                       ),
                                     ],
@@ -113,7 +127,9 @@ class TasksTab extends StatelessWidget {
                           const SizedBox(height: 32),
                         ],
                       )
-                    : const SizedBox.shrink(key: ValueKey('active_task_hidden')),
+                    : const SizedBox.shrink(
+                        key: ValueKey('active_task_hidden'),
+                      ),
               ),
             ),
           ),
@@ -132,14 +148,14 @@ class TasksTab extends StatelessWidget {
                             children: [
                               Text(
                                 l10n.taskHistory,
-                                style: const TextStyle(
+                                style: theme.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18,
                                 ),
                               ),
                               FilledButton.tonalIcon(
-                                onPressed: () =>
-                                    context.read<TaskController>().clearHistory(),
+                                onPressed: () => context
+                                    .read<TaskController>()
+                                    .clearHistory(),
                                 icon: const Icon(
                                   Icons.delete_sweep_rounded,
                                   size: 18,
@@ -151,131 +167,140 @@ class TasksTab extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                       )
-                    : const SizedBox.shrink(key: ValueKey('task_history_header_hidden')),
+                    : const SizedBox.shrink(
+                        key: ValueKey('task_history_header_hidden'),
+                      ),
               ),
             ),
           ),
           if (historyLength > 0)
             SliverPadding(
-              padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-              sliver: Selector<
-                TaskController,
-                ({int length, List<TaskState> history})
-              >(
-                selector: (context, c) => (
-                  length: c.completedTasks.length,
-                  history: c.completedTasks,
-                ),
-                shouldRebuild: (prev, next) =>
-                    prev.length != next.length ||
-                    !const IterableEquality().equals(
-                      prev.history,
-                      next.history,
+              padding: const EdgeInsets.only(
+                left: 24.0,
+                right: 24.0,
+                bottom: 24.0,
+              ),
+              sliver:
+                  Selector<
+                    TaskController,
+                    ({int length, List<TaskState> history})
+                  >(
+                    selector: (context, c) => (
+                      length: c.completedTasks.length,
+                      history: c.completedTasks,
                     ),
-                builder: (context, data, child) {
-                  final history = data.history;
-                  return SliverPrototypeExtentList.builder(
-                    itemCount: data.length,
-                    prototypeItem: AppCard(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      borderRadius: 12.0,
-                      child: ListTile(
-                        leading: const CircleAvatar(),
-                        title: Row(
-                          children: [
-                            const Text(''),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                            ),
-                          ],
+                    shouldRebuild: (prev, next) =>
+                        prev.length != next.length ||
+                        !const IterableEquality().equals(
+                          prev.history,
+                          next.history,
                         ),
-                        subtitle: const Text(''),
-                        trailing: const Text(''),
-                      ),
-                    ),
-                    itemBuilder: (context, index) {
-                      final task = history[index];
-                      final isSuccess = task.status == TaskStatus.success;
-                      return AppCard(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        borderRadius: 12.0,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: isSuccess
-                                ? Colors.green.shade50
-                                : Colors.red.shade50,
-                            child: Icon(
-                              isSuccess
-                                  ? Icons.check_circle_rounded
-                                  : Icons.error_rounded,
-                              color: isSuccess
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                task.packageName ?? l10n.unknownApp,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                    builder: (context, data, child) {
+                      final history = data.history;
+                      return SliverList.builder(
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          final task = history[index];
+                          final isSuccess = task.status == TaskStatus.success;
+                          return AppCard(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            borderRadius: 12.0,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
+                              ),
+                              leading: CircleAvatar(
+                                backgroundColor: isSuccess
+                                    ? theme.colorScheme.primaryContainer
+                                    : theme.colorScheme.errorContainer,
+                                child: Icon(
+                                  isSuccess
+                                      ? Icons.check_circle_rounded
+                                      : Icons.error_rounded,
+                                  color: isSuccess
+                                      ? theme.colorScheme.onPrimaryContainer
+                                      : theme.colorScheme.onErrorContainer,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme
-                                      .colorScheme
-                                      .primaryContainer,
-                                  borderRadius: BorderRadius.circular(
-                                    6,
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      task.packageName ?? l10n.unknownApp,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  task.stage,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme
-                                        .colorScheme
-                                        .onPrimaryContainer,
-                                  ),
-                                ),
+                                  if (task.stage.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 140,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            theme.colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        task.stage,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme
+                                              .colorScheme
+                                              .onPrimaryContainer,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            isSuccess
-                                ? l10n.taskSuccessMsg
-                                : l10n.failureReason(task.message),
-                            style: TextStyle(
-                              color: isSuccess
-                                  ? Colors.grey
-                                  : Colors.red.shade900,
-                              fontSize: 12,
+                              subtitle: Text(
+                                isSuccess
+                                    ? l10n.taskSuccessMsg
+                                    : l10n.failureReason(task.message),
+                                style: TextStyle(
+                                  color: isSuccess
+                                      ? theme.colorScheme.onSurfaceVariant
+                                      : theme.colorScheme.error,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: (task.source ?? '').isEmpty
+                                  ? null
+                                  : ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 96,
+                                      ),
+                                      child: Text(
+                                        task.source!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
                             ),
-                          ),
-                          trailing: Text(
-                            task.source ?? "",
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
             ),
         ],
       );

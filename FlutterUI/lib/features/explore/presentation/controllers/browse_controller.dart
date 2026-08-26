@@ -9,6 +9,7 @@ class BrowseController with ChangeNotifier {
   Map<String, List<AppPackage>> _recommendations = {};
   List<AppPackage> _searchResults = [];
   bool _isSearching = false;
+  Object? _searchError;
   String? _pendingSearchQuery;
   AppPackage? _selectedApp;
 
@@ -34,6 +35,7 @@ class BrowseController with ChangeNotifier {
   Map<String, List<AppPackage>> get recommendations => _recommendations;
   List<AppPackage> get searchResults => _searchResults;
   bool get isSearching => _isSearching;
+  Object? get searchError => _searchError;
   String? get pendingSearchQuery => _pendingSearchQuery;
   AppPackage? get selectedApp => _selectedApp;
 
@@ -49,7 +51,9 @@ class BrowseController with ChangeNotifier {
   }
 
   Future<void> fetchRecommendations({bool forceRefresh = false}) async {
-    _recommendations = await _packageRepository.getRecommendations(forceRefresh: forceRefresh);
+    _recommendations = await _packageRepository.getRecommendations(
+      forceRefresh: forceRefresh,
+    );
     notifyListeners();
 
     if (_packageRepository.activeFetchFuture != null) {
@@ -71,6 +75,7 @@ class BrowseController with ChangeNotifier {
   Future<void> search(String query) async {
     final searchId = ++_activeSearchId;
     _isSearching = true;
+    _searchError = null;
     _selectedApp = null;
     notifyListeners();
 
@@ -81,11 +86,25 @@ class BrowseController with ChangeNotifier {
       if (!_disposed && searchId == _activeSearchId) {
         _searchResults = results;
       }
+    } catch (error) {
+      if (!_disposed && searchId == _activeSearchId) {
+        _searchResults = [];
+        _searchError = error;
+      }
     } finally {
       if (!_disposed && searchId == _activeSearchId) {
         _isSearching = false;
         notifyListeners();
       }
     }
+  }
+
+  void clearSearch() {
+    _activeSearchId++;
+    _isSearching = false;
+    _searchError = null;
+    _searchResults = [];
+    _selectedApp = null;
+    notifyListeners();
   }
 }

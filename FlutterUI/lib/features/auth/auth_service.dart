@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
+import 'package:frontend/features/auth/secure_auth_storage.dart';
+import 'package:frontend/features/auth/system_account_service.dart';
 
 /// [AuthService] manages the integration with Supabase for user authentication
 /// and handles deep links. It is designed defensively to guarantee zero memory leaks,
@@ -30,7 +32,8 @@ class AuthService extends ChangeNotifier {
   bool get isBusy => _isBusy;
 
   SupabaseClient get client => Supabase.instance.client;
-  Session? get currentSession => _isInitialized ? client.auth.currentSession : null;
+  Session? get currentSession =>
+      _isInitialized ? client.auth.currentSession : null;
   String? get accessToken => currentSession?.accessToken;
   Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
 
@@ -51,34 +54,44 @@ class AuthService extends ChangeNotifier {
     _isInitializing = true;
     try {
       if (!MeoArchEnvironment.isConfigured) {
-        debugPrint('Warning: Supabase environment variables not configured. Auth will not work.');
+        debugPrint(
+          'Warning: Supabase environment variables not configured. Auth will not work.',
+        );
       } else {
+        final projectRef = Uri.parse(
+          MeoArchEnvironment.supabaseUrl,
+        ).host.split('.').first;
+        final secureStorage = SecureAuthStorage(
+          sessionKey: 'sb-$projectRef-auth-token',
+        );
         await Supabase.initialize(
           url: MeoArchEnvironment.supabaseUrl,
           publishableKey: MeoArchEnvironment.supabasePublishableKey,
-          authOptions: const FlutterAuthClientOptions(
+          authOptions: FlutterAuthClientOptions(
             authFlowType: AuthFlowType.pkce,
+            localStorage: secureStorage,
+            pkceAsyncStorage: secureStorage,
           ),
         );
 
         _currentUser = Supabase.instance.client.auth.currentUser;
 
-        _authSubscription =
-            Supabase.instance.client.auth.onAuthStateChange.listen(
-          (data) {
-            if (_disposed) return;
-            final AuthChangeEvent event = data.event;
-            final Session? session = data.session;
+        _authSubscription = Supabase.instance.client.auth.onAuthStateChange
+            .listen(
+              (data) {
+                if (_disposed) return;
+                final AuthChangeEvent event = data.event;
+                final Session? session = data.session;
 
-            _currentUser = session?.user;
-            notifyListeners();
+                _currentUser = session?.user;
+                notifyListeners();
 
-            debugPrint('Auth event: $event, User: ${_currentUser?.id}');
-          },
-          onError: (err) {
-            debugPrint('Auth state subscription encountered error: $err');
-          },
-        );
+                debugPrint('Auth event: $event, User: ${_currentUser?.id}');
+              },
+              onError: (err) {
+                debugPrint('Auth state subscription encountered error: $err');
+              },
+            );
       }
 
       _initDeepLinks();
@@ -104,8 +117,17 @@ class AuthService extends ChangeNotifier {
           if (uri.scheme == 'omnistore' &&
               uri.host == 'auth' &&
               uri.path == '/callback') {
-            // Note: The supabase_flutter plugin generally intercepts link authentication automatically,
-            // but we listen here for explicit state observation and recovery.
+            final tokens = await SystemAccountService.instance.exchangeCallback(
+              uri,
+            );
+            final refreshToken = tokens?['refresh_token'] as String?;
+            final accessToken = tokens?['access_token'] as String?;
+            if (refreshToken != null && accessToken != null && _isInitialized) {
+              await client.auth.setSession(
+                refreshToken,
+                accessToken: accessToken,
+              );
+            }
           }
         },
         onError: (err) {
@@ -125,12 +147,28 @@ class AuthService extends ChangeNotifier {
     await _signInWithOAuth(OAuthProvider.google);
   }
 
+  Future<bool> signInWithSystemAccount() async {
+    if (_disposed || _isBusy || !_isInitialized) return false;
+    _isBusy = true;
+    notifyListeners();
+    try {
+      return await SystemAccountService.instance.beginAuthorization();
+    } finally {
+      if (!_disposed) {
+        _isBusy = false;
+        notifyListeners();
+      }
+    }
+  }
+
   /// Initiates the OAuth sign-in process with a state lock flag.
   /// This will open the default browser to complete authentication.
   Future<void> _signInWithOAuth(OAuthProvider provider) async {
     if (_disposed) return;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService._signInWithOAuth: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService._signInWithOAuth: Supabase is not initialized. Operation ignored.',
+      );
       return;
     }
     if (_isBusy) return;
@@ -159,7 +197,9 @@ class AuthService extends ChangeNotifier {
   }) async {
     if (_disposed) return null;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService.signInWithPassword: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService.signInWithPassword: Supabase is not initialized. Operation ignored.',
+      );
       return null;
     }
     if (_isBusy) return null;
@@ -198,7 +238,9 @@ class AuthService extends ChangeNotifier {
   Future<void> signOut() async {
     if (_disposed) return;
     if (!_isInitialized || !MeoArchEnvironment.isConfigured) {
-      debugPrint('AuthService.signOut: Supabase is not initialized. Operation ignored.');
+      debugPrint(
+        'AuthService.signOut: Supabase is not initialized. Operation ignored.',
+      );
       return;
     }
     if (_isBusy) return;

@@ -160,6 +160,26 @@ class CLIArguments(BaseModel):
             if len(parts) < 2: raise ValueError("AI CLI format: name,summary")
         return v
 
+
+LEGACY_AI_ARGUMENTS = (
+    "ai_summary",
+    "ai_explain",
+    "ai_recommend",
+    "ai_analyze_error",
+    "ai_compare",
+    "ai_health",
+    "ai_test",
+    "ai_pick",
+    "ai_correct",
+    "ai_changelog",
+    "ai_cli",
+    "ai_conflicts",
+)
+
+
+def legacy_ai_requested(arguments: CLIArguments) -> bool:
+    return any(bool(getattr(arguments, name)) for name in LEGACY_AI_ARGUMENTS)
+
 async def handle_cli(backend: OmnistoreBackend, args):
     """Murphy-proof Registry-based Command Dispatcher."""
     try:
@@ -168,6 +188,20 @@ async def handle_cli(backend: OmnistoreBackend, args):
         errors = [f"Argument '{e['loc'][0]}' invalid: {e['msg']}" for e in ve.errors()]
         await backend._handle_error("Validation Failure", ValueError("; ".join(errors)), args.json)
         sys.exit(1)
+
+    if legacy_ai_requested(validated_args):
+        payload = {
+            "status": "error",
+            "code": "explicit_ai_consent_required",
+            "response": (
+                "Legacy backend AI commands are disabled. Use OmniStore's optional "
+                "AI panel so the destination, data, and request fingerprint can be approved."
+            ),
+        }
+        stream = sys.stdout if validated_args.json_mode else sys.stderr
+        stream.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        stream.flush()
+        raise SystemExit(2)
 
     async def _save_config_handler():
         data = sys.stdin.read().strip() or validated_args.set_config
@@ -248,13 +282,13 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "list_plugins": lambda: backend.run_list_plugins(validated_args.json_mode),
         "set_plugin_enabled": lambda: _handle_set_plugin_enabled(validated_args.set_plugin_enabled),
         "remove_plugin": lambda: backend.run_remove_plugin(validated_args.remove_plugin, validated_args.json_mode),
-        "ai_explain": lambda: backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or ""),
-        "ai_recommend": lambda: backend.run_ai_recommend(validated_args.ai_recommend),
-        "ai_analyze_error": lambda: backend.run_ai_analyze_error(validated_args.ai_analyze_error),
-        "ai_health": backend.run_ai_health,
+        "ai_explain": lambda: backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or "", validated_args.json_mode),
+        "ai_recommend": lambda: backend.run_ai_recommend(validated_args.ai_recommend, validated_args.json_mode),
+        "ai_analyze_error": lambda: backend.run_ai_analyze_error(validated_args.ai_analyze_error, validated_args.json_mode),
+        "ai_health": lambda: backend.run_ai_health(validated_args.json_mode),
         "ai_test": lambda: backend.run_ai_test(validated_args.json_mode),
         "ai_pick": lambda: backend.run_ai_pick(validated_args.json_mode),
-        "ai_correct": lambda: backend.run_ai_correct(validated_args.ai_correct),
+        "ai_correct": lambda: backend.run_ai_correct(validated_args.ai_correct, validated_args.json_mode),
         "ai_changelog": lambda: _handle_ai_changelog(validated_args.ai_changelog),
         "ai_cli": lambda: _handle_ai_cli(validated_args.ai_cli),
         "ai_conflicts": lambda: _handle_ai_conflicts(validated_args.ai_conflicts),

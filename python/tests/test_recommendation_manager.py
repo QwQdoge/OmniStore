@@ -10,6 +10,12 @@ class EmptySession:
     pass
 
 
+def test_recommendation_manager_honors_xdg_cache_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg-cache"))
+    manager = RecommendationManager(EmptySession())
+    assert manager.cache_dir == tmp_path / "xdg-cache" / "omnistore"
+
+
 @pytest.mark.asyncio
 async def test_featured_is_stable_offline_and_ordered(tmp_path):
     manager = RecommendationManager(EmptySession())

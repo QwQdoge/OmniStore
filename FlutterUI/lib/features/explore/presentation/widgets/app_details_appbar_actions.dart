@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/data/repositories/ai_repository.dart';
+import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/features/explore/presentation/widgets/ai_dialogs.dart';
 
@@ -30,7 +31,7 @@ class AppDetailsAppBarActions {
         ),
       if (isAIEnabled) ...[
         IconButton(
-          icon: const Icon(Icons.auto_awesome_rounded),
+          icon: const AiMark(size: 24),
           tooltip: l10n.aiPromptExplain,
           onPressed: () => _showAIExplainDialog(context, app),
         ),

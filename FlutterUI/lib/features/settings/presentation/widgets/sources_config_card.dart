@@ -22,6 +22,9 @@ class SourcesConfigCard extends StatefulWidget {
 class _SourcesConfigCardState extends State<SourcesConfigCard> {
   List<SourcePluginInfo> _plugins = const [];
   bool _loadingPlugins = false;
+  bool _detectingSources = false;
+  final Set<String> _updatingSources = <String>{};
+  final Set<String> _updatingPlugins = <String>{};
 
   @override
   void initState() {
@@ -52,14 +55,22 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _togglePlugin(SourcePluginInfo plugin, bool enabled) async {
+    if (!_updatingPlugins.add(plugin.id)) return;
     final l10n = AppLocalizations.of(context)!;
-    final success = await BackendService.instance.setPluginEnabled(
-      plugin.id,
-      enabled,
-    );
-    if (!mounted) return;
-    Toast.show(context, success ? l10n.pluginUpdated : l10n.pluginUpdateFailed);
-    await _loadPlugins();
+    try {
+      final success = await BackendService.instance.setPluginEnabled(
+        plugin.id,
+        enabled,
+      );
+      if (!mounted) return;
+      Toast.show(
+        context,
+        success ? l10n.pluginUpdated : l10n.pluginUpdateFailed,
+      );
+      await _loadPlugins();
+    } finally {
+      _updatingPlugins.remove(plugin.id);
+    }
   }
 
   Future<void> _removePlugin(SourcePluginInfo plugin) async {
@@ -73,7 +84,8 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     await _loadPlugins();
   }
 
-  void _updateSourceConfig(String key, dynamic value) {
+  Future<void> _updateSourceConfig(String key, bool value) async {
+    if (!_updatingSources.add(key)) return;
     final settings = context.read<SettingsController>();
     final config = Map<String, dynamic>.from(settings.config);
     config['search'] = Map<String, dynamic>.from(config['search'] ?? {});
@@ -81,7 +93,14 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
       config['search']['sources'] ?? {},
     );
     config['search']['sources'][key] = value;
-    settings.updateConfig(config);
+    try {
+      final saved = await settings.updateConfig(config);
+      if (!saved && mounted) {
+        Toast.show(context, AppLocalizations.of(context)!.failed);
+      }
+    } finally {
+      _updatingSources.remove(key);
+    }
   }
 
   String _displayName(String key) {
@@ -101,15 +120,21 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   }
 
   Future<void> _autoDetectSources(AppLocalizations l10n) async {
+    if (_detectingSources) return;
+    setState(() => _detectingSources = true);
     Toast.show(context, l10n.autoDetectingSources);
 
-    final settings = context.read<SettingsController>();
-    final success = await settings.autoDetectSources();
-    if (mounted) {
-      Toast.show(
-        context,
-        success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
-      );
+    try {
+      final settings = context.read<SettingsController>();
+      final success = await settings.autoDetectSources();
+      if (mounted) {
+        Toast.show(
+          context,
+          success ? l10n.autoDetectSuccess : l10n.autoDetectFailed,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _detectingSources = false);
     }
   }
 
@@ -151,8 +176,15 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     FilledButton.tonalIcon(
-                      onPressed: () => _autoDetectSources(l10n),
-                      icon: const Icon(Icons.radar_rounded, size: 18),
+                      onPressed: _detectingSources
+                          ? null
+                          : () => _autoDetectSources(l10n),
+                      icon: _detectingSources
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.radar_rounded, size: 18),
                       label: Text(l10n.autoDetect),
                     ),
                   ],
@@ -167,9 +199,18 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                     return FilterChip(
                       label: Text(_displayName(src)),
                       selected: isEnabled,
-                      onSelected: (val) => _updateSourceConfig(src, val),
+                      onSelected: _updatingSources.contains(src)
+                          ? null
+                          : (val) => _updateSourceConfig(src, val),
                     );
                   }).toList(),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.pacmanBrowsingNoAuthorization,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ListTile(
@@ -177,11 +218,16 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   leading: const Icon(Icons.code_rounded),
                   title: Text(l10n.githubIntegration),
                   subtitle: Text(l10n.configurePat),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const GitHubIntegrationPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const GitHubIntegrationPage(),
+                      ),
                     );
                   },
                 ),
@@ -204,17 +250,22 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                   SmoothSizeSwitcher(
                     alignment: Alignment.topCenter,
                     child: _loadingPlugins
-                        ? const LinearProgressIndicator(minHeight: 2, key: ValueKey('loading'))
+                        ? const LinearProgressIndicator(
+                            minHeight: 2,
+                            key: ValueKey('loading'),
+                          )
                         : _plugins.isEmpty
-                            ? Padding(
-                                key: const ValueKey('empty'),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                child: Text(l10n.noPluginsFound),
-                              )
-                            : Column(
-                                key: const ValueKey('plugins'),
-                                children: _plugins.map((p) => _buildPluginTile(p, l10n)).toList(),
-                              ),
+                        ? Padding(
+                            key: const ValueKey('empty'),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(l10n.noPluginsFound),
+                          )
+                        : Column(
+                            key: const ValueKey('plugins'),
+                            children: _plugins
+                                .map((p) => _buildPluginTile(p, l10n))
+                                .toList(),
+                          ),
                   ),
                   const SizedBox(height: 12),
                 ],

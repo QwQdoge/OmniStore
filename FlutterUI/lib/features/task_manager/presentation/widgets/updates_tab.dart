@@ -6,7 +6,7 @@ import 'package:frontend/services/update_service.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
-import 'package:frontend/core/widgets/magic_pulse_icon.dart';
+import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'ai_update_summary_dialog.dart';
 import 'updates_tab_skeleton.dart';
@@ -17,8 +17,13 @@ import 'package:frontend/core/utils/toast.dart';
 
 class UpdatesTab extends StatelessWidget {
   final VoidCallback onUpdateStarted;
+  final Future<void> Function(bool success) onUpdateFinished;
 
-  const UpdatesTab({super.key, required this.onUpdateStarted});
+  const UpdatesTab({
+    super.key,
+    required this.onUpdateStarted,
+    required this.onUpdateFinished,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,15 +62,19 @@ class UpdatesTab extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     FilledButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         final taskController = context.read<TaskController>();
                         final l10n = AppLocalizations.of(context)!;
                         if (taskController.isBusy) {
                           Toast.show(context, l10n.taskInProgress);
                           return;
                         }
-                        taskController.updateAll('all', l10n);
                         onUpdateStarted();
+                        final success = await taskController.updateAll(
+                          'all',
+                          l10n,
+                        );
+                        await onUpdateFinished(success);
                       },
                       icon: const Icon(Icons.system_update_alt, size: 18),
                       label: Text(AppLocalizations.of(context)!.updateAll),
@@ -158,10 +167,7 @@ class UpdatesTab extends StatelessWidget {
                                       return const SizedBox.shrink();
                                     }
                                     return IconButton(
-                                      icon: const MagicPulseIcon(
-                                        icon: Icons.auto_awesome_rounded,
-                                        size: 20,
-                                      ),
+                                      icon: const AiMark(size: 20),
                                       tooltip: AppLocalizations.of(
                                         context,
                                       )!.aiExplainUpdate,
@@ -178,7 +184,7 @@ class UpdatesTab extends StatelessWidget {
                                   },
                                 ),
                                 FilledButton(
-                                  onPressed: () {
+                                  onPressed: () async {
                                     final taskController = context
                                         .read<TaskController>();
                                     final l10n = AppLocalizations.of(context)!;
@@ -186,15 +192,17 @@ class UpdatesTab extends StatelessWidget {
                                       Toast.show(context, l10n.taskInProgress);
                                       return;
                                     }
-                                    taskController.runTask(
-                                      '-U',
-                                      update['id'] ?? update['name'],
-                                      update['source'] == 'Pacman'
-                                          ? 'Native'
-                                          : update['source'],
-                                      l10n,
-                                    );
                                     onUpdateStarted();
+                                    final success = await taskController
+                                        .runTask(
+                                          '-U',
+                                          update['id'] ?? update['name'],
+                                          update['source'] == 'Pacman'
+                                              ? 'Native'
+                                              : update['source'],
+                                          l10n,
+                                        );
+                                    await onUpdateFinished(success);
                                   },
                                   child: Text(
                                     AppLocalizations.of(context)!.update,

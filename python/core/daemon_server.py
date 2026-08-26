@@ -3,6 +3,7 @@ import json
 import logging
 import io
 import inspect
+import os
 from typing import Any
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from core.backend import OmnistoreBackend, captured_output_var
@@ -50,11 +51,8 @@ class DaemonRequest(BaseModel):
             "run_list_installed_sources", "run_list_plugins",
             "run_set_plugin_enabled", "run_remove_plugin",
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
-            "run_import_packages", "run_export_packages", "run_ai_test",
-            "run_ai_explain", "run_ai_recommend", "run_ai_analyze_error", "run_ai_pick",
-            "run_ai_changelog", "run_ai_cli", "run_ai_conflicts", "run_ai_correct",
-            "run_ai_compare", "run_ai_health", "run_ai_install_decision",
-            "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env", "shutdown"
+            "run_import_packages", "run_export_packages",
+            "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env", "ping", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:
             raise ValueError(f"Forbidden Action: {v}")
@@ -115,6 +113,11 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
             try:
                 async def execute_action():
                     action = cmd_data.action
+                    if action == "ping":
+                        return {
+                            "status": "success",
+                            "response": {"protocol": 1, "pid": os.getpid()},
+                        }
                     if action == "shutdown":
                         stop_event.set()
                         return {"status": "success", "response": True}
@@ -145,11 +148,14 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                                 else:
                                     res = obj
 
-                                return {
-                                    "status": "success",
-                                    "response": res,
-                                    "stdout": captured_stdout.getvalue()
-                                }
+                                if isinstance(res, BaseModel):
+                                    res = res.model_dump(exclude_none=True)
+                                if isinstance(res, dict) and res.get("status") in {"success", "error"}:
+                                    result = dict(res)
+                                    result.setdefault("stdout", captured_stdout.getvalue())
+                                    return result
+                                return {"status": "success", "response": res,
+                                        "stdout": captured_stdout.getvalue()}
                             else:
                                 return {"status": "error", "error": f"Method or attribute not found: {action}"}
                     except Exception as ae:
