@@ -243,3 +243,9 @@ Action: Replaced multiple nested SmoothSizeSwitchers with a single SmoothSizeSwi
 **Action:** Standardized custom dialog titles to explicitly include `textAlign: TextAlign.center` where native Material 3 dialog icons are used.
 
 - Improved `EmptyState` widget to conform to MD3 patterns by placing icons inside a surface container high badge (circular, tonal background, primary color) and fixing text colors (using onSurface instead of outline for titles). Wrapped layout in a `Semantics` node for better screen reader support (consolidation).
+
+## 2026-08-26 - Dart Ternary Null-Aware Indexing & MD3 Button Polish
+
+**Learning:** Combining null-aware map indexing directly in a ternary expression condition (`_state?["status"] == "error" ? ...`) causes Dart analyzer parser ambiguity where `_state ?` is misparsed as a boolean condition. Explicitly checking `_state != null && _state!["status"] == "error"` resolves analyzer issues cleanly. Additionally, `IconButton` widgets must include a `tooltip` for desktop hover discovery and screen-reader accessibility, while dialog dismissal actions should standardize on `FilledButton.tonal`.
+
+**Action:** Refactored `MeoChannelCard` to use explicit null checks, added a localized `tooltip: "Refresh"` to its refresh `IconButton`, and updated dialog cancel buttons to `FilledButton.tonal`.

@@ -49,7 +49,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             'Only official Meo packages would be downgraded. Arch and third-party packages will not be changed.\n\n$packages',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            FilledButton.tonal(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
             FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
           ],
         ),
@@ -61,7 +61,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
   @override
   Widget build(BuildContext context) {
     final channel = _state?['channel']?.toString() ?? 'Checking…';
-    final error = _state?['status'] == 'error' ? _state?['error']?.toString() : null;
+    final error = (_state != null && _state!['status'] == 'error') ? _state!['error']?.toString() : null;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,10 +77,11 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             ),
             trailing: Chip(label: Text(channel)),
           ),
-          if (error != null) Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(error, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(error, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
           Wrap(
             spacing: 8,
             children: [
@@ -92,7 +93,11 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                 onPressed: _busy || channel == 'beta' ? null : () => _switch('beta'),
                 child: const Text('Beta'),
               ),
-              IconButton(onPressed: _busy ? null : _refresh, icon: const Icon(Icons.refresh_rounded)),
+              IconButton(
+                onPressed: _busy ? null : _refresh,
+                icon: const Icon(Icons.refresh_rounded),
+                tooltip: 'Refresh',
+              ),
             ],
           ),
         ],
