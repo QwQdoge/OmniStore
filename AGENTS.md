@@ -1,29 +1,56 @@
-# OmniStore workspace guidance
+# OmniStore agent rules
 
-This repository owns the OmniStore Flutter frontend, Python backend, source
-plugins, packaging, and first-login provisioning consumer.
+This repository owns the OmniStore Flutter client, Python backend, source
+plugin manifests, package recipe, and release/ISO integration inputs. Preserve
+the source tree and make only evidence-backed capability claims.
 
-## Source paths
+## Source ownership and runtime facts
 
-- Flutter application: `FlutterUI/`
-- Python backend: `python/`
-- Source plugin manifests: `plugins/sources/`
-- Arch package recipe: `PKGBUILD`
-- Release/ISO integration scripts: `scripts/`
+- Flutter work belongs in FlutterUI/. Run Flutter commands from that directory.
+- Python backend and daemon-mode code belong in python/. This checkout has
+  Python daemon-mode code; it does not contain a Rust daemon/Cargo workspace.
+  Do not claim or scaffold a Rust daemon as though one already exists.
+- Source manifests belong in plugins/sources/. A manifest or UI switch alone
+  does not establish search/install/update support.
+- PKGBUILD and release exporter checks are package-source contracts. Keep
+  versioned release bundles separate from an arbitrary development checkout.
 
-Do not claim a source is supported unless search, details, install, uninstall,
-update, error propagation, and platform gating are real. A plugin manifest and
-UI toggle alone are not runtime acceptance. Pacman repository additions must
-fail closed until signature/keyring enrollment is implemented.
+## Documentation and records
 
-## Generated material
+- Keep code-bound documentation with the owning component or in docs/ for a
+  new root-wide contract.
+- Do not create root-level plan files, architecture drafts, audits, PR journals,
+  agent journals, screenshots, build logs, or temporary notes.
+- Store plans, decisions, audits, and historical reports in
+  /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/, using
+  00-inbox, 01-overview, 02-decisions, 03-work, 04-validation, and 99-archive.
+- Already-classified root records and historical Agent material live in the
+  OmniStore Obsidian `99-archive/` with provenance preserved. Retained source,
+  build/cache folders, and artifacts are not routine-cleanup targets.
 
-- Flutter and Python build intermediates remain in their existing `build/`,
-  `.dart_tool/`, `dist/`, or `build_cache/` directories.
-- Distributable bundles go under `artifacts/releases/<platform>/`.
-- Screenshots, install/update logs, and provisioning evidence go under
-  `artifacts/validation/<run-id>/`.
-- Do not write release bundles, screenshots, or logs into the repository root.
+## Output rules
 
-MeoArch ISO integration consumes a versioned release bundle from this project;
-the ISO workspace must not copy an arbitrary development tree or virtualenv.
+New durable output belongs only under
+/home/shekong/Projects/outputs/omni-store/:
+
+| Kind | Path |
+| --- | --- |
+| Reproducible build work | build/ |
+| Install or ISO handoff | install/ |
+| Validation evidence | validation/<UTC-run-id>/ |
+| Release bundles/packages | packages/ |
+| Disposable work | tmp/ |
+
+Use YYYY-MM-DDTHHMMSSZ-short-label for every validation run. Do not put generated
+output in the repository root.
+
+## Security and deployment boundary
+
+- Never place user credentials, AI-provider secrets, API keys, or package
+  signing material in source, output, or Obsidian notes.
+- Do not add a local credential broker or account synchronization behavior
+  without explicit, reviewed design and per-use consent.
+- Do not publish packages, alter remote package sources, deploy a service, or
+  modify a live machine/service without explicit user authorization.
+- Avoid git reset, git clean, broad deletion, and unreviewed recursive
+  commands. Preserve dirty work and state validation limits honestly.

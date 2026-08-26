@@ -1,155 +1,87 @@
-# OmniStore 🚀
+# OmniStore
 
-## Introduction
-OmniStore is a **cross-platform unified software store and management tool**. It supports multiple repositories including **Pacman, AUR, Flatpak, AppImage, and Snap**. Built with **AI assistance** (supporting local Ollama, OpenAI-compatible, and Gemini), it provides intelligent search correction, recommendations, update summaries, and error diagnostics.
+OmniStore is a cross-platform software-store project with a Flutter desktop/web
+client, a Python backend, source-plugin manifests, packaging inputs, and
+MeoArch integration support. It manages software-source discovery and package
+operations; a source toggle or manifest is not proof that every runtime action
+is supported.
 
-The backend is implemented in Python for business logic, with a **Rust resident daemon** responsible for background update detection and notifications. The frontend is built with **Flutter (Material-3/MD3)**, featuring a glassmorphism UI, fluid animations, internationalization (English, Chinese, Japanese, Spanish), and built-in mirror/repository editors.
+## What is in this repository
 
----
+| Path | Purpose |
+| --- | --- |
+| FlutterUI/ | Flutter client, platforms, assets, localization, tests, and Flutter-specific documentation. |
+| python/ | Python backend, source/plugin logic, packaging assembly, tests, and daemon-mode code. |
+| plugins/sources/ | Source-plugin manifests. |
+| scripts/ | Maintenance and localization helpers. |
+| PKGBUILD | Arch package recipe for the distributable project. |
+| config_schema.json | Versioned configuration schema. |
+| verify_release_exporter_contract.py | Release-bundle contract check for the Meo Settings usage export. |
 
-## Key Features
-- **Unified Multi-Repo Search**: Simultaneous search across Pacman, AUR, Flatpak, AppImage, and Snap.
-- **Custom Repository Management**: Edit `/etc/pacman.d/mirrorlist`, Flatpak remotes, and Snap sources directly from the UI.
-- **Deep AI Integration**:
-  - **Search Assistant**: Automatic spelling correction, keyword associations, and semantic search.
-  - **Daily Picks**: AI-curated high-quality apps selected from thousands of packages daily.
-  - **Variant Comparison**: Compare different versions (e.g., Flatpak vs. AUR) for sandboxing, stability, and update frequency.
-  - **Update Interpretation**: Translates technical changelogs into easy-to-understand feature summaries.
-  - **Conflict Warning**: Scans for potential dependency conflicts or functional overlap before installation.
-  - **Magic Terminal**: Generates precise terminal commands for power users.
-  - **System Health**: AI-driven evaluation of orphaned packages, cache, and system load.
-- **Rust Daemon**: Lightweight background service for update checks and desktop notifications.
-- **Modern MD3 UI**: Material 3 design, glassmorphism cards, responsive layouts, and smooth navigation.
-- **Onboarding Wizard**: First-run experience to guide language, mirror, and AI configuration.
-- **Highly Configurable**: All settings are stored in a clear `config.yaml` and can be edited in real-time within the app.
+The checked-out source contains Python daemon-mode/update code in python/main.py
+and python/daemon_main.py. It does not contain a Rust daemon source directory
+or a Cargo manifest, so this project must not be described as shipping a Rust
+daemon. Treat claims in older material as historical until they are verified
+against the current source.
 
----
+## Working boundary
 
-## Installation Guide
+Run Flutter tooling from FlutterUI/, and keep Python backend work under
+python/. Keep code-bound component documentation with its component; a new
+root-wide implementation or deployment contract belongs in docs/ when one is
+needed. The root README and AGENTS files are orientation only.
 
-### 1. Python Backend
-```bash
-# Create virtual environment (recommended)
-python3 -m venv python/.venv
-source python/.venv/bin/activate
+Already-classified root notes and historical Agent material were moved to the
+OmniStore Obsidian archive with their provenance preserved. Retained source,
+package configuration, build/cache directories, and artifacts are not an
+invitation to add more root-level plans, architecture drafts, audit reports,
+Agent journals, screenshots, logs, or release notes. Any further migration or
+removal needs a separate, recoverable task.
 
-# Install dependencies
-pip install -r python/requirements.txt
-```
+## Capability and integration discipline
 
-### 2. Rust Daemon
-```bash
-# Enter daemon directory and build
-cd daemon
-cargo build --release
-# Binary is located at daemon/target/release/omnistore-daemon
-```
+- Do not claim a package source works until search, details, install, uninstall,
+  update, platform gating, and error behavior are implemented and tested as
+  applicable.
+- Meo Settings consumes the versioned installed-app usage export, not private
+  daemon traffic. Keep that boundary explicit.
+- Account and AI-provider credentials require explicit user consent and must
+  not be copied into a custom backend, source file, or report.
+- The MeoArch ISO consumes a versioned release bundle, never an arbitrary
+  development tree or virtual environment.
 
-### 3. Flutter Frontend
-```bash
-cd FlutterUI
-flutter pub get
-flutter run   # Debug run
-# Or build release
-# flutter build linux / windows / macos
-```
+## Filing rule for new material
 
-### 4. Running the System
-1. Start the Rust daemon: `./daemon/target/release/omnistore-daemon &`
-2. Start the Flutter UI: `cd FlutterUI && flutter run`
+| Material | Required location |
+| --- | --- |
+| Flutter, Python, plugin, script, package, and schema source | Their existing owning directory. |
+| Contract tied to code, packaging, or deployment | The owning component documentation directory or docs/. |
+| Plans, audits, decisions, agent journals, and historical reports | /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/ |
+| Reproducible build work | /home/shekong/Projects/outputs/omni-store/build/ |
+| Install/ISO handoff material | /home/shekong/Projects/outputs/omni-store/install/ |
+| Validation evidence | /home/shekong/Projects/outputs/omni-store/validation/<UTC-run-id>/ |
+| Release bundles and package candidates | /home/shekong/Projects/outputs/omni-store/packages/ |
+| Disposable generated work | /home/shekong/Projects/outputs/omni-store/tmp/ |
 
----
+Use a UTC run identifier in the form YYYY-MM-DDTHHMMSSZ-short-label, such as
+2026-08-26T143015Z-linux-smoke. Use the numbered
+folders in the Obsidian project directory: 00-inbox, 01-overview,
+02-decisions, 03-work, 04-validation, and 99-archive.
 
-## Meo Settings installed-app usage export
+`python3 auto_build.py --all` now puts PyInstaller spec, work, and interim
+binary trees in `outputs/omni-store/build/`, and its assembled bundle in
+`outputs/omni-store/packages/omnistore-<platform>/`. `--output-dir` is the
+explicit assembled-bundle target and takes priority; `--output-root` (or
+`MEO_OUTPUT_ROOT`) changes the shared root, while `--build-dir` changes only
+the PyInstaller build tree. This avoids default `release_bundle`,
+`python/build_cache`, and `python/dist` output in the source checkout.
 
-Verified Linux release packages install the read-only
-`omnistore-apps-export` command. It is the only supported cross-application
-contract for Meo Settings:
+## Safety and release boundary
 
-```bash
-omnistore-apps-export
-```
-
-It prints one JSON document with schema
-`org.meo.omnistore.installed-usage`, version `1`.  A successful response has
-`applications`, per-source `sources`, `knownSizeBytes`, and
-`unknownSizeCount`.  `sizeBytes` is an exact filesystem value only when the
-source provides one (such as a locally scanned AppImage); package-manager and
-Flatpak values are explicitly marked `reported`.  Shares are therefore shares
-of known OmniStore application metadata, not a claim about total filesystem
-usage, package dependencies, caches, or user data.
-
-The export neither opens the Flutter GUI nor connects to OmniStore's local
-daemon, and it does not install, remove, update, or clean packages.  Do not
-consume the daemon's private localhost protocol as a Settings integration.
-
-The `omnistore-bin` PKGBUILD does not assume that a checked-out Python source
-change also exists in an older release bundle. Before it installs the wrapper,
-its `prepare()` phase runs `verify_release_exporter_contract.py` against that
-bundle's `backends/python_server`, with an isolated XDG environment. The gate
-requires the named flag, built-in Pacman and Flatpak source manifests beside
-the bundled backend, and a successful schema-v1 JSON response. The currently
-referenced v0.1.2 bundle does **not** pass this gate, so packaging intentionally
-stops rather than shipping a broken command.
-
-For a future release, rebuild and assemble the backend into the versioned
-bundle, run the verifier against that bundle, publish the matching asset, and
-only then update `pkgver` / the release tag in PKGBUILD. The source exporter
-and a local rebuilt backend can be tested without publishing or installing a
-package:
-
-```bash
-python verify_release_exporter_contract.py \
-  --backend /path/to/release-bundle/backends/python_server
-```
-
----
-
-## Configuration (`config.yaml`)
-Located at `~/.config/omnistore/config.yaml`. Example structure:
-```yaml
-search:
-  sources:
-    pacman: true
-    aur: true
-    flatpak: true
-  max_results: 100
-ui:
-  appearance: system
-  color_seed: "#6750A4"
-  language: en
-ai:
-  enabled: true
-  provider: ollama
-  endpoint: http://localhost:11434
-  model: qwen2.5:7b
-daemon:
-  enabled: true
-  check_interval_hours: 4
-```
-
----
-
-## Development
-
-| Document | Contents |
-|----------|----------|
-| [project_architecture.md](project_architecture.md) | Whole-repo diagram, Python/Rust, protocols |
-| [PROJECT_CONTEXT.zh-CN.md](PROJECT_CONTEXT.zh-CN.md) | 中文项目环境说明、模块职责、运行入口、开发注意事项 |
-| [FlutterUI/ARCHITECTURE.md](FlutterUI/ARCHITECTURE.md) | Flutter layers, features, navigation indices |
-| [FlutterUI/lib/README.md](FlutterUI/lib/README.md) | Quick `lib/` tree index |
-
-**Flutter `lib/` layers:** `app/` → `features/` → `data/` (Python CLI) · `core/` · `services/` · `widgets/`
-
-### Contribution
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a Pull Request and ensure it passes CI checks (Python + Rust + Flutter).
-
----
-
-## License
-OmniStore is licensed under the **MIT License**. See `LICENSE` for details.
-
----
-> **Thank you for using OmniStore!** Please report any issues or suggestions on GitHub.
+- Preserve existing source, plugin manifests, package sources, build/cache
+  directories, artifacts, and dirty worktrees. Do not use destructive cleanup.
+- Do not publish a package, deploy an integration, alter a system package
+  source, or change a live daemon/service without explicit authorization.
+- A local test, release build, screenshot, or contract verifier is only the
+  evidence it actually provides; record the boundary rather than claiming an
+  unperformed end-to-end result.
