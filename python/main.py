@@ -68,6 +68,8 @@ async def main():
     cmd.add_argument("--daemon", action="store_true")
     cmd.add_argument("--storage-info", action="store_true")
     cmd.add_argument("--export-installed-usage", action="store_true")
+    cmd.add_argument("--meo-channel", choices=("status", "beta", "stable"))
+    parser.add_argument("--confirm-meo-stable-downgrades", action="store_true")
 
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--source", default="AUR")
