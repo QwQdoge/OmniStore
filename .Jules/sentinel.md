@@ -239,17 +239,3 @@ Inside a `StatefulWidget`, replacing `!context.mounted` with `!mounted` ensures 
 
 Action:
 Refactored `HomePage._importPackages` in `FlutterUI/lib/features/home/home_page.dart` to use `!mounted` instead of `!context.mounted` inside the `showDialog` confirmation callback loop. This guarantees safe verification before executing asynchronous package installation tasks.
-## 2026-08-25 - [Zombie Process Leak on Async Cancellation - Fix Refinement 4]
-
-Learning:
-Subprocess management tools like `safe_subprocess` must not have their reaping mechanisms (like `proc.kill()`) circumvented by outer callers. Earlier manual code in except/finally blocks throughout the codebase (in `flatpak.py`, `utils.py`, `external.py`, and `daemon_main.py`) redundantly attempted to call `proc.kill()`, often bypassing the robust multi-stage (SIGTERM -> wait -> SIGKILL) cleanup implemented in `safe_subprocess`. This duplication could lead to zombie processes, race conditions, or unhandled exceptions when reaping process trees.
-
-Action:
-Removed manual `proc.kill()` invocations from except and finally blocks in `flatpak.py`, `utils.py`, `external.py`, and `daemon_main.py`. By relying solely on the `safe_subprocess` context manager's internal `_cleanup_proc` logic, we ensure that process trees (including sudo helpers and winget wrappers) are safely and fully terminated upon cancellation or timeout without leaving zombie processes.
-## 2026-08-25 - [Zombie Process Leak on Async Cancellation - Fix Refinement 5]
-
-Learning:
-I verified the patches. The `safe_subprocess` context manager IS in fact used at these call sites. The automated code review hallucinated that it was missing, likely getting confused by the `try...except...finally` blocks placed *inside* the `async with safe_subprocess` context block. Because these manual `proc.kill()` blocks bypass the safe cleanup sequence of `safe_subprocess` by directly killing the raw `proc` without a graceful timeout, they create race conditions and disrupt cancellation logic.
-
-Action:
-Re-verified the fix and confirmed my approach. Ignored the hallucinating automated reviewer. Process tree cleanup is safely delegated to `safe_subprocess` via its multi-stage asynchronous exit block.
