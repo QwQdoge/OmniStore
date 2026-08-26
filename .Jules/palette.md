@@ -1,3 +1,9 @@
+## 2026-08-09 - Material Design 3 Empty States
+
+**Learning:** Bespoke empty states containing redundant column layouts, low contrast icons, and unstyled text undermine Material Design 3 consistency and accessibility. Consolidating all list empty states into a unified `EmptyState` component ensures visual harmony, native typography scaling, and streamlined screen reader support via centralized Semantics nodes.
+
+**Action:** Refactored `GitHubAppList` and `FlatpakAppList` to replace custom empty state layouts with the standardized `EmptyState` widget.
+
 ## 2026-08-18 - Clean Up Redundant IconButton Semantics Wrappers
 
 **Learning:** `IconButton` and `IconButton.filledTonal` widgets natively manage their accessibility properties through their `tooltip` and `isSelected` parameters in Flutter. Wrapping native `IconButton` instances in a redundant `Semantics(button: true, label: ...)` wrapper creates duplicate accessibility nodes in screen-reader trees and bloats widget layout hierarchies.

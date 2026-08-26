@@ -8,6 +8,8 @@ import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/github_star_badge.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
+
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
@@ -40,43 +42,18 @@ class GitHubAppList extends StatelessWidget {
     if (isLoading) {
       content = const GitHubAppListSkeleton(key: ValueKey('loading'));
     } else if (apps.isEmpty) {
-      content = Center(
+      content = EmptyState(
         key: const ValueKey('empty'),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              emptyIcon,
-              size: 64,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              emptyText ?? l10n.noPackagesAvailable,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            if (emptySubtitle.isNotEmpty) ...[
-              Text(
-                emptySubtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (showRetry)
-              FilledButton.icon(
+        icon: emptyIcon,
+        title: emptyText ?? l10n.noPackagesAvailable,
+        subtitle: emptySubtitle.isNotEmpty ? emptySubtitle : null,
+        child: showRetry
+            ? FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(l10n.retry),
-              ),
-          ],
-        ),
+              )
+            : null,
       );
     } else {
       final scheme = Theme.of(context).colorScheme;

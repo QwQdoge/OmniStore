@@ -5,6 +5,8 @@ import 'package:frontend/core/widgets/app_source_tag.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/empty_state.dart';
+
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
@@ -34,39 +36,15 @@ class FlatpakAppList extends StatelessWidget {
 
     if (apps.isEmpty && !isLoading) {
       final hasError = loadError != null;
-      content = Center(
+      content = EmptyState(
         key: const ValueKey('empty'),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              hasError ? Icons.cloud_off_rounded : Icons.inventory_2_rounded,
-              size: 64,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.noResults,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              loadError ?? AppLocalizations.of(context)!.checkNetwork,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text(AppLocalizations.of(context)!.retry),
-            ),
-          ],
+        icon: hasError ? Icons.cloud_off_rounded : Icons.inventory_2_rounded,
+        title: AppLocalizations.of(context)!.noResults,
+        subtitle: loadError ?? AppLocalizations.of(context)!.checkNetwork,
+        child: FilledButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded),
+          label: Text(AppLocalizations.of(context)!.retry),
         ),
       );
     } else if (isLoading) {
