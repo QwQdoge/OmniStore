@@ -102,3 +102,7 @@ Standardized and unified all ScaffoldMessenger SnackBar usages into a reusable g
 ## 2026-08-22 - Button Consistency: Standardizing Secondary/Dismissal/Action Actions
 - Replaced scattered usages of `TextButton` and `TextButton.icon` with `FilledButton.tonal` and `FilledButton.tonalIcon` across authentication, onboarding, settings, tasks, and home page to align with the primary/secondary action patterns defined for Material Design 3 in this app.
 - This solidifies the separation between primary actions (`FilledButton`) and secondary/dismissal actions (`FilledButton.tonal`), removing fragmented UI states and building consistency without requiring full app redesigns.
+## 2026-08-26 - Button Consistency: Standardizing Secondary/Dismissal/Action Actions
+- Replaced `TextButton` with `FilledButton.tonal` in `FlutterUI/lib/features/ai/ai_consent_dialog.dart` (AI consent dialog denial action).
+- Replaced scattered usages of `TextButton.icon` with `FilledButton.tonalIcon` in `FlutterUI/lib/features/settings/presentation/widgets/ai_settings_section.dart` (Account AI settings, refresh, and credential deletion actions).
+- This further enforces the MD3 visual consistency pattern established in prior journal entries, cleanly separating primary actions from secondary/dismissal actions.
