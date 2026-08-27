@@ -5,7 +5,7 @@ import re
 import asyncio
 import tempfile
 import shutil
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from core.subprocess_utils import safe_subprocess
 
 logger = logging.getLogger(__name__)
@@ -89,9 +89,12 @@ class CustomRepoManager:
                         if name_part and url_part:
                             remotes.append({"name": name_part, "url": url_part})
                 return remotes
-        except Exception as e:
+        except (OSError, asyncio.SubprocessError) as e:
             logger.error(f"Failed to list flatpak remotes: {e}")
             return []
+        except Exception as e:
+            logger.exception(f"Unexpected error listing flatpak remotes: {e}")
+            raise
 
     async def add_flatpak_remote(self, name: str, url: str, callback: Any = None) -> bool:
         """
@@ -135,7 +138,6 @@ class CustomRepoManager:
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
                             except Exception as cfg_err:
                                 logger.error(f"Failed to update config for flatpak remote, rolling back remote: {cfg_err}")
-                                # 回滚包管理器状态，维持与配置状态一致 (Fail-closed)
                                 try:
                                     async with safe_subprocess(
                                         "flatpak", "remote-delete", "--user", "--force", name_clean,
@@ -153,15 +155,18 @@ class CustomRepoManager:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to add remote: {err_msg}")
                         return False
-            except Exception as e:
+            except (OSError, asyncio.SubprocessError) as e:
                 logger.error(f"Exception in add_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to add flatpak remote: {e}")
                 return False
+            except Exception as e:
+                logger.exception(f"Unexpected error in add_flatpak_remote: {e}")
+                raise
 
     async def remove_flatpak_remote(self, name: str, callback: Any = None) -> bool:
         """
         移除自定义 Flatpak remote。
-        防御机制：并发互斥锁、入参校验、配置持久化失败 Fail-closed 保护。
+        防御机制：并发互斥锁、入参校验、配置持久化失败回滚 (Re-add deleted remote)。
         """
         async with self._lock:
             if not self._validate_name(name):
@@ -173,6 +178,19 @@ class CustomRepoManager:
                 return False
 
             name_clean = name.strip()
+
+            # 寻找旧的 URL 以备配置写入失败时回滚
+            old_url: Optional[str] = None
+            if self.cm is not None:
+                try:
+                    custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
+                    if isinstance(custom_flatpaks, list):
+                        for item in custom_flatpaks:
+                            if isinstance(item, dict) and item.get("name") == name_clean:
+                                old_url = item.get("url")
+                                break
+                except Exception as e:
+                    logger.debug(f"Could not read existing remote URL from config: {e}")
 
             try:
                 await self._safe_callback(callback, f"[INFO] Removing Flatpak remote '{name_clean}'...")
@@ -193,7 +211,17 @@ class CustomRepoManager:
                                     custom_flatpaks = [r for r in custom_flatpaks if isinstance(r, dict) and r.get("name") != name_clean]
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
                             except Exception as cfg_err:
-                                logger.error(f"Failed to update config after removing flatpak remote: {cfg_err}")
+                                logger.error(f"Failed to update config after removing flatpak remote, attempting rollback: {cfg_err}")
+                                if old_url:
+                                    try:
+                                        async with safe_subprocess(
+                                            "flatpak", "remote-add", "--user", "--if-not-exists", name_clean, old_url,
+                                            stdout=asyncio.subprocess.PIPE,
+                                            stderr=asyncio.subprocess.DEVNULL
+                                        ) as rb_proc:
+                                            await rb_proc.communicate()
+                                    except Exception as rb_err:
+                                        logger.error(f"Rollback re-adding flatpak remote '{name_clean}' failed: {rb_err}")
                                 await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
                                 return False
                         await self._safe_callback(callback, f"[INFO] Successfully removed Flatpak remote '{name_clean}'.")
@@ -202,10 +230,13 @@ class CustomRepoManager:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to remove remote: {err_msg}")
                         return False
-            except Exception as e:
+            except (OSError, asyncio.SubprocessError) as e:
                 logger.error(f"Exception in remove_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to remove flatpak remote: {e}")
                 return False
+            except Exception as e:
+                logger.exception(f"Unexpected error in remove_flatpak_remote: {e}")
+                raise
 
     # --- Pacman Custom Repositories (/etc/pacman.conf) ---
 
@@ -239,8 +270,11 @@ class CustomRepoManager:
                 url = server_match.group(1).strip() if server_match else ""
 
                 repos.append({"name": repo_name, "url": url})
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Failed to parse pacman custom repos: {e}")
+        except Exception as e:
+            logger.exception(f"Unexpected error listing pacman repos: {e}")
+            raise
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback: Any = None) -> bool:
@@ -262,8 +296,7 @@ class CustomRepoManager:
         - 互斥锁防止并发写死锁
         - 使用 errors="surrogateescape" 无损保留非 UTF-8 字节，严禁使用 errors="replace" 写入 \ufffd 损坏文件
         - 提权准备检查
-        - 原子写入：临时文件创建与 finally 强制清理
-        - 配置管理器持久化失败 Fail-closed 保护
+        - 原子写入与备份回滚：如果配置写失败，通过备份恢复 /etc/pacman.conf
         """
         async with self._lock:
             if not name or not isinstance(name, str) or not self._validate_name(name):
@@ -296,6 +329,8 @@ class CustomRepoManager:
 
             temp_fd = None
             temp_path = None
+            backup_fd = None
+            backup_path = None
             try:
                 if not os.path.exists("/etc/pacman.conf"):
                     await self._safe_callback(callback, "[ERROR] /etc/pacman.conf does not exist.")
@@ -313,10 +348,17 @@ class CustomRepoManager:
                 modified_conf = pattern.sub("", conf)
                 modified_conf = re.sub(r"\n{3,}", "\n\n", modified_conf)
 
+                # 创建旧 pacman.conf 备份文件
+                backup_fd, backup_path = tempfile.mkstemp()
+                with os.fdopen(backup_fd, "w", encoding="utf-8", errors="surrogateescape") as bkf:
+                    bkf.write(conf)
+                backup_fd = None
+
+                # 创建修改后的 pacman.conf 临时文件
                 temp_fd, temp_path = tempfile.mkstemp()
                 with os.fdopen(temp_fd, "w", encoding="utf-8", errors="surrogateescape") as tmpf:
                     tmpf.write(modified_conf)
-                temp_fd = None  # FD consumed by fdopen context
+                temp_fd = None
 
                 async with safe_subprocess(
                     "sudo", "cp", temp_path, "/etc/pacman.conf",
@@ -334,7 +376,17 @@ class CustomRepoManager:
                                 custom_pacman = [r for r in custom_pacman if isinstance(r, dict) and r.get("name") != name_clean]
                                 self.cm.set("custom_repos.pacman", custom_pacman)
                         except Exception as cfg_err:
-                            logger.error(f"Failed to sync custom pacman config: {cfg_err}")
+                            logger.error(f"Failed to sync custom pacman config, restoring pacman.conf backup: {cfg_err}")
+                            if backup_path and os.path.exists(backup_path):
+                                try:
+                                    async with safe_subprocess(
+                                        "sudo", "cp", backup_path, "/etc/pacman.conf",
+                                        stdout=asyncio.subprocess.PIPE,
+                                        stderr=asyncio.subprocess.DEVNULL
+                                    ) as rb_proc:
+                                        await rb_proc.communicate()
+                                except Exception as rb_err:
+                                    logger.error(f"Rollback pacman.conf failed: {rb_err}")
                             await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
                             return False
 
@@ -351,21 +403,26 @@ class CustomRepoManager:
                     await self._safe_callback(callback, "[ERROR] Failed to write /etc/pacman.conf.")
                     return False
 
-            except Exception as e:
+            except (OSError, asyncio.SubprocessError) as e:
                 logger.error(f"Failed to remove pacman repo: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to remove pacman repo: {e}")
                 return False
+            except Exception as e:
+                logger.exception(f"Unexpected error in remove_pacman_repo: {e}")
+                raise
             finally:
-                if temp_fd is not None:
-                    try:
-                        os.close(temp_fd)
-                    except Exception:
-                        pass
-                if temp_path and os.path.exists(temp_path):
-                    try:
-                        os.remove(temp_path)
-                    except Exception as clean_err:
-                        logger.warning(f"Failed to remove temporary file {temp_path}: {clean_err}")
+                for fd in (temp_fd, backup_fd):
+                    if fd is not None:
+                        try:
+                            os.close(fd)
+                        except Exception:
+                            pass
+                for path in (temp_path, backup_path):
+                    if path and os.path.exists(path):
+                        try:
+                            os.remove(path)
+                        except Exception as clean_err:
+                            logger.warning(f"Failed to remove temporary file {path}: {clean_err}")
 
     # --- AppImage Custom Feeds ---
 
@@ -381,9 +438,12 @@ class CustomRepoManager:
             if isinstance(feeds, list):
                 return [str(item) for item in feeds if isinstance(item, str) and item.strip()]
             return []
-        except Exception as e:
+        except (KeyError, TypeError, ValueError) as e:
             logger.error(f"Failed to list appimage feeds: {e}")
             return []
+        except Exception as e:
+            logger.exception(f"Unexpected error listing appimage feeds: {e}")
+            raise
 
     def add_appimage_feed(self, url: str) -> bool:
         """
@@ -406,9 +466,12 @@ class CustomRepoManager:
                 self.cm.set("custom_repos.appimage", feeds)
                 return True
             return False
-        except Exception as e:
+        except (KeyError, TypeError, ValueError, OSError) as e:
             logger.error(f"Failed to add appimage feed: {e}")
             return False
+        except Exception as e:
+            logger.exception(f"Unexpected error in add_appimage_feed: {e}")
+            raise
 
     def remove_appimage_feed(self, url: str) -> bool:
         """
@@ -430,6 +493,9 @@ class CustomRepoManager:
                 self.cm.set("custom_repos.appimage", feeds)
                 return True
             return False
-        except Exception as e:
+        except (KeyError, TypeError, ValueError, OSError) as e:
             logger.error(f"Failed to remove appimage feed: {e}")
             return False
+        except Exception as e:
+            logger.exception(f"Unexpected error in remove_appimage_feed: {e}")
+            raise
