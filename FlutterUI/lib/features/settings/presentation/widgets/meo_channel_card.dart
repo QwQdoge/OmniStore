@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 
 /// A thin UI over the package-owned channel mechanism.  It deliberately has
@@ -22,81 +23,211 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
   }
 
   Future<void> _refresh() async {
-    final state = await BackendService.instance.getMeoChannel();
-    if (mounted) setState(() => _state = state);
+    try {
+      final state = await BackendService.instance.getMeoChannel();
+      if (mounted) setState(() => _state = state);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _state = {
+          ...?_state,
+          'status': 'error',
+          'error': error.toString(),
+        });
+      }
+    }
   }
 
   Future<void> _switch(String channel, {bool confirm = false}) async {
     setState(() => _busy = true);
-    final result = await BackendService.instance.setMeoChannel(
-      channel,
-      confirmStableDowngrades: confirm,
-    );
-    if (!mounted) return;
-    setState(() {
-      _busy = false;
-      _state = result;
-    });
-    if (result['status'] == 'confirmation_required') {
-      final packages = (result['downgrades'] as List? ?? const [])
-          .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
-          .join('\n');
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Switch to Stable'),
-          content: Text(
-            'Only official Meo packages would be downgraded. Arch and third-party packages will not be changed.\n\n$packages',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
-          ],
-        ),
+    try {
+      final result = await BackendService.instance.setMeoChannel(
+        channel,
+        confirmStableDowngrades: confirm,
       );
-      if (confirmed == true && mounted) await _switch('stable', confirm: true);
+      if (!mounted) return;
+      setState(() => _state = {...?_state, ...result});
+      if (result['status'] == 'confirmation_required') {
+        await _confirmStableDowngrades(result);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _state = {
+          ...?_state,
+          'status': 'error',
+          'error': error.toString(),
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _confirmStableDowngrades(Map<String, dynamic> state) async {
+    final l10n = AppLocalizations.of(context)!;
+    final packages = (state['downgrades'] as List? ?? const [])
+        .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
+        .join('\n');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.security_update_good_rounded),
+        title: const Text('Switch to Stable'),
+        content: Text(
+          'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await _switch('stable', confirm: true);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final state = _state;
     final channel = state?['channel']?.toString() ?? 'Checking…';
     final error = state != null && state['status'] == 'error' ? state['error']?.toString() : null;
+    final downgradePending = state?['downgrades'] is List && (state!['downgrades'] as List).isNotEmpty;
+    final repositories = (state?['repositories'] as List? ?? const []).join(' → ');
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.alt_route_rounded),
-            title: const Text('Meo update channel'),
-            subtitle: Text(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: theme.colorScheme.tertiaryContainer,
+                  foregroundColor: theme.colorScheme.onTertiaryContainer,
+                  child: const Icon(Icons.alt_route_rounded),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Meo update channel', style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Read from the active pacman repository order',
+                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                Chip(label: Text(channel)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
               channel == 'beta'
                   ? 'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.'
                   : 'Stable receives fully tested MeoArch release trains.',
+              style: theme.textTheme.bodyMedium,
             ),
-            trailing: Chip(label: Text(channel)),
-          ),
-          if (error != null) Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(error, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ),
-          Wrap(
-            spacing: 8,
-            children: [
-              OutlinedButton(
-                onPressed: _busy || channel == 'stable' ? null : () => _switch('stable'),
-                child: const Text('Stable'),
-              ),
-              FilledButton.tonal(
-                onPressed: _busy || channel == 'beta' ? null : () => _switch('beta'),
-                child: const Text('Beta'),
-              ),
-              IconButton(onPressed: _busy ? null : _refresh, icon: const Icon(Icons.refresh_rounded)),
+            if (repositories.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text('Repository priority: $repositories', style: theme.textTheme.bodySmall),
             ],
-          ),
-        ],
+            if (channel == 'beta') ...[
+              const SizedBox(height: 12),
+              _StatusPanel(
+                icon: Icons.science_outlined,
+                color: theme.colorScheme.tertiary,
+                text: 'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.',
+              ),
+            ],
+            if (downgradePending) ...[
+              const SizedBox(height: 12),
+              _StatusPanel(
+                icon: Icons.pending_actions_rounded,
+                color: theme.colorScheme.primary,
+                text: 'Stable is configured, but ${(state!['downgrades'] as List).length} Meo package downgrade(s) still require review.',
+                action: FilledButton.tonalIcon(
+                  onPressed: _busy ? null : () => _confirmStableDowngrades(state!),
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Review downgrades'),
+                ),
+              ),
+            ],
+            if (error != null) ...[
+              const SizedBox(height: 12),
+              _StatusPanel(icon: Icons.error_outline_rounded, color: theme.colorScheme.error, text: error),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: SegmentedButton<String>(
+                    segments: [
+                      ButtonSegment(value: 'stable', label: const Text('Stable'), icon: const Icon(Icons.verified_outlined), enabled: !_busy && channel != 'stable'),
+                      ButtonSegment(value: 'beta', label: const Text('Beta'), icon: const Icon(Icons.science_outlined), enabled: !_busy && channel != 'beta'),
+                    ],
+                    selected: {'stable', 'beta'}.contains(channel) ? {channel} : const <String>{},
+                    emptySelectionAllowed: true,
+                    onSelectionChanged: (selection) {
+                      if (selection.isNotEmpty) _switch(selection.first);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  tooltip: l10n.refresh,
+                  onPressed: _busy ? null : _refresh,
+                  icon: _busy
+                      ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.refresh_rounded),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPanel extends StatelessWidget {
+  const _StatusPanel({required this.icon, required this.color, required this.text, this.action});
+
+  final IconData icon;
+  final Color color;
+  final String text;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: Text(text, style: theme.textTheme.bodySmall)),
+              ],
+            ),
+            if (action != null) ...[
+              const SizedBox(height: 10),
+              Align(alignment: Alignment.centerRight, child: action!),
+            ],
+          ],
+        ),
       ),
     );
   }
