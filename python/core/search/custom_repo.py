@@ -5,6 +5,7 @@ import re
 import asyncio
 import tempfile
 import shutil
+import subprocess
 from typing import Dict, List, Any, Optional
 from core.subprocess_utils import safe_subprocess
 
@@ -89,7 +90,7 @@ class CustomRepoManager:
                         if name_part and url_part:
                             remotes.append({"name": name_part, "url": url_part})
                 return remotes
-        except (OSError, asyncio.SubprocessError) as e:
+        except (OSError, subprocess.SubprocessError) as e:
             logger.error(f"Failed to list flatpak remotes: {e}")
             return []
         except Exception as e:
@@ -136,7 +137,7 @@ class CustomRepoManager:
                                 else:
                                     custom_flatpaks.append({"name": name_clean, "url": url_clean})
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
-                            except Exception as cfg_err:
+                            except (OSError, IOError, KeyError, ValueError, TypeError) as cfg_err:
                                 logger.error(f"Failed to update config for flatpak remote, rolling back remote: {cfg_err}")
                                 try:
                                     async with safe_subprocess(
@@ -145,7 +146,7 @@ class CustomRepoManager:
                                         stderr=asyncio.subprocess.DEVNULL
                                     ) as rb_proc:
                                         await rb_proc.communicate()
-                                except Exception as rb_err:
+                                except (OSError, subprocess.SubprocessError) as rb_err:
                                     logger.error(f"Rollback failed for flatpak remote '{name_clean}': {rb_err}")
                                 await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
                                 return False
@@ -155,7 +156,7 @@ class CustomRepoManager:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to add remote: {err_msg}")
                         return False
-            except (OSError, asyncio.SubprocessError) as e:
+            except (OSError, subprocess.SubprocessError) as e:
                 logger.error(f"Exception in add_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to add flatpak remote: {e}")
                 return False
@@ -189,7 +190,7 @@ class CustomRepoManager:
                             if isinstance(item, dict) and item.get("name") == name_clean:
                                 old_url = item.get("url")
                                 break
-                except Exception as e:
+                except (OSError, IOError, KeyError, ValueError, TypeError) as e:
                     logger.debug(f"Could not read existing remote URL from config: {e}")
 
             try:
@@ -210,7 +211,7 @@ class CustomRepoManager:
                                 if isinstance(custom_flatpaks, list):
                                     custom_flatpaks = [r for r in custom_flatpaks if isinstance(r, dict) and r.get("name") != name_clean]
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
-                            except Exception as cfg_err:
+                            except (OSError, IOError, KeyError, ValueError, TypeError) as cfg_err:
                                 logger.error(f"Failed to update config after removing flatpak remote, attempting rollback: {cfg_err}")
                                 if old_url:
                                     try:
@@ -220,7 +221,7 @@ class CustomRepoManager:
                                             stderr=asyncio.subprocess.DEVNULL
                                         ) as rb_proc:
                                             await rb_proc.communicate()
-                                    except Exception as rb_err:
+                                    except (OSError, subprocess.SubprocessError) as rb_err:
                                         logger.error(f"Rollback re-adding flatpak remote '{name_clean}' failed: {rb_err}")
                                 await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
                                 return False
@@ -230,7 +231,7 @@ class CustomRepoManager:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to remove remote: {err_msg}")
                         return False
-            except (OSError, asyncio.SubprocessError) as e:
+            except (OSError, subprocess.SubprocessError) as e:
                 logger.error(f"Exception in remove_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to remove flatpak remote: {e}")
                 return False
@@ -375,7 +376,7 @@ class CustomRepoManager:
                             if isinstance(custom_pacman, list):
                                 custom_pacman = [r for r in custom_pacman if isinstance(r, dict) and r.get("name") != name_clean]
                                 self.cm.set("custom_repos.pacman", custom_pacman)
-                        except Exception as cfg_err:
+                        except (OSError, IOError, KeyError, ValueError, TypeError) as cfg_err:
                             logger.error(f"Failed to sync custom pacman config, restoring pacman.conf backup: {cfg_err}")
                             if backup_path and os.path.exists(backup_path):
                                 try:
@@ -385,7 +386,7 @@ class CustomRepoManager:
                                         stderr=asyncio.subprocess.DEVNULL
                                     ) as rb_proc:
                                         await rb_proc.communicate()
-                                except Exception as rb_err:
+                                except (OSError, subprocess.SubprocessError) as rb_err:
                                     logger.error(f"Rollback pacman.conf failed: {rb_err}")
                             await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
                             return False
@@ -403,7 +404,7 @@ class CustomRepoManager:
                     await self._safe_callback(callback, "[ERROR] Failed to write /etc/pacman.conf.")
                     return False
 
-            except (OSError, asyncio.SubprocessError) as e:
+            except (OSError, subprocess.SubprocessError) as e:
                 logger.error(f"Failed to remove pacman repo: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to remove pacman repo: {e}")
                 return False
@@ -438,7 +439,7 @@ class CustomRepoManager:
             if isinstance(feeds, list):
                 return [str(item) for item in feeds if isinstance(item, str) and item.strip()]
             return []
-        except (KeyError, TypeError, ValueError) as e:
+        except (KeyError, TypeError, ValueError, OSError) as e:
             logger.error(f"Failed to list appimage feeds: {e}")
             return []
         except Exception as e:

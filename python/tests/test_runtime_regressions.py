@@ -361,7 +361,6 @@ def test_remove_flatpak_remote_rollback_on_config_failure(monkeypatch):
 
     result = asyncio.run(manager.remove_flatpak_remote("myrepo"))
     assert result is False
-    # Verify rollback attempted to re-add flatpak remote
     assert any("remote-add" in cmd for cmd in subproc_calls)
 
 
@@ -415,7 +414,6 @@ def test_remove_pacman_repo_rollback_on_config_failure(tmp_path, monkeypatch):
 
     result = asyncio.run(manager.remove_pacman_repo("testing"))
     assert result is False
-    # Verify rollback attempted to restore backup to pacman.conf
     assert len([cmd for cmd in subproc_calls if cmd[:2] == ["sudo", "cp"]]) == 2
 
 
@@ -427,6 +425,37 @@ def test_unexpected_programming_exceptions_are_re_raised():
 
     with pytest.raises(TypeError, match="Unexpected bug"):
         asyncio.run(manager._safe_callback(broken_callback, "test message"))
+
+
+def test_custom_repo_programming_exception_in_config_manager_is_reraised(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
+
+    class BuggyConfigManager:
+        def get(self, key, default=None):
+            return []
+
+        def set(self, key, value):
+            raise AttributeError("Programmer bug in ConfigManager code")
+
+    cm = BuggyConfigManager()
+    manager = CustomRepoManager(config_manager=cm, executor=None)
+
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *args, **kwargs: MockSubprocessContext())
+
+    with pytest.raises(AttributeError, match="Programmer bug in ConfigManager code"):
+        asyncio.run(manager.add_flatpak_remote("myrepo", "https://example.org/feed"))
 
 
 def test_all_project_python_sources_parse():
