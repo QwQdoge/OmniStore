@@ -1052,6 +1052,48 @@ class BackendService {
     }
   }
 
+  /// The selected Meo update channel is read from pacman's resolved repository
+  /// list. It is never persisted as a Flutter preference.
+  Future<Map<String, dynamic>> getMeoChannel() async {
+    if (kIsWeb || _isTestEnv) {
+      return const {"status": "success", "channel": "unconfigured"};
+    }
+    try {
+      final result = await _safeRun(
+        ["--meo-channel", "status", "--json"],
+        timeout: const Duration(seconds: 20),
+        useLock: true,
+      );
+      final data = _safeJsonDecode(result?.stdout.toString() ?? "");
+      return data is Map<String, dynamic> ? data : const {"status": "error"};
+    } catch (error) {
+      debugPrint("getMeoChannel Error: $error");
+      return const {"status": "error"};
+    }
+  }
+
+  Future<Map<String, dynamic>> setMeoChannel(
+    String channel, {
+    bool confirmStableDowngrades = false,
+  }) async {
+    if (channel != "stable" && channel != "beta") {
+      throw ArgumentError("Unknown Meo channel");
+    }
+    if (kIsWeb || _isTestEnv) return const {"status": "error"};
+    final arguments = <String>["--meo-channel", channel];
+    if (confirmStableDowngrades) {
+      arguments.add("--confirm-meo-stable-downgrades");
+    }
+    arguments.add("--json");
+    final result = await _safeRun(
+      arguments,
+      timeout: const Duration(minutes: 30),
+      useLock: true,
+    );
+    final data = _safeJsonDecode(result?.stdout.toString() ?? "");
+    return data is Map<String, dynamic> ? data : const {"status": "error"};
+  }
+
   Stream<String> bootstrap() {
     if (kIsWeb || _isTestEnv) {
       return Stream.value(

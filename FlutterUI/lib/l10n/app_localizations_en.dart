@@ -1451,4 +1451,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pullToRefreshCategory =>
       'Pull to refresh or try another category.';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return 'Filter by source: $name';
+  }
 }

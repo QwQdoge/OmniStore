@@ -8,6 +8,7 @@ from pathlib import Path
 # ==================== 🛠️ 路径配置 ====================
 
 BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_OUTPUT_ROOT = BASE_DIR.parent / "outputs"
 
 RUST_PROJECT_DIR = BASE_DIR / "daemon"
 PYTHON_PROJECT_DIR = BASE_DIR / "python"
@@ -25,7 +26,46 @@ def run_command(cmd, cwd, name):
         sys.exit(1)
     print(f"✅ {name} 成功！")
 
-def ensure_venv():
+def resolve_output_paths(args):
+    """Resolve shared-output paths without creating them during argument parsing."""
+    raw_output_root = (
+        args.output_root
+        or os.environ.get("MEO_OUTPUT_ROOT")
+        or DEFAULT_OUTPUT_ROOT
+    )
+    project_output_root = Path(raw_output_root).expanduser().resolve() / "omni-store"
+
+    raw_build_dir = args.build_dir or os.environ.get("MEO_OMNISTORE_BUILD_DIR")
+    build_dir = (
+        Path(raw_build_dir).expanduser().resolve()
+        if raw_build_dir
+        else project_output_root / "build"
+    )
+
+    # An explicit --output-dir must win over all environment and root defaults.
+    raw_bundle_dir = (
+        args.output_dir
+        if args.output_dir is not None
+        else os.environ.get("MEO_OMNISTORE_OUTPUT_DIR")
+    )
+    bundle_dir = (
+        Path(raw_bundle_dir).expanduser().resolve()
+        if raw_bundle_dir
+        else project_output_root / "packages" / f"omnistore-{args.platform}"
+    )
+    return build_dir, bundle_dir
+
+
+def pyinstaller_paths(build_dir, target_name):
+    target_dir = Path(build_dir) / "pyinstaller" / target_name
+    return {
+        "spec": target_dir / "spec",
+        "work": target_dir / "work",
+        "dist": target_dir / "dist",
+    }
+
+
+def ensure_venv(build_dir):
     def venv_tools(path):
         if sys.platform == "win32":
             return path / "Scripts" / "pip.exe", path / "Scripts" / "pyinstaller.exe"
@@ -33,7 +73,10 @@ def ensure_venv():
 
     # Prefer a reusable venv only when it matches the current platform layout.
     primary_venv = PYTHON_PROJECT_DIR / ".venv"
-    fallback_venv = PYTHON_PROJECT_DIR / "build_venv"
+    # A fallback virtual environment is build tooling, so it belongs under the
+    # shared output tree instead of creating python/build_venv in the source
+    # checkout.  A healthy, pre-existing python/.venv remains reusable.
+    fallback_venv = Path(build_dir) / "venv"
     venv_dir = primary_venv
     if primary_venv.exists():
         primary_pip, _ = venv_tools(primary_venv)
@@ -47,6 +90,7 @@ def ensure_venv():
     if not venv_dir.exists():
         print("Creating virtual environment...")
         try:
+            venv_dir.parent.mkdir(parents=True, exist_ok=True)
             subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True, cwd=str(PYTHON_PROJECT_DIR))
         except Exception as e:
             print(f"⚠️ Failed to create virtual environment: {e}")
@@ -83,24 +127,31 @@ def ensure_venv():
 
     return pyinstaller_path, extra_args
 
-def build_rust():
+def build_rust(build_dir):
     print("\n🚀 [正在执行] Python Daemon Build...")
-    pyinstaller, extra_args = ensure_venv()
+    pyinstaller, extra_args = ensure_venv(build_dir)
+    output_paths = pyinstaller_paths(build_dir, "omnistore-daemon")
+    for path in output_paths.values():
+        path.mkdir(parents=True, exist_ok=True)
     cmd = [
         pyinstaller,
         "--onefile",
         "--name", "omnistore-daemon",
         "--clean",
-        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"),
-        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+        "--specpath", str(output_paths["spec"]),
+        "--workpath", str(output_paths["work"]),
+        "--distpath", str(output_paths["dist"]),
     ] + extra_args + [str(PYTHON_PROJECT_DIR / "daemon_main.py")]
     
     subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
     print("✅ Python Daemon Build 成功！")
 
-def build_python():
+def build_python(build_dir):
     print("\n🚀 [正在执行] Python Server Build...")
-    pyinstaller, extra_args = ensure_venv()
+    pyinstaller, extra_args = ensure_venv(build_dir)
+    output_paths = pyinstaller_paths(build_dir, "python_server")
+    for path in output_paths.values():
+        path.mkdir(parents=True, exist_ok=True)
     cmd = [
         pyinstaller,
         "--onefile",
@@ -108,8 +159,9 @@ def build_python():
         "--clean",
         "--exclude-module", "PyQt5",
         "--exclude-module", "PySide6",
-        "--specpath", str(PYTHON_PROJECT_DIR / "build_cache"),
-        "--workpath", str(PYTHON_PROJECT_DIR / "build_cache"),
+        "--specpath", str(output_paths["spec"]),
+        "--workpath", str(output_paths["work"]),
+        "--distpath", str(output_paths["dist"]),
     ] + extra_args + [str(PYTHON_PROJECT_DIR / "main.py")]
     
     subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
@@ -143,7 +195,7 @@ def copy_builtin_source_manifests(bundle_dir):
     return True
 
 
-def assemble(platform, output_dir):
+def assemble(platform, output_dir, build_dir):
     print("\n📦 [assemble] assembling Flutter Bundle...")
 
     if platform == "windows":
@@ -180,7 +232,7 @@ def assemble(platform, output_dir):
 
     # 复制 Rust 产物
     rust_bin_name = "omnistore-daemon" + binary_ext
-    rust_src = PYTHON_PROJECT_DIR / "dist" / rust_bin_name
+    rust_src = pyinstaller_paths(build_dir, "omnistore-daemon")["dist"] / rust_bin_name
     if rust_src.exists():
         shutil.copy2(rust_src, target_backend_dir / rust_bin_name)
         print(f"✅ copy rust artifacts: {rust_bin_name}")
@@ -189,7 +241,7 @@ def assemble(platform, output_dir):
 
     # 复制 Python 产物
     python_bin_name = "python_server" + binary_ext
-    python_src = PYTHON_PROJECT_DIR / "dist" / python_bin_name
+    python_src = pyinstaller_paths(build_dir, "python_server")["dist"] / python_bin_name
     if python_src.exists():
         shutil.copy2(python_src, target_backend_dir / python_bin_name)
         print(f"✅ copy python artifacts: {python_bin_name}")
@@ -225,7 +277,24 @@ def main():
     parser.add_argument("--flutter", action="store_true", help="only build Flutter frontend")
     parser.add_argument("--assemble", action="store_true", help="only execute assembly step (copy binaries into Flutter bundle)")
     parser.add_argument("--platform", type=str, default="linux", choices=["linux", "windows", "macos", "apk"], help="target platform (default: linux)")
-    parser.add_argument("--output-dir", type=str, default="release_bundle", help="output directory for the assembled bundle")
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="exact assembled-bundle directory; takes priority over environment/default paths",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=str,
+        default=None,
+        help="shared Projects output root (overrides MEO_OUTPUT_ROOT)",
+    )
+    parser.add_argument(
+        "--build-dir",
+        type=str,
+        default=None,
+        help="PyInstaller build/spec/work root (overrides MEO_OMNISTORE_BUILD_DIR)",
+    )
 
     args = parser.parse_args()
 
@@ -234,25 +303,27 @@ def main():
         parser.print_help()
         return
 
+    build_dir, output_dir = resolve_output_paths(args)
+
     # APK 不需要 Python 和 Rust 后端
     if args.platform == "apk":
         if args.all or args.flutter:
             build_flutter("apk")
         if args.all or args.assemble:
-            assemble("apk", args.output_dir)
+            assemble("apk", output_dir, build_dir)
         return
 
     if args.all or args.rust:
-        build_rust()
+        build_rust(build_dir)
 
     if args.all or args.python:
-        build_python()
+        build_python(build_dir)
 
     if args.all or args.flutter:
         build_flutter(args.platform)
 
     if args.all or args.rust or args.python or args.flutter or args.assemble:
-        assemble(args.platform, args.output_dir)
+        assemble(args.platform, output_dir, build_dir)
 
 if __name__ == "__main__":
     main()

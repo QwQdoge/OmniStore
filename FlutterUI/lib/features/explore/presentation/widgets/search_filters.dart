@@ -56,6 +56,9 @@ class SearchFilters extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: FilterChip(
                 label: Text(AppLocalizations.of(context)!.all),
+                tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(
+                  AppLocalizations.of(context)!.all,
+                ),
                 selected: selectedSources.isEmpty,
                 onSelected: (selected) {
                   if (selected) {
@@ -71,6 +74,7 @@ class SearchFilters extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
                   label: Text(name),
+                  tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(name),
                   selected: isSelected,
                   onSelected: (selected) {
                     final newSources = List<String>.from(selectedSources);

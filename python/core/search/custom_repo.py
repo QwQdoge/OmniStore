@@ -10,6 +10,7 @@ from core.downloader.manager import InstallExecutor
 
 
 class CustomRepoManager:
+    OFFICIAL_MEO_REPOSITORIES = frozenset({"meo", "meo-beta"})
     def __init__(self, config_manager, executor):
         self.cm = config_manager
         self.executor = executor
@@ -153,6 +154,21 @@ class CustomRepoManager:
 
     async def remove_pacman_repo(self, name: str, callback=None) -> bool:
         """Remove a custom repository from /etc/pacman.conf (requires sudo privileges)."""
+        # Official Meo repositories are owned by the mutually-conflicting
+        # meo-channel-* packages.  Removing their Include-backed entries here
+        # would leave pacman and the selected channel package disagreeing.
+        normalized_name = name.strip().casefold()
+        if not re.fullmatch(r"[A-Za-z0-9@._+:-]{1,128}", name.strip()):
+            if callback:
+                await callback("[ERROR] Invalid Pacman repository name.")
+            return False
+        if normalized_name in self.OFFICIAL_MEO_REPOSITORIES:
+            if callback:
+                await callback(
+                    "[ERROR] Official Meo repositories are managed by the update "
+                    "channel package. Use OmniStore's Update channel controls."
+                )
+            return False
         if callback:
             await callback(f"[INFO] Requesting authorization to modify /etc/pacman.conf...")
 
@@ -169,7 +185,7 @@ class CustomRepoManager:
                 return True
 
             # Regex search for block starting with [name] up to next block
-            pattern = re.compile(rf'^\s*\[{name}\].*?((?=^\s*\[)|$)', re.MULTILINE | re.DOTALL)
+            pattern = re.compile(rf'^\s*\[{re.escape(name.strip())}\].*?((?=^\s*\[)|$)', re.MULTILINE | re.DOTALL)
             modified_conf = pattern.sub('', conf)
 
             # Clean up potential trailing double newlines

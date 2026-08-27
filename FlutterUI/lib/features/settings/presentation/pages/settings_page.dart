@@ -7,6 +7,7 @@ import '../widgets/ai_settings_section.dart';
 import '../widgets/settings_section_header.dart';
 import '../widgets/general_settings_card.dart';
 import '../widgets/update_settings_card.dart';
+import '../widgets/meo_channel_card.dart';
 import '../widgets/typography_settings_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
@@ -79,6 +80,8 @@ class _SettingsPageState extends State<SettingsPage> {
             explicitChildNodes: true,
             child: const UpdateSettingsCard(),
           ),
+          const SizedBox(height: 12),
+          const MeoChannelCard(),
 
           const SizedBox(height: 24),
           SettingsSectionHeader(

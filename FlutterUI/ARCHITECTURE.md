@@ -107,5 +107,7 @@ flowchart TB
 
 ## Related docs
 
-- Repo-wide: [`../project_architecture.md`](../project_architecture.md)
+- Repo-wide ownership and current layout: [`../README.md`](../README.md)
 - Per-layer READMEs under `lib/*/README.md`
+- Historical architecture drafts are archived outside the source repository in
+  the OmniStore project record; they are not current implementation contracts.

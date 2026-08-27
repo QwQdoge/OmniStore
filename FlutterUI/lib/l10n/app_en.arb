@@ -1364,5 +1364,13 @@
   "pullToRefreshCategory": "Pull to refresh or try another category.",
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
+  },
+  "sourceFilterSemantics": "Filter by source: {name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
