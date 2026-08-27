@@ -8,7 +8,7 @@
   "explore": "探索",
   "search": "搜尋",
   "settings": "設定",
-  "downloads": "工作與更新",
+  "downloads": "任務與更新",
   "help": "幫助",
   "userAccount": "使用者帳戶",
   "install": "安裝",
@@ -44,14 +44,14 @@
   },
   "packageManager": "套件管理員",
   "pacmanOfficial": "Pacman（官方軟體源）",
-  "pacmanBrowsingNoAuthorization": "瀏覽、搜尋、查看詳細資料和檢查 Pacman 更新均不需要帳號或管理員認證；只有變更系統時才會要求授權。",
+  "pacmanBrowsingNoAuthorization": "瀏覽、搜尋、查看詳細資料和檢查 Pacman 更新均不需要帳戶或管理員授權；只有變更系統時才會要求授權。",
   "@pacmanBrowsingNoAuthorization": {
     "description": "說明 Pacman 操作何時需要授權"
   },
   "aurUser": "AUR（使用者軟體源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "軟體源優先級（拖曳排序）",
+  "sourcePriority": "軟體源優先順序（拖曳排序）",
   "maxResults": "最大結果數",
   "appearance": "介面外觀",
   "themeColor": "主題色",
@@ -209,7 +209,7 @@
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "清理孤立套件與 pacman 快取",
+  "systemCleaningSubtitle": "清理孤立套件與 Pacman 快取",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -1308,7 +1308,7 @@
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權標。",
+  "patHelperText": "請提供 GitHub Personal Access Token (Classic) 或細粒度 (Fine-grained) 權杖。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
