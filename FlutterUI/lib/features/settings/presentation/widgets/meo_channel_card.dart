@@ -147,9 +147,9 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
               _StatusPanel(
                 icon: Icons.pending_actions_rounded,
                 color: theme.colorScheme.primary,
-                text: 'Stable is configured, but ${(state!['downgrades'] as List).length} Meo package downgrade(s) still require review.',
+                text: 'Stable is configured, but ${(state['downgrades'] as List).length} Meo package downgrade(s) still require review.',
                 action: FilledButton.tonalIcon(
-                  onPressed: _busy ? null : () => _confirmStableDowngrades(state!),
+                  onPressed: _busy ? null : () => _confirmStableDowngrades(state),
                   icon: const Icon(Icons.fact_check_outlined),
                   label: const Text('Review downgrades'),
                 ),
