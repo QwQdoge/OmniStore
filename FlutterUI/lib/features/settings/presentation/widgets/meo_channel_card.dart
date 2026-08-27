@@ -49,7 +49,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             'Only official Meo packages would be downgraded. Arch and third-party packages will not be changed.\n\n$packages',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            FilledButton.tonal(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
             FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
           ],
         ),
