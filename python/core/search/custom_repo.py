@@ -166,7 +166,7 @@ class CustomRepoManager:
             if callback:
                 await callback(
                     "[ERROR] Official Meo repositories are managed by the update "
-                    "channel package. Use OmniStore's Update channel controls."
+                    "channel package and disabled from manual removal. Use OmniStore's Update channel controls."
                 )
             return False
         if callback:

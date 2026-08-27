@@ -246,3 +246,26 @@ async def test_appimage_search_pre_scan_optimization(tmp_path, monkeypatch):
     non_inst_res = next(r for r in results_installed if r["name"] == "NonInstalledTool")
     assert super_tool_res["installed"] is True
     assert non_inst_res["installed"] is False
+
+
+@pytest.mark.asyncio
+async def test_scoop_and_brew_get_installed_ids(monkeypatch):
+    scoop = ScoopSource()
+    scoop.enabled = True
+
+    async def dummy_scoop_list_ids():
+        return {"git", "7zip"}
+    monkeypatch.setattr(scoop, "_get_installed_ids", dummy_scoop_list_ids)
+
+    installed_scoop = await scoop._get_installed_ids()
+    assert installed_scoop == {"git", "7zip"}
+
+    brew = BrewSource()
+    brew.enabled = True
+
+    async def dummy_brew_list_ids():
+        return {"wget", "curl"}
+    monkeypatch.setattr(brew, "_get_installed_ids", dummy_brew_list_ids)
+
+    installed_brew = await brew._get_installed_ids()
+    assert installed_brew == {"wget", "curl"}
