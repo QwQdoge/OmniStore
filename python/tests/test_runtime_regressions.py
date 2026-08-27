@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 from core import backend as backend_module
 from core import cli_handler
@@ -266,6 +266,70 @@ def test_update_all_passes_graphical_askpass_to_aur_helper(monkeypatch):
     assert "-Sua" in aur_call.args[0]
     assert "-Syu" not in aur_call.args[0]
     assert aur_call.kwargs["env"]["SUDO_ASKPASS"] == "/usr/bin/ksshaskpass"
+
+
+def test_custom_repo_pacman_conf_preserves_non_utf8_bytes(tmp_path, monkeypatch):
+    conf_path = tmp_path / "pacman.conf"
+    raw_content = b"[custom_repo]\nServer = https://example.org/repo\n# Non-UTF8 byte \x80\xff\xfe comment\n"
+    conf_path.write_bytes(raw_content)
+
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("os.path.exists", lambda path: True if path == "/etc/pacman.conf" else False)
+
+    manager = CustomRepoManager(config_manager=None, executor=None)
+
+    # Wrap builtins.open to point /etc/pacman.conf to our temp file
+    orig_open = open
+
+    def mock_open(file, mode="r", *args, **kwargs):
+        if file == "/etc/pacman.conf":
+            return orig_open(conf_path, mode, *args, **kwargs)
+        return orig_open(file, mode, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    repos = asyncio.run(manager.list_pacman_repos())
+    assert len(repos) == 1
+    assert repos[0]["name"] == "custom_repo"
+    assert repos[0]["url"] == "https://example.org/repo"
+
+    # Verify that reading and re-encoding with surrogateescape preserves exact raw bytes without \ufffd replacement
+    with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
+        read_text = f.read()
+    assert read_text.encode("utf-8", errors="surrogateescape") == raw_content
+    assert "\ufffd" not in read_text
+
+
+def test_custom_repo_config_write_failure_fails_closed(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
+
+    class FailingConfigManager:
+        def get(self, key, default=None):
+            return []
+
+        def set(self, key, value):
+            raise IOError("Disk write failed")
+
+    cm = FailingConfigManager()
+    manager = CustomRepoManager(config_manager=cm, executor=None)
+
+    # Mock safe_subprocess to simulate successful flatpak execution
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *args, **kwargs: MockSubprocessContext())
+
+    result = asyncio.run(manager.add_flatpak_remote("myrepo", "https://example.org/feed"))
+    assert result is False
 
 
 def test_all_project_python_sources_parse():

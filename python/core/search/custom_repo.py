@@ -47,14 +47,15 @@ class CustomRepoManager:
         return url_str.startswith(("http://", "https://", "file://"))
 
     async def _safe_callback(self, callback: Any, message: str) -> None:
-        """故障隔离：防御性捕获回调内部可能抛出的异常，防止 UI / 主流程崩溃"""
+        """安全执行回调，保留完整 Traceback 日志，避免隐匿编程错误"""
         if callback and callable(callback):
             try:
                 res = callback(message)
                 if asyncio.iscoroutine(res):
                     await res
             except Exception as e:
-                logger.warning(f"Callback execution error: {e}")
+                logger.exception(f"Callback execution failed for message '{message}': {e}")
+                raise
 
     # --- Flatpak Custom Remotes ---
 
@@ -95,7 +96,7 @@ class CustomRepoManager:
     async def add_flatpak_remote(self, name: str, url: str, callback: Any = None) -> bool:
         """
         添加自定义 Flatpak remote。
-        防御机制：并发互斥锁、环境检查、入参校验及配置同步回滚保护。
+        防御机制：并发互斥锁、环境检查、入参校验及配置持久化失败回滚。
         """
         async with self._lock:
             if not self._validate_name(name) or not self._validate_url(url):
@@ -133,12 +134,25 @@ class CustomRepoManager:
                                     custom_flatpaks.append({"name": name_clean, "url": url_clean})
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
                             except Exception as cfg_err:
-                                logger.error(f"Failed to update config for flatpak remote: {cfg_err}")
+                                logger.error(f"Failed to update config for flatpak remote, rolling back remote: {cfg_err}")
+                                # 回滚包管理器状态，维持与配置状态一致 (Fail-closed)
+                                try:
+                                    async with safe_subprocess(
+                                        "flatpak", "remote-delete", "--user", "--force", name_clean,
+                                        stdout=asyncio.subprocess.PIPE,
+                                        stderr=asyncio.subprocess.DEVNULL
+                                    ) as rb_proc:
+                                        await rb_proc.communicate()
+                                except Exception as rb_err:
+                                    logger.error(f"Rollback failed for flatpak remote '{name_clean}': {rb_err}")
+                                await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
+                                return False
                         await self._safe_callback(callback, f"[INFO] Successfully added Flatpak remote '{name_clean}'.")
+                        return True
                     else:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to add remote: {err_msg}")
-                    return success
+                        return False
             except Exception as e:
                 logger.error(f"Exception in add_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to add flatpak remote: {e}")
@@ -147,7 +161,7 @@ class CustomRepoManager:
     async def remove_flatpak_remote(self, name: str, callback: Any = None) -> bool:
         """
         移除自定义 Flatpak remote。
-        防御机制：并发互斥锁、入参极端校验、进程通信防卡死。
+        防御机制：并发互斥锁、入参校验、配置持久化失败 Fail-closed 保护。
         """
         async with self._lock:
             if not self._validate_name(name):
@@ -180,11 +194,14 @@ class CustomRepoManager:
                                     self.cm.set("custom_repos.flatpak", custom_flatpaks)
                             except Exception as cfg_err:
                                 logger.error(f"Failed to update config after removing flatpak remote: {cfg_err}")
+                                await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
+                                return False
                         await self._safe_callback(callback, f"[INFO] Successfully removed Flatpak remote '{name_clean}'.")
+                        return True
                     else:
                         err_msg = stdout.decode("utf-8", errors="replace").strip() if stdout else "Unknown error"
                         await self._safe_callback(callback, f"[ERROR] Failed to remove remote: {err_msg}")
-                    return success
+                        return False
             except Exception as e:
                 logger.error(f"Exception in remove_flatpak_remote: {e}")
                 await self._safe_callback(callback, f"[ERROR] Failed to remove flatpak remote: {e}")
@@ -195,14 +212,14 @@ class CustomRepoManager:
     async def list_pacman_repos(self) -> List[Dict[str, str]]:
         """
         解析 /etc/pacman.conf 获取自定义 Pacman 软件源。
-        防御机制：平台及文件防护、编码防崩溃、异常捕获并降级返回空列表。
+        防御机制：使用 surrogateescape 确保非 UTF-8 字节不被误损坏，异常时降级返回空列表。
         """
         repos: List[Dict[str, str]] = []
         if sys.platform != "linux" or not os.path.exists("/etc/pacman.conf"):
             return repos
 
         try:
-            with open("/etc/pacman.conf", "r", encoding="utf-8", errors="replace") as f:
+            with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
                 content = f.read()
 
             pattern = re.compile(r"^\[([^\]\s]+)\]", re.MULTILINE)
@@ -243,10 +260,10 @@ class CustomRepoManager:
         从 /etc/pacman.conf 中安全移除自定义源。
         防御机制：
         - 互斥锁防止并发写死锁
-        - 入参极端校验与官方保留源防护
+        - 使用 errors="surrogateescape" 无损保留非 UTF-8 字节，严禁使用 errors="replace" 写入 \ufffd 损坏文件
         - 提权准备检查
-        - 原子写入：临时文件创建与 finally 强制清理，避免中间残留
-        - safe_subprocess 执行提权复制与数据库同步
+        - 原子写入：临时文件创建与 finally 强制清理
+        - 配置管理器持久化失败 Fail-closed 保护
         """
         async with self._lock:
             if not name or not isinstance(name, str) or not self._validate_name(name):
@@ -284,7 +301,8 @@ class CustomRepoManager:
                     await self._safe_callback(callback, "[ERROR] /etc/pacman.conf does not exist.")
                     return False
 
-                with open("/etc/pacman.conf", "r", encoding="utf-8", errors="replace") as f:
+                # 使用 surrogateescape 无损保留非 UTF-8 字节
+                with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
                     conf = f.read()
 
                 if f"[{name_clean}]" not in conf:
@@ -296,7 +314,7 @@ class CustomRepoManager:
                 modified_conf = re.sub(r"\n{3,}", "\n\n", modified_conf)
 
                 temp_fd, temp_path = tempfile.mkstemp()
-                with os.fdopen(temp_fd, "w", encoding="utf-8") as tmpf:
+                with os.fdopen(temp_fd, "w", encoding="utf-8", errors="surrogateescape") as tmpf:
                     tmpf.write(modified_conf)
                 temp_fd = None  # FD consumed by fdopen context
 
@@ -317,6 +335,8 @@ class CustomRepoManager:
                                 self.cm.set("custom_repos.pacman", custom_pacman)
                         except Exception as cfg_err:
                             logger.error(f"Failed to sync custom pacman config: {cfg_err}")
+                            await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
+                            return False
 
                     await self._safe_callback(callback, f"[INFO] Successfully removed Pacman repository [{name_clean}]. Syncing databases...")
 
@@ -336,7 +356,6 @@ class CustomRepoManager:
                 await self._safe_callback(callback, f"[ERROR] Failed to remove pacman repo: {e}")
                 return False
             finally:
-                # 内存/临时文件泄漏防护：无论成功失败，必须清理临时文件和文件描述符
                 if temp_fd is not None:
                     try:
                         os.close(temp_fd)
@@ -369,7 +388,7 @@ class CustomRepoManager:
     def add_appimage_feed(self, url: str) -> bool:
         """
         添加 AppImage 自定义订阅源。
-        防御机制：URL 极端校验、配置管理容错。
+        防御机制：URL 极端校验、配置写失败 Fail-closed。
         """
         if not self._validate_url(url):
             logger.warning(f"Invalid AppImage feed URL: {url}")
@@ -394,7 +413,7 @@ class CustomRepoManager:
     def remove_appimage_feed(self, url: str) -> bool:
         """
         移除 AppImage 自定义订阅源。
-        防御机制：入参校验与配置管理容错。
+        防御机制：入参校验与配置写失败 Fail-closed。
         """
         if not url or not isinstance(url, str):
             return False
