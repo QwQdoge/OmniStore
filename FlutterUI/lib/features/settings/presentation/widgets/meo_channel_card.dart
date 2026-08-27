@@ -60,9 +60,8 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
 
   @override
   Widget build(BuildContext context) {
-    final state = _state;
-    final channel = state?['channel']?.toString() ?? 'Checking…';
-    final error = state != null && state['status'] == 'error' ? state['error']?.toString() : null;
+    final channel = _state?['channel']?.toString() ?? 'Checking…';
+    final error = _state?['status'] == 'error' ? _state?['error']?.toString() : null;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
