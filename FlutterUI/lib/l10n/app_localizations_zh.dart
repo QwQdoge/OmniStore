@@ -316,7 +316,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refresh => '刷新';
 
   @override
-  String get noActiveTasks => '暂无进行中或已完成的任务';
+  String get noActiveTasks => '暂无进行中的任务';
 
   @override
   String get currentTask => '当前任务';
@@ -1669,7 +1669,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get refresh => '重新整理';
 
   @override
-  String get noActiveTasks => '暫無進行中或已完成的工作';
+  String get noActiveTasks => '暫無進行中的任務';
 
   @override
   String get currentTask => '目前任務';
