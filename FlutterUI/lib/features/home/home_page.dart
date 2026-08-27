@@ -137,18 +137,20 @@ class _HomePageState extends State<HomePage> {
       if (packages.isNotEmpty) {
         showDialog(
           context: context,
-          builder: (context) => ImportPackagesDialog(
+          builder: (dialogContext) => ImportPackagesDialog(
             packagesCount: packages.length,
             titleText: l10n.importPackages,
             contentText: l10n.importPackagesConfirm(packages.length),
             cancelText: l10n.cancel,
             confirmText: l10n.allDownloads,
-            onCancel: () => Navigator.pop(context),
+            onCancel: () => Navigator.pop(dialogContext),
             onConfirm: () async {
-              Navigator.pop(context);
+              if (!mounted) return;
+              Navigator.pop(dialogContext);
 
               // Capture context properties before async gaps
 
+              if (!mounted) return;
               final appLocalizations = AppLocalizations.of(context);
 
               if (appLocalizations == null) return;
@@ -159,6 +161,7 @@ class _HomePageState extends State<HomePage> {
                 final name = pkg['name'] as String;
                 final source = pkg['source'] as String? ?? 'Native';
 
+                if (!mounted) break;
                 Toast.show(context, appLocalizations.installingPkg(name));
 
                 await taskController.runTask(

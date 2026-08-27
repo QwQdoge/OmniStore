@@ -176,7 +176,21 @@ def test_custom_pacman_repository_addition_is_fail_closed():
         )
 
     assert asyncio.run(reject_custom_repository()) is False
-    assert any("disabled" in message.lower() for message in messages)
+
+
+def test_official_meo_repository_removal_is_fail_closed():
+    manager = CustomRepoManager(config_manager=None, executor=None)
+
+    async def reject_removal():
+        messages = []
+        async def callback(message):
+            messages.append(message)
+        ok = await manager.remove_pacman_repo("meo-beta", callback=callback)
+        return ok, messages
+
+    ok, messages = asyncio.run(reject_removal())
+    assert ok is False
+    assert "managed by the update channel package" in messages[0]
 
 
 def test_privilege_manager_never_reads_or_pipes_the_sudo_password():

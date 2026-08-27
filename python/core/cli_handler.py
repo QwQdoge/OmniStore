@@ -50,6 +50,8 @@ class CLIArguments(BaseModel):
     locate: Optional[str] = None
     daemon: bool = False
     storage_info: bool = False
+    meo_channel: Optional[str] = None
+    confirm_meo_stable_downgrades: bool = False
     json_mode: bool = Field(default=False, alias="json")
     source: str = "AUR"
     url: Optional[str] = None
@@ -263,6 +265,24 @@ async def handle_cli(backend: OmnistoreBackend, args):
         enabled = raw_enabled.lower() in ("true", "1", "yes")
         await backend.run_set_plugin_enabled(plugin_id, enabled, validated_args.json_mode)
 
+    async def _handle_meo_channel(action: str):
+        from core.meo_channel import MeoChannelError, MeoChannelManager
+
+        manager = MeoChannelManager()
+        try:
+            if action == "status":
+                payload = await manager.status()
+            elif action == "beta":
+                payload = await manager.switch_to_beta()
+            else:
+                payload = await manager.switch_to_stable(
+                    confirm_downgrades=validated_args.confirm_meo_stable_downgrades
+                )
+        except MeoChannelError as error:
+            payload = {"status": "error", "error": str(error)}
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
     REGISTRY = {
         "get_config": lambda: sys.stdout.write(json.dumps(backend.config.data, ensure_ascii=False) + "\n"),
         "set_config": _save_config_handler,
@@ -301,6 +321,7 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "launch": lambda: backend.run_launch(validated_args.launch, validated_args.source, validated_args.json_mode),
         "locate": lambda: backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode),
         "storage_info": lambda: backend.run_get_storage_info(validated_args.json_mode),
+        "meo_channel": lambda: _handle_meo_channel(validated_args.meo_channel),
     }
 
     for flag, handler in REGISTRY.items():

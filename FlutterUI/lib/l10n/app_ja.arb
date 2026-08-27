@@ -1364,5 +1364,13 @@
   "pullToRefreshCategory": "スワイプして更新するか、別のカテゴリーをお試しください。",
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
+  },
+  "sourceFilterSemantics": "ソースで絞り込み: {name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

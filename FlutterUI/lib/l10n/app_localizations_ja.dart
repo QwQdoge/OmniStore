@@ -1361,4 +1361,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pullToRefreshCategory => 'スワイプして更新するか、別のカテゴリーをお試しください。';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return 'ソースで絞り込み: $name';
+  }
 }
