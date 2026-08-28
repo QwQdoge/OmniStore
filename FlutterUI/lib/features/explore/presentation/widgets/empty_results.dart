@@ -56,7 +56,7 @@ class _EmptyResultsState extends State<EmptyResults> {
                       widget.performSearch(widget.searchController.text);
                     },
                     label: Text(cat.name),
-                    tooltip: cat.name,
+                    tooltip: widget.l10n.categorySemantics(cat.name),
                     avatar: Icon(cat.icon, size: 18),
                   ),
                 )
