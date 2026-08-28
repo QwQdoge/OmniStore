@@ -1,0 +1,32 @@
+name: Dependency refresh
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.1'
+          channel: stable
+          cache: true
+      - name: Refresh Flutter dependencies
+        working-directory: FlutterUI
+        run: |
+          flutter --version
+          flutter pub upgrade --major-versions
+          flutter pub outdated || true
+      - name: Upload resolved manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnistore-dependency-refresh
+          path: |
+            FlutterUI/pubspec.yaml
+            FlutterUI/pubspec.lock
