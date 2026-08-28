@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  refresh:
+  flutter-refresh:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -23,10 +23,52 @@ jobs:
           flutter --version
           flutter pub upgrade --major-versions
           flutter pub outdated || true
-      - name: Upload resolved manifests
+      - name: Upload resolved Flutter manifests
         uses: actions/upload-artifact@v4
         with:
-          name: omnistore-dependency-refresh
+          name: omnistore-flutter-dependency-refresh
           path: |
             FlutterUI/pubspec.yaml
             FlutterUI/pubspec.lock
+
+  python-refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Rewrite Python requirements to latest stable
+        run: |
+          python - <<'PY'
+          import json, re, urllib.request
+          from pathlib import Path
+
+          path = Path('python/requirements.txt')
+          out = []
+          pattern = re.compile(r'^(?P<name>[A-Za-z0-9_.-]+)(?P<extras>\[[^]]+\])?\s*(?P<op>==|>=|~=|<=|>|<)\s*(?P<version>[^\s#]+)(?P<tail>\s*(?:#.*)?)$')
+          for raw in path.read_text().splitlines():
+              m = pattern.match(raw.strip())
+              if not m:
+                  out.append(raw)
+                  continue
+              package = m.group('name')
+              with urllib.request.urlopen(f'https://pypi.org/pypi/{package}/json', timeout=20) as response:
+                  latest = json.load(response)['info']['version']
+              prefix = package + (m.group('extras') or '')
+              tail = m.group('tail') or ''
+              out.append(f'{prefix}=={latest}{tail}')
+          path.write_text('\n'.join(out) + '\n')
+          PY
+          cat python/requirements.txt
+      - name: Install Python dependencies
+        run: python -m pip install -r python/requirements.txt
+      - name: Run Python tests
+        working-directory: python
+        run: pytest -q
+      - name: Upload resolved Python manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnistore-python-dependency-refresh
+          path: python/requirements.txt
