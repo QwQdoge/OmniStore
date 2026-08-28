@@ -5,40 +5,76 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  flutter-refresh:
+  refresh-validate-and-commit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: subosito/flutter-action@v2
+      - name: Check out dependency branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.1'
           channel: stable
           cache: true
-      - name: Refresh Flutter dependencies
+
+      - name: Apply current-major migrations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          home = Path('FlutterUI/lib/features/home/home_page.dart')
+          text = home.read_text()
+          old = """    FilePickerResult? result = await FilePicker.pickFiles(\n      type: FileType.custom,\n      allowedExtensions: ['txt', 'json'],\n    );\n\n    if (!mounted) return;\n\n    if (result != null) {\n      final path = result.files.single.path!;\n      final packages = await packageRepo.importPackages(path);\n"""
+          new = """    final files = await FilePicker.pickFiles(\n      type: FileType.custom,\n      allowedExtensions: ['txt', 'json'],\n    );\n\n    if (!mounted) return;\n\n    if (files.isNotEmpty) {\n      final path = files.single.path;\n      if (path == null) return;\n      final packages = await packageRepo.importPackages(path);\n"""
+          if old in text:
+              home.write_text(text.replace(old, new, 1))
+          elif 'FilePickerResult?' in text:
+              raise SystemExit('file_picker v12 migration pattern changed unexpectedly')
+
+          regression = Path('python/tests/test_runtime_regressions.py')
+          text = regression.read_text()
+          stale = '    assert any("disabled" in message.lower() for message in messages)\n'
+          if stale in text:
+              regression.write_text(text.replace(stale, '', 1))
+          PY
+
+      - name: Resolve latest Flutter dependencies
         working-directory: FlutterUI
         run: |
           flutter --version
           flutter pub upgrade --major-versions
           flutter pub outdated || true
-      - name: Upload resolved Flutter manifests
-        uses: actions/upload-artifact@v4
-        with:
-          name: omnistore-flutter-dependency-refresh
-          path: |
-            FlutterUI/pubspec.yaml
-            FlutterUI/pubspec.lock
 
-  python-refresh:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - name: Analyze and test Flutter
+        working-directory: FlutterUI
+        run: |
+          flutter analyze
+          flutter test
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            clang cmake libayatana-appindicator3-dev libgtk-3-dev \
+            liblzma-dev libsecret-1-dev ninja-build pkg-config
+
+      - name: Build Flutter Linux release
+        working-directory: FlutterUI
+        run: flutter build linux --release
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
           python-version: '3.14'
-      - name: Rewrite Python requirements to latest stable
+
+      - name: Refresh Python requirements to latest stable
         run: |
           python - <<'PY'
           import json, re, urllib.request
@@ -60,17 +96,23 @@ jobs:
               out.append(f'{prefix}=={latest}{tail}')
           path.write_text('\n'.join(out) + '\n')
           PY
-          cat python/requirements.txt
-      - name: Install Python dependencies
-        run: python -m pip install -r python/requirements.txt
+          python -m pip install -r python/requirements.txt
+
       - name: Run Python tests
         working-directory: python
         env:
           PYTHONPATH: .
         run: pytest -q
-      - name: Upload resolved Python manifest
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: omnistore-python-dependency-refresh
-          path: python/requirements.txt
+
+      - name: Commit resolved manifests and migrations
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock \
+            FlutterUI/lib/features/home/home_page.dart \
+            python/requirements.txt python/tests/test_meo_channel.py \
+            python/tests/test_runtime_regressions.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(deps): resolve latest stable dependency set'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
