@@ -1,5 +1,6 @@
 import asyncio
 import json
+import subprocess
 import sys
 
 import pytest
@@ -8,8 +9,16 @@ from core.meo_channel import CommandResult, MeoChannelManager, channel_from_repo
 
 
 def test_channel_helper_does_not_eagerly_import_unrelated_network_sources():
-    assert "core.sources.aur.aur" not in sys.modules
-    assert "core.sources.github.github" not in sys.modules
+    # Import isolation is the behavior under test. Running this assertion in the
+    # shared pytest process made it depend on which unrelated test happened to
+    # import AUR/GitHub sources first.
+    code = """
+import sys
+import core.meo_channel
+assert 'core.sources.aur.aur' not in sys.modules
+assert 'core.sources.github.github' not in sys.modules
+"""
+    subprocess.run([sys.executable, "-c", code], check=True)
 
 
 def test_channel_follows_pacman_order_not_a_preference():
