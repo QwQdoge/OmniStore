@@ -57,6 +57,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+# system_tray 2.0.3 is still its latest stable release but declares uuid ^3.0.6.
+# uuid 4.x keeps the v1/v4/v5 APIs used by system_tray, while current
+# cached_network_image/flutter_cache_manager requires uuid 4.x. Keep the shared
+# transitive dependency on its current stable release and let CI compile/test the
+# combination instead of downgrading cached_network_image.
+dependency_overrides:
+  uuid: ^4.6.0
+
 flutter:
   generate: true
   uses-material-design: true
