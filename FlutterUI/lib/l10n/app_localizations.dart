@@ -2634,6 +2634,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter by source: {name}'**
   String sourceFilterSemantics(String name);
+
+  /// No description provided for @meoUpdateChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Update Channel'**
+  String get meoUpdateChannel;
+
+  /// No description provided for @meoUpdateChannelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Read from the active pacman repository order'**
+  String get meoUpdateChannelDesc;
+
+  /// No description provided for @switchToStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Stable'**
+  String get switchToStable;
+
+  /// No description provided for @meoDowngradeConfirmDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n{packages}'**
+  String meoDowngradeConfirmDialog(String packages);
+
+  /// No description provided for @meoBetaChannelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.'**
+  String get meoBetaChannelDesc;
+
+  /// No description provided for @meoStableChannelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable receives fully tested MeoArch release trains.'**
+  String get meoStableChannelDesc;
+
+  /// No description provided for @meoRepositoryPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository priority: {repositories}'**
+  String meoRepositoryPriority(String repositories);
+
+  /// No description provided for @meoBetaWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.'**
+  String get meoBetaWarning;
+
+  /// No description provided for @meoDowngradePending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Stable is configured, but 1 Meo package downgrade still requires review.} other{Stable is configured, but {count} Meo package downgrades still require review.}}'**
+  String meoDowngradePending(num count);
+
+  /// No description provided for @meoReviewDowngrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Downgrades'**
+  String get meoReviewDowngrades;
+
+  /// No description provided for @aiReadingAccountConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading account AI connection'**
+  String get aiReadingAccountConnection;
+
+  /// No description provided for @aiReadingAccountConnectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads provider, model name, and key mask only.'**
+  String get aiReadingAccountConnectionSubtitle;
+
+  /// No description provided for @aiCannotReadAccountConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read account AI connection'**
+  String get aiCannotReadAccountConnection;
+
+  /// No description provided for @aiCannotReadAccountConnectionDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Account to enter and securely save your API key, then refresh here.'**
+  String get aiCannotReadAccountConnectionDetail;
+
+  /// No description provided for @aiManageConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage AI Connection'**
+  String get aiManageConnection;
+
+  /// No description provided for @aiEnableAssistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable AI Assistance'**
+  String get aiEnableAssistance;
+
+  /// No description provided for @aiEnableAssistanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default; requires single-use confirmation per request when enabled.'**
+  String get aiEnableAssistanceSubtitle;
+
+  /// No description provided for @aiSecureSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Save / Replace'**
+  String get aiSecureSave;
+
+  /// No description provided for @aiDeleteLocalKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Local Key'**
+  String get aiDeleteLocalKey;
+
+  /// No description provided for @aiLoginMeoAccountFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to Meo Account first'**
+  String get aiLoginMeoAccountFirst;
+
+  /// No description provided for @aiAccountConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Account AI Connection'**
+  String get aiAccountConnection;
+
+  /// No description provided for @aiNoAccountConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No AI connection found in account'**
+  String get aiNoAccountConnection;
 }
 
 class _AppLocalizationsDelegate

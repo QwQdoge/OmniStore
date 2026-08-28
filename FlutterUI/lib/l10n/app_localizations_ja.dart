@@ -1366,4 +1366,80 @@ class AppLocalizationsJa extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'ソースで絞り込み: $name';
   }
+
+  @override
+  String get meoUpdateChannel => 'Meo 更新チャンネル';
+
+  @override
+  String get meoUpdateChannelDesc => 'アクティブな pacman リポジトリの順序から読み込み';
+
+  @override
+  String get switchToStable => 'Stable に切り替え';
+
+  @override
+  String meoDowngradeConfirmDialog(String packages) {
+    return '以下の公式 Meo パッケージは Stable バージョンが必要です。Arch およびサードパーティのパッケージはダウングレードされません。\n\n$packages';
+  }
+
+  @override
+  String get meoBetaChannelDesc =>
+      'Beta は Stable より早く新しい Meo コンポーネントを受信します。Arch システムパッケージは通常の金型リポジトリに維持されます。';
+
+  @override
+  String get meoStableChannelDesc =>
+      'Stable は十分にテストされた MeoArch リリースバージョンを受信します。';
+
+  @override
+  String meoRepositoryPriority(String repositories) {
+    return 'リポジトリの優先順位: $repositories';
+  }
+
+  @override
+  String get meoBetaWarning =>
+      'Beta はオプトインであり、クリティカルなシステムには推奨されません。Stable がフォールバックリポジトリとなります。';
+
+  @override
+  String meoDowngradePending(num count) {
+    return 'Stable が設定されていますが、$count 件の Meo パッケージのダウングレードの確認が必要です。';
+  }
+
+  @override
+  String get meoReviewDowngrades => 'ダウングレードを確認';
+
+  @override
+  String get aiReadingAccountConnection => 'アカウントの AI 接続を読み込み中';
+
+  @override
+  String get aiReadingAccountConnectionSubtitle => '名前、プロバイダー、キーマスクのみを読み込みます。';
+
+  @override
+  String get aiCannotReadAccountConnection => 'アカウントの AI 接続を読み込めません';
+
+  @override
+  String get aiCannotReadAccountConnectionDetail =>
+      'アカウントに移動して API キーを入力・保存し、ここで更新してください。';
+
+  @override
+  String get aiManageConnection => 'AI 接続を管理';
+
+  @override
+  String get aiEnableAssistance => 'AI アシスタントを有効化';
+
+  @override
+  String get aiEnableAssistanceSubtitle => 'デフォルトはオフです。有効化後も送信ごとに個別確認が必要です。';
+
+  @override
+  String get aiSecureSave => '安全に保存 / 置換';
+
+  @override
+  String get aiDeleteLocalKey => 'ローカルキーを削除';
+
+  @override
+  String get aiLoginMeoAccountFirst => '最初に Meo Account にログインしてください';
+
+  @override
+  String get aiAccountConnection => 'アカウント AI 接続';
+
+  @override
+  String get aiNoAccountConnection => 'アカウントに AI 接続が見つかりません';
 }

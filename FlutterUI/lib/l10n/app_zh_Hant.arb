@@ -17,7 +17,7 @@
   "launch": "啟動",
   "about": "關於",
   "details": "詳情",
-  "source": "軟體源",
+  "source": "軟件源",
   "variant": "分發版本",
   "@variant": {
     "description": "Label for app variants/versions"
@@ -43,15 +43,15 @@
     "description": "Category label"
   },
   "packageManager": "套件管理員",
-  "pacmanOfficial": "Pacman（官方軟體源）",
+  "pacmanOfficial": "Pacman（官方軟件源）",
   "pacmanBrowsingNoAuthorization": "瀏覽、搜尋、查看詳細資料和檢查 Pacman 更新均不需要帳號或管理員認證；只有變更系統時才會要求授權。",
   "@pacmanBrowsingNoAuthorization": {
     "description": "說明 Pacman 操作何時需要授權"
   },
-  "aurUser": "AUR（使用者軟體源）",
+  "aurUser": "AUR（使用者軟件源）",
   "flatpak": "Flatpak",
   "appImage": "AppImage",
-  "sourcePriority": "軟體源優先級（拖曳排序）",
+  "sourcePriority": "軟件源優先級（拖曳排序）",
   "maxResults": "最大結果數",
   "appearance": "介面外觀",
   "themeColor": "主題色",
@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 套件…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失敗",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已啟用的軟體來源均已更新",
   "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
@@ -304,7 +316,7 @@
   "@advanced": {
     "description": "Label for advanced settings toggle"
   },
-  "repositories": "軟體源",
+  "repositories": "軟件源",
   "@repositories": {
     "description": "Section title for software repositories"
   },
@@ -384,7 +396,7 @@
   "@aiPickDaySubtitle": {
     "description": "Subtitle for daily AI pick card"
   },
-  "aiCompareTitle": "AI 版本比較",
+  "aiCompareTitle": "AI 分發版本比較",
   "@aiCompareTitle": {
     "description": "Title for AI package comparison feature"
   },
@@ -480,7 +492,7 @@
   "envOkDesc": "系統狀態良好，一切就緒！",
   "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
-  "sourceConfigTitle": "軟體源設定",
+  "sourceConfigTitle": "軟件源設定",
   "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體來源",
   "enableAur": "啟用 AUR (Arch User Repository)",
   "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
@@ -502,7 +514,7 @@
   "resetCacheDesc": "清空搜尋歷史與本地推薦快取",
   "resetCacheConfirm": "將清空搜尋歷史與推薦快取。確認繼續？",
   "resetting": "正在重置...",
-  "resetSuccess": "快取與歷史記錄已成功清空",
+  "resetSuccess": "快取與歷史記錄已清空",
   "resetFailed": "重置失敗: {error}",
   "@resetFailed": {
     "placeholders": {
@@ -538,12 +550,12 @@
     }
   },
   "switchSource": "切換",
-  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體源，通常更穩定。",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟件源，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
   "cleanOrphans": "清理孤立套件",
   "securityWarning": "安全風險提示",
-  "aurSecurityDesc": "AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
+  "aurSecurityDesc": "AUR 是由社群維護的軟件源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
   "installInfo": "安裝資訊",
   "downloadSize": "下載大小",
@@ -589,7 +601,11 @@
   "pluginCapabilities": "{count} 項功能",
   "@pluginCapabilities": {
     "description": "軟體來源外掛提供的功能數量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
@@ -643,7 +659,7 @@
     }
   },
   "githubAuthTitle": "GitHub 身份驗證",
-  "githubPatSaved": "GitHub 存取權杖已成功儲存",
+  "githubPatSaved": "GitHub 個人存取權杖已儲存",
   "saveToken": "儲存權杖",
   "back": "返回",
   "next": "下一步",
@@ -662,7 +678,7 @@
   "@next": {
     "description": "Next button label"
   },
-  "aurFull": "AUR（Arch 使用者軟體源）",
+  "aurFull": "AUR（Arch 使用者軟件源）",
   "@aurFull": {
     "description": "Full name for AUR"
   },
@@ -759,7 +775,7 @@
   "expand": "展開",
   "all": "全部",
   "relatedApps": "相關應用程式",
-  "activeSources": "已啟用軟體源",
+  "activeSources": "已啟用軟件源",
   "@activeSources": {
     "description": "Label for active software sources"
   },
@@ -767,12 +783,12 @@
   "@autoDetect": {
     "description": "Button to auto detect available sources"
   },
-  "addCustomSource": "新增自訂軟體源",
+  "addCustomSource": "新增自訂軟件源",
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源",
-  "sourceType": "軟體源類型",
+  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟件源、AppImage 訂閱或 GitHub/Bitu 軟件源",
+  "sourceType": "軟件源類型",
   "@sourceType": {
     "description": "Label for source type"
   },
@@ -784,7 +800,7 @@
   "@bituRepoType": {
     "description": "Bitu source type option"
   },
-  "flatpakRemoteType": "Flatpak 遠端軟體源",
+  "flatpakRemoteType": "Flatpak 遠端軟件源",
   "@flatpakRemoteType": {
     "description": "Flatpak source type option"
   },
@@ -792,7 +808,7 @@
   "@appImageFeedType": {
     "description": "AppImage source type option"
   },
-  "sourceName": "軟體源名稱",
+  "sourceName": "軟件源名稱",
   "@sourceName": {
     "description": "Label for source name"
   },
@@ -800,7 +816,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "軟體源地址（owner/repo）",
+  "repoOwnerRepo": "軟件源地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -816,23 +832,23 @@
   "@hintFeedUrl": {
     "description": "Hint for feed URL"
   },
-  "errorNameUrlRequired": "名稱和連結/軟體源地址不能為空",
+  "errorNameUrlRequired": "名稱和連結/軟件源地址不能為空",
   "@errorNameUrlRequired": {
     "description": "Error message when name or URL is missing"
   },
-  "addingCustomSource": "正在新增自訂軟體源...",
+  "addingCustomSource": "正在新增自訂軟件源...",
   "@addingCustomSource": {
     "description": "Message while adding custom source"
   },
-  "sourceAddSuccess": "軟體源新增成功！",
+  "sourceAddSuccess": "軟件源新增成功！",
   "@sourceAddSuccess": {
     "description": "Success message after adding source"
   },
-  "sourceAddFailed": "新增軟體源失敗。",
+  "sourceAddFailed": "新增軟件源失敗。",
   "@sourceAddFailed": {
     "description": "Failure message after adding source"
   },
-  "autoDetectingSources": "正在自動偵測系統中可用的軟體源...",
+  "autoDetectingSources": "正在自動偵測系統中可用的軟件源...",
   "@autoDetectingSources": {
     "description": "Message while auto detecting sources"
   },
@@ -982,7 +998,7 @@
   "enableSystemdServiceDesc": "允許在應用程式關閉時透過註冊 systemd 定時器來靜默檢查更新",
   "taskHistory": "任務歷史記錄",
   "unknownApp": "未知應用程式",
-  "taskSuccessMsg": "已成功完成",
+  "taskSuccessMsg": "已完成",
   "failureReason": "失敗原因：{message}",
   "@failureReason": {
     "placeholders": {
@@ -1003,7 +1019,7 @@
   "trending": "熱度榜",
   "latestUpdates": "最新更新",
   "searchNoResultsSubtitle": "請嘗試其他關鍵字，或啟用更多軟體來源",
-  "pluginsAndSources": "外掛程式與軟體源",
+  "pluginsAndSources": "外掛程式與軟件源",
   "@pluginsAndSources": {
     "description": "Section title for plugins and software sources"
   },
@@ -1160,7 +1176,7 @@
   "@installationDecisionTitle": {
     "description": "Description for installationDecisionTitle"
   },
-  "recommendedSource": "推薦軟體源：{source}",
+  "recommendedSource": "推薦軟件源：{source}",
   "@recommendedSource": {
     "placeholders": {
       "source": {
@@ -1368,12 +1384,34 @@
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
   },
-  "sourceFilterSemantics": "按軟體源篩選：{name}",
+  "sourceFilterSemantics": "按軟件源篩選：{name}",
   "@sourceFilterSemantics": {
     "placeholders": {
       "name": {
         "type": "String"
       }
     }
-  }
+  },
+  "meoUpdateChannel": "Meo 更新通道",
+  "meoUpdateChannelDesc": "讀取自 Pacman 軟件源的生效順序",
+  "switchToStable": "切換至 Stable",
+  "meoDowngradeConfirmDialog": "以下 Meo 官方套件需要降低至 Stable 版本。Arch 及第三方套件不會被降級。\n\n{packages}",
+  "meoBetaChannelDesc": "Beta 通道會比 Stable 更早接收新的 Meo 元件。Arch 系統套件仍保留在其常規軟件源中。",
+  "meoStableChannelDesc": "Stable 通道僅接收經過完整測試的 MeoArch 發布分支。",
+  "meoRepositoryPriority": "軟件源優先級：{repositories}",
+  "meoBetaWarning": "Beta 為手動選擇通道，不建議在生產關鍵系統中使用。Stable 仍為備用軟件源。",
+  "meoDowngradePending": "已設定 Stable 通道，但仍有 {count} 個 Meo 套件降級需要確認。",
+  "meoReviewDowngrades": "檢查降級項",
+  "aiReadingAccountConnection": "正在讀取帳號 AI 連線",
+  "aiReadingAccountConnectionSubtitle": "只讀取名稱、服務商和金鑰遮罩。",
+  "aiCannotReadAccountConnection": "無法讀取帳號 AI 連線",
+  "aiCannotReadAccountConnectionDetail": "前往 Account 填寫您自己的 API 金鑰並安全儲存，然後回到這裡重新整理。",
+  "aiManageConnection": "管理 AI 連線",
+  "aiEnableAssistance": "啟用 AI 輔助",
+  "aiEnableAssistanceSubtitle": "預設關閉；開啟後每次傳送仍需單獨確認。",
+  "aiSecureSave": "安全儲存 / 替換",
+  "aiDeleteLocalKey": "刪除本地金鑰",
+  "aiLoginMeoAccountFirst": "先登入 Meo Account",
+  "aiAccountConnection": "帳號 AI 連線",
+  "aiNoAccountConnection": "帳號中還沒有 AI 連線"
 }

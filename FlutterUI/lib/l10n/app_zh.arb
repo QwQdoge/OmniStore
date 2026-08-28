@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 软件包…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失败",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已启用的软件源均已更新",
   "enableSystemTray": "启用系统托盘",
   "@enableSystemTray": {
@@ -385,7 +397,7 @@
   "@aiPickDaySubtitle": {
     "description": "Subtitle for daily AI pick card"
   },
-  "aiCompareTitle": "AI 版本对比",
+  "aiCompareTitle": "AI 分发版本对比",
   "@aiCompareTitle": {
     "description": "Title for AI package comparison feature"
   },
@@ -503,7 +515,7 @@
   "resetCacheDesc": "清空搜索历史与本地推荐缓存",
   "resetCacheConfirm": "将清空搜索历史和推荐缓存。确认继续？",
   "resetting": "正在重置...",
-  "resetSuccess": "缓存与历史记录已成功清空",
+  "resetSuccess": "缓存与历史记录已清空",
   "resetFailed": "重置失败: {error}",
   "@resetFailed": {
     "placeholders": {
@@ -590,7 +602,11 @@
   "pluginCapabilities": "{count} 项能力",
   "@pluginCapabilities": {
     "description": "软件源插件提供的能力数量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 响应失败。",
   "@aiResponseFailed": {
@@ -644,7 +660,7 @@
     }
   },
   "githubAuthTitle": "GitHub 身份验证",
-  "githubPatSaved": "GitHub 访问令牌已成功保存",
+  "githubPatSaved": "GitHub 个人访问令牌已保存",
   "saveToken": "保存令牌",
   "back": "返回",
   "next": "下一步",
@@ -983,7 +999,7 @@
   "enableSystemdServiceDesc": "允许在应用关闭时通过注册 systemd 定时器来静默检查更新",
   "taskHistory": "任务历史记录",
   "unknownApp": "未知应用",
-  "taskSuccessMsg": "已成功完成",
+  "taskSuccessMsg": "已完成",
   "failureReason": "失败原因：{message}",
   "@failureReason": {
     "placeholders": {
@@ -1376,5 +1392,27 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoUpdateChannel": "Meo 更新通道",
+  "meoUpdateChannelDesc": "读取自 Pacman 软件源的生效顺序",
+  "switchToStable": "切换至 Stable",
+  "meoDowngradeConfirmDialog": "以下 Meo 官方软件包需要降低至 Stable 版本。Arch 及第三方软件包不会被降级。\n\n{packages}",
+  "meoBetaChannelDesc": "Beta 通道会比 Stable 更早接收新的 Meo 组件。Arch 系统软件包仍保留在其常规软件源中。",
+  "meoStableChannelDesc": "Stable 通道仅接收经过完整测试的 MeoArch 发布分支。",
+  "meoRepositoryPriority": "软件源优先级：{repositories}",
+  "meoBetaWarning": "Beta 为手动选择通道，不建议在生产关键系统中使用。Stable 仍为备用软件源。",
+  "meoDowngradePending": "已配置 Stable 通道，但仍有 {count} 个 Meo 软件包降级需要确认。",
+  "meoReviewDowngrades": "检查降级项",
+  "aiReadingAccountConnection": "正在读取账号 AI 连接",
+  "aiReadingAccountConnectionSubtitle": "只读取名称、服务商和密钥掩码。",
+  "aiCannotReadAccountConnection": "无法读取账号 AI 连接",
+  "aiCannotReadAccountConnectionDetail": "前往 Account 填写您自己的 API 密钥并安全保存，然后回到这里刷新。",
+  "aiManageConnection": "管理 AI 连接",
+  "aiEnableAssistance": "启用 AI 辅助",
+  "aiEnableAssistanceSubtitle": "默认关闭；开启后每次发送仍需单独确认。",
+  "aiSecureSave": "安全保存 / 替换",
+  "aiDeleteLocalKey": "删除本地密钥",
+  "aiLoginMeoAccountFirst": "先登录 Meo Account",
+  "aiAccountConnection": "账号 AI 连接",
+  "aiNoAccountConnection": "账号中还没有 AI 连接"
 }

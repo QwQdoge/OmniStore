@@ -136,7 +136,7 @@ class WelcomeAiPage extends StatelessWidget {
                               TextField(
                                 controller: endpointController,
                                 decoration: InputDecoration(
-                                  labelText: 'Endpoint URL',
+                                  labelText: l10n.aiEndpoint,
                                   hintText: aiProvider == 'ollama'
                                       ? l10n.aiEndpointHelper
                                       : 'e.g. https://api.openai.com/v1',
@@ -163,7 +163,7 @@ class WelcomeAiPage extends StatelessWidget {
                                 controller: apiKeyController,
                                 obscureText: true,
                                 decoration: InputDecoration(
-                                  labelText: 'API Key',
+                                  labelText: l10n.aiApiKey,
                                   hintText: l10n.aiApiKeyHelper,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),

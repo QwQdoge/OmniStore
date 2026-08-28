@@ -1468,4 +1468,94 @@ class AppLocalizationsEs extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'Filtrar por origen: $name';
   }
+
+  @override
+  String get meoUpdateChannel => 'Canal de actualización Meo';
+
+  @override
+  String get meoUpdateChannelDesc =>
+      'Leído del orden de repositorios activo de pacman';
+
+  @override
+  String get switchToStable => 'Cambiar a Stable';
+
+  @override
+  String meoDowngradeConfirmDialog(String packages) {
+    return 'Los siguientes paquetes oficiales de Meo requieren una versión Stable. Los paquetes de Arch y terceros no se degradarán.\n\n$packages';
+  }
+
+  @override
+  String get meoBetaChannelDesc =>
+      'Beta recibe componentes más recientes de Meo antes que Stable. Los paquetes del sistema Arch permanecen en sus repositorios habituales.';
+
+  @override
+  String get meoStableChannelDesc =>
+      'Stable recibe versiones de MeoArch totalmente probadas.';
+
+  @override
+  String meoRepositoryPriority(String repositories) {
+    return 'Prioridad de repositorios: $repositories';
+  }
+
+  @override
+  String get meoBetaWarning =>
+      'Beta es opcional y no se recomienda para sistemas críticos. Stable sigue siendo el repositorio de respaldo.';
+
+  @override
+  String meoDowngradePending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Stable está configurado, pero $count degradaciones de paquetes Meo requieren revisión.',
+      one:
+          'Stable está configurado, pero 1 degradación de paquete Meo requiere revisión.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get meoReviewDowngrades => 'Revisar degradaciones';
+
+  @override
+  String get aiReadingAccountConnection =>
+      'Leyendo conexión de IA de la cuenta';
+
+  @override
+  String get aiReadingAccountConnectionSubtitle =>
+      'Solo lee el nombre, proveedor y máscara de clave.';
+
+  @override
+  String get aiCannotReadAccountConnection =>
+      'No se puede leer la conexión de IA de la cuenta';
+
+  @override
+  String get aiCannotReadAccountConnectionDetail =>
+      'Vaya a Cuenta para ingresar y guardar de forma segura su clave API, luego actualice aquí.';
+
+  @override
+  String get aiManageConnection => 'Gestionar conexión de IA';
+
+  @override
+  String get aiEnableAssistance => 'Habilitar asistencia de IA';
+
+  @override
+  String get aiEnableAssistanceSubtitle =>
+      'Desactivado por defecto; requiere confirmación individual antes de cada envío.';
+
+  @override
+  String get aiSecureSave => 'Guardar / Reemplazar de forma segura';
+
+  @override
+  String get aiDeleteLocalKey => 'Eliminar clave local';
+
+  @override
+  String get aiLoginMeoAccountFirst => 'Iniciar sesión en Meo Account primero';
+
+  @override
+  String get aiAccountConnection => 'Conexión de IA de la cuenta';
+
+  @override
+  String get aiNoAccountConnection =>
+      'No se encontró ninguna conexión de IA en la cuenta';
 }

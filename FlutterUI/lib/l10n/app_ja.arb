@@ -191,9 +191,21 @@
     "description": "update"
   },
   "updatingSourcePackages": "{source} パッケージを更新しています…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} の更新に失敗しました",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "有効なパッケージソースはすべて最新です",
   "enableSystemTray": "システムトレイを有効にする",
   "@enableSystemTray": {
@@ -586,7 +598,11 @@
   "pluginCapabilities": "{count} 個の機能",
   "@pluginCapabilities": {
     "description": "ソースプラグインが提供する機能の数",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI の応答に失敗しました。",
   "@aiResponseFailed": {
@@ -1372,5 +1388,27 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoUpdateChannel": "Meo 更新チャンネル",
+  "meoUpdateChannelDesc": "アクティブな pacman リポジトリの順序から読み込み",
+  "switchToStable": "Stable に切り替え",
+  "meoDowngradeConfirmDialog": "以下の公式 Meo パッケージは Stable バージョンが必要です。Arch およびサードパーティのパッケージはダウングレードされません。\n\n{packages}",
+  "meoBetaChannelDesc": "Beta は Stable より早く新しい Meo コンポーネントを受信します。Arch システムパッケージは通常の金型リポジトリに維持されます。",
+  "meoStableChannelDesc": "Stable は十分にテストされた MeoArch リリースバージョンを受信します。",
+  "meoRepositoryPriority": "リポジトリの優先順位: {repositories}",
+  "meoBetaWarning": "Beta はオプトインであり、クリティカルなシステムには推奨されません。Stable がフォールバックリポジトリとなります。",
+  "meoDowngradePending": "Stable が設定されていますが、{count} 件の Meo パッケージのダウングレードの確認が必要です。",
+  "meoReviewDowngrades": "ダウングレードを確認",
+  "aiReadingAccountConnection": "アカウントの AI 接続を読み込み中",
+  "aiReadingAccountConnectionSubtitle": "名前、プロバイダー、キーマスクのみを読み込みます。",
+  "aiCannotReadAccountConnection": "アカウントの AI 接続を読み込めません",
+  "aiCannotReadAccountConnectionDetail": "アカウントに移動して API キーを入力・保存し、ここで更新してください。",
+  "aiManageConnection": "AI 接続を管理",
+  "aiEnableAssistance": "AI アシスタントを有効化",
+  "aiEnableAssistanceSubtitle": "デフォルトはオフです。有効化後も送信ごとに個別確認が必要です。",
+  "aiSecureSave": "安全に保存 / 置換",
+  "aiDeleteLocalKey": "ローカルキーを削除",
+  "aiLoginMeoAccountFirst": "最初に Meo Account にログインしてください",
+  "aiAccountConnection": "アカウント AI 接続",
+  "aiNoAccountConnection": "アカウントに AI 接続が見つかりません"
 }

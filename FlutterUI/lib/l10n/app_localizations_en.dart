@@ -1456,4 +1456,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'Filter by source: $name';
   }
+
+  @override
+  String get meoUpdateChannel => 'Meo Update Channel';
+
+  @override
+  String get meoUpdateChannelDesc =>
+      'Read from the active pacman repository order';
+
+  @override
+  String get switchToStable => 'Switch to Stable';
+
+  @override
+  String meoDowngradeConfirmDialog(String packages) {
+    return 'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages';
+  }
+
+  @override
+  String get meoBetaChannelDesc =>
+      'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.';
+
+  @override
+  String get meoStableChannelDesc =>
+      'Stable receives fully tested MeoArch release trains.';
+
+  @override
+  String meoRepositoryPriority(String repositories) {
+    return 'Repository priority: $repositories';
+  }
+
+  @override
+  String get meoBetaWarning =>
+      'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.';
+
+  @override
+  String meoDowngradePending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Stable is configured, but $count Meo package downgrades still require review.',
+      one:
+          'Stable is configured, but 1 Meo package downgrade still requires review.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get meoReviewDowngrades => 'Review Downgrades';
+
+  @override
+  String get aiReadingAccountConnection => 'Reading account AI connection';
+
+  @override
+  String get aiReadingAccountConnectionSubtitle =>
+      'Reads provider, model name, and key mask only.';
+
+  @override
+  String get aiCannotReadAccountConnection =>
+      'Unable to read account AI connection';
+
+  @override
+  String get aiCannotReadAccountConnectionDetail =>
+      'Go to Account to enter and securely save your API key, then refresh here.';
+
+  @override
+  String get aiManageConnection => 'Manage AI Connection';
+
+  @override
+  String get aiEnableAssistance => 'Enable AI Assistance';
+
+  @override
+  String get aiEnableAssistanceSubtitle =>
+      'Off by default; requires single-use confirmation per request when enabled.';
+
+  @override
+  String get aiSecureSave => 'Secure Save / Replace';
+
+  @override
+  String get aiDeleteLocalKey => 'Delete Local Key';
+
+  @override
+  String get aiLoginMeoAccountFirst => 'Log in to Meo Account first';
+
+  @override
+  String get aiAccountConnection => 'Account AI Connection';
+
+  @override
+  String get aiNoAccountConnection => 'No AI connection found in account';
 }

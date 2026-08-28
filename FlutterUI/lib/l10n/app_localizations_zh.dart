@@ -484,7 +484,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiPickDaySubtitle => '由 OmniStore AI 提供支持';
 
   @override
-  String get aiCompareTitle => 'AI 版本对比';
+  String get aiCompareTitle => 'AI 分发版本对比';
 
   @override
   String get aiHealthTitle => 'AI 系统健康报告';
@@ -650,7 +650,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetting => '正在重置...';
 
   @override
-  String get resetSuccess => '缓存与历史记录已成功清空';
+  String get resetSuccess => '缓存与历史记录已清空';
 
   @override
   String resetFailed(String error) {
@@ -840,7 +840,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubAuthTitle => 'GitHub 身份验证';
 
   @override
-  String get githubPatSaved => 'GitHub 访问令牌已成功保存';
+  String get githubPatSaved => 'GitHub 个人访问令牌已保存';
 
   @override
   String get saveToken => '保存令牌';
@@ -1116,7 +1116,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknownApp => '未知应用';
 
   @override
-  String get taskSuccessMsg => '已成功完成';
+  String get taskSuccessMsg => '已完成';
 
   @override
   String failureReason(String message) {
@@ -1355,6 +1355,80 @@ class AppLocalizationsZh extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return '按软件源筛选：$name';
   }
+
+  @override
+  String get meoUpdateChannel => 'Meo 更新通道';
+
+  @override
+  String get meoUpdateChannelDesc => '读取自 Pacman 软件源的生效顺序';
+
+  @override
+  String get switchToStable => '切换至 Stable';
+
+  @override
+  String meoDowngradeConfirmDialog(String packages) {
+    return '以下 Meo 官方软件包需要降低至 Stable 版本。Arch 及第三方软件包不会被降级。\n\n$packages';
+  }
+
+  @override
+  String get meoBetaChannelDesc =>
+      'Beta 通道会比 Stable 更早接收新的 Meo 组件。Arch 系统软件包仍保留在其常规软件源中。';
+
+  @override
+  String get meoStableChannelDesc => 'Stable 通道仅接收经过完整测试的 MeoArch 发布分支。';
+
+  @override
+  String meoRepositoryPriority(String repositories) {
+    return '软件源优先级：$repositories';
+  }
+
+  @override
+  String get meoBetaWarning => 'Beta 为手动选择通道，不建议在生产关键系统中使用。Stable 仍为备用软件源。';
+
+  @override
+  String meoDowngradePending(num count) {
+    return '已配置 Stable 通道，但仍有 $count 个 Meo 软件包降级需要确认。';
+  }
+
+  @override
+  String get meoReviewDowngrades => '检查降级项';
+
+  @override
+  String get aiReadingAccountConnection => '正在读取账号 AI 连接';
+
+  @override
+  String get aiReadingAccountConnectionSubtitle => '只读取名称、服务商和密钥掩码。';
+
+  @override
+  String get aiCannotReadAccountConnection => '无法读取账号 AI 连接';
+
+  @override
+  String get aiCannotReadAccountConnectionDetail =>
+      '前往 Account 填写您自己的 API 密钥并安全保存，然后回到这里刷新。';
+
+  @override
+  String get aiManageConnection => '管理 AI 连接';
+
+  @override
+  String get aiEnableAssistance => '启用 AI 辅助';
+
+  @override
+  String get aiEnableAssistanceSubtitle => '默认关闭；开启后每次发送仍需单独确认。';
+
+  @override
+  String get aiSecureSave => '安全保存 / 替换';
+
+  @override
+  String get aiDeleteLocalKey => '删除本地密钥';
+
+  @override
+  String get aiLoginMeoAccountFirst => '先登录 Meo Account';
+
+  @override
+  String get aiAccountConnection => '账号 AI 连接';
+
+  @override
+  String get aiNoAccountConnection => '账号中还没有 AI 连接';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1413,7 +1487,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get details => '詳情';
 
   @override
-  String get source => '軟體源';
+  String get source => '軟件源';
 
   @override
   String get variant => '分發版本';
@@ -1445,14 +1519,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get packageManager => '套件管理員';
 
   @override
-  String get pacmanOfficial => 'Pacman（官方軟體源）';
+  String get pacmanOfficial => 'Pacman（官方軟件源）';
 
   @override
   String get pacmanBrowsingNoAuthorization =>
       '瀏覽、搜尋、查看詳細資料和檢查 Pacman 更新均不需要帳號或管理員認證；只有變更系統時才會要求授權。';
 
   @override
-  String get aurUser => 'AUR（使用者軟體源）';
+  String get aurUser => 'AUR（使用者軟件源）';
 
   @override
   String get flatpak => 'Flatpak';
@@ -1461,7 +1535,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '軟體源優先級（拖曳排序）';
+  String get sourcePriority => '軟件源優先級（拖曳排序）';
 
   @override
   String get maxResults => '最大結果數';
@@ -1778,7 +1852,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get advanced => '進階';
 
   @override
-  String get repositories => '軟體源';
+  String get repositories => '軟件源';
 
   @override
   String get aiSettings => 'AI 助手設定';
@@ -1837,7 +1911,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiPickDaySubtitle => '由 OmniStore AI 提供支援';
 
   @override
-  String get aiCompareTitle => 'AI 版本比較';
+  String get aiCompareTitle => 'AI 分發版本比較';
 
   @override
   String get aiHealthTitle => 'AI 系統健康報告';
@@ -1936,7 +2010,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get continueAnyway => '仍然繼續';
 
   @override
-  String get sourceConfigTitle => '軟體源設定';
+  String get sourceConfigTitle => '軟件源設定';
 
   @override
   String get sourceConfigSubtitle => '選擇 OmniStore 可以搜尋的軟體來源';
@@ -2003,7 +2077,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get resetting => '正在重置...';
 
   @override
-  String get resetSuccess => '快取與歷史記錄已成功清空';
+  String get resetSuccess => '快取與歷史記錄已清空';
 
   @override
   String resetFailed(String error) {
@@ -2054,7 +2128,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體源，通常更穩定。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟件源，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -2070,7 +2144,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aurSecurityDesc =>
-      'AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
+      'AUR 是由社群維護的軟件源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -2193,7 +2267,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubAuthTitle => 'GitHub 身份驗證';
 
   @override
-  String get githubPatSaved => 'GitHub 存取權杖已成功儲存';
+  String get githubPatSaved => 'GitHub 個人存取權杖已儲存';
 
   @override
   String get saveToken => '儲存權杖';
@@ -2205,7 +2279,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get next => '下一步';
 
   @override
-  String get aurFull => 'AUR（Arch 使用者軟體源）';
+  String get aurFull => 'AUR（Arch 使用者軟件源）';
 
   @override
   String get flatpakFull => 'Flatpak（Flathub）';
@@ -2281,20 +2355,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get relatedApps => '相關應用程式';
 
   @override
-  String get activeSources => '已啟用軟體源';
+  String get activeSources => '已啟用軟件源';
 
   @override
   String get autoDetect => '自動偵測';
 
   @override
-  String get addCustomSource => '新增自訂軟體源';
+  String get addCustomSource => '新增自訂軟件源';
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源';
+      '設定自訂 Flatpak 遠端軟件源、AppImage 訂閱或 GitHub/Bitu 軟件源';
 
   @override
-  String get sourceType => '軟體源類型';
+  String get sourceType => '軟件源類型';
 
   @override
   String get githubRepoType => 'GitHub 倉庫（owner/repo）';
@@ -2303,19 +2377,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bituRepoType => 'Bitu / Bitbucket（工作區/倉庫）';
 
   @override
-  String get flatpakRemoteType => 'Flatpak 遠端軟體源';
+  String get flatpakRemoteType => 'Flatpak 遠端軟件源';
 
   @override
   String get appImageFeedType => 'AppImage 訂閱連結';
 
   @override
-  String get sourceName => '軟體源名稱';
+  String get sourceName => '軟件源名稱';
 
   @override
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '軟體源地址（owner/repo）';
+  String get repoOwnerRepo => '軟件源地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2327,19 +2401,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintFeedUrl => '例如：https://example.com/feed.json';
 
   @override
-  String get errorNameUrlRequired => '名稱和連結/軟體源地址不能為空';
+  String get errorNameUrlRequired => '名稱和連結/軟件源地址不能為空';
 
   @override
-  String get addingCustomSource => '正在新增自訂軟體源...';
+  String get addingCustomSource => '正在新增自訂軟件源...';
 
   @override
-  String get sourceAddSuccess => '軟體源新增成功！';
+  String get sourceAddSuccess => '軟件源新增成功！';
 
   @override
-  String get sourceAddFailed => '新增軟體源失敗。';
+  String get sourceAddFailed => '新增軟件源失敗。';
 
   @override
-  String get autoDetectingSources => '正在自動偵測系統中可用的軟體源...';
+  String get autoDetectingSources => '正在自動偵測系統中可用的軟件源...';
 
   @override
   String get autoDetectSuccess => '自動偵測完成，設定已儲存！';
@@ -2469,7 +2543,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get unknownApp => '未知應用程式';
 
   @override
-  String get taskSuccessMsg => '已成功完成';
+  String get taskSuccessMsg => '已完成';
 
   @override
   String failureReason(String message) {
@@ -2513,7 +2587,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searchNoResultsSubtitle => '請嘗試其他關鍵字，或啟用更多軟體來源';
 
   @override
-  String get pluginsAndSources => '外掛程式與軟體源';
+  String get pluginsAndSources => '外掛程式與軟件源';
 
   @override
   String get refreshPlugins => '重新整理外掛程式';
@@ -2553,7 +2627,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String recommendedSource(String source) {
-    return '推薦軟體源：$source';
+    return '推薦軟件源：$source';
   }
 
   @override
@@ -2706,6 +2780,80 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String sourceFilterSemantics(String name) {
-    return '按軟體源篩選：$name';
+    return '按軟件源篩選：$name';
   }
+
+  @override
+  String get meoUpdateChannel => 'Meo 更新通道';
+
+  @override
+  String get meoUpdateChannelDesc => '讀取自 Pacman 軟件源的生效順序';
+
+  @override
+  String get switchToStable => '切換至 Stable';
+
+  @override
+  String meoDowngradeConfirmDialog(String packages) {
+    return '以下 Meo 官方套件需要降低至 Stable 版本。Arch 及第三方套件不會被降級。\n\n$packages';
+  }
+
+  @override
+  String get meoBetaChannelDesc =>
+      'Beta 通道會比 Stable 更早接收新的 Meo 元件。Arch 系統套件仍保留在其常規軟件源中。';
+
+  @override
+  String get meoStableChannelDesc => 'Stable 通道僅接收經過完整測試的 MeoArch 發布分支。';
+
+  @override
+  String meoRepositoryPriority(String repositories) {
+    return '軟件源優先級：$repositories';
+  }
+
+  @override
+  String get meoBetaWarning => 'Beta 為手動選擇通道，不建議在生產關鍵系統中使用。Stable 仍為備用軟件源。';
+
+  @override
+  String meoDowngradePending(num count) {
+    return '已設定 Stable 通道，但仍有 $count 個 Meo 套件降級需要確認。';
+  }
+
+  @override
+  String get meoReviewDowngrades => '檢查降級項';
+
+  @override
+  String get aiReadingAccountConnection => '正在讀取帳號 AI 連線';
+
+  @override
+  String get aiReadingAccountConnectionSubtitle => '只讀取名稱、服務商和金鑰遮罩。';
+
+  @override
+  String get aiCannotReadAccountConnection => '無法讀取帳號 AI 連線';
+
+  @override
+  String get aiCannotReadAccountConnectionDetail =>
+      '前往 Account 填寫您自己的 API 金鑰並安全儲存，然後回到這裡重新整理。';
+
+  @override
+  String get aiManageConnection => '管理 AI 連線';
+
+  @override
+  String get aiEnableAssistance => '啟用 AI 輔助';
+
+  @override
+  String get aiEnableAssistanceSubtitle => '預設關閉；開啟後每次傳送仍需單獨確認。';
+
+  @override
+  String get aiSecureSave => '安全儲存 / 替換';
+
+  @override
+  String get aiDeleteLocalKey => '刪除本地金鑰';
+
+  @override
+  String get aiLoginMeoAccountFirst => '先登入 Meo Account';
+
+  @override
+  String get aiAccountConnection => '帳號 AI 連線';
+
+  @override
+  String get aiNoAccountConnection => '帳號中還沒有 AI 連線';
 }

@@ -471,11 +471,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   Widget _buildAccountConnectionCard(Map<dynamic, dynamic> aiConfig) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     if (!_authService.isAuthenticated) {
       return _buildAccountCallout(
         background: colors.secondaryContainer.withValues(alpha: 0.55),
-        title: '先登录 Meo Account',
+        title: l10n.aiLoginMeoAccountFirst,
         detail: '登录后即可选择账号中加密保存的 AI 连接；API 密钥不会下发到 OmniStore。',
         actionLabel: '登录账号',
         actionIcon: Icons.login_rounded,
@@ -484,14 +485,14 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     }
 
     if (_isLoadingAccountCredentials) {
-      return const ListTile(
+      return ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: SizedBox.square(
+        leading: const SizedBox.square(
           dimension: 24,
           child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
-        title: Text('正在读取账号 AI 连接'),
-        subtitle: Text('只读取名称、服务商和密钥掩码。'),
+        title: Text(l10n.aiReadingAccountConnection),
+        subtitle: Text(l10n.aiReadingAccountConnectionSubtitle),
       );
     }
 
@@ -499,10 +500,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       return ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Icon(Icons.cloud_off_rounded, color: colors.error),
-        title: const Text('无法读取账号 AI 连接'),
+        title: Text(l10n.aiCannotReadAccountConnection),
         subtitle: Text(_accountCredentialError!),
         trailing: IconButton(
-          tooltip: '重试',
+          tooltip: l10n.refresh,
           onPressed: () => _loadAccountCredentials(forceRefresh: true),
           icon: const Icon(Icons.refresh_rounded),
         ),
@@ -512,8 +513,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     if (_accountCredentials.isEmpty) {
       return _buildAccountCallout(
         background: colors.surfaceContainerHigh,
-        title: '账号中还没有 AI 连接',
-        detail: '前往 Account 填写你自己的 API 密钥并安全保存，然后回到这里刷新。',
+        title: l10n.aiNoAccountConnection,
+        detail: l10n.aiCannotReadAccountConnectionDetail,
         actionLabel: '去连接',
         actionIcon: Icons.open_in_new_rounded,
         onPressed: _openAccountAiSettings,
@@ -531,10 +532,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       children: [
         DropdownButtonFormField<String>(
           initialValue: selectedId,
-          decoration: const InputDecoration(
-            labelText: '账号 AI 连接',
+          decoration: InputDecoration(
+            labelText: l10n.aiAccountConnection,
             helperText: '密钥只在 Account Edge broker 内解密，OmniStore 不可读取。',
-            prefixIcon: Icon(Icons.account_circle_outlined),
+            prefixIcon: const Icon(Icons.account_circle_outlined),
           ),
           items: [
             for (final credential in _accountCredentials)
@@ -556,7 +557,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
             TextButton.icon(
               onPressed: _openAccountAiSettings,
               icon: const Icon(Icons.open_in_new_rounded),
-              label: const Text('管理 AI 连接'),
+              label: Text(l10n.aiManageConnection),
             ),
             TextButton.icon(
               onPressed: () => _loadAccountCredentials(forceRefresh: true),
@@ -621,8 +622,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('启用 AI 辅助'),
-                      subtitle: const Text('默认关闭；开启后每次发送仍需单独确认。'),
+                      title: Text(l10n.aiEnableAssistance),
+                      subtitle: Text(l10n.aiEnableAssistanceSubtitle),
                       value: aiConfig['enabled'] == true,
                       onChanged: (value) => _updateAIConfig('enabled', value),
                       secondary: const AiMark(size: 42),
@@ -802,7 +803,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                           FilledButton.tonalIcon(
                             onPressed: _saveLocalCredential,
                             icon: const Icon(Icons.lock_rounded),
-                            label: const Text('安全保存 / 替换'),
+                            label: Text(l10n.aiSecureSave),
                           ),
                           if (context
                               .read<SettingsController>()
@@ -810,7 +811,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                             TextButton.icon(
                               onPressed: _deleteLocalCredential,
                               icon: const Icon(Icons.delete_outline_rounded),
-                              label: const Text('删除本地密钥'),
+                              label: Text(l10n.aiDeleteLocalKey),
                             ),
                         ],
                       ),
