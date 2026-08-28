@@ -1,27 +1,27 @@
 # --- 核心后端 ---
-fastapi==0.138.1
-uvicorn[standard]==0.49.0
-websockets==16.0
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+websockets==17.1
 python-multipart==0.0.32
 
 # --- 异步网络与并发 ---
-aiohttp==3.14.1
+aiohttp==3.14.3
 httpx==0.28.1
 
 # --- 系统与工具 ---
 psutil==7.2.2
 PyYAML==6.0.3
-packaging==26.2
-lxml==6.1.1
+packaging==26.3
+lxml==6.1.2
 
 # --- 基础工具 ---
 requests==2.34.2
 rich==15.0.0
 
-# --- GUI ---  
-PySide6>=6.6
-materialyoucolor>=3.0.0
+# --- GUI ---
+PySide6==6.11.2
+materialyoucolor==3.0.4
 
 # --- 测试 ---
-pytest==8.4.2
-pytest-asyncio==1.2.0
+pytest==9.1.1
+pytest-asyncio==1.4.0
