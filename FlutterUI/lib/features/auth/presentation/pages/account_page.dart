@@ -29,16 +29,32 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
+    SystemAccountService.instance.addListener(_handleSystemAccountChanged);
     SystemAccountService.instance.isAvailable().then((available) {
       if (mounted) setState(() => _systemAccountAvailable = available);
     });
   }
 
+  void _handleSystemAccountChanged() {
+    if (!mounted) return;
+    setState(() {
+      _systemAccountAvailable = SystemAccountService.instance.available;
+    });
+  }
+
   @override
   void dispose() {
+    SystemAccountService.instance.removeListener(_handleSystemAccountChanged);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSystemSignIn() async {
+    final started = await AuthService().signInWithSystemAccount();
+    if (!started && mounted) {
+      Toast.show(context, AppLocalizations.of(context)!.failed);
+    }
   }
 
   Future<void> _handleEmailSignIn() async {
@@ -125,7 +141,7 @@ class _AccountPageState extends State<AccountPage> {
                     onSignInWithGoogle: () => AuthService().signInWithGoogle(),
                     onSignInWithGitHub: () => AuthService().signInWithGitHub(),
                     onSignInWithSystemAccount: _systemAccountAvailable
-                        ? () => AuthService().signInWithSystemAccount()
+                        ? _handleSystemSignIn
                         : null,
                   ),
           ),
@@ -143,7 +159,19 @@ class _AccountPageState extends State<AccountPage> {
         user.userMetadata?['full_name'] as String? ??
         user.email ??
         l10n.defaultUser;
-    final avatarUrl = user.userMetadata?['avatar_url'] as String?;
+    final rawAvatarUrl = user.userMetadata?['avatar_url'] as String?;
+    final avatarUri = rawAvatarUrl == null ? null : Uri.tryParse(rawAvatarUrl);
+    final avatarUrl = avatarUri?.scheme == 'https'
+        ? avatarUri.toString()
+        : null;
+    final authService = AuthService();
+    final source = authService.authenticationSource == 'system'
+        ? l10n.meoarchAccount
+        : authService.authenticationSource == 'google'
+        ? 'Google'
+        : authService.authenticationSource == 'github'
+        ? 'GitHub'
+        : l10n.email;
 
     return Center(
       key: const ValueKey('profile'),
@@ -197,6 +225,20 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ],
             const SizedBox(height: 32),
+            if (authService.lastError != null) ...[
+              Card(
+                color: colorScheme.errorContainer,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.error_outline_rounded,
+                    color: colorScheme.onErrorContainer,
+                  ),
+                  title: Text(l10n.failed),
+                  subtitle: Text(authService.lastError!),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Card(
               elevation: 0,
               color: colorScheme.surfaceContainerLow,
@@ -211,6 +253,28 @@ class _AccountPageState extends State<AccountPage> {
                 children: [
                   ListTile(
                     leading: Icon(
+                      Icons.badge_outlined,
+                      color: colorScheme.primary,
+                    ),
+                    title: Text(l10n.signIn),
+                    subtitle: Text(source),
+                    trailing: authService.systemAccountAvailable
+                        ? Icon(
+                            authService.systemIdentityMatches
+                                ? Icons.verified_user_rounded
+                                : Icons.person_search_rounded,
+                            color: authService.systemIdentityMatches
+                                ? colorScheme.primary
+                                : colorScheme.tertiary,
+                          )
+                        : null,
+                  ),
+                  Divider(
+                    height: 1,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  ),
+                  ListTile(
+                    leading: Icon(
                       Icons.sync_rounded,
                       color: colorScheme.primary,
                     ),
@@ -220,7 +284,11 @@ class _AccountPageState extends State<AccountPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    subtitle: Text(l10n.syncStatusSubtitle),
+                    subtitle: Text(
+                      authService.lastSyncedAt == null
+                          ? l10n.syncStatusSubtitle
+                          : authService.lastSyncedAt!.toLocal().toString(),
+                    ),
                     trailing: _isSyncing
                         ? const SizedBox.square(
                             dimension: 22,

@@ -1,12 +1,14 @@
 pkgname=omnistore-bin
 pkgver=0.1.2
-pkgrel=1
-pkgdesc="OmniStore: A unified software repository search and management tool built with Flutter, Rust, and Python."
+pkgrel=2
+pkgdesc="OmniStore unified software repository client with Flutter and Python backends"
 arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('MIT')
 depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass')
+optdepends=('meo-release: shared MeoArch application catalog and channel integration'
+            'flatpak: install applications from Flatpak remotes')
 makedepends=('python')
 provides=('omnistore')
 conflicts=('omnistore' 'omnistore-git')
@@ -85,6 +87,13 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server --export-installed-usage --json
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-apps-export"
+  cat > "${pkgdir}/usr/bin/omnistore-cli" <<'EOF'
+#!/bin/sh
+set -eu
+cd /opt/omnistore
+exec /opt/omnistore/backends/python_server "$@"
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-cli"
   cat > "${pkgdir}/usr/bin/omnistore-cleanup-systemd" <<'EOF'
 #!/bin/sh
 set -eu
@@ -105,7 +114,7 @@ EOF
   cat > "${pkgdir}/usr/share/applications/omnistore.desktop" <<EOF
 [Desktop Entry]
 Name=OmniStore
-Comment=A unified software repository search and management tool built with Flutter, Rust, and Python.
+Comment=A unified software repository search and management tool
 Exec=/usr/bin/omnistore
 Icon=omnistore
 Terminal=false
