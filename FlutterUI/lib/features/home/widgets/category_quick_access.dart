@@ -30,21 +30,18 @@ class CategoryQuickAccess extends StatelessWidget {
             itemCount: categories.length,
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Semantics(
-                label: AppLocalizations.of(
+              child: ActionChip(
+                avatar: Icon(categories[index].icon, size: 18),
+                label: Text(categories[index].name),
+                tooltip: AppLocalizations.of(
                   context,
                 )!.categorySemantics(categories[index].name),
-                child: ActionChip(
-                  avatar: Icon(categories[index].icon, size: 18),
-                  label: Text(categories[index].name),
-                  tooltip: categories[index].name,
-                  onPressed: () {
-                    final browse = context.read<BrowseController>();
-                    browse.pendingSearchQuery =
-                        '/${categories[index].id.toLowerCase()}';
-                    context.read<NavigationController>().setIndex(2);
-                  },
-                ),
+                onPressed: () {
+                  final browse = context.read<BrowseController>();
+                  browse.pendingSearchQuery =
+                      '/${categories[index].id.toLowerCase()}';
+                  context.read<NavigationController>().setIndex(2);
+                },
               ),
             ),
           ),
