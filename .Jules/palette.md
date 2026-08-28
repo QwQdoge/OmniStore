@@ -32,3 +32,6 @@ Rules:
 * maintain existing interaction patterns
 * ensure responsive layouts
 * avoid render overflows
+
+## Learnings
+* SearchBar Clear Action Responsiveness: Wrap clear button inside `ValueListenableBuilder<TextEditingValue>` directly bound to `searchController` and enclose in `AnimatedSwitcher` with MD3 curves (`Curves.easeOutCubic` / `Curves.fastOutSlowIn`) to guarantee instant typing feedback and smooth layout transition.
