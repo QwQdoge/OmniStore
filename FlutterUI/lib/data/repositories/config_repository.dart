@@ -42,7 +42,10 @@ class ConfigRepository {
     ConfigPersistenceWriter? desktopWriter,
     Duration saveDebounce = const Duration(milliseconds: 500),
   }) : _state = _ConfigRepositoryState(),
+       // Public test constructor intentionally keeps non-private argument names.
+       // ignore: prefer_initializing_formals
        _desktopWriter = desktopWriter,
+       // ignore: prefer_initializing_formals
        _saveDebounce = saveDebounce;
 
   static final Map<String, dynamic> _defaultWebConfig = {

@@ -34,7 +34,9 @@ class LocalAiService {
     http.Client? client,
     LocalAiKeyReader? keyReader,
     LocalAiConsentPresenter? consentPresenter,
-  }) : _client = client,
+  }) : // Keep the public constructor argument as `client`.
+       // ignore: prefer_initializing_formals
+       _client = client,
        _keyReader = keyReader ?? _readApiKey,
        _consentPresenter = consentPresenter ?? _presentConsent;
 

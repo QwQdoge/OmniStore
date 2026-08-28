@@ -122,15 +122,16 @@ class _HomePageState extends State<HomePage> {
     }
 
     final packageRepo = context.read<PackageRepository>();
-    FilePickerResult? result = await FilePicker.pickFiles(
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'json'],
     );
 
     if (!mounted) return;
 
-    if (result != null) {
-      final path = result.files.single.path!;
+    if (files.isNotEmpty) {
+      final path = files.single.path;
+      if (path == null) return;
       final packages = await packageRepo.importPackages(path);
       if (!mounted) return;
 
