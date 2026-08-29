@@ -25,3 +25,6 @@ Avoid:
 Journal:
 
 .Jules/shepherd.md
+
+## Learnings
+* When standardizing UI components across the app, ensuring consistency across dialogs and cards using `FilledButton.tonal` or `FilledButton.tonalIcon` helps present unified secondary/cancellation actions.
