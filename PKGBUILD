@@ -6,7 +6,7 @@ arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('MIT')
-depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass')
+depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass' 'python' 'pyalpm')
 makedepends=('python')
 provides=('omnistore')
 conflicts=('omnistore' 'omnistore-git')
@@ -67,6 +67,13 @@ package() {
 
   # 2. 拷贝解压出来的所有东西
   cp -r "$_src_dir"/* "${pkgdir}/opt/omnistore/"
+
+  test -x "${pkgdir}/opt/omnistore/backends/meo_stable_rollback.py" || {
+    error "Verified release bundle is missing the Stable rollback root helper."
+    return 1
+  }
+  install -Dm755 "${pkgdir}/opt/omnistore/backends/meo_stable_rollback.py" \
+    "${pkgdir}/usr/lib/omnistore/meo-stable-rollback.py"
 
   # 3. 在系统的 /usr/bin 下建一个软链接
   install -d "${pkgdir}/usr/bin"

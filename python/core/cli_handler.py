@@ -52,6 +52,7 @@ class CLIArguments(BaseModel):
     storage_info: bool = False
     meo_channel: Optional[str] = None
     confirm_meo_stable_downgrades: bool = False
+    meo_stable_plan_hash: Optional[str] = Field(default=None, max_length=64)
     json_mode: bool = Field(default=False, alias="json")
     source: str = "AUR"
     url: Optional[str] = None
@@ -138,6 +139,13 @@ class CLIArguments(BaseModel):
             if not re.match(r'^[a-zA-Z0-9._-]+$', v_stripped):
                 raise ValueError("Invalid plugin id")
             return v_stripped
+        return v
+
+    @field_validator("meo_stable_plan_hash")
+    @classmethod
+    def validate_meo_stable_plan_hash(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.fullmatch(r"[0-9a-f]{64}", v):
+            raise ValueError("Stable rollback plan hash must be a SHA-256 digest")
         return v
 
     @field_validator("ai_changelog")
@@ -276,7 +284,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
                 payload = await manager.switch_to_beta()
             else:
                 payload = await manager.switch_to_stable(
-                    confirm_downgrades=validated_args.confirm_meo_stable_downgrades
+                    confirm_downgrades=validated_args.confirm_meo_stable_downgrades,
+                    confirmed_plan_hash=validated_args.meo_stable_plan_hash,
                 )
         except MeoChannelError as error:
             payload = {"status": "error", "error": str(error)}

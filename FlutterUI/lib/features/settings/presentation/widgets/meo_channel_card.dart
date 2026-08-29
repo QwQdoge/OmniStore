@@ -26,36 +26,45 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
     if (mounted) setState(() => _state = state);
   }
 
-  Future<void> _switch(String channel, {bool confirm = false}) async {
+  Future<void> _switch(String channel, {bool confirm = false, String? planHash}) async {
     setState(() => _busy = true);
     final result = await BackendService.instance.setMeoChannel(
       channel,
       confirmStableDowngrades: confirm,
+      stablePlanHash: planHash,
     );
     if (!mounted) return;
     setState(() {
       _busy = false;
-      _state = result;
+      _state = result['status'] == 'error' && _state != null
+          ? {..._state!, 'status': 'error', 'error': result['error']}
+          : result;
     });
     if (result['status'] == 'confirmation_required') {
-      final packages = (result['downgrades'] as List? ?? const [])
-          .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
-          .join('\n');
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Switch to Stable'),
-          content: Text(
-            'Only official Meo packages would be downgraded. Arch and third-party packages will not be changed.\n\n$packages',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
-          ],
-        ),
-      );
-      if (confirmed == true && mounted) await _switch('stable', confirm: true);
+      await _reviewDowngrades(result);
     }
+  }
+
+  Future<void> _reviewDowngrades(Map<String, dynamic> result) async {
+    final packages = (result['downgrades'] as List? ?? const [])
+        .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
+        .join('\n');
+    final planHash = result['planHash']?.toString();
+    if (planHash == null || planHash.length != 64) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Switch to Stable'),
+        content: Text(
+          'Only official Meo packages would be downgraded. Arch and third-party packages will not be changed.\n\n$packages',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await _switch('stable', confirm: true, planHash: planHash);
   }
 
   @override
@@ -95,6 +104,14 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
               IconButton(onPressed: _busy ? null : _refresh, icon: const Icon(Icons.refresh_rounded)),
             ],
           ),
+          if (_state?['status'] == 'confirmation_required')
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: TextButton(
+                onPressed: _busy ? null : () => _reviewDowngrades(_state!),
+                child: const Text('Review downgrades'),
+              ),
+            ),
         ],
       ),
     );

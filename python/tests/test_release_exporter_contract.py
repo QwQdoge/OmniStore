@@ -44,13 +44,16 @@ def test_release_contract_requires_builtin_source_manifests(tmp_path):
     backend = tmp_path / "backends" / "python_server"
     backend.parent.mkdir()
     backend.write_text("placeholder", encoding="utf-8")
-    with pytest.raises(ValueError, match="required built-in source manifests"):
+    with pytest.raises(ValueError, match="required source manifests or rollback helper"):
         contract.bundle_root_for(backend)
 
     for manifest in contract.REQUIRED_SOURCE_MANIFESTS:
         destination = tmp_path / manifest
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text("{}", encoding="utf-8")
+    helper = tmp_path / contract.ROLLBACK_HELPER
+    helper.parent.mkdir(parents=True, exist_ok=True)
+    helper.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
     assert contract.bundle_root_for(backend) == tmp_path
 
 

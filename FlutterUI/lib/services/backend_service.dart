@@ -1075,6 +1075,7 @@ class BackendService {
   Future<Map<String, dynamic>> setMeoChannel(
     String channel, {
     bool confirmStableDowngrades = false,
+    String? stablePlanHash,
   }) async {
     if (channel != "stable" && channel != "beta") {
       throw ArgumentError("Unknown Meo channel");
@@ -1083,6 +1084,9 @@ class BackendService {
     final arguments = <String>["--meo-channel", channel];
     if (confirmStableDowngrades) {
       arguments.add("--confirm-meo-stable-downgrades");
+      if (stablePlanHash != null) {
+        arguments.addAll(["--meo-stable-plan-hash", stablePlanHash]);
+      }
     }
     arguments.add("--json");
     final result = await _safeRun(

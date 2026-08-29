@@ -248,6 +248,14 @@ def assemble(platform, output_dir, build_dir):
     else:
         print(f"⚠️ can not find python artifacts: {python_src}")
 
+    rollback_helper = BASE_DIR / "python" / "helpers" / "meo_stable_rollback.py"
+    if rollback_helper.is_file():
+        shutil.copy2(rollback_helper, target_backend_dir / "meo_stable_rollback.py")
+        os.chmod(target_backend_dir / "meo_stable_rollback.py", 0o755)
+        print("✅ copy Stable rollback helper")
+    else:
+        print(f"⚠️ can not find Stable rollback helper: {rollback_helper}")
+
     copy_builtin_source_manifests(flutter_bundle_dir)
 
     icon_src = BASE_DIR / "omnistore.svg"

@@ -27,6 +27,7 @@ REQUIRED_SOURCE_MANIFESTS = (
     Path("plugins/sources/pacman/plugin.json"),
     Path("plugins/sources/flatpak/plugin.json"),
 )
+ROLLBACK_HELPER = Path("backends/meo_stable_rollback.py")
 
 
 def advertises_exporter(help_output: str) -> bool:
@@ -44,9 +45,11 @@ def bundle_root_for(backend: Path) -> Path:
         raise ValueError("release backend must be located at backends/python_server")
     root = backend.parent.parent
     missing = [str(path) for path in REQUIRED_SOURCE_MANIFESTS if not (root / path).is_file()]
+    if not (root / ROLLBACK_HELPER).is_file():
+        missing.append(str(ROLLBACK_HELPER))
     if missing:
         raise ValueError(
-            "release bundle is missing required built-in source manifests: " + ", ".join(missing)
+            "release bundle is missing required source manifests or rollback helper: " + ", ".join(missing)
         )
     return root
 
