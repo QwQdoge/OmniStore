@@ -76,7 +76,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          FilledButton.tonal(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
         ],
       ),
