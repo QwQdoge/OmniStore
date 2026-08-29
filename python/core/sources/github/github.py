@@ -167,12 +167,14 @@ class GitHubSource(UnifiedSource):
                         return False
                     total = int(dl_resp.headers.get('content-length', 0))
                     downloaded = 0
-                    with open(dest_path, 'wb') as f:
+                    tmp_path = dest_path.with_suffix('.tmp')
+                    with open(tmp_path, 'wb') as f:
                         async for chunk in dl_resp.content.iter_chunked(8192):
                             f.write(chunk)
                             downloaded += len(chunk)
                             if total > 0 and callback:
                                 await callback(f"[PROGRESS] {int(downloaded/total*100)}")
+                    tmp_path.replace(dest_path)
 
             dest_path.chmod(0o755)
             if callback: await callback(f"[INFO] Installed to {dest_path}")
