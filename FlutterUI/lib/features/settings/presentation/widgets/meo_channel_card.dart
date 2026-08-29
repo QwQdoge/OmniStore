@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 
@@ -28,11 +29,13 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
       if (mounted) setState(() => _state = state);
     } catch (error) {
       if (mounted) {
-        setState(() => _state = {
-          ...?_state,
-          'status': 'error',
-          'error': error.toString(),
-        });
+        setState(
+          () => _state = {
+            ...?_state,
+            'status': 'error',
+            'error': error.toString(),
+          },
+        );
       }
     }
   }
@@ -51,11 +54,13 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
       }
     } catch (error) {
       if (mounted) {
-        setState(() => _state = {
-          ...?_state,
-          'status': 'error',
-          'error': error.toString(),
-        });
+        setState(
+          () => _state = {
+            ...?_state,
+            'status': 'error',
+            'error': error.toString(),
+          },
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -65,7 +70,9 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
   Future<void> _confirmStableDowngrades(Map<String, dynamic> state) async {
     final l10n = AppLocalizations.of(context)!;
     final packages = (state['downgrades'] as List? ?? const [])
-        .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
+        .map(
+          (item) => '${item['name']}: ${item['installed']} → ${item['stable']}',
+        )
         .join('\n');
     final confirmed = await showDialog<bool>(
       context: context,
@@ -76,8 +83,14 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Switch to Stable')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Switch to Stable'),
+          ),
         ],
       ),
     );
@@ -90,9 +103,15 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
     final theme = Theme.of(context);
     final state = _state;
     final channel = state?['channel']?.toString() ?? 'Checking…';
-    final error = state != null && state['status'] == 'error' ? state['error']?.toString() : null;
-    final downgradePending = state?['downgrades'] is List && (state!['downgrades'] as List).isNotEmpty;
-    final repositories = (state?['repositories'] as List? ?? const []).join(' → ');
+    final error = state != null && state['status'] == 'error'
+        ? state['error']?.toString()
+        : null;
+    final downgradePending =
+        state?['downgrades'] is List &&
+        (state!['downgrades'] as List).isNotEmpty;
+    final repositories = (state?['repositories'] as List? ?? const []).join(
+      ' → ',
+    );
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -111,11 +130,16 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Meo update channel', style: theme.textTheme.titleMedium),
+                      Text(
+                        'Meo update channel',
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         'Read from the active pacman repository order',
-                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -132,14 +156,18 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             ),
             if (repositories.isNotEmpty) ...[
               const SizedBox(height: 6),
-              Text('Repository priority: $repositories', style: theme.textTheme.bodySmall),
+              Text(
+                'Repository priority: $repositories',
+                style: theme.textTheme.bodySmall,
+              ),
             ],
             if (channel == 'beta') ...[
               const SizedBox(height: 12),
               _StatusPanel(
                 icon: Icons.science_outlined,
                 color: theme.colorScheme.tertiary,
-                text: 'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.',
+                text:
+                    'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.',
               ),
             ],
             if (downgradePending) ...[
@@ -147,9 +175,12 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
               _StatusPanel(
                 icon: Icons.pending_actions_rounded,
                 color: theme.colorScheme.primary,
-                text: 'Stable is configured, but ${(state['downgrades'] as List).length} Meo package downgrade(s) still require review.',
+                text:
+                    'Stable is configured, but ${(state['downgrades'] as List).length} Meo package downgrade(s) still require review.',
                 action: FilledButton.tonalIcon(
-                  onPressed: _busy ? null : () => _confirmStableDowngrades(state),
+                  onPressed: _busy
+                      ? null
+                      : () => _confirmStableDowngrades(state),
                   icon: const Icon(Icons.fact_check_outlined),
                   label: const Text('Review downgrades'),
                 ),
@@ -157,7 +188,11 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
             ],
             if (error != null) ...[
               const SizedBox(height: 12),
-              _StatusPanel(icon: Icons.error_outline_rounded, color: theme.colorScheme.error, text: error),
+              _StatusPanel(
+                icon: Icons.error_outline_rounded,
+                color: theme.colorScheme.error,
+                text: error,
+              ),
             ],
             const SizedBox(height: 16),
             Row(
@@ -165,10 +200,22 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                 Expanded(
                   child: SegmentedButton<String>(
                     segments: [
-                      ButtonSegment(value: 'stable', label: const Text('Stable'), icon: const Icon(Icons.verified_outlined), enabled: !_busy && channel != 'stable'),
-                      ButtonSegment(value: 'beta', label: const Text('Beta'), icon: const Icon(Icons.science_outlined), enabled: !_busy && channel != 'beta'),
+                      ButtonSegment(
+                        value: 'stable',
+                        label: const Text('Stable'),
+                        icon: const Icon(Icons.verified_outlined),
+                        enabled: !_busy && channel != 'stable',
+                      ),
+                      ButtonSegment(
+                        value: 'beta',
+                        label: const Text('Beta'),
+                        icon: const Icon(Icons.science_outlined),
+                        enabled: !_busy && channel != 'beta',
+                      ),
                     ],
-                    selected: {'stable', 'beta'}.contains(channel) ? {channel} : const <String>{},
+                    selected: {'stable', 'beta'}.contains(channel)
+                        ? {channel}
+                        : const <String>{},
                     emptySelectionAllowed: true,
                     onSelectionChanged: (selection) {
                       if (selection.isNotEmpty) _switch(selection.first);
@@ -179,9 +226,18 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                 IconButton.filledTonal(
                   tooltip: l10n.refresh,
                   onPressed: _busy ? null : _refresh,
-                  icon: _busy
-                      ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.refresh_rounded),
+                  icon: SmoothSizeSwitcher(
+                    child: _busy
+                        ? const SizedBox.square(
+                            key: ValueKey('loading'),
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(
+                            Icons.refresh_rounded,
+                            key: ValueKey('idle'),
+                          ),
+                  ),
                 ),
               ],
             ),
@@ -193,7 +249,12 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
 }
 
 class _StatusPanel extends StatelessWidget {
-  const _StatusPanel({required this.icon, required this.color, required this.text, this.action});
+  const _StatusPanel({
+    required this.icon,
+    required this.color,
+    required this.text,
+    this.action,
+  });
 
   final IconData icon;
   final Color color;
