@@ -72,13 +72,10 @@ class AppDetailsActions extends StatelessWidget {
             flex: 2,
             child: SizedBox(
               height: 56,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  side: BorderSide(
-                    color: colorScheme.error.withValues(alpha: 0.5),
-                    width: 1,
-                  ),
+              child: FilledButton.tonal(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.errorContainer,
+                  foregroundColor: colorScheme.onErrorContainer,
                 ),
                 onPressed: () => onHandleAction("-R"),
                 child: Text(
