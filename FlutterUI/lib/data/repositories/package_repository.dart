@@ -39,9 +39,10 @@ class PackageRepository {
       _activeFetchFuture;
   DateTime? _lastFetchTime;
 
-  // ⚡ Bolt: Cache for store/source-specific queries to prevent redundant heavy network calls
-  // and daemon-side subprocess execution on frequent page re-entry and tab switching.
-  final Map<String, _CachedSearchResult> _sourceSearchCache = {};
+  // ⚡ Bolt: Cache search results and coalesce active search requests to eliminate redundant
+  // IPC/daemon subprocess overhead on frequent page re-entry, tab switching, and duplicate queries.
+  final Map<String, _CachedSearchResult> _searchCache = {};
+  final Map<String, Future<List<AppPackage>>> _activeSearchRequests = {};
 
   static final List<AppPackage> _editorialFeatured =
       [
@@ -94,40 +95,61 @@ class PackageRepository {
     int? limit,
     int? offset,
   }) async {
-    final isSourceQuery = query.startsWith("source:");
-    if (isSourceQuery && !forceRefresh) {
-      final cached = _sourceSearchCache[query];
+    final cacheKey = query.trim().toLowerCase();
+    if (!forceRefresh) {
+      final cached = _searchCache[query] ?? _searchCache[cacheKey];
       if (cached != null && !cached.isExpired) {
         return cached.results;
       }
+
+      final activeRequest =
+          _activeSearchRequests[query] ?? _activeSearchRequests[cacheKey];
+      if (activeRequest != null) {
+        return activeRequest;
+      }
     }
 
-    final List<AppPackage> results;
+    final future = _searchPackagesImpl(
+      query,
+      cancelOngoing: cancelOngoing,
+      throwOnError: throwOnError,
+    );
+    _activeSearchRequests[cacheKey] = future;
+
+    try {
+      final results = await future;
+      _searchCache[cacheKey] = _CachedSearchResult(results, DateTime.now());
+      if (_searchCache.length > _maxCacheSize) {
+        final oldestKey = _searchCache.entries
+            .reduce(
+              (a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b,
+            )
+            .key;
+        _searchCache.remove(oldestKey);
+      }
+      return results;
+    } finally {
+      _activeSearchRequests.remove(cacheKey);
+    }
+  }
+
+  Future<List<AppPackage>> _searchPackagesImpl(
+    String query, {
+    bool cancelOngoing = true,
+    bool throwOnError = false,
+  }) async {
     if (kIsWeb) {
       final webResults = await _webSearchPackages(query);
-      results = webResults
+      return webResults
           .map((item) => AppPackage.fromJson(item as Map<String, dynamic>))
           .toList();
     } else {
-      results = await BackendService.instance.searchPackages(
+      return BackendService.instance.searchPackages(
         query,
         cancelOngoing: cancelOngoing,
         throwOnError: throwOnError,
       );
     }
-
-    if (isSourceQuery) {
-      _sourceSearchCache[query] = _CachedSearchResult(results, DateTime.now());
-      if (_sourceSearchCache.length > _maxCacheSize) {
-        final oldestKey = _sourceSearchCache.entries
-            .reduce(
-              (a, b) => a.value.timestamp.isBefore(b.value.timestamp) ? a : b,
-            )
-            .key;
-        _sourceSearchCache.remove(oldestKey);
-      }
-    }
-    return results;
   }
 
   Future<List<dynamic>> _webSearchPackages(String query) async {

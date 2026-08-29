@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 from core import backend as backend_module
 from core import cli_handler
@@ -266,6 +266,196 @@ def test_update_all_passes_graphical_askpass_to_aur_helper(monkeypatch):
     assert "-Sua" in aur_call.args[0]
     assert "-Syu" not in aur_call.args[0]
     assert aur_call.kwargs["env"]["SUDO_ASKPASS"] == "/usr/bin/ksshaskpass"
+
+
+def test_custom_repo_pacman_conf_preserves_non_utf8_bytes(tmp_path, monkeypatch):
+    conf_path = tmp_path / "pacman.conf"
+    raw_content = b"[custom_repo]\nServer = https://example.org/repo\n# Non-UTF8 byte \x80\xff\xfe comment\n"
+    conf_path.write_bytes(raw_content)
+
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("os.path.exists", lambda path: True if path == "/etc/pacman.conf" else False)
+
+    manager = CustomRepoManager(config_manager=None, executor=None)
+
+    orig_open = open
+
+    def mock_open(file, mode="r", *args, **kwargs):
+        if file == "/etc/pacman.conf":
+            return orig_open(conf_path, mode, *args, **kwargs)
+        return orig_open(file, mode, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    repos = asyncio.run(manager.list_pacman_repos())
+    assert len(repos) == 1
+    assert repos[0]["name"] == "custom_repo"
+    assert repos[0]["url"] == "https://example.org/repo"
+
+    with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
+        read_text = f.read()
+    assert read_text.encode("utf-8", errors="surrogateescape") == raw_content
+    assert "\ufffd" not in read_text
+
+
+def test_custom_repo_config_write_failure_fails_closed(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
+
+    class FailingConfigManager:
+        def get(self, key, default=None):
+            return []
+
+        def set(self, key, value):
+            raise IOError("Disk write failed")
+
+    cm = FailingConfigManager()
+    manager = CustomRepoManager(config_manager=cm, executor=None)
+
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *args, **kwargs: MockSubprocessContext())
+
+    result = asyncio.run(manager.add_flatpak_remote("myrepo", "https://example.org/feed"))
+    assert result is False
+
+
+def test_remove_flatpak_remote_rollback_on_config_failure(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
+
+    subproc_calls = []
+
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        def __init__(self, *cmd):
+            subproc_calls.append(list(cmd))
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *cmd, **kwargs: MockSubprocessContext(*cmd))
+
+    class FailingConfigManager:
+        def get(self, key, default=None):
+            return [{"name": "myrepo", "url": "https://example.org/feed"}]
+        def set(self, key, value):
+            raise IOError("Config disk error")
+
+    cm = FailingConfigManager()
+    manager = CustomRepoManager(config_manager=cm, executor=None)
+
+    result = asyncio.run(manager.remove_flatpak_remote("myrepo"))
+    assert result is False
+    assert any("remote-add" in cmd for cmd in subproc_calls)
+
+
+def test_remove_pacman_repo_rollback_on_config_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/pacman" if name == "pacman" else None)
+    monkeypatch.setattr("os.path.exists", lambda path: True)
+
+    conf_path = tmp_path / "pacman.conf"
+    conf_path.write_bytes(b"[testing]\nServer = https://example.org\n")
+
+    orig_open = open
+
+    def mock_open(file, mode="r", *args, **kwargs):
+        if file == "/etc/pacman.conf":
+            return orig_open(conf_path, mode, *args, **kwargs)
+        return orig_open(file, mode, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    subproc_calls = []
+
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        def __init__(self, *cmd):
+            subproc_calls.append(list(cmd))
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *cmd, **kwargs: MockSubprocessContext(*cmd))
+
+    class FailingConfigManager:
+        def get(self, key, default=None):
+            return [{"name": "testing", "url": "https://example.org"}]
+        def set(self, key, value):
+            raise IOError("Config disk error")
+
+    class MockExecutor:
+        async def _ensure_privileged(self, callback):
+            return True
+
+    cm = FailingConfigManager()
+    executor = MockExecutor()
+    manager = CustomRepoManager(config_manager=cm, executor=executor)
+
+    result = asyncio.run(manager.remove_pacman_repo("testing"))
+    assert result is False
+    assert len([cmd for cmd in subproc_calls if cmd[:2] == ["sudo", "cp"]]) == 2
+
+
+def test_unexpected_programming_exceptions_are_re_raised():
+    manager = CustomRepoManager(config_manager=None, executor=None)
+
+    def broken_callback(msg):
+        raise TypeError("Unexpected bug in caller callback")
+
+    with pytest.raises(TypeError, match="Unexpected bug"):
+        asyncio.run(manager._safe_callback(broken_callback, "test message"))
+
+
+def test_custom_repo_programming_exception_in_config_manager_is_reraised(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
+
+    class BuggyConfigManager:
+        def get(self, key, default=None):
+            return []
+
+        def set(self, key, value):
+            raise AttributeError("Programmer bug in ConfigManager code")
+
+    cm = BuggyConfigManager()
+    manager = CustomRepoManager(config_manager=cm, executor=None)
+
+    class MockProcess:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+
+    class MockSubprocessContext:
+        async def __aenter__(self):
+            return MockProcess()
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *args, **kwargs: MockSubprocessContext())
+
+    with pytest.raises(AttributeError, match="Programmer bug in ConfigManager code"):
+        asyncio.run(manager.add_flatpak_remote("myrepo", "https://example.org/feed"))
 
 
 def test_all_project_python_sources_parse():

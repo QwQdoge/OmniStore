@@ -99,7 +99,43 @@ class SignInForm extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
+                  if (onSignInWithSystemAccount != null) ...[
+                    Semantics(
+                      button: true,
+                      identifier: 'account.system.continue',
+                      child: FilledButton.icon(
+                        onPressed: isLoading ? null : onSignInWithSystemAccount,
+                        icon: const Icon(Icons.devices_rounded),
+                        label: Text(l10n.meoarchAccount),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            l10n.orDivider,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   TextField(
+                    key: const ValueKey('account.email'),
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: l10n.email,
@@ -117,6 +153,7 @@ class SignInForm extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   TextField(
+                    key: const ValueKey('account.password'),
                     controller: passwordController,
                     obscureText: isObscure,
                     decoration: InputDecoration(
@@ -200,20 +237,6 @@ class SignInForm extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (onSignInWithSystemAccount != null) ...[
-                    FilledButton.tonalIcon(
-                      onPressed: isLoading ? null : onSignInWithSystemAccount,
-                      icon: const Icon(Icons.devices_rounded),
-                      label: Text(l10n.meoarchAccount),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
                   OutlinedButton.icon(
                     onPressed: isLoading ? null : onSignInWithGoogle,
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),

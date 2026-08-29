@@ -33,6 +33,25 @@ async def test_featured_is_stable_offline_and_ordered(tmp_path):
     assert all(app["primary_source"] == "Flatpak" for app in result["featured"])
 
 
+def test_featured_prefers_installed_meo_release_catalog(tmp_path):
+    catalog = tmp_path / "application-catalog.json"
+    catalog.write_text(json.dumps({
+        "schemaVersion": 1,
+        "applications": [
+            {"id": "native.id", "name": "Native", "summary": "Not featured",
+             "store": {"source": "Flatpak", "id": "flatpak.native", "featured": False}},
+            {"id": "meo.app", "name": "Meo Pick", "summary": "System-curated",
+             "store": {"source": "Flatpak", "id": "org.example.Meo", "featured": True, "order": 2}},
+        ],
+    }), encoding="utf-8")
+    manager = RecommendationManager(EmptySession(), application_catalog_path=catalog)
+
+    result = manager._featured_apps()
+
+    assert [app["id"] for app in result] == ["org.example.Meo"]
+    assert result[0]["description"] == "System-curated"
+
+
 @pytest.mark.asyncio
 async def test_expired_dynamic_cache_is_retained_when_refresh_fails(tmp_path, monkeypatch):
     manager = RecommendationManager(EmptySession())

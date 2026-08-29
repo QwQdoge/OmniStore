@@ -17,7 +17,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Wires global providers and launches [OmnistoreApp].
-Future<void> bootstrapOmniStore() async {
+Future<void> bootstrapOmniStore({
+  List<String> initialArguments = const [],
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final configRepo = ConfigRepository.instance;
@@ -42,12 +44,24 @@ Future<void> bootstrapOmniStore() async {
         useSystemTitleBar: useSystemTitleBar,
       ).timeout(const Duration(seconds: 5)),
       SharedPreferences.getInstance(),
-      AuthService().initialize().timeout(const Duration(seconds: 5)),
     ]);
     prefs = results[1] as SharedPreferences;
   } catch (e) {
     debugPrint('Initialization error: $e');
     prefs = await SharedPreferences.getInstance();
+  }
+
+  // Authentication owns encrypted storage and cold-start deep links. Let it
+  // finish independently so a slow KWallet prompt cannot be mistaken for a
+  // successful app bootstrap or have its error swallowed by unrelated setup.
+  try {
+    await AuthService()
+        .initialize(
+          initialDeepLink: meoAccountCallbackFromArguments(initialArguments),
+        )
+        .timeout(const Duration(seconds: 20));
+  } catch (error) {
+    debugPrint('Authentication initialization error: $error');
   }
 
   await L10nService.init(config);

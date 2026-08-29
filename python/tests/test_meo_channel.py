@@ -1,10 +1,16 @@
 import asyncio
 import inspect
 import json
+import sys
 
 import pytest
 
 from core.meo_channel import CommandResult, MeoChannelManager, channel_from_repositories, official_packages
+
+
+def test_channel_helper_does_not_eagerly_import_unrelated_network_sources():
+    assert "core.sources.aur.aur" not in sys.modules
+    assert "core.sources.github.github" not in sys.modules
 
 
 def test_channel_follows_pacman_order_not_a_preference():

@@ -170,7 +170,7 @@
   "@refresh": {
     "description": "Refresh action label"
   },
-  "noActiveTasks": "暂无进行中或已完成的任务",
+  "noActiveTasks": "暂无进行中的任务",
   "@noActiveTasks": {
     "description": "Message shown when no tasks are running"
   },

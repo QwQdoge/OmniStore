@@ -8,7 +8,8 @@ from typing import List, Dict, Any, Optional
 from core.habit_tracker import HabitTracker
 
 class RecommendationManager:
-    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, backend=None):
+    def __init__(self, session: aiohttp.ClientSession, habit_tracker: HabitTracker = None, backend=None,
+                 application_catalog_path: Optional[Path] = None):
         self.session = session
         self.habit_tracker = habit_tracker or HabitTracker()
         self.backend = backend
@@ -23,6 +24,9 @@ class RecommendationManager:
         self.cache_path = self.cache_dir / "recommendations.json"
         self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
         self.featured_config_path = Path(__file__).with_name("featured_apps.json")
+        self.application_catalog_path = application_catalog_path or Path(
+            "/usr/share/meo-release/application-catalog.json"
+        )
         self._metadata_cache = self._load_metadata_cache()
         # ⚡ Optimization: flags for coalesced saving
         self._is_saving = False
@@ -99,7 +103,25 @@ class RecommendationManager:
     def _featured_apps(self) -> List[Dict[str, Any]]:
         """Repository-owned editorial picks. These never depend on network or AI."""
         try:
-            entries = json.loads(self.featured_config_path.read_text(encoding="utf-8"))
+            entries = None
+            if self.application_catalog_path.is_file():
+                system_catalog = json.loads(self.application_catalog_path.read_text(encoding="utf-8"))
+                if system_catalog.get("schemaVersion") != 1:
+                    raise ValueError("unsupported system application catalog")
+                entries = []
+                for application in system_catalog.get("applications", []):
+                    store = application.get("store", {})
+                    if not store.get("featured", False):
+                        continue
+                    entries.append({
+                        "id": store.get("id", application.get("id")),
+                        "source": store.get("source", "Flatpak"),
+                        "name": application.get("name"),
+                        "description": application.get("summary", ""),
+                        "order": store.get("order", 0),
+                    })
+            if entries is None:
+                entries = json.loads(self.featured_config_path.read_text(encoding="utf-8"))
             if not isinstance(entries, list):
                 raise ValueError("featured configuration must be a list")
             seen = set()
