@@ -8,6 +8,7 @@ import 'package:frontend/features/settings/presentation/widgets/ai_test_result_d
 import 'package:frontend/core/widgets/app_card.dart';
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
+import 'ai_settings/ai_status_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/features/ai/account_ai_service.dart';
@@ -628,56 +629,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       secondary: const AiMark(size: 42),
                     ),
                     const Divider(height: 24),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: aiConfig['enabled'] == true
-                            ? theme.colorScheme.primaryContainer.withValues(
-                                alpha: 0.68,
-                              )
-                            : theme.colorScheme.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            aiConfig['enabled'] == true
-                                ? Icons.verified_user_rounded
-                                : Icons.pause_circle_outline_rounded,
-                            color: aiConfig['enabled'] == true
-                                ? theme.colorScheme.onPrimaryContainer
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  aiConfig['enabled'] == true
-                                      ? 'AI 辅助已启用'
-                                      : 'AI 辅助保持关闭',
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  aiConfig['enabled'] == true
-                                      ? '每次实际发送仍会展示内容与用途，并要求单次授权。'
-                                      : '可以先配置连接；保存连接不会自动启用 AI。',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    AiStatusCard(enabled: aiConfig['enabled'] == true),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       key: ValueKey('ai-provider-$provider'),
