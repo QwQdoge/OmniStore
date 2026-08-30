@@ -45,7 +45,7 @@ Journal:
 ## 2026-08-29 - [GitHub File Operations]
 
 Learning:
-When downloading files in `github.py`, directly writing to the destination path using `with open(dest_path, 'wb')` can result in corrupted executable files if the download is interrupted or crashes mid-way.
+When downloading files in `github.py`, directly writing to the destination path using `with open(dest_path, 'wb')` can result in corrupted executable files if the download is interrupted or crashes mid-way. A shared deterministic temp name also risks collisions for concurrent installs, and failed downloads can leave stale temp files.
 
 Action:
-Replaced direct file writes with atomic file writes by downloading to a temporary file (`dest_path.with_suffix('.tmp')`) and then replacing the destination file using `tmp_path.replace(dest_path)` upon successful completion. This prevents partially downloaded files from being executed or remaining in the system as corrupted artifacts.
+Replaced direct file writes with atomic file writes using a unique sibling temp file in the same directory (`install_dir / f".tmp_{uuid.uuid4().hex}_{asset_name}"`). The temp file is cleaned up in failure/cancellation paths, and we atomically replace the destination only after the file is closed.
