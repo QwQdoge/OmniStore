@@ -3,7 +3,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'welcome_config_card.dart';
 
-class WelcomeAiPage extends StatelessWidget {
+class WelcomeAiPage extends StatefulWidget {
   final bool enableAI;
   final ValueChanged<bool> onEnableAIChanged;
   final String aiProvider;
@@ -30,6 +30,13 @@ class WelcomeAiPage extends StatelessWidget {
     required this.testSuccess,
     required this.onShowApiKeyInstructions,
   });
+
+  @override
+  State<WelcomeAiPage> createState() => _WelcomeAiPageState();
+}
+
+class _WelcomeAiPageState extends State<WelcomeAiPage> {
+  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +71,14 @@ class WelcomeAiPage extends StatelessWidget {
                 ),
               ),
               subtitle: Text(l10n.aiIntegrationDesc),
-              value: enableAI,
-              onChanged: onEnableAIChanged,
+              value: widget.enableAI,
+              onChanged: widget.onEnableAIChanged,
             ),
           ),
           const SizedBox(height: 16),
           SmoothSizeSwitcher(
             alignment: Alignment.topCenter,
-            child: enableAI
+            child: widget.enableAI
                 ? Column(
                     key: const ValueKey('ai-details'),
                     children: [
@@ -89,7 +96,7 @@ class WelcomeAiPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
-                                initialValue: aiProvider,
+                                initialValue: widget.aiProvider,
                                 borderRadius: BorderRadius.circular(12),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface,
@@ -130,14 +137,14 @@ class WelcomeAiPage extends StatelessWidget {
                                     child: Text(l10n.openaiCloud),
                                   ),
                                 ],
-                                onChanged: onAiProviderChanged,
+                                onChanged: widget.onAiProviderChanged,
                               ),
                               const SizedBox(height: 16),
                               TextField(
-                                controller: endpointController,
+                                controller: widget.endpointController,
                                 decoration: InputDecoration(
                                   labelText: 'Endpoint URL',
-                                  hintText: aiProvider == 'ollama'
+                                  hintText: widget.aiProvider == 'ollama'
                                       ? l10n.aiEndpointHelper
                                       : 'e.g. https://api.openai.com/v1',
                                   border: OutlineInputBorder(
@@ -160,8 +167,8 @@ class WelcomeAiPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               TextField(
-                                controller: apiKeyController,
-                                obscureText: true,
+                                controller: widget.apiKeyController,
+                                obscureText: _isObscure,
                                 decoration: InputDecoration(
                                   labelText: 'API Key',
                                   hintText: l10n.aiApiKeyHelper,
@@ -181,21 +188,26 @@ class WelcomeAiPage extends StatelessWidget {
                                       width: 2,
                                     ),
                                   ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_isObscure ? Icons.visibility_off_rounded : Icons.visibility_rounded),
+                                    onPressed: () => setState(() => _isObscure = !_isObscure),
+                                    tooltip: _isObscure ? l10n.showPassword : l10n.hidePassword,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
                               Row(
                                 children: [
                                   FilledButton.tonalIcon(
-                                    onPressed: onShowApiKeyInstructions,
+                                    onPressed: widget.onShowApiKeyInstructions,
                                     icon: const Icon(Icons.help_outline_rounded, size: 18),
                                     label: Text(l10n.howToGetApiKey),
                                   ),
                                   const Spacer(),
                                   FilledButton.tonalIcon(
-                                    onPressed: isTestingAI ? null : onTestAI,
+                                    onPressed: widget.isTestingAI ? null : widget.onTestAI,
                                     icon: SmoothSizeSwitcher(
-                                      child: isTestingAI
+                                      child: widget.isTestingAI
                                           ? const SizedBox(
                                               key: ValueKey('testing'),
                                               width: 18,
@@ -208,17 +220,17 @@ class WelcomeAiPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              if (testResult != null) ...[
+                              if (widget.testResult != null) ...[
                                 const SizedBox(height: 12),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: testSuccess
+                                    color: widget.testSuccess
                                         ? theme.colorScheme.primary.withValues(alpha: 0.1)
                                         : theme.colorScheme.error.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: testSuccess
+                                      color: widget.testSuccess
                                           ? theme.colorScheme.primary.withValues(alpha: 0.3)
                                           : theme.colorScheme.error.withValues(alpha: 0.3),
                                     ),
@@ -226,20 +238,20 @@ class WelcomeAiPage extends StatelessWidget {
                                   child: Row(
                                     children: [
                                       Icon(
-                                        testSuccess
+                                        widget.testSuccess
                                             ? Icons.check_circle_rounded
                                             : Icons.error_outline_rounded,
                                         size: 18,
-                                        color: testSuccess
+                                        color: widget.testSuccess
                                             ? theme.colorScheme.primary
                                             : theme.colorScheme.error,
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          testResult!,
+                                          widget.testResult!,
                                           style: TextStyle(
-                                            color: testSuccess
+                                            color: widget.testSuccess
                                                 ? theme.colorScheme.primary
                                                 : theme.colorScheme.error,
                                             fontWeight: FontWeight.bold,
@@ -255,7 +267,7 @@ class WelcomeAiPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (aiProvider == 'ollama') ...[
+                      if (widget.aiProvider == 'ollama') ...[
                         const SizedBox(height: 12),
                         Card(
                           elevation: 0,

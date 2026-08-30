@@ -19,6 +19,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
   final TextEditingController _patController = TextEditingController();
   bool _isSaving = false;
   bool _isLoading = false;
+  bool _isObscure = true;
 
   @override
   void initState() {
@@ -118,7 +119,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
             TextField(
               controller: _patController,
               enabled: isInteractive,
-              obscureText: true,
+              obscureText: _isObscure,
               decoration: InputDecoration(
                 labelText: l10n.personalAccessToken,
                 border: OutlineInputBorder(
@@ -143,7 +144,13 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
                 ),
                 prefixIcon: const Icon(Icons.vpn_key_rounded),
                 helperText: l10n.patHelperText,
+                suffixIcon: IconButton(
+                  icon: Icon(_isObscure ? Icons.visibility_off_rounded : Icons.visibility_rounded),
+                  onPressed: () => setState(() => _isObscure = !_isObscure),
+                  tooltip: _isObscure ? l10n.showPassword : l10n.hidePassword,
+                ),
               ),
+              onSubmitted: (_) => _savePat(),
             ),
             const SizedBox(height: 24),
             Row(

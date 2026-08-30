@@ -47,7 +47,7 @@ class SignInForm extends StatelessWidget {
     return Center(
       key: const ValueKey('signin'),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
+        constraints: const BoxConstraints(maxWidth: 600),
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Card(
