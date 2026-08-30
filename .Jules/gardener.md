@@ -26,3 +26,7 @@ Avoid:
 Journal:
 
 .Jules/gardener.md
+
+---
+
+- Extracted `AiAccountConnectionCard` from `ai_settings_section.dart` to reduce its file size and simplify complex state/UI logic.
