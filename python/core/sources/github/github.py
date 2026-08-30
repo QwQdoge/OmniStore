@@ -167,12 +167,24 @@ class GitHubSource(UnifiedSource):
                         return False
                     total = int(dl_resp.headers.get('content-length', 0))
                     downloaded = 0
-                    with open(dest_path, 'wb') as f:
-                        async for chunk in dl_resp.content.iter_chunked(8192):
-                            f.write(chunk)
-                            downloaded += len(chunk)
-                            if total > 0 and callback:
-                                await callback(f"[PROGRESS] {int(downloaded/total*100)}")
+                    import tempfile
+                    import os
+                    fd, tmp_path_str = tempfile.mkstemp(dir=str(install_dir), prefix=".tmp_", suffix="_" + asset_name)
+                    tmp_path = Path(tmp_path_str)
+                    with os.fdopen(fd, 'wb') as f:
+                        try:
+                            async for chunk in dl_resp.content.iter_chunked(8192):
+                                f.write(chunk)
+                                downloaded += len(chunk)
+                                if total > 0 and callback:
+                                    await callback(f"[PROGRESS] {int(downloaded/total*100)}")
+                            f.close()
+                            tmp_path.replace(dest_path)
+                        finally:
+                            if not f.closed:
+                                f.close()
+                            if tmp_path.exists():
+                                tmp_path.unlink(missing_ok=True)
 
             dest_path.chmod(0o755)
             if callback: await callback(f"[INFO] Installed to {dest_path}")
