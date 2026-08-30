@@ -25,3 +25,7 @@ Avoid:
 Journal:
 
 .Jules/shepherd.md
+
+## Journal Entries
+
+* **Button Variant Consistency**: Standardized secondary inline action buttons in `AISettingsSection` to `FilledButton.tonalIcon` (replacing `TextButton.icon`), ensuring visual parity with other settings sections and Material Design 3 guidelines.

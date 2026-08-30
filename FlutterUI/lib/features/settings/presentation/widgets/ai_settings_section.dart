@@ -554,12 +554,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            TextButton.icon(
+            FilledButton.tonalIcon(
               onPressed: _openAccountAiSettings,
               icon: const Icon(Icons.open_in_new_rounded),
               label: const Text('管理 AI 连接'),
             ),
-            TextButton.icon(
+            FilledButton.tonalIcon(
               onPressed: () => _loadAccountCredentials(forceRefresh: true),
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('刷新'),
@@ -759,7 +759,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                           if (context
                               .read<SettingsController>()
                               .hasLocalAiCredential)
-                            TextButton.icon(
+                            FilledButton.tonalIcon(
                               onPressed: _deleteLocalCredential,
                               icon: const Icon(Icons.delete_outline_rounded),
                               label: const Text('删除本地密钥'),
