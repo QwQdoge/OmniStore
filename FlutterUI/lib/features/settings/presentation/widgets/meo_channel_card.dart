@@ -76,7 +76,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           l10n.meoDowngradeConfirmDialog(packages),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          FilledButton.tonal(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.switchToStable)),
         ],
       ),

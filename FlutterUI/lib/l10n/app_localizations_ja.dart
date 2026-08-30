@@ -1383,7 +1383,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get meoBetaChannelDesc =>
-      'Beta は Stable より早く新しい Meo コンポーネントを受信します。Arch システムパッケージは通常の金型リポジトリに維持されます。';
+      'Beta は Stable より早く新しい Meo コンポーネントを受信します。Arch システムパッケージは通常のリポジトリに維持されます。';
 
   @override
   String get meoStableChannelDesc =>
@@ -1410,7 +1410,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiReadingAccountConnection => 'アカウントの AI 接続を読み込み中';
 
   @override
-  String get aiReadingAccountConnectionSubtitle => '名前、プロバイダー、キーマスクのみを読み込みます。';
+  String get aiReadingAccountConnectionSubtitle => '接続名、プロバイダー、キーマスクのみを読み込みます。';
 
   @override
   String get aiCannotReadAccountConnection => 'アカウントの AI 接続を読み込めません';

@@ -1510,7 +1510,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiReadingAccountConnectionSubtitle =>
-      'Reads provider, model name, and key mask only.';
+      'Reads connection name, provider, and key mask only.';
 
   @override
   String get aiCannotReadAccountConnection =>

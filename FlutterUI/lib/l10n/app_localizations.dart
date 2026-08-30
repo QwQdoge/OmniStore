@@ -2704,7 +2704,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiReadingAccountConnectionSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Reads provider, model name, and key mask only.'**
+  /// **'Reads connection name, provider, and key mask only.'**
   String get aiReadingAccountConnectionSubtitle;
 
   /// No description provided for @aiCannotReadAccountConnection.
