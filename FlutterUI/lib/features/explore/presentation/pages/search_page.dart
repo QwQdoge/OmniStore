@@ -26,7 +26,6 @@ class _SearchPageState extends State<SearchPage> {
   final ScrollController _sourceFilterScrollController = ScrollController();
   bool _showDiscovery = true;
   final List<String> _selectedSources = [];
-  final ValueNotifier<bool> _hasSearchText = ValueNotifier<bool>(false);
   BrowseController? _browseController;
   List<AppPackage>? _lastResults;
 
@@ -46,7 +45,6 @@ class _SearchPageState extends State<SearchPage> {
       final browse = _browseController!;
       if (browse.pendingSearchQuery != null) {
         _searchController.text = browse.pendingSearchQuery!;
-        _hasSearchText.value = _searchController.text.isNotEmpty;
         _performSearch(browse.pendingSearchQuery!);
         browse.pendingSearchQuery = null;
       }
@@ -56,7 +54,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     _browseController?.removeListener(_onBrowseChanged);
-    _hasSearchText.dispose();
     _searchController.dispose();
     _quickFilterScrollController.dispose();
     _focusNode.dispose();
@@ -129,31 +126,37 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               focusNode: _focusNode,
               hintText: l10n.searchHint,
-              onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
               onSubmitted: _performSearch,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                ValueListenableBuilder<bool>(
-                  valueListenable: _hasSearchText,
-                  builder: (context, hasText, child) {
-                    if (hasText) {
-                      return IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: l10n.clearSearch,
-                        onPressed: () {
-                          _searchController.clear();
-                          _hasSearchText.value = false;
-                          if (!_showDiscovery || _selectedSources.isNotEmpty) {
-                            setState(() {
-                              _showDiscovery = true;
-                              _selectedSources.clear();
-                            });
-                          }
-                          context.read<BrowseController>().clearSearch();
-                        },
-                      );
-                    }
-                    return const SizedBox.shrink();
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchController,
+                  builder: (context, value, _) {
+                    final hasText = value.text.isNotEmpty;
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: hasText
+                          ? IconButton(
+                              key: const ValueKey('clear_button'),
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: l10n.clearSearch,
+                              onPressed: () {
+                                _searchController.clear();
+                                if (!_showDiscovery || _selectedSources.isNotEmpty) {
+                                  setState(() {
+                                    _showDiscovery = true;
+                                    _selectedSources.clear();
+                                  });
+                                }
+                                context.read<BrowseController>().clearSearch();
+                              },
+                            )
+                          : const SizedBox.shrink(
+                              key: ValueKey('clear_empty'),
+                            ),
+                    );
                   },
                 ),
               ],

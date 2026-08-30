@@ -232,18 +232,33 @@ class _DownloadPageState extends State<DownloadPage>
                   hintText: AppLocalizations.of(context)!.searchInstalledHint,
                   leading: const Icon(Icons.search_rounded),
                   trailing: [
-                    if (_searchQuery.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: AppLocalizations.of(context)!.clear,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = "";
-                            _applyFilters();
-                          });
-                        },
-                      ),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, _) {
+                        final hasText = value.text.isNotEmpty;
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
+                          child: hasText
+                              ? IconButton(
+                                  key: const ValueKey('clear_button'),
+                                  icon: const Icon(Icons.close_rounded),
+                                  tooltip: AppLocalizations.of(context)!.clear,
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = "";
+                                      _applyFilters();
+                                    });
+                                  },
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('clear_empty'),
+                                ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
