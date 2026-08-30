@@ -143,7 +143,7 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
           child: Text(isChinese ? '拒绝' : 'Deny'),
         ),
