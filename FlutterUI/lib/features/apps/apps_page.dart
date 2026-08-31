@@ -109,12 +109,24 @@ class _AppsPageState extends State<AppsPage> {
               hintText: l10n.searchInstalledHint,
               leading: const Icon(Icons.search_rounded),
               trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    tooltip: l10n.clear,
-                    onPressed: () => _searchController.clear(),
-                  ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchController,
+                  builder: (context, value, _) {
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.fastOutSlowIn,
+                      child: value.text.isNotEmpty
+                          ? IconButton(
+                              key: const ValueKey('clear_btn'),
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: l10n.clear,
+                              onPressed: () => _searchController.clear(),
+                            )
+                          : const SizedBox.shrink(key: ValueKey('idle')),
+                    );
+                  },
+                ),
               ],
             ),
           ),
