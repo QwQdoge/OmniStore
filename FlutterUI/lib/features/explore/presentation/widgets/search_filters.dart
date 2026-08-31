@@ -45,58 +45,57 @@ class SearchFilters extends StatelessWidget {
 
     return Semantics(
       container: true,
+      explicitChildNodes: true,
       label: l10n.source,
       child: Container(
         height: 66,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
         child: Scrollbar(
-        controller: scrollController,
-        thumbVisibility: true,
-        child: ListView(
           controller: scrollController,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(bottom: 8),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: FilterChip(
-                label: Text(AppLocalizations.of(context)!.all),
-                tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(
-                  AppLocalizations.of(context)!.all,
-                ),
-                selected: selectedSources.isEmpty,
-                onSelected: (selected) {
-                  if (selected) {
-                    onSelectedSourcesChanged([]);
-                  }
-                },
-              ),
-            ),
-            ...enabledSources.map((src) {
-              final name = _displayName(src);
-              final isSelected = selectedSources.contains(name.toLowerCase());
-              return Padding(
+          thumbVisibility: true,
+          child: ListView(
+            controller: scrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(bottom: 8),
+            children: [
+              Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
-                  label: Text(name),
-                  tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(name),
-                  selected: isSelected,
+                  label: Text(l10n.all),
+                  tooltip: l10n.sourceFilterSemantics(l10n.all),
+                  selected: selectedSources.isEmpty,
                   onSelected: (selected) {
-                    final newSources = List<String>.from(selectedSources);
                     if (selected) {
-                      newSources.add(name.toLowerCase());
-                    } else {
-                      newSources.remove(name.toLowerCase());
+                      onSelectedSourcesChanged([]);
                     }
-                    onSelectedSourcesChanged(newSources);
                   },
                 ),
-              );
-            }),
-          ],
+              ),
+              ...enabledSources.map((src) {
+                final name = _displayName(src);
+                final isSelected = selectedSources.contains(name.toLowerCase());
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: FilterChip(
+                    label: Text(name),
+                    tooltip: l10n.sourceFilterSemantics(name),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      final newSources = List<String>.from(selectedSources);
+                      if (selected) {
+                        newSources.add(name.toLowerCase());
+                      } else {
+                        newSources.remove(name.toLowerCase());
+                      }
+                      onSelectedSourcesChanged(newSources);
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

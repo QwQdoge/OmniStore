@@ -125,18 +125,14 @@ class _SearchPageState extends State<SearchPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-            child: Semantics(
-              search: true,
-              label: l10n.search,
-              child: SearchBar(
-                controller: _searchController,
-                focusNode: _focusNode,
-                hintText: l10n.searchHint,
-                textInputAction: TextInputAction.search,
-                onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
-                onSubmitted: _performSearch,
-                leading: const Icon(Icons.search_rounded),
-                trailing: [
+            child: SearchBar(
+              controller: _searchController,
+              focusNode: _focusNode,
+              hintText: l10n.searchHint,
+              onChanged: (val) => _hasSearchText.value = val.isNotEmpty,
+              onSubmitted: _performSearch,
+              leading: const Icon(Icons.search_rounded),
+              trailing: [
                 ValueListenableBuilder<bool>(
                   valueListenable: _hasSearchText,
                   builder: (context, hasText, child) {
@@ -168,7 +164,6 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-        ),
           SmoothSizeSwitcher(
             child: !_showDiscovery
                 ? Selector<SettingsController, Map<String, bool>>(
