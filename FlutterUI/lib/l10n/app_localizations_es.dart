@@ -1523,7 +1523,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiReadingAccountConnectionSubtitle =>
-      'Solo lee el nombre de la conexión, el proveedor y la máscara de clave.';
+      'Lee los metadatos de la conexión, los detalles del proveedor y la máscara de clave.';
 
   @override
   String get aiCannotReadAccountConnection =>

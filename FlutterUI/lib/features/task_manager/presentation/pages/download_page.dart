@@ -232,18 +232,30 @@ class _DownloadPageState extends State<DownloadPage>
                   hintText: AppLocalizations.of(context)!.searchInstalledHint,
                   leading: const Icon(Icons.search_rounded),
                   trailing: [
-                    if (_searchQuery.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: AppLocalizations.of(context)!.clear,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = "";
-                            _applyFilters();
-                          });
-                        },
-                      ),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, _) {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.fastOutSlowIn,
+                          child: value.text.isNotEmpty
+                              ? IconButton(
+                                  key: const ValueKey('clear_btn'),
+                                  icon: const Icon(Icons.close_rounded),
+                                  tooltip: AppLocalizations.of(context)!.clear,
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = "";
+                                      _applyFilters();
+                                    });
+                                  },
+                                )
+                              : const SizedBox.shrink(key: ValueKey('idle')),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

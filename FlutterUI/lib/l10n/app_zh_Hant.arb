@@ -1403,7 +1403,7 @@
   "meoDowngradePending": "已設定 Stable 通道，但仍有 {count} 個 Meo 套件降級需要確認。",
   "meoReviewDowngrades": "檢查降級項",
   "aiReadingAccountConnection": "正在讀取帳號 AI 連線",
-  "aiReadingAccountConnectionSubtitle": "只讀取名稱、服務商和金鑰遮罩。",
+  "aiReadingAccountConnectionSubtitle": "讀取連線元資料、服務商資訊及金鑰遮罩。",
   "aiCannotReadAccountConnection": "無法讀取帳號 AI 連線",
   "aiCannotReadAccountConnectionDetail": "前往 Account 填寫您自己的 API 金鑰並安全儲存，然後回到這裡重新整理。",
   "aiManageConnection": "管理 AI 連線",

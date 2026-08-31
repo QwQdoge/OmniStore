@@ -1400,7 +1400,7 @@
   "meoDowngradePending": "Stable が設定されていますが、{count} 件の Meo パッケージのダウングレードの確認が必要です。",
   "meoReviewDowngrades": "ダウングレードを確認",
   "aiReadingAccountConnection": "アカウントの AI 接続を読み込み中",
-  "aiReadingAccountConnectionSubtitle": "接続名、プロバイダー、キーマスクのみを読み込みます。",
+  "aiReadingAccountConnectionSubtitle": "接続メタデータ、プロバイダー情報、キーマスクを読み込みます。",
   "aiCannotReadAccountConnection": "アカウントの AI 接続を読み込めません",
   "aiCannotReadAccountConnectionDetail": "アカウントに移動して API キーを入力・保存し、ここで更新してください。",
   "aiManageConnection": "AI 接続を管理",

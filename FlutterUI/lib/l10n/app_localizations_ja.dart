@@ -1410,7 +1410,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiReadingAccountConnection => 'アカウントの AI 接続を読み込み中';
 
   @override
-  String get aiReadingAccountConnectionSubtitle => '接続名、プロバイダー、キーマスクのみを読み込みます。';
+  String get aiReadingAccountConnectionSubtitle =>
+      '接続メタデータ、プロバイダー情報、キーマスクを読み込みます。';
 
   @override
   String get aiCannotReadAccountConnection => 'アカウントの AI 接続を読み込めません';

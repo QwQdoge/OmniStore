@@ -1397,7 +1397,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiReadingAccountConnection => '正在读取账号 AI 连接';
 
   @override
-  String get aiReadingAccountConnectionSubtitle => '只读取名称、服务商和密钥掩码。';
+  String get aiReadingAccountConnectionSubtitle => '读取连接元数据、服务商信息及密钥掩码。';
 
   @override
   String get aiCannotReadAccountConnection => '无法读取账号 AI 连接';
@@ -2824,7 +2824,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiReadingAccountConnection => '正在讀取帳號 AI 連線';
 
   @override
-  String get aiReadingAccountConnectionSubtitle => '只讀取名稱、服務商和金鑰遮罩。';
+  String get aiReadingAccountConnectionSubtitle => '讀取連線元資料、服務商資訊及金鑰遮罩。';
 
   @override
   String get aiCannotReadAccountConnection => '無法讀取帳號 AI 連線';

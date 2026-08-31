@@ -1400,7 +1400,7 @@
   "meoDowngradePending": "{count, plural, =1{Stable está configurado, pero 1 degradación de paquete Meo requiere revisión.} other{Stable está configurado, pero {count} degradaciones de paquetes Meo requieren revisión.}}",
   "meoReviewDowngrades": "Revisar degradaciones",
   "aiReadingAccountConnection": "Leyendo conexión de IA de la cuenta",
-  "aiReadingAccountConnectionSubtitle": "Solo lee el nombre de la conexión, el proveedor y la máscara de clave.",
+  "aiReadingAccountConnectionSubtitle": "Lee los metadatos de la conexión, los detalles del proveedor y la máscara de clave.",
   "aiCannotReadAccountConnection": "No se puede leer la conexión de IA de la cuenta",
   "aiCannotReadAccountConnectionDetail": "Vaya a Cuenta para ingresar y guardar de forma segura su clave API, luego actualice aquí.",
   "aiManageConnection": "Gestionar conexión de IA",

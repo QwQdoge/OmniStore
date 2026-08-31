@@ -1421,7 +1421,7 @@
   },
   "meoReviewDowngrades": "Review Downgrades",
   "aiReadingAccountConnection": "Reading account AI connection",
-  "aiReadingAccountConnectionSubtitle": "Reads connection name, provider, and key mask only.",
+  "aiReadingAccountConnectionSubtitle": "Reads connection metadata, provider details, and key mask.",
   "aiCannotReadAccountConnection": "Unable to read account AI connection",
   "aiCannotReadAccountConnectionDetail": "Go to Account to enter and securely save your API key, then refresh here.",
   "aiManageConnection": "Manage AI Connection",
