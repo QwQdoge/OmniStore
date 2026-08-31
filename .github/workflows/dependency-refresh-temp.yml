@@ -1,0 +1,135 @@
+name: Dependency refresh temporary
+
+on:
+  push:
+    branches:
+      - chore/deps-latest-20260831
+
+permissions:
+  contents: write
+
+jobs:
+  resolve-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.1'
+          channel: stable
+          cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: python/requirements.txt
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            clang \
+            cmake \
+            libayatana-appindicator3-dev \
+            libgtk-3-dev \
+            liblzma-dev \
+            libsecret-1-dev \
+            ninja-build \
+            pkg-config
+
+      - name: Resolve latest stable Flutter dependencies
+        working-directory: FlutterUI
+        run: flutter pub upgrade --major-versions
+
+      - name: Resolve latest stable direct Python dependencies
+        run: |
+          python -m pip install --upgrade pip uv packaging
+          python - <<'PY'
+          from pathlib import Path
+          from packaging.requirements import Requirement
+
+          src = Path('python/requirements.txt')
+          direct = []
+          for raw in src.read_text().splitlines():
+              line = raw.strip()
+              if not line or line.startswith('#'):
+                  continue
+              req = Requirement(line)
+              extras = ''.join(['[', ','.join(sorted(req.extras)), ']']) if req.extras else ''
+              marker = f'; {req.marker}' if req.marker else ''
+              direct.append(f'{req.name}{extras}{marker}')
+          Path('/tmp/omni-direct.in').write_text('\n'.join(direct) + '\n')
+          PY
+          uv pip compile --upgrade --python-version 3.14 --no-header --no-annotate /tmp/omni-direct.in -o /tmp/omni-resolved.txt
+          python - <<'PY'
+          from pathlib import Path
+          from packaging.requirements import Requirement
+          from packaging.utils import canonicalize_name
+
+          resolved = {}
+          for raw in Path('/tmp/omni-resolved.txt').read_text().splitlines():
+              line = raw.strip()
+              if not line or line.startswith('#') or line.startswith('-'):
+                  continue
+              try:
+                  req = Requirement(line)
+              except Exception:
+                  continue
+              specs = list(req.specifier)
+              if len(specs) == 1 and specs[0].operator == '==':
+                  resolved[canonicalize_name(req.name)] = specs[0].version
+
+          src = Path('python/requirements.txt')
+          out = []
+          for raw in src.read_text().splitlines():
+              stripped = raw.strip()
+              if not stripped or stripped.startswith('#'):
+                  out.append(raw)
+                  continue
+              req = Requirement(stripped)
+              version = resolved.get(canonicalize_name(req.name))
+              if version is None:
+                  raise SystemExit(f'No resolved version for direct dependency {req.name}')
+              extras = f"[{','.join(sorted(req.extras))}]" if req.extras else ''
+              marker = f'; {req.marker}' if req.marker else ''
+              out.append(f'{req.name}{extras}=={version}{marker}')
+          src.write_text('\n'.join(out) + '\n')
+          PY
+
+      - name: Commit resolver outputs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock python/requirements.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(deps): resolve latest stable dependencies'
+            git push
+          fi
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -r python/requirements.txt
+          python -m pip check
+
+      - name: Run Python tests
+        run: python -m pytest -q python/tests
+
+      - name: Analyze Flutter
+        working-directory: FlutterUI
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        working-directory: FlutterUI
+        run: flutter test --reporter expanded
+
+      - name: Build Flutter Linux release
+        working-directory: FlutterUI
+        run: flutter build linux --release
