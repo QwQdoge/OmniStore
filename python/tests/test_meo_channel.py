@@ -1,5 +1,6 @@
 import asyncio
 import json
+from pathlib import Path
 import subprocess
 import sys
 
@@ -19,6 +20,7 @@ def test_channel_helper_does_not_eagerly_import_unrelated_network_sources():
         check=False,
         capture_output=True,
         text=True,
+        cwd=Path(__file__).resolve().parents[1],
     )
     assert result.returncode == 0, result.stderr or result.stdout
 
