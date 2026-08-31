@@ -41,10 +41,15 @@ class SearchFilters extends StatelessWidget {
 
     if (enabledSources.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: Scrollbar(
+    final l10n = AppLocalizations.of(context)!;
+
+    return Semantics(
+      container: true,
+      label: l10n.source,
+      child: Container(
+        height: 66,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        child: Scrollbar(
         controller: scrollController,
         thumbVisibility: true,
         child: ListView(
@@ -91,6 +96,7 @@ class SearchFilters extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
