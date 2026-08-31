@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/ai/account_ai_service.dart';
 import 'package:frontend/features/auth/auth_service.dart';
-import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/ai/widgets/ai_mark.dart';
 
 class AccountConnectionCard extends StatelessWidget {
