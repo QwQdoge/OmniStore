@@ -5,17 +5,12 @@ on:
     branches:
       - chore/deps-latest-20260831
 
-permissions:
-  contents: write
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.1'
@@ -51,11 +46,3 @@ jobs:
       - name: Build Flutter Linux release
         working-directory: FlutterUI
         run: flutter build linux --release
-      - name: Record validation success
-        run: |
-          printf 'validated Flutter 3.47.1 and Python 3.14 dependency refresh\n' > .dependency-refresh-validated
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .dependency-refresh-validated
-          git commit -m 'ci: record dependency validation success'
-          git push
