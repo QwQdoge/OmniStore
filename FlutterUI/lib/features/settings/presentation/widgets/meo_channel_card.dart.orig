@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/app_card.dart';
-import 'package:frontend/core/widgets/smooth_size_switcher.dart';
-import "package:frontend/core/widgets/smooth_size_switcher.dart";
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 

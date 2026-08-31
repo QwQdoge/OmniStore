@@ -1,0 +1,29 @@
+--- FlutterUI/lib/features/settings/presentation/widgets/meo_channel_card.dart
++++ FlutterUI/lib/features/settings/presentation/widgets/meo_channel_card.dart
+@@ -1,5 +1,6 @@
+ import 'package:flutter/material.dart';
+ import 'package:frontend/core/widgets/app_card.dart';
++import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+ import 'package:frontend/l10n/app_localizations.dart';
+ import 'package:frontend/services/backend_service.dart';
+
+--- FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart
++++ FlutterUI/lib/features/settings/presentation/widgets/sources_config_card.dart
+@@ -2,6 +2,7 @@
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+ import 'package:collection/collection.dart';
++import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+
+ import 'package:frontend/core/widgets/app_card.dart';
+ import 'package:frontend/core/widgets/toast.dart';
+--- FlutterUI/lib/features/auth/presentation/pages/account_page.dart
++++ FlutterUI/lib/features/auth/presentation/pages/account_page.dart
+@@ -1,6 +1,7 @@
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+ import 'package:url_launcher/url_launcher.dart';
++import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+
+ import 'package:frontend/data/services/auth_service.dart';
+ import 'package:frontend/l10n/app_localizations.dart';
