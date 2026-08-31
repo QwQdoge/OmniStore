@@ -4,16 +4,17 @@ publish_to: 'none'
 
 # =========================================================
 # ⚠️ WARNING TO AI / DEVELOPER:
-# 1. All dependencies have been upgraded to their MAJOR versions.
-#    DO NOT downgrade any package version under any circumstances.
-# 2. 'flutter_markdown' is DISCONTINUED. We are strictly using 
+# 1. Keep direct dependencies on the latest stable versions supported by the
+#    current stable Flutter/Dart toolchain. Raise the SDK baseline when a
+#    stable dependency requires it; do not downgrade to preserve an old baseline.
+# 2. 'flutter_markdown' is DISCONTINUED. We are strictly using
 #    'flutter_markdown_plus'. DO NOT change it back to the old package.
 # =========================================================
 
 version: 0.1.3+2
 
 environment:
-  sdk: ^3.11.0
+  sdk: ^3.13.0
 
 dependencies:
   flutter:
@@ -23,20 +24,20 @@ dependencies:
 
   # State & Storage
   provider: ^6.1.2
-  shared_preferences: ^2.5.5 # 适配最新生态，防止 AI 拿旧版本死锁
-  
+  shared_preferences: ^2.5.5
+
   # UI & Media
-  flutter_markdown_plus: ^1.0.1 # 替代已废弃的 flutter_markdown，提供更丰富的 Markdown 支持
+  flutter_markdown_plus: ^1.0.1
   cached_network_image: ^3.3.1
   cupertino_icons: ^1.0.8
-  
+
   # Desktop & OS Integration (Crucial for Arch Linux/Wayland compatibility)
   window_manager: ^0.5.1
   screen_retriever: ^0.2.1
-  system_tray: ^2.0.3 # 修复老版本在部分 Linux 环境下托盘图标退出的 Bug
+  system_tray: ^2.0.3
   flutter_local_notifications: ^22.0.0
   file_picker: ^12.0.0-beta.5
-  
+
   # Network & Core Utilities
   web_socket_channel: ^3.0.3
   url_launcher: ^6.3.2
@@ -55,6 +56,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+# system_tray 2.0.3 still constrains uuid to 3.x while current image/cache
+# packages use uuid 4.x. CI compiles and tests the combined API surface.
+dependency_overrides:
+  uuid: ^4.6.0
 
 flutter:
   generate: true
