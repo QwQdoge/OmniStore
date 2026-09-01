@@ -403,6 +403,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   Widget _buildAccountCallout({
+    Key? key,
     required Color background,
     required String title,
     required String detail,
