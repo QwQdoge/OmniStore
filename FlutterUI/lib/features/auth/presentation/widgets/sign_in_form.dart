@@ -61,126 +61,131 @@ class SignInForm extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withValues(
-                          alpha: 0.7,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.account_circle_rounded,
-                        size: 48,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    l10n.signInTitle,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.signInSubtitle,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  if (onSignInWithSystemAccount != null) ...[
-                    Semantics(
-                      button: true,
-                      identifier: 'account.system.continue',
-                      child: FilledButton.icon(
-                        onPressed: isLoading ? null : onSignInWithSystemAccount,
-                        icon: const Icon(Icons.devices_rounded),
-                        label: Text(l10n.meoarchAccount),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+              child: AutofillGroup(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer.withValues(
+                            alpha: 0.7,
                           ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.account_circle_rounded,
+                          size: 48,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            l10n.orDivider,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
+                    Text(
+                      l10n.signInTitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.signInSubtitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    if (onSignInWithSystemAccount != null) ...[
+                      Semantics(
+                        button: true,
+                        identifier: 'account.system.continue',
+                        child: FilledButton.icon(
+                          onPressed: isLoading ? null : onSignInWithSystemAccount,
+                          icon: const Icon(Icons.devices_rounded),
+                          label: Text(l10n.meoarchAccount),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  TextField(
-                    key: const ValueKey('account.email'),
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: l10n.email,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: border,
-                      enabledBorder: border,
-                      focusedBorder: focusedBorder,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
                       ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    key: const ValueKey('account.password'),
-                    controller: passwordController,
-                    obscureText: isObscure,
-                    decoration: InputDecoration(
-                      labelText: l10n.password,
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
-                      border: border,
-                      enabledBorder: border,
-                      focusedBorder: focusedBorder,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              l10n.orDivider,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isObscure
-                              ? Icons.visibility_off_rounded
-                              : Icons.visibility_rounded,
+                      const SizedBox(height: 20),
+                    ],
+                    TextField(
+                      key: const ValueKey('account.email'),
+                      controller: emailController,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: l10n.email,
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: border,
+                        enabledBorder: border,
+                        focusedBorder: focusedBorder,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
                         ),
-                        onPressed: onToggleObscure,
-                        tooltip: isObscure
-                            ? l10n.showPassword
-                            : l10n.hidePassword,
                       ),
+                      keyboardType: TextInputType.emailAddress,
+                      enabled: !isLoading,
                     ),
-                    enabled: !isLoading,
-                    onSubmitted: (_) => onSignIn(),
-                  ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      key: const ValueKey('account.password'),
+                      controller: passwordController,
+                      obscureText: isObscure,
+                      autofillHints: const [AutofillHints.password],
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: l10n.password,
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        border: border,
+                        enabledBorder: border,
+                        focusedBorder: focusedBorder,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isObscure
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                          ),
+                          onPressed: onToggleObscure,
+                          tooltip: isObscure
+                              ? l10n.showPassword
+                              : l10n.hidePassword,
+                        ),
+                      ),
+                      enabled: !isLoading,
+                      onSubmitted: (_) => onSignIn(),
+                    ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
                     onPressed: isLoading ? null : onSignIn,
@@ -266,6 +271,7 @@ class SignInForm extends StatelessWidget {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
