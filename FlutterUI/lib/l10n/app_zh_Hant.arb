@@ -191,21 +191,9 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 套件…",
-  "@updatingSourcePackages": {
-    "placeholders": {
-      "source": {
-        "type": "String"
-      }
-    }
-  },
+  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
   "sourceUpdateFailed": "{source} 更新失敗",
-  "@sourceUpdateFailed": {
-    "placeholders": {
-      "source": {
-        "type": "String"
-      }
-    }
-  },
+  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
   "enabledSourcesUpdated": "所有已啟用的軟體源均已更新",
   "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
@@ -601,11 +589,7 @@
   "pluginCapabilities": "{count} 項功能",
   "@pluginCapabilities": {
     "description": "軟體來源外掛提供的功能數量",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "placeholders": {"count": {"type": "int"}}
   },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
