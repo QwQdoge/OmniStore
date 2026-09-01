@@ -96,6 +96,12 @@ class PackageRepository {
     int? offset,
   }) async {
     final cacheKey = query.trim().toLowerCase();
+    // ⚡ Bolt: Early exit on empty or whitespace-only search query to avoid
+    // unnecessary cache lookups, async allocations, map operations, and daemon calls.
+    if (cacheKey.isEmpty) {
+      return const [];
+    }
+
     if (!forceRefresh) {
       final cached = _searchCache[query] ?? _searchCache[cacheKey];
       if (cached != null && !cached.isExpired) {
