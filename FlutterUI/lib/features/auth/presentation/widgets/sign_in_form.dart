@@ -62,6 +62,7 @@ class SignInForm extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(28),
               child: AutofillGroup(
+                onDisposeAction: AutofillContextAction.cancel,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -138,7 +139,10 @@ class SignInForm extends StatelessWidget {
                     TextField(
                       key: const ValueKey('account.email'),
                       controller: emailController,
-                      autofillHints: const [AutofillHints.email],
+                      autofillHints: const [
+                        AutofillHints.username,
+                        AutofillHints.email,
+                      ],
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         labelText: l10n.email,
