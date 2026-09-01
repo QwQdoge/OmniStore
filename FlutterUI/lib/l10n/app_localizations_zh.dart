@@ -1694,7 +1694,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get enabledSourcesUpdated => '所有已啟用的軟體來源均已更新';
+  String get enabledSourcesUpdated => '所有已啟用的軟體源均已更新';
 
   @override
   String get enableSystemTray => '啟用系統匣';
@@ -1939,7 +1939,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceConfigTitle => '軟體源設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇 OmniStore 可以搜尋的軟體來源';
+  String get sourceConfigSubtitle => '選擇 OmniStore 可以搜尋的軟體源';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
@@ -2149,7 +2149,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get retry => '重試';
 
   @override
-  String get searchFailedSubtitle => '無法連線至軟體來源。請檢查網路連線後重試。';
+  String get searchFailedSubtitle => '無法連線至軟體源。請檢查網路連線後重試。';
 
   @override
   String pluginCapabilities(int count) {
@@ -2510,7 +2510,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get latestUpdates => '最新更新';
 
   @override
-  String get searchNoResultsSubtitle => '請嘗試其他關鍵字，或啟用更多軟體來源';
+  String get searchNoResultsSubtitle => '請嘗試其他關鍵字，或啟用更多軟體源';
 
   @override
   String get pluginsAndSources => '外掛程式與軟體源';
