@@ -51,6 +51,10 @@ class InstalledTab extends StatelessWidget {
                                 padding: const EdgeInsets.only(right: 8),
                                 child: ChoiceChip(
                                   label: Text(_filterLabel(context, s)),
+                                  tooltip: AppLocalizations.of(context)!
+                                      .sourceFilterSemantics(
+                                        _filterLabel(context, s),
+                                      ),
                                   selected: selectedSourceFilter == s,
                                   onSelected: (v) {
                                     if (v) {

@@ -54,4 +54,56 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('FilterChip, ChoiceChip, and ActionChip have tooltips set', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Column(
+            children: [
+              FilterChip(
+                label: const Text('Pacman'),
+                tooltip: 'Filter by source: Pacman',
+                selected: true,
+                onSelected: (_) {},
+              ),
+              ChoiceChip(
+                label: const Text('All'),
+                tooltip: 'Filter by source: All',
+                selected: true,
+                onSelected: (_) {},
+              ),
+              ActionChip(
+                label: const Text('GIMP'),
+                tooltip: 'Category: GIMP',
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FilterChip), findsOneWidget);
+    expect(find.byType(ChoiceChip), findsOneWidget);
+    expect(find.byType(ActionChip), findsOneWidget);
+
+    final filterChip = tester.widget<FilterChip>(find.byType(FilterChip));
+    expect(filterChip.tooltip, equals('Filter by source: Pacman'));
+
+    final choiceChip = tester.widget<ChoiceChip>(find.byType(ChoiceChip));
+    expect(choiceChip.tooltip, equals('Filter by source: All'));
+
+    final actionChip = tester.widget<ActionChip>(find.byType(ActionChip));
+    expect(actionChip.tooltip, equals('Category: GIMP'));
+  });
 }
