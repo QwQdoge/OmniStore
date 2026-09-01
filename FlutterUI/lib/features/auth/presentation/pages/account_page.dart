@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
@@ -70,6 +71,7 @@ class _AccountPageState extends State<AccountPage> {
     setState(() => _isLoading = true);
     try {
       await AuthService().signInWithPassword(email: email, password: password);
+      TextInput.finishAutofillContext(shouldSave: true);
     } on AuthException catch (e) {
       if (mounted) {
         Toast.show(context, l10n.signInFailed(e.message));
