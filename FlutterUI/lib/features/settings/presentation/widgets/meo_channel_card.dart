@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 
@@ -179,9 +180,15 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                 IconButton.filledTonal(
                   tooltip: l10n.refresh,
                   onPressed: _busy ? null : _refresh,
-                  icon: _busy
-                      ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.refresh_rounded),
+                  icon: SmoothSizeSwitcher(
+                    child: _busy
+                        ? const SizedBox.square(
+                            key: ValueKey('loading'),
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh_rounded, key: ValueKey('idle')),
+                  ),
                 ),
               ],
             ),
