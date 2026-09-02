@@ -67,7 +67,7 @@ class _AIUpdateSummaryDialogState extends State<AIUpdateSummaryDialog> {
     final theme = Theme.of(context);
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      icon: const AiMark(size: 24),
+      icon: const AiMark(size: 32),
       title: Text(
         AppLocalizations.of(context)!.aiChangelogTitle,
         style: theme.textTheme.headlineSmall?.copyWith(

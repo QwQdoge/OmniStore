@@ -11,7 +11,11 @@ class ApiKeyInstructionsDialog extends StatelessWidget {
 
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      icon: Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
+      icon: Icon(
+        Icons.vpn_key_rounded,
+        color: theme.colorScheme.primary,
+        size: 32,
+      ),
       title: Text(
         l10n.howToGetApiKey,
         style: theme.textTheme.headlineSmall?.copyWith(
