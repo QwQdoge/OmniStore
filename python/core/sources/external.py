@@ -526,13 +526,34 @@ class ScoopSource(UnifiedSource):
         super().__init__(name="Scoop", weight=weight)
         self.enabled = shutil.which("scoop") is not None
 
+    async def _get_installed_ids(self) -> set:
+        if not self.enabled:
+            return set()
+        try:
+            async with safe_subprocess("scoop", "list", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                installed = set()
+                for line in _decode_output(stdout or b"").splitlines():
+                    line = line.strip()
+                    if not line or line.lower().startswith(("name", "---")):
+                        continue
+                    parts = line.split()
+                    if parts:
+                        installed.add(parts[0].lower())
+                return installed
+        except Exception:
+            return set()
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
         try:
             async with safe_subprocess("scoop", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
-                installed = {item["id"].lower() for item in await self.list_installed()}
+                # ⚡ Bolt: Query installed IDs using a lightweight single CLI call instead of self.list_installed(),
+                # avoiding expensive directory size calculations for all installed packages on disk.
+                installed_task = kwargs.get("installed_scoop_task")
+                installed = await installed_task if installed_task is not None else await self._get_installed_ids()
                 results = []
                 for line in _decode_output(stdout or b"").splitlines():
                     line = line.strip()
@@ -680,13 +701,31 @@ class BrewSource(UnifiedSource):
         super().__init__(name="Homebrew", weight=weight)
         self.enabled = shutil.which("brew") is not None
 
+    async def _get_installed_ids(self) -> set:
+        if not self.enabled:
+            return set()
+        try:
+            async with safe_subprocess("brew", "list", "--versions", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await proc.communicate()
+                installed = set()
+                for line in _decode_output(stdout or b"").splitlines():
+                    parts = line.split()
+                    if parts and not parts[0].startswith("==>"):
+                        installed.add(parts[0].lower())
+                return installed
+        except Exception:
+            return set()
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
         try:
             async with safe_subprocess("brew", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
-                installed = {item["id"].lower() for item in await self.list_installed()}
+                # ⚡ Bolt: Query installed IDs using lightweight single CLI call instead of self.list_installed(),
+                # avoiding per-package 'brew --prefix' subprocess spawns and filesystem scans.
+                installed_task = kwargs.get("installed_brew_task")
+                installed = await installed_task if installed_task is not None else await self._get_installed_ids()
                 results = []
                 for line in _decode_output(stdout or b"").splitlines():
                     name = line.strip()

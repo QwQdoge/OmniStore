@@ -246,3 +246,61 @@ async def test_appimage_search_pre_scan_optimization(tmp_path, monkeypatch):
     non_inst_res = next(r for r in results_installed if r["name"] == "NonInstalledTool")
     assert super_tool_res["installed"] is True
     assert non_inst_res["installed"] is False
+
+
+@pytest.mark.asyncio
+async def test_scoop_and_brew_get_installed_ids_optimization(monkeypatch):
+    scoop = ScoopSource()
+    brew = BrewSource()
+
+    scoop.enabled = True
+    brew.enabled = True
+
+    # Ensure list_installed is NOT called during search
+    async def forbidden_list_installed():
+        pytest.fail("list_installed should not be called during search")
+
+    monkeypatch.setattr(scoop, "list_installed", forbidden_list_installed)
+    monkeypatch.setattr(brew, "list_installed", forbidden_list_installed)
+
+    async def mock_scoop_installed_ids():
+        return {"curl", "git"}
+
+    async def mock_brew_installed_ids():
+        return {"wget", "htop"}
+
+    monkeypatch.setattr(scoop, "_get_installed_ids", mock_scoop_installed_ids)
+    monkeypatch.setattr(brew, "_get_installed_ids", mock_brew_installed_ids)
+
+    class DummyProc:
+        def __init__(self, stdout_data):
+            self._stdout_data = stdout_data
+            self.pid = 12345
+            self.returncode = 0
+
+        async def communicate(self):
+            return (self._stdout_data, b"")
+
+        async def wait(self):
+            return 0
+
+    async def mock_create_subprocess_exec(*args, **kwargs):
+        cmd = args[0]
+        if cmd == "scoop":
+            return DummyProc(b"Name Version Source\ncurl 7.88.0 [main]\n7zip 22.01 [main]\n")
+        elif cmd == "brew":
+            return DummyProc(b"wget\nffmpeg\nhtop\n")
+        return DummyProc(b"")
+
+    monkeypatch.setattr("asyncio.create_subprocess_exec", mock_create_subprocess_exec)
+
+    scoop_results = await scoop.search("test")
+    assert len(scoop_results) == 2
+    assert next(r for r in scoop_results if r["name"] == "curl")["installed"] is True
+    assert next(r for r in scoop_results if r["name"] == "7zip")["installed"] is False
+
+    brew_results = await brew.search("test")
+    assert len(brew_results) == 3
+    assert next(r for r in brew_results if r["name"] == "wget")["installed"] is True
+    assert next(r for r in brew_results if r["name"] == "htop")["installed"] is True
+    assert next(r for r in brew_results if r["name"] == "ffmpeg")["installed"] is False
