@@ -52,7 +52,7 @@ class InstalledTab extends StatelessWidget {
                                 child: ChoiceChip(
                                   label: Text(_filterLabel(context, s)),
                                   tooltip: AppLocalizations.of(context)!
-                                      .sourceFilterSemantics(
+                                      .filterInstalledSemantics(
                                         _filterLabel(context, s),
                                       ),
                                   selected: selectedSourceFilter == s,

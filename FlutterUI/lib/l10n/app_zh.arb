@@ -1376,5 +1376,21 @@
         "type": "String"
       }
     }
+  },
+  "toggleSourceSemantics": "启用或禁用软件源：{name}",
+  "@toggleSourceSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterInstalledSemantics": "按{name}筛选已安装应用",
+  "@filterInstalledSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

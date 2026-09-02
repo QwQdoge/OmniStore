@@ -109,9 +109,7 @@ class _AIAppResolverState extends State<AIAppResolver> {
                         padding: const EdgeInsets.only(right: 8.0),
                         child: ActionChip(
                           label: Text(_resolvedApps[index].name),
-                          tooltip: AppLocalizations.of(
-                            context,
-                          )!.categorySemantics(_resolvedApps[index].name),
+                          tooltip: AppLocalizations.of(context)!.viewDetails,
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(

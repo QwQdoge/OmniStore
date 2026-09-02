@@ -2634,6 +2634,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter by source: {name}'**
   String sourceFilterSemantics(String name);
+
+  /// No description provided for @toggleSourceSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable or disable software source: {name}'**
+  String toggleSourceSemantics(String name);
+
+  /// No description provided for @filterInstalledSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter installed apps: {name}'**
+  String filterInstalledSemantics(String name);
 }
 
 class _AppLocalizationsDelegate

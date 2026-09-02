@@ -1468,4 +1468,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'Filtrar por origen: $name';
   }
+
+  @override
+  String toggleSourceSemantics(String name) {
+    return 'Habilitar o deshabilitar la fuente de software: $name';
+  }
+
+  @override
+  String filterInstalledSemantics(String name) {
+    return 'Filtrar aplicaciones instaladas: $name';
+  }
 }

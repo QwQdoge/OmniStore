@@ -1366,4 +1366,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'ソースで絞り込み: $name';
   }
+
+  @override
+  String toggleSourceSemantics(String name) {
+    return 'ソフトウェアソースを有効または無効にする: $name';
+  }
+
+  @override
+  String filterInstalledSemantics(String name) {
+    return 'インストール済みアプリを絞り込む: $name';
+  }
 }

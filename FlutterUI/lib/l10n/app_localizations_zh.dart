@@ -1355,6 +1355,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return '按软件源筛选：$name';
   }
+
+  @override
+  String toggleSourceSemantics(String name) {
+    return '启用或禁用软件源：$name';
+  }
+
+  @override
+  String filterInstalledSemantics(String name) {
+    return '按$name筛选已安装应用';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2707,5 +2717,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String sourceFilterSemantics(String name) {
     return '按軟體源篩選：$name';
+  }
+
+  @override
+  String toggleSourceSemantics(String name) {
+    return '啟用或停用軟體源：$name';
+  }
+
+  @override
+  String filterInstalledSemantics(String name) {
+    return '按$name篩選已安裝軟體';
   }
 }

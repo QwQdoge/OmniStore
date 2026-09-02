@@ -207,7 +207,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                         sourcesMap[src] ?? (src == 'github' || src == 'bitu');
                     return FilterChip(
                       label: Text(_displayName(src)),
-                      tooltip: l10n.sourceFilterSemantics(_displayName(src)),
+                      tooltip: l10n.toggleSourceSemantics(_displayName(src)),
                       selected: isEnabled,
                       onSelected: _updatingSources.contains(src)
                           ? null

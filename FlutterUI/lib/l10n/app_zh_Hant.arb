@@ -1375,5 +1375,21 @@
         "type": "String"
       }
     }
+  },
+  "toggleSourceSemantics": "啟用或停用軟體源：{name}",
+  "@toggleSourceSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterInstalledSemantics": "按{name}篩選已安裝軟體",
+  "@filterInstalledSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

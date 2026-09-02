@@ -8,7 +8,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
+import 'package:frontend/data/repositories/config_repository.dart';
+import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:frontend/features/settings/presentation/widgets/sources_config_card.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/installed_tab.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/task_state.dart';
 
@@ -55,55 +61,77 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('FilterChip, ChoiceChip, and ActionChip have tooltips set', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Column(
-            children: [
-              FilterChip(
-                label: const Text('Pacman'),
-                tooltip: 'Filter by source: Pacman',
-                selected: true,
-                onSelected: (_) {},
-              ),
-              ChoiceChip(
-                label: const Text('All'),
-                tooltip: 'Filter by source: All',
-                selected: true,
-                onSelected: (_) {},
-              ),
-              ActionChip(
-                label: const Text('GIMP'),
-                tooltip: 'Category: GIMP',
-                onPressed: () {},
-              ),
+  testWidgets(
+    'SourcesConfigCard production widget renders FilterChips with accurate toggle tooltips',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final configRepo = ConfigRepository.test();
+      final settingsController = SettingsController(configRepo);
+      await settingsController.loadConfig();
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<SettingsController>.value(
+              value: settingsController,
+            ),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
             ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SingleChildScrollView(child: SourcesConfigCard()),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(FilterChip), findsOneWidget);
-    expect(find.byType(ChoiceChip), findsOneWidget);
-    expect(find.byType(ActionChip), findsOneWidget);
+      final filterChips = tester
+          .widgetList<FilterChip>(find.byType(FilterChip))
+          .toList();
+      expect(filterChips, isNotEmpty);
+      expect(
+        filterChips.first.tooltip,
+        equals('Enable or disable software source: GitHub'),
+      );
+    },
+  );
 
-    final filterChip = tester.widget<FilterChip>(find.byType(FilterChip));
-    expect(filterChip.tooltip, equals('Filter by source: Pacman'));
+  testWidgets(
+    'InstalledTab production widget renders ChoiceChips with accurate filter tooltips',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: InstalledTab(
+              isLoading: false,
+              selectedSourceFilter: 'all',
+              filteredApps: const [],
+              filterScrollController: ScrollController(),
+              availableFilters: const ['all', 'managed', 'unmanaged'],
+              onSourceFilterSelected: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final choiceChip = tester.widget<ChoiceChip>(find.byType(ChoiceChip));
-    expect(choiceChip.tooltip, equals('Filter by source: All'));
-
-    final actionChip = tester.widget<ActionChip>(find.byType(ActionChip));
-    expect(actionChip.tooltip, equals('Category: GIMP'));
-  });
+      final choiceChips = tester
+          .widgetList<ChoiceChip>(find.byType(ChoiceChip))
+          .toList();
+      expect(choiceChips, isNotEmpty);
+      expect(choiceChips.first.tooltip, equals('Filter installed apps: All'));
+    },
+  );
 }
