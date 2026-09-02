@@ -68,11 +68,23 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
     final packages = (state['downgrades'] as List? ?? const [])
         .map((item) => '${item['name']}: ${item['installed']} → ${item['stable']}')
         .join('\n');
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.security_update_good_rounded),
-        title: const Text('Switch to Stable'),
+        clipBehavior: Clip.antiAlias,
+        icon: Icon(
+          Icons.security_update_good_rounded,
+          color: theme.colorScheme.primary,
+          size: 32,
+        ),
+        title: Text(
+          'Switch to Stable',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+          textAlign: TextAlign.center,
+        ),
         content: Text(
           'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
         ),

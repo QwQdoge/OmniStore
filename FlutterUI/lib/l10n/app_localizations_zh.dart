@@ -1216,7 +1216,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。';
+  String get aiPickDisclaimer => '条件可用。推荐基于使用习惯和当前配置生成，不会影响具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -1924,13 +1924,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
-  String get envWarningDesc => '缺少必要組件，將進行自動配置。';
+  String get envWarningDesc => '缺少必要組件，將進行自動設定。';
 
   @override
   String get envOkDesc => '系統狀態良好，一切就緒！';
 
   @override
-  String get fixProblems => '一鍵修復/配置';
+  String get fixProblems => '一鍵修復/設定';
 
   @override
   String get continueAnyway => '仍然繼續';
@@ -2569,7 +2569,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。';
+  String get aiPickDisclaimer => '條件可用。推薦基於使用習慣和當前設定生成，不會影響具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';

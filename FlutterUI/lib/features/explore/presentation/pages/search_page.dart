@@ -77,14 +77,18 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  bool _matchesSelectedSources(AppPackage app) {
+    if (_selectedSources.isEmpty) return true;
+    if (_selectedSources.contains(app.primarySourceLower)) return true;
+    return app.sources.any((s) => _selectedSources.contains(s.toLowerCase()));
+  }
+
   void _autoSelectFirstApp() {
     if (!mounted) return;
     final browse = context.read<BrowseController>();
     var filteredResults = browse.searchResults;
     if (_selectedSources.isNotEmpty) {
-      filteredResults = browse.searchResults.where((app) {
-        return _selectedSources.contains(app.primarySourceLower);
-      }).toList();
+      filteredResults = browse.searchResults.where(_matchesSelectedSources).toList();
     }
 
     if (filteredResults.isNotEmpty) {
@@ -214,13 +218,7 @@ class _SearchPageState extends State<SearchPage> {
 
                             final filtered = _selectedSources.isEmpty
                                 ? results
-                                : results.where((app) {
-                                    // Memoized because app filtering was recalculated
-                                    // on every render / search query keystroke
-                                    return _selectedSources.contains(
-                                      app.primarySourceLower,
-                                    );
-                                  }).toList();
+                                : results.where(_matchesSelectedSources).toList();
 
                             return (
                               filteredResults: filtered,
