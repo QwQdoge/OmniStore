@@ -45,6 +45,9 @@ class TaskController with ChangeNotifier {
   String? _packageName;
   String? _flag;
   int _taskGeneration = 0;
+  // ⚡ Bolt: Monotonically increasing version counter to enable O(1) change detection
+  // in log-watching UI widgets (e.g. TerminalDialog) without O(N) list equality iteration.
+  int _logVersion = 0;
   final List<TaskLogEntry> _logEntries = [];
   final List<TaskState> _completedTasks = [];
 
@@ -70,10 +73,14 @@ class TaskController with ChangeNotifier {
   /// Structured log entries for UI and diagnostics.
   List<TaskLogEntry> get logEntries => _logEntriesView;
 
+  /// Monotonically increasing version tracking log mutations for O(1) UI equality checks.
+  int get logVersion => _logVersion;
+
   List<TaskState> get completedTasks => _completedTasksView;
 
   void clearLogs() {
     _logEntries.clear();
+    _logVersion++;
     notifyListeners();
   }
 
@@ -148,6 +155,7 @@ class TaskController with ChangeNotifier {
     _progress = null;
     _status = l10n.taskStarting;
     _logEntries.clear();
+    _logVersion++;
     bool hasError = false;
     notifyListeners();
 
@@ -455,6 +463,7 @@ class TaskController with ChangeNotifier {
     );
 
     if (_logEntries.length > 500) _logEntries.removeAt(0);
+    _logVersion++;
   }
 
   String? _translateKey(String key, String? error, AppLocalizations l10n) {
