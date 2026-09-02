@@ -183,18 +183,14 @@ class TasksTab extends StatelessWidget {
               sliver:
                   Selector<
                     TaskController,
-                    ({int length, List<TaskState> history})
+                    ({int version, int length, List<TaskState> history})
                   >(
                     selector: (context, c) => (
+                      version: c.completedTasksVersion,
                       length: c.completedTasks.length,
                       history: c.completedTasks,
                     ),
-                    shouldRebuild: (prev, next) =>
-                        prev.length != next.length ||
-                        !const IterableEquality().equals(
-                          prev.history,
-                          next.history,
-                        ),
+                    shouldRebuild: (prev, next) => prev.version != next.version,
                     builder: (context, data, child) {
                       final history = data.history;
                       return SliverList.builder(

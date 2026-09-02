@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import '../data/repositories/config_repository.dart';
 import '../data/repositories/package_repository.dart';
 import '../data/repositories/task_repository.dart';
@@ -717,10 +718,13 @@ class BackendService {
       if (daemonRes != null && daemonRes.status == 'success') {
         final data = daemonRes.response ?? _safeJsonDecode(daemonRes.stdout);
         if (data is List) {
-          availableSources.value = data
+          final newList = data
               .whereType<Map>()
               .map((item) => Map<String, dynamic>.from(item))
               .toList();
+          if (!const DeepCollectionEquality().equals(availableSources.value, newList)) {
+            availableSources.value = newList;
+          }
           return data;
         }
       }
@@ -732,10 +736,13 @@ class BackendService {
       if (res != null && res.exitCode == 0) {
         final data = _safeJsonDecode(res.stdout.toString());
         if (data is List) {
-          availableSources.value = data
+          final newList = data
               .whereType<Map>()
               .map((item) => Map<String, dynamic>.from(item))
               .toList();
+          if (!const DeepCollectionEquality().equals(availableSources.value, newList)) {
+            availableSources.value = newList;
+          }
           return data;
         }
       }
