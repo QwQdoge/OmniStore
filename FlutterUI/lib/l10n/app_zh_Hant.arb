@@ -476,9 +476,9 @@
   "envCheckTitle": "環境檢查",
   "envCheckSubtitle": "確保系統已準備就緒",
   "envFatalDesc": "系統不是 Arch Linux，核心功能受限。",
-  "envWarningDesc": "缺少必要組件，將進行自動設定。",
+  "envWarningDesc": "缺少必要組件，將進行自動配置。",
   "envOkDesc": "系統狀態良好，一切就緒！",
-  "fixProblems": "一鍵修復/設定",
+  "fixProblems": "一鍵修復/配置",
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體源設定",
   "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體源",
@@ -1184,7 +1184,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "條件可用。推薦基於使用習慣和當前設定生成，不會影響具體安裝選項。",
+  "aiPickDisclaimer": "條件可用。推薦基於您的使用習慣和當前配置生成，不會影響具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },

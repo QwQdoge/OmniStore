@@ -1185,7 +1185,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "条件可用。推荐基于使用习惯和当前配置生成，不会影响具体安装选项。",
+  "aiPickDisclaimer": "条件可用。推荐基于您的使用习惯和当前配置生成，不会影响具体安装选项。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },

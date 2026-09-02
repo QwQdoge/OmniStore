@@ -412,6 +412,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     required VoidCallback onPressed,
   }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: background,

@@ -305,10 +305,8 @@ class _DownloadPageState extends State<DownloadPage>
         ),
         actions: [
           Selector<TaskController, ({bool hasLogs, bool isBusy})>(
-            // ⚡ Bolt: Uses logEntries.isNotEmpty to check logs in O(1) time without
-            // allocating mapped string lists via controller.logs.
             selector: (context, controller) => (
-              hasLogs: controller.logEntries.isNotEmpty,
+              hasLogs: controller.logs.isNotEmpty,
               isBusy: controller.isBusy,
             ),
             builder: (context, data, _) {

@@ -127,20 +127,8 @@ class AppSourceTag extends StatelessWidget {
       ),
     );
 
-    final String semanticsLabel;
-    switch (mode) {
-      case AppSourceTagMode.source:
-        semanticsLabel = '${l10n.source}: $label';
-        break;
-      case AppSourceTagMode.ready:
-      case AppSourceTagMode.managed:
-      case AppSourceTagMode.trust:
-        semanticsLabel = label;
-        break;
-    }
-
     return Semantics(
-      label: semanticsLabel,
+      label: "${mode.name}: $label",
       child: tooltip != null || mode == AppSourceTagMode.trust
           ? Tooltip(
               message: tooltip ?? _getTrustTooltip(l10n),

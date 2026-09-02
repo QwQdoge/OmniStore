@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -116,72 +117,69 @@ class TerminalDialog extends StatelessWidget {
               },
             ),
             Expanded(
-              // ⚡ Bolt: Selector uses O(1) logVersion scalar integer comparison instead of O(N)
-              // IterableEquality iteration over all log items on every notification.
-              child:
-                  Selector<
-                    TaskController,
-                    ({int version, List<TaskLogEntry> logs})
-                  >(
-                    selector: (context, c) =>
-                        (version: c.logVersion, logs: c.logEntries),
-                    shouldRebuild: (prev, next) => prev.version != next.version,
-                    builder: (context, data, _) {
-                      final logs = data.logs;
-                      return logs.isEmpty
-                          ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.waitingForOutput,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              reverse: true,
-                              padding: const EdgeInsets.all(12),
-                              itemCount: logs.length,
-                              prototypeItem: const Text(
-                                '',
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  height: 1.5,
-                                ),
-                              ),
-                              itemBuilder: (context, i) {
-                                final entry = logs[logs.length - 1 - i];
-                                final time = _formatTime(entry.timestamp);
-                                return Text.rich(
+              child: Selector<
+                TaskController,
+                ({int length, List<TaskLogEntry> logs})
+              >(
+                selector: (context, c) =>
+                    (length: c.logEntries.length, logs: c.logEntries),
+                shouldRebuild: (prev, next) =>
+                    prev.length != next.length ||
+                    !const IterableEquality().equals(prev.logs, next.logs),
+                builder: (context, data, _) {
+                  final logs = data.logs;
+                  return logs.isEmpty
+                      ? Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.waitingForOutput,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          reverse: true,
+                          padding: const EdgeInsets.all(12),
+                          itemCount: logs.length,
+                          prototypeItem: const Text(
+                            '',
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                              height: 1.5,
+                            ),
+                          ),
+                          itemBuilder: (context, i) {
+                            final entry = logs[logs.length - 1 - i];
+                            final time = _formatTime(entry.timestamp);
+                            return Text.rich(
+                              TextSpan(
+                                children: [
                                   TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '$time  ',
-                                        style: TextStyle(
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: entry.message,
-                                        style: TextStyle(
-                                          color: _logColor(theme, entry.level),
-                                        ),
-                                      ),
-                                    ],
+                                    text: '$time  ',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                  style: const TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 12,
-                                    height: 1.5,
+                                  TextSpan(
+                                    text: entry.message,
+                                    style: TextStyle(
+                                      color: _logColor(theme, entry.level),
+                                    ),
                                   ),
-                                );
-                              },
+                                ],
+                              ),
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                                height: 1.5,
+                              ),
                             );
-                    },
-                  ),
+                          },
+                        );
+                },
+              ),
             ),
           ],
         ),

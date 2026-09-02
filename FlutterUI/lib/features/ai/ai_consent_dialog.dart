@@ -59,15 +59,8 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
         : summary.payloadSha256;
 
     return AlertDialog(
-      clipBehavior: Clip.antiAlias,
-      icon: const AiMark(size: 32),
-      title: Text(
-        isChinese ? '允许这一次 AI 调用？' : 'Allow this AI request?',
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
-        textAlign: TextAlign.center,
-      ),
+      icon: const AiMark(size: 52),
+      title: Text(isChinese ? '允许这一次 AI 调用？' : 'Allow this AI request?'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: SingleChildScrollView(
